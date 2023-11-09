@@ -19,7 +19,7 @@ export async function getFromServer(host, port, endpoint) {
   const data = await response.json();
 
   // move received data to our data dispatcher
-  restDataDispatcher(endpoint, data.data);
+  restDataDispatcher(endpoint, data);
 }
 
 export async function postToServer(host, port, endpoint, data) {

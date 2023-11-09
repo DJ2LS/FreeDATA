@@ -11,12 +11,11 @@ const settings = useSettingsStore(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { sendCQ, sendPing, startBeacon, stopBeacon } from "../js/sock.js";
+import { sendPing, startBeacon, stopBeacon } from "../js/sock.js";
 import { postToServer } from "../js/rest.js";
 
 
 function transmitCQ() {
-  sendCQ();
   postToServer("localhost", 5000, "modem/cqcqcq", null);
 }
 

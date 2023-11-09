@@ -34,7 +34,7 @@ var setTxAudioLevelOnce = true;
 var setRxAudioLevelOnce = true;
 
 // network connection Timeout
-setTimeout(connectModem, 2000);
+//setTimeout(connectModem, 2000);
 
 function connectModem() {
   //exports.connectModem = function(){

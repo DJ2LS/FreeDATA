@@ -583,7 +583,6 @@ class RF:
                     tci_timeout_reached = False
                 else:
                     tci_timeout_reached = True
-
             threading.Event().wait(0.01)
             # if we're transmitting FreeDATA signals, reset channel busy state
             ModemParam.channel_busy = False
@@ -598,7 +597,6 @@ class RF:
 
         self.modem_transmit_queue.task_done()
         Modem.transmitting = False
-        threading.Event().set()
 
         end_of_transmission = time.time()
         transmission_time = end_of_transmission - start_of_transmission
@@ -843,6 +841,7 @@ class RF:
                             )
         except Exception as e:
             self.log.warning("[MDM] [demod_audio] Stream not active anymore", e=e)
+
         return nin
 
     def init_codec2(self):
