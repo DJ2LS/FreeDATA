@@ -15,8 +15,6 @@ import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
 import { startModem, stopModem } from "../js/api";
-
-
 </script>
 
 <template>
