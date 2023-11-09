@@ -96,12 +96,14 @@ def fetch_audio_devices(input_devices, output_devices):
                 input_devices.append(new_input_device)
 
         if max_output_channels > 0:
+            hostapi_name = sd.query_hostapis(device['hostapi'])['name']
             new_output_device = {"id": device_crc(device), 
                                  "name": device['name'], 
                                  "api": hostapi_name}
             # check if device not in device list
             if new_output_device not in output_devices:
                 output_devices.append(new_output_device)
+
 
 # FreeData uses the crc as id inside the configuration
 # SD lib uses a numerical id which is essentially an 
@@ -122,4 +124,4 @@ def get_device_index_from_crc(crc, isInput: bool):
         if dev['id'] == crc:
             return (i, dev['name'])
 
-    raise Exception("Audio device %s not detected." % crc)
+    raise Exception(f"Input: {isInput} | Audio device {crc} not detected | Devices: {detected_devices}")
