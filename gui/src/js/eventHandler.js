@@ -26,9 +26,7 @@ export function eventDispatcher(data) {
   // Todo we might use a switch function for data dispatching
   stateStore.ptt_state = data.ptt;
 
-
-
-    // copied directly from sock.js We need to implement these variables step by step
+  // copied directly from sock.js We need to implement these variables step by step
   if (data["command"] == "modem_state") {
     //console.log(data)
 
