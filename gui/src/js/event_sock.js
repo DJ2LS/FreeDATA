@@ -1,25 +1,21 @@
 import {
   eventDispatcher
 } from "../js/eventHandler.js";
+import { addDataToWaterfall } from "../js/waterfallHandler.js";
 
 
-let socket;
-let retries = 0;
-let maxRetries = 15;
-
-function connect() {
-  socket = new WebSocket("ws://localhost:5000/events");
+function connect(endpoint, dispatcher) {
+  let socket = new WebSocket("ws://localhost:5000/" + endpoint);
 
   // handle opening
   socket.addEventListener("open", function (event) {
-    console.log("Connected to the WebSocket server");
+    console.log("Connected to the WebSocket server: " + endpoint);
     retries = 0; // Reset the retries back to 0 since the connection was successful
   });
 
   // handle data
   socket.addEventListener("message", function (event) {
-    console.log("Message from server:", event.data);
-    eventDispatcher(event.data)
+    dispatcher(event.data)
   });
 
   // handle errors
@@ -35,11 +31,12 @@ function connect() {
     if (!event.wasClean) {
       setTimeout(() => {
         console.log("Reconnecting to websocket");
-        connect();
+        connect(endpoint, dispatcher);
       }, 1000);
     }
   });
 }
 
-// Initial connection attempt
-connect();
+// Initial connection attempts to endpoints
+connect('events', eventDispatcher);
+connect('fft', addDataToWaterfall);

@@ -18,7 +18,7 @@ export function initWaterfall() {
 }
 
 export function addDataToWaterfall(data) {
-  //console.log(spectrum)
+  data = JSON.parse(data)
   try {
     spectrum.addData(data);
   } catch (e) {

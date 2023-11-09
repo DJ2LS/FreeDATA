@@ -12,6 +12,7 @@ Created on Wed Dec 23 07:04:24 2020
 import atexit
 import ctypes
 import os
+import queue
 import sys
 import threading
 import time
@@ -63,7 +64,7 @@ class RF:
 
     log = structlog.get_logger("RF")
 
-    def __init__(self, config, event_queue) -> None:
+    def __init__(self, config, event_queue, fft_queue) -> None:
         self.config = config
 
         self.sampler_avg = 0
@@ -109,12 +110,11 @@ class RF:
         # Init FIFO queue to store modulation out in
         self.modoutqueue = deque()
 
-        # Define fft_data buffer
-        self.fft_data = bytes()
-
         self.event_manager = event_manager.EventManager([
             event_queue, 
             sock.SOCKET_QUEUE])
+
+        self.fft_queue = fft_queue
 
         self.init_codec2()
         self.init_audio()
@@ -247,8 +247,8 @@ class RF:
             x = self.audio_received_queue.get()
             x = np.frombuffer(x, dtype=np.int16)
             # x = self.resampler.resample48_to_8(x)
-
-            self.fft_data = x
+            if AudioParam.enable_fft:
+                self.calculate_fft(x)
 
             length_x = len(x)
             for data_buffer, receive in [
@@ -361,7 +361,8 @@ class RF:
 
         if not self.modoutqueue or self.mod_out_locked:
             data_out48k = np.zeros(frames, dtype=np.int16)
-            self.fft_data = x
+            if AudioParam.enable_fft:
+                self.calculate_fft(x)
         else:
             if not HamlibParam.ptt_state:
                 # TODO Moved to this place for testing
@@ -370,7 +371,8 @@ class RF:
                 self.event_manager.send_ptt_change(True)
 
             data_out48k = self.modoutqueue.popleft()
-            self.fft_data = data_out48k
+            if AudioParam.enable_fft:
+                self.calculate_fft(data_out48k)
 
         try:
             outdata[:] = data_out48k[:frames]
@@ -678,11 +680,6 @@ class RF:
             self.modoutqueue.append(c)
 
     def init_decoders(self):
-        if AudioParam.enable_fft:
-            fft_thread = threading.Thread(
-                target=self.calculate_fft, name="FFT_THREAD", daemon=True
-            )
-            fft_thread.start()
 
         if Modem.enable_fsk:
             audio_thread_fsk_ldpc0 = threading.Thread(
@@ -1280,7 +1277,7 @@ class RF:
                 )
                 threading.Event().wait(1)
 
-    def calculate_fft(self) -> None:
+    def calculate_fft(self, data) -> None:
         """
         Calculate an average signal strength of the channel to assess
         whether the channel is "busy."
@@ -1291,120 +1288,118 @@ class RF:
         # Initialize dbfs counter
         rms_counter = 0
 
-        while True:
-            # threading.Event().wait(0.01)
-            threading.Event().wait(0.01)
-            # WE NEED TO OPTIMIZE THIS!
+        # https://gist.github.com/ZWMiller/53232427efc5088007cab6feee7c6e4c
+        # Fast Fourier Transform, 10*log10(abs) is to scale it to dB
+        # and make sure it's not imaginary
+        try:
+            fftarray = np.fft.rfft(data)
 
-            # Start calculating the FFT once enough samples are captured.
-            if len(self.fft_data) >= 128:
-                # https://gist.github.com/ZWMiller/53232427efc5088007cab6feee7c6e4c
-                # Fast Fourier Transform, 10*log10(abs) is to scale it to dB
-                # and make sure it's not imaginary
-                try:
-                    fftarray = np.fft.rfft(self.fft_data)
+            # Set value 0 to 1 to avoid division by zero
+            fftarray[fftarray == 0] = 1
+            dfft = 10.0 * np.log10(abs(fftarray))
 
-                    # Set value 0 to 1 to avoid division by zero
-                    fftarray[fftarray == 0] = 1
-                    dfft = 10.0 * np.log10(abs(fftarray))
+            # get average of dfft
+            avg = np.mean(dfft)
 
-                    # get average of dfft
-                    avg = np.mean(dfft)
+            # Detect signals which are higher than the
+            # average + 10 (+10 smoothes the output).
+            # Data higher than the average must be a signal.
+            # Therefore we are setting it to 100 so it will be highlighted
+            # Have to do this when we are not transmitting so our
+            # own sending data will not affect this too much
+            if not Modem.transmitting:
+                dfft[dfft > avg + 15] = 100
 
-                    # Detect signals which are higher than the
-                    # average + 10 (+10 smoothes the output).
-                    # Data higher than the average must be a signal.
-                    # Therefore we are setting it to 100 so it will be highlighted
-                    # Have to do this when we are not transmitting so our
-                    # own sending data will not affect this too much
-                    if not Modem.transmitting:
-                        dfft[dfft > avg + 15] = 100
+                # Calculate audio dbfs
+                # https://stackoverflow.com/a/9763652
+                # calculate dbfs every 50 cycles for reducing CPU load
+                rms_counter += 1
+                if rms_counter > 50:
+                    d = np.frombuffer(data, np.int16).astype(np.float32)
+                    # calculate RMS and then dBFS
+                    # https://dsp.stackexchange.com/questions/8785/how-to-compute-dbfs
+                    # try except for avoiding runtime errors by division/0
+                    try:
+                        rms = int(np.sqrt(np.max(d ** 2)))
+                        if rms == 0:
+                            raise ZeroDivisionError
+                        AudioParam.audio_dbfs = 20 * np.log10(rms / 32768)
+                    except Exception as e:
+                        # FIXME Disabled for cli cleanup
+                        #self.log.warning(
+                        #    "[MDM] fft calculation error - please check your audio setup",
+                        #    e=e,
+                        #)
+                        AudioParam.audio_dbfs = -100
 
-                        # Calculate audio dbfs
-                        # https://stackoverflow.com/a/9763652
-                        # calculate dbfs every 50 cycles for reducing CPU load
-                        rms_counter += 1
-                        if rms_counter > 50:
-                            d = np.frombuffer(self.fft_data, np.int16).astype(np.float32)
-                            # calculate RMS and then dBFS
-                            # https://dsp.stackexchange.com/questions/8785/how-to-compute-dbfs
-                            # try except for avoiding runtime errors by division/0
-                            try:
-                                rms = int(np.sqrt(np.max(d ** 2)))
-                                if rms == 0:
-                                    raise ZeroDivisionError
-                                AudioParam.audio_dbfs = 20 * np.log10(rms / 32768)
-                            except Exception as e:
-                                # FIXME Disabled for cli cleanup
-                                #self.log.warning(
-                                #    "[MDM] fft calculation error - please check your audio setup",
-                                #    e=e,
-                                #)
-                                AudioParam.audio_dbfs = -100
+                    rms_counter = 0
 
-                            rms_counter = 0
+            # Convert data to int to decrease size
+            dfft = dfft.astype(int)
 
-                    # Convert data to int to decrease size
-                    dfft = dfft.astype(int)
+            # Create list of dfft for later pushing to AudioParam.fft
+            dfftlist = dfft.tolist()
 
-                    # Create list of dfft for later pushing to AudioParam.fft
-                    dfftlist = dfft.tolist()
+            # Reduce area where the busy detection is enabled
+            # We want to have this in correlation with mode bandwidth
+            # TODO This is not correctly and needs to be checked for correct maths
+            # dfftlist[0:1] = 10,15Hz
+            # Bandwidth[Hz] / 10,15
+            # narrowband = 563Hz = 56
+            # wideband = 1700Hz = 167
+            # 1500Hz = 148
+            # 2700Hz = 266
+            # 3200Hz = 315
 
-                    # Reduce area where the busy detection is enabled
-                    # We want to have this in correlation with mode bandwidth
-                    # TODO This is not correctly and needs to be checked for correct maths
-                    # dfftlist[0:1] = 10,15Hz
-                    # Bandwidth[Hz] / 10,15
-                    # narrowband = 563Hz = 56
-                    # wideband = 1700Hz = 167
-                    # 1500Hz = 148
-                    # 2700Hz = 266
-                    # 3200Hz = 315
+            # slot
+            slot = 0
+            slot1 = [0, 65]
+            slot2 = [65,120]
+            slot3 = [120, 176]
+            slot4 = [176, 231]
+            slot5 = [231, len(dfftlist)]
 
-                    # slot
-                    slot = 0
-                    slot1 = [0, 65]
-                    slot2 = [65,120]
-                    slot3 = [120, 176]
-                    slot4 = [176, 231]
-                    slot5 = [231, len(dfftlist)]
+            # Set to true if we should increment delay count; else false to decrement
+            addDelay=False
+            for range in [slot1, slot2, slot3, slot4, slot5]:
 
-                    # Set to true if we should increment delay count; else false to decrement
-                    addDelay=False
-                    for range in [slot1, slot2, slot3, slot4, slot5]:
+                range_start = range[0]
+                range_end = range[1]
+                # define the area, we are detecting busy state
+                #dfft = dfft[120:176] if Modem.low_bandwidth_mode else dfft[65:231]
+                slotdfft = dfft[range_start:range_end]
+                # Check for signals higher than average by checking for "100"
+                # If we have a signal, increment our channel_busy delay counter
+                # so we have a smoother state toggle
+                if np.sum(slotdfft[slotdfft > avg + 15]) >= 200 and not Modem.transmitting:
+                    addDelay=True
+                    ModemParam.channel_busy_slot[slot] = True
+                else:
+                    ModemParam.channel_busy_slot[slot] = False
+                # increment slot
+                slot += 1
+            if addDelay:
+                # Limit delay counter to a maximum of 200. The higher this value,
+                # the longer we will wait until releasing state
+                ModemParam.channel_busy = True
+                ModemParam.channel_busy_delay = min(ModemParam.channel_busy_delay + 10, 200)
+            else:
+                # Decrement channel busy counter if no signal has been detected.
+                ModemParam.channel_busy_delay = max(ModemParam.channel_busy_delay - 1, 0)
+                # When our channel busy counter reaches 0, toggle state to False
+                if ModemParam.channel_busy_delay == 0:
+                    ModemParam.channel_busy = False
 
-                        range_start = range[0]
-                        range_end = range[1]
-                        # define the area, we are detecting busy state
-                        #dfft = dfft[120:176] if Modem.low_bandwidth_mode else dfft[65:231]
-                        slotdfft = dfft[range_start:range_end]
-                        # Check for signals higher than average by checking for "100"
-                        # If we have a signal, increment our channel_busy delay counter
-                        # so we have a smoother state toggle
-                        if np.sum(slotdfft[slotdfft > avg + 15]) >= 200 and not Modem.transmitting:
-                            addDelay=True
-                            ModemParam.channel_busy_slot[slot] = True
-                        else:
-                            ModemParam.channel_busy_slot[slot] = False
-                        # increment slot
-                        slot += 1
-                    if addDelay:
-                        # Limit delay counter to a maximum of 200. The higher this value,
-                        # the longer we will wait until releasing state
-                        ModemParam.channel_busy = True
-                        ModemParam.channel_busy_delay = min(ModemParam.channel_busy_delay + 10, 200)
-                    else:
-                        # Decrement channel busy counter if no signal has been detected.
-                        ModemParam.channel_busy_delay = max(ModemParam.channel_busy_delay - 1, 0)
-                        # When our channel busy counter reaches 0, toggle state to False
-                        if ModemParam.channel_busy_delay == 0:
-                            ModemParam.channel_busy = False
-                    AudioParam.fft = dfftlist[:315]  # 315 --> bandwidth 3200
-                except Exception as err:
-                    self.log.error(f"[MDM] calculate_fft: Exception: {err}")
-                    self.log.debug("[MDM] Setting fft=0")
-                    # else 0
-                    AudioParam.fft = [0]
+            # erase queue if greater than 10
+            if self.fft_queue.qsize() >= 10:
+                self.fft_queue = queue.Queue()
+
+            self.fft_queue.put(dfftlist[:315]) # 315 --> bandwidth 3200
+        except Exception as err:
+            self.log.error(f"[MDM] calculate_fft: Exception: {err}")
+            self.log.debug("[MDM] Setting fft=0")
+            # else 0
+            self.fft_queue.put([0])
 
     def set_frames_per_burst(self, frames_per_burst: int) -> None:
         """

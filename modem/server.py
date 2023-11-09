@@ -38,7 +38,9 @@ set_config()
 
 # start modem
 app.modem_events = queue.Queue()
-app.modem = modem.RF(app.config_manager.config, app.modem_events)
+app.modem_fft = queue.Queue()
+
+app.modem = modem.RF(app.config_manager.config, app.modem_events, app.modem_fft)
 data_handler.DATA(app.config_manager.config, app.modem_events)
 
 ## REST API
@@ -127,8 +129,15 @@ def post_ping():
 
 # Event websocket
 @sock.route('/events')
-def echo(sock):
+def sock_events(sock):
     # it seems we have to keep the logics inside a loop, otherwise connection will be terminated
     while True:
         ev = app.modem_events.get()
         sock.send(ev)
+
+@sock.route('/fft')
+def sock_fft(sock):
+    # it seems we have to keep the logics inside a loop, otherwise connection will be terminated
+    while True:
+        fft = app.modem_fft.get()
+        sock.send(fft)
