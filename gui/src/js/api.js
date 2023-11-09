@@ -1,4 +1,5 @@
 import { getModemConfigAsJSON } from "./settingsHandler.ts";
+import { getFromServer, postToServer } from "./rest.js";
 
 
 
@@ -17,12 +18,12 @@ export function saveModemConfig(){
 
 }
 
-export function fetchSettings() {
+export function startModem() {
+  postToServer("localhost", 5000, "modem/start", null);
 
 }
 
-export function saveSettings() {
-  // save settings via post
-  console.log("post settings");
+export function stopModem() {
+  postToServer("localhost", 5000, "modem/stop", null);
 
 }

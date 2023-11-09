@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 """
-daemon.py
+deprecated_daemon.py
 
 Author: DJ2LS, January 2022
 

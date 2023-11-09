@@ -64,8 +64,9 @@ class RF:
 
     log = structlog.get_logger("RF")
 
-    def __init__(self, config, event_queue, fft_queue) -> None:
+    def __init__(self, config, event_queue, fft_queue, service_queue) -> None:
         self.config = config
+        self.service_queue = service_queue
 
         self.sampler_avg = 0
         self.buffer_avg = 0
@@ -157,20 +158,21 @@ class RF:
                 atexit.register(self.stream.stop)
                 self.log.info("[MDM] init: receiving audio from '%s'" % in_dev_name)
                 self.log.info("[MDM] init: transmiting audio on '%s'" % out_dev_name)
+
+                try:
+                    self.log.debug("[MDM] init: starting pyaudio callback")
+                    # self.audio_stream.start_stream(
+                    self.stream.start()
+                except Exception as audioerr:
+                    self.log.error("[MDM] init: starting pyaudio callback failed", e=audioerr)
+
             except Exception as err:
                 self.log.error("[MDM] init: can't open audio device. Exit", e=err)
-                # TODO Disabled sys.exit in case of wrong audio devices. We need to ensure flask server is running.
-                # This needs to be optimized when working on modem startup without daemon
-                # We also get problems with old configs, using ID instead of CRC as identifier, so
-                # we need some error handling here
-                #sys.exit(1)
-
-            try:
-                self.log.debug("[MDM] init: starting pyaudio callback")
-                # self.audio_stream.start_stream(
-                self.stream.start()
-            except Exception as err:
-                self.log.error("[MDM] init: starting pyaudio callback failed", e=err)
+                # let's stop the modem service
+                self.service_queue.put("stop")
+                # simulate audio class active state for reducing cli output
+                self.stream = lambda: None
+                self.stream.active = False
 
         elif not TESTMODE:
             # placeholder area for processing audio via TCI
@@ -242,7 +244,6 @@ class RF:
         """
 
         while True:
-            threading.Event().wait(0.01)
 
             x = self.audio_received_queue.get()
             x = np.frombuffer(x, dtype=np.int16)

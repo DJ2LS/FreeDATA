@@ -14,21 +14,9 @@ const audio = useAudioStore(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { startModem, stopModem } from "../js/daemon";
+import { startModem, stopModem } from "../js/api";
 
-function startStopModem() {
-  switch (state.modem_running_state) {
-    case "stopped":
-      startModem();
 
-      break;
-    case "running":
-      stopModem();
-
-      break;
-    default:
-  }
-}
 </script>
 
 <template>
@@ -41,7 +29,7 @@ function startStopModem() {
       data-bs-trigger="hover"
       data-bs-html="false"
       title="Start the Modem. Please set your audio and radio settings first!"
-      @click="startStopModem()"
+      @click="startModem"
       v-bind:class="{ disabled: state.modem_running_state === 'running' }"
     >
       <i class="bi bi-play-fill"></i>
@@ -55,7 +43,7 @@ function startStopModem() {
       data-bs-trigger="hover"
       data-bs-html="false"
       title="Stop the Modem."
-      @click="startStopModem()"
+      @click="stopModem"
       v-bind:class="{ disabled: state.modem_running_state === 'stopped' }"
     >
       <i class="bi bi-stop-fill"></i>

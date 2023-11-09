@@ -44,12 +44,10 @@ class DATA:
     def __init__(self, config, event_queue) -> None:
 
         self.stats = stats.stats()
-
         self.event_queue = event_queue
 
         self.mycallsign = config['STATION']['mycall']
         self.mygrid = config['STATION']['mygrid']
-        
         self.dxcallsign = Station.dxcallsign
 
         self.data_queue_transmit = DATA_QUEUE_TRANSMIT

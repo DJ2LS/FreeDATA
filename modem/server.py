@@ -9,6 +9,7 @@ import data_handler
 import modem
 import queue
 import server_commands
+import service_manager
 
 app = Flask(__name__)
 CORS(app)
@@ -30,18 +31,25 @@ def set_config():
 
     app.config_manager = CONFIG(config_file)
 
-# returns a standard API response
-def api_response(data):
-    return make_response(jsonify(data), 200)
 
 set_config()
 
 # start modem
-app.modem_events = queue.Queue()
-app.modem_fft = queue.Queue()
+app.modem_events = queue.Queue() # queue which holds latest events
+app.modem_fft = queue.Queue() # queue which holds lates fft data
+app.modem_service = queue.Queue() # start / stop modem service
 
-app.modem = modem.RF(app.config_manager.config, app.modem_events, app.modem_fft)
-data_handler.DATA(app.config_manager.config, app.modem_events)
+# start service manager
+service_manager.SM(app)
+
+# start modem service
+app.modem_service.put("start")
+
+
+# returns a standard API response
+def api_response(data):
+    return make_response(jsonify(data), 200)
+
 
 ## REST API
 @app.route('/', methods=['GET'])
@@ -57,7 +65,9 @@ def index():
 @app.route('/config', methods=['GET', 'POST'])
 def config():
     if request.method == 'POST':
+        app.modem_service.put("stop")
         set_config = app.config_manager.write(request.json)
+        app.modem_service.put("start")
         if not set_config:
             response = api_response(None, 'error writing config')
         else:
@@ -119,8 +129,24 @@ def post_ping():
 # @app.route('/mesh/routing_table', methods=['GET'])
 # @app.route('/modem/get_rx_buffer', methods=['GET'])
 # @app.route('/modem/del_rx_buffer', methods=['POST'])
-# @app.route('/modem/start', methods=['POST'])
-# @app.route('/modem/stop', methods=['POST'])
+@app.route('/modem/start', methods=['POST'])
+def post_modem_start():
+    if request.method in ['POST']:
+        print("start received...")
+        app.modem_service.put("start")
+        return api_response(request.json)
+    else:
+        return api_response({"info": "endpoint for STARTING modem via POST"})
+
+@app.route('/modem/stop', methods=['POST'])
+def post_modem_stop():
+    if request.method in ['POST']:
+        print("stop received...")
+
+        app.modem_service.put("stop")
+        return api_response(request.json)
+    else:
+        return api_response({"info": "endpoint for STOPPING modem via POST"})
 
 # @app.route('/rig/status', methods=['GET'])
 # @app.route('/rig/mode', methods=['POST'])
