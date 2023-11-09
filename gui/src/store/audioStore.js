@@ -20,7 +20,12 @@ export const useAudioStore = defineStore("audioStore", () => {
     for (var key in inputDevices.value) {
       let selected = "";
 
-      console.log("AUDIO DEVICES: " + inputDevices.value[key]["id"] + " | " + settings.rx_audio)
+      console.log(
+        "AUDIO DEVICES: " +
+          inputDevices.value[key]["id"] +
+          " | " +
+          settings.rx_audio,
+      );
       if (inputDevices.value[key]["id"] == settings.rx_audio) {
         selected = "selected";
       } else {

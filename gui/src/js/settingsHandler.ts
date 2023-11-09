@@ -165,16 +165,14 @@ export function processModemConfig(data) {
 }
 
 export function processModemAudioDevices(data) {
-        console.log(data)
-        audioStore.inputDevices = data["in"];
-        audioStore.outputDevices = data["out"];
+  console.log(data);
+  audioStore.inputDevices = data["in"];
+  audioStore.outputDevices = data["out"];
 }
 
 export function processModemSerialDevices(data) {
-
-    settings.serial_devices = data;
+  settings.serial_devices = data;
 }
-
 
 export function getModemConfigAsJSON() {
   // create json output from settings
