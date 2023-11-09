@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { saveSettings } from "../js/settingsHandler";
+import { saveModemConfig } from "../js/api";
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -17,7 +17,7 @@ const settings = useSettingsStore(pinia);
       class="form-select form-select-sm"
       aria-label=".form-select-sm"
       id="rigcontrol_radiocontrol"
-      @change="saveSettings"
+      @change="saveModemConfig"
       v-model="settings.radiocontrol"
     >
       <option selected value="disabled">

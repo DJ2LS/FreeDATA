@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { saveSettings } from "../js/settingsHandler";
+import { saveModemConfig } from "../js/api";
+
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -18,7 +19,7 @@ const settings = useSettingsStore(pinia);
           class="form-check-input"
           type="checkbox"
           id="autoTuneSwitch"
-          @change="saveSettings"
+          @change="saveModemConfig"
           v-model="settings.auto_tune"
           true-value="True"
           false-value="False"
@@ -37,7 +38,7 @@ const settings = useSettingsStore(pinia);
           class="form-check-input"
           type="checkbox"
           id="fskModeSwitch"
-          @change="saveSettings"
+          @change="saveModemConfig"
           v-model="settings.enable_fsk"
           true-value="True"
           false-value="False"
@@ -57,7 +58,7 @@ const settings = useSettingsStore(pinia);
           class="form-check-input"
           type="checkbox"
           id="enableMeshSwitch"
-          @change="saveSettings"
+          @change="saveModemConfig"
           v-model="settings.enable_mesh_features"
           true-value="True"
           false-value="False"

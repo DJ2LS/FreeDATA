@@ -224,16 +224,3 @@ export function getModemConfigAsJSON() {
 
   return configData;
 }
-
-export function fetchSettings() {
-  // fetch Settings
-  getFromServer("localhost", 5000, "config");
-  getFromServer("localhost", 5000, "devices/audio");
-  getFromServer("localhost", 5000, "devices/serial");
-}
-
-export function saveSettings() {
-  // save settings via post
-  console.log("post settings");
-  postToServer("localhost", 5000, "config", getModemConfigAsJSON());
-}

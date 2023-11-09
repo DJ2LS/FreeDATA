@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { saveSettings } from "../js/settingsHandler";
+import { saveModemConfig } from "../js/api";
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -72,7 +72,7 @@ function startStopModem() {
       maxlength="5"
       max="65534"
       min="1025"
-      @change="saveSettings()"
+      @change="saveModemConfig()"
       v-model="settings.modem_port"
     />
   </div>
@@ -84,7 +84,7 @@ function startStopModem() {
       class="form-control"
       placeholder="modem host"
       id="modem_port"
-      @change="saveSettings"
+      @change="saveModemConfig"
       v-model="settings.modem_host"
     />
   </div>
@@ -96,7 +96,7 @@ function startStopModem() {
       class="form-select form-select-sm"
       id="rx_audio"
       aria-label=".form-select-sm"
-      @change="saveSettings"
+      @change="saveModemConfig"
       v-model="settings.rx_audio"
       v-html="audio.getInputDevices()"
     ></select>
@@ -109,7 +109,7 @@ function startStopModem() {
       class="form-select form-select-sm"
       id="tx_audio"
       aria-label=".form-select-sm"
-      @change="saveSettings"
+      @change="saveModemConfig"
       v-model="settings.tx_audio"
       v-html="audio.getOutputDevices()"
     ></select>
@@ -120,7 +120,7 @@ function startStopModem() {
     <select
       class="form-select form-select-sm"
       id="tx_delay"
-      @change="saveSettings"
+      @change="saveModemConfig"
       v-model="settings.tx_delay"
     >
       <option value="0">0</option>
@@ -153,7 +153,7 @@ function startStopModem() {
     <select
       class="form-select form-select-sm"
       id="tuning_range_fmin"
-      @change="saveSettings"
+      @change="saveModemConfig"
       v-model="settings.tuning_range_fmin"
     >
       <option value="-50.0">-50.0</option>
@@ -166,7 +166,7 @@ function startStopModem() {
     <select
       class="form-select form-select-sm"
       id="tuning_range_fmax"
-      @change="saveSettings"
+      @change="saveModemConfig"
       v-model="settings.tuning_range_fmax"
     >
       <option value="50.0">50.0</option>
@@ -183,7 +183,7 @@ function startStopModem() {
       aria-label=".form-select-sm"
       id="beaconInterval"
       style="width: 6rem"
-      @change="saveSettings"
+      @change="saveModemConfig"
       v-model="settings.beacon_interval"
     >
       <option value="60">60 secs</option>
@@ -204,7 +204,7 @@ function startStopModem() {
           class="form-check-input"
           type="checkbox"
           id="fftSwitch"
-          @change="saveSettings"
+          @change="saveModemConfig"
           v-model="settings.enable_fft"
           true-value="True"
           false-value="False"
@@ -221,7 +221,7 @@ function startStopModem() {
           class="form-check-input"
           type="checkbox"
           id="scatterSwitch"
-          @change="saveSettings"
+          @change="saveModemConfig"
           v-model="settings.enable_scatter"
           true-value="True"
           false-value="False"
@@ -241,7 +241,7 @@ function startStopModem() {
           v-model="settings.low_bandwidth_mode"
           true-value="True"
           false-value="False"
-          @change="saveSettings"
+          @change="saveModemConfig"
         />
         <label class="form-check-label" for="250HzModeSwitch">250Hz</label>
       </div>
@@ -258,7 +258,7 @@ function startStopModem() {
           v-model="settings.respond_to_cq"
           true-value="True"
           false-value="False"
-          @change="saveSettings"
+          @change="saveModemConfig"
         />
         <label class="form-check-label" for="respondCQSwitch">QRV</label>
       </div>
@@ -270,7 +270,7 @@ function startStopModem() {
       <select
         class="form-select form-select-sm"
         id="rx_buffer_size"
-        @change="saveSettings"
+        @change="saveModemConfig"
         v-model="settings.rx_buffer_size"
       >
         <option value="1">1</option>

@@ -7,7 +7,6 @@ function connect(endpoint, dispatcher) {
   // handle opening
   socket.addEventListener("open", function (event) {
     console.log("Connected to the WebSocket server: " + endpoint);
-    retries = 0; // Reset the retries back to 0 since the connection was successful
   });
 
   // handle data

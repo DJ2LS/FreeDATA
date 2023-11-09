@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { saveSettings } from "../js/settingsHandler";
+import { saveModemConfig } from "../js/api";
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -20,7 +20,7 @@ const settings = useSettingsStore(pinia);
       id="hamlib_rigctld_path"
       aria-label="Device IP"
       aria-describedby="basic-addon1"
-      @change="saveSettings"
+      @change="saveModemConfig"
       v-model="settings.hamlib_rigctld_path"
     />
   </div>
@@ -35,7 +35,7 @@ const settings = useSettingsStore(pinia);
       id="hamlib_rigctld_server_port"
       aria-label="Device Port"
       aria-describedby="basic-addon1"
-      @change="saveSettings"
+      @change="saveModemConfig"
       v-model="settings.hamlib_rigctld_server_port"
     />
   </div>
@@ -73,7 +73,7 @@ const settings = useSettingsStore(pinia);
       class="form-select form-select-sm"
       aria-label=".form-select-sm"
       id="hamlib_deviceid"
-      @change="saveSettings"
+      @change="saveModemConfig"
       v-model="settings.hamlib_deviceid"
     >
       <option selected value="-- ignore --">-- ignore --</option>
@@ -350,7 +350,7 @@ const settings = useSettingsStore(pinia);
       aria-label=".form-select-sm"
       id="hamlib_deviceport"
       style="width: 7rem"
-      @change="saveSettings"
+      @change="saveModemConfig"
       v-html="settings.getSerialDevices()"
     ></select>
   </div>
@@ -362,7 +362,7 @@ const settings = useSettingsStore(pinia);
       class="form-select form-select-sm"
       aria-label=".form-select-sm"
       id="hamlib_serialspeed"
-      @change="saveSettings"
+      @change="saveModemConfig"
       v-model="settings.hamlib_serialspeed"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -385,7 +385,7 @@ const settings = useSettingsStore(pinia);
       class="form-select form-select-sm"
       aria-label=".form-select-sm"
       id="hamlib_data_bits"
-      @change="saveSettings"
+      @change="saveModemConfig"
       v-model="settings.hamlib_data_bits"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -400,7 +400,7 @@ const settings = useSettingsStore(pinia);
       class="form-select form-select-sm"
       aria-label=".form-select-sm"
       id="hamlib_stop_bits"
-      @change="saveSettings"
+      @change="saveModemConfig"
       v-model="settings.hamlib_stop_bits"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -415,7 +415,7 @@ const settings = useSettingsStore(pinia);
       class="form-select form-select-sm"
       aria-label=".form-select-sm"
       id="hamlib_handshake"
-      @change="saveSettings"
+      @change="saveModemConfig"
       v-model="settings.hamlib_handshake"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -429,7 +429,7 @@ const settings = useSettingsStore(pinia);
       class="form-select form-select-sm"
       aria-label=".form-select-sm"
       id="hamlib_ptt_port"
-      @change="saveSettings"
+      @change="saveModemConfig"
       v-model="settings.hamlib_ptt_port"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -443,7 +443,7 @@ const settings = useSettingsStore(pinia);
       aria-label=".form-select-sm"
       id="hamlib_pttprotocol"
       style="width: 0.5rem"
-      @change="saveSettings"
+      @change="saveModemConfig"
       v-model="settings.hamlib_pttprotocol"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -464,7 +464,7 @@ const settings = useSettingsStore(pinia);
       aria-label=".form-select-sm"
       id="hamlib_dcd"
       style="width: 0.5rem"
-      @change="saveSettings"
+      @change="saveModemConfig"
       v-model="settings.hamlib_dcd"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -484,7 +484,7 @@ const settings = useSettingsStore(pinia);
       aria-label=".form-select-sm"
       id="hamlib_dtrstate"
       style="width: 0.5rem"
-      @change="saveSettings"
+      @change="saveModemConfig"
       v-model="settings.hamlib_dtrstate"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -522,7 +522,7 @@ const settings = useSettingsStore(pinia);
       id="hamlib_rigctld_custom_args"
       aria-label="Custom arguments"
       aria-describedby="basic-addon1"
-      @change="saveSettings"
+      @change="saveModemConfig"
       v-model="settings.hamlib_rigctld_custom_args"
     />
   </div>

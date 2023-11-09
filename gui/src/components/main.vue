@@ -19,7 +19,7 @@ import chat from "./chat.vue";
 import infoScreen from "./infoScreen.vue";
 
 import { stopTransmission } from "../js/sock.js";
-import { fetchSettings } from "../js/settingsHandler.js";
+import { getModemConfig } from "../js/api";
 
 function stopAllTransmissions() {
   console.log("stopping transmissions");
@@ -113,7 +113,7 @@ function stopAllTransmissions() {
               role="tab"
               aria-controls="list-settings"
               title="Settings"
-              @click="fetchSettings"
+              @click="getModemConfig"
               ><i class="bi bi-gear-wide-connected h3"></i
             ></a>
 

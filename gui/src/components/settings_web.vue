@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { saveSettings } from "../js/settingsHandler";
+import { saveModemConfig } from "../js/api";
+
+
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -18,7 +20,7 @@ const settings = useSettingsStore(pinia);
           class="form-check-input"
           type="checkbox"
           id="ExplorerSwitch"
-          @change="saveSettings"
+          @change="saveModemConfig"
           v-model="settings.enable_explorer"
           true-value="True"
           false-value="False"
@@ -35,7 +37,7 @@ const settings = useSettingsStore(pinia);
           class="form-check-input"
           type="checkbox"
           id="ExplorerStatsSwitch"
-          @change="saveSettings"
+          @change="saveModemConfig"
           v-model="settings.explorer_stats"
           true-value="True"
           false-value="False"
