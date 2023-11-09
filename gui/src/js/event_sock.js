@@ -1,8 +1,5 @@
-import {
-  eventDispatcher
-} from "../js/eventHandler.js";
+import { eventDispatcher } from "../js/eventHandler.js";
 import { addDataToWaterfall } from "../js/waterfallHandler.js";
-
 
 function connect(endpoint, dispatcher) {
   let socket = new WebSocket("ws://localhost:5000/" + endpoint);
@@ -15,7 +12,7 @@ function connect(endpoint, dispatcher) {
 
   // handle data
   socket.addEventListener("message", function (event) {
-    dispatcher(event.data)
+    dispatcher(event.data);
   });
 
   // handle errors
@@ -38,5 +35,5 @@ function connect(endpoint, dispatcher) {
 }
 
 // Initial connection attempts to endpoints
-connect('events', eventDispatcher);
-connect('fft', addDataToWaterfall);
+connect("events", eventDispatcher);
+connect("fft", addDataToWaterfall);
