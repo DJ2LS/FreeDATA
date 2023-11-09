@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { saveModemConfig } from "../js/api";
 
-
-
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
