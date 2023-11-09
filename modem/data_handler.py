@@ -48,6 +48,8 @@ class DATA:
         self.event_queue = event_queue
 
         self.mycallsign = config['STATION']['mycall']
+        self.mygrid = config['STATION']['mygrid']
+        
         self.dxcallsign = Station.dxcallsign
 
         self.data_queue_transmit = DATA_QUEUE_TRANSMIT
@@ -530,7 +532,7 @@ class DATA:
 
         self.log.debug("[Modem] send_data_to_socket_queue:", jsondata=json_data_out)
         # finally push data to our network queue
-        sock.SOCKET_QUEUE.put(json_data_out)
+        # sock.SOCKET_QUEUE.put(json_data_out)
         self.event_queue.put(json_data_out)
 
     def send_ident_frame(self, transmit) -> None:
@@ -2636,7 +2638,7 @@ class DATA:
         ping_frame[:1] = bytes([FR_TYPE.PING_ACK.value])
         ping_frame[1:4] = Station.dxcallsign_crc
         ping_frame[4:7] = Station.mycallsign_crc
-        ping_frame[7:11] = helpers.encode_grid(Station.mygrid.decode("UTF-8"))
+        ping_frame[7:11] = helpers.encode_grid(self.mygrid)
         ping_frame[13:14] = helpers.snr_to_bytes(ModemParam.snr)
 
         if Modem.enable_fsk:
@@ -2781,7 +2783,7 @@ class DATA:
                         beacon_frame = bytearray(self.length_sig0_frame)
                         beacon_frame[:1] = bytes([FR_TYPE.BEACON.value])
                         beacon_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
-                        beacon_frame[7:11] = helpers.encode_grid(Station.mygrid.decode("UTF-8"))
+                        beacon_frame[7:11] = helpers.encode_grid(self.mygrid)
 
                         if Modem.enable_fsk:
                             self.log.info("[Modem] ENABLE FSK", state=Modem.enable_fsk)
@@ -2856,13 +2858,13 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="modem-message",
             cq="transmitting",
-            mycallsign=str(self.mycallsign, "UTF-8"),
+            mycallsign=self.mycallsign,
             dxcallsign="None",
         )
         cq_frame = bytearray(self.length_sig0_frame)
         cq_frame[:1] = bytes([FR_TYPE.CQ.value])
         cq_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
-        cq_frame[7:11] = helpers.encode_grid(Station.mygrid.decode("UTF-8"))
+        cq_frame[7:11] = helpers.encode_grid(self.mygrid)
 
         self.log.debug("[Modem] CQ Frame:", data=[cq_frame])
 
@@ -2942,7 +2944,7 @@ class DATA:
         qrv_frame = bytearray(self.length_sig0_frame)
         qrv_frame[:1] = bytes([FR_TYPE.QRV.value])
         qrv_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
-        qrv_frame[7:11] = helpers.encode_grid(Station.mygrid.decode("UTF-8"))
+        qrv_frame[7:11] = helpers.encode_grid(self.mygrid)
         qrv_frame[11:12] = helpers.snr_to_bytes(ModemParam.snr)
 
         if Modem.enable_fsk:

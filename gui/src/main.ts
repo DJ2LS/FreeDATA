@@ -36,3 +36,4 @@ loadSettings();
 //import "./js/daemon";
 //import "./js/sock.js";
 //import './js/settingsHandler.js'
+import './js/event_sock.js'

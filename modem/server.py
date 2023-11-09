@@ -8,11 +8,13 @@ import audio
 import data_handler
 import modem
 import queue
+import server_commands
 
 app = Flask(__name__)
 CORS(app)
 CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
+print(sock)
 
 # set config file to use
 def set_config():
@@ -86,7 +88,15 @@ def get_serial_devices():
 # @app.route('/modem/send_test_frame', methods=['POST'])
 # @app.route('/modem/fec_transmit', methods=['POST'])
 # @app.route('/modem/fec_is_writing', methods=['POST'])
-# @app.route('/modem/cqcqcq', methods=['POST'])
+@app.route('/modem/cqcqcq', methods=['POST', 'GET'])
+def post_cqcqcq():
+    if request.method in ['POST']:
+        server_commands.cqcqcq()
+        return api_response({"cmd": "cqcqcq"})
+    else:
+        return api_response({"info": "endpoint for triggering a CQ via POST"})
+
+
 # @app.route('/modem/beacon', methods=['POST']) # on/off
 # @app.route('/modem/mesh_ping', methods=['POST'])
 # @app.route('/modem/ping_ping', methods=['POST'])
@@ -110,4 +120,6 @@ def get_serial_devices():
 @sock.route('/events')
 def echo(sock):
         ev = app.modem_events.get()
+        print(ev)
+        ev = {'test': 'ok'}
         sock.send(ev)
