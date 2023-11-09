@@ -733,8 +733,6 @@ export function getRxBuffer() {
   writeTncCommand(command);
 }
 
-
-
 // OPEN ARQ SESSION
 export function connectARQ(dxcallsign) {
   var command =

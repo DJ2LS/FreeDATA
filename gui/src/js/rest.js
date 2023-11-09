@@ -9,8 +9,6 @@ import {
   getModemConfigAsJSON,
 } from "../js/settingsHandler.ts";
 
-
-
 export async function getFromServer(host, port, endpoint) {
   // our central function for fetching the modems REST API by a specific endpoint
   // TODO make this function using the host and port, specified in settings
