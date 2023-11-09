@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, make_response
 from flask_sock import Sock
 from flask_cors import CORS
 import os
@@ -32,12 +32,8 @@ def set_config():
     app.config_manager = CONFIG(config_file)
 
 # returns a standard API response
-def api_response(data, status = 'ok'):
-    response = {
-        'status': status,
-        'data': data
-    }
-    return jsonify(response)
+def api_response(data):
+    return make_response(jsonify(data), 200)
 
 set_config()
 
@@ -93,6 +89,7 @@ def post_cqcqcq():
     if request.method in ['POST']:
         server_commands.cqcqcq()
         return api_response({"cmd": "cqcqcq"})
+
     else:
         return api_response({"info": "endpoint for triggering a CQ via POST"})
 
@@ -119,7 +116,12 @@ def post_cqcqcq():
 # Event websocket
 @sock.route('/events')
 def echo(sock):
-        ev = app.modem_events.get()
-        print(ev)
-        ev = {'test': 'ok'}
+    print("----------------------")
+    print("waiting for input")
+    ev = app.modem_events.get()
+    print(ev)
+    try:
         sock.send(ev)
+    except Exception as e:
+        print(e)
+    print("sending to sock done")
