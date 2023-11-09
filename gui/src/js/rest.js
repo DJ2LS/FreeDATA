@@ -4,6 +4,8 @@ import pinia from "../store/index";
 setActivePinia(pinia);
 import {
   processModemConfig,
+  processModemAudioDevices,
+  processModemSerialDevices,
   getModemConfigAsJSON,
 } from "../js/settingsHandler.ts";
 
@@ -52,10 +54,10 @@ function restDataDispatcher(endpoint, data) {
       processModemConfig(data);
       break;
     case "devices/audio":
-      //processModemAudioDevices(data);
+      processModemAudioDevices(data);
       break;
     case "devices/serial":
-      //processModemSerialDevices(data);
+      processModemSerialDevices(data);
       break;
 
     default:

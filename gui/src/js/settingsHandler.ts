@@ -9,6 +9,9 @@ setActivePinia(pinia);
 import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 
+import { useAudioStore } from "../store/audioStore.js";
+const audioStore = useAudioStore(pinia);
+
 import { postToServer, getFromServer } from "./rest.js";
 
 // ---------------------------------
@@ -133,6 +136,8 @@ export function processModemConfig(data) {
   settings.auto_tune = data.AUDIO.auto_tune;
   settings.rx_audio_level = data.AUDIO.rxaudiolevel;
   settings.tx_audio_level = data.AUDIO.txaudiolevel;
+  settings.rx_audio = data.AUDIO.rx;
+  settings.tx_audio = data.AUDIO.tx;
 
   // MODEM SETTINGS
   settings.enable_fft = data.Modem.fft;
@@ -159,6 +164,18 @@ export function processModemConfig(data) {
   settings.enable_mesh_features = data.MESH.enable_protocol;
 }
 
+export function processModemAudioDevices(data) {
+        console.log(data)
+        audioStore.inputDevices = data["in"];
+        audioStore.outputDevices = data["out"];
+}
+
+export function processModemSerialDevices(data) {
+
+    settings.serial_devices = data;
+}
+
+
 export function getModemConfigAsJSON() {
   // create json output from settings
   // TODO Can we make this more dynamic? Maybe using a settings object?
@@ -167,9 +184,9 @@ export function getModemConfigAsJSON() {
   const configData = {
     AUDIO: {
       auto_tune: settings.auto_tune,
-      rx: "560f",
+      rx: settings.rx_audio,
       rxaudiolevel: settings.rx_audio_level,
-      tx: "560f",
+      tx: settings.tx_audio,
       txaudiolevel: settings.tx_audio_level,
     },
     MESH: {

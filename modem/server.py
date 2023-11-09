@@ -116,12 +116,5 @@ def post_cqcqcq():
 # Event websocket
 @sock.route('/events')
 def echo(sock):
-    print("----------------------")
-    print("waiting for input")
     ev = app.modem_events.get()
-    print(ev)
-    try:
-        sock.send(ev)
-    except Exception as e:
-        print(e)
-    print("sending to sock done")
+    sock.send(ev)

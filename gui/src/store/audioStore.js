@@ -19,13 +19,15 @@ export const useAudioStore = defineStore("audioStore", () => {
     var html = "";
     for (var key in inputDevices.value) {
       let selected = "";
-      if (inputDevices.value[key]["name"] == settings.rx_audio) {
+
+      console.log("AUDIO DEVICES: " + inputDevices.value[key]["id"] + " | " + settings.rx_audio)
+      if (inputDevices.value[key]["id"] == settings.rx_audio) {
         selected = "selected";
       } else {
         selected = "";
       }
 
-      html += `<option value=${inputDevices.value[key]["id"]} ${selected}>${inputDevices.value[key]["name"]}</option>`;
+      html += `<option value=${inputDevices.value[key]["id"]} ${selected}>${inputDevices.value[key]["name"]} | ${inputDevices.value[key]["api"]}</option>`;
     }
     return html;
   }
@@ -34,12 +36,12 @@ export const useAudioStore = defineStore("audioStore", () => {
     var html = "";
     for (var key in outputDevices.value) {
       let selected = "";
-      if (outputDevices.value[key]["name"] == settings.tx_audio) {
+      if (outputDevices.value[key]["id"] == settings.tx_audio) {
         selected = "selected";
       } else {
         selected = "";
       }
-      html += `<option value=${outputDevices.value[key]["id"]} ${selected}>${outputDevices.value[key]["name"]}</option>`;
+      html += `<option value=${outputDevices.value[key]["id"]} ${selected}>${outputDevices.value[key]["name"]} | ${inputDevices.value[key]["api"]}</option>`;
     }
     return html;
   }
