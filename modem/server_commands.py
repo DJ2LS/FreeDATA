@@ -2,7 +2,7 @@ from queues import DATA_QUEUE_TRANSMIT
 import structlog
 log = structlog.get_logger("COMMANDS")
 
-def cqcqcq(self):
+def cqcqcq():
     DATA_QUEUE_TRANSMIT.put(["CQ"])
 
 def ping_ping(data):
@@ -18,9 +18,7 @@ def ping_ping(data):
         )
 
 def beacon(data):
-    beacon_state = False
-    if data['enabled'] in ['True']:
-        beacon_state = True
+    beacon_state = data['enabled'] in ['True']
     #Beacon.beacon_state = beacon_state
     log.info(
         "[CMD] Changing beacon state", state=beacon_state

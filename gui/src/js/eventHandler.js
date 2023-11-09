@@ -20,7 +20,15 @@ import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 
 export function eventDispatcher(data) {
-  console.log(data);
+  data = JSON.parse(data);
+
+  // get ptt state as a first test
+  // Todo we might use a switch function for data dispatching
+  stateStore.ptt_state = data.ptt;
+
+
+
+    // copied directly from sock.js We need to implement these variables step by step
   if (data["command"] == "modem_state") {
     //console.log(data)
 
