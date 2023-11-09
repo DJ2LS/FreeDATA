@@ -1,7 +1,4 @@
-import {
-  eventDispatcher
-} from "../js/eventHandler.js";
-
+import { eventDispatcher } from "../js/eventHandler.js";
 
 let socket;
 let retries = 0;
@@ -19,7 +16,7 @@ function connect() {
   // handle data
   socket.addEventListener("message", function (event) {
     console.log("Message from server:", event.data);
-    eventDispatcher(event.data)
+    eventDispatcher(event.data);
   });
 
   // handle errors
