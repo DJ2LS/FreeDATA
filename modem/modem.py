@@ -161,18 +161,20 @@ class RF:
 
                 try:
                     self.log.debug("[MDM] init: starting pyaudio callback")
-                    # self.audio_stream.start_stream(
                     self.stream.start()
                 except Exception as audioerr:
                     self.log.error("[MDM] init: starting pyaudio callback failed", e=audioerr)
 
             except Exception as err:
                 self.log.error("[MDM] init: can't open audio device. Exit", e=err)
+                self.stream.stop
+                self.stream = lambda: None
+                self.stream.active = False
+
                 # let's stop the modem service
                 self.service_queue.put("stop")
                 # simulate audio class active state for reducing cli output
-                self.stream = lambda: None
-                self.stream.active = False
+
 
         elif not TESTMODE:
             # placeholder area for processing audio via TCI

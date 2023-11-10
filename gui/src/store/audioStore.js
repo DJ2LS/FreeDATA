@@ -17,6 +17,8 @@ export const useAudioStore = defineStore("audioStore", () => {
 
   function getInputDevices() {
     var html = "";
+        if (inputDevices.value.length > 0){
+
     for (var key in inputDevices.value) {
       let selected = "";
 
@@ -35,20 +37,25 @@ export const useAudioStore = defineStore("audioStore", () => {
       html += `<option value=${inputDevices.value[key]["id"]} ${selected}>${inputDevices.value[key]["name"]} | ${inputDevices.value[key]["api"]}</option>`;
     }
     return html;
+    }
   }
 
   function getOutputDevices() {
     var html = "";
-    for (var key in outputDevices.value) {
-      let selected = "";
-      if (outputDevices.value[key]["id"] == settings.tx_audio) {
-        selected = "selected";
-      } else {
-        selected = "";
-      }
-      html += `<option value=${outputDevices.value[key]["id"]} ${selected}>${outputDevices.value[key]["name"]} | ${inputDevices.value[key]["api"]}</option>`;
+
+    if (outputDevices.value.length > 0){
+        for (var key in outputDevices.value) {
+
+          let selected = "";
+          if (outputDevices.value[key]["id"] == settings.tx_audio) {
+            selected = "selected";
+          } else {
+            selected = "";
+          }
+          html += `<option value=${outputDevices.value[key]["id"]} ${selected}>${outputDevices.value[key]["name"]} | ${outputDevices.value[key]["api"]}</option>`;
+        }
+        return html;
     }
-    return html;
   }
 
   return {

@@ -110,18 +110,59 @@ def fetch_audio_devices(input_devices, output_devices):
 # index of the device within the list
 # returns (id, name)
 def get_device_index_from_crc(crc, isInput: bool):
-    in_devices = []
-    out_devices = []
+    try:
+        in_devices = []
+        out_devices = []
 
-    fetch_audio_devices(in_devices, out_devices)
+        fetch_audio_devices(in_devices, out_devices)
 
-    if isInput:
-        detected_devices = in_devices
-    else:
-        detected_devices = out_devices
+        if isInput:
+            detected_devices = in_devices
+        else:
+            detected_devices = out_devices
 
-    for i, dev in enumerate(detected_devices):
-        if dev['id'] == crc:
-            return (i, dev['name'])
+        for i, dev in enumerate(detected_devices):
+            if dev['id'] == crc:
+                return (i, dev['name'])
 
-    raise Exception(f"Input: {isInput} | Audio device {crc} not detected | Devices: {detected_devices}")
+    except Exception as e:
+        log.warning(f"Audio device {crc} not detected ", devices=detected_devices, isInput=isInput)
+
+
+import sounddevice as sd
+
+
+def test_audio_devices(input_id: str, output_id: str) -> list:
+    result = [False, False]
+
+    try:
+        device_index = get_device_index_from_crc(input_id, True)
+        if device_index is None:
+            raise ValueError("Invalid input device index.")
+
+        sd.check_input_settings(
+            device=device_index[0],
+            channels=1,
+            dtype="int16",
+            samplerate=48000,
+        )
+        result[0] = True
+    except (sd.PortAudioError, ValueError) as e:
+        print("Input device error:", e)
+
+    try:
+        device_index = get_device_index_from_crc(output_id, False)
+        if device_index is None:
+            raise ValueError("Invalid output device index.")
+
+        sd.check_output_settings(
+            device=device_index[0],
+            channels=1,
+            dtype="int16",
+            samplerate=48000,
+        )
+        result[1] = True
+    except (sd.PortAudioError, ValueError) as e:
+        print("Output device error:", e)
+
+    return result
