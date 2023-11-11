@@ -3540,13 +3540,16 @@ class DATA:
 
     def send_fec(self, mode, wakeup, payload, mycallsign):
         """Send an empty test frame"""
-        print(wakeup)
-        print(payload)
-        print(mycallsign)
 
         mode_int = codec2.freedv_get_mode_value_by_name(mode)
         payload_per_frame = modem.get_bytes_per_frame(mode_int) - 2
         fec_payload_length = payload_per_frame - 1
+
+        # check callsign
+        if mycallsign in [None]:
+            mycallsign = self.mycallsign
+        mycallsign = helpers.callsign_to_bytes(mycallsign)
+        mycallsign = helpers.bytes_to_callsign(mycallsign)
 
         if wakeup:
             mode_int_wakeup = codec2.freedv_get_mode_value_by_name("sig0")

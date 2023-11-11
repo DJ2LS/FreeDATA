@@ -5,8 +5,6 @@ import os
 import serial_ports
 from config import CONFIG
 import audio
-import data_handler
-import modem
 import queue
 import server_commands
 import service_manager
@@ -30,7 +28,6 @@ def set_config():
         exit(1)
 
     app.config_manager = CONFIG(config_file)
-
 
 set_config()
 
@@ -64,7 +61,7 @@ def index():
 # get and set config
 @app.route('/config', methods=['GET', 'POST'])
 def config():
-    if request.method == 'POST':
+    if request.method in ['POST']:
         app.modem_service.put("stop")
         set_config = app.config_manager.write(request.json)
         app.modem_service.put("start")
@@ -89,69 +86,69 @@ def get_serial_devices():
 
 @app.route('/modem/cqcqcq', methods=['POST', 'GET'])
 def post_cqcqcq():
-    if request.method in ['POST']:
-        server_commands.cqcqcq()
-        return api_response({"cmd": "cqcqcq"})
-    else:
+    if request.method not in ['POST']:
         return api_response({"info": "endpoint for triggering a CQ via POST"})
+    server_commands.cqcqcq()
+    return api_response({"cmd": "cqcqcq"})
 
 @app.route('/modem/beacon', methods=['POST'])
 def post_beacon():
-    if request.method in ['POST']:
-        server_commands.beacon(request.json)
-        return api_response(request.json)
-    else:
+    if request.method not in ['POST']:
         return api_response({"info": "endpoint for controlling BEACON STATE via POST"})
+    server_commands.beacon(request.json)
+    return api_response(request.json)
 
 @app.route('/modem/ping_ping', methods=['POST'])
 def post_ping():
-    if request.method in ['POST']:
-        server_commands.ping_ping(request.json)
-        return api_response(request.json)
-    else:
+    if request.method not in ['POST']:
         return api_response({"info": "endpoint for controlling PING via POST"})
+    server_commands.ping_ping(request.json)
+    return api_response(request.json)
 
-# @app.route('/modem/listen', methods=['POST']) # not needed if we are restarting modem on changing settings
-# @app.route('/modem/record_audio', methods=['POST'])
-# @app.route('/modem/responde_to_call', methods=['POST']) # not needed if we are restarting modem on changing settings
-# @app.route('/modem/responde_to_cq', methods=['POST']) # not needed if we are restarting modem on changing settings
-# @app.route('/modem/audio_levels', methods=['POST']) # tx and rx # not needed if we are restarting modem on changing settings
-# @app.route('/modem/send_test_frame', methods=['POST'])
-# @app.route('/modem/fec_transmit', methods=['POST'])
-# @app.route('/modem/fec_is_writing', methods=['POST'])
+@app.route('/modem/send_test_frame', methods=['POST'])
+def post_send_test_frame():
+    if request.method not in ['POST']:
+        return api_response({"info": "endpoint for triggering a TEST_FRAME via POST"})
+    server_commands.modem_send_test_frame()
+    return api_response({"cmd": "test_frame"})
 
-# @app.route('/modem/mesh_ping', methods=['POST'])
+@app.route('/modem/fec_transmit', methods=['POST'])
+def post_send_fec_frame():
+    if request.method not in ['POST']:
+        return api_response({"info": "endpoint for triggering a FEC frame via POST"})
+    server_commands.modem_fec_transmit(request.json)
+    return api_response(request.json)
+
+@app.route('/modem/fec_is_writing', methods=['POST'])
+def post_send_fec_frame():
+    if request.method not in ['POST']:
+        return api_response({"info": "endpoint for triggering a IS WRITING frame via POST"})
+    server_commands.modem_fec_is_writing(request.json)
+    return api_response(request.json)
+
+@app.route('/modem/start', methods=['POST'])
+def post_modem_start():
+    if request.method not in ['POST']:
+        return api_response({"info": "endpoint for STARTING modem via POST"})
+    print("start received...")
+    app.modem_service.put("start")
+    return api_response(request.json)
+
+@app.route('/modem/stop', methods=['POST'])
+def post_modem_stop():
+    if request.method not in ['POST']:
+        return api_response({"info": "endpoint for STOPPING modem via POST"})
+    print("stop received...")
+
+    app.modem_service.put("stop")
+    return api_response(request.json)
+
+
 # @app.route('/modem/arq_connect', methods=['POST'])
 # @app.route('/modem/arq_disconnect', methods=['POST'])
 # @app.route('/modem/send_raw', methods=['POST'])
 # @app.route('/modem/stop_transmission', methods=['POST'])
 
-# @app.route('/mesh/routing_table', methods=['GET'])
-# @app.route('/modem/get_rx_buffer', methods=['GET'])
-# @app.route('/modem/del_rx_buffer', methods=['POST'])
-@app.route('/modem/start', methods=['POST'])
-def post_modem_start():
-    if request.method in ['POST']:
-        print("start received...")
-        app.modem_service.put("start")
-        return api_response(request.json)
-    else:
-        return api_response({"info": "endpoint for STARTING modem via POST"})
-
-@app.route('/modem/stop', methods=['POST'])
-def post_modem_stop():
-    if request.method in ['POST']:
-        print("stop received...")
-
-        app.modem_service.put("stop")
-        return api_response(request.json)
-    else:
-        return api_response({"info": "endpoint for STOPPING modem via POST"})
-
-# @app.route('/rig/status', methods=['GET'])
-# @app.route('/rig/mode', methods=['POST'])
-# @app.route('/rig/frequency', methods=['POST'])
-# @app.route('/rig/test_hamlib', methods=['POST'])
 
 
 # our client set which contains all connected websocket clients
@@ -186,3 +183,24 @@ def sock_fft(sock):
     while True:
         fft = app.modem_fft.get()
         transmit_sock_data(fft)
+
+
+
+# @app.route('/modem/listen', methods=['POST']) # not needed if we are restarting modem on changing settings
+# @app.route('/modem/record_audio', methods=['POST'])
+# @app.route('/modem/responde_to_call', methods=['POST']) # not needed if we are restarting modem on changing settings
+# @app.route('/modem/responde_to_cq', methods=['POST']) # not needed if we are restarting modem on changing settings
+# @app.route('/modem/audio_levels', methods=['POST']) # tx and rx # not needed if we are restarting modem on changing settings
+
+
+
+# @app.route('/modem/mesh_ping', methods=['POST'])
+
+# @app.route('/mesh/routing_table', methods=['GET'])
+# @app.route('/modem/get_rx_buffer', methods=['GET'])
+# @app.route('/modem/del_rx_buffer', methods=['POST'])
+
+# @app.route('/rig/status', methods=['GET'])
+# @app.route('/rig/mode', methods=['POST'])
+# @app.route('/rig/frequency', methods=['POST'])
+# @app.route('/rig/test_hamlib', methods=['POST'])
