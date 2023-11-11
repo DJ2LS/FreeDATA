@@ -125,7 +125,7 @@ def get_device_index_from_crc(crc, isInput: bool):
 
         for i, dev in enumerate(detected_devices):
             if dev['id'] == crc:
-                return (dev["native_index"], dev['name'])
+                return (dev['native_index'], dev['name'])
 
     except Exception as e:
         log.warning(f"Audio device {crc} not detected ", devices=detected_devices, isInput=isInput)
@@ -134,10 +134,10 @@ def get_device_index_from_crc(crc, isInput: bool):
 def test_audio_devices(input_id: str, output_id: str) -> list:
     test_result = [False, False]
     try:
-        result = get_device_index_from_crc(output_id, True)
+        result = get_device_index_from_crc(input_id, True)
         if result is None:
             # in_dev_index, in_dev_name = None, None
-            raise ValueError("Invalid input device index.")
+            raise ValueError(f"[Audio-Test] Invalid input device index {output_id}.")
         else:
             in_dev_index, in_dev_name = result
             sd.check_input_settings(
@@ -148,16 +148,16 @@ def test_audio_devices(input_id: str, output_id: str) -> list:
             )
             test_result[0] = True
     except (sd.PortAudioError, ValueError) as e:
-        log.warning("Input device error:", e=e)
+        log.warning(f"[Audio-Test] Input device error ({input_id}) [{str(in_dev_index)}] [{in_dev_name}]:", e=e)
         test_result[0] = False
     try:
-        result = get_device_index_from_crc(input_id, False)
+        result = get_device_index_from_crc(output_id, False)
         if result is None:
             # out_dev_index, out_dev_name = None, None
-            raise ValueError("Invalid output device index.")
+            raise ValueError(f"[Audio-Test] Invalid output device index {output_id}.")
         else:
             out_dev_index, out_dev_name = result
-            sd.check_input_settings(
+            sd.check_output_settings(
                 device=out_dev_index,
                 channels=1,
                 dtype="int16",
@@ -167,7 +167,7 @@ def test_audio_devices(input_id: str, output_id: str) -> list:
 
 
     except (sd.PortAudioError, ValueError) as e:
-        log.warning("Output device error:", e=e)
+        log.warning(f"[Audio-Test] Output device error ({output_id}) [{str(out_dev_index)}] [{out_dev_name}]:", e=e)
         test_result[1] = False
 
     sd._terminate()
