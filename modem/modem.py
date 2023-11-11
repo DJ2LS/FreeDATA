@@ -99,8 +99,6 @@ class RF:
         # Make sure our resampler will work
         assert (self.AUDIO_SAMPLE_RATE_RX / self.MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48  # type: ignore
 
-        # init codec2 resampler
-        self.resampler = codec2.resampler()
 
         self.modem_transmit_queue = MODEM_TRANSMIT_QUEUE
         self.modem_received_queue = MODEM_RECEIVED_QUEUE
@@ -117,11 +115,8 @@ class RF:
 
         self.fft_queue = fft_queue
 
-        self.init_codec2()
-        self.init_audio()
-        self.init_rig_control()
-        self.init_decoders()
-        self.init_data_threads()
+        self.start_modem()
+
 
     # --------------------------------------------------------------------------------------------------------
     def tci_tx_callback(self) -> None:
@@ -138,15 +133,64 @@ class RF:
                 data_out = self.modoutqueue.popleft()
                 self.tci_module.push_audio(data_out)
 
-    def init_audio(self):
-        # --------------------------------------------CREATE PORTAUDIO INSTANCE
-        if not TESTMODE and not HamlibParam.hamlib_radiocontrol in ["tci"]:
-            try:
-                (in_dev_index, in_dev_name) = audio.get_device_index_from_crc(
-                    self.audio_input_device, True)
-                (out_dev_index, out_dev_name) = audio.get_device_index_from_crc(
-                    self.audio_output_device, False)
+    def start_modem(self):
+        if not TESTMODE and HamlibParam.hamlib_radiocontrol not in ["tci"]:
+            self.init_audio()
 
+        elif not TESTMODE:
+            self.init_tci()
+        else:
+            self.init_mkfifo()
+
+        # init codec2 instances
+        self.init_codec2()
+
+        # init rig control
+        self.init_rig_control()
+
+        # init decoders
+        self.init_decoders()
+
+        # init decoding threads
+        self.init_data_threads()
+        atexit.register(self.stream.stop)
+
+    def stop_modem(self):
+        try:
+            # let's stop the modem service
+            self.service_queue.put("stop")
+            # simulate audio class active state for reducing cli output
+            # self.stream = lambda: None
+            # self.stream.active = False
+            # self.stream.stop
+        except Exception:
+            self.log.error("[MDM] Error stopping modem", e=err)
+
+    def init_audio(self):
+        try:
+            self.log.info(f"[MDM] init: get audio devices", input_device=self.audio_input_device,
+                          output_device=self.audio_output_device)
+            try:
+                result = audio.get_device_index_from_crc(self.audio_input_device, True)
+                if result is None:
+                    raise ValueError("Invalid input device")
+                else:
+                    in_dev_index, in_dev_name = result
+
+                result = audio.get_device_index_from_crc(self.audio_output_device, False)
+                if result is None:
+                    raise ValueError("Invalid output device")
+                else:
+                    out_dev_index, out_dev_name = result
+
+                self.log.info(f"[MDM] init: receiving audio from '{in_dev_name}'")
+                self.log.info(f"[MDM] init: transmiting audio on '{out_dev_name}'")
+                self.log.debug("[MDM] init: starting pyaudio callback and decoding threads")
+
+                # init codec2 resampler
+                self.resampler = codec2.resampler()
+
+                # init audio stream
                 self.stream = sd.RawStream(
                     channels=1,
                     dtype="int16",
@@ -155,87 +199,76 @@ class RF:
                     samplerate=self.AUDIO_SAMPLE_RATE_RX,
                     blocksize=4800,
                 )
-                atexit.register(self.stream.stop)
-                self.log.info("[MDM] init: receiving audio from '%s'" % in_dev_name)
-                self.log.info("[MDM] init: transmiting audio on '%s'" % out_dev_name)
-
-                try:
-                    self.log.debug("[MDM] init: starting pyaudio callback")
-                    self.stream.start()
-                except Exception as audioerr:
-                    self.log.error("[MDM] init: starting pyaudio callback failed", e=audioerr)
-
-            except Exception as err:
-                self.log.error("[MDM] init: can't open audio device. Exit", e=err)
-                self.stream.stop
-                self.stream = lambda: None
-                self.stream.active = False
-
-                # let's stop the modem service
-                self.service_queue.put("stop")
-                # simulate audio class active state for reducing cli output
+                self.stream.start()
 
 
-        elif not TESTMODE:
-            # placeholder area for processing audio via TCI
-            # https://github.com/maksimus1210/TCI
-            self.log.warning("[MDM] [TCI] Not yet fully implemented", ip=TCIParam.ip, port=TCIParam.port)
 
-            # we are trying this by simulating an audio stream Object like with mkfifo
-            class Object:
-                """An object for simulating audio stream"""
-                active = True
+            except Exception as audioerr:
+                self.log.error("[MDM] init: starting pyaudio callback failed", e=audioerr)
 
-            self.stream = Object()
+        except Exception as err:
+            self.log.warning("[MDM] init: can't open audio device. Stopping modem", e=err)
+            self.stop_modem()
 
-            # lets init TCI module
-            self.tci_module = tci.TCICtrl()
+    def init_tci(self):
+        # placeholder area for processing audio via TCI
+        # https://github.com/maksimus1210/TCI
+        self.log.warning("[MDM] [TCI] Not yet fully implemented", ip=TCIParam.ip, port=TCIParam.port)
 
-            tci_rx_callback_thread = threading.Thread(
-                target=self.tci_rx_callback,
-                name="TCI RX CALLBACK THREAD",
-                daemon=True,
-            )
-            tci_rx_callback_thread.start()
+        # we are trying this by simulating an audio stream Object like with mkfifo
+        class Object:
+            """An object for simulating audio stream"""
+            active = True
 
-            # let's start the audio tx callback
-            self.log.debug("[MDM] Starting tci tx callback thread")
-            tci_tx_callback_thread = threading.Thread(
-                target=self.tci_tx_callback,
-                name="TCI TX CALLBACK THREAD",
-                daemon=True,
-            )
-            tci_tx_callback_thread.start()
+        self.stream = Object()
 
-        else:
+        # lets init TCI module
+        self.tci_module = tci.TCICtrl()
 
-            class Object:
-                """An object for simulating audio stream"""
-                active = True
+        tci_rx_callback_thread = threading.Thread(
+            target=self.tci_rx_callback,
+            name="TCI RX CALLBACK THREAD",
+            daemon=True,
+        )
+        tci_rx_callback_thread.start()
 
-            self.stream = Object()
+        # let's start the audio tx callback
+        self.log.debug("[MDM] Starting tci tx callback thread")
+        tci_tx_callback_thread = threading.Thread(
+            target=self.tci_tx_callback,
+            name="TCI TX CALLBACK THREAD",
+            daemon=True,
+        )
+        tci_tx_callback_thread.start()
+    def init_mkfifo(self):
+        class Object:
+            """An object for simulating audio stream"""
+            active = True
 
-            # Create mkfifo buffers
-            try:
-                os.mkfifo(RXCHANNEL)
-                os.mkfifo(TXCHANNEL)
-            except Exception as err:
-                self.log.info(f"[MDM] init:mkfifo: Exception: {err}")
+        self.stream = Object()
 
-            mkfifo_write_callback_thread = threading.Thread(
-                target=self.mkfifo_write_callback,
-                name="MKFIFO WRITE CALLBACK THREAD",
-                daemon=True,
-            )
-            mkfifo_write_callback_thread.start()
+        # Create mkfifo buffers
+        try:
+            os.mkfifo(RXCHANNEL)
+            os.mkfifo(TXCHANNEL)
+        except Exception as err:
+            self.log.info(f"[MDM] init:mkfifo: Exception: {err}")
 
-            self.log.debug("[MDM] Starting mkfifo_read_callback")
-            mkfifo_read_callback_thread = threading.Thread(
-                target=self.mkfifo_read_callback,
-                name="MKFIFO READ CALLBACK THREAD",
-                daemon=True,
-            )
-            mkfifo_read_callback_thread.start()
+        mkfifo_write_callback_thread = threading.Thread(
+            target=self.mkfifo_write_callback,
+            name="MKFIFO WRITE CALLBACK THREAD",
+            daemon=True,
+        )
+        mkfifo_write_callback_thread.start()
+
+        self.log.debug("[MDM] Starting mkfifo_read_callback")
+        mkfifo_read_callback_thread = threading.Thread(
+            target=self.mkfifo_read_callback,
+            name="MKFIFO READ CALLBACK THREAD",
+            daemon=True,
+        )
+        mkfifo_read_callback_thread.start()
+
 
     def tci_rx_callback(self) -> None:
         """

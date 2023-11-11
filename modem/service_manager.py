@@ -27,9 +27,8 @@ class SM:
             cmd = self.modem_service.get()
             if cmd in ['start'] and not self.modem:
                 audio_test = audio.test_audio_devices(self.config['AUDIO']['rx'], self.config['AUDIO']['tx'])
-                print(self.config['AUDIO']['rx'])
                 print(audio_test)
-                if False not in audio_test:
+                if False not in audio_test and None not in audio_test:
                     self.log.info("starting modem....")
                     self.modem = modem.RF(self.config, self.modem_events, self.modem_fft, self.modem_service)
                     self.data_handler = data_handler.DATA(self.config, self.modem_events)

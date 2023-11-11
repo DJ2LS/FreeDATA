@@ -129,42 +129,47 @@ def get_device_index_from_crc(crc, isInput: bool):
 
     except Exception as e:
         log.warning(f"Audio device {crc} not detected ", devices=detected_devices, isInput=isInput)
-
-
-import sounddevice as sd
-
+        return [None, None]
 
 def test_audio_devices(input_id: str, output_id: str) -> list:
-    result = [False, False]
-
+    test_result = [False, False]
     try:
-        device_index = get_device_index_from_crc(input_id, True)
-        if device_index is None:
+        result = get_device_index_from_crc(output_id, True)
+        if result is None:
+            # in_dev_index, in_dev_name = None, None
             raise ValueError("Invalid input device index.")
-
-        sd.check_input_settings(
-            device=device_index[0],
-            channels=1,
-            dtype="int16",
-            samplerate=48000,
-        )
-        result[0] = True
+        else:
+            in_dev_index, in_dev_name = result
+            sd.check_input_settings(
+                device=in_dev_index,
+                channels=1,
+                dtype="int16",
+                samplerate=48000,
+            )
+            test_result[0] = True
     except (sd.PortAudioError, ValueError) as e:
-        print("Input device error:", e)
-
+        log.warning("Input device error:", e=e)
+        test_result[0] = False
     try:
-        device_index = get_device_index_from_crc(output_id, False)
-        if device_index is None:
+        result = get_device_index_from_crc(input_id, False)
+        if result is None:
+            # out_dev_index, out_dev_name = None, None
             raise ValueError("Invalid output device index.")
+        else:
+            out_dev_index, out_dev_name = result
+            sd.check_input_settings(
+                device=out_dev_index,
+                channels=1,
+                dtype="int16",
+                samplerate=48000,
+            )
+            test_result[1] = True
 
-        sd.check_output_settings(
-            device=device_index[0],
-            channels=1,
-            dtype="int16",
-            samplerate=48000,
-        )
-        result[1] = True
+
     except (sd.PortAudioError, ValueError) as e:
-        print("Output device error:", e)
+        log.warning("Output device error:", e=e)
+        test_result[1] = False
 
-    return result
+    sd._terminate()
+    sd._initialize()
+    return test_result
