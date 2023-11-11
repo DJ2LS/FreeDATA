@@ -120,7 +120,7 @@ def post_send_fec_frame():
     return api_response(request.json)
 
 @app.route('/modem/fec_is_writing', methods=['POST'])
-def post_send_fec_frame():
+def post_send_fec_is_writing_frame():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for triggering a IS WRITING frame via POST"})
     server_commands.modem_fec_is_writing(request.json)
