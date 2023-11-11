@@ -90,7 +90,8 @@ def fetch_audio_devices(input_devices, output_devices):
 
             new_input_device = {"id": device_crc(device), 
                                 "name": device['name'], 
-                                "api": hostapi_name}
+                                "api": hostapi_name,
+                                "native_index":index}
             # check if device not in device list
             if new_input_device not in input_devices:
                 input_devices.append(new_input_device)
@@ -99,7 +100,8 @@ def fetch_audio_devices(input_devices, output_devices):
             hostapi_name = sd.query_hostapis(device['hostapi'])['name']
             new_output_device = {"id": device_crc(device), 
                                  "name": device['name'], 
-                                 "api": hostapi_name}
+                                 "api": hostapi_name,
+                                 "native_index":index}
             # check if device not in device list
             if new_output_device not in output_devices:
                 output_devices.append(new_output_device)
@@ -123,7 +125,7 @@ def get_device_index_from_crc(crc, isInput: bool):
 
         for i, dev in enumerate(detected_devices):
             if dev['id'] == crc:
-                return (i, dev['name'])
+                return (dev["native_index"], dev['name'])
 
     except Exception as e:
         log.warning(f"Audio device {crc} not detected ", devices=detected_devices, isInput=isInput)
