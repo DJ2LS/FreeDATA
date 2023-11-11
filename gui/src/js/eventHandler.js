@@ -20,7 +20,7 @@ import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 
 export function stateDispatcher(data) {
-if (data["command"] == "modem_state") {
+  if (data["command"] == "modem_state") {
     //console.log(data)
 
     stateStore.rx_buffer_length = data["rx_buffer_length"];
@@ -109,14 +109,13 @@ if (data["command"] == "modem_state") {
     if (data["speed_list"].length > 0) {
       prepareStatsDataForStore(data["speed_list"]);
     }
-}
+  }
 }
 export function eventDispatcher(data) {
   data = JSON.parse(data);
 
   // get ptt state as a first test
-      stateStore.ptt_state = data.ptt;
-
+  stateStore.ptt_state = data.ptt;
 
   var message = "";
   if (data["freedata"] == "modem-message") {
