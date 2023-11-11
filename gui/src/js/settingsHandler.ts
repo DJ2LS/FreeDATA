@@ -116,7 +116,28 @@ export function processModemConfig(data) {
   // For now its a hardcoded structure until we found a better way
 
   console.log(data);
+// chatGPT function for iterating through all items and asserting them to a function
+  for (const category in data) {
+    if (data.hasOwnProperty(category)) {
+        for (const setting in data[category]) {
+            if (data[category].hasOwnProperty(setting)) {
+                // Create a variable name combining the category and setting name
+                const variableName = setting;
+                // Assign the value to the variable
+                settings[variableName] = data[category][setting];
 
+                console.log(variableName + ': ' + settings[variableName]);
+            }
+        }
+    }
+}
+
+
+
+
+
+
+/*
   // STATION SETTINGS
   // Extract the callsign and SSID
   if (data.STATION.mycall.includes("-")) {
@@ -162,6 +183,8 @@ export function processModemConfig(data) {
 
   // MESH SETTINGS
   settings.enable_mesh_features = data.MESH.enable_protocol;
+
+  */
 }
 
 export function processModemAudioDevices(data) {
@@ -181,7 +204,7 @@ export function getModemConfigAsJSON() {
 
   const configData = {
     AUDIO: {
-      auto_tune: settings.auto_tune,
+      enable_auto_tune: settings.auto_tune,
       input_device: settings.rx_audio,
       rxaudiolevel: settings.rx_audio_level,
       output_device: settings.tx_audio,
@@ -219,8 +242,8 @@ export function getModemConfigAsJSON() {
       ssid_list: [],
     },
     TCI: {
-      ip: settings.tci_ip,
-      port: settings.tci_port,
+      tci_ip: settings.tci_ip,
+      tci_port: settings.tci_port,
     },
   };
 

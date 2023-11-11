@@ -148,7 +148,7 @@ def test_audio_devices(input_id: str, output_id: str) -> list:
             )
             test_result[0] = True
     except (sd.PortAudioError, ValueError) as e:
-        log.warning(f"[Audio-Test] Input device error ({input_id}) [{str(in_dev_index)}] [{in_dev_name}]:", e=e)
+        log.warning(f"[Audio-Test] Input device error ({input_id}):", e=e)
         test_result[0] = False
     try:
         result = get_device_index_from_crc(output_id, False)
@@ -167,7 +167,7 @@ def test_audio_devices(input_id: str, output_id: str) -> list:
 
 
     except (sd.PortAudioError, ValueError) as e:
-        log.warning(f"[Audio-Test] Output device error ({output_id}) [{str(out_dev_index)}] [{out_dev_name}]:", e=e)
+        log.warning(f"[Audio-Test] Output device error ({output_id}):", e=e)
         test_result[1] = False
 
     sd._terminate()
