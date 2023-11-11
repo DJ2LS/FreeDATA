@@ -8,6 +8,7 @@ import audio
 import queue
 import server_commands
 import service_manager
+import state_manager
 
 app = Flask(__name__)
 CORS(app)
@@ -32,9 +33,16 @@ def set_config():
 set_config()
 
 # start modem
+app.state_queue = queue.Queue() # queue which holds latest events
 app.modem_events = queue.Queue() # queue which holds latest events
 app.modem_fft = queue.Queue() # queue which holds lates fft data
 app.modem_service = queue.Queue() # start / stop modem service
+
+# init state manager
+app.states = state_manager.STATES(app.state_queue)
+
+print(app.states.testvalue)
+app.states.set("testvalue", "holla")
 
 # start service manager
 service_manager.SM(app)
@@ -120,7 +128,7 @@ def post_send_fec_frame():
     return api_response(request.json)
 
 @app.route('/modem/fec_is_writing', methods=['POST'])
-def post_send_fec_frame():
+def post_send_fec_is_writing():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for triggering a IS WRITING frame via POST"})
     server_commands.modem_fec_is_writing(request.json)

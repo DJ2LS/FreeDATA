@@ -62,23 +62,28 @@ class RF:
 
     log = structlog.get_logger("RF")
 
-    def __init__(self, config, event_queue, fft_queue, service_queue) -> None:
+    def __init__(self, config, event_queue, fft_queue, service_queue, states) -> None:
         self.config = config
         self.service_queue = service_queue
+        self.states = states
 
         self.sampler_avg = 0
         self.buffer_avg = 0
 
         # these are crc ids now
-        self.audio_input_device = config['AUDIO']['rx']
-        self.audio_output_device = config['AUDIO']['tx']
+        self.audio_input_device = config['AUDIO']['input_device']
+        self.audio_output_device = config['AUDIO']['output_device']
 
         self.rx_audio_level = config['AUDIO']['rxaudiolevel']
         self.tx_audio_level = config['AUDIO']['txaudiolevel']
-        self.enable_audio_auto_tune = config['AUDIO']['auto_tune']
-        self.enable_fft = config['Modem']['fft']
-        
-        
+        self.enable_audio_auto_tune = config['AUDIO']['enable_auto_tune']
+        self.enable_fft = config['Modem']['enable_fft']
+        self.tx_delay = config['Modem']['tx_delay']
+
+        self.tuning_range_fmin = config['Modem']['tuning_range_fmin']
+        self.tuning_range_fmax = config['Modem']['tuning_range_fmax']
+
+        self.channel_busy_delay = 0
 
 
         self.AUDIO_SAMPLE_RATE_RX = 48000
@@ -454,7 +459,7 @@ class RF:
 
         Modem.transmitting = True
         # if we're transmitting FreeDATA signals, reset channel busy state
-        ModemParam.channel_busy = False
+        self.states.channel_busy = False
 
         start_of_transmission = time.time()
         # TODO Moved ptt toggle some steps before audio is ready for testing
@@ -490,15 +495,15 @@ class RF:
         )
 
         # Add empty data to handle ptt toggle time
-        if ModemParam.tx_delay > 0:
-            data_delay = int(self.MODEM_SAMPLE_RATE * (ModemParam.tx_delay / 1000))  # type: ignore
+        if self.tx_delay > 0:
+            data_delay = int(self.MODEM_SAMPLE_RATE * (self.tx_delay / 1000))  # type: ignore
             mod_out_silence = ctypes.create_string_buffer(data_delay * 2)
             txbuffer = bytes(mod_out_silence)
         else:
             txbuffer = bytes()
 
         self.log.debug(
-            "[MDM] TRANSMIT", mode=self.MODE, payload=payload_bytes_per_frame, delay=ModemParam.tx_delay
+            "[MDM] TRANSMIT", mode=self.MODE, payload=payload_bytes_per_frame, delay=self.tx_delay
         )
 
         for _ in range(repeats):
@@ -600,7 +605,7 @@ class RF:
                     tci_timeout_reached = True
             threading.Event().wait(0.01)
             # if we're transmitting FreeDATA signals, reset channel busy state
-            ModemParam.channel_busy = False
+            self.states.channel_busy = False
 
         HamlibParam.ptt_state = self.radio.set_ptt(False)
 
@@ -649,7 +654,7 @@ class RF:
     def transmit_morse(self, repeats, repeat_delay, frames):
         Modem.transmitting = True
         # if we're transmitting FreeDATA signals, reset channel busy state
-        ModemParam.channel_busy = False
+        self.states.channel_busy = False
         self.log.debug(
             "[MDM] TRANSMIT", mode="MORSE"
         )
@@ -683,7 +688,7 @@ class RF:
 
             threading.Event().wait(0.01)
             # if we're transmitting FreeDATA signals, reset channel busy state
-            ModemParam.channel_busy = False
+            self.states.channel_busy = False
 
         HamlibParam.ptt_state = self.radio.set_ptt(False)
 
@@ -809,25 +814,25 @@ class RF:
                     if rx_status not in [0]:
                         # we need to disable this if in testmode as its causing problems with FIFO it seems
                         if not TESTMODE:
-                            ModemParam.is_codec2_traffic = True
+                            self.states.is_codec2_traffic = True
                             self.is_codec2_traffic_counter = self.is_codec2_traffic_cooldown
-                            if not ModemParam.channel_busy:
+                            if not self.states.channel_busy:
                                 self.log.debug("[MDM] Setting channel_busy since codec2 data detected")
-                                ModemParam.channel_busy=True
-                                ModemParam.channel_busy_delay += 10
+                                self.states.channel_busy=True
+                                self.channel_busy_delay += 10
                         self.log.debug(
                             "[MDM] [demod_audio] modem state", mode=mode_name, rx_status=rx_status,
                             sync_flag=codec2.api.rx_sync_flags_to_text[rx_status]
                         )
                     else:
-                        ModemParam.is_codec2_traffic = False
+                        self.states.is_codec2_traffic = False
 
                     # decrement codec traffic counter for making state smoother
                     if self.is_codec2_traffic_counter > 0:
                         self.is_codec2_traffic_counter -= 1
-                        ModemParam.is_codec2_traffic = True
+                        self.states.is_codec2_traffic = True
                     else:
-                        ModemParam.is_codec2_traffic = False
+                        self.states.is_codec2_traffic = False
 
                     if rx_status == 10:
                         state_buffer.append(rx_status)
@@ -1321,9 +1326,6 @@ class RF:
         Calculate an average signal strength of the channel to assess
         whether the channel is "busy."
         """
-        # Initialize channel_busy_delay counter
-        #channel_busy_delay = 0
-
         # Initialize dbfs counter
         rms_counter = 0
 
@@ -1412,22 +1414,22 @@ class RF:
                 # so we have a smoother state toggle
                 if np.sum(slotdfft[slotdfft > avg + 15]) >= 200 and not Modem.transmitting:
                     addDelay=True
-                    ModemParam.channel_busy_slot[slot] = True
+                    self.states.channel_busy_slot[slot] = True
                 else:
-                    ModemParam.channel_busy_slot[slot] = False
+                    self.states.channel_busy_slot[slot] = False
                 # increment slot
                 slot += 1
             if addDelay:
                 # Limit delay counter to a maximum of 200. The higher this value,
                 # the longer we will wait until releasing state
-                ModemParam.channel_busy = True
-                ModemParam.channel_busy_delay = min(ModemParam.channel_busy_delay + 10, 200)
+                self.states.channel_busy = True
+                self.channel_busy_delay = min(self.channel_busy_delay + 10, 200)
             else:
                 # Decrement channel busy counter if no signal has been detected.
-                ModemParam.channel_busy_delay = max(ModemParam.channel_busy_delay - 1, 0)
+                self.channel_busy_delay = max(self.channel_busy_delay - 1, 0)
                 # When our channel busy counter reaches 0, toggle state to False
-                if ModemParam.channel_busy_delay == 0:
-                    ModemParam.channel_busy = False
+                if self.channel_busy_delay == 0:
+                    self.states.channel_busy = False
 
             # erase queue if greater than 10
             if self.fft_queue.qsize() >= 10:

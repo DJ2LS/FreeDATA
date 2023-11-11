@@ -182,25 +182,27 @@ export function getModemConfigAsJSON() {
   const configData = {
     AUDIO: {
       auto_tune: settings.auto_tune,
-      rx: settings.rx_audio,
+      input_device: settings.rx_audio,
       rxaudiolevel: settings.rx_audio_level,
-      tx: settings.tx_audio,
+      output_device: settings.tx_audio,
       txaudiolevel: settings.tx_audio_level,
+      //enable_auto_tune: settings.tx_audio_level,
+
     },
     MESH: {
       enable_protocol: settings.enable_mesh_features,
     },
     Modem: {
-      explorer: settings.enable_explorer,
-      fft: settings.enable_fft,
-      fmax: settings.tuning_range_fmax,
-      fmin: settings.tuning_range_fmin,
-      fsk: settings.enable_fsk,
-      narrowband: settings.low_bandwidth_mode,
-      qrv: settings.respond_to_cq,
+      enable_explorer: settings.enable_explorer,
+      enable_fft: settings.enable_fft,
+      tuning_range_fmax: settings.tuning_range_fmax,
+      tuning_range_fmin: settings.tuning_range_fmin,
+      enable_fsk: settings.enable_fsk,
+      enable_low_bandwidth_mode: settings.enable_low_bandwidth_mode,
+      respond_to_cq: settings.respond_to_cq,
       rx_buffer_size: settings.rx_buffer_size,
-      scatter: "False",
-      stats: settings.explorer_stats,
+      enable_scatter: "False",
+      enable_stats: settings.explorer_stats,
       tx_delay: settings.tx_delay,
     },
     NETWORK: {

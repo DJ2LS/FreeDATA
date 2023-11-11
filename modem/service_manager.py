@@ -15,7 +15,7 @@ class SM:
         self.modem_events = app.modem_events
         self.modem_fft = app.modem_fft
         self.modem_service = app.modem_service
-
+        self.states = app.states
 
         runner_thread = threading.Thread(
             target=self.runner, name="runner thread", daemon=True
@@ -26,11 +26,11 @@ class SM:
         while True:
             cmd = self.modem_service.get()
             if cmd in ['start'] and not self.modem:
-                audio_test = audio.test_audio_devices(self.config['AUDIO']['rx'], self.config['AUDIO']['tx'])
+                audio_test = audio.test_audio_devices(self.config['AUDIO']['input_device'], self.config['AUDIO']['output_device'])
                 print(audio_test)
                 if False not in audio_test and None not in audio_test:
                     self.log.info("starting modem....")
-                    self.modem = modem.RF(self.config, self.modem_events, self.modem_fft, self.modem_service)
+                    self.modem = modem.RF(self.config, self.modem_events, self.modem_fft, self.modem_service, self.states)
                     self.data_handler = data_handler.DATA(self.config, self.modem_events)
                 else:
                     self.log.warning("starting modem failed", input_test=audio_test[0], output_test=audio_test[1])
