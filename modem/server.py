@@ -192,6 +192,13 @@ def sock_fft(sock):
         fft = app.modem_fft.get()
         transmit_sock_data(fft)
 
+@sock.route('/states')
+def sock_states(sock):
+    # it seems we have to keep the logics inside a loop, otherwise connection will be terminated
+    client_list.add(sock)
+    while True:
+        state = app.states.get()
+        transmit_sock_data(state)
 
 
 # @app.route('/modem/listen', methods=['POST']) # not needed if we are restarting modem on changing settings

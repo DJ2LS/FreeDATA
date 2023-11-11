@@ -19,15 +19,8 @@ const stateStore = useStateStore(pinia);
 import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 
-export function eventDispatcher(data) {
-  data = JSON.parse(data);
-
-  // get ptt state as a first test
-  // Todo we might use a switch function for data dispatching
-  stateStore.ptt_state = data.ptt;
-
-  // copied directly from sock.js We need to implement these variables step by step
-  if (data["command"] == "modem_state") {
+export function stateDispatcher(data) {
+if (data["command"] == "modem_state") {
     //console.log(data)
 
     stateStore.rx_buffer_length = data["rx_buffer_length"];
@@ -116,34 +109,14 @@ export function eventDispatcher(data) {
     if (data["speed_list"].length > 0) {
       prepareStatsDataForStore(data["speed_list"]);
     }
+}
+}
+export function eventDispatcher(data) {
+  data = JSON.parse(data);
 
-    // TODO: Remove ported objects
-    /*
-        let Data = {
-          mycallsign: data["mycallsign"],
-          mygrid: data["mygrid"],
-          //channel_state: data['CHANNEL_STATE'],
+  // get ptt state as a first test
+      stateStore.ptt_state = data.ptt;
 
-          info: data["info"],
-          rx_msg_buffer_length: data["rx_msg_buffer_length"],
-          tx_n_max_retries: data["tx_n_max_retries"],
-          arq_tx_n_frames_per_burst: data["arq_tx_n_frames_per_burst"],
-          arq_tx_n_bursts: data["arq_tx_n_bursts"],
-          arq_tx_n_current_arq_frame: data["arq_tx_n_current_arq_frame"],
-          arq_tx_n_total_arq_frames: data["arq_tx_n_total_arq_frames"],
-          arq_rx_frame_n_bursts: data["arq_rx_frame_n_bursts"],
-          arq_rx_n_current_arq_frame: data["arq_rx_n_current_arq_frame"],
-          arq_n_arq_frames_per_data_frame:
-          data["arq_n_arq_frames_per_data_frame"],
-          arq_bytes_per_minute: data["arq_bytes_per_minute"],
-          arq_compression_factor: data["arq_compression_factor"],
-          routing_table: data["routing_table"],
-          mesh_signalling_table: data["mesh_signalling_table"],
-          listen: data["listen"],
-          //speed_table: [{"bpm" : 5200, "snr": -3, "timestamp":1673555399},{"bpm" : 2315, "snr": 12, "timestamp":1673555500}],
-        };
-        */
-  }
 
   var message = "";
   if (data["freedata"] == "modem-message") {

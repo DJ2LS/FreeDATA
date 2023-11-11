@@ -1,4 +1,4 @@
-import { eventDispatcher } from "../js/eventHandler.js";
+import { eventDispatcher, stateDispatcher } from "../js/eventHandler.js";
 import { addDataToWaterfall } from "../js/waterfallHandler.js";
 
 function connect(endpoint, dispatcher) {
@@ -34,5 +34,6 @@ function connect(endpoint, dispatcher) {
 }
 
 // Initial connection attempts to endpoints
+connect("states", stateDispatcher);
 connect("events", eventDispatcher);
 connect("fft", addDataToWaterfall);
