@@ -116,41 +116,34 @@ export function processModemConfig(data) {
   // For now its a hardcoded structure until we found a better way
 
   console.log(data);
-// chatGPT function for iterating through all items and asserting them to a function
+  // chatGPT function for iterating through all items and asserting them to a function
   for (const category in data) {
     if (data.hasOwnProperty(category)) {
-        for (const setting in data[category]) {
-            if (data[category].hasOwnProperty(setting)) {
-                // Create a variable name combining the category and setting name
-                const variableName = setting;
-                // Assign the value to the variable
-                if(variableName == "mycall"){
-
-                    let mycall = data[category][setting];
-                    if (mycall.includes("-")) {
-                        const splittedCallsign = mycall.split("-");
-                        settings.mycall = splittedCallsign[0]; // The part before the hyphen
-                        settings.myssid = parseInt(splittedCallsign[1], 10); // The part after the hyphen, converted to a number
-                      } else {
-                        settings.mycall = mycall; // Use the original mycall if no SSID is present
-                        settings.myssid = 0; // Default SSID if not provided
-                      }
-
-                } else {
-                    settings[variableName] = data[category][setting];
-                }
-                console.log(variableName + ': ' + settings[variableName]);
+      for (const setting in data[category]) {
+        if (data[category].hasOwnProperty(setting)) {
+          // Create a variable name combining the category and setting name
+          const variableName = setting;
+          // Assign the value to the variable
+          if (variableName == "mycall") {
+            let mycall = data[category][setting];
+            if (mycall.includes("-")) {
+              const splittedCallsign = mycall.split("-");
+              settings.mycall = splittedCallsign[0]; // The part before the hyphen
+              settings.myssid = parseInt(splittedCallsign[1], 10); // The part after the hyphen, converted to a number
+            } else {
+              settings.mycall = mycall; // Use the original mycall if no SSID is present
+              settings.myssid = 0; // Default SSID if not provided
             }
+          } else {
+            settings[variableName] = data[category][setting];
+          }
+          console.log(variableName + ": " + settings[variableName]);
         }
+      }
     }
-}
+  }
 
-
-
-
-
-
-/*
+  /*
   // STATION SETTINGS
   // Extract the callsign and SSID
   if (data.STATION.mycall.includes("-")) {
