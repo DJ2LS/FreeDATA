@@ -3,8 +3,8 @@ import { ref } from "vue";
 
 export const useSettingsStore = defineStore("settingsStore", () => {
   // audio
-  var tx_audio = ref();
-  var rx_audio = ref();
+  var output_device = ref();
+  var input_device = ref();
   var tx_audio_level = ref();
   var rx_audio_level = ref();
 
@@ -224,8 +224,8 @@ export const useSettingsStore = defineStore("settingsStore", () => {
     tx_delay,
     enable_mesh_features,
     getJSON,
-    tx_audio,
-    rx_audio,
+    output_device,
+    input_device,
     getSerialDevices,
     serial_devices,
     tx_audio_level,

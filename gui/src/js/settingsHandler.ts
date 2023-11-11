@@ -116,7 +116,6 @@ export function processModemConfig(data) {
   // For now its a hardcoded structure until we found a better way
 
   console.log(data);
-  // chatGPT function for iterating through all items and asserting them to a function
   for (const category in data) {
     if (data.hasOwnProperty(category)) {
       for (const setting in data[category]) {
@@ -142,55 +141,6 @@ export function processModemConfig(data) {
       }
     }
   }
-
-  /*
-  // STATION SETTINGS
-  // Extract the callsign and SSID
-  if (data.STATION.mycall.includes("-")) {
-    const splittedCallsign = data.STATION.mycall.split("-");
-    settings.mycall = splittedCallsign[0]; // The part before the hyphen
-    settings.myssid = parseInt(splittedCallsign[1], 10); // The part after the hyphen, converted to a number
-  } else {
-    settings.mycall = data.STATION.mycall; // Use the original mycall if no SSID is present
-    settings.myssid = 0; // Default SSID if not provided
-  }
-  settings.mygrid = data.STATION.mygrid;
-
-  // ssid list not yet implemented
-  //data.STATION.ssid_list[0];
-
-  // AUDIO SETTINGS
-  settings.auto_tune = data.AUDIO.auto_tune;
-  settings.rx_audio_level = data.AUDIO.rxaudiolevel;
-  settings.tx_audio_level = data.AUDIO.txaudiolevel;
-  settings.rx_audio = data.AUDIO.rx;
-  settings.tx_audio = data.AUDIO.tx;
-
-  // MODEM SETTINGS
-  settings.enable_fft = data.Modem.fft;
-  settings.enable_fsk = data.Modem.fsk;
-  settings.tuning_range_fmin = data.Modem.fmin;
-  settings.tuning_range_fmax = data.Modem.fmax;
-  settings.rx_buffer_size = data.Modem.rx_buffer_size;
-  settings.enable_explorer = data.Modem.explorer;
-  settings.explorer_stats = data.Modem.stats;
-  settings.tx_delay = data.Modem.tx_delay;
-  settings.respond_to_cq = data.Modem.qrv;
-  settings.low_bandwidth_mode = data.Modem.narrowband;
-
-  // HAMLIB SETTINGS
-  settings.hamlib_rigctld_port = data.RADIO.rigctld_port;
-  settings.hamlib_rigctld_ip = data.RADIO.rigctld_ip;
-  settings.radiocontrol = data.RADIO.radiocontrol;
-
-  // TCI SETTINGS
-  settings.tci_ip = data.TCI.ip;
-  settings.tci_port = data.TCI.port;
-
-  // MESH SETTINGS
-  settings.enable_mesh_features = data.MESH.enable_protocol;
-
-  */
 }
 
 export function processModemAudioDevices(data) {
@@ -212,9 +162,9 @@ export function getModemConfigAsJSON() {
     AUDIO: {
       enable_auto_tune: settings.auto_tune,
       input_device: settings.rx_audio,
-      rxaudiolevel: settings.rx_audio_level,
+      rx_audio_level: settings.rx_audio_level,
       output_device: settings.tx_audio,
-      txaudiolevel: settings.tx_audio_level,
+      tx_audio_level: settings.tx_audio_level,
       //enable_auto_tune: settings.tx_audio_level,
     },
     MESH: {

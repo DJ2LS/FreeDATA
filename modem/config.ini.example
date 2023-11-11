@@ -1,60 +1,43 @@
 [NETWORK]
-#network settings
 modemport = 3000
 
 [STATION]
-#station settings
-mycall = DJ2LS
-mygrid = JN20aa
-ssid_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+mycall = DJ2LS-9
+mygrid = JN49em
+ssid_list = []
 
 [AUDIO]
-#audio settings
-rx = 0
-tx = 0
-rxaudiolevel = 0
-txaudiolevel = 0
-auto_tune = False
+input_device = c07e
+output_device = c07e
+rx_audio_level = 0
+tx_audio_level = 0
+enable_auto_tune = False
 
 [RADIO]
-#radio settings
 radiocontrol = disabled
 rigctld_ip = 127.0.0.1
 rigctld_port = 4532
-
-[TNC]
-scatter = False
-fft = True
-narrowband = False
-fmin = -50
-fmax = 50
-qrv = True
-rx_buffer_size = 16
-explorer = False
-stats = False
-fsk = False
-tx_delay = 0
+radioport = None
 
 [TCI]
-#tci settings
+tci_ip = 127.0.0.1
+tci_port = 50001
 ip = 127.0.0.1
 port = 50001
 
 [MESH]
-#tci settings
-enable_protocol = True
+enable_protocol = False
 
 [Modem]
-#modem settings
-scatter = False
-fft = True
-narrowband = False
-fmin = -50
-fmax = 50
-qrv = True
+enable_explorer = False
+enable_fft = True
+tuning_range_fmax = 50
+tuning_range_fmin = -50
+enable_fsk = False
+enable_low_bandwidth_mode = False
+respond_to_cq = True
 rx_buffer_size = 16
-explorer = False
-stats = False
-fsk = False
+enable_scatter = False
+enable_stats = False
 tx_delay = 0
 

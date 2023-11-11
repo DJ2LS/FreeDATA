@@ -74,8 +74,8 @@ class RF:
         self.audio_input_device = config['AUDIO']['input_device']
         self.audio_output_device = config['AUDIO']['output_device']
 
-        self.rx_audio_level = config['AUDIO']['rxaudiolevel']
-        self.tx_audio_level = config['AUDIO']['txaudiolevel']
+        self.rx_audio_level = config['AUDIO']['rx_audio_level']
+        self.tx_audio_level = config['AUDIO']['tx_audio_level']
         self.enable_audio_auto_tune = config['AUDIO']['enable_auto_tune']
         self.enable_fft = config['Modem']['enable_fft']
         self.tx_delay = config['Modem']['tx_delay']
