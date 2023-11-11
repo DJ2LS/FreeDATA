@@ -42,3 +42,4 @@ class SM:
                     del self.data_handler
                     self.modem = False
                     self.data_handler = False
+            threading.Event().wait(0.5)

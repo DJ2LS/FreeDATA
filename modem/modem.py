@@ -135,25 +135,27 @@ class RF:
 
     def start_modem(self):
         if not TESTMODE and HamlibParam.hamlib_radiocontrol not in ["tci"]:
-            self.init_audio()
+            result = self.init_audio()
 
         elif not TESTMODE:
-            self.init_tci()
+            result = self.init_tci()
         else:
-            self.init_mkfifo()
+            result = self.init_mkfifo()
+        if result not in [False]:
+            # init codec2 instances
+            self.init_codec2()
 
-        # init codec2 instances
-        self.init_codec2()
+            # init rig control
+            self.init_rig_control()
 
-        # init rig control
-        self.init_rig_control()
+            # init decoders
+            self.init_decoders()
 
-        # init decoders
-        self.init_decoders()
-
-        # init decoding threads
-        self.init_data_threads()
-        atexit.register(self.stream.stop)
+            # init decoding threads
+            self.init_data_threads()
+            atexit.register(self.stream.stop)
+        else:
+            return False
 
     def stop_modem(self):
         try:
@@ -167,48 +169,47 @@ class RF:
             self.log.error("[MDM] Error stopping modem", e=err)
 
     def init_audio(self):
+        self.log.info(f"[MDM] init: get audio devices", input_device=self.audio_input_device,
+                      output_device=self.audio_output_device)
         try:
-            self.log.info(f"[MDM] init: get audio devices", input_device=self.audio_input_device,
-                          output_device=self.audio_output_device)
-            try:
-                result = audio.get_device_index_from_crc(self.audio_input_device, True)
-                if result is None:
-                    raise ValueError("Invalid input device")
-                else:
-                    in_dev_index, in_dev_name = result
+            result = audio.get_device_index_from_crc(self.audio_input_device, True)
+            if result is None:
+                raise ValueError("Invalid input device")
+            else:
+                in_dev_index, in_dev_name = result
 
-                result = audio.get_device_index_from_crc(self.audio_output_device, False)
-                if result is None:
-                    raise ValueError("Invalid output device")
-                else:
-                    out_dev_index, out_dev_name = result
+            result = audio.get_device_index_from_crc(self.audio_output_device, False)
+            if result is None:
+                raise ValueError("Invalid output device")
+            else:
+                out_dev_index, out_dev_name = result
 
-                self.log.info(f"[MDM] init: receiving audio from '{in_dev_name}'")
-                self.log.info(f"[MDM] init: transmiting audio on '{out_dev_name}'")
-                self.log.debug("[MDM] init: starting pyaudio callback and decoding threads")
+            self.log.info(f"[MDM] init: receiving audio from '{in_dev_name}'")
+            self.log.info(f"[MDM] init: transmiting audio on '{out_dev_name}'")
+            self.log.debug("[MDM] init: starting pyaudio callback and decoding threads")
 
-                # init codec2 resampler
-                self.resampler = codec2.resampler()
+            # init codec2 resampler
+            self.resampler = codec2.resampler()
 
-                # init audio stream
-                self.stream = sd.RawStream(
-                    channels=1,
-                    dtype="int16",
-                    callback=self.callback,
-                    device=(in_dev_index, out_dev_index),
-                    samplerate=self.AUDIO_SAMPLE_RATE_RX,
-                    blocksize=4800,
-                )
-                self.stream.start()
+            # init audio stream
+            self.stream = sd.RawStream(
+                channels=1,
+                dtype="int16",
+                callback=self.callback,
+                device=(in_dev_index, out_dev_index),
+                samplerate=self.AUDIO_SAMPLE_RATE_RX,
+                blocksize=4800,
+            )
+            self.stream.start()
+            return True
 
 
 
-            except Exception as audioerr:
-                self.log.error("[MDM] init: starting pyaudio callback failed", e=audioerr)
-
-        except Exception as err:
-            self.log.warning("[MDM] init: can't open audio device. Stopping modem", e=err)
+        except Exception as audioerr:
+            self.log.error("[MDM] init: starting pyaudio callback failed", e=audioerr)
             self.stop_modem()
+            return False
+
 
     def init_tci(self):
         # placeholder area for processing audio via TCI
