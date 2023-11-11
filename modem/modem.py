@@ -13,7 +13,6 @@ import atexit
 import ctypes
 import os
 import queue
-import sys
 import threading
 import time
 from collections import deque
@@ -22,10 +21,9 @@ import itertools
 import numpy as np
 import sock
 import sounddevice as sd
-from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
+from global_instances import AudioParam, HamlibParam, ModemParam, TCIParam, Modem
 from static import FRAME_TYPE
 import structlog
-import ujson as json
 import tci
 import cw
 from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUEUE, RIGCTLD_COMMAND_QUEUE, \
@@ -77,6 +75,11 @@ class RF:
 
         self.rx_audio_level = config['AUDIO']['rxaudiolevel']
         self.tx_audio_level = config['AUDIO']['txaudiolevel']
+        self.enable_audio_auto_tune = config['AUDIO']['auto_tune']
+        self.enable_fft = config['Modem']['fft']
+        
+        
+
 
         self.AUDIO_SAMPLE_RATE_RX = 48000
         self.AUDIO_SAMPLE_RATE_TX = 48000
@@ -166,7 +169,7 @@ class RF:
             # self.stream.active = False
             # self.stream.stop
         except Exception:
-            self.log.error("[MDM] Error stopping modem", e=err)
+            self.log.error("[MDM] Error stopping modem")
 
     def init_audio(self):
         self.log.info(f"[MDM] init: get audio devices", input_device=self.audio_input_device,
@@ -284,7 +287,7 @@ class RF:
             x = self.audio_received_queue.get()
             x = np.frombuffer(x, dtype=np.int16)
             # x = self.resampler.resample48_to_8(x)
-            if AudioParam.enable_fft:
+            if self.enable_fft:
                 self.calculate_fft(x)
 
             length_x = len(x)
@@ -372,7 +375,6 @@ class RF:
 
         # audio recording for debugging purposes
         if AudioParam.audio_record:
-            # AudioParam.audio_record_file.write(x)
             AudioParam.audio_record_file.writeframes(x)
 
         # Avoid decoding when transmitting to reduce CPU
@@ -398,7 +400,7 @@ class RF:
 
         if not self.modoutqueue or self.mod_out_locked:
             data_out48k = np.zeros(frames, dtype=np.int16)
-            if AudioParam.enable_fft:
+            if self.enable_fft:
                 self.calculate_fft(x)
         else:
             if not HamlibParam.ptt_state:
@@ -408,7 +410,7 @@ class RF:
                 self.event_manager.send_ptt_change(True)
 
             data_out48k = self.modoutqueue.popleft()
-            if AudioParam.enable_fft:
+            if self.enable_fft:
                 self.calculate_fft(data_out48k)
 
         try:
@@ -421,7 +423,7 @@ class RF:
     # --------------------------------------------------------------------
     def transmit(
             self, mode, repeats: int, repeat_delay: int, frames: bytearray
-    ) -> None:
+    ) -> bool:
         """
 
         Args:
@@ -556,34 +558,8 @@ class RF:
         # Re-sample back up to 48k (resampler works on np.int16)
         x = np.frombuffer(txbuffer, dtype=np.int16)
 
-        # enable / disable AUDIO TUNE Feature / ALC correction
-        if AudioParam.audio_auto_tune:
-            if HamlibParam.alc == 0.0:
-                AudioParam.tx_audio_level = AudioParam.tx_audio_level + 20
-            elif 0.0 < HamlibParam.alc <= 0.1:
-                print("0.0 < HamlibParam.alc <= 0.1")
-                AudioParam.tx_audio_level = AudioParam.tx_audio_level + 2
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(AudioParam.tx_audio_level),
-                               alc_level=str(HamlibParam.alc))
-            elif 0.1 < HamlibParam.alc < 0.2:
-                print("0.1 < HamlibParam.alc < 0.2")
-                AudioParam.tx_audio_level = AudioParam.tx_audio_level
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(AudioParam.tx_audio_level),
-                               alc_level=str(HamlibParam.alc))
-            elif 0.2 < HamlibParam.alc < 0.99:
-                print("0.2 < HamlibParam.alc < 0.99")
-                AudioParam.tx_audio_level = AudioParam.tx_audio_level - 20
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(AudioParam.tx_audio_level),
-                               alc_level=str(HamlibParam.alc))
-            elif 1.0 >= HamlibParam.alc:
-                print("1.0 >= HamlibParam.alc")
-                AudioParam.tx_audio_level = AudioParam.tx_audio_level - 40
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(AudioParam.tx_audio_level),
-                               alc_level=str(HamlibParam.alc))
-            else:
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(AudioParam.tx_audio_level),
-                               alc_level=str(HamlibParam.alc))
-        x = set_audio_volume(x, AudioParam.tx_audio_level)
+        self.audio_auto_tune()
+        x = set_audio_volume(x, self.tx_audio_level)
 
         if not HamlibParam.hamlib_radiocontrol in ["tci"]:
             txbuffer_out = self.resampler.resample8_to_48(x)
@@ -641,6 +617,35 @@ class RF:
         transmission_time = end_of_transmission - start_of_transmission
         self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
 
+    def audio_auto_tune(self):
+        # enable / disable AUDIO TUNE Feature / ALC correction
+        if self.enable_audio_auto_tune:
+            if HamlibParam.alc == 0.0:
+                self.tx_audio_level = self.tx_audio_level + 20
+            elif 0.0 < HamlibParam.alc <= 0.1:
+                print("0.0 < HamlibParam.alc <= 0.1")
+                self.tx_audio_level = self.tx_audio_level + 2
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
+                               alc_level=str(HamlibParam.alc))
+            elif 0.1 < HamlibParam.alc < 0.2:
+                print("0.1 < HamlibParam.alc < 0.2")
+                self.tx_audio_level = self.tx_audio_level
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
+                               alc_level=str(HamlibParam.alc))
+            elif 0.2 < HamlibParam.alc < 0.99:
+                print("0.2 < HamlibParam.alc < 0.99")
+                self.tx_audio_level = self.tx_audio_level - 20
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
+                               alc_level=str(HamlibParam.alc))
+            elif 1.0 >= HamlibParam.alc:
+                print("1.0 >= HamlibParam.alc")
+                self.tx_audio_level = self.tx_audio_level - 40
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
+                               alc_level=str(HamlibParam.alc))
+            else:
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
+                               alc_level=str(HamlibParam.alc))
+
     def transmit_morse(self, repeats, repeat_delay, frames):
         Modem.transmitting = True
         # if we're transmitting FreeDATA signals, reset channel busy state
@@ -679,9 +684,6 @@ class RF:
             threading.Event().wait(0.01)
             # if we're transmitting FreeDATA signals, reset channel busy state
             ModemParam.channel_busy = False
-
-
-
 
         HamlibParam.ptt_state = self.radio.set_ptt(False)
 
@@ -1374,7 +1376,7 @@ class RF:
             # Convert data to int to decrease size
             dfft = dfft.astype(int)
 
-            # Create list of dfft for later pushing to AudioParam.fft
+            # Create list of dfft
             dfftlist = dfft.tolist()
 
             # Reduce area where the busy detection is enabled
