@@ -459,7 +459,7 @@ class RF:
 
         Modem.transmitting = True
         # if we're transmitting FreeDATA signals, reset channel busy state
-        self.states.channel_busy = False
+        self.states.set("channel_busy", False)
 
         start_of_transmission = time.time()
         # TODO Moved ptt toggle some steps before audio is ready for testing
@@ -605,7 +605,7 @@ class RF:
                     tci_timeout_reached = True
             threading.Event().wait(0.01)
             # if we're transmitting FreeDATA signals, reset channel busy state
-            self.states.channel_busy = False
+            self.states.set("channel_busy", False)
 
         HamlibParam.ptt_state = self.radio.set_ptt(False)
 
@@ -654,7 +654,7 @@ class RF:
     def transmit_morse(self, repeats, repeat_delay, frames):
         Modem.transmitting = True
         # if we're transmitting FreeDATA signals, reset channel busy state
-        self.states.channel_busy = False
+        self.states.set("channel_busy", False)
         self.log.debug(
             "[MDM] TRANSMIT", mode="MORSE"
         )
@@ -688,7 +688,7 @@ class RF:
 
             threading.Event().wait(0.01)
             # if we're transmitting FreeDATA signals, reset channel busy state
-            self.states.channel_busy = False
+            self.states.set("channel_busy", False)
 
         HamlibParam.ptt_state = self.radio.set_ptt(False)
 
@@ -814,25 +814,25 @@ class RF:
                     if rx_status not in [0]:
                         # we need to disable this if in testmode as its causing problems with FIFO it seems
                         if not TESTMODE:
-                            self.states.is_codec2_traffic = True
+                            self.states.set("is_codec2_traffic", True)
                             self.is_codec2_traffic_counter = self.is_codec2_traffic_cooldown
                             if not self.states.channel_busy:
                                 self.log.debug("[MDM] Setting channel_busy since codec2 data detected")
-                                self.states.channel_busy=True
+                                self.states.set("channel_busy", True)
                                 self.channel_busy_delay += 10
                         self.log.debug(
                             "[MDM] [demod_audio] modem state", mode=mode_name, rx_status=rx_status,
                             sync_flag=codec2.api.rx_sync_flags_to_text[rx_status]
                         )
                     else:
-                        self.states.is_codec2_traffic = False
+                        self.states.set("is_codec2_traffic", False)
 
                     # decrement codec traffic counter for making state smoother
                     if self.is_codec2_traffic_counter > 0:
                         self.is_codec2_traffic_counter -= 1
-                        self.states.is_codec2_traffic = True
+                        self.states.set("is_codec2_traffic", True)
                     else:
-                        self.states.is_codec2_traffic = False
+                        self.states.set("is_codec2_traffic", False)
 
                     if rx_status == 10:
                         state_buffer.append(rx_status)
@@ -1422,14 +1422,14 @@ class RF:
             if addDelay:
                 # Limit delay counter to a maximum of 200. The higher this value,
                 # the longer we will wait until releasing state
-                self.states.channel_busy = True
+                self.states.set("channel_busy", True)
                 self.channel_busy_delay = min(self.channel_busy_delay + 10, 200)
             else:
                 # Decrement channel busy counter if no signal has been detected.
                 self.channel_busy_delay = max(self.channel_busy_delay - 1, 0)
                 # When our channel busy counter reaches 0, toggle state to False
                 if self.channel_busy_delay == 0:
-                    self.states.channel_busy = False
+                    self.states.set("channel_busy", False)
 
             # erase queue if greater than 10
             if self.fft_queue.qsize() >= 10:
