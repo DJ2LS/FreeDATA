@@ -187,7 +187,6 @@ export function getModemConfigAsJSON() {
       output_device: settings.tx_audio,
       txaudiolevel: settings.tx_audio_level,
       //enable_auto_tune: settings.tx_audio_level,
-
     },
     MESH: {
       enable_protocol: settings.enable_mesh_features,
