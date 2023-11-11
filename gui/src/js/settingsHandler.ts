@@ -116,28 +116,23 @@ export function processModemConfig(data) {
   // For now its a hardcoded structure until we found a better way
 
   console.log(data);
-// chatGPT function for iterating through all items and asserting them to a function
+  // chatGPT function for iterating through all items and asserting them to a function
   for (const category in data) {
     if (data.hasOwnProperty(category)) {
-        for (const setting in data[category]) {
-            if (data[category].hasOwnProperty(setting)) {
-                // Create a variable name combining the category and setting name
-                const variableName = setting;
-                // Assign the value to the variable
-                settings[variableName] = data[category][setting];
+      for (const setting in data[category]) {
+        if (data[category].hasOwnProperty(setting)) {
+          // Create a variable name combining the category and setting name
+          const variableName = setting;
+          // Assign the value to the variable
+          settings[variableName] = data[category][setting];
 
-                console.log(variableName + ': ' + settings[variableName]);
-            }
+          console.log(variableName + ": " + settings[variableName]);
         }
+      }
     }
-}
+  }
 
-
-
-
-
-
-/*
+  /*
   // STATION SETTINGS
   // Extract the callsign and SSID
   if (data.STATION.mycall.includes("-")) {
