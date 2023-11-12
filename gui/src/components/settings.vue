@@ -16,8 +16,6 @@ import settings_exp from "./settings_exp.vue";
     aria-labelledby="list-settings-list"
   >
     <div class="container">
-
-
       <div class="card text-center">
         <div class="card-header">
           <!-- SETTINGS Nav tabs -->
