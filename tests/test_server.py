@@ -30,23 +30,21 @@ class TestIntegration(unittest.TestCase):
         self.assertEqual(r.status_code, 200)
 
         data = r.json()
-        self.assertEqual(data['data']['api_version'], 1)
+        self.assertEqual(data['api_version'], 1)
 
     def test_config_get(self):
         r = requests.get(self.url + '/config')
         self.assertEqual(r.status_code, 200)
 
-        payload = r.json()
-        self.assertIn('data', payload)
-        self.assertIn('status', payload)
-
-        config = payload['data']
+        config = r.json()
         self.assertIsInstance(config, dict)
 
         self.assertIn('NETWORK', config)
         self.assertIn('STATION', config)
         self.assertIn('AUDIO', config)
-        self.assertIn('Modem', config)
+        self.assertIn('MODEM', config)
+        self.assertIn('TCI', config)
+        self.assertIn('RADIO', config)
 
     def test_config_post(self):
         config = {'NETWORK': {'modemport' : '3050'}}
@@ -57,8 +55,7 @@ class TestIntegration(unittest.TestCase):
 
         r = requests.get(self.url + '/config')
         self.assertEqual(r.status_code, 200)
-        payload = r.json()
-        config = payload['data']
+        config = r.json()
         self.assertEqual(config['NETWORK']['modemport'], '3050')
 
 if __name__ == '__main__':
