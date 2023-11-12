@@ -170,8 +170,7 @@ export function getModemConfigAsJSON() {
     MESH: {
       enable_protocol: settings.enable_mesh_features,
     },
-    Modem: {
-      enable_explorer: settings.enable_explorer,
+    MODEM: {
       enable_fft: settings.enable_fft,
       tuning_range_fmax: settings.tuning_range_fmax,
       tuning_range_fmin: settings.tuning_range_fmin,
@@ -180,7 +179,6 @@ export function getModemConfigAsJSON() {
       respond_to_cq: settings.respond_to_cq,
       rx_buffer_size: settings.rx_buffer_size,
       enable_scatter: "False",
-      enable_stats: settings.explorer_stats,
       tx_delay: settings.tx_delay,
     },
     NETWORK: {
@@ -195,6 +193,8 @@ export function getModemConfigAsJSON() {
       mycall: settings.mycall + "-" + settings.myssid,
       mygrid: settings.mygrid,
       ssid_list: [],
+      enable_explorer: settings.enable_explorer,
+      enable_stats: settings.explorer_stats,
     },
     TCI: {
       tci_ip: settings.tci_ip,

@@ -16,12 +16,7 @@ import settings_exp from "./settings_exp.vue";
     aria-labelledby="list-settings-list"
   >
     <div class="container">
-      <div class="badge text-bg-warning m-1">
-        <h5>
-          <i class="bi bi-exclamation-triangle"></i> Please restart the modem
-          after changing settings <i class="bi bi-exclamation-triangle"></i>
-        </h5>
-      </div>
+
 
       <div class="card text-center">
         <div class="card-header">

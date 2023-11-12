@@ -8,7 +8,6 @@ Here we are saving application wide variables and stats, which have to be access
 """
 
 from dataclasses import dataclass, field
-from typing import List
 import subprocess
 from enum import Enum
 import threading

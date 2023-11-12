@@ -19,9 +19,8 @@ from collections import deque
 import codec2
 import itertools
 import numpy as np
-import sock
 import sounddevice as sd
-from global_instances import AudioParam, HamlibParam, ModemParam, TCIParam, Modem
+from global_instances import AudioParam, HamlibParam, ModemParam, Modem
 from static import FRAME_TYPE
 import structlog
 import tci
@@ -83,6 +82,11 @@ class RF:
         self.tuning_range_fmin = config['Modem']['tuning_range_fmin']
         self.tuning_range_fmax = config['Modem']['tuning_range_fmax']
 
+        self.tci_ip = config['TCI']['tci_ip']
+        self.tci_port = config['TCI']['tci_port']
+
+
+
         self.channel_busy_delay = 0
 
 
@@ -117,9 +121,7 @@ class RF:
         # Init FIFO queue to store modulation out in
         self.modoutqueue = deque()
 
-        self.event_manager = event_manager.EventManager([
-            event_queue, 
-            sock.SOCKET_QUEUE])
+        self.event_manager = event_manager.EventManager([event_queue])
 
         self.fft_queue = fft_queue
 
@@ -222,7 +224,7 @@ class RF:
     def init_tci(self):
         # placeholder area for processing audio via TCI
         # https://github.com/maksimus1210/TCI
-        self.log.warning("[MDM] [TCI] Not yet fully implemented", ip=TCIParam.ip, port=TCIParam.port)
+        self.log.warning("[MDM] [TCI] Not yet fully implemented", ip=self.tci_ip, port=self.tci_port)
 
         # we are trying this by simulating an audio stream Object like with mkfifo
         class Object:
@@ -374,54 +376,57 @@ class RF:
 
         """
         # self.log.debug("[MDM] callback")
-        x = np.frombuffer(data_in48k, dtype=np.int16)
-        x = self.resampler.resample48_to_8(x)
-        x = set_audio_volume(x, self.rx_audio_level)
+        try:
+            x = np.frombuffer(data_in48k, dtype=np.int16)
+            x = self.resampler.resample48_to_8(x)
+            x = set_audio_volume(x, self.rx_audio_level)
 
-        # audio recording for debugging purposes
-        if AudioParam.audio_record:
-            AudioParam.audio_record_file.writeframes(x)
+            # audio recording for debugging purposes
+            if AudioParam.audio_record:
+                AudioParam.audio_record_file.writeframes(x)
 
-        # Avoid decoding when transmitting to reduce CPU
-        # TODO Overriding this for testing purposes
-        # if not Modem.transmitting:
-        length_x = len(x)
-        # Avoid buffer overflow by filling only if buffer for
-        # selected datachannel mode is not full
-        for audiobuffer, receive, index in [
-            (self.sig0_datac13_buffer, RECEIVE_SIG0, 0),
-            (self.sig1_datac13_buffer, RECEIVE_SIG1, 1),
-            (self.dat0_datac1_buffer, RECEIVE_DATAC1, 2),
-            (self.dat0_datac3_buffer, RECEIVE_DATAC3, 3),
-            (self.dat0_datac4_buffer, RECEIVE_DATAC4, 4),
-            (self.fsk_ldpc_buffer_0, Modem.enable_fsk, 5),
-            (self.fsk_ldpc_buffer_1, Modem.enable_fsk, 6),
-        ]:
-            if (audiobuffer.nbuffer + length_x) > audiobuffer.size:
-                AudioParam.buffer_overflow_counter[index] += 1
-            elif receive:
-                audiobuffer.push(x)
-        # end of "not Modem.transmitting" if block
+            # Avoid decoding when transmitting to reduce CPU
+            # TODO Overriding this for testing purposes
+            # if not Modem.transmitting:
+            length_x = len(x)
+            # Avoid buffer overflow by filling only if buffer for
+            # selected datachannel mode is not full
+            for audiobuffer, receive, index in [
+                (self.sig0_datac13_buffer, RECEIVE_SIG0, 0),
+                (self.sig1_datac13_buffer, RECEIVE_SIG1, 1),
+                (self.dat0_datac1_buffer, RECEIVE_DATAC1, 2),
+                (self.dat0_datac3_buffer, RECEIVE_DATAC3, 3),
+                (self.dat0_datac4_buffer, RECEIVE_DATAC4, 4),
+                (self.fsk_ldpc_buffer_0, Modem.enable_fsk, 5),
+                (self.fsk_ldpc_buffer_1, Modem.enable_fsk, 6),
+            ]:
+                if (audiobuffer.nbuffer + length_x) > audiobuffer.size:
+                    AudioParam.buffer_overflow_counter[index] += 1
+                elif receive:
+                    audiobuffer.push(x)
+            # end of "not Modem.transmitting" if block
 
-        if not self.modoutqueue or self.mod_out_locked:
-            data_out48k = np.zeros(frames, dtype=np.int16)
-            if self.enable_fft:
-                self.calculate_fft(x)
-        else:
-            if not HamlibParam.ptt_state:
-                # TODO Moved to this place for testing
-                # Maybe we can avoid moments of silence before transmitting
-                HamlibParam.ptt_state = self.radio.set_ptt(True)
-                self.event_manager.send_ptt_change(True)
+            if not self.modoutqueue or self.mod_out_locked:
+                data_out48k = np.zeros(frames, dtype=np.int16)
+                if self.enable_fft:
+                    self.calculate_fft(x)
+            else:
+                if not HamlibParam.ptt_state:
+                    # TODO Moved to this place for testing
+                    # Maybe we can avoid moments of silence before transmitting
+                    HamlibParam.ptt_state = self.radio.set_ptt(True)
+                    self.event_manager.send_ptt_change(True)
 
-            data_out48k = self.modoutqueue.popleft()
-            if self.enable_fft:
-                self.calculate_fft(data_out48k)
+                data_out48k = self.modoutqueue.popleft()
+                if self.enable_fft:
+                    self.calculate_fft(data_out48k)
+        except Exception as e:
+            self.log.warning(f"[MDM] audio callback not ready yet: {e}")
 
         try:
             outdata[:] = data_out48k[:frames]
         except IndexError as err:
-            self.log.debug(f"[MDM] callback: IndexError: {err}")
+            self.log.debug(f"[MDM] callback writing error: IndexError: {err}")
 
         # return (data_out48k, audio.pyaudio.paContinue)
 
@@ -993,8 +998,8 @@ class RF:
         # set tuning range
         codec2.api.freedv_set_tuning_range(
             c2instance,
-            ctypes.c_float(ModemParam.tuning_range_fmin),
-            ctypes.c_float(ModemParam.tuning_range_fmax),
+            ctypes.c_float(self.tuning_range_fmin),
+            ctypes.c_float(self.tuning_range_fmax),
         )
 
         # get bytes per frame
@@ -1176,7 +1181,6 @@ class RF:
     def get_scatter(self, freedv: ctypes.c_void_p) -> None:
         """
         Ask codec2 for data about the received signal and calculate the scatter plot.
-        Side effect: sets ModemParam.scatter
 
         :param freedv: codec2 instance to query
         :type freedv: ctypes.c_void_p
@@ -1209,10 +1213,11 @@ class RF:
 
         # Send all the data if we have too-few samples, otherwise send a sampling
         if 150 > len(scatterdata) > 0:
-            ModemParam.scatter = scatterdata
+            self.event_manager.send_scatter_change(scatterdata)
+
         else:
             # only take every tenth data point
-            ModemParam.scatter = scatterdata[::10]
+            self.event_manager.send_scatter_change(scatterdata[::10])
 
     def calculate_snr(self, freedv: ctypes.c_void_p) -> float:
         """

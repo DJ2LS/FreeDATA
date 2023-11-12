@@ -25,7 +25,7 @@ import audio
 import crcengine
 import log_handler
 import serial.tools.list_ports
-import sock
+import deprecated_sock
 from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
 
 import structlog
@@ -544,7 +544,7 @@ class DAEMON:
                 elif sys.platform in ["win32", "win64"]:
                     command.append("python")
 
-                command.append("main.py")
+                command.append("deprecated_main.py")
                 command += options
                 proc = subprocess.Popen(command)
                 atexit.register(proc.kill)
@@ -606,7 +606,7 @@ if __name__ == "__main__":
         mainlog.info("[DMN] Starting TCP/IP socket", port=DAEMON.port)
         # https://stackoverflow.com/a/16641793
         socketserver.TCPServer.allow_reuse_address = True
-        cmdserver = sock.ThreadedTCPServer(
+        cmdserver = deprecated_sock.ThreadedTCPServer(
             (Modem.host, DAEMON.port), sock.ThreadedTCPRequestHandler
         )
         server_thread = threading.Thread(target=cmdserver.serve_forever)

@@ -7,12 +7,10 @@ Created on Fri Dec 25 21:25:14 2020
 import time
 from datetime import datetime,timezone
 import crcengine
-import static
-from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem, MeshParam
+from global_instances import Station, Modem
 import structlog
 import numpy as np
 import threading
-import mesh
 import hashlib
 import hmac
 import os

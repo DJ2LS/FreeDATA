@@ -11,6 +11,8 @@ class STATES:
         self.is_codec2_traffic = False
         self.is_modem_running = False
 
+        self.is_beacon_running = False
+
     def set(self, key, value):
         setattr(self, key, value)
         self.statequeue.put(self.getAsJSON())
@@ -21,4 +23,6 @@ class STATES:
             "channel_busy": self.channel_busy,
             "is_codec2_traffic": self.is_codec2_traffic,
             "is_modem_running": self.is_modem_running,
+            "is_beacon_running": self.is_beacon_running,
+
         })

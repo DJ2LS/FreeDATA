@@ -2,13 +2,16 @@
 modemport = 3000
 
 [STATION]
-mycall = DJ2LS-9
-mygrid = JN49em
+mycall = DJ2LS-5
+mygrid = JN49en
 ssid_list = []
+enable_explorer = False
+enable_stats = False
+
 
 [AUDIO]
-input_device = c07e
-output_device = c07e
+input_device = 4f55
+output_device = 4f55
 rx_audio_level = 0
 tx_audio_level = 0
 enable_auto_tune = False
@@ -22,14 +25,11 @@ radioport = None
 [TCI]
 tci_ip = 127.0.0.1
 tci_port = 50001
-ip = 127.0.0.1
-port = 50001
 
 [MESH]
 enable_protocol = False
 
-[Modem]
-enable_explorer = False
+[MODEM]
 enable_fft = True
 tuning_range_fmax = 50
 tuning_range_fmin = -50
@@ -38,6 +38,5 @@ enable_low_bandwidth_mode = False
 respond_to_cq = True
 rx_buffer_size = 16
 enable_scatter = False
-enable_stats = False
 tx_delay = 0
 

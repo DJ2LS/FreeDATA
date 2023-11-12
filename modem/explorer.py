@@ -9,18 +9,16 @@ Created on 05.11.23
 
 import requests
 import threading
-import time
 import ujson as json
 import structlog
-import static
-from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
-
+from global_instances import HamlibParam, Modem
 
 log = structlog.get_logger("explorer")
 
-
 class explorer():
-    def __init__(self):
+    def __init__(self, config, states):
+        self.config = config
+        self.states = states
         self.explorer_url = "https://api.freedata.app/explorer.php"
         self.publish_interval = 120
 
@@ -36,11 +34,11 @@ class explorer():
 
         frequency = 0 if HamlibParam.hamlib_frequency is None else HamlibParam.hamlib_frequency
         band = "USB"
-        callsign = str(Station.mycallsign, "utf-8")
-        gridsquare = str(Station.mygrid, "utf-8")
+        callsign = str(self.config['STATION']['mycall'], "utf-8")
+        gridsquare = str(self.config['STATION']['mygrid'], "utf-8")
         version = str(Modem.version)
-        bandwidth = str(Modem.low_bandwidth_mode)
-        beacon = str(Beacon.beacon_state)
+        bandwidth = str(self.config['Modem']['low_bandwidth_mode'])
+        beacon = str(self.states.is_beacon_running)
         strength = str(HamlibParam.hamlib_strength)
 
         log.info("[EXPLORER] publish", frequency=frequency, band=band, callsign=callsign, gridsquare=gridsquare, version=version, bandwidth=bandwidth)

@@ -47,7 +47,7 @@ def signal_handler(sig, frame):
 
     """
     print("Closing Modem...")
-    sock.CLOSE_SIGNAL = True
+    deprecated_sock.CLOSE_SIGNAL = True
     sys.exit(0)
 
 
@@ -144,7 +144,7 @@ try:
     # check if we have an int or str as device name
 
     # we need to wait until we got all parameters from argparse first before we can load the other modules
-    import sock
+    import deprecated_sock
 
     try:
         AudioParam.audio_input_device = int(conf.get('AUDIO', 'rx', '0'))
@@ -187,7 +187,7 @@ if my_ssid not in Station.ssid_list:
     Station.ssid_list.append(my_ssid)
 
 # we need to wait until we got all parameters from argparse first before we can load the other modules
-import sock
+import deprecated_sock
 
 # config logging
 try:

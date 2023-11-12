@@ -4,8 +4,6 @@ import helpers
 import time
 import modem
 import base64
-from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
-import sock
 import ujson as json
 
 class broadcastHandler:
@@ -13,7 +11,9 @@ class broadcastHandler:
 
     log = structlog.get_logger("BROADCAST")
 
-    def __init__(self, event_queue) -> None:
+    def __init__(self, config, event_queue) -> None:
+        self.mycallsign = config['STATION']['mycall']
+
         self.fec_wakeup_callsign = bytes()
         self.longest_duration = 6
         self.wakeup_received = False
@@ -83,9 +83,7 @@ class broadcastHandler:
         # and make sure we are not overwrite them if they exist
         try:
             if "mycallsign" not in jsondata:
-                jsondata["mycallsign"] = str(Station.mycallsign, "UTF-8")
-            if "dxcallsign" not in jsondata:
-                jsondata["dxcallsign"] = str(Station.dxcallsign, "UTF-8")
+                jsondata["mycallsign"] = str(self.mycallsign, "UTF-8")
         except Exception as e:
             self.log.debug("[Modem] error adding callsigns to network message", e=e)
 
@@ -94,7 +92,6 @@ class broadcastHandler:
 
         self.log.debug("[Modem] send_data_to_socket_queue:", jsondata=json_data_out)
         # finally push data to our network queue
-        sock.SOCKET_QUEUE.put(json_data_out)
         self.event_queue.put(json_data_out)
 
     def watchdog(self):

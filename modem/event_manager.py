@@ -13,3 +13,8 @@ class EventManager:
         jsondata = {"ptt": str(on)}
         data_out = json.dumps(jsondata)
         self.broadcast(data_out)
+
+    def send_scatter_change(self, data):
+        jsondata = {"scatter": str(data)}
+        data_out = json.dumps(jsondata)
+        self.broadcast(data_out)

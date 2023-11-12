@@ -4,6 +4,7 @@ import modem
 import structlog
 import audio
 import ujson as json
+import explorer
 
 
 class SM:
@@ -23,6 +24,11 @@ class SM:
             target=self.runner, name="runner thread", daemon=True
         )
         runner_thread.start()
+
+        # optionally start explorer module
+        if self.config['STATION']['enable_explorer']:
+           explorer.explorer(self.config, self.states)
+
 
     def runner(self):
         while True:
@@ -52,7 +58,7 @@ class SM:
         if False not in audio_test and None not in audio_test and not self.states.is_modem_running:
             self.log.info("starting modem....")
             self.modem = modem.RF(self.config, self.modem_events, self.modem_fft, self.modem_service, self.states)
-            self.data_handler = data_handler.DATA(self.config, self.modem_events)
+            self.data_handler = data_handler.DATA(self.config, self.modem_events, self.states)
             self.states.set("is_modem_running", True)
             return True
         elif self.states.is_modem_running:

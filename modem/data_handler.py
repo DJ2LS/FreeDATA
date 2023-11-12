@@ -23,7 +23,7 @@ import codec2
 import helpers
 import modem
 import numpy as np
-import sock
+import deprecated_sock
 from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
 import structlog
 import stats
@@ -41,7 +41,7 @@ class DATA:
 
     log = structlog.get_logger("DATA")
 
-    def __init__(self, config, event_queue) -> None:
+    def __init__(self, config, event_queue, states) -> None:
 
         self.stats = stats.stats()
         self.event_queue = event_queue
@@ -111,7 +111,7 @@ class DATA:
         self.rx_n_frames_per_burst = 0
         self.max_n_frames_per_burst = 1
 
-        self.broadcast = broadcast.broadcastHandler(self.event_queue)
+        self.broadcast = broadcast.broadcastHandler(config, self.event_queue)
 
         # Flag to indicate if we received a low bandwidth mode channel opener
         self.received_LOW_BANDWIDTH_MODE = False
@@ -327,9 +327,9 @@ class DATA:
                 # [2] STATE bool
                 if data[2]:
                     self.beacon_interval = data[1]
-                    Beacon.beacon_state = True
+                    self.states.set("is_beacon_running", True)
                 else:
-                    Beacon.beacon_state = False
+                    self.states.set("is_beacon_running", False)
 
             elif data[0] == "ARQ_RAW":
                 # [1] DATA_OUT bytes
@@ -2772,7 +2772,7 @@ class DATA:
         try:
             while True:
                 threading.Event().wait(0.5)
-                while Beacon.beacon_state:
+                while self.states.is_beacon_runining:
                     if (
                             not ARQ.arq_session
                             and not self.arq_file_transfer
@@ -2811,7 +2811,7 @@ class DATA:
                     self.beacon_interval_timer = time.time() + self.beacon_interval
                     while (
                             time.time() < self.beacon_interval_timer
-                            and Beacon.beacon_state
+                            and self.states.is_beacon_runining
                             and not Beacon.beacon_pause
                     ):
                         threading.Event().wait(0.01)

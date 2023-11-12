@@ -8,11 +8,9 @@ Created on 05.11.23
 # pylint: disable=import-outside-toplevel, attribute-defined-outside-init
 
 import requests
-import threading
-import time
 import ujson as json
 import structlog
-from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, TCIParam, Modem
+from global_instances import ARQ, HamlibParam, Station, Modem
 
 log = structlog.get_logger("stats")
 

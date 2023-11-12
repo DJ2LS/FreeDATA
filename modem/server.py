@@ -9,6 +9,8 @@ import queue
 import server_commands
 import service_manager
 import state_manager
+import explorer
+
 
 app = Flask(__name__)
 CORS(app)
@@ -41,15 +43,11 @@ app.modem_service = queue.Queue() # start / stop modem service
 # init state manager
 app.states = state_manager.STATES(app.state_queue)
 
-print(app.states.testvalue)
-app.states.set("testvalue", "holla")
-
 # start service manager
 service_manager.SM(app)
 
 # start modem service
 app.modem_service.put("start")
-
 
 # returns a standard API response
 def api_response(data):
