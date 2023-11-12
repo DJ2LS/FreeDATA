@@ -76,11 +76,11 @@ class RF:
         self.rx_audio_level = config['AUDIO']['rx_audio_level']
         self.tx_audio_level = config['AUDIO']['tx_audio_level']
         self.enable_audio_auto_tune = config['AUDIO']['enable_auto_tune']
-        self.enable_fft = config['Modem']['enable_fft']
-        self.tx_delay = config['Modem']['tx_delay']
+        self.enable_fft = config['MODEM']['enable_fft']
+        self.tx_delay = config['MODEM']['tx_delay']
 
-        self.tuning_range_fmin = config['Modem']['tuning_range_fmin']
-        self.tuning_range_fmax = config['Modem']['tuning_range_fmax']
+        self.tuning_range_fmin = config['MODEM']['tuning_range_fmin']
+        self.tuning_range_fmax = config['MODEM']['tuning_range_fmax']
 
         self.tci_ip = config['TCI']['tci_ip']
         self.tci_port = config['TCI']['tci_port']
