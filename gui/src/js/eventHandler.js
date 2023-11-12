@@ -121,16 +121,42 @@ export function stateDispatcher(data) {
 export function eventDispatcher(data) {
   data = JSON.parse(data);
 
-  // get ptt state as a first test
-  stateStore.ptt_state = data.ptt;
-
-  var message = "";
-  if (data["freedata"] == "modem-message") {
     // break early if we received a dummy callsign
     // thats a kind of hotfix, as long as the modem isnt handling this better
     if (data["dxcallsign"] == "AA0AA-0" || data["dxcallsign"] == "ZZ9YY-0") {
       return;
     }
+
+
+    // get ptt state as a first test
+    stateStore.ptt_state = data.ptt;
+
+    // catch modem related events
+    if (data["freedata"] == "modem-event") {
+
+        switch (data["event"]) {
+          case "start":
+            displayToast("success", "bi-arrow-left-right", "Modem started", 5000);
+            return;
+
+          case "stop":
+            displayToast("success", "bi-arrow-left-right", "Modem stopped", 5000);
+            return;
+
+          case "restart":
+            displayToast("secondary", "bi-bootstrap-reboot", "Modem restarted", 5000);
+            return;
+
+          case "failed":
+            displayToast("danger", "bi-bootstrap-reboot", "Modem startup failed | bad config?", 5000);
+            return;
+        }
+    }
+
+/*
+
+  var message = "";
+  if (data["freedata"] == "modem-message") {
 
     console.log(data);
 
@@ -341,4 +367,5 @@ export function eventDispatcher(data) {
       }
     }
   }
+  */
 }

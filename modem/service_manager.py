@@ -3,6 +3,8 @@ import data_handler
 import modem
 import structlog
 import audio
+import ujson as json
+
 
 class SM:
     def __init__(self, app):
@@ -26,26 +28,54 @@ class SM:
         while True:
             cmd = self.modem_service.get()
             if cmd in ['start'] and not self.modem:
-                audio_test = audio.test_audio_devices(self.config['AUDIO']['input_device'], self.config['AUDIO']['output_device'])
-                print(audio_test)
-                if False not in audio_test and None not in audio_test and not self.states.is_modem_running:
-                    self.log.info("starting modem....")
-                    self.modem = modem.RF(self.config, self.modem_events, self.modem_fft, self.modem_service, self.states)
-                    self.data_handler = data_handler.DATA(self.config, self.modem_events)
-                    self.states.set("is_modem_running", True)
+                self.log.info("------------------ FreeDATA ------------------")
+                self.log.info("------------------  MODEM   ------------------")
+                self.start_modem()
+            elif cmd in ['stop'] and self.modem:
+                self.stop_modem()
+                # we need to wait a bit for avoiding a portaudio crash
+                threading.Event().wait(0.5)
 
-                else:
-                    self.log.warning("starting modem failed", input_test=audio_test[0], output_test=audio_test[1])
-                    self.states.set("is_modem_running", False)
-
+            elif cmd in ['restart']:
+                self.stop_modem()
+                # we need to wait a bit for avoiding a portaudio crash
+                threading.Event().wait(0.5)
+                if self.start_modem():
+                    self.modem_events.put(json.dumps({"freedata": "modem-event", "event": "restart"}))
 
             else:
-                    print("--------------------------------------")
-                    self.log.info("stopping modem....")
-                    del self.modem
-                    del self.data_handler
-                    self.modem = False
-                    self.data_handler = False
-                    self.states.set("is_modem_running", False)
+                self.log.warning("[SVC] modem command processing failed", cmd=cmd, state=self.states.is_modem_running)
 
-            threading.Event().wait(0.5)
+
+    def start_modem(self):
+        audio_test = self.test_audio()
+        if False not in audio_test and None not in audio_test and not self.states.is_modem_running:
+            self.log.info("starting modem....")
+            self.modem = modem.RF(self.config, self.modem_events, self.modem_fft, self.modem_service, self.states)
+            self.data_handler = data_handler.DATA(self.config, self.modem_events)
+            self.states.set("is_modem_running", True)
+            return True
+        elif self.states.is_modem_running:
+            self.log.warning("modem already running")
+            return False
+
+        else:
+            self.log.warning("starting modem failed", input_test=audio_test[0], output_test=audio_test[1])
+            self.states.set("is_modem_running", False)
+            self.modem_events.put(json.dumps({"freedata": "modem-event", "event": "failed"}))
+            return False
+
+    def stop_modem(self):
+        self.log.info("stopping modem....")
+        del self.modem
+        del self.data_handler
+        self.modem = False
+        self.data_handler = False
+        self.states.set("is_modem_running", False)
+
+    def test_audio(self):
+        audio_test = audio.test_audio_devices(self.config['AUDIO']['input_device'],
+                                              self.config['AUDIO']['output_device'])
+        self.log.info("tested audio devices", result=audio_test)
+
+        return audio_test
