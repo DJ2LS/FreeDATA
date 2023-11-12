@@ -197,7 +197,7 @@ def sock_states(sock):
     # it seems we have to keep the logics inside a loop, otherwise connection will be terminated
     client_list.add(sock)
     while True:
-        state = app.states.get()
+        state = app.state_queue.get()
         transmit_sock_data(state)
 
 

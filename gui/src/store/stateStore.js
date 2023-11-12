@@ -25,7 +25,7 @@ export const useStateStore = defineStore("stateStore", () => {
 
   var modem_connection = ref("disconnected");
   var modemStartCount = ref(0);
-  var modem_running_state = ref("--------");
+  var is_modem_running = ref();
 
   var arq_total_bytes = ref(0);
   var arq_transmission_percent = ref(0);
@@ -128,7 +128,7 @@ export const useStateStore = defineStore("stateStore", () => {
     arq_seconds_until_timeout,
     arq_seconds_until_timeout_percent,
     modem_connection,
-    modem_running_state,
+    is_modem_running,
     arq_session_state,
     is_codec2_traffic,
     rf_level,

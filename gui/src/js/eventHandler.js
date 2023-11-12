@@ -20,8 +20,16 @@ import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 
 export function stateDispatcher(data) {
-  if (data["command"] == "modem_state") {
-    //console.log(data)
+    console.log(data)
+
+    if (data["freedata-message"] == "state-change") {
+
+    stateStore.channel_busy = data["channel_busy"];
+    stateStore.is_codec2_traffic = data["is_codec2_traffic"];
+    stateStore.is_modem_running = data["is_modem_running"];
+
+
+    /*
 
     stateStore.rx_buffer_length = data["rx_buffer_length"];
     stateStore.frequency = data["frequency"];
@@ -58,7 +66,6 @@ export function stateDispatcher(data) {
     stateStore.ptt_state = data["ptt_state"];
     stateStore.speed_level = data["speed_level"];
     stateStore.fft = JSON.parse(data["fft"]);
-    stateStore.channel_busy = data["channel_busy"];
     stateStore.channel_busy_slot = data["channel_busy_slot"];
 
     addDataToWaterfall(JSON.parse(data["fft"]));
@@ -96,7 +103,6 @@ export function stateDispatcher(data) {
     stateStore.alc = data["alc"];
     stateStore.rf_level = data["rf_level"];
 
-    stateStore.is_codec2_traffic = data["is_codec2_traffic"];
 
     stateStore.arq_session_state = data["arq_session"];
     stateStore.arq_state = data["arq_state"];
@@ -109,6 +115,7 @@ export function stateDispatcher(data) {
     if (data["speed_list"].length > 0) {
       prepareStatsDataForStore(data["speed_list"]);
     }
+    */
   }
 }
 export function eventDispatcher(data) {
