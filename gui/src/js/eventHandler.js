@@ -20,14 +20,12 @@ import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 
 export function stateDispatcher(data) {
-    console.log(data)
+  console.log(data);
 
-    if (data["freedata-message"] == "state-change") {
-
+  if (data["freedata-message"] == "state-change") {
     stateStore.channel_busy = data["channel_busy"];
     stateStore.is_codec2_traffic = data["is_codec2_traffic"];
     stateStore.is_modem_running = data["is_modem_running"];
-
 
     /*
 
