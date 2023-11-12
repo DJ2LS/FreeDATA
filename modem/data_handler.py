@@ -42,6 +42,7 @@ class DATA:
     log = structlog.get_logger("DATA")
 
     def __init__(self, config, event_queue, states) -> None:
+        self.states = states
 
         self.stats = stats.stats()
         self.event_queue = event_queue
