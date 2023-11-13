@@ -28,7 +28,7 @@ import { startModem, stopModem } from "../js/api";
       data-bs-html="false"
       title="Start the Modem. Please set your audio and radio settings first!"
       @click="startModem"
-      v-bind:class="{ disabled: state.modem_running_state === 'running' }"
+      v-bind:class="{ disabled: state.is_modem_running === true }"
     >
       <i class="bi bi-play-fill"></i>
       <span class="ms-2">start modem</span>
@@ -42,7 +42,7 @@ import { startModem, stopModem } from "../js/api";
       data-bs-html="false"
       title="Stop the Modem."
       @click="stopModem"
-      v-bind:class="{ disabled: state.modem_running_state === 'stopped' }"
+      v-bind:class="{ disabled: state.is_modem_running === false }"
     >
       <i class="bi bi-stop-fill"></i>
       <span class="ms-2">stop modem</span>
@@ -83,7 +83,7 @@ import { startModem, stopModem } from "../js/api";
       id="rx_audio"
       aria-label=".form-select-sm"
       @change="saveModemConfig"
-      v-model="settings.rx_audio"
+      v-model="settings.input_device"
       v-html="audio.getInputDevices()"
     ></select>
   </div>
@@ -96,7 +96,7 @@ import { startModem, stopModem } from "../js/api";
       id="tx_audio"
       aria-label=".form-select-sm"
       @change="saveModemConfig"
-      v-model="settings.tx_audio"
+      v-model="settings.output_device"
       v-html="audio.getOutputDevices()"
     ></select>
   </div>
