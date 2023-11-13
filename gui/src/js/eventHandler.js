@@ -19,8 +19,15 @@ const stateStore = useStateStore(pinia);
 import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 
+export function connectionFailed(endpoint, event){
+   stateStore.modem_connection = "disconnected"
+
+}
 export function stateDispatcher(data) {
   console.log(data);
+
+     stateStore.modem_connection = "connected"
+
 
   if (data["freedata-message"] == "state-change") {
     stateStore.channel_busy = data["channel_busy"];

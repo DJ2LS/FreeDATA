@@ -1,4 +1,4 @@
-import { eventDispatcher, stateDispatcher } from "../js/eventHandler.js";
+import { eventDispatcher, stateDispatcher, connectionFailed } from "../js/eventHandler.js";
 import { addDataToWaterfall } from "../js/waterfallHandler.js";
 
 function connect(endpoint, dispatcher) {
@@ -17,6 +17,7 @@ function connect(endpoint, dispatcher) {
   // handle errors
   socket.addEventListener("error", function (event) {
     console.error("WebSocket error:", event);
+    connectionFailed(endpoint, event)
   });
 
   // handle closing and reconnect
