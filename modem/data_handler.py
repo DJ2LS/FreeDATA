@@ -2773,7 +2773,7 @@ class DATA:
         try:
             while True:
                 threading.Event().wait(0.5)
-                while self.states.is_beacon_runining:
+                while self.states.is_beacon_running:
                     if (
                             not ARQ.arq_session
                             and not self.arq_file_transfer
@@ -2812,7 +2812,7 @@ class DATA:
                     self.beacon_interval_timer = time.time() + self.beacon_interval
                     while (
                             time.time() < self.beacon_interval_timer
-                            and self.states.is_beacon_runining
+                            and self.states.is_beacon_running
                             and not Beacon.beacon_pause
                     ):
                         threading.Event().wait(0.01)
