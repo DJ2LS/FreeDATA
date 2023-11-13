@@ -8,8 +8,6 @@ const settings = useSettingsStore(pinia);
 
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
-
-
 </script>
 
 <template>
@@ -54,10 +52,6 @@ const state = useStateStore(pinia);
       </div>
     </div>
     <div class="card-body p-2 mb-1">
-
-
-
-
       <button
         class="btn btn-secondary btn-sm ms-1 me-1"
         id="updater_channel"

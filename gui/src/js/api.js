@@ -14,7 +14,12 @@ export function getModemConfig() {
 }
 
 export function saveModemConfig() {
-  postToServer(settings.modem_host, settings.modem_port, "config", getModemConfigAsJSON());
+  postToServer(
+    settings.modem_host,
+    settings.modem_port,
+    "config",
+    getModemConfigAsJSON(),
+  );
 }
 
 export function startModem() {
@@ -27,5 +32,4 @@ export function stopModem() {
 
 export function getModemVersion() {
   getFromServer(settings.modem_host, settings.modem_port, "version", null);
-
 }
