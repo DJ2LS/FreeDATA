@@ -41,8 +41,6 @@ function stopAllTransmissions() {
     ></div>
   </div>
 
-
-
   <div class="container-fluid">
     <div class="row">
       <div class="col-sm-auto bg-body-secondary border-end">
@@ -55,7 +53,7 @@ function stopAllTransmissions() {
             role="tablist"
             style="margin-top: 100px"
           >
-          <a
+            <a
               class="btn border btn-outline-secondary list-group-item mb-5"
               data-bs-html="false"
               data-bs-toggle="modal"
@@ -164,7 +162,6 @@ function stopAllTransmissions() {
             >
               <!--beginn of blur div -->
               <!-------------------------------- MAIN AREA ---------------->
-
 
               <!------------------------------------------------------------------------------------------>
               <div class="container">
