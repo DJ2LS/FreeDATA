@@ -31,15 +31,18 @@ onMounted(() => {
   getModemConfig();
   getModemVersion();
   new Modal("#modemCheck", {}).show();
-  if (state.is_modem_running == false) {
-  }
+
 });
 
 function getModemState() {
   // Returns active/inactive if modem is running for modem status label
-  console.log(state.is_modem_running);
   if (state.is_modem_running == true) return "Active";
   else return "Inactive";
+}
+function getNetworkState() {
+  // Returns active/inactive if modem is running for modem status label
+  if (state.modem_connection === "connected") return "Connected";
+  else return "Disconnected";
 }
 </script>
 
@@ -75,7 +78,12 @@ function getModemState() {
                   data-bs-target="#networkStatusCollapse"
                   data-bs-toggle="collapse"
                 >
-                  Network <span class="badge ms-2 bg-success">Connected</span>
+                  Network <span class="badge ms-2 bg-success" :class="
+                      state.modem_connection === 'connected'
+                        ? 'bg-success'
+                        : 'bg-danger'
+                    "
+                    >{{ getNetworkState() }}</span>
                 </button>
               </h2>
               <div
@@ -83,6 +91,32 @@ function getModemState() {
                 class="accordion-collapse collapse"
               >
                 <div class="accordion-body">
+                  <div class="input-group input-group-sm mb-1">
+    <span class="input-group-text" style="width: 180px">Modem port</span>
+    <input
+      type="text"
+      class="form-control"
+      placeholder="modem port"
+      id="modem_port"
+      maxlength="5"
+      max="65534"
+      min="1025"
+      @change="saveModemConfig()"
+      v-model="settings.modem_port"
+    />
+  </div>
+
+  <div class="input-group input-group-sm mb-1">
+    <span class="input-group-text" style="width: 180px">Modem host</span>
+    <input
+      type="text"
+      class="form-control"
+      placeholder="modem host"
+      id="modem_port"
+      @change="saveModemConfig"
+      v-model="settings.modem_host"
+    />
+  </div>
                   Placeholder content for this accordion, which is intended to
                   demonstrate the <code>.accordion-flush</code> class. This is
                   the first item's accordion body.
