@@ -41,6 +41,8 @@ function stopAllTransmissions() {
     ></div>
   </div>
 
+
+
   <div class="container-fluid">
     <div class="row">
       <div class="col-sm-auto bg-body-secondary border-end">
@@ -53,6 +55,15 @@ function stopAllTransmissions() {
             role="tablist"
             style="margin-top: 100px"
           >
+          <a
+              class="btn border btn-outline-secondary list-group-item mb-5"
+              data-bs-html="false"
+              data-bs-toggle="modal"
+              data-bs-target="#modemCheck"
+              title="Check FreeDATA status"
+              ><i class="bi bi-activity h3"></i>
+            </a>
+
             <a
               class="list-group-item list-group-item-dark list-group-item-action border-0 rounded-3 mb-2 active"
               id="list-modem-list"
@@ -154,21 +165,12 @@ function stopAllTransmissions() {
               <!--beginn of blur div -->
               <!-------------------------------- MAIN AREA ---------------->
 
-              <!-- Button trigger modal -->
-              <button
-                type="button"
-                class="btn btn-primary"
-                data-bs-toggle="modal"
-                data-bs-target="#staticBackdrop"
-              >
-                Check Screen
-              </button>
 
               <!------------------------------------------------------------------------------------------>
               <div class="container">
                 <div class="row">
                   <main_active_rig_control />
-                  <main_rig_control />
+                  <!--<main_rig_control />-->
 
                   <div class="col-5">
                     <main_active_audio_level />

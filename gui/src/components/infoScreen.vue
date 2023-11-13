@@ -90,7 +90,7 @@ onMounted(shuffleCards);
 </script>
 
 <template>
-  <infoScreen_updater />
+  <!--<infoScreen_updater />-->
   <div class="container-fluid">
     <div class="row mt-2">
       <hr />
