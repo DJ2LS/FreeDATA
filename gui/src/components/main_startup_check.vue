@@ -45,7 +45,7 @@ import infoScreen_updater from "./infoScreen_updater.vue";
               <div
                 id="flush-collapseOne"
                 class="accordion-collapse collapse"
-                data-bs-parent="#accordionFlushExample"
+                
               >
                 <div class="accordion-body">
                   <infoScreen_updater />
@@ -68,7 +68,7 @@ import infoScreen_updater from "./infoScreen_updater.vue";
               <div
                 id="flush-collapseOne"
                 class="accordion-collapse collapse"
-                data-bs-parent="#accordionFlushExample"
+                
               >
                 <div class="accordion-body">
                   Placeholder content for this accordion, which is intended to
@@ -93,7 +93,7 @@ import infoScreen_updater from "./infoScreen_updater.vue";
               <div
                 id="flush-collapseTwo"
                 class="accordion-collapse collapse"
-                data-bs-parent="#accordionFlushExample"
+                
               >
                 <div class="accordion-body">
                                     <main_audio />
@@ -107,18 +107,18 @@ import infoScreen_updater from "./infoScreen_updater.vue";
                   class="accordion-button collapsed"
                   type="button"
                   data-bs-toggle="collapse"
-                  data-bs-target="#flush-collapseThree"
+                  data-bs-target="#flush-collapseFour"
                   aria-expanded="false"
-                  aria-controls="flush-collapseThree"
+                  aria-controls="flush-collapseFour"
                 >
                   Radio control
                   <span class="badge ms-2 bg-danger">Disconnected</span>
                 </button>
               </h2>
               <div
-                id="flush-collapseThree"
+                id="flush-collapseFour"
                 class="accordion-collapse collapse"
-                data-bs-parent="#accordionFlushExample"
+                
               >
                 <div class="accordion-body">
 
