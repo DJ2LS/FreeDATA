@@ -157,7 +157,7 @@ export function processModemSerialDevices(data) {
 }
 export function processModemVersion(data) {
   //data = JSON.parse(data);
-  stateStore.modem_version=data["version"];
+  stateStore.modem_version = data["version"];
 }
 
 export function getModemConfigAsJSON() {

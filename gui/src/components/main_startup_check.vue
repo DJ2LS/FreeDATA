@@ -65,7 +65,6 @@ function getModemState() {
         </div>
         <div class="modal-body">
           <div class="accordion" id="startupCheckAccordion">
-           
             <!-- Network Section -->
             <div class="accordion-item">
               <h2 class="accordion-header">
@@ -198,8 +197,8 @@ function getModemState() {
                 </div>
               </div>
             </div>
-             <!-- Version Section -->
-             <div class="accordion-item">
+            <!-- Version Section -->
+            <div class="accordion-item">
               <h2 class="accordion-header">
                 <button
                   class="accordion-button collapsed"
@@ -217,20 +216,20 @@ function getModemState() {
               >
                 <div class="accordion-body">
                   <button
-        class="btn btn-secondary btn-sm ms-1 me-1"
-        type="button"
-        disabled
-      >
-        GUI version | {{ version }}
-      </button>
+                    class="btn btn-secondary btn-sm ms-1 me-1"
+                    type="button"
+                    disabled
+                  >
+                    GUI version | {{ version }}
+                  </button>
 
-      <button
-        class="btn btn-secondary btn-sm ms-1 me-1"
-        type="button"
-        disabled
-      >
-        Modem version | {{ state.modem_version }}
-      </button>
+                  <button
+                    class="btn btn-secondary btn-sm ms-1 me-1"
+                    type="button"
+                    disabled
+                  >
+                    Modem version | {{ state.modem_version }}
+                  </button>
                   <infoScreen_updater />
                 </div>
               </div>

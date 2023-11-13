@@ -22,5 +22,4 @@ export function stopModem() {
 
 export function getModemVersion() {
   getFromServer("localhost", 5000, "version", null);
-
 }
