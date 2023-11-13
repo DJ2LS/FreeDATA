@@ -21,7 +21,6 @@ import { sendTestFrame, setTxAudioLevel, setRxAudioLevel } from "../js/sock.js";
 
 import main_startup_check from "./main_startup_check.vue";
 
-
 function tuneAudio() {
   sendTestFrame();
 }
@@ -129,11 +128,7 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
 </script>
 
 <template>
-
-
-<main_startup_check />
-
-
+  <main_startup_check />
 
   <!-- updater release notes-->
   <div

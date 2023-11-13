@@ -3,7 +3,6 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-
 import main_modals from "./main_modals.vue";
 import main_top_navbar from "./main_top_navbar.vue";
 import main_rig_control from "./main_rig_control.vue";
@@ -155,13 +154,15 @@ function stopAllTransmissions() {
               <!--beginn of blur div -->
               <!-------------------------------- MAIN AREA ---------------->
 
-
-
-
-<!-- Button trigger modal -->
-<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-  Check Screen
-</button>
+              <!-- Button trigger modal -->
+              <button
+                type="button"
+                class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#staticBackdrop"
+              >
+                Check Screen
+              </button>
 
               <!------------------------------------------------------------------------------------------>
               <div class="container">
