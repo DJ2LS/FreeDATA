@@ -55,21 +55,7 @@ const state = useStateStore(pinia);
     </div>
     <div class="card-body p-2 mb-1">
 
-      <button
-        class="btn btn-secondary btn-sm ms-1 me-1"
-        type="button"
-        disabled
-      >
-        GUI version | {{ version }}
-      </button>
 
-      <button
-        class="btn btn-secondary btn-sm ms-1 me-1"
-        type="button"
-        disabled
-      >
-        Modem version | {{ state.modem_version }}
-      </button>
 
 
       <button
