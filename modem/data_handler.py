@@ -23,13 +23,12 @@ import codec2
 import helpers
 import modem
 import numpy as np
-import deprecated_sock
-from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
+from global_instances import ARQ, Beacon, HamlibParam, ModemParam, Station, Modem
 import structlog
 import stats
 import ujson as json
 from codec2 import FREEDV_MODE, FREEDV_MODE_USED_SLOTS
-from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT, RX_BUFFER, MESH_RECEIVED_QUEUE
+from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT, RX_BUFFER
 from static import FRAME_TYPE as FR_TYPE
 import broadcast
 
@@ -365,11 +364,12 @@ class DATA:
             # [0] bytes
             # [1] freedv instance
             # [2] bytes_per_frame
+            # [3] snr
             self.process_data(
-                bytes_out=data[0], freedv=data[1], bytes_per_frame=data[2]
+                bytes_out=data[0], freedv=data[1], bytes_per_frame=data[2], snr=data[3]
             )
 
-    def process_data(self, bytes_out, freedv, bytes_per_frame: int) -> None:
+    def process_data(self, bytes_out, freedv, bytes_per_frame: int, snr) -> None:
         """
         Process incoming data and decide what to do with the frame.
 
@@ -377,6 +377,7 @@ class DATA:
           bytes_out:
           freedv:
           bytes_per_frame:
+          snr:
 
         Returns:
 
@@ -432,7 +433,6 @@ class DATA:
                 # get snr of received data
                 # FIXME find a fix for this - after moving to classes, this no longer works
                 # snr = self.calculate_snr(freedv)
-                snr = ModemParam.snr
                 self.log.debug("[Modem] RX SNR", snr=snr)
                 # send payload data to arq checker without CRC16
                 self.arq_data_received(
@@ -826,7 +826,7 @@ class DATA:
 
                 # calculate statistics
                 self.calculate_transfer_rate_rx(
-                    self.rx_start_of_transmission, len(ARQ.rx_frame_buffer)
+                    self.rx_start_of_transmission, len(ARQ.rx_frame_buffer), snr
                 )
 
                 # send a network message with information
@@ -843,36 +843,6 @@ class DATA:
                     finished=ARQ.arq_seconds_until_finish,
                     irs=helpers.bool_to_string(self.is_IRS)
                 )
-
-        # elif self.rx_n_frame_of_burst == self.rx_n_frames_per_burst:
-        #    # We have "Nones" in our rx buffer,
-        #    # Check if we received last frame of burst - this is an indicator for missed frames.
-        #    # With this way of doing this, we always MUST receive the last
-        #    # frame of a burst otherwise the entire burst is lost
-        #    # TODO See if a timeout on the send side with re-transmit last burst would help.
-        #    self.log.debug(
-        #        "[Modem] last frames of burst received:",
-        #        frame=self.rx_n_frame_of_burst,
-        #        frames=self.rx_n_frames_per_burst,
-        #
-        #    )
-        #    self.calculate_transfer_rate_rx(
-        #        self.rx_start_of_transmission, len(ARQ.rx_frame_buffer)
-        #    )
-
-        # elif self.rx_n_frame_of_burst not in [self.rx_n_frames_per_burst - 1]:
-        #    self.log.info(
-        #        "[Modem] data_handler: received burst",
-        #        frame=self.rx_n_frame_of_burst + 1,
-        #        frames=self.rx_n_frames_per_burst,
-        #    )
-
-        # else:
-        #    self.log.error(
-        #        "[Modem] data_handler: Should not reach this point...",
-        #        frame=self.rx_n_frame_of_burst + 1,
-        #        frames=self.rx_n_frames_per_burst,
-        #    )
         else:
             self.log.warning(
                 "[Modem] data_handler: missing data in burst buffer...",
@@ -889,7 +859,7 @@ class DATA:
         # get total bytes per transmission information as soon we received a frame with a BOF
 
         if bof_position >= 0:
-            self.arq_extract_statistics_from_data_frame(bof_position, eof_position)
+            self.arq_extract_statistics_from_data_frame(bof_position, eof_position, snr)
         if (
                 bof_position >= 0
                 and eof_position > 0
@@ -955,7 +925,6 @@ class DATA:
                     e="wrong crc",
                     expected=data_frame_crc.hex(),
                     received=data_frame_crc_received.hex(),
-                    overflows=AudioParam.buffer_overflow_counter,
                     nacks=self.frame_nack_counter,
                     duration=duration,
                     bytesperminute=ARQ.bytes_per_minute,
@@ -976,7 +945,7 @@ class DATA:
             # Finally cleanup our buffers and states,
             self.arq_cleanup()
 
-    def arq_extract_statistics_from_data_frame(self, bof_position, eof_position):
+    def arq_extract_statistics_from_data_frame(self, bof_position, eof_position, snr):
         payload = ARQ.rx_frame_buffer[
                   bof_position + len(self.data_frame_bof): eof_position
                   ]
@@ -987,7 +956,7 @@ class DATA:
         compression_factor = np.clip(compression_factor, 0, 255)
         ARQ.arq_compression_factor = compression_factor / 10
         self.calculate_transfer_rate_rx(
-            self.rx_start_of_transmission, len(ARQ.rx_frame_buffer)
+            self.rx_start_of_transmission, len(ARQ.rx_frame_buffer), snr
         )
 
     def check_if_mode_fits_to_busy_slot(self):
@@ -1018,13 +987,13 @@ class DATA:
             # make sure new speed level isn't higher than available modes
             new_speed_level = min(self.speed_level + 1, len(self.mode_list) - 1)
             # check if actual snr is higher than minimum snr for next mode
-            if ModemParam.snr >= self.snr_list[new_speed_level]:
+            if snr >= self.snr_list[new_speed_level]:
                 self.speed_level = new_speed_level
 
 
             else:
                 self.log.info("[Modem] ARQ | increasing speed level not possible because of SNR limit",
-                              given_snr=ModemParam.snr,
+                              given_snr=snr,
                               needed_snr=self.snr_list[new_speed_level]
                               )
 
@@ -1040,7 +1009,7 @@ class DATA:
         self.log.debug(
             "[Modem] calculated speed level",
             speed_level=self.speed_level,
-            given_snr=ModemParam.snr,
+            given_snr=snr,
             min_snr=self.snr_list[self.speed_level],
         )
 
@@ -1055,7 +1024,7 @@ class DATA:
 
         duration = time.time() - self.rx_start_of_transmission
         self.calculate_transfer_rate_rx(
-            self.rx_start_of_transmission, len(ARQ.rx_frame_buffer)
+            self.rx_start_of_transmission, len(ARQ.rx_frame_buffer), snr
         )
         self.log.info("[Modem] ARQ | RX | DATA FRAME SUCCESSFULLY RECEIVED", nacks=self.frame_nack_counter,
                       bytesperminute=ARQ.bytes_per_minute, total_bytes=ARQ.total_bytes, duration=duration, hmac_signed=signed)
@@ -1189,7 +1158,7 @@ class DATA:
         self.send_data_ack_frame(snr)
         # Update statistics AFTER the frame ACK is sent
         self.calculate_transfer_rate_rx(
-            self.rx_start_of_transmission, len(ARQ.rx_frame_buffer)
+            self.rx_start_of_transmission, len(ARQ.rx_frame_buffer), snr
         )
 
         self.log.info(
@@ -1437,7 +1406,6 @@ class DATA:
                     "[Modem] ATTEMPT:",
                     retry=self.tx_n_retry_of_burst,
                     maxretries=self.tx_n_max_retries_per_burst,
-                    overflows=AudioParam.buffer_overflow_counter,
                 )
 
             # update buffer position
@@ -1511,8 +1479,6 @@ class DATA:
             BytesPerMinute=ARQ.bytes_per_minute,
             total_bytes=ARQ.total_bytes,
             BitsPerSecond=ARQ.arq_bits_per_second,
-            overflows=AudioParam.buffer_overflow_counter,
-
         )
 
         # finally do an arq cleanup
@@ -1538,13 +1504,11 @@ class DATA:
         )
 
         self.log.info(
-            "[Modem] ARQ | TX | TRANSMISSION FAILED OR TIME OUT!",
-            overflows=AudioParam.buffer_overflow_counter,
-        )
+            "[Modem] ARQ | TX | TRANSMISSION FAILED OR TIME OUT!")
 
         self.stop_transmission()
 
-    def burst_ack_nack_received(self, data_in: bytes) -> None:
+    def burst_ack_nack_received(self, data_in: bytes, snr) -> None:
         """
         Received an ACK/NACK for a transmitted frame, keep track and
         make adjustments to speed level if needed.
@@ -1562,7 +1526,7 @@ class DATA:
                 self.dxcallsign,
                 Station.dxgrid,
                 "DATA",
-                ModemParam.snr,
+                snr,
                 ModemParam.frequency_offset,
                 HamlibParam.hamlib_frequency,
             )
@@ -1607,7 +1571,7 @@ class DATA:
             ARQ.arq_speed_level = self.speed_level
 
     def frame_ack_received(
-            self, data_in: bytes  # pylint: disable=unused-argument
+            self, data_in: bytes, snr  # pylint: disable=unused-argument,
     ) -> None:
         """Received an ACK for a transmitted frame"""
         # Process data only if we are in ARQ and BUSY state
@@ -1617,7 +1581,7 @@ class DATA:
                 Station.dxcallsign,
                 Station.dxgrid,
                 "DATA",
-                ModemParam.snr,
+                snr,
                 ModemParam.frequency_offset,
                 HamlibParam.hamlib_frequency,
             )
@@ -1628,7 +1592,7 @@ class DATA:
             self.arq_session_last_received = int(time.time())
 
     def frame_nack_received(
-            self, data_in: bytes  # pylint: disable=unused-argument
+            self, data_in: bytes, snr  # pylint: disable=unused-argument
     ) -> None:
         """
         Received a NACK for a transmitted frame
@@ -1655,7 +1619,7 @@ class DATA:
             Station.dxcallsign,
             Station.dxgrid,
             "DATA",
-            ModemParam.snr,
+            snr,
             ModemParam.frequency_offset,
             HamlibParam.hamlib_frequency,
         )
@@ -1678,7 +1642,7 @@ class DATA:
 
         self.arq_cleanup()
 
-    def burst_rpt_received(self, data_in: bytes):
+    def burst_rpt_received(self, data_in: bytes, snr):
         """
         Repeat request frame received for transmitted frame
 
@@ -1694,7 +1658,7 @@ class DATA:
             Station.dxcallsign,
             Station.dxgrid,
             "DATA",
-            ModemParam.snr,
+            snr,
             ModemParam.frequency_offset,
             HamlibParam.hamlib_frequency,
         )
@@ -1881,7 +1845,7 @@ class DATA:
         )
         return True
 
-    def received_session_opener(self, data_in: bytes) -> None:
+    def received_session_opener(self, data_in: bytes, snr) -> None:
         """
         Received a session open request packet.
 
@@ -1919,7 +1883,7 @@ class DATA:
             Station.dxcallsign,
             Station.dxgrid,
             "DATA",
-            ModemParam.snr,
+            snr,
             ModemParam.frequency_offset,
             HamlibParam.hamlib_frequency,
         )
@@ -1976,7 +1940,7 @@ class DATA:
             modem.MODEM_TRANSMIT_QUEUE.put(["morse", 1, 0, self.mycallsign])
         self.arq_cleanup()
 
-    def received_session_close(self, data_in: bytes):
+    def received_session_close(self, data_in: bytes, snr):
         """
         Closes the session when a close session frame is received and
         the DXCALLSIGN_CRC matches the remote station participating in the session.
@@ -1997,7 +1961,7 @@ class DATA:
                 Station.dxcallsign,
                 Station.dxgrid,
                 "DATA",
-                ModemParam.snr,
+                snr,
                 ModemParam.frequency_offset,
                 HamlibParam.hamlib_frequency,
             )
@@ -2043,7 +2007,7 @@ class DATA:
 
         self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
 
-    def received_session_heartbeat(self, data_in: bytes) -> None:
+    def received_session_heartbeat(self, data_in: bytes, snr) -> None:
         """
         Received an ARQ session heartbeat, record and update state accordingly.
         Args:
@@ -2060,7 +2024,7 @@ class DATA:
                 self.dxcallsign,
                 Station.dxgrid,
                 "SESSION-HB",
-                ModemParam.snr,
+                snr,
                 ModemParam.frequency_offset,
                 HamlibParam.hamlib_frequency,
             )
@@ -2269,7 +2233,7 @@ class DATA:
         # `data_channel_max_retries` attempts have been sent. Aborting attempt & cleaning up
         return False
 
-    def arq_received_data_channel_opener(self, data_in: bytes):
+    def arq_received_data_channel_opener(self, data_in: bytes, snr):
         """
         Received request to open data channel frame
 
@@ -2366,7 +2330,7 @@ class DATA:
 
         # calculate initial speed level in correlation to latest known SNR
         for i in range(len(self.mode_list)):
-            if ModemParam.snr >= self.snr_list[i]:
+            if snr >= self.snr_list[i]:
                 self.speed_level = i
 
         # check if speed level fits to busy condition
@@ -2380,7 +2344,7 @@ class DATA:
             Station.dxcallsign,
             Station.dxgrid,
             "DATA",
-            ModemParam.snr,
+            snr,
             ModemParam.frequency_offset,
             HamlibParam.hamlib_frequency,
         )
@@ -2443,7 +2407,7 @@ class DATA:
             + str(self.dxcallsign, "UTF-8")
             + "]",
             bandwidth="wide",
-            snr=ModemParam.snr,
+            snr=snr,
         )
 
         # set start of transmission for our statistics
@@ -2455,7 +2419,7 @@ class DATA:
         self.data_channel_last_received = int(time.time())
         self.burst_last_received = int(time.time() + 10)  # we might need some more time so lets increase this
 
-    def arq_received_channel_is_open(self, data_in: bytes) -> None:
+    def arq_received_channel_is_open(self, data_in: bytes, snr) -> None:
         """
         Called if we received a data channel opener
         Args:
@@ -2494,7 +2458,7 @@ class DATA:
                 Station.dxcallsign,
                 Station.dxgrid,
                 "DATA",
-                ModemParam.snr,
+                snr,
                 ModemParam.frequency_offset,
                 HamlibParam.hamlib_frequency,
             )
@@ -2505,7 +2469,7 @@ class DATA:
                 + "]>>|<<["
                 + str(self.dxcallsign, "UTF-8")
                 + "]",
-                snr=ModemParam.snr,
+                snr=snr,
             )
 
             # as soon as we set ARQ_STATE to True, transmission starts
@@ -2566,7 +2530,6 @@ class DATA:
             ping="transmitting",
             dxcallsign=str(dxcallsign, "UTF-8"),
             mycallsign=str(mycallsign, "UTF-8"),
-            snr=str(ModemParam.snr),
         )
         self.log.info(
             "[Modem] PING REQ ["
@@ -2588,7 +2551,7 @@ class DATA:
         else:
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.sig0.value)
 
-    def received_ping(self, data_in: bytes) -> None:
+    def received_ping(self, data_in: bytes, snr) -> None:
         """
         Called if we received a ping
 
@@ -2614,7 +2577,7 @@ class DATA:
             + "] <<< ["
             + str(dxcallsign, "UTF-8")
             + "]",
-            snr=ModemParam.snr,
+            snr=snr,
         )
 
         Station.dxgrid = b'------'
@@ -2622,7 +2585,7 @@ class DATA:
             dxcallsign,
             Station.dxgrid,
             "PING",
-            ModemParam.snr,
+            snr,
             ModemParam.frequency_offset,
             HamlibParam.hamlib_frequency,
         )
@@ -2635,12 +2598,12 @@ class DATA:
             dxgrid=str(Station.dxgrid, "UTF-8"),
             dxcallsign=str(dxcallsign, "UTF-8"),
             mycallsign=str(mycallsign, "UTF-8"),
-            snr=str(ModemParam.snr),
+            snr=str(snr),
         )
         if Modem.respond_to_call:
-            self.transmit_ping_ack()
+            self.transmit_ping_ack(snr)
 
-    def transmit_ping_ack(self):
+    def transmit_ping_ack(self, snr):
         """
 
         transmit a ping ack frame
@@ -2651,14 +2614,14 @@ class DATA:
         ping_frame[1:4] = Station.dxcallsign_crc
         ping_frame[4:7] = Station.mycallsign_crc
         ping_frame[7:11] = helpers.encode_grid(self.mygrid)
-        ping_frame[13:14] = helpers.snr_to_bytes(ModemParam.snr)
+        ping_frame[13:14] = helpers.snr_to_bytes(snr)
 
         if Modem.enable_fsk:
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.sig0.value)
 
-    def received_ping_ack(self, data_in: bytes) -> None:
+    def received_ping_ack(self, data_in: bytes, snr) -> None:
         """
         Called if a PING ack has been received
         Args:
@@ -2681,11 +2644,11 @@ class DATA:
                 dxgrid=str(Station.dxgrid, "UTF-8"),
                 dxcallsign=str(Station.dxcallsign, "UTF-8"),
                 mycallsign=str(mycallsign, "UTF-8"),
-                snr=str(ModemParam.snr),
+                snr=str(snr),
                 dxsnr=str(dxsnr)
             )
             # combined_snr = own rx snr / snr on dx side
-            combined_snr = f"{ModemParam.snr}/{dxsnr}"
+            combined_snr = f"{snr}/{dxsnr}"
             helpers.add_to_heard_stations(
                 Station.dxcallsign,
                 Station.dxgrid,
@@ -2701,7 +2664,7 @@ class DATA:
                 + "] >|< ["
                 + str(Station.dxcallsign, "UTF-8")
                 + "]",
-                snr=ModemParam.snr,
+                snr=snr,
                 dxsnr=dxsnr,
             )
             Modem.modem_state = "IDLE"
@@ -2712,7 +2675,7 @@ class DATA:
                 + "] ??? ["
                 + str(bytes(data_in[4:7]), "UTF-8")
                 + "]",
-                snr=ModemParam.snr,
+                snr=snr,
             )
 
     def stop_transmission(self) -> None:
@@ -2820,7 +2783,7 @@ class DATA:
         except Exception as err:
             self.log.debug("[Modem] run_beacon: ", exception=err)
 
-    def received_beacon(self, data_in: bytes) -> None:
+    def received_beacon(self, data_in: bytes, snr) -> None:
         """
         Called if we received a beacon
         Args:
@@ -2837,7 +2800,7 @@ class DATA:
             timestamp=int(time.time()),
             dxcallsign=str(beacon_callsign, "UTF-8"),
             dxgrid=str(Station.dxgrid, "UTF-8"),
-            snr=str(ModemParam.snr),
+            snr=str(snr),
         )
 
         self.log.info(
@@ -2846,13 +2809,13 @@ class DATA:
             + "]["
             + str(Station.dxgrid, "UTF-8")
             + "] ",
-            snr=ModemParam.snr,
+            snr=snr,
         )
         helpers.add_to_heard_stations(
             beacon_callsign,
             Station.dxgrid,
             "BEACON",
-            ModemParam.snr,
+            snr,
             ModemParam.frequency_offset,
             HamlibParam.hamlib_frequency,
         )
@@ -2887,7 +2850,7 @@ class DATA:
             self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
 
 
-    def received_cq(self, data_in: bytes) -> None:
+    def received_cq(self, data_in: bytes, snr) -> None:
         """
         Called when we receive a CQ frame
         Args:
@@ -2914,21 +2877,21 @@ class DATA:
             + "]["
             + str(Station.dxgrid, "UTF-8")
             + "] ",
-            snr=ModemParam.snr,
+            snr=snr,
         )
         helpers.add_to_heard_stations(
             dxcallsign,
             Station.dxgrid,
             "CQ CQ CQ",
-            ModemParam.snr,
+            snr,
             ModemParam.frequency_offset,
             HamlibParam.hamlib_frequency,
         )
 
         if Modem.respond_to_cq and Modem.respond_to_call:
-            self.transmit_qrv(dxcallsign)
+            self.transmit_qrv(dxcallsign, snr)
 
-    def transmit_qrv(self, dxcallsign: bytes) -> None:
+    def transmit_qrv(self, dxcallsign: bytes, snr) -> None:
         """
         Called when we send a QRV frame
         Args:
@@ -2957,7 +2920,7 @@ class DATA:
         qrv_frame[:1] = bytes([FR_TYPE.QRV.value])
         qrv_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
         qrv_frame[7:11] = helpers.encode_grid(self.mygrid)
-        qrv_frame[11:12] = helpers.snr_to_bytes(ModemParam.snr)
+        qrv_frame[11:12] = helpers.snr_to_bytes(snr)
 
         if Modem.enable_fsk:
             self.log.info("[Modem] ENABLE FSK", state=Modem.enable_fsk)
@@ -2965,7 +2928,7 @@ class DATA:
         else:
             self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
 
-    def received_qrv(self, data_in: bytes) -> None:
+    def received_qrv(self, data_in: bytes, snr) -> None:
         """
         Called when we receive a QRV frame
         Args:
@@ -2977,14 +2940,14 @@ class DATA:
         Station.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
         dxsnr = helpers.snr_from_bytes(data_in[11:12])
 
-        combined_snr = f"{ModemParam.snr}/{dxsnr}"
+        combined_snr = f"{snr}/{dxsnr}"
 
         self.send_data_to_socket_queue(
             freedata="modem-message",
             qrv="received",
             dxcallsign=str(dxcallsign, "UTF-8"),
             dxgrid=str(Station.dxgrid, "UTF-8"),
-            snr=str(ModemParam.snr),
+            snr=str(snr),
             dxsnr=str(dxsnr)
         )
 
@@ -2994,7 +2957,7 @@ class DATA:
             + "]["
             + str(Station.dxgrid, "UTF-8")
             + "] ",
-            snr=ModemParam.snr,
+            snr=snr,
             dxsnr=dxsnr
         )
         helpers.add_to_heard_stations(
@@ -3008,7 +2971,7 @@ class DATA:
 
 
 
-    def received_is_writing(self, data_in: bytes) -> None:
+    def received_is_writing(self, data_in: bytes, snr) -> None:
         """
         Called when we receive a IS WRITING frame
         Args:
@@ -3052,7 +3015,7 @@ class DATA:
 
     # ------------ CALCULATE TRANSFER RATES
     def calculate_transfer_rate_rx(
-            self, rx_start_of_transmission: float, receivedbytes: int
+            self, rx_start_of_transmission: float, receivedbytes: int, snr
     ) -> list:
         """
         Calculate transfer rate for received data
@@ -3090,7 +3053,7 @@ class DATA:
                 ARQ.arq_seconds_until_finish = int(((ARQ.total_bytes - receivedbytes) / (
                             ARQ.bytes_per_minute * ARQ.arq_compression_factor)) * 60) - 20  # offset because of frame ack/nack
 
-                speed_chart = {"snr": ModemParam.snr, "bpm": ARQ.bytes_per_minute, "timestamp": int(time.time())}
+                speed_chart = {"snr": snr, "bpm": ARQ.bytes_per_minute, "timestamp": int(time.time())}
                 # check if data already in list
                 if speed_chart not in ARQ.speed_list:
                     ARQ.speed_list.append(speed_chart)
@@ -3208,9 +3171,6 @@ class DATA:
         modem.RECEIVE_DATAC4 = False
         # modem.RECEIVE_FSK_LDPC_0 = False
         modem.RECEIVE_FSK_LDPC_1 = False
-
-        # reset buffer overflow counter
-        AudioParam.buffer_overflow_counter = [0, 0, 0, 0, 0]
 
         self.is_IRS = False
         self.burst_nack = False
