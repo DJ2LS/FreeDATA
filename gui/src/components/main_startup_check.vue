@@ -41,11 +41,7 @@ import infoScreen_updater from "./infoScreen_updater.vue";
                   <span class="badge ms-2 bg-warning">Update needed</span>
                 </button>
               </h2>
-              <div
-                id="flush-collapseOne"
-                class="accordion-collapse collapse"
-                
-              >
+              <div id="flush-collapseOne" class="accordion-collapse collapse">
                 <div class="accordion-body">
                   <infoScreen_updater />
                 </div>
@@ -64,11 +60,7 @@ import infoScreen_updater from "./infoScreen_updater.vue";
                   Network <span class="badge ms-2 bg-success">Connected</span>
                 </button>
               </h2>
-              <div
-                id="flush-collapseOne"
-                class="accordion-collapse collapse"
-                
-              >
+              <div id="flush-collapseOne" class="accordion-collapse collapse">
                 <div class="accordion-body">
                   Placeholder content for this accordion, which is intended to
                   demonstrate the <code>.accordion-flush</code> class. This is
@@ -89,11 +81,7 @@ import infoScreen_updater from "./infoScreen_updater.vue";
                   Modem <span class="badge ms-2 bg-success">Running</span>
                 </button>
               </h2>
-              <div
-                id="flush-collapseTwo"
-                class="accordion-collapse collapse"
-                
-              >
+              <div id="flush-collapseTwo" class="accordion-collapse collapse">
                 <div class="accordion-body">
                   <main_audio />
                 </div>
@@ -113,11 +101,7 @@ import infoScreen_updater from "./infoScreen_updater.vue";
                   <span class="badge ms-2 bg-danger">Disconnected</span>
                 </button>
               </h2>
-              <div
-                id="flush-collapseFour"
-                class="accordion-collapse collapse"
-                
-              >
+              <div id="flush-collapseFour" class="accordion-collapse collapse">
                 <div class="accordion-body">
                   <main_rig_control />
                 </div>
