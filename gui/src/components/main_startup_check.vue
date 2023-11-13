@@ -28,18 +28,15 @@ import { getModemConfig } from "../js/api";
 onMounted(() => {
   getModemConfig();
   new Modal("#modemCheck", {}).show();
-  if (state.is_modem_running == false){
-
+  if (state.is_modem_running == false) {
   }
 });
 
-function getModemState(){
+function getModemState() {
   // Returns active/inactive if modem is running for modem status label
-  console.log(state.is_modem_running)
-  if (state.is_modem_running == true)
-    return "Active";
-  else
-    return "Inactive";
+  console.log(state.is_modem_running);
+  if (state.is_modem_running == true) return "Active";
+  else return "Inactive";
 }
 </script>
 
@@ -119,78 +116,81 @@ function getModemState(){
                   data-bs-target="#modemStatusCollapse"
                   data-bs-toggle="collapse"
                 >
-                  Modem <span class="badge ms-2"
-                  :class="state.is_modem_running === true ? 'bg-success' : 'bg-danger'"            
-            >{{ getModemState() }}</span>
+                  Modem
+                  <span
+                    class="badge ms-2"
+                    :class="
+                      state.is_modem_running === true
+                        ? 'bg-success'
+                        : 'bg-danger'
+                    "
+                    >{{ getModemState() }}</span
+                  >
                 </button>
               </h2>
               <div id="modemStatusCollapse" class="accordion-collapse collapse">
                 <div class="accordion-body">
-                 
                   <div class="input-group input-group-sm mb-1">
-                    
                     <label class="input-group-text w-25">Modem control</label>
                     <label class="input-group-text">
-                      
-                    <button
-                    type="button"
-                    id="startModem"
-                    class="btn btn-sm btn-outline-success"
-                    data-bs-toggle="tooltip"
-                    data-bs-trigger="hover"
-                    data-bs-html="false"
-                    title="Start the Modem. Please set your audio and radio settings first!"
-                    @click="startModem"
-                    v-bind:class="{ disabled: state.is_modem_running === true }"
-                    
-                  >
-                    <i class="bi bi-play-fill"></i>
-                    
-                  </button>
-                    </label><label class="input-group-text">
-                  <button
-                    type="button"
-                    id="stopModem"
-                    class="btn btn-sm btn-outline-danger"
-                    data-bs-toggle="tooltip"
-                    data-bs-trigger="hover"
-                    data-bs-html="false"
-                    title="Stop the Modem."
-                    @click="stopModem"
-                    v-bind:class="{ disabled: state.is_modem_running === false }"
-                    
-                  >
-                    <i class="bi bi-stop-fill"></i>
-                   
-                  </button>
-                </label>
+                      <button
+                        type="button"
+                        id="startModem"
+                        class="btn btn-sm btn-outline-success"
+                        data-bs-toggle="tooltip"
+                        data-bs-trigger="hover"
+                        data-bs-html="false"
+                        title="Start the Modem. Please set your audio and radio settings first!"
+                        @click="startModem"
+                        v-bind:class="{
+                          disabled: state.is_modem_running === true,
+                        }"
+                      >
+                        <i class="bi bi-play-fill"></i>
+                      </button> </label
+                    ><label class="input-group-text">
+                      <button
+                        type="button"
+                        id="stopModem"
+                        class="btn btn-sm btn-outline-danger"
+                        data-bs-toggle="tooltip"
+                        data-bs-trigger="hover"
+                        data-bs-html="false"
+                        title="Stop the Modem."
+                        @click="stopModem"
+                        v-bind:class="{
+                          disabled: state.is_modem_running === false,
+                        }"
+                      >
+                        <i class="bi bi-stop-fill"></i>
+                      </button>
+                    </label>
                   </div>
-                    <!-- Audio Input Device -->
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-25">Input device</label>
-    <select
-      class="form-select form-select-sm"
-      id="rx_audio"
-      aria-label=".form-select-sm"
-      @change="saveModemConfig"
-      v-model="settings.input_device"
-      v-html="audio.getInputDevices()"
-    ></select>
-  </div>
+                  <!-- Audio Input Device -->
+                  <div class="input-group input-group-sm mb-1">
+                    <label class="input-group-text w-25">Input device</label>
+                    <select
+                      class="form-select form-select-sm"
+                      id="rx_audio"
+                      aria-label=".form-select-sm"
+                      @change="saveModemConfig"
+                      v-model="settings.input_device"
+                      v-html="audio.getInputDevices()"
+                    ></select>
+                  </div>
 
-  <!-- Audio Output Device -->
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-25">Output device</label>
-    <select
-      class="form-select form-select-sm"
-      id="tx_audio"
-      aria-label=".form-select-sm"
-      @change="saveModemConfig"
-      v-model="settings.output_device"
-      v-html="audio.getOutputDevices()"
-    ></select>
-  </div>
-        
+                  <!-- Audio Output Device -->
+                  <div class="input-group input-group-sm mb-1">
+                    <label class="input-group-text w-25">Output device</label>
+                    <select
+                      class="form-select form-select-sm"
+                      id="tx_audio"
+                      aria-label=".form-select-sm"
+                      @change="saveModemConfig"
+                      v-model="settings.output_device"
+                      v-html="audio.getOutputDevices()"
+                    ></select>
+                  </div>
                 </div>
               </div>
             </div>
