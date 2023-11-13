@@ -23,7 +23,7 @@ import codec2
 import helpers
 import modem
 import numpy as np
-from global_instances import ARQ, Beacon, HamlibParam, ModemParam, Station, Modem
+from global_instances import ARQ, HamlibParam, ModemParam, Station, Modem
 import structlog
 import stats
 import ujson as json
@@ -48,6 +48,7 @@ class DATA:
 
         self.mycallsign = config['STATION']['mycall']
         self.mygrid = config['STATION']['mygrid']
+
         self.dxcallsign = Station.dxcallsign
 
         self.data_queue_transmit = DATA_QUEUE_TRANSMIT
@@ -115,8 +116,13 @@ class DATA:
 
         # Flag to indicate if we received a low bandwidth mode channel opener
         self.received_LOW_BANDWIDTH_MODE = False
+        # flag to indicate if modem running in low bandwidth mode
+        self.low_bandwidth_mode = self.config["MODEM"]["enable_low_bandwidth_mode"]
 
         self.data_channel_max_retries = 15
+
+        # event for checking arq_state_event
+        self.arq_state_event = threading.Event()
 
         # -------------- AVAILABLE MODES START-----------
         # IMPORTANT: LISTS MUST BE OF EQUAL LENGTH
@@ -151,7 +157,7 @@ class DATA:
 
         # Mode list for selecting between low bandwidth ( 500Hz ) and modes with higher bandwidth
         # but ability to fall back to low bandwidth modes if needed.
-        if Modem.low_bandwidth_mode:
+        if self.low_bandwidth_mode:
             # List of codec2 modes to use in "low bandwidth" mode.
             self.mode_list = self.mode_list_low_bw
             # list of times to wait for corresponding mode in seconds
@@ -270,6 +276,7 @@ class DATA:
 
         self.beacon_interval = 0
         self.beacon_interval_timer = 0
+        self.beacon_paused = False
         self.beacon_thread = threading.Thread(
             target=self.run_beacon, name="watchdog", daemon=True
         )
@@ -286,10 +293,10 @@ class DATA:
             # stuck in IRS
             #
             # send transmission queued information once
-            if ARQ.arq_state or ModemParam.is_codec2_traffic:
+            if self.states.is_arq_state or self.states.is_codec2_traffic:
                 self.log.debug(
                     "[Modem] TX DISPATCHER - waiting with processing command ",
-                    arq_state=ARQ.arq_state,
+                    is_arq_state=self.states.is_arq_state,
                 )
 
                 self.send_data_to_socket_queue(
@@ -299,7 +306,7 @@ class DATA:
                 )
 
                 # now stay in while loop until state released
-                while ARQ.arq_state or ModemParam.is_codec2_traffic:
+                while self.states.is_arq_state or self.states.is_codec2_traffic:
                     threading.Event().wait(0.01)
 
                 # and finally sleep some time
@@ -678,15 +685,15 @@ class DATA:
         data_in = bytes(data_in)
 
         # only process data if we are in ARQ and BUSY state else return to quit
-        if not ARQ.arq_state and Modem.modem_state not in ["BUSY"]:
-            self.log.warning("[Modem] wrong modem state - dropping data", arq_state=ARQ.arq_state,
+        if not self.states.is_arq_state and Modem.modem_state not in ["BUSY"]:
+            self.log.warning("[Modem] wrong modem state - dropping data", is_arq_state=self.states.is_arq_state,
                              modem_state=Modem.modem_state)
             return
 
         self.arq_file_transfer = True
 
         Modem.modem_state = "BUSY"
-        ARQ.arq_state = True
+        self.states.set("is_arq_state", True)
 
         # Update data_channel timestamp
         self.data_channel_last_received = int(time.time())
@@ -1254,7 +1261,7 @@ class DATA:
         bufferposition_burst_start = 0
 
         # Iterate through data_out buffer
-        while not self.data_frame_ack_received and ARQ.arq_state:
+        while not self.data_frame_ack_received and self.states.is_arq_state:
             # we have self.tx_n_max_retries_per_burst attempts for sending a burst
             for self.tx_n_retry_of_burst in range(self.tx_n_max_retries_per_burst):
                 # Bound speed level to:
@@ -1351,7 +1358,7 @@ class DATA:
 
                 # After transmission finished, wait for an ACK or RPT frame
                 while (
-                        ARQ.arq_state
+                        self.states.is_arq_state
                         and not self.burst_ack
                         and not self.burst_nack
                         and not self.rpt_request_received
@@ -1391,8 +1398,8 @@ class DATA:
 
 
                 # We need this part for leaving the repeat loop
-                # ARQ.arq_state == "DATA" --> when stopping transmission manually
-                if not ARQ.arq_state:
+                # self.states.is_arq_state == "DATA" --> when stopping transmission manually
+                if not self.states.is_arq_state:
                     self.log.debug(
                         "[Modem] arq_transmit: ARQ State changed to FALSE. Breaking retry loop."
                     )
@@ -1520,7 +1527,7 @@ class DATA:
 
         """
         # Process data only if we are in ARQ and BUSY state
-        if ARQ.arq_state:
+        if self.states.is_arq_state:
             Station.dxgrid = b'------'
             helpers.add_to_heard_stations(
                 self.dxcallsign,
@@ -1575,7 +1582,7 @@ class DATA:
     ) -> None:
         """Received an ACK for a transmitted frame"""
         # Process data only if we are in ARQ and BUSY state
-        if ARQ.arq_state:
+        if self.states.is_arq_state:
             Station.dxgrid = b'------'
             helpers.add_to_heard_stations(
                 Station.dxcallsign,
@@ -1651,7 +1658,7 @@ class DATA:
 
         """
         # Only process data if we are in ARQ and BUSY state
-        if not ARQ.arq_state or Modem.modem_state != "BUSY":
+        if not self.states.is_arq_state or Modem.modem_state != "BUSY":
             return
         Station.dxgrid = b'------'
         helpers.add_to_heard_stations(
@@ -1715,7 +1722,7 @@ class DATA:
             + "]>> <<["
             + str(self.dxcallsign, "UTF-8")
             + "]",
-            state=ARQ.arq_session_state,
+            self.states.arq_session_state,
         )
 
         # wait if  we have a channel busy condition
@@ -1727,7 +1734,7 @@ class DATA:
         # wait until data channel is open
         while not ARQ.arq_session and not self.arq_session_timeout:
             threading.Event().wait(0.01)
-            ARQ.arq_session_state = "connecting"
+            self.states.set("arq_session_state", "connecting")
             self.send_data_to_socket_queue(
                 freedata="modem-message",
                 arq="session",
@@ -1735,8 +1742,8 @@ class DATA:
                 mycallsign=str(self.mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
-        if ARQ.arq_session and ARQ.arq_session_state == "connected":
-            # ARQ.arq_session_state = "connected"
+        if ARQ.arq_session and self.states.arq_session_state == "connected":
+            # self.states.set("arq_session_state", "connected")
             self.send_data_to_socket_queue(
                 freedata="modem-message",
                 arq="session",
@@ -1754,9 +1761,9 @@ class DATA:
             + "]",
             attempts=self.session_connect_max_retries,  # Adjust for 0-based for user display
             reason="maximum connection attempts reached",
-            state=ARQ.arq_session_state,
+            state=self.states.arq_session_state,
         )
-        ARQ.arq_session_state = "failed"
+        self.states.set("arq_session_state", "failed")
         self.send_data_to_socket_queue(
             freedata="modem-message",
             arq="session",
@@ -1776,7 +1783,7 @@ class DATA:
             False if the session open request failed
         """
         self.IS_ARQ_SESSION_MASTER = True
-        ARQ.arq_session_state = "connecting"
+        self.states.set("arq_session_state", "connecting")
 
         # create a random session id
         self.session_id = np.random.bytes(1)
@@ -1798,7 +1805,7 @@ class DATA:
                     + str(self.dxcallsign, "UTF-8")
                     + "]",
                     a=f"{str(attempt + 1)}/{str(self.session_connect_max_retries)}",
-                    state=ARQ.arq_session_state,
+                    state=self.states.arq_session_state,
                 )
 
                 self.send_data_to_socket_queue(
@@ -1823,7 +1830,7 @@ class DATA:
                         return True
 
                     # Stop waiting and interrupt if data channel is getting closed while opening
-                    if ARQ.arq_session_state == "disconnecting":
+                    if self.states.arq_session_state == "disconnecting":
                         # disabled this session close as its called twice
                         # self.close_session()
                         return False
@@ -1865,7 +1872,7 @@ class DATA:
             return False
 
         self.IS_ARQ_SESSION_MASTER = False
-        ARQ.arq_session_state = "connecting"
+        self.states.set("arq_session_state", "connecting")
 
         # Update arq_session timestamp
         self.arq_session_last_received = int(time.time())
@@ -1893,7 +1900,7 @@ class DATA:
             + "]>>|<<["
             + str(self.dxcallsign, "UTF-8")
             + "]",
-            state=ARQ.arq_session_state,
+            self.states.arq_session_state,
         )
         ARQ.arq_session = True
         Modem.modem_state = "BUSY"
@@ -1909,7 +1916,7 @@ class DATA:
 
     def close_session(self) -> None:
         """Close the ARQ session"""
-        ARQ.arq_session_state = "disconnecting"
+        self.states.set("arq_session_state", "disconnecting")
 
         self.log.info(
             "[Modem] SESSION ["
@@ -1917,7 +1924,7 @@ class DATA:
             + "]<<X>>["
             + str(self.dxcallsign, "UTF-8")
             + "]",
-            state=ARQ.arq_session_state,
+            self.states.arq_session_state,
         )
 
         self.send_data_to_socket_queue(
@@ -1954,8 +1961,8 @@ class DATA:
         # Close the session if the CRC matches the remote station in static.
         _valid_crc, mycallsign = helpers.check_callsign(self.mycallsign, bytes(data_in[2:5]))
         _valid_session = helpers.check_session_id(self.session_id, bytes(data_in[1:2]))
-        if (_valid_crc or _valid_session) and ARQ.arq_session_state not in ["disconnected"]:
-            ARQ.arq_session_state = "disconnected"
+        if (_valid_crc or _valid_session) and self.states.arq_session_state not in ["disconnected"]:
+            self.states.set("arq_session_state", "disconnected")
             Station.dxgrid = b'------'
             helpers.add_to_heard_stations(
                 Station.dxcallsign,
@@ -1971,7 +1978,7 @@ class DATA:
                 + "]<<X>>["
                 + str(self.dxcallsign, "UTF-8")
                 + "]",
-                state=ARQ.arq_session_state,
+                self.states.arq_session_state,
             )
 
             self.send_data_to_socket_queue(
@@ -1990,7 +1997,7 @@ class DATA:
         """Send ARQ sesion heartbeat while connected"""
         # ARQ.arq_session = True
         # Modem.modem_state = "BUSY"
-        # ARQ.arq_session_state = "connected"
+        # self.states.set("arq_session_state", "connected")
 
         connection_frame = bytearray(self.length_sig0_frame)
         connection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_HB.value])
@@ -2017,7 +2024,7 @@ class DATA:
         # Accept session data if the DXCALLSIGN_CRC matches the station in static or session id.
         _valid_crc, _ = helpers.check_callsign(self.dxcallsign, bytes(data_in[4:7]))
         _valid_session = helpers.check_session_id(self.session_id, bytes(data_in[1:2]))
-        if _valid_crc or _valid_session and ARQ.arq_session_state in ["connected", "connecting"]:
+        if _valid_crc or _valid_session and self.states.arq_session_state in ["connected", "connecting"]:
             self.log.debug("[Modem] Received session heartbeat")
             Station.dxgrid = b'------'
             helpers.add_to_heard_stations(
@@ -2039,7 +2046,7 @@ class DATA:
             )
 
             ARQ.arq_session = True
-            ARQ.arq_session_state = "connected"
+            self.states.set("arq_session_state", "connected")
             Modem.modem_state = "BUSY"
 
             # Update the timeout timestamps
@@ -2054,9 +2061,9 @@ class DATA:
             if (
                     not self.IS_ARQ_SESSION_MASTER
                     and not self.arq_file_transfer
-                    and ARQ.arq_session_state != 'disconnecting'
-                    and ARQ.arq_session_state != 'disconnected'
-                    and ARQ.arq_session_state != 'failed'
+                    and self.states.arq_session_state != 'disconnecting'
+                    and self.states.arq_session_state != 'disconnected'
+                    and self.states.arq_session_state != 'failed'
             ):
                 self.transmit_session_heartbeat()
 
@@ -2106,13 +2113,13 @@ class DATA:
             threading.Event().wait(2.5)
 
         # init arq state event
-        ARQ.arq_state_event = threading.Event()
+        self.arq_state_event = threading.Event()
 
         # finally start the channel opening procedure
         self.arq_open_data_channel(mycallsign)
 
         # if data channel is open, return true else false
-        if ARQ.arq_state_event.is_set():
+        if self.states.is_arq_state_event.is_set():
             # start arq transmission
             self.arq_transmit(data_out, hmac_salt)
             return True
@@ -2178,7 +2185,7 @@ class DATA:
 
         # check if the Modem is running in low bandwidth mode
         # then set the corresponding frametype and build frame
-        if Modem.low_bandwidth_mode:
+        if self.low_bandwidth_mode:
             frametype = bytes([FR_TYPE.ARQ_DC_OPEN_N.value])
             self.log.debug("[Modem] Requesting low bandwidth mode")
         else:
@@ -2213,19 +2220,19 @@ class DATA:
             )
 
             # Let's check if we have a busy channel and if we are not in a running arq session.
-            if ModemParam.channel_busy and not ARQ.arq_state_event.is_set() or ModemParam.is_codec2_traffic:
+            if ModemParam.channel_busy and not self.arq_state_event.is_set() or self.states.is_codec2_traffic:
                 self.channel_busy_handler()
 
             # if channel free, enqueue frame for tx
-            if not ARQ.arq_state_event.is_set():
+            if not self.states.is_arq_state_event.is_set():
                 self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
 
             # wait until timeout or event set
 
             random_wait_time = randrange(int(self.duration_sig1_frame * 10), int(self.datachannel_opening_interval * 10), 1)  / 10
-            ARQ.arq_state_event.wait(timeout=random_wait_time)
+            self.arq_state_event.wait(timeout=random_wait_time)
 
-            if ARQ.arq_state_event.is_set():
+            if self.states.is_arq_state_event.is_set():
                 return True
             if Modem.modem_state in ["IDLE"]:
                 return False
@@ -2263,7 +2270,7 @@ class DATA:
         # Station B already tries connecting to Station A.
         # For avoiding ignoring repeated connect request in case of packet loss
         # we are only ignoring packets in case we are ISS
-        if ARQ.arq_state_event.is_set() and not self.is_IRS:
+        if self.states.is_arq_state_event.is_set() and not self.is_IRS:
             return False
 
         self.is_IRS = True
@@ -2289,7 +2296,7 @@ class DATA:
         # ISS(n) <-> IRS(w)
         # ISS(n) <-> IRS(n)
 
-        if frametype == FR_TYPE.ARQ_DC_OPEN_W.value and not Modem.low_bandwidth_mode:
+        if frametype == FR_TYPE.ARQ_DC_OPEN_W.value and not self.low_bandwidth_mode:
             # ISS(w) <-> IRS(w)
             constellation = "ISS(w) <-> IRS(w)"
             self.received_LOW_BANDWIDTH_MODE = False
@@ -2303,7 +2310,7 @@ class DATA:
             self.mode_list = self.mode_list_low_bw
             self.time_list = self.time_list_low_bw
             self.snr_list = self.snr_list_low_bw
-        elif frametype == FR_TYPE.ARQ_DC_OPEN_N.value and not Modem.low_bandwidth_mode:
+        elif frametype == FR_TYPE.ARQ_DC_OPEN_N.value and not self.low_bandwidth_mode:
             # ISS(n) <-> IRS(w)
             constellation = "ISS(n) <-> IRS(w)"
             self.received_LOW_BANDWIDTH_MODE = True
@@ -2370,13 +2377,13 @@ class DATA:
 
         # Set ARQ State AFTER resetting timeouts
         # this avoids timeouts starting too early
-        ARQ.arq_state = True
+        self.states.set("is_arq_state", True)
         Modem.modem_state = "BUSY"
 
         self.reset_statistics()
 
         # Select the frame type based on the current Modem mode
-        if Modem.low_bandwidth_mode or self.received_LOW_BANDWIDTH_MODE:
+        if self.low_bandwidth_mode or self.received_LOW_BANDWIDTH_MODE:
             frametype = bytes([FR_TYPE.ARQ_DC_OPEN_ACK_N.value])
             self.log.debug("[Modem] Responding with low bandwidth mode")
         else:
@@ -2473,9 +2480,9 @@ class DATA:
             )
 
             # as soon as we set ARQ_STATE to True, transmission starts
-            ARQ.arq_state = True
+            self.states.set("is_arq_state", True)
             # also set the ARQ event
-            ARQ.arq_state_event.set()
+            self.arq_state_event.set()
 
             # Update data_channel timestamp
             self.data_channel_last_received = int(time.time())
@@ -2711,7 +2718,7 @@ class DATA:
         """
         self.log.warning("[Modem] Stopping transmission!")
         Modem.modem_state = "IDLE"
-        ARQ.arq_state = False
+        self.states.set("is_arq_state", False)
         self.send_data_to_socket_queue(
             freedata="modem-message",
             arq="transmission",
@@ -2740,10 +2747,10 @@ class DATA:
                     if (
                             not ARQ.arq_session
                             and not self.arq_file_transfer
-                            and not Beacon.beacon_pause
+                            and not self.beacon_paused
                             #and not ModemParam.channel_busy
                             and Modem.modem_state not in ["BUSY"]
-                            and not ARQ.arq_state
+                            and not self.states.is_arq_state
                     ):
                         self.send_data_to_socket_queue(
                             freedata="modem-message",
@@ -2776,7 +2783,7 @@ class DATA:
                     while (
                             time.time() < self.beacon_interval_timer
                             and self.states.is_beacon_running
-                            and not Beacon.beacon_pause
+                            and not self.beacon_paused
                     ):
                         threading.Event().wait(0.01)
 
@@ -3197,13 +3204,13 @@ class DATA:
             self.mycallsign = self.mycallsign
             self.session_id = bytes(1)
 
-        ARQ.arq_session_state = "disconnected"
+        self.states.set("arq_session_state", "disconnected")
         ARQ.speed_list = []
-        ARQ.arq_state = False
-        ARQ.arq_state_event = threading.Event()
+        self.states.set("is_arq_state", False)
+        self.arq_state_event = threading.Event()
         self.arq_file_transfer = False
 
-        Beacon.beacon_pause = False
+        self.beacon_paused = False
         # reset beacon interval timer for not directly starting beacon after ARQ
         self.beacon_interval_timer = time.time() + self.beacon_interval
 
@@ -3288,8 +3295,8 @@ class DATA:
         # TODO We need to redesign this part for cleaner state handling
         # Return if not ARQ STATE and not ARQ SESSION STATE as they are different use cases
         if (
-                not ARQ.arq_state
-                and ARQ.arq_session_state != "connected"
+                not self.states.is_arq_state
+                and self.states.arq_session_state != "connected"
                 or not self.is_IRS
         ):
             return
@@ -3333,7 +3340,7 @@ class DATA:
         waiting_time = (self.time_list[self.speed_level] * frames_left) + self.duration_sig0_frame + self.channel_busy_timeout + 1
         timeout_percent = 100 - (time_left / waiting_time * 100)
         #timeout_percent = 0
-        if timeout_percent >= 75 and not ModemParam.is_codec2_traffic and not Modem.transmitting:
+        if timeout_percent >= 75 and not self.states.is_codec2_traffic and not Modem.transmitting:
             override = True
         else:
             override = False
@@ -3344,7 +3351,7 @@ class DATA:
         # better wait some more time because data might be important for us
         # reason for this situation can be delays on IRS and ISS, maybe because both had a busy channel condition.
         # Nevertheless, we need to keep timeouts short for efficiency
-        if timeout <= time.time() or modem_error_state and not ModemParam.is_codec2_traffic and not Modem.transmitting or override:
+        if timeout <= time.time() or modem_error_state and not self.states.is_codec2_traffic and not Modem.transmitting or override:
             self.log.warning(
                 "[Modem] Burst decoding error or timeout",
                 attempt=self.n_retries_per_burst,
@@ -3406,7 +3413,7 @@ class DATA:
         DATA CHANNEL
         """
         # and not static.ARQ_SEND_KEEP_ALIVE:
-        if ARQ.arq_state and Modem.modem_state == "BUSY":
+        if self.states.is_arq_state and Modem.modem_state == "BUSY":
             threading.Event().wait(0.01)
             if (
                     self.data_channel_last_received + self.transmission_timeout
@@ -3484,7 +3491,7 @@ class DATA:
                 if (
                         ARQ.arq_session
                         and self.IS_ARQ_SESSION_MASTER
-                        and ARQ.arq_session_state == "connected"
+                        and self.states.arq_session_state == "connected"
                         # and not self.arq_file_transfer
                 ):
                     threading.Event().wait(1)

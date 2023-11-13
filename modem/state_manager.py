@@ -9,6 +9,9 @@ class STATES:
         self.is_codec2_traffic = False
         self.is_modem_running = False
         self.is_beacon_running = False
+        self.is_arq_state = False
+        self.is_arq_session = False
+        self.arq_session_state = 'disconnected'
         self.audio_dbfs = 0
 
     def set(self, key, value):
