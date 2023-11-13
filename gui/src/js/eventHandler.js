@@ -32,6 +32,16 @@ export function stateDispatcher(data) {
     stateStore.channel_busy = data["channel_busy"];
     stateStore.is_codec2_traffic = data["is_codec2_traffic"];
     stateStore.is_modem_running = data["is_modem_running"];
+    stateStore.dbfs_level = data["audio_dbfs"];
+    stateStore.channel_busy_slot = data["channel_busy_slot"];
+    stateStore.beacon_state = data["is_beacon_running"];
+
+/*
+    self.is_arq_state = False
+    self.is_arq_session = False
+    self.arq_session_state = 'disconnected'
+*/
+
 
     /*
 
@@ -66,11 +76,9 @@ export function stateDispatcher(data) {
       setRxAudioLevel(settings.rx_audio_level);
     }
 
-    stateStore.dbfs_level = data["audio_dbfs"];
     stateStore.ptt_state = data["ptt_state"];
     stateStore.speed_level = data["speed_level"];
     stateStore.fft = JSON.parse(data["fft"]);
-    stateStore.channel_busy_slot = data["channel_busy_slot"];
 
     addDataToWaterfall(JSON.parse(data["fft"]));
 
@@ -100,7 +108,6 @@ export function stateDispatcher(data) {
     );
     stateStore.dxcallsign = data["dxcallsign"];
 
-    stateStore.beacon_state = data["beacon_state"];
     stateStore.audio_recording = data["audio_recording"];
 
     stateStore.hamlib_status = data["hamlib_status"];

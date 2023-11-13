@@ -21,9 +21,11 @@ class explorer():
         self.states = states
         self.explorer_url = "https://api.freedata.app/explorer.php"
         self.publish_interval = 120
+        self.enable_explorer = config["STATION"]["enable_explorer"]
 
-        self.interval_thread = threading.Thread(target=self.interval, name="interval", daemon=True)
-        self.interval_thread.start()
+        if self.enable_explorer:
+            self.interval_thread = threading.Thread(target=self.interval, name="interval", daemon=True)
+            self.interval_thread.start()
 
     def interval(self):
         while True:
