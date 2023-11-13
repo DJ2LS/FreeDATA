@@ -1,26 +1,31 @@
 import { getModemConfigAsJSON } from "./settingsHandler.ts";
 import { getFromServer, postToServer } from "./rest.js";
+import { useSettingsStore } from "../store/settingsStore.js";
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
+setActivePinia(pinia);
+const settings = useSettingsStore(pinia);
 
 export function getModemConfig() {
   // fetch Settings
-  getFromServer("localhost", 5000, "config");
-  getFromServer("localhost", 5000, "devices/audio");
-  getFromServer("localhost", 5000, "devices/serial");
+  getFromServer(settings.modem_host, settings.modem_port, "config");
+  getFromServer(settings.modem_host, settings.modem_port, "devices/audio");
+  getFromServer(settings.modem_host, settings.modem_port, "devices/serial");
 }
 
 export function saveModemConfig() {
-  postToServer("localhost", 5000, "config", getModemConfigAsJSON());
+  postToServer(settings.modem_host, settings.modem_port, "config", getModemConfigAsJSON());
 }
 
 export function startModem() {
-  postToServer("localhost", 5000, "modem/start", null);
+  postToServer(settings.modem_host, settings.modem_port, "modem/start", null);
 }
 
 export function stopModem() {
-  postToServer("localhost", 5000, "modem/stop", null);
+  postToServer(settings.modem_host, settings.modem_port, "modem/stop", null);
 }
 
 export function getModemVersion() {
-  getFromServer("localhost", 5000, "version", null);
+  getFromServer(settings.modem_host, settings.modem_port, "version", null);
 
 }
