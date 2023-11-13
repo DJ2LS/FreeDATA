@@ -5,8 +5,16 @@ import {
 } from "../js/eventHandler.js";
 import { addDataToWaterfall } from "../js/waterfallHandler.js";
 
+// ----------------- init pinia stores -------------
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
+setActivePinia(pinia);
+
+import { useSettingsStore } from "../store/settingsStore.js";
+const settings = useSettingsStore(pinia);
+
 function connect(endpoint, dispatcher) {
-  let socket = new WebSocket("ws://localhost:5000/" + endpoint);
+  let socket = new WebSocket("ws://" + settings.modem_host + ":" + settings.modem_port + "/" + endpoint);
 
   // handle opening
   socket.addEventListener("open", function (event) {
