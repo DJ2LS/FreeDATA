@@ -36,12 +36,11 @@ export function stateDispatcher(data) {
     stateStore.channel_busy_slot = data["channel_busy_slot"];
     stateStore.beacon_state = data["is_beacon_running"];
 
-/*
+    /*
     self.is_arq_state = False
     self.is_arq_session = False
     self.arq_session_state = 'disconnected'
 */
-
 
     /*
 
