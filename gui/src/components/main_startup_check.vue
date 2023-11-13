@@ -24,6 +24,8 @@ const state = useStateStore(pinia);
 import { startModem, stopModem } from "../js/api";
 import { getModemConfig } from "../js/api";
 
+import { saveSettingsToFile } from "../js/settingsHandler";
+
 const version = import.meta.env.PACKAGE_VERSION;
 
 // start modemCheck modal once on startup
@@ -105,7 +107,7 @@ function getNetworkState() {
                       maxlength="5"
                       max="65534"
                       min="1025"
-                      @change="saveModemConfig()"
+                      @change="saveSettingsToFile()"
                       v-model="settings.modem_port"
                     />
                   </div>
@@ -119,7 +121,7 @@ function getNetworkState() {
                       class="form-control"
                       placeholder="modem host"
                       id="modem_port"
-                      @change="saveModemConfig"
+                      @change="saveSettingsToFile()"
                       v-model="settings.modem_host"
                     />
                   </div>
