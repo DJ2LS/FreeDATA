@@ -15,23 +15,23 @@ import { postToServer } from "../js/rest.js";
 
 
 function transmitCQ() {
-  postToServer("localhost", 5000, "modem/cqcqcq", null);
+  postToServer(settings.modem_host, settings.modem_port, "modem/cqcqcq", null);
 }
 
 function transmitPing() {
   let command = {"dxcall": (<HTMLInputElement>document.getElementById("dxCall")).value}
-  postToServer("localhost", 5000, "modem/ping_ping", command);
+  postToServer(settings.modem_host, settings.modem_port, "modem/ping_ping", command);
 }
 
 function startStopBeacon() {
   switch (state.beacon_state) {
     case "False":
-        postToServer("localhost", 5000, "modem/beacon", {"enabled": "True"});
+        postToServer(settings.modem_host, settings.modem_port,"modem/beacon", {"enabled": "True"});
 
 
       break;
     case "True":
-        postToServer("localhost", 5000, "modem/beacon", {"enabled": "False"});
+        postToServer(settings.modem_host, settings.modem_port, "modem/beacon", {"enabled": "False"});
 
 
       break;
