@@ -7,8 +7,6 @@ setActivePinia(pinia);
 
 import infoScreen_updater from "./infoScreen_updater.vue";
 
-const version = import.meta.env.PACKAGE_VERSION;
-
 function openWebExternal(url) {
   open(url);
 }

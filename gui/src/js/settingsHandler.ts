@@ -12,6 +12,9 @@ const settings = useSettingsStore(pinia);
 import { useAudioStore } from "../store/audioStore.js";
 const audioStore = useAudioStore(pinia);
 
+import { useStateStore } from "../store/stateStore";
+const stateStore = useStateStore(pinia);
+
 import { postToServer, getFromServer } from "./rest.js";
 
 // ---------------------------------
@@ -55,7 +58,7 @@ if (!fs.existsSync(configFolder)) {
 // create config file if not exists with defaults
 const configDefaultSettings = `{
     "modem_host": "127.0.0.1",
-    "modem_port": 3000,
+    "modem_port": 5000,
     "spectrum": "waterfall",
     "theme": "default",
     "screen_height": 430,
@@ -152,6 +155,10 @@ export function processModemAudioDevices(data) {
 export function processModemSerialDevices(data) {
   settings.serial_devices = data;
 }
+export function processModemVersion(data) {
+  //data = JSON.parse(data);
+  stateStore.modem_version = data["version"];
+}
 
 export function getModemConfigAsJSON() {
   // create json output from settings
@@ -182,7 +189,7 @@ export function getModemConfigAsJSON() {
       tx_delay: settings.tx_delay,
     },
     NETWORK: {
-      modemport: "3000",
+      modemport: "5000",
     },
     RADIO: {
       radiocontrol: settings.radiocontrol,

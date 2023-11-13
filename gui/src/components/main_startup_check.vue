@@ -6,7 +6,7 @@ import main_rig_control from "./main_rig_control.vue";
 import main_audio from "./main_audio.vue";
 import infoScreen_updater from "./infoScreen_updater.vue";
 
-import { saveModemConfig } from "../js/api";
+import { getModemVersion, saveModemConfig } from "../js/api";
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -24,19 +24,24 @@ const state = useStateStore(pinia);
 import { startModem, stopModem } from "../js/api";
 import { getModemConfig } from "../js/api";
 
+const version = import.meta.env.PACKAGE_VERSION;
+
 // start modemCheck modal once on startup
 onMounted(() => {
   getModemConfig();
+  getModemVersion();
   new Modal("#modemCheck", {}).show();
-  if (state.is_modem_running == false) {
-  }
 });
 
 function getModemState() {
   // Returns active/inactive if modem is running for modem status label
-  console.log(state.is_modem_running);
   if (state.is_modem_running == true) return "Active";
   else return "Inactive";
+}
+function getNetworkState() {
+  // Returns active/inactive if modem is running for modem status label
+  if (state.modem_connection === "connected") return "Connected";
+  else return "Disconnected";
 }
 </script>
 
@@ -62,28 +67,6 @@ function getModemState() {
         </div>
         <div class="modal-body">
           <div class="accordion" id="startupCheckAccordion">
-            <!-- Version Section -->
-            <div class="accordion-item">
-              <h2 class="accordion-header">
-                <button
-                  class="accordion-button collapsed"
-                  type="button"
-                  data-bs-target="#versionCheckCollapse"
-                  data-bs-toggle="collapse"
-                >
-                  Version
-                  <span class="badge ms-2 bg-warning">Update needed</span>
-                </button>
-              </h2>
-              <div
-                id="versionCheckCollapse"
-                class="accordion-collapse collapse"
-              >
-                <div class="accordion-body">
-                  <infoScreen_updater />
-                </div>
-              </div>
-            </div>
             <!-- Network Section -->
             <div class="accordion-item">
               <h2 class="accordion-header">
@@ -93,7 +76,16 @@ function getModemState() {
                   data-bs-target="#networkStatusCollapse"
                   data-bs-toggle="collapse"
                 >
-                  Network <span class="badge ms-2 bg-success">Connected</span>
+                  Network
+                  <span
+                    class="badge ms-2 bg-success"
+                    :class="
+                      state.modem_connection === 'connected'
+                        ? 'bg-success'
+                        : 'bg-danger'
+                    "
+                    >{{ getNetworkState() }}</span
+                  >
                 </button>
               </h2>
               <div
@@ -101,6 +93,36 @@ function getModemState() {
                 class="accordion-collapse collapse"
               >
                 <div class="accordion-body">
+                  <div class="input-group input-group-sm mb-1">
+                    <span class="input-group-text" style="width: 180px"
+                      >Modem port</span
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="modem port"
+                      id="modem_port"
+                      maxlength="5"
+                      max="65534"
+                      min="1025"
+                      @change="saveModemConfig()"
+                      v-model="settings.modem_port"
+                    />
+                  </div>
+
+                  <div class="input-group input-group-sm mb-1">
+                    <span class="input-group-text" style="width: 180px"
+                      >Modem host</span
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="modem host"
+                      id="modem_port"
+                      @change="saveModemConfig"
+                      v-model="settings.modem_host"
+                    />
+                  </div>
                   Placeholder content for this accordion, which is intended to
                   demonstrate the <code>.accordion-flush</code> class. This is
                   the first item's accordion body.
@@ -213,6 +235,43 @@ function getModemState() {
               >
                 <div class="accordion-body">
                   <main_rig_control />
+                </div>
+              </div>
+            </div>
+            <!-- Version Section -->
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button
+                  class="accordion-button collapsed"
+                  type="button"
+                  data-bs-target="#versionCheckCollapse"
+                  data-bs-toggle="collapse"
+                >
+                  Version
+                  <span class="badge ms-2 bg-warning">Update needed</span>
+                </button>
+              </h2>
+              <div
+                id="versionCheckCollapse"
+                class="accordion-collapse collapse"
+              >
+                <div class="accordion-body">
+                  <button
+                    class="btn btn-secondary btn-sm ms-1 me-1"
+                    type="button"
+                    disabled
+                  >
+                    GUI version | {{ version }}
+                  </button>
+
+                  <button
+                    class="btn btn-secondary btn-sm ms-1 me-1"
+                    type="button"
+                    disabled
+                  >
+                    Modem version | {{ state.modem_version }}
+                  </button>
+                  <infoScreen_updater />
                 </div>
               </div>
             </div>

@@ -10,7 +10,7 @@ export const useSettingsStore = defineStore("settingsStore", () => {
 
   // network
   var modem_host = ref("127.0.0.1");
-  var modem_port = ref(3000);
+  var modem_port = ref(5000);
   var daemon_host = ref(modem_host.value);
   var daemon_port = ref(modem_port.value + 1);
 
