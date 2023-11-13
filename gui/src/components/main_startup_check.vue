@@ -96,13 +96,11 @@ function getNetworkState() {
               >
                 <div class="accordion-body">
                   <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text" style="width: 180px"
-                      >Modem port</span
-                    >
+                    <span class="input-group-text w-25">Modem port</span>
                     <input
                       type="text"
                       class="form-control"
-                      placeholder="modem port"
+                      placeholder="modem port (def 5000)"
                       id="modem_port"
                       maxlength="5"
                       max="65534"
@@ -113,21 +111,16 @@ function getNetworkState() {
                   </div>
 
                   <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text" style="width: 180px"
-                      >Modem host</span
-                    >
+                    <span class="input-group-text w-25">Modem host</span>
                     <input
                       type="text"
                       class="form-control"
-                      placeholder="modem host"
+                      placeholder="modem host (default 127.0.0.1)"
                       id="modem_port"
                       @change="saveSettingsToFile()"
                       v-model="settings.modem_host"
                     />
                   </div>
-                  Placeholder content for this accordion, which is intended to
-                  demonstrate the <code>.accordion-flush</code> class. This is
-                  the first item's accordion body.
                 </div>
               </div>
             </div>
