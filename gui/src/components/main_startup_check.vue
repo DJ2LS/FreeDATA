@@ -96,9 +96,7 @@ function getNetworkState() {
               >
                 <div class="accordion-body">
                   <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text w-25" 
-                      >Modem port</span
-                    >
+                    <span class="input-group-text w-25">Modem port</span>
                     <input
                       type="text"
                       class="form-control"
@@ -113,9 +111,7 @@ function getNetworkState() {
                   </div>
 
                   <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text w-25"
-                      >Modem host</span
-                    >
+                    <span class="input-group-text w-25">Modem host</span>
                     <input
                       type="text"
                       class="form-control"
@@ -125,7 +121,6 @@ function getNetworkState() {
                       v-model="settings.modem_host"
                     />
                   </div>
-
                 </div>
               </div>
             </div>
