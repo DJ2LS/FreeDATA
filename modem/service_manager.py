@@ -27,8 +27,7 @@ class SM:
 
         # optionally start explorer module
         if self.config['STATION']['enable_explorer']:
-           explorer.explorer(self.config, self.states)
-
+            explorer.explorer(self.config, self.states)
 
     def runner(self):
         while True:

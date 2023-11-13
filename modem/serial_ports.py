@@ -6,7 +6,6 @@ def get_ports():
 
     serial_devices = []
     ports = serial.tools.list_ports.comports()
-    print(ports)
     for port, desc, hwid in ports:
         # calculate hex of hwid if we have unique names
         crc_hwid = crc_algorithm(bytes(hwid, encoding="utf-8"))
