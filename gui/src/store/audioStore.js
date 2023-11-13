@@ -20,14 +20,7 @@ export const useAudioStore = defineStore("audioStore", () => {
     if (inputDevices.value.length > 0) {
       for (var key in inputDevices.value) {
         let selected = "";
-
-        console.log(
-          "AUDIO DEVICES: " +
-            inputDevices.value[key]["id"] +
-            " | " +
-            settings.rx_audio,
-        );
-        if (inputDevices.value[key]["id"] == settings.rx_audio) {
+        if (inputDevices.value[key]["id"] == settings.input_device) {
           selected = "selected";
         } else {
           selected = "";
@@ -45,7 +38,7 @@ export const useAudioStore = defineStore("audioStore", () => {
     if (outputDevices.value.length > 0) {
       for (var key in outputDevices.value) {
         let selected = "";
-        if (outputDevices.value[key]["id"] == settings.tx_audio) {
+        if (outputDevices.value[key]["id"] == settings.output_device) {
           selected = "selected";
         } else {
           selected = "";
