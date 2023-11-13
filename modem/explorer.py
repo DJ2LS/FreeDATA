@@ -34,10 +34,10 @@ class explorer():
 
         frequency = 0 if HamlibParam.hamlib_frequency is None else HamlibParam.hamlib_frequency
         band = "USB"
-        callsign = str(self.config['STATION']['mycall'], "utf-8")
-        gridsquare = str(self.config['STATION']['mygrid'], "utf-8")
+        callsign = str(self.config['STATION']['mycall'])
+        gridsquare = str(self.config['STATION']['mygrid'])
         version = str(Modem.version)
-        bandwidth = str(self.config['Modem']['low_bandwidth_mode'])
+        bandwidth = str(self.config['MODEM']['enable_low_bandwidth_mode'])
         beacon = str(self.states.is_beacon_running)
         strength = str(HamlibParam.hamlib_strength)
 
