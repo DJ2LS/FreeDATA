@@ -117,7 +117,7 @@ class DATA:
         # Flag to indicate if we received a low bandwidth mode channel opener
         self.received_LOW_BANDWIDTH_MODE = False
         # flag to indicate if modem running in low bandwidth mode
-        self.low_bandwidth_mode = self.config["MODEM"]["enable_low_bandwidth_mode"]
+        self.low_bandwidth_mode = config["MODEM"]["enable_low_bandwidth_mode"]
 
         self.data_channel_max_retries = 15
 
