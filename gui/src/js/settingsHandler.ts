@@ -185,11 +185,11 @@ export function getModemConfigAsJSON() {
       enable_low_bandwidth_mode: settings.enable_low_bandwidth_mode,
       respond_to_cq: settings.respond_to_cq,
       rx_buffer_size: settings.rx_buffer_size,
-      enable_scatter: "False",
+      enable_scatter: settings.enable_scatter,
       tx_delay: settings.tx_delay,
     },
     NETWORK: {
-      modemport: "5000",
+      modemport: settings.modem_port,
     },
     RADIO: {
       radiocontrol: settings.radiocontrol,
