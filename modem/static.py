@@ -138,7 +138,7 @@ class TCIParam:
 class Modem:
     version = "0.11.2-alpha.4"
     host: str = "0.0.0.0"
-    port: int = 3000
+    port: int = 5000
     SOCKET_TIMEOUT: int = 1  # seconds
     modem_state: str = "IDLE"
     enable_explorer = False

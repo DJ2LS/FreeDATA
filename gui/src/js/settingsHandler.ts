@@ -58,7 +58,7 @@ if (!fs.existsSync(configFolder)) {
 // create config file if not exists with defaults
 const configDefaultSettings = `{
     "modem_host": "127.0.0.1",
-    "modem_port": 3000,
+    "modem_port": 5000,
     "spectrum": "waterfall",
     "theme": "default",
     "screen_height": 430,
@@ -189,7 +189,7 @@ export function getModemConfigAsJSON() {
       tx_delay: settings.tx_delay,
     },
     NETWORK: {
-      modemport: "3000",
+      modemport: "5000",
     },
     RADIO: {
       radiocontrol: settings.radiocontrol,
