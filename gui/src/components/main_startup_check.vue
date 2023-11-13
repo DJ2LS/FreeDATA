@@ -1,7 +1,6 @@
 <script setup lang="ts">
-
-import { Modal } from 'bootstrap'
-import { onMounted } from 'vue'
+import { Modal } from "bootstrap";
+import { onMounted } from "vue";
 
 import main_rig_control from "./main_rig_control.vue";
 import main_audio from "./main_audio.vue";
@@ -9,13 +8,8 @@ import infoScreen_updater from "./infoScreen_updater.vue";
 
 // start modemCheck modal once on startup
 onMounted(() => {
-    new Modal('#modemCheck', {}).show()
-})
-
-
-
-
-
+  new Modal("#modemCheck", {}).show();
+});
 </script>
 
 <template>
@@ -39,11 +33,6 @@ onMounted(() => {
           ></button>
         </div>
         <div class="modal-body">
-
-
-
-
-
           <div class="accordion" id="startupCheckAccordion">
             <!-- Version Section -->
             <div class="accordion-item">
@@ -54,10 +43,14 @@ onMounted(() => {
                   data-bs-target="#versionCheckCollapse"
                   data-bs-toggle="collapse"
                 >
-                  Version <span class="badge ms-2 bg-warning">Update needed</span>
+                  Version
+                  <span class="badge ms-2 bg-warning">Update needed</span>
                 </button>
               </h2>
-              <div id="versionCheckCollapse" class="accordion-collapse collapse">
+              <div
+                id="versionCheckCollapse"
+                class="accordion-collapse collapse"
+              >
                 <div class="accordion-body">
                   <infoScreen_updater />
                 </div>
@@ -75,7 +68,10 @@ onMounted(() => {
                   Network <span class="badge ms-2 bg-success">Connected</span>
                 </button>
               </h2>
-              <div id="networkStatusCollapse" class="accordion-collapse collapse">
+              <div
+                id="networkStatusCollapse"
+                class="accordion-collapse collapse"
+              >
                 <div class="accordion-body">
                   Placeholder content for this accordion, which is intended to
                   demonstrate the <code>.accordion-flush</code> class. This is
@@ -114,7 +110,10 @@ onMounted(() => {
                   <span class="badge ms-2 bg-danger">Disconnected</span>
                 </button>
               </h2>
-              <div id="radioControlCollapse" class="accordion-collapse collapse">
+              <div
+                id="radioControlCollapse"
+                class="accordion-collapse collapse"
+              >
                 <div class="accordion-body">
                   <main_rig_control />
                 </div>

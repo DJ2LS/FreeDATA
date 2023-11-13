@@ -7,9 +7,6 @@ import { useAudioStore } from "../store/audioStore.js";
 const audio = useAudioStore(pinia);
 
 import { saveModemConfig } from "../js/api";
-
-
-
 </script>
 
 <template>
