@@ -22,7 +22,7 @@ import { saveSettingsToFile } from "../js/settingsHandler";
         Modem Connection {{ state.modem_connection }}
       </span>
       <span class="badge bg-secondary me-4">
-        Modem {{ state.modem_running_state }}
+        Modem {{ state.is_modem_running }}
       </span>
       <span class="badge bg-secondary me-4">
         RIG Control {{ state.rigctld_started }}

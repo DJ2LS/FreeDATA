@@ -6,7 +6,7 @@ import main_rig_control from "./main_rig_control.vue";
 import main_audio from "./main_audio.vue";
 import infoScreen_updater from "./infoScreen_updater.vue";
 
-import { saveModemConfig } from "../js/api";
+import { getModemVersion, saveModemConfig } from "../js/api";
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -24,9 +24,12 @@ const state = useStateStore(pinia);
 import { startModem, stopModem } from "../js/api";
 import { getModemConfig } from "../js/api";
 
+const version = import.meta.env.PACKAGE_VERSION;
+
 // start modemCheck modal once on startup
 onMounted(() => {
   getModemConfig();
+  getModemVersion();
   new Modal("#modemCheck", {}).show();
   if (state.is_modem_running == false){
 
@@ -65,28 +68,7 @@ function getModemState(){
         </div>
         <div class="modal-body">
           <div class="accordion" id="startupCheckAccordion">
-            <!-- Version Section -->
-            <div class="accordion-item">
-              <h2 class="accordion-header">
-                <button
-                  class="accordion-button collapsed"
-                  type="button"
-                  data-bs-target="#versionCheckCollapse"
-                  data-bs-toggle="collapse"
-                >
-                  Version
-                  <span class="badge ms-2 bg-warning">Update needed</span>
-                </button>
-              </h2>
-              <div
-                id="versionCheckCollapse"
-                class="accordion-collapse collapse"
-              >
-                <div class="accordion-body">
-                  <infoScreen_updater />
-                </div>
-              </div>
-            </div>
+           
             <!-- Network Section -->
             <div class="accordion-item">
               <h2 class="accordion-header">
@@ -213,6 +195,43 @@ function getModemState(){
               >
                 <div class="accordion-body">
                   <main_rig_control />
+                </div>
+              </div>
+            </div>
+             <!-- Version Section -->
+             <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button
+                  class="accordion-button collapsed"
+                  type="button"
+                  data-bs-target="#versionCheckCollapse"
+                  data-bs-toggle="collapse"
+                >
+                  Version
+                  <span class="badge ms-2 bg-warning">Update needed</span>
+                </button>
+              </h2>
+              <div
+                id="versionCheckCollapse"
+                class="accordion-collapse collapse"
+              >
+                <div class="accordion-body">
+                  <button
+        class="btn btn-secondary btn-sm ms-1 me-1"
+        type="button"
+        disabled
+      >
+        GUI version | {{ version }}
+      </button>
+
+      <button
+        class="btn btn-secondary btn-sm ms-1 me-1"
+        type="button"
+        disabled
+      >
+        Modem version | {{ state.modem_version }}
+      </button>
+                  <infoScreen_updater />
                 </div>
               </div>
             </div>

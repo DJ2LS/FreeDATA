@@ -10,6 +10,7 @@ import server_commands
 import service_manager
 import state_manager
 import explorer
+from static import Modem as modeminfo
 
 
 app = Flask(__name__)
@@ -147,6 +148,10 @@ def post_modem_stop():
 
     app.modem_service.put("stop")
     return api_response(request.json)
+
+@app.route('/version', methods=['GET'])
+def get_modem_version():
+    return api_response({"version": modeminfo.version})
 
 
 # @app.route('/modem/arq_connect', methods=['POST'])

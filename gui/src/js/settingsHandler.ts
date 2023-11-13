@@ -12,6 +12,9 @@ const settings = useSettingsStore(pinia);
 import { useAudioStore } from "../store/audioStore.js";
 const audioStore = useAudioStore(pinia);
 
+import { useStateStore } from "../store/stateStore";
+const stateStore = useStateStore(pinia);
+
 import { postToServer, getFromServer } from "./rest.js";
 
 // ---------------------------------
@@ -151,6 +154,10 @@ export function processModemAudioDevices(data) {
 
 export function processModemSerialDevices(data) {
   settings.serial_devices = data;
+}
+export function processModemVersion(data) {
+  //data = JSON.parse(data);
+  stateStore.modem_version=data["version"];
 }
 
 export function getModemConfigAsJSON() {

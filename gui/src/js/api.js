@@ -19,3 +19,8 @@ export function startModem() {
 export function stopModem() {
   postToServer("localhost", 5000, "modem/stop", null);
 }
+
+export function getModemVersion() {
+  getFromServer("localhost", 5000, "version", null);
+
+}

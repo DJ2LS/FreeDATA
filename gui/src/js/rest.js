@@ -7,6 +7,7 @@ import {
   processModemAudioDevices,
   processModemSerialDevices,
   getModemConfigAsJSON,
+  processModemVersion,
 } from "../js/settingsHandler.ts";
 
 export async function getFromServer(host, port, endpoint) {
@@ -59,7 +60,9 @@ function restDataDispatcher(endpoint, data) {
     case "devices/serial":
       processModemSerialDevices(data);
       break;
-
+    case "version":
+      processModemVersion(data);
+      break;
     default:
       console.log("Wrong endpoint:" + endpoint);
   }
