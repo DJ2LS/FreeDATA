@@ -2,8 +2,6 @@
 import main_rig_control from "./main_rig_control.vue";
 import main_audio from "./main_audio.vue";
 import infoScreen_updater from "./infoScreen_updater.vue";
-
-
 </script>
 
 <template>
@@ -29,7 +27,7 @@ import infoScreen_updater from "./infoScreen_updater.vue";
         </div>
         <div class="modal-body">
           <div class="accordion" id="accordionFlushExample">
-                      <div class="accordion-item">
+            <div class="accordion-item">
               <h2 class="accordion-header">
                 <button
                   class="accordion-button collapsed"
@@ -39,7 +37,8 @@ import infoScreen_updater from "./infoScreen_updater.vue";
                   aria-expanded="false"
                   aria-controls="flush-collapseOne"
                 >
-                  Version <span class="badge ms-2 bg-warning">Update needed</span>
+                  Version
+                  <span class="badge ms-2 bg-warning">Update needed</span>
                 </button>
               </h2>
               <div
@@ -96,8 +95,7 @@ import infoScreen_updater from "./infoScreen_updater.vue";
                 
               >
                 <div class="accordion-body">
-                                    <main_audio />
-
+                  <main_audio />
                 </div>
               </div>
             </div>
@@ -121,18 +119,16 @@ import infoScreen_updater from "./infoScreen_updater.vue";
                 
               >
                 <div class="accordion-body">
-
-
                   <main_rig_control />
-
-
                 </div>
               </div>
             </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal"> Continue</button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+            Continue
+          </button>
         </div>
       </div>
     </div>
