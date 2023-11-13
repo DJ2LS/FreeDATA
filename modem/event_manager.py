@@ -18,3 +18,8 @@ class EventManager:
         jsondata = {"scatter": str(data)}
         data_out = json.dumps(jsondata)
         self.broadcast(data_out)
+
+    def send_buffer_overflow(self, data):
+        jsondata = {"buffer-overflow": str(data)}
+        data_out = json.dumps(jsondata)
+        self.broadcast(data_out)

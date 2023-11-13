@@ -20,7 +20,7 @@ import codec2
 import itertools
 import numpy as np
 import sounddevice as sd
-from global_instances import AudioParam, HamlibParam, ModemParam, Modem
+from global_instances import HamlibParam, ModemParam, Modem
 from static import FRAME_TYPE
 import structlog
 import tci
@@ -77,6 +77,7 @@ class RF:
         self.tx_audio_level = config['AUDIO']['tx_audio_level']
         self.enable_audio_auto_tune = config['AUDIO']['enable_auto_tune']
         self.enable_fft = config['MODEM']['enable_fft']
+        self.enable_scatter = config['MODEM']['enable_scatter']
         self.tx_delay = config['MODEM']['tx_delay']
 
         self.tuning_range_fmin = config['MODEM']['tuning_range_fmin']
@@ -85,10 +86,9 @@ class RF:
         self.tci_ip = config['TCI']['tci_ip']
         self.tci_port = config['TCI']['tci_port']
 
-
+        self.buffer_overflow_counter = [0, 0, 0, 0, 0, 0, 0, 0]
 
         self.channel_busy_delay = 0
-
 
         self.AUDIO_SAMPLE_RATE_RX = 48000
         self.AUDIO_SAMPLE_RATE_TX = 48000
@@ -382,8 +382,9 @@ class RF:
             x = set_audio_volume(x, self.rx_audio_level)
 
             # audio recording for debugging purposes
-            if AudioParam.audio_record:
-                AudioParam.audio_record_file.writeframes(x)
+            # TODO Find a nice place for this
+            #if AudioParam.audio_record:
+            #    AudioParam.audio_record_file.writeframes(x)
 
             # Avoid decoding when transmitting to reduce CPU
             # TODO Overriding this for testing purposes
@@ -401,7 +402,8 @@ class RF:
                 (self.fsk_ldpc_buffer_1, Modem.enable_fsk, 6),
             ]:
                 if (audiobuffer.nbuffer + length_x) > audiobuffer.size:
-                    AudioParam.buffer_overflow_counter[index] += 1
+                    self.buffer_overflow_counter[index] += 1
+                    self.event_manager.send_buffer_overflow(self.buffer_overflow_counter)
                 elif receive:
                     audiobuffer.push(x)
             # end of "not Modem.transmitting" if block
@@ -875,10 +877,9 @@ class RF:
                                 self.log.debug(
                                     "[MDM] [demod_audio] Pushing received data to received_queue", nbytes=nbytes
                                 )
-
-                                self.modem_received_queue.put([bytes_out, freedv, bytes_per_frame])
+                                snr = self.calculate_snr(freedv)
+                                self.modem_received_queue.put([bytes_out, freedv, bytes_per_frame, snr])
                                 self.get_scatter(freedv)
-                                self.calculate_snr(freedv)
                                 state_buffer = []
                         else:
                             self.log.warning(
@@ -1159,7 +1160,8 @@ class RF:
             # data[0] = bytes_out
             # data[1] = freedv session
             # data[2] = bytes_per_frame
-            DATA_QUEUE_RECEIVED.put([data[0], data[1], data[2]])
+            # data[3] = snr
+            DATA_QUEUE_RECEIVED.put([data[0], data[1], data[2], data[3]])
             self.modem_received_queue.task_done()
 
     def get_frequency_offset(self, freedv: ctypes.c_void_p) -> float:
@@ -1185,7 +1187,7 @@ class RF:
         :param freedv: codec2 instance to query
         :type freedv: ctypes.c_void_p
         """
-        if not ModemParam.enable_scatter:
+        if not self.enable_scatter:
             return
 
         modemStats = codec2.MODEMSTATS()
@@ -1369,14 +1371,11 @@ class RF:
                         rms = int(np.sqrt(np.max(d ** 2)))
                         if rms == 0:
                             raise ZeroDivisionError
-                        AudioParam.audio_dbfs = 20 * np.log10(rms / 32768)
+                        audio_dbfs = 20 * np.log10(rms / 32768)
+                        self.states.set("audio_dbfs", audio_dbfs)
                     except Exception as e:
-                        # FIXME Disabled for cli cleanup
-                        #self.log.warning(
-                        #    "[MDM] fft calculation error - please check your audio setup",
-                        #    e=e,
-                        #)
-                        AudioParam.audio_dbfs = -100
+                        self.states.set("audio_dbfs", -100)
+
 
                     rms_counter = 0
 

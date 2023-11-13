@@ -3,15 +3,13 @@ import ujson as json
 class STATES:
     def __init__(self, statequeue):
         self.statequeue = statequeue
-        self.testvalue = "Hello World!"
-
 
         self.channel_busy = False
         self.channel_busy_slot = [False, False, False, False, False]
         self.is_codec2_traffic = False
         self.is_modem_running = False
-
         self.is_beacon_running = False
+        self.audio_dbfs = 0
 
     def set(self, key, value):
         setattr(self, key, value)
