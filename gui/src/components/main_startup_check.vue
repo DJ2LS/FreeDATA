@@ -1,11 +1,24 @@
 <script setup lang="ts">
+
+import { Modal } from 'bootstrap'
+import { onMounted } from 'vue'
+
 import main_rig_control from "./main_rig_control.vue";
 import main_audio from "./main_audio.vue";
 import infoScreen_updater from "./infoScreen_updater.vue";
+
+// start modemCheck modal once on startup
+onMounted(() => {
+    new Modal('#modemCheck', {}).show()
+})
+
+
+
+
+
 </script>
 
 <template>
-  <!-- Modal -->
   <div
     class="modal fade"
     id="modemCheck"
@@ -26,41 +39,43 @@ import infoScreen_updater from "./infoScreen_updater.vue";
           ></button>
         </div>
         <div class="modal-body">
-          <div class="accordion" id="accordionFlushExample">
+
+
+
+
+
+          <div class="accordion" id="startupCheckAccordion">
+            <!-- Version Section -->
             <div class="accordion-item">
               <h2 class="accordion-header">
                 <button
                   class="accordion-button collapsed"
                   type="button"
+                  data-bs-target="#versionCheckCollapse"
                   data-bs-toggle="collapse"
-                  data-bs-target="#flush-collapseOne"
-                  aria-expanded="false"
-                  aria-controls="flush-collapseOne"
                 >
-                  Version
-                  <span class="badge ms-2 bg-warning">Update needed</span>
+                  Version <span class="badge ms-2 bg-warning">Update needed</span>
                 </button>
               </h2>
-              <div id="flush-collapseOne" class="accordion-collapse collapse">
+              <div id="versionCheckCollapse" class="accordion-collapse collapse">
                 <div class="accordion-body">
                   <infoScreen_updater />
                 </div>
               </div>
             </div>
+            <!-- Network Section -->
             <div class="accordion-item">
               <h2 class="accordion-header">
                 <button
                   class="accordion-button collapsed"
                   type="button"
+                  data-bs-target="#networkStatusCollapse"
                   data-bs-toggle="collapse"
-                  data-bs-target="#flush-collapseOne"
-                  aria-expanded="false"
-                  aria-controls="flush-collapseOne"
                 >
                   Network <span class="badge ms-2 bg-success">Connected</span>
                 </button>
               </h2>
-              <div id="flush-collapseOne" class="accordion-collapse collapse">
+              <div id="networkStatusCollapse" class="accordion-collapse collapse">
                 <div class="accordion-body">
                   Placeholder content for this accordion, which is intended to
                   demonstrate the <code>.accordion-flush</code> class. This is
@@ -68,40 +83,38 @@ import infoScreen_updater from "./infoScreen_updater.vue";
                 </div>
               </div>
             </div>
+            <!-- Modem Section -->
             <div class="accordion-item">
               <h2 class="accordion-header">
                 <button
                   class="accordion-button collapsed"
                   type="button"
+                  data-bs-target="#modemStatusCollapse"
                   data-bs-toggle="collapse"
-                  data-bs-target="#flush-collapseTwo"
-                  aria-expanded="false"
-                  aria-controls="flush-collapseTwo"
                 >
                   Modem <span class="badge ms-2 bg-success">Running</span>
                 </button>
               </h2>
-              <div id="flush-collapseTwo" class="accordion-collapse collapse">
+              <div id="modemStatusCollapse" class="accordion-collapse collapse">
                 <div class="accordion-body">
                   <main_audio />
                 </div>
               </div>
             </div>
+            <!-- Radio Control Section -->
             <div class="accordion-item">
               <h2 class="accordion-header">
                 <button
                   class="accordion-button collapsed"
                   type="button"
+                  data-bs-target="#radioControlCollapse"
                   data-bs-toggle="collapse"
-                  data-bs-target="#flush-collapseFour"
-                  aria-expanded="false"
-                  aria-controls="flush-collapseFour"
                 >
                   Radio control
                   <span class="badge ms-2 bg-danger">Disconnected</span>
                 </button>
               </h2>
-              <div id="flush-collapseFour" class="accordion-collapse collapse">
+              <div id="radioControlCollapse" class="accordion-collapse collapse">
                 <div class="accordion-body">
                   <main_rig_control />
                 </div>

@@ -5,6 +5,11 @@ setActivePinia(pinia);
 
 import { useAudioStore } from "../store/audioStore.js";
 const audio = useAudioStore(pinia);
+
+import { saveModemConfig } from "../js/api";
+
+
+
 </script>
 
 <template>
@@ -41,6 +46,7 @@ const audio = useAudioStore(pinia);
           class="form-select form-select-sm"
           aria-label=".form-select-sm"
           v-html="audio.getInputDevices()"
+          @change="saveModemConfig"
         ></select>
       </div>
       <div class="input-group input-group-sm">
@@ -51,6 +57,7 @@ const audio = useAudioStore(pinia);
           class="form-select form-select-sm"
           aria-label=".form-select-sm"
           v-html="audio.getOutputDevices()"
+          @change="saveModemConfig"
         ></select>
       </div>
     </div>
