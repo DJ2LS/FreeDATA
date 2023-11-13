@@ -6,12 +6,8 @@
 
 import contextlib
 import socket
-import time
 import structlog
 import threading
-import static
-from global_instances import HamlibParam
-
 
 class radio:
     """rigctld (hamlib) communication class"""
@@ -241,7 +237,6 @@ class radio:
             if 'RPRT' not in alc:
                 try:
                     alc = float(alc)
-                    self.alc = alc if alc != 0.0 else HamlibParam.alc
                 except ValueError:
                     self.alc = 0.0
 
