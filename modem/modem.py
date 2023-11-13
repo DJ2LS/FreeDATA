@@ -999,8 +999,8 @@ class RF:
         # set tuning range
         codec2.api.freedv_set_tuning_range(
             c2instance,
-            ctypes.c_float(self.tuning_range_fmin),
-            ctypes.c_float(self.tuning_range_fmax),
+            ctypes.c_float(float(self.tuning_range_fmin)),
+            ctypes.c_float(float(self.tuning_range_fmax)),
         )
 
         # get bytes per frame
