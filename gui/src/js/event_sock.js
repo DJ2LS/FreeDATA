@@ -14,7 +14,9 @@ import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 
 function connect(endpoint, dispatcher) {
-  let socket = new WebSocket("ws://" + settings.modem_host + ":" + settings.modem_port + "/" + endpoint);
+  let socket = new WebSocket(
+    "ws://" + settings.modem_host + ":" + settings.modem_port + "/" + endpoint,
+  );
 
   // handle opening
   socket.addEventListener("open", function (event) {
