@@ -168,9 +168,9 @@ export function getModemConfigAsJSON() {
   const configData = {
     AUDIO: {
       enable_auto_tune: settings.auto_tune,
-      input_device: settings.rx_audio,
+      input_device: settings.input_device,
       rx_audio_level: settings.rx_audio_level,
-      output_device: settings.tx_audio,
+      output_device: settings.output_device,
       tx_audio_level: settings.tx_audio_level,
       //enable_auto_tune: settings.tx_audio_level,
     },
