@@ -63,6 +63,7 @@ class RF:
 
     def __init__(self, config, event_queue, fft_queue, service_queue, states) -> None:
         self.config = config
+        print(config)
         self.service_queue = service_queue
         self.states = states
 
@@ -79,7 +80,6 @@ class RF:
         self.enable_fft = config['MODEM']['enable_fft']
         self.enable_scatter = config['MODEM']['enable_scatter']
         self.tx_delay = config['MODEM']['tx_delay']
-
         self.tuning_range_fmin = config['MODEM']['tuning_range_fmin']
         self.tuning_range_fmax = config['MODEM']['tuning_range_fmax']
 

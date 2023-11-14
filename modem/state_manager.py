@@ -3,7 +3,7 @@ import ujson as json
 class STATES:
     def __init__(self, statequeue):
         self.statequeue = statequeue
-
+        self.newstate = None
         self.channel_busy = False
         self.channel_busy_slot = [False, False, False, False, False]
         self.is_codec2_traffic = False
@@ -16,7 +16,12 @@ class STATES:
 
     def set(self, key, value):
         setattr(self, key, value)
-        self.statequeue.put(self.getAsJSON())
+
+        # only process data if changed
+        new_state = self.getAsJSON()
+        if new_state != self.newstate:
+            self.statequeue.put(new_state)
+            self.newstate = new_state
 
     def getAsJSON(self):
         return json.dumps({

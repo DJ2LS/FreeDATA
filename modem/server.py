@@ -40,7 +40,7 @@ set_config()
 # start modem
 app.state_queue = queue.Queue() # queue which holds latest states
 app.modem_events = queue.Queue() # queue which holds latest events
-app.modem_fft = queue.Queue() # queue which holds lates fft data
+app.modem_fft = queue.Queue() # queue which holds latest fft data
 app.modem_service = queue.Queue() # start / stop modem service
 
 # init state manager
@@ -204,8 +204,11 @@ def sock_watchdog(sock, client_list, event_queue):
         try:
             sock.receive(timeout=1)
         except Exception as e:
-            print(e)
-            client_list.remove(sock)
+            print(f"client connection lost: {e}")
+            try:
+                client_list.remove(sock)
+            except Exception as err:
+                print(f"error removing client from list: {e} | {err}")
             break
     return
 

@@ -14,7 +14,7 @@ class SM:
         self.modem = False
         self.data_handler = False
 
-        self.config = app.config_manager.config
+        self.config = app.config_manager.read()
         self.modem_events = app.modem_events
         self.modem_fft = app.modem_fft
         self.modem_service = app.modem_service

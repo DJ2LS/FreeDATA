@@ -285,7 +285,6 @@ class DATA:
     def worker_transmit(self) -> None:
         """Dispatch incoming UI instructions for transmitting operations"""
         while True:
-            print("ja?")
 
             data = self.data_queue_transmit.get()
             print(data)
@@ -365,7 +364,7 @@ class DATA:
                 self.log.error(
                     "[Modem] worker_transmit: received invalid command:", data=data
                 )
-            print("jaaaa")
+
     def worker_receive(self) -> None:
         """Queue received data for processing"""
         while True:
