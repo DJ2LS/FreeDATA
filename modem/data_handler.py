@@ -285,8 +285,10 @@ class DATA:
     def worker_transmit(self) -> None:
         """Dispatch incoming UI instructions for transmitting operations"""
         while True:
-            data = self.data_queue_transmit.get()
+            print("ja?")
 
+            data = self.data_queue_transmit.get()
+            print(data)
             # if we are already in ARQ_STATE, or we're receiving codec2 traffic
             # let's wait with processing data
             # this should avoid weird toggle states where both stations
@@ -363,7 +365,7 @@ class DATA:
                 self.log.error(
                     "[Modem] worker_transmit: received invalid command:", data=data
                 )
-
+            print("jaaaa")
     def worker_receive(self) -> None:
         """Queue received data for processing"""
         while True:
@@ -2855,7 +2857,6 @@ class DATA:
             self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
-
 
     def received_cq(self, data_in: bytes, snr) -> None:
         """

@@ -7,7 +7,7 @@ log = structlog.get_logger("COMMANDS")
 def cqcqcq():
     try:
         DATA_QUEUE_TRANSMIT.put(["CQ"])
-
+        return
     except Exception as err:
         log.warning("[CMD] error while transmiting CQ", e=err)
 
