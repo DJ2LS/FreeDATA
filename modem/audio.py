@@ -28,8 +28,8 @@ def get_audio_devices():
 
     # we need to reset and initialize sounddevice before running the multiprocessing part.
     # If we are not doing this at this early point, not all devices will be displayed
-    sd._terminate()
-    sd._initialize()
+    #sd._terminate()
+    #sd._initialize()
 
     # log.debug("[AUD] get_audio_devices")
     with multiprocessing.Manager() as manager:

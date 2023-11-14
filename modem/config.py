@@ -99,6 +99,9 @@ class CONFIG:
 
     # converts values of settings from String to Value.
     # For example 'False' (type String) will be converted to False (type Bool)
+    # This is also needed, because configparser reads configs as string
+    # configparser has a type conversion, but we would have to do this for every
+    # item. This approach is more flexible
     def convert_types(self, config):
         for setting in config:
             value = config[setting]
