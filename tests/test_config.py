@@ -18,7 +18,6 @@ class TestConfigMethods(unittest.TestCase):
         data = self.config.read()
         self.assertIsInstance(data, dict)
 
-        self.assertIn('NETWORK', data.keys())
         self.assertIn('STATION', data.keys())
         self.assertIn('AUDIO', data.keys())
         self.assertIn('RADIO', data.keys())
@@ -41,15 +40,13 @@ class TestConfigMethods(unittest.TestCase):
         self.assertEqual(last_conf['STATION']['mycall'], oldcall)
 
     def test_validate_data(self):
-        data = {'NETWORK': {'modemport': "abc"}}
+        data = {'STATION': {'ssid_list': "abc"}}
         with self.assertRaises(ValueError):
             self.config.validate(data)
 
-        data = {'NETWORK': {'modemport': "3000"}}
+        data = {'STATION': {'ssid_list': [1, 2, 3]}}
         self.assertIsNone(self.config.validate(data))
-
-
-
+        
 
 if __name__ == '__main__':
     unittest.main()

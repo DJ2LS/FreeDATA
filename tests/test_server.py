@@ -47,7 +47,7 @@ class TestIntegration(unittest.TestCase):
         self.assertIn('RADIO', config)
 
     def test_config_post(self):
-        config = {'NETWORK': {'modemport' : '3050'}}
+        config = {'NETWORK': {'modemport' : 3050}}
         r = requests.post(self.url + '/config', 
                           headers={'Content-type': 'application/json'},
                           data = json.dumps(config))
@@ -56,7 +56,7 @@ class TestIntegration(unittest.TestCase):
         r = requests.get(self.url + '/config')
         self.assertEqual(r.status_code, 200)
         config = r.json()
-        self.assertEqual(config['NETWORK']['modemport'], '3050')
+        self.assertEqual(config['NETWORK']['modemport'], 3050)
 
 if __name__ == '__main__':
     unittest.main()

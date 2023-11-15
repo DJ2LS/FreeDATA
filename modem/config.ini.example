@@ -1,5 +1,5 @@
 [NETWORK]
-modemport = 3000
+modemport = 5000
 
 [STATION]
 mycall = DJ2LS-5
@@ -7,7 +7,6 @@ mygrid = JN49en
 ssid_list = []
 enable_explorer = False
 enable_stats = False
-
 
 [AUDIO]
 input_device = 4f55
