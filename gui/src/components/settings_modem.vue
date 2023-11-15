@@ -51,7 +51,7 @@ import { startModem, stopModem } from "../js/api";
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text" style="width: 180px">Modem port</span>
     <input
-      type="text"
+      type="number"
       class="form-control"
       placeholder="modem port"
       id="modem_port"
@@ -59,7 +59,7 @@ import { startModem, stopModem } from "../js/api";
       max="65534"
       min="1025"
       @change="saveModemConfig()"
-      v-model="settings.modem_port"
+      v-model.number="settings.modem_port"
     />
   </div>
 
@@ -107,7 +107,7 @@ import { startModem, stopModem } from "../js/api";
       class="form-select form-select-sm"
       id="tx_delay"
       @change="saveModemConfig"
-      v-model="settings.tx_delay"
+      v-model.number="settings.tx_delay"
     >
       <option value="0">0</option>
       <option value="50">50</option>
@@ -140,26 +140,26 @@ import { startModem, stopModem } from "../js/api";
       class="form-select form-select-sm"
       id="tuning_range_fmin"
       @change="saveModemConfig"
-      v-model="settings.tuning_range_fmin"
+      v-model.number="settings.tuning_range_fmin"
     >
-      <option value="-50.0">-50.0</option>
-      <option value="-100.0">-100.0</option>
-      <option value="-150.0">-150.0</option>
-      <option value="-200.0">-200.0</option>
-      <option value="-250.0">-250.0</option>
+      <option value="-50">-50</option>
+      <option value="-100">-100</option>
+      <option value="-150">-150</option>
+      <option value="-200">-200</option>
+      <option value="-250">-250</option>
     </select>
     <label class="input-group-text">fmax</label>
     <select
       class="form-select form-select-sm"
       id="tuning_range_fmax"
       @change="saveModemConfig"
-      v-model="settings.tuning_range_fmax"
+      v-model.number="settings.tuning_range_fmax"
     >
-      <option value="50.0">50.0</option>
-      <option value="100.0">100.0</option>
-      <option value="150.0">150.0</option>
-      <option value="200.0">200.0</option>
-      <option value="250.0">250.0</option>
+      <option value="50">50</option>
+      <option value="100">100</option>
+      <option value="150">150</option>
+      <option value="200">200</option>
+      <option value="250">250</option>
     </select>
   </div>
   <div class="input-group input-group-sm mb-1">

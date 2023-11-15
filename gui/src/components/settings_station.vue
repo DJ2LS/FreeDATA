@@ -33,7 +33,7 @@ const settings = useSettingsStore(pinia);
       class="form-select form-select-sm w-50"
       id="myCallSSID"
       @change="saveModemConfig"
-      v-model="settings.myssid"
+      v-model.number="settings.myssid"
     >
       <option selected value="0">0</option>
       <option value="1">1</option>

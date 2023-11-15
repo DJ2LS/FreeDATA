@@ -3,10 +3,10 @@ import { ref } from "vue";
 
 export const useSettingsStore = defineStore("settingsStore", () => {
   // audio
-  var output_device = ref();
-  var input_device = ref();
-  var tx_audio_level = ref();
-  var rx_audio_level = ref();
+  var output_device = ref("");
+  var input_device = ref("");
+  var tx_audio_level = ref(0);
+  var rx_audio_level = ref(0);
 
   // network
   var modem_host = ref("127.0.0.1");
@@ -60,23 +60,23 @@ export const useSettingsStore = defineStore("settingsStore", () => {
 
   //modem
   var spectrum = ref("waterfall");
-  var enable_scatter = ref("False");
-  var enable_fft = ref("False");
-  var enable_fsk = ref("False");
-  var low_bandwidth_mode = ref("False");
+  var enable_scatter = ref(false);
+  var enable_fft = ref(false);
+  var enable_fsk = ref(false);
+  var low_bandwidth_mode = ref(false);
   var update_channel = ref("latest");
   var beacon_interval = ref(300);
   var received_files_folder = ref("None");
-  var tuning_range_fmin = ref(-50.0);
-  var tuning_range_fmax = ref(50.0);
-  var respond_to_cq = ref("True");
+  var tuning_range_fmin = ref(-50);
+  var tuning_range_fmax = ref(50);
+  var respond_to_cq = ref(true);
   var rx_buffer_size = ref(16);
-  var enable_explorer = ref("False");
-  var explorer_stats = ref("False");
-  var auto_tune = ref("False");
-  var enable_is_writing = ref("True");
+  var enable_explorer = ref(false);
+  var explorer_stats = ref(false);
+  var auto_tune = ref(false);
+  var enable_is_writing = ref(true);
   var tx_delay = ref(0);
-  var enable_mesh_features = ref("False");
+  var enable_mesh_features = ref(false);
   var serial_devices = ref();
 
   function getSerialDevices() {
