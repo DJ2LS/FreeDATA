@@ -85,7 +85,9 @@ class CONFIG:
         for section in data:
             for setting in data[section]:
                 if not isinstance(data[section][setting], self.config_types[section][setting]):
-                    raise ValueError(f"{section}.{setting} must be {self.config_types[section][setting]}")
+                    message = (f"{section}.{setting} must be {self.config_types[section][setting]}."
+                               f" '{data[section][setting]}' {type(data[section][setting])} given.")
+                    raise ValueError(message)
 
     # Handle special setting data type conversion
     # is_writing means data from a dict being writen to the config file
