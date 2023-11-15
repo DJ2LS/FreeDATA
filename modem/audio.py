@@ -137,7 +137,7 @@ def test_audio_devices(input_id: str, output_id: str) -> list:
         result = get_device_index_from_crc(input_id, True)
         if result is None:
             # in_dev_index, in_dev_name = None, None
-            raise ValueError(f"[Audio-Test] Invalid input device index {output_id}.")
+            raise ValueError(f"[Audio-Test] Invalid input device index {input_id}.")
         else:
             in_dev_index, in_dev_name = result
             sd.check_input_settings(
