@@ -20,8 +20,6 @@ const settings = useSettingsStore(pinia);
           id="autoTuneSwitch"
           @change="saveModemConfig"
           v-model="settings.auto_tune"
-          true-value="True"
-          false-value="False"
         />
         <label class="form-check-label" for="autoTuneSwitch"
           >adjust ALC on TX</label
@@ -39,8 +37,6 @@ const settings = useSettingsStore(pinia);
           id="fskModeSwitch"
           @change="saveModemConfig"
           v-model="settings.enable_fsk"
-          true-value="True"
-          false-value="False"
           disabled
         />
         <label class="form-check-label" for="fskModeSwitch"
@@ -59,8 +55,6 @@ const settings = useSettingsStore(pinia);
           id="enableMeshSwitch"
           @change="saveModemConfig"
           v-model="settings.enable_mesh_features"
-          true-value="True"
-          false-value="False"
         />
         <label class="form-check-label" for="enableMeshSwitch"
           >experimental! REALLY!</label

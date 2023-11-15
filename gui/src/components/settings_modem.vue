@@ -192,8 +192,6 @@ import { startModem, stopModem } from "../js/api";
           id="fftSwitch"
           @change="saveModemConfig"
           v-model="settings.enable_fft"
-          true-value="True"
-          false-value="False"
         />
         <label class="form-check-label" for="fftSwitch">Waterfall</label>
       </div>
@@ -209,8 +207,6 @@ import { startModem, stopModem } from "../js/api";
           id="scatterSwitch"
           @change="saveModemConfig"
           v-model="settings.enable_scatter"
-          true-value="True"
-          false-value="False"
         />
         <label class="form-check-label" for="scatterSwitch">Scatter</label>
       </div>
@@ -225,8 +221,6 @@ import { startModem, stopModem } from "../js/api";
           type="checkbox"
           id="250HzModeSwitch"
           v-model="settings.low_bandwidth_mode"
-          true-value="True"
-          false-value="False"
           @change="saveModemConfig"
         />
         <label class="form-check-label" for="250HzModeSwitch">250Hz</label>
@@ -242,8 +236,6 @@ import { startModem, stopModem } from "../js/api";
           type="checkbox"
           id="respondCQSwitch"
           v-model="settings.respond_to_cq"
-          true-value="True"
-          false-value="False"
           @change="saveModemConfig"
         />
         <label class="form-check-label" for="respondCQSwitch">QRV</label>

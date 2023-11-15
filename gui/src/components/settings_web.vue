@@ -20,8 +20,6 @@ const settings = useSettingsStore(pinia);
           id="ExplorerSwitch"
           @change="saveModemConfig"
           v-model="settings.enable_explorer"
-          true-value="True"
-          false-value="False"
         />
         <label class="form-check-label" for="ExplorerSwitch">Publish</label>
       </div>
@@ -37,8 +35,6 @@ const settings = useSettingsStore(pinia);
           id="ExplorerStatsSwitch"
           @change="saveModemConfig"
           v-model="settings.explorer_stats"
-          true-value="True"
-          false-value="False"
         />
         <label class="form-check-label" for="ExplorerStatsSwitch"
           >Publish stats</label

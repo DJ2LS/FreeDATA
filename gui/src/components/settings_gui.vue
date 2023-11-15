@@ -82,8 +82,6 @@ function saveSettings() {
           id="GraphicsSwitch"
           @change="saveSettings"
           v-model="settings.high_graphics"
-          true-value="True"
-          false-value="False"
           disabled
         />
         <label class="form-check-label" for="GraphicsSwitch"
@@ -127,8 +125,6 @@ function saveSettings() {
           id="NotificationSwitch"
           @change="saveSettings"
           v-model="settings.enable_sys_notification"
-          true-value="True"
-          false-value="False"
           disabled
         />
         <label class="form-check-label" for="NotificationSwitch"
@@ -147,8 +143,6 @@ function saveSettings() {
           id="AutoStartSwitch"
           @change="saveSettings"
           v-model="settings.auto_start"
-          true-value="True"
-          false-value="False"
           disabled
         />
         <label class="form-check-label" for="AutoStartSwitch"

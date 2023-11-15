@@ -20,8 +20,6 @@ const settings = useSettingsStore(pinia);
           id="enable_is_writing"
           @change="saveModemConfig"
           v-model="settings.enable_is_writing"
-          true-value="True"
-          false-value="False"
           disabled
         />
         <label class="form-check-label" for="GraphicsSwitch"
@@ -41,8 +39,6 @@ const settings = useSettingsStore(pinia);
           id="enable_request_profile"
           @change="saveModemConfig"
           v-model="settings.enable_request_profile"
-          true-value="True"
-          false-value="False"
           disabled
         />
       </div>
@@ -61,8 +57,6 @@ const settings = useSettingsStore(pinia);
           id="enable_request_shared_folder"
           @change="saveModemConfig"
           v-model="settings.enable_request_shared_folder"
-          true-value="True"
-          false-value="False"
           disabled
         />
       </div>
@@ -94,8 +88,6 @@ const settings = useSettingsStore(pinia);
           id="enable_auto_retry"
           @change="saveModemConfig"
           v-model="settings.enable_auto_retry"
-          true-value="True"
-          false-value="False"
         />
       </div>
     </label>
