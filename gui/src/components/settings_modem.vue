@@ -249,7 +249,7 @@ import { startModem, stopModem } from "../js/api";
         class="form-select form-select-sm"
         id="rx_buffer_size"
         @change="saveModemConfig"
-        v-model="settings.rx_buffer_size"
+        v-model.number="settings.rx_buffer_size"
       >
         <option value="1">1</option>
         <option value="2">2</option>
