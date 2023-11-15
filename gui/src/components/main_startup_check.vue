@@ -50,7 +50,7 @@ function getRigControlStuff() {
     case "disabled":
       return true;
     case "rigctld":
-      if (state.rigctld_started == 'true') {
+      if (state.rigctld_started == "true") {
         return true;
       } else {
         return false;
@@ -58,13 +58,13 @@ function getRigControlStuff() {
     case "tci":
       return true;
       break;
-      default:
-        console.error("Unknown radio control mode " + settings.radiocontrol)
-        return "Unknown control type"
+    default:
+      console.error("Unknown radio control mode " + settings.radiocontrol);
+      return "Unknown control type";
   }
 }
 
-function testHamlib(){
+function testHamlib() {
   alert("Not yet implemented.");
 }
 </script>
@@ -243,9 +243,15 @@ function testHamlib(){
                   data-bs-toggle="collapse"
                 >
                   Radio control
-                  <span class="badge ms-2"
-                  :class="getRigControlStuff() === true ? 'bg-success' : 'bg-danger'"
-                  >{{ getRigControlStuff() === true ? 'Online' : 'Offline' }}</span>
+                  <span
+                    class="badge ms-2"
+                    :class="
+                      getRigControlStuff() === true ? 'bg-success' : 'bg-danger'
+                    "
+                    >{{
+                      getRigControlStuff() === true ? "Online" : "Offline"
+                    }}</span
+                  >
                 </button>
               </h2>
               <div
@@ -254,7 +260,9 @@ function testHamlib(){
               >
                 <div class="accordion-body">
                   <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text" style="width: 180px">Rig control method</span>
+                    <span class="input-group-text" style="width: 180px"
+                      >Rig control method</span
+                    >
 
                     <select
                       class="form-select form-select-sm"
@@ -270,62 +278,69 @@ function testHamlib(){
                       <option selected value="tci">TCI</option>
                     </select>
                   </div>
-                  <div :class="settings.radiocontrol == 'rigctld' ? '' : 'd-none' ">
-                      <!-- Shown when rigctld is selected-->
-                      
-                      <div class="input-group input-group-sm mb-1">
-                    <label class="input-group-text w-25">Rigctld control</label>
-                    <label class="input-group-text">
-                      <button
-                        type="button"
-                      
-                        class="btn btn-sm btn-outline-success"
-                        data-bs-toggle="tooltip"
-                        data-bs-trigger="hover"
-                        data-bs-html="false"
-                        title="Start rigctld"
-                        @click="startRigctld"
-                        v-bind:class="{
-                          disabled: state.rigctld_started == 'true',
-                        }"
-                      >
-                        <i class="bi bi-play-fill"></i>
-                      </button> </label
-                    ><label class="input-group-text">
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-outline-danger"
-                        data-bs-toggle="tooltip"
-                        data-bs-trigger="hover"
-                        data-bs-html="false"
-                        title="Stop rigctld"
-                        @click="stopRigctld"
-                        v-bind:class="{
-                          disabled: state.rigctld_started == 'false' || state.rigctld_started === undefined
-                        }"
-                      >
-                        <i class="bi bi-stop-fill"></i>
-                      </button>
-                    </label>
-                    <label class="input-group-text">
-                    <button
-                type="button"
-                id="testHamlib"
-                class="btn btn-sm btn-outline-secondary"
-                data-bs-placement="bottom"
-                data-bs-toggle="tooltip"
-                data-bs-trigger="hover"
-                data-bs-html="true"
-                @click="testHamlib"
-                title="Test your hamlib settings and toggle PTT once. Button will become <strong class='text-success'>green</strong> on success and <strong class='text-danger'>red</strong> if fails."
-              >
-                PTT test
-              </button>
-            </label>
-                  </div>
+                  <div
+                    :class="settings.radiocontrol == 'rigctld' ? '' : 'd-none'"
+                  >
+                    <!-- Shown when rigctld is selected-->
 
-                      <div class="input-group input-group-sm mb-1">
-                      <span class="input-group-text" style="width: 180px">Radio port</span>
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="input-group-text w-25"
+                        >Rigctld control</label
+                      >
+                      <label class="input-group-text">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-success"
+                          data-bs-toggle="tooltip"
+                          data-bs-trigger="hover"
+                          data-bs-html="false"
+                          title="Start rigctld"
+                          @click="startRigctld"
+                          v-bind:class="{
+                            disabled: state.rigctld_started == 'true',
+                          }"
+                        >
+                          <i class="bi bi-play-fill"></i>
+                        </button> </label
+                      ><label class="input-group-text">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-danger"
+                          data-bs-toggle="tooltip"
+                          data-bs-trigger="hover"
+                          data-bs-html="false"
+                          title="Stop rigctld"
+                          @click="stopRigctld"
+                          v-bind:class="{
+                            disabled:
+                              state.rigctld_started == 'false' ||
+                              state.rigctld_started === undefined,
+                          }"
+                        >
+                          <i class="bi bi-stop-fill"></i>
+                        </button>
+                      </label>
+                      <label class="input-group-text">
+                        <button
+                          type="button"
+                          id="testHamlib"
+                          class="btn btn-sm btn-outline-secondary"
+                          data-bs-placement="bottom"
+                          data-bs-toggle="tooltip"
+                          data-bs-trigger="hover"
+                          data-bs-html="true"
+                          @click="testHamlib"
+                          title="Test your hamlib settings and toggle PTT once. Button will become <strong class='text-success'>green</strong> on success and <strong class='text-danger'>red</strong> if fails."
+                        >
+                          PTT test
+                        </button>
+                      </label>
+                    </div>
+
+                    <div class="input-group input-group-sm mb-1">
+                      <span class="input-group-text" style="width: 180px"
+                        >Radio port</span
+                      >
 
                       <select
                         class="form-select form-select-sm"
@@ -337,9 +352,9 @@ function testHamlib(){
                       ></select>
                     </div>
                   </div>
-                  <div :class="settings.radiocontrol == 'tci' ? '' : 'd-none' ">
+                  <div :class="settings.radiocontrol == 'tci' ? '' : 'd-none'">
                     <!-- Shown when tci is selected-->
-                   
+
                     <div class="input-group input-group-sm mb-1">
                       <span class="input-group-text w-25">TCI IP address</span>
                       <input
@@ -366,7 +381,6 @@ function testHamlib(){
                       />
                     </div>
                   </div>
-                
                 </div>
               </div>
             </div>
