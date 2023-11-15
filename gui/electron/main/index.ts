@@ -20,6 +20,7 @@ process.env.DIST = join(process.env.DIST_ELECTRON, "../dist");
 process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL
   ? join(process.env.DIST_ELECTRON, "../public")
   : process.env.DIST;
+process.env.FDUpdateAvail = "0";
 
 // Disable GPU Acceleration for Windows 7
 if (release().startsWith("6.1")) app.disableHardwareAcceleration();
@@ -55,8 +56,7 @@ async function createWindow() {
     autoHideMenuBar: true,
     webPreferences: {
       preload,
-      backgroundThrottle: false,
-
+      backgroundThrottling: false,
       // Warning: Enable nodeIntegration and disable contextIsolation is not secure in production
       // Consider using contextBridge.exposeInMainWorld
       // Read more on https://www.electronjs.org/docs/latest/tutorial/context-isolation
@@ -170,7 +170,7 @@ daemonProcess = spawn(daemonPath, [], {
 
 app.on("window-all-closed", () => {
   win = null;
-  if (process.platform !== "darwin") app.quit(close_sub_processes());
+  if (process.platform !== "darwin") app.quit();
 });
 
 app.on("second-instance", () => {
@@ -215,6 +215,7 @@ ipcMain.on("request-restart-and-install-update", (event, data) => {
 
 // LISTENER FOR UPDATER EVENTS
 autoUpdater.on("update-available", (info) => {
+  process.env.FDUpdateAvail = "1";
   console.log("update available");
 
   let arg = {
@@ -234,6 +235,7 @@ autoUpdater.on("update-not-available", (info) => {
 });
 
 autoUpdater.on("update-downloaded", (info) => {
+  process.env.FDUpdateAvail = "1";
   console.log("update downloaded");
   let arg = {
     status: "update-downloaded",
@@ -288,7 +290,7 @@ function close_sub_processes() {
 
   console.log("closing modem and daemon");
   try {
-    if (platform() == "win32" || platform() == "win64") {
+    if (platform() == "win32") {
       spawn("Taskkill", ["/IM", "freedata-modem.exe", "/F"]);
       spawn("Taskkill", ["/IM", "freedata-daemon.exe", "/F"]);
     }
