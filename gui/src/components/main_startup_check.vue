@@ -26,6 +26,7 @@ import { saveSettingsToFile } from "../js/settingsHandler";
 import { startRigctld, stopRigctld } from "../js/deprecated_daemon";
 
 const version = import.meta.env.PACKAGE_VERSION;
+var updateAvailable = process.env.FDUpdateAvail;
 
 // start modemCheck modal once on startup
 onMounted(() => {
@@ -394,7 +395,7 @@ function testHamlib() {
                   data-bs-toggle="collapse"
                 >
                   Version
-                  <span class="badge ms-2 bg-warning">Update needed</span>
+                  <span class="badge ms-2" :class="updateAvailable === '1' ? 'bg-warning' : 'bg-success'"> {{ updateAvailable === '1' ? 'Update available ! ! ! !' : 'Current' }}</span>
                 </button>
               </h2>
               <div
@@ -417,7 +418,9 @@ function testHamlib() {
                   >
                     Modem version | {{ state.modem_version }}
                   </button>
+                  <div :class="updateAvailable === '1' ? '' : 'd-none'">
                   <infoScreen_updater />
+                </div>
                 </div>
               </div>
             </div>
