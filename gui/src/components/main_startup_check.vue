@@ -2,8 +2,6 @@
 import { Modal } from "bootstrap";
 import { onMounted } from "vue";
 
-import main_rig_control from "./main_rig_control.vue";
-import main_audio from "./main_audio.vue";
 import infoScreen_updater from "./infoScreen_updater.vue";
 
 import { getModemVersion, saveModemConfig } from "../js/api";
@@ -25,6 +23,7 @@ import { startModem, stopModem } from "../js/api";
 import { getModemConfig } from "../js/api";
 
 import { saveSettingsToFile } from "../js/settingsHandler";
+import { startRigctld, stopRigctld } from "../js/deprecated_daemon";
 
 const version = import.meta.env.PACKAGE_VERSION;
 
@@ -44,6 +43,29 @@ function getNetworkState() {
   // Returns active/inactive if modem is running for modem status label
   if (state.modem_connection === "connected") return "Connected";
   else return "Disconnected";
+}
+
+function getRigControlStuff() {
+  switch (settings.radiocontrol) {
+    case "disabled":
+      return true;
+    case "rigctld":
+      if (state.rigctld_started == 'true') {
+        return true;
+      } else {
+        return false;
+      }
+    case "tci":
+      return true;
+      break;
+      default:
+        console.error("Unknown radio control mode " + settings.radiocontrol)
+        return "Unknown control type"
+  }
+}
+
+function testHamlib(){
+  alert("Not yet implemented.");
 }
 </script>
 
@@ -221,7 +243,9 @@ function getNetworkState() {
                   data-bs-toggle="collapse"
                 >
                   Radio control
-                  <span class="badge ms-2 bg-danger">Disconnected</span>
+                  <span class="badge ms-2"
+                  :class="getRigControlStuff() === true ? 'bg-success' : 'bg-danger'"
+                  >{{ getRigControlStuff() === true ? 'Online' : 'Offline' }}</span>
                 </button>
               </h2>
               <div
@@ -229,7 +253,120 @@ function getNetworkState() {
                 class="accordion-collapse collapse"
               >
                 <div class="accordion-body">
-                  <main_rig_control />
+                  <div class="input-group input-group-sm mb-1">
+                    <span class="input-group-text" style="width: 180px">Rig control method</span>
+
+                    <select
+                      class="form-select form-select-sm"
+                      aria-label=".form-select-sm"
+                      id="rigcontrol_radiocontrol"
+                      @change="saveModemConfig"
+                      v-model="settings.radiocontrol"
+                    >
+                      <option selected value="disabled">
+                        Disabled (no rig control; use with VOX)
+                      </option>
+                      <option selected value="rigctld">Rigctld (Hamlib)</option>
+                      <option selected value="tci">TCI</option>
+                    </select>
+                  </div>
+                  <div :class="settings.radiocontrol == 'rigctld' ? '' : 'd-none' ">
+                      <!-- Shown when rigctld is selected-->
+                      
+                      <div class="input-group input-group-sm mb-1">
+                    <label class="input-group-text w-25">Rigctld control</label>
+                    <label class="input-group-text">
+                      <button
+                        type="button"
+                      
+                        class="btn btn-sm btn-outline-success"
+                        data-bs-toggle="tooltip"
+                        data-bs-trigger="hover"
+                        data-bs-html="false"
+                        title="Start rigctld"
+                        @click="startRigctld"
+                        v-bind:class="{
+                          disabled: state.rigctld_started == 'true',
+                        }"
+                      >
+                        <i class="bi bi-play-fill"></i>
+                      </button> </label
+                    ><label class="input-group-text">
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-outline-danger"
+                        data-bs-toggle="tooltip"
+                        data-bs-trigger="hover"
+                        data-bs-html="false"
+                        title="Stop rigctld"
+                        @click="stopRigctld"
+                        v-bind:class="{
+                          disabled: state.rigctld_started == 'false' || state.rigctld_started === undefined
+                        }"
+                      >
+                        <i class="bi bi-stop-fill"></i>
+                      </button>
+                    </label>
+                    <label class="input-group-text">
+                    <button
+                type="button"
+                id="testHamlib"
+                class="btn btn-sm btn-outline-secondary"
+                data-bs-placement="bottom"
+                data-bs-toggle="tooltip"
+                data-bs-trigger="hover"
+                data-bs-html="true"
+                @click="testHamlib"
+                title="Test your hamlib settings and toggle PTT once. Button will become <strong class='text-success'>green</strong> on success and <strong class='text-danger'>red</strong> if fails."
+              >
+                PTT test
+              </button>
+            </label>
+                  </div>
+
+                      <div class="input-group input-group-sm mb-1">
+                      <span class="input-group-text" style="width: 180px">Radio port</span>
+
+                      <select
+                        class="form-select form-select-sm"
+                        aria-label=".form-select-sm"
+                        id="hamlib_deviceport"
+                        style="width: 7rem"
+                        @change="saveModemConfig"
+                        v-html="settings.getSerialDevices()"
+                      ></select>
+                    </div>
+                  </div>
+                  <div :class="settings.radiocontrol == 'tci' ? '' : 'd-none' ">
+                    <!-- Shown when tci is selected-->
+                   
+                    <div class="input-group input-group-sm mb-1">
+                      <span class="input-group-text w-25">TCI IP address</span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="TCI IP"
+                        id="rigcontrol_tci_ip"
+                        aria-label="Device IP"
+                        v-model="settings.tci_ip"
+                        @change="saveModemConfig"
+                      />
+                    </div>
+
+                    <div class="input-group input-group-sm mb-1">
+                      <span class="input-group-text w-25">TCI port</span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="TCI port"
+                        id="rigcontrol_tci_port"
+                        aria-label="Device Port"
+                        v-model="settings.tci_port"
+                        @change="saveModemConfig"
+                      />
+                    </div>
+                  </div>
+                
                 </div>
               </div>
             </div>
