@@ -20,7 +20,7 @@ import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
 import { startModem, stopModem } from "../js/api";
-import { getModemConfig } from "../js/api";
+import { getModemConfig, getModemCurrentState } from "../js/api";
 
 import { saveSettingsToFile } from "../js/settingsHandler";
 import { startRigctld, stopRigctld } from "../js/deprecated_daemon";
@@ -31,6 +31,7 @@ var updateAvailable = process.env.FDUpdateAvail;
 // start modemCheck modal once on startup
 onMounted(() => {
   getModemConfig();
+  getModemCurrentState();
   getModemVersion();
   new Modal("#modemCheck", {}).show();
 });

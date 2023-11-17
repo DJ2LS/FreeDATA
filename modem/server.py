@@ -92,6 +92,10 @@ def get_serial_devices():
     devices = serial_ports.get_ports()
     return api_response(devices)
 
+@app.route('/modem/state', methods=['GET'])
+def get_modem_state():
+    return api_response(app.states.sendState())
+
 @app.route('/modem/cqcqcq', methods=['POST', 'GET'])
 def post_cqcqcq():
     if request.method not in ['POST']:
@@ -198,7 +202,7 @@ def transmit_sock_data_worker(client_list, event_queue):
 
 def sock_watchdog(sock, client_list, event_queue):
     event_queue.put(json.dumps({"freedata-message": "hello-client"}))
-
+    
     client_list.add(sock)
     while True:
         try:
@@ -224,7 +228,7 @@ def sock_fft(sock):
 @sock.route('/states')
 def sock_states(sock):
     sock_watchdog(sock, states_client_list, app.state_queue)
-    app.states.sendStateUpdate()
+    
 
 # websocket multi client support for using with queued information.
 # our client set which contains all connected websocket clients

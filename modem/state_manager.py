@@ -30,6 +30,11 @@ class STATES:
         self.radio_bandwidth = 0
         self.radio_rf_power = 0
 
+    def sendState (self):
+        currentState = self.getAsJSON(False)
+        self.statequeue.put(currentState)
+        return currentState
+
     def sendStateUpdate (self):
         self.statequeue.put(self.newstate)
             
@@ -39,15 +44,20 @@ class STATES:
         # only process data if changed
         # but also send an update if more than a 'updateCadence' second(s) has lapsed
         # Otherwise GUI can't tell if modem is active due to lack of state messages on startup
-        new_state = self.getAsJSON()
+        new_state = self.getAsJSON(True)
         if new_state != self.newstate:
             self.newstate = new_state
             self.sendStateUpdate()
             
 
-    def getAsJSON(self):
+    def getAsJSON(self, isChangedState):
+        
+        msgtype = "state-change"
+        if (not isChangedState):
+            msgtype = "state"
+
         return json.dumps({
-            "freedata-message": "state-change",
+            "freedata-message": msgtype,
             "channel_busy": self.channel_busy,
             "is_codec2_traffic": self.is_codec2_traffic,
             "is_modem_running": self.is_modem_running,
