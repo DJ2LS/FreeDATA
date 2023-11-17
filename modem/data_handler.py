@@ -491,19 +491,14 @@ class DATA:
         :param repeat_delay: Delay time before sending repeat frame, defaults to 0
         :type repeat_delay: int, optional
         """
-        #print(frame_to_tx[0])
-        #print(frame_to_tx)
         frame_type = FR_TYPE(int.from_bytes(frame_to_tx[0][:1], byteorder="big")).name
         self.log.debug("[Modem] enqueue_frame_for_tx", c2_mode=FREEDV_MODE(c2_mode).name, data=frame_to_tx,
                        type=frame_type)
 
-        # Set the TRANSMITTING flag before adding an object to the transmit queue
-        # TODO This is not that nice, we could improve this somehow
-        Modem.transmitting = True
         modem.MODEM_TRANSMIT_QUEUE.put([c2_mode, copies, repeat_delay, frame_to_tx])
 
         # Wait while transmitting
-        while Modem.transmitting:
+        while self.states.is_transmitting:
             threading.Event().wait(0.01)
 
     def send_data_to_socket_queue(self, **jsondata):
@@ -3342,7 +3337,7 @@ class DATA:
         waiting_time = (self.time_list[self.speed_level] * frames_left) + self.duration_sig0_frame + self.channel_busy_timeout + 1
         timeout_percent = 100 - (time_left / waiting_time * 100)
         #timeout_percent = 0
-        if timeout_percent >= 75 and not self.states.is_codec2_traffic and not Modem.transmitting:
+        if timeout_percent >= 75 and not self.states.is_codec2_traffic and not self.states.is_transmitting:
             override = True
         else:
             override = False
@@ -3353,7 +3348,7 @@ class DATA:
         # better wait some more time because data might be important for us
         # reason for this situation can be delays on IRS and ISS, maybe because both had a busy channel condition.
         # Nevertheless, we need to keep timeouts short for efficiency
-        if timeout <= time.time() or modem_error_state and not self.states.is_codec2_traffic and not Modem.transmitting or override:
+        if timeout <= time.time() or modem_error_state and not self.states.is_codec2_traffic and not self.states.is_transmitting or override:
             self.log.warning(
                 "[Modem] Burst decoding error or timeout",
                 attempt=self.n_retries_per_burst,
@@ -3551,7 +3546,7 @@ class DATA:
 
         # send burst only if channel not busy - but without waiting
         # otherwise burst will be dropped
-        if not ModemParam.channel_busy and not Modem.transmitting:
+        if not ModemParam.channel_busy and not self.states.is_transmitting:
             self.enqueue_frame_for_tx(
                 frame_to_tx=[fec_frame], c2_mode=codec2.FREEDV_MODE["sig0"].value
             )

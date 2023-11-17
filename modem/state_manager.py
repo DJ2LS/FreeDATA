@@ -2,8 +2,15 @@ import time
 import ujson as json
 class STATES:
     def __init__(self, statequeue):
+
+        # state related settings
         self.statequeue = statequeue
         self.newstate = None
+        self.last = time.time()
+
+        # modem related states
+        # not every state is needed to publish, yet
+        # TODO can we reduce them?
         self.channel_busy = False
         self.channel_busy_slot = [False, False, False, False, False]
         self.is_codec2_traffic = False
@@ -11,9 +18,9 @@ class STATES:
         self.is_beacon_running = False
         self.is_arq_state = False
         self.is_arq_session = False
+        self.is_transmitting = False
         self.arq_session_state = 'disconnected'
         self.audio_dbfs = 0
-        self.last = time.time()
 
     def set(self, key, value):
         setattr(self, key, value)

@@ -20,7 +20,7 @@ import codec2
 import itertools
 import numpy as np
 import sounddevice as sd
-from global_instances import HamlibParam, Modem
+from global_instances import HamlibParam
 from static import FRAME_TYPE
 import structlog
 import tci
@@ -33,8 +33,6 @@ import event_manager
 TESTMODE = False
 RXCHANNEL = ""
 TXCHANNEL = ""
-
-Modem.transmitting = False
 
 # Receive only specific modes to reduce CPU load
 RECEIVE_SIG0 = True
@@ -83,6 +81,10 @@ class RF:
         self.tx_delay = config['MODEM']['tx_delay']
         self.tuning_range_fmin = config['MODEM']['tuning_range_fmin']
         self.tuning_range_fmax = config['MODEM']['tuning_range_fmax']
+        self.enable_
+
+        self.states.set("is_transmitting", False)
+
 
         self.tci_ip = config['TCI']['tci_ip']
         self.tci_port = config['TCI']['tci_port']
@@ -389,7 +391,7 @@ class RF:
 
             # Avoid decoding when transmitting to reduce CPU
             # TODO Overriding this for testing purposes
-            # if not Modem.transmitting:
+            # if not self.states.is_transmitting:
             length_x = len(x)
             # Avoid buffer overflow by filling only if buffer for
             # selected datachannel mode is not full
@@ -407,7 +409,7 @@ class RF:
                     self.event_manager.send_buffer_overflow(self.buffer_overflow_counter)
                 elif receive:
                     audiobuffer.push(x)
-            # end of "not Modem.transmitting" if block
+            # end of "not self.states.is_transmitting" if block
 
             if not self.modoutqueue or self.mod_out_locked:
                 data_out48k = np.zeros(frames, dtype=np.int16)
@@ -465,7 +467,7 @@ class RF:
         else:
             return False
 
-        Modem.transmitting = True
+        self.states.set("is_transmitting", True)
         # if we're transmitting FreeDATA signals, reset channel busy state
         self.states.set("channel_busy", False)
 
@@ -624,7 +626,7 @@ class RF:
         self.mod_out_locked = True
 
         self.modem_transmit_queue.task_done()
-        Modem.transmitting = False
+        self.states.set("is_transmitting", False)
 
         end_of_transmission = time.time()
         transmission_time = end_of_transmission - start_of_transmission
@@ -660,7 +662,7 @@ class RF:
                                alc_level=str(HamlibParam.alc))
 
     def transmit_morse(self, repeats, repeat_delay, frames):
-        Modem.transmitting = True
+        self.states.set("is_transmitting", True)
         # if we're transmitting FreeDATA signals, reset channel busy state
         self.states.set("channel_busy", False)
         self.log.debug(
@@ -707,7 +709,7 @@ class RF:
         self.mod_out_locked = True
 
         self.modem_transmit_queue.task_done()
-        Modem.transmitting = False
+        self.states.set("is_transmitting", False)
         threading.Event().set()
 
         end_of_transmission = time.time()
@@ -850,43 +852,36 @@ class RF:
                     if nbytes == bytes_per_frame:
                         print(bytes(bytes_out))
 
-                        # process commands only if Modem.listen = True
-                        if Modem.listen:
-
-                            # ignore data channel opener frames for avoiding toggle states
-                            # use case: opener already received, but ack got lost and we are receiving
-                            # an opener again
-                            if mode_name in ["sig1-datac13"] and int.from_bytes(bytes(bytes_out[:1]), "big") in [
-                                FRAME_TYPE.ARQ_SESSION_OPEN.value,
-                                FRAME_TYPE.ARQ_DC_OPEN_W.value,
-                                FRAME_TYPE.ARQ_DC_OPEN_ACK_W.value,
-                                FRAME_TYPE.ARQ_DC_OPEN_N.value,
-                                FRAME_TYPE.ARQ_DC_OPEN_ACK_N.value
-                            ]:
-                                print("dropp")
-                            elif int.from_bytes(bytes(bytes_out[:1]), "big") in [
-                                FRAME_TYPE.MESH_BROADCAST.value,
-                                FRAME_TYPE.MESH_SIGNALLING_PING.value,
-                                FRAME_TYPE.MESH_SIGNALLING_PING_ACK.value,
-                            ]:
-                                self.log.debug(
-                                    "[MDM] [demod_audio] moving data to mesh dispatcher", nbytes=nbytes
-                                )
-                                MESH_RECEIVED_QUEUE.put(bytes(bytes_out))
-
-                            else:
-                                self.log.debug(
-                                    "[MDM] [demod_audio] Pushing received data to received_queue", nbytes=nbytes
-                                )
-                                snr = self.calculate_snr(freedv)
-                                self.modem_received_queue.put([bytes_out, freedv, bytes_per_frame, snr])
-                                self.get_scatter(freedv)
-                                state_buffer = []
-                        else:
-                            self.log.warning(
-                                "[MDM] [demod_audio] received frame but ignored processing",
-                                listen=Modem.listen
+                        # ignore data channel opener frames for avoiding toggle states
+                        # use case: opener already received, but ack got lost and we are receiving
+                        # an opener again
+                        if mode_name in ["sig1-datac13"] and int.from_bytes(bytes(bytes_out[:1]), "big") in [
+                            FRAME_TYPE.ARQ_SESSION_OPEN.value,
+                            FRAME_TYPE.ARQ_DC_OPEN_W.value,
+                            FRAME_TYPE.ARQ_DC_OPEN_ACK_W.value,
+                            FRAME_TYPE.ARQ_DC_OPEN_N.value,
+                            FRAME_TYPE.ARQ_DC_OPEN_ACK_N.value
+                        ]:
+                            print("dropp")
+                        elif int.from_bytes(bytes(bytes_out[:1]), "big") in [
+                            FRAME_TYPE.MESH_BROADCAST.value,
+                            FRAME_TYPE.MESH_SIGNALLING_PING.value,
+                            FRAME_TYPE.MESH_SIGNALLING_PING_ACK.value,
+                        ]:
+                            self.log.debug(
+                                "[MDM] [demod_audio] moving data to mesh dispatcher", nbytes=nbytes
                             )
+                            MESH_RECEIVED_QUEUE.put(bytes(bytes_out))
+
+                        else:
+                            self.log.debug(
+                                "[MDM] [demod_audio] Pushing received data to received_queue", nbytes=nbytes
+                            )
+                            snr = self.calculate_snr(freedv)
+                            self.modem_received_queue.put([bytes_out, freedv, bytes_per_frame, snr])
+                            self.get_scatter(freedv)
+                            state_buffer = []
+
         except Exception as e:
             self.log.warning("[MDM] [demod_audio] Stream not active anymore", e=e)
 
@@ -1309,7 +1304,7 @@ class RF:
                 threading.Event().wait(0.1)
                 HamlibParam.hamlib_status = self.radio.get_status()
                 threading.Event().wait(0.1)
-                if Modem.transmitting:
+                if self.states.is_transmitting:
                     HamlibParam.alc = self.radio.get_alc()
                     threading.Event().wait(0.1)
                 # HamlibParam.hamlib_rf = self.radio.get_level()
@@ -1351,7 +1346,7 @@ class RF:
             # Therefore we are setting it to 100 so it will be highlighted
             # Have to do this when we are not transmitting so our
             # own sending data will not affect this too much
-            if not Modem.transmitting:
+            if not self.states.is_transmitting:
                 dfft[dfft > avg + 15] = 100
 
                 # Calculate audio dbfs
@@ -1407,12 +1402,11 @@ class RF:
                 range_start = range[0]
                 range_end = range[1]
                 # define the area, we are detecting busy state
-                #dfft = dfft[120:176] if Modem.low_bandwidth_mode else dfft[65:231]
                 slotdfft = dfft[range_start:range_end]
                 # Check for signals higher than average by checking for "100"
                 # If we have a signal, increment our channel_busy delay counter
                 # so we have a smoother state toggle
-                if np.sum(slotdfft[slotdfft > avg + 15]) >= 200 and not Modem.transmitting:
+                if np.sum(slotdfft[slotdfft > avg + 15]) >= 200 and not self.states.is_transmitting:
                     addDelay=True
                     self.states.channel_busy_slot[slot] = True
                 else:
