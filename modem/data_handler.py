@@ -48,6 +48,8 @@ class DATA:
 
         self.mycallsign = config['STATION']['mycall']
         self.mygrid = config['STATION']['mygrid']
+        self.enable_fsk = config['MODEM']['enable_fsk']
+
 
         self.dxcallsign = Station.dxcallsign
 
@@ -2553,8 +2555,8 @@ class DATA:
         ping_frame[4:7] = helpers.get_crc_24(mycallsign)
         ping_frame[7:13] = helpers.callsign_to_bytes(mycallsign)
 
-        if Modem.enable_fsk:
-            self.log.info("[Modem] ENABLE FSK", state=Modem.enable_fsk)
+        if self.enable_fsk:
+            self.log.info("[Modem] ENABLE FSK", state=self.enable_fsk)
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.sig0.value)
@@ -2624,7 +2626,7 @@ class DATA:
         ping_frame[7:11] = helpers.encode_grid(self.mygrid)
         ping_frame[13:14] = helpers.snr_to_bytes(snr)
 
-        if Modem.enable_fsk:
+        if self.enable_fsk:
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.sig0.value)
@@ -2768,8 +2770,8 @@ class DATA:
                         beacon_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
                         beacon_frame[7:11] = helpers.encode_grid(self.mygrid)
 
-                        if Modem.enable_fsk:
-                            self.log.info("[Modem] ENABLE FSK", state=Modem.enable_fsk)
+                        if self.enable_fsk:
+                            self.log.info("[Modem] ENABLE FSK", state=self.enable_fsk)
                             self.enqueue_frame_for_tx(
                                 [beacon_frame],
                                 c2_mode=FREEDV_MODE.fsk_ldpc_0.value,
@@ -2851,8 +2853,8 @@ class DATA:
 
         self.log.debug("[Modem] CQ Frame:", data=[cq_frame])
 
-        if Modem.enable_fsk:
-            self.log.info("[Modem] ENABLE FSK", state=Modem.enable_fsk)
+        if self.enable_fsk:
+            self.log.info("[Modem] ENABLE FSK", state=self.enable_fsk)
             self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
@@ -2929,8 +2931,8 @@ class DATA:
         qrv_frame[7:11] = helpers.encode_grid(self.mygrid)
         qrv_frame[11:12] = helpers.snr_to_bytes(snr)
 
-        if Modem.enable_fsk:
-            self.log.info("[Modem] ENABLE FSK", state=Modem.enable_fsk)
+        if self.enable_fsk:
+            self.log.info("[Modem] ENABLE FSK", state=self.enable_fsk)
             self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)

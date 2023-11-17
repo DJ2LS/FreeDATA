@@ -20,7 +20,7 @@ import codec2
 import itertools
 import numpy as np
 import sounddevice as sd
-from global_instances import HamlibParam, ModemParam, Modem
+from global_instances import HamlibParam, Modem
 from static import FRAME_TYPE
 import structlog
 import tci
@@ -77,6 +77,7 @@ class RF:
         self.rx_audio_level = config['AUDIO']['rx_audio_level']
         self.tx_audio_level = config['AUDIO']['tx_audio_level']
         self.enable_audio_auto_tune = config['AUDIO']['enable_auto_tune']
+        self.enable_fsk = config['MODEM']['enable_fsk']
         self.enable_fft = config['MODEM']['enable_fft']
         self.enable_scatter = config['MODEM']['enable_scatter']
         self.tx_delay = config['MODEM']['tx_delay']
@@ -304,8 +305,8 @@ class RF:
                 (self.dat0_datac1_buffer, RECEIVE_DATAC1),
                 (self.dat0_datac3_buffer, RECEIVE_DATAC3),
                 (self.dat0_datac4_buffer, RECEIVE_DATAC4),
-                (self.fsk_ldpc_buffer_0, Modem.enable_fsk),
-                (self.fsk_ldpc_buffer_1, Modem.enable_fsk),
+                (self.fsk_ldpc_buffer_0, self.enable_fsk),
+                (self.fsk_ldpc_buffer_1, self.enable_fsk),
             ]:
                 if (
                         not (data_buffer.nbuffer + length_x) > data_buffer.size
@@ -338,8 +339,8 @@ class RF:
                             (self.dat0_datac1_buffer, RECEIVE_DATAC1),
                             (self.dat0_datac3_buffer, RECEIVE_DATAC3),
                             (self.dat0_datac4_buffer, RECEIVE_DATAC4),
-                            (self.fsk_ldpc_buffer_0, Modem.enable_fsk),
-                            (self.fsk_ldpc_buffer_1, Modem.enable_fsk),
+                            (self.fsk_ldpc_buffer_0, self.enable_fsk),
+                            (self.fsk_ldpc_buffer_1, self.enable_fsk),
                         ]:
                             if (
                                     not (data_buffer.nbuffer + length_x) > data_buffer.size
@@ -398,8 +399,8 @@ class RF:
                 (self.dat0_datac1_buffer, RECEIVE_DATAC1, 2),
                 (self.dat0_datac3_buffer, RECEIVE_DATAC3, 3),
                 (self.dat0_datac4_buffer, RECEIVE_DATAC4, 4),
-                (self.fsk_ldpc_buffer_0, Modem.enable_fsk, 5),
-                (self.fsk_ldpc_buffer_1, Modem.enable_fsk, 6),
+                (self.fsk_ldpc_buffer_0, self.enable_fsk, 5),
+                (self.fsk_ldpc_buffer_1, self.enable_fsk, 6),
             ]:
                 if (audiobuffer.nbuffer + length_x) > audiobuffer.size:
                     self.buffer_overflow_counter[index] += 1
@@ -732,7 +733,7 @@ class RF:
 
     def init_decoders(self):
 
-        if Modem.enable_fsk:
+        if self.enable_fsk:
             audio_thread_fsk_ldpc0 = threading.Thread(
                 target=self.audio_fsk_ldpc_0, name="AUDIO_THREAD FSK LDPC0", daemon=True
             )
@@ -1167,7 +1168,6 @@ class RF:
     def get_frequency_offset(self, freedv: ctypes.c_void_p) -> float:
         """
         Ask codec2 for the calculated (audio) frequency offset of the received signal.
-        Side-effect: sets ModemParam.frequency_offset
 
         :param freedv: codec2 instance to query
         :type freedv: ctypes.c_void_p
@@ -1177,7 +1177,6 @@ class RF:
         modemStats = codec2.MODEMSTATS()
         codec2.api.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
         offset = round(modemStats.foff) * (-1)
-        ModemParam.frequency_offset = offset
         return offset
 
     def get_scatter(self, freedv: ctypes.c_void_p) -> None:
@@ -1225,7 +1224,6 @@ class RF:
         """
         Ask codec2 for data about the received signal and calculate
         the signal-to-noise ratio.
-        Side effect: sets ModemParam.snr
 
         :param freedv: codec2 instance to query
         :type freedv: ctypes.c_void_p
@@ -1244,15 +1242,13 @@ class RF:
 
             snr = round(modem_stats_snr, 1)
             self.log.info("[MDM] calculate_snr: ", snr=snr)
-            ModemParam.snr = snr
-            # ModemParam.snr = np.clip(
+            # snr = np.clip(
             #    snr, -127, 127
             # )  # limit to max value of -128/128 as a possible fix of #188
-            return ModemParam.snr
+            return snr
         except Exception as err:
             self.log.error(f"[MDM] calculate_snr: Exception: {err}")
-            ModemParam.snr = 0
-            return ModemParam.snr
+            return 0
 
     def init_rig_control(self):
         # Check how we want to control the radio
