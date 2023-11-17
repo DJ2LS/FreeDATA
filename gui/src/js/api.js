@@ -33,3 +33,6 @@ export function stopModem() {
 export function getModemVersion() {
   getFromServer(settings.modem_host, settings.modem_port, "version", null);
 }
+export function getModemCurrentState() {
+  getFromServer(settings.modem_host, settings.modem_port, "modem/state", null);
+}
