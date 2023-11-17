@@ -224,6 +224,7 @@ def sock_fft(sock):
 @sock.route('/states')
 def sock_states(sock):
     sock_watchdog(sock, states_client_list, app.state_queue)
+    app.states.sendStateUpdate()
 
 # websocket multi client support for using with queued information.
 # our client set which contains all connected websocket clients

@@ -13,19 +13,21 @@ class STATES:
         self.is_arq_session = False
         self.arq_session_state = 'disconnected'
         self.audio_dbfs = 0
-        self.last = time.time()
+    
+    def sendStateUpdate (self):
+            self.statequeue.put(self.newstate)
+            
 
     def set(self, key, value):
         setattr(self, key, value)
-        updateCandence = 3
         # only process data if changed
         # but also send an update if more than a 'updateCadence' second(s) has lapsed
         # Otherwise GUI can't tell if modem is active due to lack of state messages on startup
         new_state = self.getAsJSON()
-        if new_state != self.newstate or time.time() - self.last > updateCandence:
-            self.statequeue.put(new_state)
+        if new_state != self.newstate:
             self.newstate = new_state
-            self.last=time.time()
+            self.sendStateUpdate()
+            
 
     def getAsJSON(self):
         return json.dumps({
