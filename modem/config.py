@@ -49,6 +49,8 @@ class CONFIG:
             'rx_buffer_size': int,
             'enable_scatter': bool,
             'tx_delay': int,
+            'enable_hmac':bool,
+            'enable_morse_identifier':bool
         },
     }
 
