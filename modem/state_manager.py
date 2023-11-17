@@ -21,6 +21,8 @@ class STATES:
         self.is_transmitting = False
         self.arq_session_state = 'disconnected'
         self.audio_dbfs = 0
+        self.dxcallsign: bytes = b"ZZ9YY-0"
+        self.dxgrid: bytes = b"------"
 
         self.radio_frequency = 0
         self.radio_mode = None
