@@ -9,7 +9,6 @@ import queue
 import server_commands
 import service_manager
 import state_manager
-from static import Modem as modeminfo
 import threading
 import ujson as json
 
@@ -163,7 +162,7 @@ def post_modem_stop():
 
 @app.route('/version', methods=['GET'])
 def get_modem_version():
-    return api_response({"version": modeminfo.version})
+    return api_response({"version": 0})
 
 
 # @app.route('/modem/arq_connect', methods=['POST'])

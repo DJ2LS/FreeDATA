@@ -1,6 +1,5 @@
 from queues import DATA_QUEUE_TRANSMIT
 import base64
-import helpers
 import structlog
 log = structlog.get_logger("COMMANDS")
 

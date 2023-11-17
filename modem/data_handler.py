@@ -27,7 +27,7 @@ import stats
 import ujson as json
 from codec2 import FREEDV_MODE, FREEDV_MODE_USED_SLOTS
 from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT, RX_BUFFER
-from static import FRAME_TYPE as FR_TYPE
+from modem_frametypes import FRAME_TYPE as FR_TYPE
 import broadcast
 
 TESTMODE = False
@@ -45,6 +45,7 @@ class DATA:
         self.event_queue = event_queue
 
         self.mycallsign = config['STATION']['mycall']
+        self.ssid_list = config['STATION']['ssid_list']
         self.mycallsign_crc = b''
         
         self.mygrid = config['STATION']['mygrid']
@@ -423,8 +424,8 @@ class DATA:
         frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
 
         # check for callsign CRC
-        _valid1, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[1:4]))
-        _valid2, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[2:5]))
+        _valid1, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[1:4]), self.ssid_list)
+        _valid2, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[2:5]), self.ssid_list)
 
         # check for session ID
         # signalling frames
@@ -739,6 +740,7 @@ class DATA:
             snr,
             self.modem_frequency_offset,
             self.states.radio_frequency,
+            self.states.heard_stations
         )
 
         # Check if we received all frames in the burst by checking if burst buffer has no more "Nones"
@@ -1534,6 +1536,7 @@ class DATA:
                 snr,
                 self.modem_frequency_offset,
                 self.states.radio_frequency,
+                self.states.heard_stations
             )
 
             frametype = int.from_bytes(bytes(data_in[:1]), "big")
@@ -1589,6 +1592,7 @@ class DATA:
                 snr,
                 self.modem_frequency_offset,
                 self.states.radio_frequency,
+                self.states.heard_stations
             )
             # Force data loops of Modem to stop and continue with next frame
             self.data_frame_ack_received = True
@@ -1627,6 +1631,7 @@ class DATA:
             snr,
             self.modem_frequency_offset,
             self.states.radio_frequency,
+            self.states.heard_stations
         )
         self.send_data_to_socket_queue(
             freedata="modem-message",
@@ -1666,6 +1671,7 @@ class DATA:
             snr,
             self.modem_frequency_offset,
             self.states.radio_frequency,
+            self.states.heard_stations
         )
 
         self.log.info("[Modem] ARQ REPEAT RECEIVED")
@@ -1881,7 +1887,7 @@ class DATA:
         self.states.set("dxcallsign", self.dxcallsign)
 
         # check if callsign ssid override
-        valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[2:5])
+        valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[2:5], self.ssid_list)
         self.mycallsign = mycallsign
         self.dxgrid = b'------'
         helpers.add_to_heard_stations(
@@ -1891,6 +1897,7 @@ class DATA:
             snr,
             self.modem_frequency_offset,
             self.states.radio_frequency,
+            self.states.heard_stations
         )
         self.log.info(
             "[Modem] SESSION ["
@@ -1957,7 +1964,7 @@ class DATA:
         # We've arrived here from process_data which already checked that the frame
         # is intended for this station.
         # Close the session if the CRC matches the remote station in static.
-        _valid_crc, mycallsign = helpers.check_callsign(self.mycallsign, bytes(data_in[2:5]))
+        _valid_crc, mycallsign = helpers.check_callsign(self.mycallsign, bytes(data_in[2:5]), self.ssid_list)
         _valid_session = helpers.check_session_id(self.session_id, bytes(data_in[1:2]))
         if (_valid_crc or _valid_session) and self.states.arq_session_state not in ["disconnected"]:
             self.states.set("arq_session_state", "disconnected")
@@ -1969,6 +1976,7 @@ class DATA:
                 snr,
                 self.modem_frequency_offset,
                 self.states.radio_frequency,
+                self.states.heard_stations
             )
             self.log.info(
                 "[Modem] SESSION ["
@@ -2020,7 +2028,7 @@ class DATA:
 
         """
         # Accept session data if the DXCALLSIGN_CRC matches the station in static or session id.
-        _valid_crc, _ = helpers.check_callsign(self.dxcallsign, bytes(data_in[4:7]))
+        _valid_crc, _ = helpers.check_callsign(self.dxcallsign, bytes(data_in[4:7]), self.ssid_list)
         _valid_session = helpers.check_session_id(self.session_id, bytes(data_in[1:2]))
         if _valid_crc or _valid_session and self.states.arq_session_state in ["connected", "connecting"]:
             self.log.debug("[Modem] Received session heartbeat")
@@ -2032,6 +2040,7 @@ class DATA:
                 snr,
                 self.modem_frequency_offset,
                 self.states.radio_frequency,
+                self.states.heard_stations
             )
 
             self.send_data_to_socket_queue(
@@ -2259,7 +2268,7 @@ class DATA:
         self.arq_file_transfer = True
 
         # check if callsign ssid override
-        _, self.mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
+        _, self.mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4], self.ssid_list)
 
         # ignore channel opener if already in ARQ STATE
         # use case: Station A is connecting to Station B while
@@ -2350,12 +2359,13 @@ class DATA:
             snr,
             self.modem_frequency_offset,
             self.states.radio_frequency,
+            self.states.heard_stations
         )
 
         self.session_id = data_in[13:14]
 
         # check again if callsign ssid override
-        _, self.mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
+        _, self.mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4], self.ssid_list)
 
         self.log.info(
             "[Modem] ARQ | DATA | RX | ["
@@ -2464,6 +2474,7 @@ class DATA:
                 snr,
                 self.modem_frequency_offset,
                 self.states.radio_frequency,
+                self.states.heard_stations
             )
 
             self.log.info(
@@ -2566,7 +2577,7 @@ class DATA:
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[7:13]))
 
         # check if callsign ssid override
-        valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
+        valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4], self.ssid_list)
         if not valid:
             # PING packet not for me.
             self.log.debug("[Modem] received_ping: ping not for this station.")
@@ -2591,6 +2602,7 @@ class DATA:
             snr,
             self.modem_frequency_offset,
             self.states.radio_frequency,
+            self.states.heard_stations
         )
 
         self.send_data_to_socket_queue(
@@ -2634,7 +2646,7 @@ class DATA:
 
         # check if we received correct ping
         # check if callsign ssid override
-        _valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
+        _valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4], self.ssid_list)
         if _valid:
 
             self.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
@@ -2659,6 +2671,7 @@ class DATA:
                 combined_snr,
                 self.modem_frequency_offset,
                 self.states.radio_frequency,
+                self.states.heard_stations
             )
 
             self.log.info(
@@ -2821,6 +2834,7 @@ class DATA:
             snr,
             self.modem_frequency_offset,
             self.states.radio_frequency,
+            self.states.heard_stations
         )
 
     def transmit_cq(self) -> None:
@@ -2888,6 +2902,7 @@ class DATA:
             snr,
             self.modem_frequency_offset,
             self.states.radio_frequency,
+            self.states.heard_stations
         )
 
         if self.respond_to_cq and self.respond_to_call:
@@ -2969,6 +2984,7 @@ class DATA:
             combined_snr,
             self.modem_frequency_offset,
             self.states.radio_frequency,
+            self.states.heard_stations
         )
 
 

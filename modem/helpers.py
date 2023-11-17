@@ -7,7 +7,6 @@ Created on Fri Dec 25 21:25:14 2020
 import time
 from datetime import datetime,timezone
 import crcengine
-from global_instances import Station, Modem
 import structlog
 import numpy as np
 import threading
@@ -122,7 +121,7 @@ def get_crc_32(data: bytes) -> bytes:
     return crc_data
 
 
-def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
+def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency, heard_stations_list):
     """
 
     Args:
@@ -137,16 +136,16 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
         Nothing
     """
     # check if buffer empty
-    if len(Modem.heard_stations) == 0:
-        Modem.heard_stations.append(
+    if len(heard_stations_list) == 0:
+        heard_stations_list.append(
             [dxcallsign, dxgrid, int(datetime.now(timezone.utc).timestamp()), datatype, snr, offset, frequency]
         )
     # if not, we search and update
     else:
-        for i in range(len(Modem.heard_stations)):
+        for i in range(len(heard_stations_list)):
             # Update callsign with new timestamp
-            if Modem.heard_stations[i].count(dxcallsign) > 0:
-                Modem.heard_stations[i] = [
+            if heard_stations_list[i].count(dxcallsign) > 0:
+                heard_stations_list[i] = [
                     dxcallsign,
                     dxgrid,
                     int(time.time()),
@@ -157,8 +156,8 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
                 ]
                 break
             # Insert if nothing found
-            if i == len(Modem.heard_stations) - 1:
-                Modem.heard_stations.append(
+            if i == len(heard_stations_list) - 1:
+                heard_stations_list.append(
                     [
                         dxcallsign,
                         dxgrid,
@@ -172,10 +171,10 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
                 break
 
 
-#    for idx, item in enumerate(Modem.heard_stations):
+#    for idx, item in enumerate(heard_stations_list):
 #        if dxcallsign in item:
 #            item = [dxcallsign, int(time.time())]
-#            Modem.heard_stations[idx] = item
+#            heard_stations_list[idx] = item
 
 
 def callsign_to_bytes(callsign) -> bytes:
@@ -287,7 +286,7 @@ def bytes_to_callsign(bytestring: bytes) -> bytes:
     return bytes(f"{callsign}-{ssid}", "utf-8")
 
 
-def check_callsign(callsign: bytes, crc_to_check: bytes):
+def check_callsign(callsign: bytes, crc_to_check: bytes, ssid_list):
     """
     Function to check a crc against a callsign to calculate the
     ssid by generating crc until we find the correct SSID
@@ -312,7 +311,7 @@ def check_callsign(callsign: bytes, crc_to_check: bytes):
     except Exception as err:
         log.debug("[HLP] check_callsign: Error callsign SSID to integer:", e=err)
 
-    for ssid in Station.ssid_list:
+    for ssid in ssid_list:
         call_with_ssid = bytearray(callsign)
         call_with_ssid.extend("-".encode("utf-8"))
         call_with_ssid.extend(str(ssid).encode("utf-8"))

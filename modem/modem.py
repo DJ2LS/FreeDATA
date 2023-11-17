@@ -20,7 +20,6 @@ import codec2
 import itertools
 import numpy as np
 import sounddevice as sd
-from static import FRAME_TYPE
 import structlog
 import tci
 import cw

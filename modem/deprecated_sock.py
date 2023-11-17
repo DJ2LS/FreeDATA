@@ -26,7 +26,7 @@ import threading
 import time
 import wave
 import helpers
-import static
+import deprecated_static
 from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem, MeshParam
 import structlog
 from random import randrange

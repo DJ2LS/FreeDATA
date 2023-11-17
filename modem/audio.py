@@ -3,7 +3,6 @@ Gather information about audio devices.
 """
 import atexit
 import multiprocessing
-
 import crcengine
 import sounddevice as sd
 import structlog
