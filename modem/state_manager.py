@@ -20,10 +20,19 @@ class STATES:
         self.is_arq_state = False
         self.is_arq_session = False
         self.is_transmitting = False
-        self.arq_session_state = 'disconnected'
         self.audio_dbfs = 0
         self.dxcallsign: bytes = b"ZZ9YY-0"
         self.dxgrid: bytes = b"------"
+
+        self.arq_session_state = 'disconnected'
+        self.arq_speed_level = 0
+        self.arq_total_bytes = 0
+        self.arq_bits_per_second = 0
+        self.arq_bytes_per_minute = 0
+        self.arq_transmission_percent = 0
+        self.arq_compression_factor = 0
+        self.arq_speed_list = []
+        self.arq_seconds_until_timeout = 0
 
         self.radio_frequency = 0
         self.radio_mode = None
