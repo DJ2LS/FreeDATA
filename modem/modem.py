@@ -27,6 +27,7 @@ from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUE
     AUDIO_RECEIVED_QUEUE, AUDIO_TRANSMIT_QUEUE, MESH_RECEIVED_QUEUE
 import audio
 import event_manager
+from modem_frametypes import FRAME_TYPE
 
 TESTMODE = False
 RXCHANNEL = ""
@@ -873,7 +874,7 @@ class RF:
                             self.log.debug(
                                 "[MDM] [demod_audio] moving data to mesh dispatcher", nbytes=nbytes
                             )
-                            MESH_RECEIVED_QUEUE.put(bytes(bytes_out))
+                            MESH_RECEIVED_QUEUE.put([bytes(bytes_out), snr])
 
                         else:
                             self.log.debug(
@@ -1305,9 +1306,9 @@ class RF:
                 if self.states.is_transmitting:
                     self.radio_alc = self.radio.get_alc()
                     threading.Event().wait(0.1)
-                # HamlibParam.hamlib_rf = self.radio.get_level()
+                self.states.set("radio_rf_power", self.radio.get_level())
                 # threading.Event().wait(0.1)
-                self.states.set("radio_rf_power", self.radio.get_strength())
+                self.states.set("radio_strength", self.radio.get_strength())
 
             except Exception as e:
                 self.log.warning(

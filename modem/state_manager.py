@@ -3,6 +3,8 @@ import ujson as json
 class STATES:
     def __init__(self, statequeue):
 
+        self.modem_version = 0.0
+
         # state related settings
         self.statequeue = statequeue
         self.newstate = None
@@ -35,10 +37,13 @@ class STATES:
         self.arq_speed_list = []
         self.arq_seconds_until_timeout = 0
 
+        self.mesh_routing_table = []
+
         self.radio_frequency = 0
         self.radio_mode = None
         self.radio_bandwidth = 0
         self.radio_rf_power = 0
+        self.radio_strength = 0
 
     def sendState (self):
         currentState = self.getAsJSON(False)

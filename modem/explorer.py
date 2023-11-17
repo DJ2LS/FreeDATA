@@ -11,7 +11,6 @@ import requests
 import threading
 import ujson as json
 import structlog
-from global_instances import HamlibParam, Modem
 
 log = structlog.get_logger("explorer")
 
@@ -34,21 +33,21 @@ class explorer():
 
     def push(self):
 
-        frequency = 0 if HamlibParam.hamlib_frequency is None else HamlibParam.hamlib_frequency
+        frequency = 0 if self.states.radio_frequency is None else self.states.radio_frequency
         band = "USB"
         callsign = str(self.config['STATION']['mycall'])
         gridsquare = str(self.config['STATION']['mygrid'])
-        version = str(Modem.version)
+        version = str(self.states.modem_version)
         bandwidth = str(self.config['MODEM']['enable_low_bandwidth_mode'])
         beacon = str(self.states.is_beacon_running)
-        strength = str(HamlibParam.hamlib_strength)
+        strength = str(self.states.radio_strength)
 
         log.info("[EXPLORER] publish", frequency=frequency, band=band, callsign=callsign, gridsquare=gridsquare, version=version, bandwidth=bandwidth)
 
         headers = {"Content-Type": "application/json"}
         station_data = {'callsign': callsign, 'gridsquare': gridsquare, 'frequency': frequency, 'strength': strength, 'band': band, 'version': version, 'bandwidth': bandwidth, 'beacon': beacon, "lastheard": []}
 
-        for i in Modem.heard_stations:
+        for i in self.states.heard_stations:
             try:
                 callsign = str(i[0], "UTF-8")
                 grid = str(i[1], "UTF-8")

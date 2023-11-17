@@ -41,13 +41,13 @@ class DATA:
     def __init__(self, config, event_queue, states) -> None:
         self.states = states
 
-        self.stats = stats.stats()
+        self.stats = stats.stats(config, event_queue, states)
         self.event_queue = event_queue
 
         self.mycallsign = config['STATION']['mycall']
         self.ssid_list = config['STATION']['ssid_list']
-        self.mycallsign_crc = b''
-        
+        self.mycallsign_crc = helpers.get_crc_24(self.mycallsign)
+
         self.mygrid = config['STATION']['mygrid']
         self.enable_fsk = config['MODEM']['enable_fsk']
         self.respond_to_cq = config['MODEM']['respond_to_cq']
