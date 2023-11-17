@@ -51,6 +51,13 @@ class DATA:
         
         self.mygrid = config['STATION']['mygrid']
         self.enable_fsk = config['MODEM']['enable_fsk']
+        self.respond_to_cq = config['MODEM']['respond_to_cq']
+        self.enable_hmac = config['MODEM']['enable_hmac']
+        # Enable general responding to channel openers for example
+        # this can be combined with a callsign blacklist for example
+        self.respond_to_call = True
+
+
 
         # TODO we need to pass this information from modem when receiving a burst
         self.modem_frequency_offset = 0
@@ -899,7 +906,7 @@ class DATA:
             data_frame_crc_received = helpers.get_crc_32(data_frame)
 
             # check if hmac signing enabled
-            if Modem.enable_hmac:
+            if self.enable_hmac:
                 self.log.info(
                     "[Modem] [HMAC] Enabled",
                 )
@@ -1864,7 +1871,7 @@ class DATA:
           data_in:bytes:
         """
         # if we don't want to respond to calls, return False
-        if not Modem.respond_to_call:
+        if not self.respond_to_call:
             return False
 
         # ignore channel opener if already in ARQ STATE
@@ -2254,7 +2261,7 @@ class DATA:
         # is intended for this station.
 
         # stop processing if we don't want to respond to a call when not in a arq session
-        if not Modem.respond_to_call and not ARQ.arq_session:
+        if not self.respond_to_call and not ARQ.arq_session:
             return False
 
         # stop processing if not in arq session, but modem state is busy and we have a different session id
@@ -2609,7 +2616,7 @@ class DATA:
             mycallsign=str(mycallsign, "UTF-8"),
             snr=str(snr),
         )
-        if Modem.respond_to_call:
+        if self.respond_to_call:
             self.transmit_ping_ack(snr)
 
     def transmit_ping_ack(self, snr):
@@ -2896,7 +2903,7 @@ class DATA:
             self.states.radio_frequency,
         )
 
-        if Modem.respond_to_cq and Modem.respond_to_call:
+        if self.respond_to_cq and self.respond_to_call:
             self.transmit_qrv(dxcallsign, snr)
 
     def transmit_qrv(self, dxcallsign: bytes, snr) -> None:
