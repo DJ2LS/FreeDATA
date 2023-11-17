@@ -20,6 +20,7 @@ import infoScreen from "./infoScreen.vue";
 
 import { stopTransmission } from "../js/sock.js";
 import { getModemConfig } from "../js/api";
+import main_modem_healthcheck from "./main_modem_healthcheck.vue";
 
 function stopAllTransmissions() {
   console.log("stopping transmissions");
@@ -53,14 +54,7 @@ function stopAllTransmissions() {
             role="tablist"
             style="margin-top: 100px"
           >
-            <a
-              class="btn border btn-outline-secondary list-group-item mb-5"
-              data-bs-html="false"
-              data-bs-toggle="modal"
-              data-bs-target="#modemCheck"
-              title="Check FreeDATA status"
-              ><i class="bi bi-activity h3"></i>
-            </a>
+            <main_modem_healthcheck />
 
             <a
               class="list-group-item list-group-item-dark list-group-item-action border-0 rounded-3 mb-2 active"
