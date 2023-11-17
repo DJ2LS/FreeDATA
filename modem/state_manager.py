@@ -22,6 +22,11 @@ class STATES:
         self.arq_session_state = 'disconnected'
         self.audio_dbfs = 0
 
+        self.radio_frequency = 0
+        self.radio_mode = None
+        self.radio_bandwidth = 0
+        self.radio_rf_power = 0
+
     def set(self, key, value):
         setattr(self, key, value)
         updateCandence = 3
