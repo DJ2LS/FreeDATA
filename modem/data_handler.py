@@ -23,7 +23,7 @@ import codec2
 import helpers
 import modem
 import numpy as np
-from global_instances import ARQ, HamlibParam, ModemParam, Station, Modem
+from global_instances import ARQ, Modem
 import structlog
 import stats
 import ujson as json
@@ -47,10 +47,18 @@ class DATA:
         self.event_queue = event_queue
 
         self.mycallsign = config['STATION']['mycall']
+        self.mycallsign_crc = b''
+        
         self.mygrid = config['STATION']['mygrid']
+        self.enable_fsk = config['MODEM']['enable_fsk']
 
-        self.dxcallsign = Station.dxcallsign
+        # TODO we need to pass this information from modem when receiving a burst
+        self.modem_frequency_offset = 0
 
+        self.dxcallsign = b"ZZ9YY-0"
+        self.dxcallsign_crc = b''
+        self.dxgrid = b''
+        
         self.data_queue_transmit = DATA_QUEUE_TRANSMIT
         self.data_queue_received = DATA_QUEUE_RECEIVED
 
@@ -489,19 +497,14 @@ class DATA:
         :param repeat_delay: Delay time before sending repeat frame, defaults to 0
         :type repeat_delay: int, optional
         """
-        #print(frame_to_tx[0])
-        #print(frame_to_tx)
         frame_type = FR_TYPE(int.from_bytes(frame_to_tx[0][:1], byteorder="big")).name
         self.log.debug("[Modem] enqueue_frame_for_tx", c2_mode=FREEDV_MODE(c2_mode).name, data=frame_to_tx,
                        type=frame_type)
 
-        # Set the TRANSMITTING flag before adding an object to the transmit queue
-        # TODO This is not that nice, we could improve this somehow
-        Modem.transmitting = True
         modem.MODEM_TRANSMIT_QUEUE.put([c2_mode, copies, repeat_delay, frame_to_tx])
 
         # Wait while transmitting
-        while Modem.transmitting:
+        while self.states.is_transmitting:
             threading.Event().wait(0.01)
 
     def send_data_to_socket_queue(self, **jsondata):
@@ -518,8 +521,8 @@ class DATA:
                 uuid=self.transmission_uuid,
                 timestamp=timestamp,
                 mycallsign=str(self.mycallsign, "UTF-8"),
-                dxcallsign=str(Station.dxcallsign, "UTF-8"),
-                dxgrid=str(Station.dxgrid, "UTF-8"),
+                dxcallsign=str(self.dxcallsign, "UTF-8"),
+                dxgrid=str(self.dxgrid, "UTF-8"),
                 data=base64_data,
             )
         """
@@ -530,7 +533,7 @@ class DATA:
             if "mycallsign" not in jsondata:
                 jsondata["mycallsign"] = str(self.mycallsign, "UTF-8")
             if "dxcallsign" not in jsondata:
-                jsondata["dxcallsign"] = str(Station.dxcallsign, "UTF-8")
+                jsondata["dxcallsign"] = str(self.dxcallsign, "UTF-8")
         except Exception as e:
             self.log.debug("[Modem] error adding callsigns to network message", e=e)
 
@@ -565,7 +568,7 @@ class DATA:
         ack_frame[4:8] = len(ARQ.rx_frame_buffer).to_bytes(4, byteorder="big")
 
         # wait if  we have a channel busy condition
-        if ModemParam.channel_busy:
+        if self.states.channel_busy:
             self.channel_busy_handler()
 
         # Transmit frame
@@ -580,7 +583,7 @@ class DATA:
         ack_frame[2:3] = helpers.snr_to_bytes(snr)
 
         # wait if  we have a channel busy condition
-        if ModemParam.channel_busy:
+        if self.states.channel_busy:
             self.channel_busy_handler()
 
         # Transmit frame
@@ -620,7 +623,7 @@ class DATA:
         # self.enqueue_frame_for_tx([ack_frame, self.send_ident_frame(False)], c2_mode=FREEDV_MODE.sig1.value, copies=3, repeat_delay=0)
 
         # wait if  we have a channel busy condition
-        if ModemParam.channel_busy:
+        if self.states.channel_busy:
             self.channel_busy_handler()
 
         self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=3, repeat_delay=0)
@@ -647,7 +650,7 @@ class DATA:
         nack_frame[5:9] = len(ARQ.rx_frame_buffer).to_bytes(4, byteorder="big")
 
         # wait if  we have a channel busy condition
-        if ModemParam.channel_busy:
+        if self.states.channel_busy:
             self.channel_busy_handler()
 
         # TRANSMIT NACK FRAME FOR BURST
@@ -661,10 +664,10 @@ class DATA:
         disconnection_frame = bytearray(self.length_sig1_frame)
         disconnection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_CLOSE.value])
         disconnection_frame[1:2] = self.session_id
-        disconnection_frame[2:5] = Station.dxcallsign_crc
+        disconnection_frame[2:5] = self.dxcallsign_crc
 
         # wait if  we have a channel busy condition
-        if ModemParam.channel_busy:
+        if self.states.channel_busy:
             self.channel_busy_handler()
 
         self.enqueue_frame_for_tx([disconnection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=3, repeat_delay=0)
@@ -686,14 +689,14 @@ class DATA:
         data_in = bytes(data_in)
 
         # only process data if we are in ARQ and BUSY state else return to quit
-        if not self.states.is_arq_state and Modem.modem_state not in ["BUSY"]:
+        if not self.states.is_arq_state and not self.states.is_modem_busy:
             self.log.warning("[Modem] wrong modem state - dropping data", is_arq_state=self.states.is_arq_state,
-                             modem_state=Modem.modem_state)
+                             modem_state=self.states.is_modem_busy)
             return
 
         self.arq_file_transfer = True
 
-        Modem.modem_state = "BUSY"
+        self.states.set("is_modem_busy", True)
         self.states.set("is_arq_state", True)
 
         # Update data_channel timestamp
@@ -715,14 +718,14 @@ class DATA:
         # Append data to rx burst buffer
         ARQ.rx_burst_buffer[self.rx_n_frame_of_burst] = data_in[self.arq_burst_header_size:]  # type: ignore
 
-        Station.dxgrid = b'------'
+        self.dxgrid = b'------'
         helpers.add_to_heard_stations(
-            Station.dxcallsign,
-            Station.dxgrid,
+            self.dxcallsign,
+            self.dxgrid,
             "DATA",
             snr,
-            ModemParam.frequency_offset,
-            HamlibParam.hamlib_frequency,
+            self.modem_frequency_offset,
+            self.states.radio_frequency,
         )
 
         # Check if we received all frames in the burst by checking if burst buffer has no more "Nones"
@@ -976,10 +979,10 @@ class DATA:
         """
         mode_name = FREEDV_MODE(self.mode_list[self.speed_level]).name
         mode_slots = FREEDV_MODE_USED_SLOTS[mode_name].value
-        if mode_slots in [ModemParam.channel_busy_slot]:
+        if mode_slots in [self.states.channel_busy_slot]:
             self.log.warning(
                 "[Modem] busy slot detection",
-                slots=ModemParam.channel_busy_slot,
+                slots=self.states.channel_busy_slot,
                 mode_slots=mode_slots,
             )
             return False
@@ -1087,8 +1090,8 @@ class DATA:
                 [
                     self.transmission_uuid,
                     timestamp,
-                    Station.dxcallsign,
-                    Station.dxgrid,
+                    self.dxcallsign,
+                    self.dxgrid,
                     base64_data,
                     signed,
                     ARQ.arq_compression_factor,
@@ -1109,8 +1112,8 @@ class DATA:
                 e=e,
                 uuid=self.transmission_uuid,
                 timestamp=timestamp,
-                dxcall=Station.dxcallsign,
-                dxgrid=Station.dxgrid,
+                dxcall=self.dxcallsign,
+                dxgrid=self.dxgrid,
                 data=base64_data
             )
 
@@ -1120,8 +1123,8 @@ class DATA:
                     self.transmission_uuid,
                     timestamp,
                     self.mycallsign,
-                    Station.dxcallsign,
-                    Station.dxgrid,
+                    self.dxcallsign,
+                    self.dxgrid,
                     data_frame
                 )
             except Exception as e:
@@ -1130,8 +1133,8 @@ class DATA:
                     e=e,
                     uuid=self.transmission_uuid,
                     timestamp=timestamp,
-                    dxcall=Station.dxcallsign,
-                    dxgrid=Station.dxgrid,
+                    dxcall=self.dxcallsign,
+                    dxgrid=self.dxgrid,
                     data=base64_data
                 )
 
@@ -1146,8 +1149,8 @@ class DATA:
             timestamp=timestamp,
             finished=0,
             mycallsign=str(self.mycallsign, "UTF-8"),
-            dxcallsign=str(Station.dxcallsign, "UTF-8"),
-            dxgrid=str(Station.dxgrid, "UTF-8"),
+            dxcallsign=str(self.dxcallsign, "UTF-8"),
+            dxgrid=str(self.dxgrid, "UTF-8"),
             data=base64_data,
             irs=helpers.bool_to_string(self.is_IRS),
             hmac_signed=signed,
@@ -1173,7 +1176,7 @@ class DATA:
             "[Modem] | RX | DATACHANNEL ["
             + str(self.mycallsign, "UTF-8")
             + "]<< >>["
-            + str(Station.dxcallsign, "UTF-8")
+            + str(self.dxcallsign, "UTF-8")
             + "]",
             snr=snr,
         )
@@ -1529,14 +1532,14 @@ class DATA:
         """
         # Process data only if we are in ARQ and BUSY state
         if self.states.is_arq_state:
-            Station.dxgrid = b'------'
+            self.dxgrid = b'------'
             helpers.add_to_heard_stations(
                 self.dxcallsign,
-                Station.dxgrid,
+                self.dxgrid,
                 "DATA",
                 snr,
-                ModemParam.frequency_offset,
-                HamlibParam.hamlib_frequency,
+                self.modem_frequency_offset,
+                self.states.radio_frequency,
             )
 
             frametype = int.from_bytes(bytes(data_in[:1]), "big")
@@ -1584,14 +1587,14 @@ class DATA:
         """Received an ACK for a transmitted frame"""
         # Process data only if we are in ARQ and BUSY state
         if self.states.is_arq_state:
-            Station.dxgrid = b'------'
+            self.dxgrid = b'------'
             helpers.add_to_heard_stations(
-                Station.dxcallsign,
-                Station.dxgrid,
+                self.dxcallsign,
+                self.dxgrid,
                 "DATA",
                 snr,
-                ModemParam.frequency_offset,
-                HamlibParam.hamlib_frequency,
+                self.modem_frequency_offset,
+                self.states.radio_frequency,
             )
             # Force data loops of Modem to stop and continue with next frame
             self.data_frame_ack_received = True
@@ -1622,14 +1625,14 @@ class DATA:
                          speed_list=ARQ.speed_list
                          )
 
-        Station.dxgrid = b'------'
+        self.dxgrid = b'------'
         helpers.add_to_heard_stations(
-            Station.dxcallsign,
-            Station.dxgrid,
+            self.dxcallsign,
+            self.dxgrid,
             "DATA",
             snr,
-            ModemParam.frequency_offset,
-            HamlibParam.hamlib_frequency,
+            self.modem_frequency_offset,
+            self.states.radio_frequency,
         )
         self.send_data_to_socket_queue(
             freedata="modem-message",
@@ -1659,16 +1662,16 @@ class DATA:
 
         """
         # Only process data if we are in ARQ and BUSY state
-        if not self.states.is_arq_state or Modem.modem_state != "BUSY":
+        if not self.states.is_arq_state or not self.states.is_modem_busy:
             return
-        Station.dxgrid = b'------'
+        self.dxgrid = b'------'
         helpers.add_to_heard_stations(
-            Station.dxcallsign,
-            Station.dxgrid,
+            self.dxcallsign,
+            self.dxgrid,
             "DATA",
             snr,
-            ModemParam.frequency_offset,
-            HamlibParam.hamlib_frequency,
+            self.modem_frequency_offset,
+            self.states.radio_frequency,
         )
 
         self.log.info("[Modem] ARQ REPEAT RECEIVED")
@@ -1702,7 +1705,7 @@ class DATA:
     ############################################################################################################
     def arq_session_handler(self, mycallsign, dxcallsign, attempts) -> bool:
         """
-        Create a session with `Station.dxcallsign` and wait until the session is open.
+        Create a session with `self.dxcallsign` and wait until the session is open.
 
         Returns:
             True if the session was opened successfully
@@ -1714,8 +1717,8 @@ class DATA:
         self.mycallsign = mycallsign
         self.dxcallsign = dxcallsign
 
-        Station.dxcallsign = self.dxcallsign
-        Station.dxcallsign_crc = helpers.get_crc_24(self.dxcallsign)
+        self.states.set("dxcallsign", self.dxcallsign)
+        self.dxcallsign_crc = helpers.get_crc_24(self.dxcallsign)
 
         self.log.info(
             "[Modem] SESSION ["
@@ -1727,7 +1730,7 @@ class DATA:
         )
 
         # wait if  we have a channel busy condition
-        if ModemParam.channel_busy:
+        if self.states.channel_busy:
             self.channel_busy_handler()
 
         self.open_session()
@@ -1792,8 +1795,8 @@ class DATA:
         connection_frame = bytearray(self.length_sig0_frame)
         connection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_OPEN.value])
         connection_frame[1:2] = self.session_id
-        connection_frame[2:5] = Station.dxcallsign_crc
-        connection_frame[5:8] = Station.mycallsign_crc
+        connection_frame[2:5] = self.dxcallsign_crc
+        connection_frame[5:8] = self.mycallsign_crc
         connection_frame[8:14] = helpers.callsign_to_bytes(self.mycallsign)
 
         while not ARQ.arq_session:
@@ -1879,21 +1882,21 @@ class DATA:
         self.arq_session_last_received = int(time.time())
 
         self.session_id = bytes(data_in[1:2])
-        Station.dxcallsign_crc = bytes(data_in[5:8])
+        self.dxcallsign_crc = bytes(data_in[5:8])
         self.dxcallsign = helpers.bytes_to_callsign(bytes(data_in[8:14]))
-        Station.dxcallsign = self.dxcallsign
+        self.states.set("dxcallsign", self.dxcallsign)
 
         # check if callsign ssid override
         valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[2:5])
         self.mycallsign = mycallsign
-        Station.dxgrid = b'------'
+        self.dxgrid = b'------'
         helpers.add_to_heard_stations(
-            Station.dxcallsign,
-            Station.dxgrid,
+            self.dxcallsign,
+            self.dxgrid,
             "DATA",
             snr,
-            ModemParam.frequency_offset,
-            HamlibParam.hamlib_frequency,
+            self.modem_frequency_offset,
+            self.states.radio_frequency,
         )
         self.log.info(
             "[Modem] SESSION ["
@@ -1904,7 +1907,7 @@ class DATA:
             self.states.arq_session_state,
         )
         ARQ.arq_session = True
-        Modem.modem_state = "BUSY"
+        self.states.set("is_modem_busy", True)
 
         self.send_data_to_socket_queue(
             freedata="modem-message",
@@ -1964,14 +1967,14 @@ class DATA:
         _valid_session = helpers.check_session_id(self.session_id, bytes(data_in[1:2]))
         if (_valid_crc or _valid_session) and self.states.arq_session_state not in ["disconnected"]:
             self.states.set("arq_session_state", "disconnected")
-            Station.dxgrid = b'------'
+            self.dxgrid = b'------'
             helpers.add_to_heard_stations(
-                Station.dxcallsign,
-                Station.dxgrid,
+                self.dxcallsign,
+                self.dxgrid,
                 "DATA",
                 snr,
-                ModemParam.frequency_offset,
-                HamlibParam.hamlib_frequency,
+                self.modem_frequency_offset,
+                self.states.radio_frequency,
             )
             self.log.info(
                 "[Modem] SESSION ["
@@ -1997,7 +2000,7 @@ class DATA:
     def transmit_session_heartbeat(self) -> None:
         """Send ARQ sesion heartbeat while connected"""
         # ARQ.arq_session = True
-        # Modem.modem_state = "BUSY"
+        # self.states.set("is_modem_busy", True)
         # self.states.set("arq_session_state", "connected")
 
         connection_frame = bytearray(self.length_sig0_frame)
@@ -2027,14 +2030,14 @@ class DATA:
         _valid_session = helpers.check_session_id(self.session_id, bytes(data_in[1:2]))
         if _valid_crc or _valid_session and self.states.arq_session_state in ["connected", "connecting"]:
             self.log.debug("[Modem] Received session heartbeat")
-            Station.dxgrid = b'------'
+            self.dxgrid = b'------'
             helpers.add_to_heard_stations(
                 self.dxcallsign,
-                Station.dxgrid,
+                self.dxgrid,
                 "SESSION-HB",
                 snr,
-                ModemParam.frequency_offset,
-                HamlibParam.hamlib_frequency,
+                self.modem_frequency_offset,
+                self.states.radio_frequency,
             )
 
             self.send_data_to_socket_queue(
@@ -2048,7 +2051,7 @@ class DATA:
 
             ARQ.arq_session = True
             self.states.set("arq_session_state", "connected")
-            Modem.modem_state = "BUSY"
+            self.states.set("is_modem_busy", True)
 
             # Update the timeout timestamps
             self.arq_session_last_received = int(time.time())
@@ -2096,14 +2099,12 @@ class DATA:
         # overwrite mycallsign in case of different SSID
         self.mycallsign = mycallsign
         self.dxcallsign = dxcallsign
-
-        Station.dxcallsign = dxcallsign
-        Station.dxcallsign_crc = helpers.get_crc_24(Station.dxcallsign)
+        self.dxcallsign_crc = helpers.get_crc_24(self.dxcallsign)
 
         # override session connection attempts
         self.data_channel_max_retries = attempts
 
-        Modem.modem_state = "BUSY"
+        self.states.set("is_modem_busy", True)
         self.arq_file_transfer = True
 
         self.transmission_uuid = transmission_uuid
@@ -2195,8 +2196,8 @@ class DATA:
 
         connection_frame = bytearray(self.length_sig0_frame)
         connection_frame[:1] = frametype
-        connection_frame[1:4] = Station.dxcallsign_crc
-        connection_frame[4:7] = Station.mycallsign_crc
+        connection_frame[1:4] = self.dxcallsign_crc
+        connection_frame[4:7] = self.mycallsign_crc
         connection_frame[7:13] = helpers.callsign_to_bytes(mycallsign)
         connection_frame[13:14] = self.session_id
 
@@ -2221,7 +2222,7 @@ class DATA:
             )
 
             # Let's check if we have a busy channel and if we are not in a running arq session.
-            if ModemParam.channel_busy and not self.arq_state_event.is_set() or self.states.is_codec2_traffic:
+            if self.states.channel_busy and not self.arq_state_event.is_set() or self.states.is_codec2_traffic:
                 self.channel_busy_handler()
 
             # if channel free, enqueue frame for tx
@@ -2235,7 +2236,7 @@ class DATA:
 
             if self.states.is_arq_state_event.is_set():
                 return True
-            if Modem.modem_state in ["IDLE"]:
+            if not self.states.is_modem_busy:
                 return False
 
         # `data_channel_max_retries` attempts have been sent. Aborting attempt & cleaning up
@@ -2258,7 +2259,7 @@ class DATA:
 
         # stop processing if not in arq session, but modem state is busy and we have a different session id
         # use-case we get a connection request while connecting to another station
-        if not ARQ.arq_session and Modem.modem_state in ["BUSY"] and data_in[13:14] != self.session_id:
+        if not ARQ.arq_session and self.states.is_modem_busy and data_in[13:14] != self.session_id:
             return False
 
         self.arq_file_transfer = True
@@ -2276,9 +2277,9 @@ class DATA:
 
         self.is_IRS = True
 
-        Station.dxcallsign_crc = bytes(data_in[4:7])
+        self.dxcallsign_crc = bytes(data_in[4:7])
         self.dxcallsign = helpers.bytes_to_callsign(bytes(data_in[7:13]))
-        Station.dxcallsign = self.dxcallsign
+        self.states.set("dxcallsign", self.dxcallsign)
 
         self.send_data_to_socket_queue(
             freedata="modem-message",
@@ -2347,14 +2348,14 @@ class DATA:
 
         # Update modes we are listening to
         self.set_listening_modes(True, True, self.mode_list[self.speed_level])
-        Station.dxgrid = b'------'
+        self.dxgrid = b'------'
         helpers.add_to_heard_stations(
-            Station.dxcallsign,
-            Station.dxgrid,
+            self.dxcallsign,
+            self.dxgrid,
             "DATA",
             snr,
-            ModemParam.frequency_offset,
-            HamlibParam.hamlib_frequency,
+            self.modem_frequency_offset,
+            self.states.radio_frequency,
         )
 
         self.session_id = data_in[13:14]
@@ -2379,7 +2380,7 @@ class DATA:
         # Set ARQ State AFTER resetting timeouts
         # this avoids timeouts starting too early
         self.states.set("is_arq_state", True)
-        Modem.modem_state = "BUSY"
+        self.states.set("is_modem_busy", True)
 
         self.reset_statistics()
 
@@ -2461,14 +2462,14 @@ class DATA:
             self.speed_level = int.from_bytes(bytes(data_in[8:9]), "big")
             self.log.debug("[Modem] speed level selected for given SNR", speed_level=self.speed_level)
 
-            Station.dxgrid = b'------'
+            self.dxgrid = b'------'
             helpers.add_to_heard_stations(
-                Station.dxcallsign,
-                Station.dxgrid,
+                self.dxcallsign,
+                self.dxgrid,
                 "DATA",
                 snr,
-                ModemParam.frequency_offset,
-                HamlibParam.hamlib_frequency,
+                self.modem_frequency_offset,
+                self.states.radio_frequency,
             )
 
             self.log.info(
@@ -2531,8 +2532,8 @@ class DATA:
         dxcallsign = helpers.callsign_to_bytes(dxcallsign)
         dxcallsign = helpers.bytes_to_callsign(dxcallsign)
 
-        Station.dxcallsign = dxcallsign
-        Station.dxcallsign_crc = helpers.get_crc_24(Station.dxcallsign)
+        self.dxcallsign = dxcallsign
+        self.dxcallsign_crc = helpers.get_crc_24(self.dxcallsign)
         self.send_data_to_socket_queue(
             freedata="modem-message",
             ping="transmitting",
@@ -2549,12 +2550,12 @@ class DATA:
 
         ping_frame = bytearray(self.length_sig0_frame)
         ping_frame[:1] = bytes([FR_TYPE.PING.value])
-        ping_frame[1:4] = Station.dxcallsign_crc
+        ping_frame[1:4] = self.dxcallsign_crc
         ping_frame[4:7] = helpers.get_crc_24(mycallsign)
         ping_frame[7:13] = helpers.callsign_to_bytes(mycallsign)
 
-        if Modem.enable_fsk:
-            self.log.info("[Modem] ENABLE FSK", state=Modem.enable_fsk)
+        if self.enable_fsk:
+            self.log.info("[Modem] ENABLE FSK", state=self.enable_fsk)
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.sig0.value)
@@ -2577,8 +2578,8 @@ class DATA:
             self.log.debug("[Modem] received_ping: ping not for this station.")
             return
 
-        Station.dxcallsign_crc = dxcallsign_crc
-        Station.dxcallsign = dxcallsign
+        self.dxcallsign_crc = dxcallsign_crc
+        self.dxcallsign = dxcallsign
         self.log.info(
             "[Modem] PING REQ ["
             + str(mycallsign, "UTF-8")
@@ -2588,14 +2589,14 @@ class DATA:
             snr=snr,
         )
 
-        Station.dxgrid = b'------'
+        self.dxgrid = b'------'
         helpers.add_to_heard_stations(
             dxcallsign,
-            Station.dxgrid,
+            self.dxgrid,
             "PING",
             snr,
-            ModemParam.frequency_offset,
-            HamlibParam.hamlib_frequency,
+            self.modem_frequency_offset,
+            self.states.radio_frequency,
         )
 
         self.send_data_to_socket_queue(
@@ -2603,7 +2604,7 @@ class DATA:
             ping="received",
             uuid=str(uuid.uuid4()),
             timestamp=int(time.time()),
-            dxgrid=str(Station.dxgrid, "UTF-8"),
+            dxgrid=str(self.dxgrid, "UTF-8"),
             dxcallsign=str(dxcallsign, "UTF-8"),
             mycallsign=str(mycallsign, "UTF-8"),
             snr=str(snr),
@@ -2619,12 +2620,12 @@ class DATA:
         """
         ping_frame = bytearray(self.length_sig0_frame)
         ping_frame[:1] = bytes([FR_TYPE.PING_ACK.value])
-        ping_frame[1:4] = Station.dxcallsign_crc
-        ping_frame[4:7] = Station.mycallsign_crc
+        ping_frame[1:4] = self.dxcallsign_crc
+        ping_frame[4:7] = self.mycallsign_crc
         ping_frame[7:11] = helpers.encode_grid(self.mygrid)
         ping_frame[13:14] = helpers.snr_to_bytes(snr)
 
-        if Modem.enable_fsk:
+        if self.enable_fsk:
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.sig0.value)
@@ -2642,15 +2643,15 @@ class DATA:
         _valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
         if _valid:
 
-            Station.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
+            self.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
             dxsnr = helpers.snr_from_bytes(data_in[13:14])
             self.send_data_to_socket_queue(
                 freedata="modem-message",
                 ping="acknowledge",
                 uuid=str(uuid.uuid4()),
                 timestamp=int(time.time()),
-                dxgrid=str(Station.dxgrid, "UTF-8"),
-                dxcallsign=str(Station.dxcallsign, "UTF-8"),
+                dxgrid=str(self.dxgrid, "UTF-8"),
+                dxcallsign=str(self.dxcallsign, "UTF-8"),
                 mycallsign=str(mycallsign, "UTF-8"),
                 snr=str(snr),
                 dxsnr=str(dxsnr)
@@ -2658,24 +2659,24 @@ class DATA:
             # combined_snr = own rx snr / snr on dx side
             combined_snr = f"{snr}/{dxsnr}"
             helpers.add_to_heard_stations(
-                Station.dxcallsign,
-                Station.dxgrid,
+                self.dxcallsign,
+                self.dxgrid,
                 "PING-ACK",
                 combined_snr,
-                ModemParam.frequency_offset,
-                HamlibParam.hamlib_frequency,
+                self.modem_frequency_offset,
+                self.states.radio_frequency,
             )
 
             self.log.info(
                 "[Modem] PING ACK ["
                 + str(mycallsign, "UTF-8")
                 + "] >|< ["
-                + str(Station.dxcallsign, "UTF-8")
+                + str(self.dxcallsign, "UTF-8")
                 + "]",
                 snr=snr,
                 dxsnr=dxsnr,
             )
-            Modem.modem_state = "IDLE"
+            self.states.set("is_modem_busy", False)
         else:
             self.log.info(
                 "[Modem] FOREIGN PING ACK ["
@@ -2702,8 +2703,8 @@ class DATA:
 
         stop_frame = bytearray(self.length_sig0_frame)
         stop_frame[:1] = bytes([FR_TYPE.ARQ_STOP.value])
-        stop_frame[1:4] = Station.dxcallsign_crc
-        stop_frame[4:7] = Station.mycallsign_crc
+        stop_frame[1:4] = self.dxcallsign_crc
+        stop_frame[4:7] = self.mycallsign_crc
         # TODO Not sure if we really need the session id when disconnecting
         # stop_frame[1:2] = self.session_id
         stop_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
@@ -2718,7 +2719,7 @@ class DATA:
         Received a transmission stop
         """
         self.log.warning("[Modem] Stopping transmission!")
-        Modem.modem_state = "IDLE"
+        self.states.set("is_modem_busy", False)
         self.states.set("is_arq_state", False)
         self.send_data_to_socket_queue(
             freedata="modem-message",
@@ -2749,8 +2750,8 @@ class DATA:
                             not ARQ.arq_session
                             and not self.arq_file_transfer
                             and not self.beacon_paused
-                            #and not ModemParam.channel_busy
-                            and Modem.modem_state not in ["BUSY"]
+                            #and not self.states.channel_busy
+                            and not self.states.is_modem_busy
                             and not self.states.is_arq_state
                     ):
                         self.send_data_to_socket_queue(
@@ -2768,8 +2769,8 @@ class DATA:
                         beacon_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
                         beacon_frame[7:11] = helpers.encode_grid(self.mygrid)
 
-                        if Modem.enable_fsk:
-                            self.log.info("[Modem] ENABLE FSK", state=Modem.enable_fsk)
+                        if self.enable_fsk:
+                            self.log.info("[Modem] ENABLE FSK", state=self.enable_fsk)
                             self.enqueue_frame_for_tx(
                                 [beacon_frame],
                                 c2_mode=FREEDV_MODE.fsk_ldpc_0.value,
@@ -2800,14 +2801,14 @@ class DATA:
         """
         # here we add the received station to the heard stations buffer
         beacon_callsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
-        Station.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
+        self.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
         self.send_data_to_socket_queue(
             freedata="modem-message",
             beacon="received",
             uuid=str(uuid.uuid4()),
             timestamp=int(time.time()),
             dxcallsign=str(beacon_callsign, "UTF-8"),
-            dxgrid=str(Station.dxgrid, "UTF-8"),
+            dxgrid=str(self.dxgrid, "UTF-8"),
             snr=str(snr),
         )
 
@@ -2815,17 +2816,17 @@ class DATA:
             "[Modem] BEACON RCVD ["
             + str(beacon_callsign, "UTF-8")
             + "]["
-            + str(Station.dxgrid, "UTF-8")
+            + str(self.dxgrid, "UTF-8")
             + "] ",
             snr=snr,
         )
         helpers.add_to_heard_stations(
             beacon_callsign,
-            Station.dxgrid,
+            self.dxgrid,
             "BEACON",
             snr,
-            ModemParam.frequency_offset,
-            HamlibParam.hamlib_frequency,
+            self.modem_frequency_offset,
+            self.states.radio_frequency,
         )
 
     def transmit_cq(self) -> None:
@@ -2851,8 +2852,8 @@ class DATA:
 
         self.log.debug("[Modem] CQ Frame:", data=[cq_frame])
 
-        if Modem.enable_fsk:
-            self.log.info("[Modem] ENABLE FSK", state=Modem.enable_fsk)
+        if self.enable_fsk:
+            self.log.info("[Modem] ENABLE FSK", state=self.enable_fsk)
             self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
@@ -2869,30 +2870,30 @@ class DATA:
         # here we add the received station to the heard stations buffer
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
         self.log.debug("[Modem] received_cq:", dxcallsign=dxcallsign)
-        Station.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
+        self.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
 
         self.send_data_to_socket_queue(
             freedata="modem-message",
             cq="received",
             mycallsign=str(self.mycallsign, "UTF-8"),
             dxcallsign=str(dxcallsign, "UTF-8"),
-            dxgrid=str(Station.dxgrid, "UTF-8"),
+            dxgrid=str(self.dxgrid, "UTF-8"),
         )
         self.log.info(
             "[Modem] CQ RCVD ["
             + str(dxcallsign, "UTF-8")
             + "]["
-            + str(Station.dxgrid, "UTF-8")
+            + str(self.dxgrid, "UTF-8")
             + "] ",
             snr=snr,
         )
         helpers.add_to_heard_stations(
             dxcallsign,
-            Station.dxgrid,
+            self.dxgrid,
             "CQ CQ CQ",
             snr,
-            ModemParam.frequency_offset,
-            HamlibParam.hamlib_frequency,
+            self.modem_frequency_offset,
+            self.states.radio_frequency,
         )
 
         if Modem.respond_to_cq and Modem.respond_to_call:
@@ -2929,8 +2930,8 @@ class DATA:
         qrv_frame[7:11] = helpers.encode_grid(self.mygrid)
         qrv_frame[11:12] = helpers.snr_to_bytes(snr)
 
-        if Modem.enable_fsk:
-            self.log.info("[Modem] ENABLE FSK", state=Modem.enable_fsk)
+        if self.enable_fsk:
+            self.log.info("[Modem] ENABLE FSK", state=self.enable_fsk)
             self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
@@ -2944,7 +2945,7 @@ class DATA:
         """
         # here we add the received station to the heard stations buffer
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
-        Station.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
+        self.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
         dxsnr = helpers.snr_from_bytes(data_in[11:12])
 
         combined_snr = f"{snr}/{dxsnr}"
@@ -2953,7 +2954,7 @@ class DATA:
             freedata="modem-message",
             qrv="received",
             dxcallsign=str(dxcallsign, "UTF-8"),
-            dxgrid=str(Station.dxgrid, "UTF-8"),
+            dxgrid=str(self.dxgrid, "UTF-8"),
             snr=str(snr),
             dxsnr=str(dxsnr)
         )
@@ -2962,18 +2963,18 @@ class DATA:
             "[Modem] QRV RCVD ["
             + str(dxcallsign, "UTF-8")
             + "]["
-            + str(Station.dxgrid, "UTF-8")
+            + str(self.dxgrid, "UTF-8")
             + "] ",
             snr=snr,
             dxsnr=dxsnr
         )
         helpers.add_to_heard_stations(
             dxcallsign,
-            Station.dxgrid,
+            self.dxgrid,
             "QRV",
             combined_snr,
-            ModemParam.frequency_offset,
-            HamlibParam.hamlib_frequency,
+            self.modem_frequency_offset,
+            self.states.radio_frequency,
         )
 
 
@@ -3017,7 +3018,7 @@ class DATA:
 
         # wait while timeout not reached and our busy state is busy
         channel_busy_timeout = time.time() + self.channel_busy_timeout
-        while ModemParam.channel_busy and time.time() < channel_busy_timeout and not self.check_if_mode_fits_to_busy_slot():
+        while self.states.channel_busy and time.time() < channel_busy_timeout and not self.check_if_mode_fits_to_busy_slot():
             threading.Event().wait(0.01)
 
     # ------------ CALCULATE TRANSFER RATES
@@ -3199,7 +3200,7 @@ class DATA:
 
         # we need to keep these values if in ARQ_SESSION
         if not ARQ.arq_session:
-            Modem.modem_state = "IDLE"
+            self.states.set("is_modem_busy", False)
             self.dxcallsign = b"AA0AA-0"
             self.mycallsign = self.mycallsign
             self.session_id = bytes(1)
@@ -3340,7 +3341,7 @@ class DATA:
         waiting_time = (self.time_list[self.speed_level] * frames_left) + self.duration_sig0_frame + self.channel_busy_timeout + 1
         timeout_percent = 100 - (time_left / waiting_time * 100)
         #timeout_percent = 0
-        if timeout_percent >= 75 and not self.states.is_codec2_traffic and not Modem.transmitting:
+        if timeout_percent >= 75 and not self.states.is_codec2_traffic and not self.states.is_transmitting:
             override = True
         else:
             override = False
@@ -3351,7 +3352,7 @@ class DATA:
         # better wait some more time because data might be important for us
         # reason for this situation can be delays on IRS and ISS, maybe because both had a busy channel condition.
         # Nevertheless, we need to keep timeouts short for efficiency
-        if timeout <= time.time() or modem_error_state and not self.states.is_codec2_traffic and not Modem.transmitting or override:
+        if timeout <= time.time() or modem_error_state and not self.states.is_codec2_traffic and not self.states.is_transmitting or override:
             self.log.warning(
                 "[Modem] Burst decoding error or timeout",
                 attempt=self.n_retries_per_burst,
@@ -3413,7 +3414,7 @@ class DATA:
         DATA CHANNEL
         """
         # and not static.ARQ_SEND_KEEP_ALIVE:
-        if self.states.is_arq_state and Modem.modem_state == "BUSY":
+        if self.states.is_arq_state and self.states.is_modem_busy:
             threading.Event().wait(0.01)
             if (
                     self.data_channel_last_received + self.transmission_timeout
@@ -3435,7 +3436,7 @@ class DATA:
                     "[Modem] DATA ["
                     + str(self.mycallsign, "UTF-8")
                     + "]<<T>>["
-                    + str(Station.dxcallsign, "UTF-8")
+                    + str(self.dxcallsign, "UTF-8")
                     + "]"
                 )
                 self.send_data_to_socket_queue(
@@ -3456,7 +3457,7 @@ class DATA:
         """
         if (
                 ARQ.arq_session
-                and Modem.modem_state == "BUSY"
+                and self.states.is_modem_busy
                 and not self.arq_file_transfer
         ):
             if self.arq_session_last_received + self.arq_session_timeout > time.time():
@@ -3549,7 +3550,7 @@ class DATA:
 
         # send burst only if channel not busy - but without waiting
         # otherwise burst will be dropped
-        if not ModemParam.channel_busy and not Modem.transmitting:
+        if not self.states.channel_busy and not self.states.is_transmitting:
             self.enqueue_frame_for_tx(
                 frame_to_tx=[fec_frame], c2_mode=codec2.FREEDV_MODE["sig0"].value
             )

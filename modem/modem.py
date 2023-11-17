@@ -20,7 +20,6 @@ import codec2
 import itertools
 import numpy as np
 import sounddevice as sd
-from global_instances import HamlibParam, ModemParam, Modem
 from static import FRAME_TYPE
 import structlog
 import tci
@@ -33,8 +32,6 @@ import event_manager
 TESTMODE = False
 RXCHANNEL = ""
 TXCHANNEL = ""
-
-Modem.transmitting = False
 
 # Receive only specific modes to reduce CPU load
 RECEIVE_SIG0 = True
@@ -77,11 +74,21 @@ class RF:
         self.rx_audio_level = config['AUDIO']['rx_audio_level']
         self.tx_audio_level = config['AUDIO']['tx_audio_level']
         self.enable_audio_auto_tune = config['AUDIO']['enable_auto_tune']
+        self.enable_fsk = config['MODEM']['enable_fsk']
         self.enable_fft = config['MODEM']['enable_fft']
         self.enable_scatter = config['MODEM']['enable_scatter']
         self.tx_delay = config['MODEM']['tx_delay']
         self.tuning_range_fmin = config['MODEM']['tuning_range_fmin']
         self.tuning_range_fmax = config['MODEM']['tuning_range_fmax']
+
+        self.radiocontrol = config['RADIO']['radiocontrol']
+        self.rigctld_ip = config['RADIO']['rigctld_ip']
+        self.rigctld_port = config['RADIO']['rigctld_port']
+
+
+        self.states.set("is_transmitting", False)
+        self.ptt_state = False
+        self.radio_alc = 0.0
 
         self.tci_ip = config['TCI']['tci_ip']
         self.tci_port = config['TCI']['tci_port']
@@ -96,7 +103,7 @@ class RF:
 
         self.AUDIO_FRAMES_PER_BUFFER_RX = 2400 * 2  # 8192
         # 8192 Let's do some tests with very small chunks for TX
-        self.AUDIO_FRAMES_PER_BUFFER_TX = 1200 if HamlibParam.hamlib_radiocontrol in ["tci"] else 2400 * 2
+        self.AUDIO_FRAMES_PER_BUFFER_TX = 1200 if self.radiocontrol in ["tci"] else 2400 * 2
         # 8 * (self.AUDIO_SAMPLE_RATE_RX/self.MODEM_SAMPLE_RATE) == 48
         self.AUDIO_CHANNELS = 1
         self.MODE = 0
@@ -137,14 +144,14 @@ class RF:
             threading.Event().wait(0.01)
 
             if len(self.modoutqueue) > 0 and not self.mod_out_locked:
-                HamlibParam.ptt_state = self.radio.set_ptt(True)
+                self.radio.set_ptt(True)
                 self.event_manager.send_ptt_change(True)
 
                 data_out = self.modoutqueue.popleft()
                 self.tci_module.push_audio(data_out)
 
     def start_modem(self):
-        if not TESTMODE and HamlibParam.hamlib_radiocontrol not in ["tci"]:
+        if not TESTMODE and self.radiocontrol not in ["tci"]:
             result = self.init_audio()
 
         elif not TESTMODE:
@@ -304,8 +311,8 @@ class RF:
                 (self.dat0_datac1_buffer, RECEIVE_DATAC1),
                 (self.dat0_datac3_buffer, RECEIVE_DATAC3),
                 (self.dat0_datac4_buffer, RECEIVE_DATAC4),
-                (self.fsk_ldpc_buffer_0, Modem.enable_fsk),
-                (self.fsk_ldpc_buffer_1, Modem.enable_fsk),
+                (self.fsk_ldpc_buffer_0, self.enable_fsk),
+                (self.fsk_ldpc_buffer_1, self.enable_fsk),
             ]:
                 if (
                         not (data_buffer.nbuffer + length_x) > data_buffer.size
@@ -338,8 +345,8 @@ class RF:
                             (self.dat0_datac1_buffer, RECEIVE_DATAC1),
                             (self.dat0_datac3_buffer, RECEIVE_DATAC3),
                             (self.dat0_datac4_buffer, RECEIVE_DATAC4),
-                            (self.fsk_ldpc_buffer_0, Modem.enable_fsk),
-                            (self.fsk_ldpc_buffer_1, Modem.enable_fsk),
+                            (self.fsk_ldpc_buffer_0, self.enable_fsk),
+                            (self.fsk_ldpc_buffer_1, self.enable_fsk),
                         ]:
                             if (
                                     not (data_buffer.nbuffer + length_x) > data_buffer.size
@@ -388,7 +395,7 @@ class RF:
 
             # Avoid decoding when transmitting to reduce CPU
             # TODO Overriding this for testing purposes
-            # if not Modem.transmitting:
+            # if not self.states.is_transmitting:
             length_x = len(x)
             # Avoid buffer overflow by filling only if buffer for
             # selected datachannel mode is not full
@@ -398,26 +405,25 @@ class RF:
                 (self.dat0_datac1_buffer, RECEIVE_DATAC1, 2),
                 (self.dat0_datac3_buffer, RECEIVE_DATAC3, 3),
                 (self.dat0_datac4_buffer, RECEIVE_DATAC4, 4),
-                (self.fsk_ldpc_buffer_0, Modem.enable_fsk, 5),
-                (self.fsk_ldpc_buffer_1, Modem.enable_fsk, 6),
+                (self.fsk_ldpc_buffer_0, self.enable_fsk, 5),
+                (self.fsk_ldpc_buffer_1, self.enable_fsk, 6),
             ]:
                 if (audiobuffer.nbuffer + length_x) > audiobuffer.size:
                     self.buffer_overflow_counter[index] += 1
                     self.event_manager.send_buffer_overflow(self.buffer_overflow_counter)
                 elif receive:
                     audiobuffer.push(x)
-            # end of "not Modem.transmitting" if block
+            # end of "not self.states.is_transmitting" if block
 
             if not self.modoutqueue or self.mod_out_locked:
                 data_out48k = np.zeros(frames, dtype=np.int16)
                 if self.enable_fft:
                     self.calculate_fft(x)
             else:
-                if not HamlibParam.ptt_state:
-                    # TODO Moved to this place for testing
-                    # Maybe we can avoid moments of silence before transmitting
-                    HamlibParam.ptt_state = self.radio.set_ptt(True)
-                    self.event_manager.send_ptt_change(True)
+                # TODO Moved to this place for testing
+                # Maybe we can avoid moments of silence before transmitting
+                self.radio.set_ptt(True)
+                self.event_manager.send_ptt_change(True)
 
                 data_out48k = self.modoutqueue.popleft()
                 if self.enable_fft:
@@ -464,14 +470,14 @@ class RF:
         else:
             return False
 
-        Modem.transmitting = True
+        self.states.set("is_transmitting", True)
         # if we're transmitting FreeDATA signals, reset channel busy state
         self.states.set("channel_busy", False)
 
         start_of_transmission = time.time()
         # TODO Moved ptt toggle some steps before audio is ready for testing
         # Toggle ptt early to save some time and send ptt state via socket
-        # HamlibParam.ptt_state = self.radio.set_ptt(True)
+        # self.radio.set_ptt(True)
         # jsondata = {"ptt": "True"}
         # data_out = json.dumps(jsondata)
         # sock.SOCKET_QUEUE.put(data_out)
@@ -573,7 +579,7 @@ class RF:
         self.audio_auto_tune()
         x = set_audio_volume(x, self.tx_audio_level)
 
-        if not HamlibParam.hamlib_radiocontrol in ["tci"]:
+        if not self.radiocontrol in ["tci"]:
             txbuffer_out = self.resampler.resample8_to_48(x)
         else:
             txbuffer_out = x
@@ -592,7 +598,7 @@ class RF:
         self.mod_out_locked = False
 
         # we need to wait manually for tci processing
-        if HamlibParam.hamlib_radiocontrol in ["tci"]:
+        if self.radiocontrol in ["tci"]:
             duration = len(txbuffer_out) / 8000
             timestamp_to_sleep = time.time() + duration
             self.log.debug("[MDM] TCI calculated duration", duration=duration)
@@ -605,7 +611,7 @@ class RF:
             tci_timeout_reached = True
 
         while self.modoutqueue or not tci_timeout_reached:
-            if HamlibParam.hamlib_radiocontrol in ["tci"]:
+            if self.radiocontrol in ["tci"]:
                 if time.time() < timestamp_to_sleep:
                     tci_timeout_reached = False
                 else:
@@ -614,7 +620,7 @@ class RF:
             # if we're transmitting FreeDATA signals, reset channel busy state
             self.states.set("channel_busy", False)
 
-        HamlibParam.ptt_state = self.radio.set_ptt(False)
+        self.radio.set_ptt(False)
 
         # Push ptt state to socket stream
         self.event_manager.send_ptt_change(False)
@@ -623,7 +629,7 @@ class RF:
         self.mod_out_locked = True
 
         self.modem_transmit_queue.task_done()
-        Modem.transmitting = False
+        self.states.set("is_transmitting", False)
 
         end_of_transmission = time.time()
         transmission_time = end_of_transmission - start_of_transmission
@@ -632,34 +638,34 @@ class RF:
     def audio_auto_tune(self):
         # enable / disable AUDIO TUNE Feature / ALC correction
         if self.enable_audio_auto_tune:
-            if HamlibParam.alc == 0.0:
+            if self.radio_alc == 0.0:
                 self.tx_audio_level = self.tx_audio_level + 20
-            elif 0.0 < HamlibParam.alc <= 0.1:
-                print("0.0 < HamlibParam.alc <= 0.1")
+            elif 0.0 < self.radio_alc <= 0.1:
+                print("0.0 < self.radio_alc <= 0.1")
                 self.tx_audio_level = self.tx_audio_level + 2
                 self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
-                               alc_level=str(HamlibParam.alc))
-            elif 0.1 < HamlibParam.alc < 0.2:
-                print("0.1 < HamlibParam.alc < 0.2")
+                               alc_level=str(self.radio_alc))
+            elif 0.1 < self.radio_alc < 0.2:
+                print("0.1 < self.radio_alc < 0.2")
                 self.tx_audio_level = self.tx_audio_level
                 self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
-                               alc_level=str(HamlibParam.alc))
-            elif 0.2 < HamlibParam.alc < 0.99:
-                print("0.2 < HamlibParam.alc < 0.99")
+                               alc_level=str(self.radio_alc))
+            elif 0.2 < self.radio_alc < 0.99:
+                print("0.2 < self.radio_alc < 0.99")
                 self.tx_audio_level = self.tx_audio_level - 20
                 self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
-                               alc_level=str(HamlibParam.alc))
-            elif 1.0 >= HamlibParam.alc:
-                print("1.0 >= HamlibParam.alc")
+                               alc_level=str(self.radio_alc))
+            elif 1.0 >= self.radio_alc:
+                print("1.0 >= self.radio_alc")
                 self.tx_audio_level = self.tx_audio_level - 40
                 self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
-                               alc_level=str(HamlibParam.alc))
+                               alc_level=str(self.radio_alc))
             else:
                 self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
-                               alc_level=str(HamlibParam.alc))
+                               alc_level=str(self.radio_alc))
 
     def transmit_morse(self, repeats, repeat_delay, frames):
-        Modem.transmitting = True
+        self.states.set("is_transmitting", True)
         # if we're transmitting FreeDATA signals, reset channel busy state
         self.states.set("channel_busy", False)
         self.log.debug(
@@ -674,7 +680,7 @@ class RF:
         self.mod_out_locked = False
 
         # we need to wait manually for tci processing
-        if HamlibParam.hamlib_radiocontrol in ["tci"]:
+        if self.radiocontrol in ["tci"]:
             duration = len(txbuffer_out) / 8000
             timestamp_to_sleep = time.time() + duration
             self.log.debug("[MDM] TCI calculated duration", duration=duration)
@@ -687,7 +693,7 @@ class RF:
             tci_timeout_reached = True
 
         while self.modoutqueue or not tci_timeout_reached:
-            if HamlibParam.hamlib_radiocontrol in ["tci"]:
+            if self.radiocontrol in ["tci"]:
                 if time.time() < timestamp_to_sleep:
                     tci_timeout_reached = False
                 else:
@@ -697,7 +703,7 @@ class RF:
             # if we're transmitting FreeDATA signals, reset channel busy state
             self.states.set("channel_busy", False)
 
-        HamlibParam.ptt_state = self.radio.set_ptt(False)
+        self.radio.set_ptt(False)
 
         # Push ptt state to socket stream
         self.event_manager.send_ptt_change(False)
@@ -706,7 +712,7 @@ class RF:
         self.mod_out_locked = True
 
         self.modem_transmit_queue.task_done()
-        Modem.transmitting = False
+        self.states.set("is_transmitting", False)
         threading.Event().set()
 
         end_of_transmission = time.time()
@@ -732,7 +738,7 @@ class RF:
 
     def init_decoders(self):
 
-        if Modem.enable_fsk:
+        if self.enable_fsk:
             audio_thread_fsk_ldpc0 = threading.Thread(
                 target=self.audio_fsk_ldpc_0, name="AUDIO_THREAD FSK LDPC0", daemon=True
             )
@@ -849,43 +855,36 @@ class RF:
                     if nbytes == bytes_per_frame:
                         print(bytes(bytes_out))
 
-                        # process commands only if Modem.listen = True
-                        if Modem.listen:
-
-                            # ignore data channel opener frames for avoiding toggle states
-                            # use case: opener already received, but ack got lost and we are receiving
-                            # an opener again
-                            if mode_name in ["sig1-datac13"] and int.from_bytes(bytes(bytes_out[:1]), "big") in [
-                                FRAME_TYPE.ARQ_SESSION_OPEN.value,
-                                FRAME_TYPE.ARQ_DC_OPEN_W.value,
-                                FRAME_TYPE.ARQ_DC_OPEN_ACK_W.value,
-                                FRAME_TYPE.ARQ_DC_OPEN_N.value,
-                                FRAME_TYPE.ARQ_DC_OPEN_ACK_N.value
-                            ]:
-                                print("dropp")
-                            elif int.from_bytes(bytes(bytes_out[:1]), "big") in [
-                                FRAME_TYPE.MESH_BROADCAST.value,
-                                FRAME_TYPE.MESH_SIGNALLING_PING.value,
-                                FRAME_TYPE.MESH_SIGNALLING_PING_ACK.value,
-                            ]:
-                                self.log.debug(
-                                    "[MDM] [demod_audio] moving data to mesh dispatcher", nbytes=nbytes
-                                )
-                                MESH_RECEIVED_QUEUE.put(bytes(bytes_out))
-
-                            else:
-                                self.log.debug(
-                                    "[MDM] [demod_audio] Pushing received data to received_queue", nbytes=nbytes
-                                )
-                                snr = self.calculate_snr(freedv)
-                                self.modem_received_queue.put([bytes_out, freedv, bytes_per_frame, snr])
-                                self.get_scatter(freedv)
-                                state_buffer = []
-                        else:
-                            self.log.warning(
-                                "[MDM] [demod_audio] received frame but ignored processing",
-                                listen=Modem.listen
+                        # ignore data channel opener frames for avoiding toggle states
+                        # use case: opener already received, but ack got lost and we are receiving
+                        # an opener again
+                        if mode_name in ["sig1-datac13"] and int.from_bytes(bytes(bytes_out[:1]), "big") in [
+                            FRAME_TYPE.ARQ_SESSION_OPEN.value,
+                            FRAME_TYPE.ARQ_DC_OPEN_W.value,
+                            FRAME_TYPE.ARQ_DC_OPEN_ACK_W.value,
+                            FRAME_TYPE.ARQ_DC_OPEN_N.value,
+                            FRAME_TYPE.ARQ_DC_OPEN_ACK_N.value
+                        ]:
+                            print("dropp")
+                        elif int.from_bytes(bytes(bytes_out[:1]), "big") in [
+                            FRAME_TYPE.MESH_BROADCAST.value,
+                            FRAME_TYPE.MESH_SIGNALLING_PING.value,
+                            FRAME_TYPE.MESH_SIGNALLING_PING_ACK.value,
+                        ]:
+                            self.log.debug(
+                                "[MDM] [demod_audio] moving data to mesh dispatcher", nbytes=nbytes
                             )
+                            MESH_RECEIVED_QUEUE.put(bytes(bytes_out))
+
+                        else:
+                            self.log.debug(
+                                "[MDM] [demod_audio] Pushing received data to received_queue", nbytes=nbytes
+                            )
+                            snr = self.calculate_snr(freedv)
+                            self.modem_received_queue.put([bytes_out, freedv, bytes_per_frame, snr])
+                            self.get_scatter(freedv)
+                            state_buffer = []
+
         except Exception as e:
             self.log.warning("[MDM] [demod_audio] Stream not active anymore", e=e)
 
@@ -1167,7 +1166,6 @@ class RF:
     def get_frequency_offset(self, freedv: ctypes.c_void_p) -> float:
         """
         Ask codec2 for the calculated (audio) frequency offset of the received signal.
-        Side-effect: sets ModemParam.frequency_offset
 
         :param freedv: codec2 instance to query
         :type freedv: ctypes.c_void_p
@@ -1177,7 +1175,6 @@ class RF:
         modemStats = codec2.MODEMSTATS()
         codec2.api.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
         offset = round(modemStats.foff) * (-1)
-        ModemParam.frequency_offset = offset
         return offset
 
     def get_scatter(self, freedv: ctypes.c_void_p) -> None:
@@ -1225,7 +1222,6 @@ class RF:
         """
         Ask codec2 for data about the received signal and calculate
         the signal-to-noise ratio.
-        Side effect: sets ModemParam.snr
 
         :param freedv: codec2 instance to query
         :type freedv: ctypes.c_void_p
@@ -1244,30 +1240,28 @@ class RF:
 
             snr = round(modem_stats_snr, 1)
             self.log.info("[MDM] calculate_snr: ", snr=snr)
-            ModemParam.snr = snr
-            # ModemParam.snr = np.clip(
+            # snr = np.clip(
             #    snr, -127, 127
             # )  # limit to max value of -128/128 as a possible fix of #188
-            return ModemParam.snr
+            return snr
         except Exception as err:
             self.log.error(f"[MDM] calculate_snr: Exception: {err}")
-            ModemParam.snr = 0
-            return ModemParam.snr
+            return 0
 
     def init_rig_control(self):
         # Check how we want to control the radio
-        if HamlibParam.hamlib_radiocontrol == "rigctld":
+        if self.radiocontrol == "rigctld":
             import rigctld as rig
-        elif HamlibParam.hamlib_radiocontrol == "tci":
+        elif self.radiocontrol == "tci":
             self.radio = self.tci_module
         else:
             import rigdummy as rig
 
-        if not HamlibParam.hamlib_radiocontrol in ["tci"]:
+        if not self.radiocontrol in ["tci"]:
             self.radio = rig.radio()
             self.radio.open_rig(
-                rigctld_ip=HamlibParam.hamlib_rigctld_ip,
-                rigctld_port=HamlibParam.hamlib_rigctld_port,
+                rigctld_ip=self.rigctld_ip,
+                rigctld_port=self.rigctld_port,
             )
             hamlib_thread = threading.Thread(
                 target=self.update_rig_data, name="HAMLIB_THREAD", daemon=True
@@ -1296,31 +1290,26 @@ class RF:
     def update_rig_data(self) -> None:
         """
         Request information about the current state of the radio via hamlib
-        Side effect: sets
-          - HamlibParam.hamlib_frequency
-          - HamlibParam.hamlib_mode
-          - HamlibParam.hamlib_bandwidth
         """
         while True:
             try:
                 # this looks weird, but is necessary for avoiding rigctld packet colission sock
                 threading.Event().wait(0.25)
-                HamlibParam.hamlib_frequency = self.radio.get_frequency()
+                self.states.set("radio_frequency", self.radio.get_frequency())
                 threading.Event().wait(0.1)
-                HamlibParam.hamlib_mode = self.radio.get_mode()
+                self.states.set("radio_mode", self.radio.get_mode())
                 threading.Event().wait(0.1)
-                HamlibParam.hamlib_bandwidth = self.radio.get_bandwidth()
+                self.states.set("radio_bandwidth", self.radio.get_bandwidth())
                 threading.Event().wait(0.1)
-                HamlibParam.hamlib_status = self.radio.get_status()
+                self.states.set("radio_status", self.radio.get_status())
                 threading.Event().wait(0.1)
-                if Modem.transmitting:
-                    HamlibParam.alc = self.radio.get_alc()
+                if self.states.is_transmitting:
+                    self.radio_alc = self.radio.get_alc()
                     threading.Event().wait(0.1)
                 # HamlibParam.hamlib_rf = self.radio.get_level()
                 # threading.Event().wait(0.1)
-                HamlibParam.hamlib_strength = self.radio.get_strength()
+                self.states.set("radio_rf_power", self.radio.get_strength())
 
-                # print(f"ALC: {HamlibParam.alc}, RF: {HamlibParam.hamlib_rf}, STRENGTH: {HamlibParam.hamlib_strength}")
             except Exception as e:
                 self.log.warning(
                     "[MDM] error getting radio data",
@@ -1355,7 +1344,7 @@ class RF:
             # Therefore we are setting it to 100 so it will be highlighted
             # Have to do this when we are not transmitting so our
             # own sending data will not affect this too much
-            if not Modem.transmitting:
+            if not self.states.is_transmitting:
                 dfft[dfft > avg + 15] = 100
 
                 # Calculate audio dbfs
@@ -1411,12 +1400,11 @@ class RF:
                 range_start = range[0]
                 range_end = range[1]
                 # define the area, we are detecting busy state
-                #dfft = dfft[120:176] if Modem.low_bandwidth_mode else dfft[65:231]
                 slotdfft = dfft[range_start:range_end]
                 # Check for signals higher than average by checking for "100"
                 # If we have a signal, increment our channel_busy delay counter
                 # so we have a smoother state toggle
-                if np.sum(slotdfft[slotdfft > avg + 15]) >= 200 and not Modem.transmitting:
+                if np.sum(slotdfft[slotdfft > avg + 15]) >= 200 and not self.states.is_transmitting:
                     addDelay=True
                     self.states.channel_busy_slot[slot] = True
                 else:
