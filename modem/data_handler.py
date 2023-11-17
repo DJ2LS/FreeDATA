@@ -53,6 +53,9 @@ class DATA:
         self.enable_fsk = config['MODEM']['enable_fsk']
         self.respond_to_cq = config['MODEM']['respond_to_cq']
         self.enable_hmac = config['MODEM']['enable_hmac']
+        self.enable_stats = config['STATION']['enable_stats']
+        self.enable_morse_identifier = config['MODEM']['enable_morse_identifier']
+
         # Enable general responding to channel openers for example
         # this can be combined with a callsign blacklist for example
         self.respond_to_call = True
@@ -950,7 +953,7 @@ class DATA:
                     data=data_frame,
 
                 )
-                if Modem.enable_stats:
+                if self.enable_stats:
                     self.stats.push(frame_nack_counter=self.frame_nack_counter, status="wrong_crc", duration=duration)
 
                 self.log.info("[Modem] ARQ | RX | Sending NACK", finished=ARQ.arq_seconds_until_finish,
@@ -1166,7 +1169,7 @@ class DATA:
             speed_list=ARQ.speed_list
         )
 
-        if Modem.enable_stats:
+        if self.enable_stats:
             duration = time.time() - self.rx_start_of_transmission
             self.stats.push(frame_nack_counter=self.frame_nack_counter, status="received", duration=duration)
 
@@ -1954,7 +1957,7 @@ class DATA:
         self.send_disconnect_frame()
 
         # transmit morse identifier if configured
-        if Modem.transmit_morse_identifier:
+        if self.enable_morse_identifier:
             modem.MODEM_TRANSMIT_QUEUE.put(["morse", 1, 0, self.mycallsign])
         self.arq_cleanup()
 
@@ -2785,7 +2788,7 @@ class DATA:
                         else:
                             self.enqueue_frame_for_tx([beacon_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1,
                                                       repeat_delay=0)
-                            if Modem.transmit_morse_identifier:
+                            if self.enable_morse_identifier:
                                 modem.MODEM_TRANSMIT_QUEUE.put(["morse", 1, 0, self.mycallsign])
 
                     self.beacon_interval_timer = time.time() + self.beacon_interval
