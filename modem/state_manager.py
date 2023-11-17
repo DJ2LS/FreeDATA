@@ -15,6 +15,7 @@ class STATES:
         self.channel_busy_slot = [False, False, False, False, False]
         self.is_codec2_traffic = False
         self.is_modem_running = False
+        self.is_modem_busy = False
         self.is_beacon_running = False
         self.is_arq_state = False
         self.is_arq_session = False

@@ -689,14 +689,14 @@ class DATA:
         data_in = bytes(data_in)
 
         # only process data if we are in ARQ and BUSY state else return to quit
-        if not self.states.is_arq_state and Modem.modem_state not in ["BUSY"]:
+        if not self.states.is_arq_state and not self.states.is_modem_busy:
             self.log.warning("[Modem] wrong modem state - dropping data", is_arq_state=self.states.is_arq_state,
-                             modem_state=Modem.modem_state)
+                             modem_state=self.states.is_modem_busy)
             return
 
         self.arq_file_transfer = True
 
-        Modem.modem_state = "BUSY"
+        self.states.set("is_modem_busy", True)
         self.states.set("is_arq_state", True)
 
         # Update data_channel timestamp
@@ -1662,7 +1662,7 @@ class DATA:
 
         """
         # Only process data if we are in ARQ and BUSY state
-        if not self.states.is_arq_state or Modem.modem_state != "BUSY":
+        if not self.states.is_arq_state or not self.states.is_modem_busy:
             return
         self.dxgrid = b'------'
         helpers.add_to_heard_stations(
@@ -1907,7 +1907,7 @@ class DATA:
             self.states.arq_session_state,
         )
         ARQ.arq_session = True
-        Modem.modem_state = "BUSY"
+        self.states.set("is_modem_busy", True)
 
         self.send_data_to_socket_queue(
             freedata="modem-message",
@@ -2000,7 +2000,7 @@ class DATA:
     def transmit_session_heartbeat(self) -> None:
         """Send ARQ sesion heartbeat while connected"""
         # ARQ.arq_session = True
-        # Modem.modem_state = "BUSY"
+        # self.states.set("is_modem_busy", True)
         # self.states.set("arq_session_state", "connected")
 
         connection_frame = bytearray(self.length_sig0_frame)
@@ -2051,7 +2051,7 @@ class DATA:
 
             ARQ.arq_session = True
             self.states.set("arq_session_state", "connected")
-            Modem.modem_state = "BUSY"
+            self.states.set("is_modem_busy", True)
 
             # Update the timeout timestamps
             self.arq_session_last_received = int(time.time())
@@ -2104,7 +2104,7 @@ class DATA:
         # override session connection attempts
         self.data_channel_max_retries = attempts
 
-        Modem.modem_state = "BUSY"
+        self.states.set("is_modem_busy", True)
         self.arq_file_transfer = True
 
         self.transmission_uuid = transmission_uuid
@@ -2236,7 +2236,7 @@ class DATA:
 
             if self.states.is_arq_state_event.is_set():
                 return True
-            if Modem.modem_state in ["IDLE"]:
+            if not self.states.is_modem_busy:
                 return False
 
         # `data_channel_max_retries` attempts have been sent. Aborting attempt & cleaning up
@@ -2259,7 +2259,7 @@ class DATA:
 
         # stop processing if not in arq session, but modem state is busy and we have a different session id
         # use-case we get a connection request while connecting to another station
-        if not ARQ.arq_session and Modem.modem_state in ["BUSY"] and data_in[13:14] != self.session_id:
+        if not ARQ.arq_session and self.states.is_modem_busy and data_in[13:14] != self.session_id:
             return False
 
         self.arq_file_transfer = True
@@ -2380,7 +2380,7 @@ class DATA:
         # Set ARQ State AFTER resetting timeouts
         # this avoids timeouts starting too early
         self.states.set("is_arq_state", True)
-        Modem.modem_state = "BUSY"
+        self.states.set("is_modem_busy", True)
 
         self.reset_statistics()
 
@@ -2676,7 +2676,7 @@ class DATA:
                 snr=snr,
                 dxsnr=dxsnr,
             )
-            Modem.modem_state = "IDLE"
+            self.states.set("is_modem_busy", False)
         else:
             self.log.info(
                 "[Modem] FOREIGN PING ACK ["
@@ -2719,7 +2719,7 @@ class DATA:
         Received a transmission stop
         """
         self.log.warning("[Modem] Stopping transmission!")
-        Modem.modem_state = "IDLE"
+        self.states.set("is_modem_busy", False)
         self.states.set("is_arq_state", False)
         self.send_data_to_socket_queue(
             freedata="modem-message",
@@ -2751,7 +2751,7 @@ class DATA:
                             and not self.arq_file_transfer
                             and not self.beacon_paused
                             #and not self.states.channel_busy
-                            and Modem.modem_state not in ["BUSY"]
+                            and not self.states.is_modem_busy
                             and not self.states.is_arq_state
                     ):
                         self.send_data_to_socket_queue(
@@ -3200,7 +3200,7 @@ class DATA:
 
         # we need to keep these values if in ARQ_SESSION
         if not ARQ.arq_session:
-            Modem.modem_state = "IDLE"
+            self.states.set("is_modem_busy", False)
             self.dxcallsign = b"AA0AA-0"
             self.mycallsign = self.mycallsign
             self.session_id = bytes(1)
@@ -3414,7 +3414,7 @@ class DATA:
         DATA CHANNEL
         """
         # and not static.ARQ_SEND_KEEP_ALIVE:
-        if self.states.is_arq_state and Modem.modem_state == "BUSY":
+        if self.states.is_arq_state and self.states.is_modem_busy:
             threading.Event().wait(0.01)
             if (
                     self.data_channel_last_received + self.transmission_timeout
@@ -3457,7 +3457,7 @@ class DATA:
         """
         if (
                 ARQ.arq_session
-                and Modem.modem_state == "BUSY"
+                and self.states.is_modem_busy
                 and not self.arq_file_transfer
         ):
             if self.arq_session_last_received + self.arq_session_timeout > time.time():
