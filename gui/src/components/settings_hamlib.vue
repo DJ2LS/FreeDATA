@@ -1,79 +1,51 @@
 <script setup lang="ts">
-import { setConfig } from "../js/api";
-
-import { setActivePinia } from "pinia";
-import pinia from "../store/index";
-setActivePinia(pinia);
-
-import { settingsStore as settings} from "../store/settingsStore.js";
+import { settingsStore as settings } from "../store/settingsStore.js";
+import { handleFieldValueChange } from "../js/settingsHandler";
 </script>
 
 <template>
   <hr class="m-2" />
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">Rigctld path</span>
-    <input
-      type="text"
-      class="form-control"
-      placeholder="rigctld Path"
-      id="hamlib_rigctld_path"
-      aria-label="Device IP"
-      aria-describedby="basic-addon1"
-      @change="setConfig"
-      v-model="settings.hamlib_rigctld_path"
-    />
-  </div>
-  <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px"
-      >Rigctld server port</span
-    >
-    <input
-      type="text"
-      class="form-control"
-      placeholder="rigctld port"
-      id="hamlib_rigctld_server_port"
-      aria-label="Device Port"
-      aria-describedby="basic-addon1"
-      @change="setConfig"
-      v-model="settings.hamlib_rigctld_server_port"
-    />
-  </div>
-
-  <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">Rigctld remote ip</span>
+    <span class="input-group-text" style="width: 180px">Rigctld IP</span>
     <input
       type="text"
       class="form-control"
       placeholder="rigctld IP"
       id="hamlib_rigctld_ip"
       aria-label="Device IP"
-      v-model="settings.hamlib_rigctld_ip"
+      @change="handleFieldValueChange"
+      data-section="RIGCTLD"
+      data-setting="rip"
+      v-model="settings.remote.RIGCTLD.ip"
     />
   </div>
 
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px"
-      >Rigctld remote port</span
-    >
+    <span class="input-group-text" style="width: 180px">Rigctld port</span>
     <input
       type="text"
       class="form-control"
       placeholder="rigctld port"
       id="hamlib_rigctld_port"
       aria-label="Device Port"
-      v-model="settings.hamlib_rigctld_port"
+      @change="handleFieldValueChange"
+      data-section="RIGCTLD"
+      data-setting="port"
+      v-model="settings.remote.RIGCTLD.port"
     />
   </div>
 
   <hr class="m-2" />
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px"> Radio model </span>
+    <span class="input-group-text" style="width: 180px">Radio model</span>
     <select
       class="form-select form-select-sm"
       aria-label=".form-select-sm"
       id="hamlib_deviceid"
-      @change="setConfig"
-      v-model="settings.hamlib_deviceid"
+      @change="handleFieldValueChange"
+      data-section="RADIO"
+      data-setting="model_id"
+      v-model="settings.remote.RADIO.model_id"
     >
       <option selected value="-- ignore --">-- ignore --</option>
       <option value="2028">Kenwood TS480</option>
@@ -349,7 +321,10 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       aria-label=".form-select-sm"
       id="hamlib_deviceport"
       style="width: 7rem"
-      @change="setConfig"
+      @change="handleFieldValueChange"
+      data-section="RIGCTLD"
+      data-setting="port"
+      v-model="settings.remote.RIGCTLD.port"
     ></select>
   </div>
 
@@ -360,8 +335,10 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       class="form-select form-select-sm"
       aria-label=".form-select-sm"
       id="hamlib_serialspeed"
-      @change="setConfig"
-      v-model="settings.hamlib_serialspeed"
+      @change="handleFieldValueChange"
+      data-section="RADIO"
+      data-setting="serial_speed"
+      v-model="settings.remote.RADIO.serial_speed"
     >
       <option selected value="ignore">-- ignore --</option>
       <option value="1200">1200</option>
@@ -383,8 +360,10 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       class="form-select form-select-sm"
       aria-label=".form-select-sm"
       id="hamlib_data_bits"
-      @change="setConfig"
-      v-model="settings.hamlib_data_bits"
+      @change="handleFieldValueChange"
+      data-section="RADIO"
+      data-setting="data_bits"
+      v-model="settings.remote.RADIO.data_bits"
     >
       <option selected value="ignore">-- ignore --</option>
       <option value="7">7</option>
@@ -398,8 +377,10 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       class="form-select form-select-sm"
       aria-label=".form-select-sm"
       id="hamlib_stop_bits"
-      @change="setConfig"
-      v-model="settings.hamlib_stop_bits"
+      @change="handleFieldValueChange"
+      data-section="RADIO"
+      data-setting="stop_bits"
+      v-model="settings.remote.RADIO.stop_bits"
     >
       <option selected value="ignore">-- ignore --</option>
       <option value="1">1</option>
@@ -413,8 +394,10 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       class="form-select form-select-sm"
       aria-label=".form-select-sm"
       id="hamlib_handshake"
-      @change="setConfig"
-      v-model="settings.hamlib_handshake"
+      @change="handleFieldValueChange"
+      data-section="RADIO"
+      data-setting="serial_handshake"
+      v-model="settings.remote.RADIO.serial_handshake"
     >
       <option selected value="ignore">-- ignore --</option>
       <option value="None">None (Default)</option>
@@ -427,8 +410,10 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       class="form-select form-select-sm"
       aria-label=".form-select-sm"
       id="hamlib_ptt_port"
-      @change="setConfig"
-      v-model="settings.hamlib_ptt_port"
+      @change="handleFieldValueChange"
+      data-section="RADIO"
+      data-setting="ptt_port"
+      v-model="settings.remote.RADIO.ptt_port"
     >
       <option selected value="ignore">-- ignore --</option>
     </select>
@@ -441,8 +426,10 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       aria-label=".form-select-sm"
       id="hamlib_pttprotocol"
       style="width: 0.5rem"
-      @change="setConfig"
-      v-model="settings.hamlib_pttprotocol"
+      @change="handleFieldValueChange"
+      data-section="RADIO"
+      data-setting="ptt_type"
+      v-model="settings.remote.RADIO.ptt_type"
     >
       <option selected value="ignore">-- ignore --</option>
       <option value="NONE">NONE</option>
@@ -462,8 +449,10 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       aria-label=".form-select-sm"
       id="hamlib_dcd"
       style="width: 0.5rem"
-      @change="setConfig"
-      v-model="settings.hamlib_dcd"
+      @change="handleFieldValueChange"
+      data-section="RADIO"
+      data-setting="serial_dcd"
+      v-model="settings.remote.RADIO.serial_dcd"
     >
       <option selected value="ignore">-- ignore --</option>
       <option value="NONE">NONE</option>
@@ -482,8 +471,10 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       aria-label=".form-select-sm"
       id="hamlib_dtrstate"
       style="width: 0.5rem"
-      @change="setConfig"
-      v-model="settings.hamlib_dtrstate"
+      @change="handleFieldValueChange"
+      data-section="RADIO"
+      data-setting="serial_dtr"
+      v-model="settings.remote.RADIO.serial_dtr"
     >
       <option selected value="ignore">-- ignore --</option>
       <option value="OFF">OFF</option>
@@ -520,8 +511,10 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       id="hamlib_rigctld_custom_args"
       aria-label="Custom arguments"
       aria-describedby="basic-addon1"
-      @change="setConfig"
-      v-model="settings.hamlib_rigctld_custom_args"
+      @change="handleFieldValueChange"
+      data-section="RIGCTLD"
+      data-setting="arguments"
+      v-model="settings.remote.RIGCTLD.arguments"
     />
   </div>
 </template>

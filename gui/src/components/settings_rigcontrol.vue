@@ -13,8 +13,8 @@ import { handleFieldValueChange } from "../js/settingsHandler";
       id="rigcontrol_radiocontrol"
       @change="handleFieldValueChange"
       data-section="RADIO"
-      data-setting="radiocontrol"
-      v-model="settings.remote.RADIO.radiocontrol"
+      data-setting="control"
+      v-model="settings.remote.RADIO.control"
     >
       <option selected value="disabled">
         Disabled / VOX (no rig control - use with VOX)

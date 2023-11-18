@@ -5,7 +5,7 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { settingsStore as settings} from "../store/settingsStore.js";
+import { settingsStore as settings } from "../store/settingsStore.js";
 
 export const useAudioStore = defineStore("audioStore", () => {
   var inputDevices = ref([{ id: 0, name: "no input devices" }]);

@@ -8,7 +8,8 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { settingsStore as settings} from "../store/settingsStore.js";
+import { settingsStore as settings } from "../store/settingsStore.js";
+import { handleFieldValueChange } from "../js/settingsHandler";
 
 import { useAudioStore } from "../store/audioStore.js";
 const audio = useAudioStore(pinia);
@@ -124,8 +125,7 @@ function testHamlib() {
                       maxlength="5"
                       max="65534"
                       min="1025"
-                      @change="saveSettingsToFile()"
-                      v-model="settings.modem_port"
+                      v-model="settings.local.port"
                     />
                   </div>
 
@@ -136,8 +136,7 @@ function testHamlib() {
                       class="form-control"
                       placeholder="modem host (default 127.0.0.1)"
                       id="modem_port"
-                      @change="saveSettingsToFile()"
-                      v-model="settings.modem_host"
+                      v-model="settings.local.host"
                     />
                   </div>
                 </div>
@@ -209,8 +208,10 @@ function testHamlib() {
                       class="form-select form-select-sm"
                       id="rx_audio"
                       aria-label=".form-select-sm"
-                      @change="setConfig"
-                      v-model="settings.input_device"
+                      data-section="AUDIO"
+                      data-setting="input_device"
+                      @change="handleFieldValueChange"
+                      v-model="settings.remote.AUDIO.input_device"
                       v-html="audio.getInputDevices()"
                     ></select>
                   </div>
@@ -265,8 +266,10 @@ function testHamlib() {
                       class="form-select form-select-sm"
                       aria-label=".form-select-sm"
                       id="rigcontrol_radiocontrol"
-                      @change="setConfig"
-                      v-model="settings.radiocontrol"
+                      data-section="RADIO"
+                      data-setting="control"
+                      @change="handleFieldValueChange"
+                      v-model="settings.remote.RADIO.control"
                     >
                       <option selected value="disabled">
                         Disabled (no rig control; use with VOX)
@@ -276,7 +279,7 @@ function testHamlib() {
                     </select>
                   </div>
                   <div
-                    :class="settings.radiocontrol == 'rigctld' ? '' : 'd-none'"
+                    :class="settings.remote.RADIO.control == 'rigctld' ? '' : 'd-none'"
                   >
                     <!-- Shown when rigctld is selected-->
 
@@ -348,7 +351,7 @@ function testHamlib() {
                       ></select>
                     </div>
                   </div>
-                  <div :class="settings.radiocontrol == 'tci' ? '' : 'd-none'">
+                  <div :class="settings.remote.RADIO.control == 'tci' ? '' : 'd-none'">
                     <!-- Shown when tci is selected-->
 
                     <div class="input-group input-group-sm mb-1">
@@ -359,8 +362,10 @@ function testHamlib() {
                         placeholder="TCI IP"
                         id="rigcontrol_tci_ip"
                         aria-label="Device IP"
-                        v-model="settings.tci_ip"
-                        @change="setConfig"
+                        data-section="TCI"
+                        data-setting="ip"
+                        v-model="settings.remote.TCI.ip"
+                        @change="handleFieldValueChange"
                       />
                     </div>
 
@@ -372,8 +377,10 @@ function testHamlib() {
                         placeholder="TCI port"
                         id="rigcontrol_tci_port"
                         aria-label="Device Port"
-                        v-model="settings.tci_port"
-                        @change="setConfig"
+                        data-section="TCI"
+                        data-setting="port"
+                        v-model="settings.remote.TCI.port"
+                        @change="handleFieldValueChange"
                       />
                     </div>
                   </div>

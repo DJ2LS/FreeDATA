@@ -33,15 +33,30 @@ export const settingsStore = reactive({
       modemport: 0,
     },
     RADIO: {
-      radiocontrol: "disabled",
-      radioport: "None",
-      rigctld_ip: "127.0.0.1",
-      rigctld_port: 0,
+      control: "disabled",
+      model_id: 0,
+      serial_port: "",
+      serial_speed: "",
+      data_bits: 0,
+      stop_bits: 0,
+      serial_handshake: "",
+      ptt_port: "",
+      ptt_type: "",
+      serial_dcd: "",
+      serial_dtr: "",
+    },
+    RIGCTLD: {
+      ip: "127.0.0.1",
+      port: 0,
+      path: "",
+      command: "",
+      arguments: "",
     },
     STATION: {
       enable_explorer: false,
       enable_stats: false,
       mycall: "",
+      myssid: 0,
       mygrid: "",
       ssid_list: [],
     },
@@ -67,3 +82,5 @@ export function getRemote() {
 if (settingsStore.remote.STATION.mycall === "") {
   getRemote();
 }
+
+// TODO add watcher for local config changes
