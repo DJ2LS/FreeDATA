@@ -44,7 +44,7 @@ tci_port = 50001
 enable_protocol = False
 
 [MODEM]
-enable_fft = False
+enable_hmac = False
 tuning_range_fmax = 50
 tuning_range_fmin = -50
 enable_fsk = False
