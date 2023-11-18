@@ -1,11 +1,6 @@
 <script setup lang="ts">
-import { setConfig } from "../js/api";
-
-import { setActivePinia } from "pinia";
-import pinia from "../store/index";
-setActivePinia(pinia);
-
-import { settingsStore as settings} from "../store/settingsStore.js";
+import { settingsStore as settings } from "../store/settingsStore.js";
+import { handleFieldValueChange } from "../js/settingsHandler";
 </script>
 
 <template>
@@ -16,8 +11,10 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       class="form-select form-select-sm"
       aria-label=".form-select-sm"
       id="rigcontrol_radiocontrol"
-      @change="setConfig"
-      v-model="settings.radiocontrol"
+      @change="handleFieldValueChange"
+      data-section="RADIO"
+      data-setting="radiocontrol"
+      v-model="settings.remote.RADIO.radiocontrol"
     >
       <option selected value="disabled">
         Disabled / VOX (no rig control - use with VOX)
@@ -37,7 +34,10 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       placeholder="TCI IP"
       id="rigcontrol_tci_ip"
       aria-label="Device IP"
-      v-model="settings.tci_ip"
+      @change="handleFieldValueChange"
+      data-section="TCI"
+      data-setting="tci_ip"
+      v-model="settings.remote.TCI.tci_ip"
     />
   </div>
 
@@ -49,7 +49,10 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       placeholder="TCI port"
       id="rigcontrol_tci_port"
       aria-label="Device Port"
-      v-model="settings.tci_port"
+      @change="handleFieldValueChange"
+      data-section="TCI"
+      data-setting="tci_port"
+      v-model="settings.remote.TCI.tci_port"
     />
   </div>
 </template>
