@@ -45,6 +45,11 @@ class DATA:
         self.event_queue = event_queue
 
         self.mycallsign = config['STATION']['mycall']
+        self.myssid = config['STATION']['myssid']
+
+        # Functions here expect mycallsign to be in callxx-# format; so cheat a little bit here:
+        self.mycallsign += "-" + str(self.myssid)
+
         self.ssid_list = config['STATION']['ssid_list']
         self.mycallsign_crc = helpers.get_crc_24(self.mycallsign)
 
