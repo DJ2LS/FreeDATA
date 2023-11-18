@@ -1,12 +1,6 @@
 <script setup lang="ts">
-import { setConfig } from "../js/api";
-
-import { setActivePinia } from "pinia";
-import pinia from "../store/index";
-setActivePinia(pinia);
-
-import { settingsStore as settings} from "../store/settingsStore.js";
-
+import { settingsStore as settings } from "../store/settingsStore.js";
+import { handleFieldValueChange } from "../js/settingsHandler.js";
 </script>
 <template>
   <!-- station callsign -->
@@ -21,8 +15,10 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       id="myCall"
       aria-label="Station Callsign"
       aria-describedby="basic-addon1"
-      @change="setConfig"
-      v-model="settings.mycall"
+      @change="handleFieldValueChange"
+      data-section="STATION"
+      data-setting="mycall"
+      v-model="settings.remote.STATION.mycall"
     />
   </div>
 
@@ -32,8 +28,10 @@ import { settingsStore as settings} from "../store/settingsStore.js";
     <select
       class="form-select form-select-sm w-50"
       id="myCallSSID"
-      @change="setConfig"
-      v-model.number="settings.myssid"
+      @change="handleFieldValueChange"
+      data-section="STATION"
+      data-setting="myssid"
+      v-model.number="settings.remote.STATION.myssid"
     >
       <option selected value="0">0</option>
       <option value="1">1</option>
@@ -65,8 +63,10 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       maxlength="6"
       aria-label="Station Grid Locator"
       aria-describedby="basic-addon1"
-      @change="setConfig"
-      v-model="settings.mygrid"
+      @change="handleFieldValueChange"
+      data-section="STATION"
+      data-setting="mygrid"
+      v-model="settings.remote.STATION.mygrid"
     />
   </div>
 </template>

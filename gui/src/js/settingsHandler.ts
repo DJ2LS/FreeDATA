@@ -6,15 +6,13 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { settingsStore as settings } from "../store/settingsStore.js";
+import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 
 import { useAudioStore } from "../store/audioStore.js";
 const audioStore = useAudioStore(pinia);
 
 import { useStateStore } from "../store/stateStore";
 const stateStore = useStateStore(pinia);
-
-import { postToServer, getFromServer } from "./rest.js";
 
 // ---------------------------------
 
@@ -145,54 +143,9 @@ export function processModemConfig(data) {
   }
 }
 
-export function getModemConfigAsJSON() {
-  // create json output from settings
-  // TODO Can we make this more dynamic? Maybe using a settings object?
-  // For now its a hardcoded structure until we found a better way
-
-  const configData = {
-    AUDIO: {
-      enable_auto_tune: settings.auto_tune,
-      input_device: settings.input_device,
-      rx_audio_level: settings.rx_audio_level,
-      output_device: settings.output_device,
-      tx_audio_level: settings.tx_audio_level,
-      //enable_auto_tune: settings.tx_audio_level,
-    },
-    MESH: {
-      enable_protocol: settings.enable_mesh_features,
-    },
-    MODEM: {
-      enable_fft: settings.enable_fft,
-      tuning_range_fmax: settings.tuning_range_fmax,
-      tuning_range_fmin: settings.tuning_range_fmin,
-      enable_fsk: settings.enable_fsk,
-      enable_low_bandwidth_mode: settings.enable_low_bandwidth_mode,
-      respond_to_cq: settings.respond_to_cq,
-      rx_buffer_size: settings.rx_buffer_size,
-      enable_scatter: settings.enable_scatter,
-      tx_delay: settings.tx_delay,
-    },
-    NETWORK: {
-      modemport: settings.modem_port,
-    },
-    RADIO: {
-      radiocontrol: settings.radiocontrol,
-      rigctld_ip: settings.hamlib_rigctld_ip,
-      rigctld_port: settings.hamlib_rigctld_port,
-    },
-    STATION: {
-      mycall: settings.mycall + "-" + settings.myssid,
-      mygrid: settings.mygrid,
-      ssid_list: [],
-      enable_explorer: settings.enable_explorer,
-      enable_stats: settings.explorer_stats,
-    },
-    TCI: {
-      tci_ip: settings.tci_ip,
-      tci_port: settings.tci_port,
-    },
-  };
-
-  return configData;
+export function handleFieldValueChange(event) {
+  const element = event.target;
+  const newValue = element.value;
+  settings.remote[element.dataset.section][element.dataset.setting] = newValue;
+  onChange();
 }
