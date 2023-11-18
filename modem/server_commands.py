@@ -12,7 +12,7 @@ def cqcqcq():
 
 def ping_ping(data):
     try:
-        dxcallsign = data["dxcallsign"]
+        dxcallsign = data["dxcall"]
         if not str(dxcallsign).strip():
             return
         DATA_QUEUE_TRANSMIT.put(["PING", None, dxcallsign])
