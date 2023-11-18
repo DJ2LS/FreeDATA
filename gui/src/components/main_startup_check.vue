@@ -18,7 +18,7 @@ import {
   setConfig,
   startModem,
   stopModem,
-  getModemCurrentState,
+  getModemState,
 } from "../js/api";
 import { audioInputOptions, audioOutputOptions } from "../js/deviceFormHelper";
 
@@ -27,7 +27,7 @@ var updateAvailable = process.env.FDUpdateAvail;
 
 // start modemCheck modal once on startup
 onMounted(() => {
-  getModemCurrentState();
+  getModemState();
   getVersion();
   new Modal("#modemCheck", {}).show();
 });

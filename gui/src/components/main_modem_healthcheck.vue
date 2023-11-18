@@ -3,8 +3,7 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { useSettingsStore } from "../store/settingsStore.js";
-const settings = useSettingsStore(pinia);
+import { settingsStore as settings } from "../store/settingsStore.js";
 
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
@@ -15,7 +14,7 @@ function getOverallHealth() {
   if (state.modem_connection !== "connected") health += 5;
   if (!state.is_modem_running) health += 3;
   if (
-    settings.radiocontrol === "rigctld" &&
+    settings.remote.RADIO.control === "rigctld" &&
     (state.rigctld_started === undefined || state.rigctld_started === "false")
   )
     health += 2;
