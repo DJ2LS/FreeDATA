@@ -337,7 +337,7 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       @change="onChange"
       data-section="RADIO"
       data-setting="serial_speed"
-      v-model="settings.remote.RADIO.serial_speed"
+      v-model.number="settings.remote.RADIO.serial_speed"
     >
       <option selected value="ignore">-- ignore --</option>
       <option value="1200">1200</option>
@@ -362,7 +362,7 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       @change="onChange"
       data-section="RADIO"
       data-setting="data_bits"
-      v-model="settings.remote.RADIO.data_bits"
+      v-model.number="settings.remote.RADIO.data_bits"
     >
       <option selected value="ignore">-- ignore --</option>
       <option value="7">7</option>
@@ -379,7 +379,7 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       @change="onChange"
       data-section="RADIO"
       data-setting="stop_bits"
-      v-model="settings.remote.RADIO.stop_bits"
+      v-model.number="settings.remote.RADIO.stop_bits"
     >
       <option selected value="ignore">-- ignore --</option>
       <option value="1">1</option>
