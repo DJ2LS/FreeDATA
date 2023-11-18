@@ -4,8 +4,6 @@ import { onMounted } from "vue";
 
 import infoScreen_updater from "./infoScreen_updater.vue";
 
-import { getModemVersion, saveModemConfig } from "../js/api";
-
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
@@ -20,8 +18,7 @@ const state = useStateStore(pinia);
 
 import { startModem, stopModem } from "../js/api";
 import { getModemConfig, getModemCurrentState } from "../js/api";
-
-import { startRigctld, stopRigctld } from "../js/deprecated_daemon";
+import { getVersion, getConfig, setConfig, startModem, stopModem } from "../js/api";
 
 const version = import.meta.env.PACKAGE_VERSION;
 var updateAvailable = process.env.FDUpdateAvail;
@@ -31,6 +28,8 @@ onMounted(() => {
   getModemConfig();
   getModemCurrentState();
   getModemVersion();
+  getConfig();
+  getVersion();
   new Modal("#modemCheck", {}).show();
 });
 
@@ -212,7 +211,7 @@ function testHamlib() {
                       class="form-select form-select-sm"
                       id="rx_audio"
                       aria-label=".form-select-sm"
-                      @change="saveModemConfig"
+                      @change="setConfig"
                       v-model="settings.input_device"
                       v-html="audio.getInputDevices()"
                     ></select>
@@ -225,7 +224,7 @@ function testHamlib() {
                       class="form-select form-select-sm"
                       id="tx_audio"
                       aria-label=".form-select-sm"
-                      @change="saveModemConfig"
+                      @change="setConfig"
                       v-model="settings.output_device"
                       v-html="audio.getOutputDevices()"
                     ></select>
@@ -268,7 +267,7 @@ function testHamlib() {
                       class="form-select form-select-sm"
                       aria-label=".form-select-sm"
                       id="rigcontrol_radiocontrol"
-                      @change="saveModemConfig"
+                      @change="setConfig"
                       v-model="settings.radiocontrol"
                     >
                       <option selected value="disabled">
@@ -347,7 +346,7 @@ function testHamlib() {
                         aria-label=".form-select-sm"
                         id="hamlib_deviceport"
                         style="width: 7rem"
-                        @change="saveModemConfig"
+                        @change="setConfig"
                       ></select>
                     </div>
                   </div>
@@ -363,7 +362,7 @@ function testHamlib() {
                         id="rigcontrol_tci_ip"
                         aria-label="Device IP"
                         v-model="settings.tci_ip"
-                        @change="saveModemConfig"
+                        @change="setConfig"
                       />
                     </div>
 
@@ -376,7 +375,7 @@ function testHamlib() {
                         id="rigcontrol_tci_port"
                         aria-label="Device Port"
                         v-model="settings.tci_port"
-                        @change="saveModemConfig"
+                        @change="setConfig"
                       />
                     </div>
                   </div>

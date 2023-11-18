@@ -9,31 +9,18 @@ import { settingsStore as settings} from "../store/settingsStore.js";
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { postToServer } from "../js/rest.js";
-
-
-function transmitCQ() {
-  postToServer(settings.modem_host, settings.modem_port, "modem/cqcqcq", null);
-}
+import { sendModemCQ, sendModemPing, setModemBeacon } from "../js/api.js";
 
 function transmitPing() {
-  let command = {"dxcall": (<HTMLInputElement>document.getElementById("dxCall")).value}
-  postToServer(settings.modem_host, settings.modem_port, "modem/ping_ping", command);
+  sendModemPing((<HTMLInputElement>document.getElementById("dxCall")).value);
 }
 
 function startStopBeacon() {
-  switch (state.beacon_state) {
-    case "False":
-        postToServer(settings.modem_host, settings.modem_port,"modem/beacon", {"enabled": "True"});
-
-
-      break;
-    case "True":
-        postToServer(settings.modem_host, settings.modem_port, "modem/beacon", {"enabled": "False"});
-
-
-      break;
-    default:
+  if (state.beacon_state === true) {
+    setModemBeacon(false);
+  }
+  else {
+    setModemBeacon(true);
   }
 }
 </script>
@@ -96,7 +83,7 @@ function startStopBeacon() {
               id="sendCQ"
               type="button"
               title="Send a CQ to the world"
-              @click="transmitCQ()"
+              @click="sendModemCQ()"
             >
               Call CQ
             </button>
@@ -107,8 +94,8 @@ function startStopBeacon() {
               class="btn btn-sm ms-1"
               @click="startStopBeacon()"
               v-bind:class="{
-                'btn-success': state.beacon_state === 'True',
-                'btn-outline-secondary': state.beacon_state === 'False',
+                'btn-success': state.beacon_state === true,
+                'btn-outline-secondary': state.beacon_state === false,
               }"
               title="Toggle beacon mode. The interval can be set in settings. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses."
             >

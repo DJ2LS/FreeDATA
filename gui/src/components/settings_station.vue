@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { saveModemConfig } from "../js/api";
+import { setConfig } from "../js/api";
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -21,7 +21,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       id="myCall"
       aria-label="Station Callsign"
       aria-describedby="basic-addon1"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model="settings.mycall"
     />
   </div>
@@ -32,7 +32,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
     <select
       class="form-select form-select-sm w-50"
       id="myCallSSID"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model.number="settings.myssid"
     >
       <option selected value="0">0</option>
@@ -65,7 +65,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       maxlength="6"
       aria-label="Station Grid Locator"
       aria-describedby="basic-addon1"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model="settings.mygrid"
     />
   </div>

@@ -55,7 +55,7 @@ const state = useStateStore(pinia);
         type="button"
         disabled
       >
-        Update channel | {{ settings.update_channel }}
+        Update channel | settings.update_channel
       </button>
       <button
         class="btn btn-secondary btn-sm ms-1"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { saveModemConfig } from "../js/api";
+import { setConfig } from "../js/api";
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -19,7 +19,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       id="hamlib_rigctld_path"
       aria-label="Device IP"
       aria-describedby="basic-addon1"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model="settings.hamlib_rigctld_path"
     />
   </div>
@@ -34,7 +34,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       id="hamlib_rigctld_server_port"
       aria-label="Device Port"
       aria-describedby="basic-addon1"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model="settings.hamlib_rigctld_server_port"
     />
   </div>
@@ -72,7 +72,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       class="form-select form-select-sm"
       aria-label=".form-select-sm"
       id="hamlib_deviceid"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model="settings.hamlib_deviceid"
     >
       <option selected value="-- ignore --">-- ignore --</option>
@@ -349,7 +349,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       aria-label=".form-select-sm"
       id="hamlib_deviceport"
       style="width: 7rem"
-      @change="saveModemConfig"
+      @change="setConfig"
     ></select>
   </div>
 
@@ -360,7 +360,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       class="form-select form-select-sm"
       aria-label=".form-select-sm"
       id="hamlib_serialspeed"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model="settings.hamlib_serialspeed"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -383,7 +383,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       class="form-select form-select-sm"
       aria-label=".form-select-sm"
       id="hamlib_data_bits"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model="settings.hamlib_data_bits"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -398,7 +398,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       class="form-select form-select-sm"
       aria-label=".form-select-sm"
       id="hamlib_stop_bits"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model="settings.hamlib_stop_bits"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -413,7 +413,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       class="form-select form-select-sm"
       aria-label=".form-select-sm"
       id="hamlib_handshake"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model="settings.hamlib_handshake"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -427,7 +427,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       class="form-select form-select-sm"
       aria-label=".form-select-sm"
       id="hamlib_ptt_port"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model="settings.hamlib_ptt_port"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -441,7 +441,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       aria-label=".form-select-sm"
       id="hamlib_pttprotocol"
       style="width: 0.5rem"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model="settings.hamlib_pttprotocol"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -462,7 +462,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       aria-label=".form-select-sm"
       id="hamlib_dcd"
       style="width: 0.5rem"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model="settings.hamlib_dcd"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -482,7 +482,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       aria-label=".form-select-sm"
       id="hamlib_dtrstate"
       style="width: 0.5rem"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model="settings.hamlib_dtrstate"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -520,7 +520,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       id="hamlib_rigctld_custom_args"
       aria-label="Custom arguments"
       aria-describedby="basic-addon1"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model="settings.hamlib_rigctld_custom_args"
     />
   </div>

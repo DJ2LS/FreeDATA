@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import pinia from "../store/index";
 
-import { saveModemConfig } from "../js/api";
+import { setConfig } from "../js/api";
 
 import { settingsStore as settings} from "../store/settingsStore.js";
 
@@ -55,8 +55,8 @@ import { startModem, stopModem } from "../js/api";
       maxlength="5"
       max="65534"
       min="1025"
-      @change="saveModemConfig()"
-      v-model.number="settings.modem_port"
+      @change="setConfig()"
+      v-model.number="settings.local.port"
     />
   </div>
 
@@ -67,8 +67,8 @@ import { startModem, stopModem } from "../js/api";
       class="form-control"
       placeholder="modem host"
       id="modem_port"
-      @change="saveModemConfig"
-      v-model="settings.modem_host"
+      @change="setConfig"
+      v-model="settings.local.host"
     />
   </div>
 
@@ -79,7 +79,7 @@ import { startModem, stopModem } from "../js/api";
       class="form-select form-select-sm"
       id="rx_audio"
       aria-label=".form-select-sm"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model="settings.input_device"
       v-html="audio.getInputDevices()"
     ></select>
@@ -92,7 +92,7 @@ import { startModem, stopModem } from "../js/api";
       class="form-select form-select-sm"
       id="tx_audio"
       aria-label=".form-select-sm"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model="settings.output_device"
       v-html="audio.getOutputDevices()"
     ></select>
@@ -103,7 +103,7 @@ import { startModem, stopModem } from "../js/api";
     <select
       class="form-select form-select-sm"
       id="tx_delay"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model.number="settings.tx_delay"
     >
       <option value="0">0</option>
@@ -136,7 +136,7 @@ import { startModem, stopModem } from "../js/api";
     <select
       class="form-select form-select-sm"
       id="tuning_range_fmin"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model.number="settings.tuning_range_fmin"
     >
       <option value="-50">-50</option>
@@ -149,7 +149,7 @@ import { startModem, stopModem } from "../js/api";
     <select
       class="form-select form-select-sm"
       id="tuning_range_fmax"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model.number="settings.tuning_range_fmax"
     >
       <option value="50">50</option>
@@ -166,7 +166,7 @@ import { startModem, stopModem } from "../js/api";
       aria-label=".form-select-sm"
       id="beaconInterval"
       style="width: 6rem"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model="settings.beacon_interval"
     >
       <option value="60">60 secs</option>
@@ -187,7 +187,7 @@ import { startModem, stopModem } from "../js/api";
           class="form-check-input"
           type="checkbox"
           id="fftSwitch"
-          @change="saveModemConfig"
+          @change="setConfig"
           v-model="settings.enable_fft"
         />
         <label class="form-check-label" for="fftSwitch">Waterfall</label>
@@ -202,7 +202,7 @@ import { startModem, stopModem } from "../js/api";
           class="form-check-input"
           type="checkbox"
           id="scatterSwitch"
-          @change="saveModemConfig"
+          @change="setConfig"
           v-model="settings.enable_scatter"
         />
         <label class="form-check-label" for="scatterSwitch">Scatter</label>
@@ -218,7 +218,7 @@ import { startModem, stopModem } from "../js/api";
           type="checkbox"
           id="250HzModeSwitch"
           v-model="settings.low_bandwidth_mode"
-          @change="saveModemConfig"
+          @change="setConfig"
         />
         <label class="form-check-label" for="250HzModeSwitch">250Hz</label>
       </div>
@@ -233,7 +233,7 @@ import { startModem, stopModem } from "../js/api";
           type="checkbox"
           id="respondCQSwitch"
           v-model="settings.respond_to_cq"
-          @change="saveModemConfig"
+          @change="setConfig"
         />
         <label class="form-check-label" for="respondCQSwitch">QRV</label>
       </div>
@@ -245,7 +245,7 @@ import { startModem, stopModem } from "../js/api";
       <select
         class="form-select form-select-sm"
         id="rx_buffer_size"
-        @change="saveModemConfig"
+        @change="setConfig"
         v-model.number="settings.rx_buffer_size"
       >
         <option value="1">1</option>

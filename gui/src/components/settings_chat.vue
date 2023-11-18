@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { saveModemConfig } from "../js/api";
+import { setConfig } from "../js/api";
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -17,7 +17,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
           class="form-check-input"
           type="checkbox"
           id="enable_is_writing"
-          @change="saveModemConfig"
+          @change="setConfig"
           v-model="settings.enable_is_writing"
           disabled
         />
@@ -36,7 +36,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
           class="form-check-input"
           type="checkbox"
           id="enable_request_profile"
-          @change="saveModemConfig"
+          @change="setConfig"
           v-model="settings.enable_request_profile"
           disabled
         />
@@ -54,7 +54,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
           class="form-check-input"
           type="checkbox"
           id="enable_request_shared_folder"
-          @change="saveModemConfig"
+          @change="setConfig"
           v-model="settings.enable_request_shared_folder"
           disabled
         />
@@ -68,7 +68,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
       type="text"
       class="form-control w-50"
       id="shared_folder_path"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model="settings.shared_folder_path"
       disabled
     />
@@ -85,7 +85,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
           class="form-check-input"
           type="checkbox"
           id="enable_auto_retry"
-          @change="saveModemConfig"
+          @change="setConfig"
           v-model="settings.enable_auto_retry"
         />
       </div>
@@ -97,7 +97,7 @@ import { settingsStore as settings} from "../store/settingsStore.js";
     <select
       class="form-select form-select-sm w-50"
       id="max_retry_attempts"
-      @change="saveModemConfig"
+      @change="setConfig"
       v-model="settings.max_retry_attempts"
     >
       <option value="1">1</option>

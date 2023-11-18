@@ -1,4 +1,3 @@
-import { getFromServer, postToServer } from "./rest.js";
 import { settingsStore as settings } from "../store/settingsStore.js";
 
 function buildURL(endpoint) {
@@ -37,6 +36,10 @@ export async function apiPost(endpoint, payload = {}) {
   }
 }
 
+export function getVersion() {
+  return apiGet("/version");
+}
+
 export function getConfig() {
   return apiGet("/config");
 }
@@ -53,6 +56,18 @@ export function getSerialDevices() {
   return apiGet("/devices/serial");
 }
 
+export function setModemBeacon(enabled = false) {
+  return apiPost("/modem/beacon", { enabled: enabled });
+}
+
+export function sendModemCQ() {
+  return apiPost("/modem/cqcqcq");
+}
+
+export function sendModemPing(dxcall) {
+  return apiPost("/modem/cqcqcq", { dxcall: dxcall });
+}
+
 export function startModem() {
   return apiPost("/modem/start");
 }
@@ -64,6 +79,7 @@ export function stopModem() {
 export function getModemVersion() {
   getFromServer("/version");
 }
+
 export function getModemCurrentState() {
   getFromServer(settings.modem_host, settings.modem_port, "modem/state", null);
 }
