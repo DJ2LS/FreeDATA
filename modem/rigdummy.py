@@ -79,7 +79,7 @@ class radio:
         Returns:
 
         """
-        return "connected"
+        return True
     def get_ptt(self):
         """ """
         return None

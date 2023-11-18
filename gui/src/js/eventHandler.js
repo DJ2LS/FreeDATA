@@ -37,7 +37,8 @@ export function stateDispatcher(data) {
     stateStore.dbfs_level = data["audio_dbfs"];
     stateStore.channel_busy_slot = data["channel_busy_slot"];
     stateStore.beacon_state = data["is_beacon_running"];
-
+    stateStore.radio_status = data["radio_status"];
+    stateStore.frequency = data["radio_frequency"];
     /*
     self.is_arq_state = False
     self.is_arq_session = False

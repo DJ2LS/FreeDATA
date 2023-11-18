@@ -307,7 +307,7 @@ class TCICtrl:
         Returns:
 
         """
-        return "connected"
+        return True
 
     def get_ptt(self):
         """ """

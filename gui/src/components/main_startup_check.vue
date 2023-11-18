@@ -48,18 +48,13 @@ function getRigControlStuff() {
     case "disabled":
       return true;
     case "rigctld":
-      if (state.rigctld_started === true) {
-        return true;
-      } else {
-        return false;
-      }
     case "tci":
-      return true;
+     return state.radio_status
     default:
       console.error(
         "Unknown radio control mode " + settings.remote.RADIO.control,
       );
-      return "Unknown control type";
+      return "Unknown control type" + settings.remote.RADIO.control;
   }
 }
 

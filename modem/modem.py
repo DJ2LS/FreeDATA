@@ -1291,20 +1291,20 @@ class RF:
         while True:
             try:
                 # this looks weird, but is necessary for avoiding rigctld packet colission sock
-                threading.Event().wait(0.25)
+                #threading.Event().wait(0.1)
+                self.states.set("radio_status", self.radio.get_status())
+                #threading.Event().wait(0.25)
                 self.states.set("radio_frequency", self.radio.get_frequency())
                 threading.Event().wait(0.1)
                 self.states.set("radio_mode", self.radio.get_mode())
                 threading.Event().wait(0.1)
                 self.states.set("radio_bandwidth", self.radio.get_bandwidth())
                 threading.Event().wait(0.1)
-                self.states.set("radio_status", self.radio.get_status())
-                threading.Event().wait(0.1)
                 if self.states.is_transmitting:
                     self.radio_alc = self.radio.get_alc()
                     threading.Event().wait(0.1)
                 self.states.set("radio_rf_power", self.radio.get_level())
-                # threading.Event().wait(0.1)
+                threading.Event().wait(0.1)
                 self.states.set("radio_strength", self.radio.get_strength())
 
             except Exception as e:

@@ -44,6 +44,8 @@ class STATES:
         self.radio_bandwidth = 0
         self.radio_rf_power = 0
         self.radio_strength = 0
+        # Set rig control status regardless or rig control method
+        self.radio_status = False
 
     def sendState (self):
         currentState = self.getAsJSON(False)
@@ -56,9 +58,8 @@ class STATES:
 
     def set(self, key, value):
         setattr(self, key, value)
+        #print(f"State ==> Setting {key} to value {value}")
         # only process data if changed
-        # but also send an update if more than a 'updateCadence' second(s) has lapsed
-        # Otherwise GUI can't tell if modem is active due to lack of state messages on startup
         new_state = self.getAsJSON(True)
         if new_state != self.newstate:
             self.newstate = new_state
@@ -77,5 +78,6 @@ class STATES:
             "is_codec2_traffic": self.is_codec2_traffic,
             "is_modem_running": self.is_modem_running,
             "is_beacon_running": self.is_beacon_running,
-
+            "radio_status": self.radio_status,
+            "radio_frequency": self.radio_frequency,
         })

@@ -197,7 +197,7 @@ class radio:
 
     def get_status(self):
         """ """
-        return "connected" if self.data_connected and self.ptt_connected else "unknown/disconnected"
+        return True if self.data_connected and self.ptt_connected else False
 
     def get_level(self):
         try:

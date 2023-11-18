@@ -12,12 +12,13 @@ export const useStateStore = defineStore("stateStore", () => {
   var bandwidth = ref("-");
   var dbfs_level_percent = ref(0);
   var dbfs_level = ref(0);
+  var radio_status = ref(false);
 
   var ptt_state = ref("False");
 
   var speed_level = ref(0);
   var fft = ref();
-  var channel_busy = ref("");
+  var channel_busy = ref(false);
   var channel_busy_slot = ref();
   var scatter = ref();
   var s_meter_strength_percent = ref(0);
@@ -139,5 +140,6 @@ export const useStateStore = defineStore("stateStore", () => {
     python_version,
     modem_version,
     rx_buffer_length,
+    radio_status,
   };
 });

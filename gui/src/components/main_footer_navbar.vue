@@ -110,8 +110,8 @@ const state = useStateStore(pinia);
             data-bs-trigger="hover"
             data-bs-html="true"
             v-bind:class="{
-              'btn-warning': state.channel_busy === 'True',
-              'btn-secondary': state.channel_busy === 'False',
+              'btn-warning': state.channel_busy === true,
+              'btn-secondary': state.channel_busy === false,
             }"
             style="pointer-events: auto"
             data-bs-title="Channel busy"
