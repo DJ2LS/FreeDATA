@@ -76,14 +76,13 @@ class RF:
         self.enable_audio_auto_tune = config['AUDIO']['enable_auto_tune']
         self.enable_fsk = config['MODEM']['enable_fsk']
         self.enable_fft = config['MODEM']['enable_fft']
-        self.enable_scatter = config['MODEM']['enable_scatter']
         self.tx_delay = config['MODEM']['tx_delay']
         self.tuning_range_fmin = config['MODEM']['tuning_range_fmin']
         self.tuning_range_fmax = config['MODEM']['tuning_range_fmax']
 
-        self.radiocontrol = config['RADIO']['radiocontrol']
-        self.rigctld_ip = config['RADIO']['rigctld_ip']
-        self.rigctld_port = config['RADIO']['rigctld_port']
+        self.radiocontrol = config['RADIO']['control']
+        self.rigctld_ip = config['RIGCTLD']['ip']
+        self.rigctld_port = config['RIGCTLD']['port']
 
 
         self.states.set("is_transmitting", False)
@@ -1184,9 +1183,7 @@ class RF:
         :param freedv: codec2 instance to query
         :type freedv: ctypes.c_void_p
         """
-        if not self.enable_scatter:
-            return
-
+       
         modemStats = codec2.MODEMSTATS()
         ctypes.cast(
             codec2.api.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats)),
