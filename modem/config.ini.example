@@ -53,7 +53,6 @@ enable_hmac = False
 enable_morse_identifier = False
 respond_to_cq = False
 rx_buffer_size = 64
-enable_scatter = False
 tx_delay = 200
 beacon_interval = 90
 
