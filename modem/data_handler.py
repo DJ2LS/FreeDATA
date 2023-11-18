@@ -2543,11 +2543,10 @@ class DATA:
             freedata="modem-message",
             ping="transmitting",
             dxcallsign=str(dxcallsign, "UTF-8"),
-            mycallsign=str(mycallsign, "UTF-8"),
         )
         self.log.info(
             "[Modem] PING REQ ["
-            + str(mycallsign, "UTF-8")
+            + mycallsign
             + "] >>> ["
             + str(dxcallsign, "UTF-8")
             + "]"
