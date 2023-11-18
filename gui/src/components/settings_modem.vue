@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 import pinia from "../store/index";
-import { useAudioStore } from "../store/audioStore.js";
-const audio = useAudioStore(pinia);
 
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { startModem, stopModem } from "../js/api";
+import { startModem, stopModem } from "../js/api.js";
+import { audioInputOptions, audioOutputOptions } from "../js/deviceFormHelper";
 </script>
 
 <template>
@@ -75,8 +74,11 @@ import { startModem, stopModem } from "../js/api";
       aria-label=".form-select-sm"
       @change="onChange"
       v-model="settings.remote.AUDIO.input_device"
-      v-html="audio.getInputDevices()"
-    ></select>
+    >
+      <option v-for="option in audioInputOptions()" v-bind:value="option.id">
+        {{ option.name }}
+      </option>
+    </select>
   </div>
 
   <!-- Audio Output Device -->
@@ -88,8 +90,11 @@ import { startModem, stopModem } from "../js/api";
       aria-label=".form-select-sm"
       @change="onChange"
       v-model="settings.remote.AUDIO.output_device"
-      v-html="audio.getOutputDevices()"
-    ></select>
+    >
+      <option v-for="option in audioOutputOptions()" v-bind:value="option.id">
+        {{ option.name }}
+      </option>
+    </select>
   </div>
 
   <div class="input-group input-group-sm mb-1">

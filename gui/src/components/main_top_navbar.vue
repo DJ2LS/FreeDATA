@@ -8,9 +8,6 @@ const state = useStateStore(pinia);
 
 import { settingsStore as settings} from "../store/settingsStore.js";
 
-import { useAudioStore } from "../store/audioStore.js";
-const audioStore = useAudioStore(pinia);
-
 </script>
 
 <template>

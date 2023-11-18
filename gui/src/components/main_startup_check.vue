@@ -10,9 +10,6 @@ setActivePinia(pinia);
 
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 
-import { useAudioStore } from "../store/audioStore.js";
-const audio = useAudioStore(pinia);
-
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
@@ -209,7 +206,6 @@ function testHamlib() {
                       aria-label=".form-select-sm"
                       @change="onChange"
                       v-model="settings.remote.AUDIO.input_device"
-                      v-html="audio.getInputDevices()"
                     ></select>
                   </div>
 
@@ -222,7 +218,6 @@ function testHamlib() {
                       aria-label=".form-select-sm"
                       @change="setConfig"
                       v-model="settings.output_device"
-                      v-html="audio.getOutputDevices()"
                     ></select>
                   </div>
                 </div>

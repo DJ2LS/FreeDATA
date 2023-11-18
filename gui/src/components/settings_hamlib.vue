@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
+import { serialDeviceOptions } from "../js/deviceFormHelper";
 </script>
 
 <template>
@@ -315,8 +316,12 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       id="hamlib_deviceport"
       style="width: 7rem"
       @change="onChange"
-      v-model="settings.remote.RIGCTLD.port"
-    ></select>
+      v-model="settings.remote.RADIO.serial_port"
+    >
+      <option v-for="option in serialDeviceOptions()" v-bind:value="option.port">
+        {{ option.port }}
+      </option>
+    </select>
   </div>
 
   <div class="input-group input-group-sm mb-1">
