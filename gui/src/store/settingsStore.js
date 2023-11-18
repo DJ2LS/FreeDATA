@@ -16,4 +16,6 @@ export function getRemote() {
   });
 }
 
-getRemote();
+if (settingsStore.remote["STATION"] === undefined) {
+  getRemote();
+}

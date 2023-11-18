@@ -3,8 +3,6 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { getRemote } from "../store/settingsStore";
-
 import main_modals from "./main_modals.vue";
 import main_top_navbar from "./main_top_navbar.vue";
 import main_rig_control from "./main_rig_control.vue";
@@ -19,9 +17,7 @@ import main_active_audio_level from "./main_active_audio_level.vue";
 
 import chat from "./chat.vue";
 import infoScreen from "./infoScreen.vue";
-
 import main_modem_healthcheck from "./main_modem_healthcheck.vue";
-getRemote();
 
 function stopAllTransmissions() {
   console.log("stopping transmissions");

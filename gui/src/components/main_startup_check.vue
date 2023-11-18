@@ -25,10 +25,7 @@ var updateAvailable = process.env.FDUpdateAvail;
 
 // start modemCheck modal once on startup
 onMounted(() => {
-  getModemConfig();
   getModemCurrentState();
-  getModemVersion();
-  getConfig();
   getVersion();
   new Modal("#modemCheck", {}).show();
 });
@@ -45,20 +42,21 @@ function getNetworkState() {
 }
 
 function getRigControlStuff() {
-  switch (settings.radiocontrol) {
+  switch (settings.remote.RADIO.radiocontrol) {
     case "disabled":
       return true;
     case "rigctld":
-      if (state.rigctld_started == "true") {
+      if (state.rigctld_started === true) {
         return true;
       } else {
         return false;
       }
     case "tci":
       return true;
-      break;
     default:
-      console.error("Unknown radio control mode " + settings.radiocontrol);
+      console.error(
+        "Unknown radio control mode " + settings.remote.RADIO.radiocontrol,
+      );
       return "Unknown control type";
   }
 }

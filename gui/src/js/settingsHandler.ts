@@ -6,7 +6,7 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { settingsStore as settings} from "../store/settingsStore.js";
+import { settingsStore as settings } from "../store/settingsStore.js";
 
 import { useAudioStore } from "../store/audioStore.js";
 const audioStore = useAudioStore(pinia);
@@ -143,20 +143,6 @@ export function processModemConfig(data) {
       }
     }
   }
-}
-
-export function processModemAudioDevices(data) {
-  console.log(data);
-  audioStore.inputDevices = data["in"];
-  audioStore.outputDevices = data["out"];
-}
-
-export function processModemSerialDevices(data) {
-  settings.serial_devices = data;
-}
-export function processModemVersion(data) {
-  //data = JSON.parse(data);
-  stateStore.modem_version = data["version"];
 }
 
 export function getModemConfigAsJSON() {
