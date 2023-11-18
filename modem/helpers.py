@@ -68,13 +68,13 @@ def get_crc_16(data) -> bytes:
     Returns:
         CRC-16 (CCITT) of the provided data as bytes
     """
+    if not isinstance(data, (bytes)):
+        data = bytes(data,"utf-8")
+    
     crc_algorithm = crcengine.new("crc16-ccitt-false")  # load crc16 library
-    crc_data = crc_algorithm(data)
-    crc_data = crc_data.to_bytes(2, byteorder="big")
-    return crc_data
+    return crc_algorithm(data).to_bytes(2, byteorder="big")
 
-
-def get_crc_24(data) -> bytes:
+def get_crc_24(data: bytes) -> bytes:
     """Author: DJ2LS
 
     Get the CRC24-OPENPGP of a byte string
@@ -88,6 +88,8 @@ def get_crc_24(data) -> bytes:
     Returns:
         CRC-24 (OpenPGP) of the provided data as bytes
     """
+    if not isinstance(data, (bytes)):
+        data = bytes(data,"utf-8")
     crc_algorithm = crcengine.create(
         0x864CFB,
         24,
@@ -97,9 +99,7 @@ def get_crc_24(data) -> bytes:
         xor_out=0,
         name="crc-24-openpgp",
     )
-    crc_data = crc_algorithm(data)
-    crc_data = crc_data.to_bytes(3, byteorder="big")
-    return crc_data
+    return crc_algorithm(data).to_bytes(3,byteorder="big")
 
 
 def get_crc_32(data: bytes) -> bytes:
@@ -115,10 +115,10 @@ def get_crc_32(data: bytes) -> bytes:
     Returns:
         CRC-32 of the provided data as bytes
     """
+    if not isinstance(data, (bytes)):
+        data = bytes(data,"utf-8")
     crc_algorithm = crcengine.new("crc32")  # load crc32 library
-    crc_data = crc_algorithm(data)
-    crc_data = crc_data.to_bytes(4, byteorder="big")
-    return crc_data
+    return crc_algorithm(data).to_bytes(4, byteorder="big")
 
 
 def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency, heard_stations_list):
