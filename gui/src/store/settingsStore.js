@@ -1,4 +1,4 @@
-import { reactive } from "vue";
+import { reactive, watch } from "vue";
 
 import { getConfig, setConfig } from "../js/api";
 
@@ -6,6 +6,7 @@ export const settingsStore = reactive({
   local: {
     host: "127.0.0.1",
     port: "5000",
+    enable_fft: false,
   },
   remote: {
     AUDIO: {
@@ -22,12 +23,12 @@ export const settingsStore = reactive({
       enable_fft: false,
       enable_fsk: false,
       enable_low_bandwidth_mode: false,
-      enable_scatter: false,
       respond_to_cq: false,
       rx_buffer_size: 0,
       tuning_range_fmax: 0,
       tuning_range_fmin: 0,
       tx_delay: 0,
+      beacon_interval: 0,
     },
     RADIO: {
       control: "disabled",
@@ -80,4 +81,7 @@ if (settingsStore.remote.STATION.mycall === "") {
   getRemote();
 }
 
-// TODO add watcher for local config changes
+watch (settingsStore.local, (oldValue, newValue) => {
+  // TODO handle local file saving
+  const cenas = newValue;
+})

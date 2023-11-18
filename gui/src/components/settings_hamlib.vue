@@ -13,8 +13,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       id="hamlib_rigctld_ip"
       aria-label="Device IP"
       @change="onChange"
-      data-section="RIGCTLD"
-      data-setting="rip"
       v-model="settings.remote.RIGCTLD.ip"
     />
   </div>
@@ -28,8 +26,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       id="hamlib_rigctld_port"
       aria-label="Device Port"
       @change="onChange"
-      data-section="RIGCTLD"
-      data-setting="port"
       v-model="settings.remote.RIGCTLD.port"
     />
   </div>
@@ -42,8 +38,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       aria-label=".form-select-sm"
       id="hamlib_deviceid"
       @change="onChange"
-      data-section="RADIO"
-      data-setting="model_id"
       v-model.number="settings.remote.RADIO.model_id"
     >
       <option selected value="-- ignore --">-- ignore --</option>
@@ -321,8 +315,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       id="hamlib_deviceport"
       style="width: 7rem"
       @change="onChange"
-      data-section="RIGCTLD"
-      data-setting="port"
       v-model="settings.remote.RIGCTLD.port"
     ></select>
   </div>
@@ -335,8 +327,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       aria-label=".form-select-sm"
       id="hamlib_serialspeed"
       @change="onChange"
-      data-section="RADIO"
-      data-setting="serial_speed"
       v-model.number="settings.remote.RADIO.serial_speed"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -360,8 +350,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       aria-label=".form-select-sm"
       id="hamlib_data_bits"
       @change="onChange"
-      data-section="RADIO"
-      data-setting="data_bits"
       v-model.number="settings.remote.RADIO.data_bits"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -377,8 +365,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       aria-label=".form-select-sm"
       id="hamlib_stop_bits"
       @change="onChange"
-      data-section="RADIO"
-      data-setting="stop_bits"
       v-model.number="settings.remote.RADIO.stop_bits"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -394,8 +380,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       aria-label=".form-select-sm"
       id="hamlib_handshake"
       @change="onChange"
-      data-section="RADIO"
-      data-setting="serial_handshake"
       v-model="settings.remote.RADIO.serial_handshake"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -410,8 +394,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       aria-label=".form-select-sm"
       id="hamlib_ptt_port"
       @change="onChange"
-      data-section="RADIO"
-      data-setting="ptt_port"
       v-model="settings.remote.RADIO.ptt_port"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -426,8 +408,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       id="hamlib_pttprotocol"
       style="width: 0.5rem"
       @change="onChange"
-      data-section="RADIO"
-      data-setting="ptt_type"
       v-model="settings.remote.RADIO.ptt_type"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -449,8 +429,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       id="hamlib_dcd"
       style="width: 0.5rem"
       @change="onChange"
-      data-section="RADIO"
-      data-setting="serial_dcd"
       v-model="settings.remote.RADIO.serial_dcd"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -471,8 +449,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       id="hamlib_dtrstate"
       style="width: 0.5rem"
       @change="onChange"
-      data-section="RADIO"
-      data-setting="serial_dtr"
       v-model="settings.remote.RADIO.serial_dtr"
     >
       <option selected value="ignore">-- ignore --</option>
@@ -511,8 +487,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       aria-label="Custom arguments"
       aria-describedby="basic-addon1"
       @change="onChange"
-      data-section="RIGCTLD"
-      data-setting="arguments"
       v-model="settings.remote.RIGCTLD.arguments"
     />
   </div>

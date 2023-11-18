@@ -15,8 +15,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       aria-label="Station Callsign"
       aria-describedby="basic-addon1"
       @change="onChange"
-      data-section="STATION"
-      data-setting="mycall"
       v-model="settings.remote.STATION.mycall"
     />
   </div>
@@ -28,8 +26,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       class="form-select form-select-sm w-50"
       id="myCallSSID"
       @change="onChange"
-      data-section="STATION"
-      data-setting="myssid"
       v-model.number="settings.remote.STATION.myssid"
     >
       <option selected value="0">0</option>
@@ -63,8 +59,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       aria-label="Station Grid Locator"
       aria-describedby="basic-addon1"
       @change="onChange"
-      data-section="STATION"
-      data-setting="mygrid"
       v-model="settings.remote.STATION.mygrid"
     />
   </div>

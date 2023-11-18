@@ -1,10 +1,6 @@
 <script setup lang="ts">
+import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 import pinia from "../store/index";
-
-import { setConfig } from "../js/api";
-
-import { settingsStore as settings} from "../store/settingsStore.js";
-
 import { useAudioStore } from "../store/audioStore.js";
 const audio = useAudioStore(pinia);
 
@@ -55,7 +51,6 @@ import { startModem, stopModem } from "../js/api";
       maxlength="5"
       max="65534"
       min="1025"
-      @change="setConfig()"
       v-model.number="settings.local.port"
     />
   </div>
@@ -67,7 +62,6 @@ import { startModem, stopModem } from "../js/api";
       class="form-control"
       placeholder="modem host"
       id="modem_port"
-      @change="setConfig"
       v-model="settings.local.host"
     />
   </div>
@@ -79,8 +73,8 @@ import { startModem, stopModem } from "../js/api";
       class="form-select form-select-sm"
       id="rx_audio"
       aria-label=".form-select-sm"
-      @change="setConfig"
-      v-model="settings.input_device"
+      @change="onChange"
+      v-model="settings.remote.AUDIO.input_device"
       v-html="audio.getInputDevices()"
     ></select>
   </div>
@@ -92,8 +86,8 @@ import { startModem, stopModem } from "../js/api";
       class="form-select form-select-sm"
       id="tx_audio"
       aria-label=".form-select-sm"
-      @change="setConfig"
-      v-model="settings.output_device"
+      @change="onChange"
+      v-model="settings.remote.AUDIO.output_device"
       v-html="audio.getOutputDevices()"
     ></select>
   </div>
@@ -103,8 +97,8 @@ import { startModem, stopModem } from "../js/api";
     <select
       class="form-select form-select-sm"
       id="tx_delay"
-      @change="setConfig"
-      v-model.number="settings.tx_delay"
+      @change="onChange"
+      v-model.number="settings.remote.MODEM.tx_delay"
     >
       <option value="0">0</option>
       <option value="50">50</option>
@@ -136,8 +130,8 @@ import { startModem, stopModem } from "../js/api";
     <select
       class="form-select form-select-sm"
       id="tuning_range_fmin"
-      @change="setConfig"
-      v-model.number="settings.tuning_range_fmin"
+      @change="onChange"
+      v-model.number="settings.remote.MODEM.tuning_range_fmin"
     >
       <option value="-50">-50</option>
       <option value="-100">-100</option>
@@ -149,8 +143,8 @@ import { startModem, stopModem } from "../js/api";
     <select
       class="form-select form-select-sm"
       id="tuning_range_fmax"
-      @change="setConfig"
-      v-model.number="settings.tuning_range_fmax"
+      @change="onChange"
+      v-model.number="settings.remote.MODEM.tuning_range_fmax"
     >
       <option value="50">50</option>
       <option value="100">100</option>
@@ -166,8 +160,8 @@ import { startModem, stopModem } from "../js/api";
       aria-label=".form-select-sm"
       id="beaconInterval"
       style="width: 6rem"
-      @change="setConfig"
-      v-model="settings.beacon_interval"
+      @change="onChange"
+      v-model.number="settings.remote.MODEM.beacon_interval"
     >
       <option value="60">60 secs</option>
       <option value="90">90 secs</option>
@@ -187,25 +181,9 @@ import { startModem, stopModem } from "../js/api";
           class="form-check-input"
           type="checkbox"
           id="fftSwitch"
-          @change="setConfig"
-          v-model="settings.enable_fft"
+          v-model="settings.local.enable_fft"
         />
         <label class="form-check-label" for="fftSwitch">Waterfall</label>
-      </div>
-    </label>
-  </div>
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Enable scatter diagram data</label>
-    <label class="input-group-text w-50">
-      <div class="form-check form-switch form-check-inline">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          id="scatterSwitch"
-          @change="setConfig"
-          v-model="settings.enable_scatter"
-        />
-        <label class="form-check-label" for="scatterSwitch">Scatter</label>
       </div>
     </label>
   </div>
@@ -217,8 +195,8 @@ import { startModem, stopModem } from "../js/api";
           class="form-check-input"
           type="checkbox"
           id="250HzModeSwitch"
-          v-model="settings.low_bandwidth_mode"
-          @change="setConfig"
+          v-model="settings.remote.MODEM.enable_low_bandwidth_mode"
+          @change="onChange"
         />
         <label class="form-check-label" for="250HzModeSwitch">250Hz</label>
       </div>
@@ -232,8 +210,8 @@ import { startModem, stopModem } from "../js/api";
           class="form-check-input"
           type="checkbox"
           id="respondCQSwitch"
-          v-model="settings.respond_to_cq"
-          @change="setConfig"
+          v-model="settings.remote.MODEM.respond_to_cq"
+          @change="onChange"
         />
         <label class="form-check-label" for="respondCQSwitch">QRV</label>
       </div>
@@ -245,8 +223,8 @@ import { startModem, stopModem } from "../js/api";
       <select
         class="form-select form-select-sm"
         id="rx_buffer_size"
-        @change="setConfig"
-        v-model.number="settings.rx_buffer_size"
+        @change="onChange"
+        v-model.number="settings.remote.MODEM.rx_buffer_size"
       >
         <option value="1">1</option>
         <option value="2">2</option>

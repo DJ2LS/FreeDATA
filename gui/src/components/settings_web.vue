@@ -5,7 +5,7 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { settingsStore as settings} from "../store/settingsStore.js";
+import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 
 </script>
 
@@ -18,8 +18,8 @@ import { settingsStore as settings} from "../store/settingsStore.js";
           class="form-check-input"
           type="checkbox"
           id="ExplorerSwitch"
-          @change="setConfig"
-          v-model="settings.enable_explorer"
+          @change="onChange"
+          v-model="settings.remote.STATION.enable_explorer"
         />
         <label class="form-check-label" for="ExplorerSwitch">Publish</label>
       </div>
@@ -33,8 +33,8 @@ import { settingsStore as settings} from "../store/settingsStore.js";
           class="form-check-input"
           type="checkbox"
           id="ExplorerStatsSwitch"
-          @change="setConfig"
-          v-model="settings.explorer_stats"
+          @change="onChange"
+          v-model="settings.remote.STATION.enable_stats"
         />
         <label class="form-check-label" for="ExplorerStatsSwitch"
           >Publish stats</label

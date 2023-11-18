@@ -11,8 +11,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       aria-label=".form-select-sm"
       id="rigcontrol_radiocontrol"
       @change="onChange"
-      data-section="RADIO"
-      data-setting="control"
       v-model="settings.remote.RADIO.control"
     >
       <option selected value="disabled">
@@ -34,8 +32,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       id="rigcontrol_tci_ip"
       aria-label="Device IP"
       @change="onChange"
-      data-section="TCI"
-      data-setting="tci_ip"
       v-model="settings.remote.TCI.tci_ip"
     />
   </div>
@@ -49,8 +45,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
       id="rigcontrol_tci_port"
       aria-label="Device Port"
       @change="onChange"
-      data-section="TCI"
-      data-setting="tci_port"
       v-model="settings.remote.TCI.tci_port"
     />
   </div>

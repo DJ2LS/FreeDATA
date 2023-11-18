@@ -207,8 +207,6 @@ function testHamlib() {
                       class="form-select form-select-sm"
                       id="rx_audio"
                       aria-label=".form-select-sm"
-                      data-section="AUDIO"
-                      data-setting="input_device"
                       @change="onChange"
                       v-model="settings.remote.AUDIO.input_device"
                       v-html="audio.getInputDevices()"
@@ -265,8 +263,6 @@ function testHamlib() {
                       class="form-select form-select-sm"
                       aria-label=".form-select-sm"
                       id="rigcontrol_radiocontrol"
-                      data-section="RADIO"
-                      data-setting="control"
                       @change="onChange"
                       v-model="settings.remote.RADIO.control"
                     >
@@ -346,7 +342,8 @@ function testHamlib() {
                         aria-label=".form-select-sm"
                         id="hamlib_deviceport"
                         style="width: 7rem"
-                        @change="setConfig"
+                        @change="onChange"
+                        v-model="settings.remote.RADIO.serial_port"
                       ></select>
                     </div>
                   </div>
@@ -361,8 +358,6 @@ function testHamlib() {
                         placeholder="TCI IP"
                         id="rigcontrol_tci_ip"
                         aria-label="Device IP"
-                        data-section="TCI"
-                        data-setting="ip"
                         v-model="settings.remote.TCI.ip"
                         @change="onChange"
                       />
@@ -376,8 +371,6 @@ function testHamlib() {
                         placeholder="TCI port"
                         id="rigcontrol_tci_port"
                         aria-label="Device Port"
-                        data-section="TCI"
-                        data-setting="port"
                         v-model="settings.remote.TCI.port"
                         @change="onChange"
                       />

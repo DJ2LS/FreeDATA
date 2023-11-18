@@ -65,10 +65,10 @@ class CONFIG:
             'enable_low_bandwidth_mode': bool,
             'respond_to_cq': bool,
             'rx_buffer_size': int,
-            'enable_scatter': bool,
             'tx_delay': int,
-            'enable_hmac':bool,
-            'enable_morse_identifier':bool
+            'enable_hmac': bool,
+            'enable_morse_identifier': bool,
+            'beacon_interval': int,
         },
     }
 
