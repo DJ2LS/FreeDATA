@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { settingsStore as settings } from "../store/settingsStore.js";
-import { handleFieldValueChange } from "../js/settingsHandler";
+import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 </script>
 
 <template>
@@ -11,7 +10,7 @@ import { handleFieldValueChange } from "../js/settingsHandler";
       class="form-select form-select-sm"
       aria-label=".form-select-sm"
       id="rigcontrol_radiocontrol"
-      @change="handleFieldValueChange"
+      @change="onChange"
       data-section="RADIO"
       data-setting="control"
       v-model="settings.remote.RADIO.control"
@@ -34,7 +33,7 @@ import { handleFieldValueChange } from "../js/settingsHandler";
       placeholder="TCI IP"
       id="rigcontrol_tci_ip"
       aria-label="Device IP"
-      @change="handleFieldValueChange"
+      @change="onChange"
       data-section="TCI"
       data-setting="tci_ip"
       v-model="settings.remote.TCI.tci_ip"
@@ -49,7 +48,7 @@ import { handleFieldValueChange } from "../js/settingsHandler";
       placeholder="TCI port"
       id="rigcontrol_tci_port"
       aria-label="Device Port"
-      @change="handleFieldValueChange"
+      @change="onChange"
       data-section="TCI"
       data-setting="tci_port"
       v-model="settings.remote.TCI.tci_port"

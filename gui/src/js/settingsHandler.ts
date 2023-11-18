@@ -142,10 +142,3 @@ export function processModemConfig(data) {
     }
   }
 }
-
-export function handleFieldValueChange(event) {
-  const element = event.target;
-  const newValue = element.value;
-  settings.remote[element.dataset.section][element.dataset.setting] = newValue;
-  onChange();
-}

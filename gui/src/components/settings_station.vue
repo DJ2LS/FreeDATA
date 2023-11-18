@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { settingsStore as settings } from "../store/settingsStore.js";
-import { handleFieldValueChange } from "../js/settingsHandler.js";
+import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 </script>
 <template>
   <!-- station callsign -->
@@ -15,7 +14,7 @@ import { handleFieldValueChange } from "../js/settingsHandler.js";
       id="myCall"
       aria-label="Station Callsign"
       aria-describedby="basic-addon1"
-      @change="handleFieldValueChange"
+      @change="onChange"
       data-section="STATION"
       data-setting="mycall"
       v-model="settings.remote.STATION.mycall"
@@ -28,7 +27,7 @@ import { handleFieldValueChange } from "../js/settingsHandler.js";
     <select
       class="form-select form-select-sm w-50"
       id="myCallSSID"
-      @change="handleFieldValueChange"
+      @change="onChange"
       data-section="STATION"
       data-setting="myssid"
       v-model.number="settings.remote.STATION.myssid"
@@ -63,7 +62,7 @@ import { handleFieldValueChange } from "../js/settingsHandler.js";
       maxlength="6"
       aria-label="Station Grid Locator"
       aria-describedby="basic-addon1"
-      @change="handleFieldValueChange"
+      @change="onChange"
       data-section="STATION"
       data-setting="mygrid"
       v-model="settings.remote.STATION.mygrid"

@@ -29,9 +29,6 @@ export const settingsStore = reactive({
       tuning_range_fmin: 0,
       tx_delay: 0,
     },
-    NETWORK: {
-      modemport: 0,
-    },
     RADIO: {
       control: "disabled",
       model_id: 0,
