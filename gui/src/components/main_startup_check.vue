@@ -18,7 +18,7 @@ import {
   setConfig,
   startModem,
   stopModem,
-  getModemState,
+  getModemState
 } from "../js/api";
 import { audioInputOptions, audioOutputOptions } from "../js/deviceFormHelper";
 
@@ -32,7 +32,7 @@ onMounted(() => {
   new Modal("#modemCheck", {}).show();
 });
 
-function getModemState() {
+function getModemStateLocal() {
   // Returns active/inactive if modem is running for modem status label
   if (state.is_modem_running == true) return "Active";
   else return "Inactive";
@@ -57,7 +57,7 @@ function getRigControlStuff() {
       return true;
     default:
       console.error(
-        "Unknown radio control mode " + settings.remote.RADIO.radiocontrol,
+        "Unknown radio control mode " + settings.remote.RADIO.control,
       );
       return "Unknown control type";
   }
@@ -160,7 +160,7 @@ function testHamlib() {
                         ? 'bg-success'
                         : 'bg-danger'
                     "
-                    >{{ getModemState() }}</span
+                    >{{ getModemStateLocal() }}</span
                   >
                 </button>
               </h2>
@@ -298,7 +298,6 @@ function testHamlib() {
                           data-bs-trigger="hover"
                           data-bs-html="false"
                           title="Start rigctld"
-                          @click="startRigctld"
                           v-bind:class="{
                             disabled: state.rigctld_started == 'true',
                           }"
@@ -313,7 +312,6 @@ function testHamlib() {
                           data-bs-trigger="hover"
                           data-bs-html="false"
                           title="Stop rigctld"
-                          @click="stopRigctld"
                           v-bind:class="{
                             disabled:
                               state.rigctld_started == 'false' ||
@@ -366,7 +364,7 @@ function testHamlib() {
                         placeholder="TCI IP"
                         id="rigcontrol_tci_ip"
                         aria-label="Device IP"
-                        v-model="settings.remote.TCI.ip"
+                        v-model="settings.remote.TCI.tci_ip"
                         @change="onChange"
                       />
                     </div>
@@ -379,7 +377,7 @@ function testHamlib() {
                         placeholder="TCI port"
                         id="rigcontrol_tci_port"
                         aria-label="Device Port"
-                        v-model="settings.remote.TCI.port"
+                        v-model="settings.remote.TCI.tci_port"
                         @change="onChange"
                       />
                     </div>

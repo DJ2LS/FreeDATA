@@ -77,5 +77,5 @@ export function stopModem() {
 }
 
 export function getModemState() {
-  getFromServer(settings.modem_host, settings.modem_port, "modem/state", null);
+  return apiGet("/modem/state")
 }
