@@ -27,6 +27,8 @@ class explorer():
             self.interval_thread.start()
 
     def interval(self):
+        # Wait for just a little bit incase modem is contionously restarting due to a bug or user configuration issue
+        threading.Event().wait(30)
         while True:
             self.push()
             threading.Event().wait(self.publish_interval)
