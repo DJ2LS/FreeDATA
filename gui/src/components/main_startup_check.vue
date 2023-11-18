@@ -18,7 +18,7 @@ import {
   setConfig,
   startModem,
   stopModem,
-  getModemState
+  getModemState,
 } from "../js/api";
 import { audioInputOptions, audioOutputOptions } from "../js/deviceFormHelper";
 
@@ -212,7 +212,10 @@ function testHamlib() {
                       @change="onChange"
                       v-model="settings.remote.AUDIO.input_device"
                     >
-                      <option v-for="option in audioInputOptions()" v-bind:value="option.id">
+                      <option
+                        v-for="option in audioInputOptions()"
+                        v-bind:value="option.id"
+                      >
                         {{ option.name }}
                       </option>
                     </select>
@@ -228,7 +231,10 @@ function testHamlib() {
                       @change="setConfig"
                       v-model="settings.remote.AUDIO.output_device"
                     >
-                      <option v-for="option in audioOutputOptions()" v-bind:value="option.id">
+                      <option
+                        v-for="option in audioOutputOptions()"
+                        v-bind:value="option.id"
+                      >
                         {{ option.name }}
                       </option>
                     </select>
@@ -282,7 +288,9 @@ function testHamlib() {
                     </select>
                   </div>
                   <div
-                    :class="settings.remote.RADIO.control == 'rigctld' ? '' : 'd-none'"
+                    :class="
+                      settings.remote.RADIO.control == 'rigctld' ? '' : 'd-none'
+                    "
                   >
                     <!-- Shown when rigctld is selected-->
 
@@ -353,7 +361,11 @@ function testHamlib() {
                       ></select>
                     </div>
                   </div>
-                  <div :class="settings.remote.RADIO.control == 'tci' ? '' : 'd-none'">
+                  <div
+                    :class="
+                      settings.remote.RADIO.control == 'tci' ? '' : 'd-none'
+                    "
+                  >
                     <!-- Shown when tci is selected-->
 
                     <div class="input-group input-group-sm mb-1">

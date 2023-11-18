@@ -77,5 +77,5 @@ export function stopModem() {
 }
 
 export function getModemState() {
-  return apiGet("/modem/state")
+  return apiGet("/modem/state");
 }
