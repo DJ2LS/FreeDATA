@@ -65,7 +65,7 @@ export function sendModemCQ() {
 }
 
 export function sendModemPing(dxcall) {
-  return apiPost("/modem/cqcqcq", { dxcall: dxcall });
+  return apiPost("/modem/ping", { dxcall: dxcall });
 }
 
 export function startModem() {
