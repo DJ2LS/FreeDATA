@@ -13,9 +13,14 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { startModem, stopModem } from "../js/api";
-import { getModemConfig, getModemCurrentState } from "../js/api";
-import { getVersion, getConfig, setConfig, startModem, stopModem } from "../js/api";
+import {
+  getVersion,
+  setConfig,
+  startModem,
+  stopModem,
+  getModemCurrentState,
+} from "../js/api";
+import { audioInputOptions, audioOutputOptions } from "../js/deviceFormHelper";
 
 const version = import.meta.env.PACKAGE_VERSION;
 var updateAvailable = process.env.FDUpdateAvail;
@@ -206,7 +211,11 @@ function testHamlib() {
                       aria-label=".form-select-sm"
                       @change="onChange"
                       v-model="settings.remote.AUDIO.input_device"
-                    ></select>
+                    >
+                      <option v-for="option in audioInputOptions()" v-bind:value="option.id">
+                        {{ option.name }}
+                      </option>
+                    </select>
                   </div>
 
                   <!-- Audio Output Device -->
@@ -217,8 +226,12 @@ function testHamlib() {
                       id="tx_audio"
                       aria-label=".form-select-sm"
                       @change="setConfig"
-                      v-model="settings.output_device"
-                    ></select>
+                      v-model="settings.remote.AUDIO.output_device"
+                    >
+                      <option v-for="option in audioOutputOptions()" v-bind:value="option.id">
+                        {{ option.name }}
+                      </option>
+                    </select>
                   </div>
                 </div>
               </div>
