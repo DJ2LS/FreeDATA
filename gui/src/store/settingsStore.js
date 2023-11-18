@@ -81,7 +81,7 @@ if (settingsStore.remote.STATION.mycall === "") {
   getRemote();
 }
 
-watch (settingsStore.local, (oldValue, newValue) => {
+watch(settingsStore.local, (oldValue, newValue) => {
   // TODO handle local file saving
   const cenas = newValue;
-})
+});

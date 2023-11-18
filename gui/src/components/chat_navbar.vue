@@ -108,7 +108,7 @@ function newChat() {
   let callsign = this.newChatCall.value;
   callsign = callsign.toUpperCase().trim();
   if (callsign === "") return;
-  startChatWithNewStation(callsign);  
+  startChatWithNewStation(callsign);
   //updateAllChat(false);
   this.newChatCall.value = "";
 }

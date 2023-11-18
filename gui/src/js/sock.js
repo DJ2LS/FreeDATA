@@ -18,7 +18,7 @@ setActivePinia(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const stateStore = useStateStore(pinia);
 
-import { settingsStore as settings} from "../store/settingsStore.js";
+import { settingsStore as settings } from "../store/settingsStore.js";
 
 var client = new net.Socket();
 var socketchunk = ""; // Current message, per connection.

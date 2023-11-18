@@ -13,12 +13,12 @@ const chat = useChatStore(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { settingsStore as settings} from "../store/settingsStore.js";
+import { settingsStore as settings } from "../store/settingsStore.js";
 
 import { displayToast } from "./popupHandler.js";
 
 //const FD = require("./src/js/freedata.js");
-import { btoa_FD,sortByProperty } from "./freedata.js";
+import { btoa_FD, sortByProperty } from "./freedata.js";
 
 // define default message object
 interface Attachment {
@@ -592,7 +592,7 @@ function addObjToDatabase(newobj) {
       console.log("new database entry");
       console.log(response);
 
-      if (newobj.command === "msg" || newobj.command==="newchat") {
+      if (newobj.command === "msg" || newobj.command === "newchat") {
         chat.unsorted_chat_list.push(newobj);
         chat.sorted_chat_list = sortChatList();
       }
@@ -696,27 +696,26 @@ function deleteFromDatabaseByCallsign(callsign) {
 /**
  * Add a newuser to the database, for when newuser button is clicked
  * @param {string} call callsign of new user
-  */
+ */
 export function startChatWithNewStation(call) {
   let newchat: newChatDefaultObject = {
-  command: "newchat",
-  is_new: false,
-  timestamp: Math.floor((new Date()).getTime() / 1000),
-  dxcallsign: call,
-};
-addObjToDatabase(newchat);
-if (!chat.sorted_beacon_list[call]) {
-  // If not, initialize it with an empty array for snr values
-  chat.sorted_beacon_list[call] = {
-    call,
-    snr: [],
-    timestamp: [],
+    command: "newchat",
+    is_new: false,
+    timestamp: Math.floor(new Date().getTime() / 1000),
+    dxcallsign: call,
   };
-  chat.callsign_list.add(call);
-}
-//chat.unsorted_chat_list.push(newchat);
-//chat.sorted_chat_list = sortChatList();
-
+  addObjToDatabase(newchat);
+  if (!chat.sorted_beacon_list[call]) {
+    // If not, initialize it with an empty array for snr values
+    chat.sorted_beacon_list[call] = {
+      call,
+      snr: [],
+      timestamp: [],
+    };
+    chat.callsign_list.add(call);
+  }
+  //chat.unsorted_chat_list.push(newchat);
+  //chat.sorted_chat_list = sortChatList();
 }
 
 // function for handling a received beacon

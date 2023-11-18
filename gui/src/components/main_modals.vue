@@ -8,7 +8,7 @@ setActivePinia(pinia);
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
 
-import { settingsStore as settings} from "../store/settingsStore.js";
+import { settingsStore as settings } from "../store/settingsStore.js";
 
 import {
   deleteChatByCallsign,
