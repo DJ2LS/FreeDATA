@@ -68,6 +68,10 @@ export function sendModemPing(dxcall) {
   return apiPost("/modem/ping_ping", { dxcall: dxcall });
 }
 
+export function sendModemTestFrame() {
+  return apiPost("/modem/send_test_frame");
+}
+
 export function startModem() {
   return apiPost("/modem/start");
 }

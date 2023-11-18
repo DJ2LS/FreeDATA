@@ -10,16 +10,14 @@ const chat = useChatStore(pinia);
 
 import { settingsStore as settings } from "../store/settingsStore.js";
 
+import { sendModemTestFrame } from "../js/api";
+
 import {
   deleteChatByCallsign,
   getNewMessagesByDXCallsign,
 } from "../js/chatHandler";
 
 import main_startup_check from "./main_startup_check.vue";
-
-function tuneAudio() {
-  sendTestFrame();
-}
 
 function set_tx_audio_level() {
   saveSettingsToFile();
@@ -932,7 +930,7 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
                 <button
                   type="button"
                   class="btn btn-sm btn-outline-secondary"
-                  @click="tuneAudio"
+                  @click="sendModemTestFrame()"
                 >
                   Tune
                 </button>
@@ -1193,7 +1191,7 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
             <button
               type="button"
               id="sendTestFrame"
-              @click="sendTestFrame()"
+              @click="sendModemTestFrame()"
               class="btn btn-danger"
             >
               Transmit
