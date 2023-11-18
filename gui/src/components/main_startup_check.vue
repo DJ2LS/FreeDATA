@@ -10,8 +10,7 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { useSettingsStore } from "../store/settingsStore.js";
-const settings = useSettingsStore(pinia);
+import { settingsStore as settings} from "../store/settingsStore.js";
 
 import { useAudioStore } from "../store/audioStore.js";
 const audio = useAudioStore(pinia);
@@ -22,7 +21,6 @@ const state = useStateStore(pinia);
 import { startModem, stopModem } from "../js/api";
 import { getModemConfig, getModemCurrentState } from "../js/api";
 
-import { saveSettingsToFile } from "../js/settingsHandler";
 import { startRigctld, stopRigctld } from "../js/deprecated_daemon";
 
 const version = import.meta.env.PACKAGE_VERSION;
@@ -350,7 +348,6 @@ function testHamlib() {
                         id="hamlib_deviceport"
                         style="width: 7rem"
                         @change="saveModemConfig"
-                        v-html="settings.getSerialDevices()"
                       ></select>
                     </div>
                   </div>

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { saveSettingsToFile } from "../js/settingsHandler";
 
 import { startRigctld, stopRigctld } from "../js/deprecated_daemon";
 
@@ -8,8 +7,7 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { useSettingsStore } from "../store/settingsStore.js";
-const settings = useSettingsStore(pinia);
+import { settingsStore as settings} from "../store/settingsStore.js";
 
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);

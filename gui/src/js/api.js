@@ -1,37 +1,68 @@
-import { getModemConfigAsJSON } from "./settingsHandler.ts";
 import { getFromServer, postToServer } from "./rest.js";
-import { useSettingsStore } from "../store/settingsStore.js";
-import { setActivePinia } from "pinia";
-import pinia from "../store/index";
-setActivePinia(pinia);
-const settings = useSettingsStore(pinia);
+import { settingsStore as settings } from "../store/settingsStore.js";
 
-export function getModemConfig() {
-  // fetch Settings
-  getFromServer(settings.modem_host, settings.modem_port, "config");
-  getFromServer(settings.modem_host, settings.modem_port, "devices/audio");
-  getFromServer(settings.modem_host, settings.modem_port, "devices/serial");
+function buildURL(endpoint) {
+  const url =
+    "http://" + settings.local.host + ":" + settings.local.port + endpoint;
+  return url;
 }
 
-export function saveModemConfig() {
-  postToServer(
-    settings.modem_host,
-    settings.modem_port,
-    "config",
-    getModemConfigAsJSON(),
-  );
+async function apiGet(endpoint) {
+  const response = await fetch(buildURL(endpoint));
+  if (!response.ok) {
+    throw new Error(`REST response not ok: ${response.statusText}`);
+  }
+  const data = await response.json();
+  return data;
+}
+
+export async function apiPost(endpoint, payload = {}) {
+  try {
+    const response = await fetch(buildURL(endpoint), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error(`REST response not ok: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error posting to REST:", error);
+  }
+}
+
+export function getConfig() {
+  return apiGet("/config");
+}
+
+export function setConfig(config) {
+  return apiPost("/config", config);
+}
+
+export function getAudioDevices() {
+  return apiGet("/devices/audio");
+}
+
+export function getSerialDevices() {
+  return apiGet("/devices/serial");
 }
 
 export function startModem() {
-  postToServer(settings.modem_host, settings.modem_port, "modem/start", null);
+  return apiPost("/modem/start");
 }
 
 export function stopModem() {
-  postToServer(settings.modem_host, settings.modem_port, "modem/stop", null);
+  return apiPost("/modem/stop");
 }
 
 export function getModemVersion() {
-  getFromServer(settings.modem_host, settings.modem_port, "version", null);
+  getFromServer("/version");
 }
 export function getModemCurrentState() {
   getFromServer(settings.modem_host, settings.modem_port, "modem/state", null);

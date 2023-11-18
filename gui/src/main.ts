@@ -1,6 +1,5 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
-import { loadSettings } from "./js/settingsHandler";
 import "./styles.css";
 import { Chart, Filler } from "chart.js";
 // Register the Filler plugin globally
@@ -30,10 +29,9 @@ const tooltipList = [...tooltipTriggerList].map(
   (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl),
 );
 
-loadSettings();
+//loadSettings();
 
-//import './js/settingsHandler.js'
 //import "./js/daemon";
 //import "./js/sock.js";
-//import './js/settingsHandler.js'
+
 import "./js/event_sock.js";

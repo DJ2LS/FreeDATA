@@ -10,12 +10,11 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { useSettingsStore } from "../store/settingsStore.js";
-const settings = useSettingsStore(pinia);
+import { settingsStore as settings } from "../store/settingsStore.js";
 
 function connect(endpoint, dispatcher) {
   let socket = new WebSocket(
-    "ws://" + settings.modem_host + ":" + settings.modem_port + "/" + endpoint,
+    "ws://" + settings.local.host + ":" + settings.local.port + "/" + endpoint,
   );
 
   // handle opening

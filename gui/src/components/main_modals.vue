@@ -4,20 +4,16 @@
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
-import { saveSettingsToFile } from "../js/settingsHandler";
 
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
 
-import { useSettingsStore } from "../store/settingsStore.js";
-const settings = useSettingsStore(pinia);
+import { settingsStore as settings} from "../store/settingsStore.js";
 
 import {
   deleteChatByCallsign,
   getNewMessagesByDXCallsign,
 } from "../js/chatHandler";
-
-import { sendTestFrame, setTxAudioLevel, setRxAudioLevel } from "../js/sock.js";
 
 import main_startup_check from "./main_startup_check.vue";
 

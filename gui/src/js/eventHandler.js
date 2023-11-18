@@ -16,8 +16,7 @@ setActivePinia(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const stateStore = useStateStore(pinia);
 
-import { useSettingsStore } from "../store/settingsStore.js";
-const settings = useSettingsStore(pinia);
+import { settingsStore as settings} from "../store/settingsStore.js";
 
 export function connectionFailed(endpoint, event) {
   stateStore.modem_connection = "disconnected";

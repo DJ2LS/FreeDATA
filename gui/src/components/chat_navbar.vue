@@ -11,8 +11,6 @@ const state = useStateStore(pinia);
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
 
-import { getRxBuffer } from "../js/sock.js";
-
 import { startChatWithNewStation } from "../js/chatHandler";
 
 import {
