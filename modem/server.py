@@ -167,6 +167,12 @@ def post_modem_stop():
 def get_modem_version():
     return api_response({"version": 0})
 
+@app.route('/modem/send_arq_raw', methods=['POST'])
+def post_modem_send_raw():
+    if request.method not in ['POST']:
+        return api_response({"info": "endpoint for SENDING RAW DATA via POST"})
+    server_commands.modem_arq_send_raw(request.json)
+    return api_response(request.json)
 
 # @app.route('/modem/arq_connect', methods=['POST'])
 # @app.route('/modem/arq_disconnect', methods=['POST'])

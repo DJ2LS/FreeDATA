@@ -68,6 +68,15 @@ export function sendModemPing(dxcall) {
   return apiPost("/modem/ping_ping", { dxcall: dxcall });
 }
 
+export function sendModemARQRaw(mycall, dxcall, data, uuid) {
+  return apiPost("/modem/send_arq_raw", {
+                                            mycallsign: mycall,
+                                            dxcallsign: dxcall,
+                                            data: data,
+                                            uuid: uuid
+                                         });
+}
+
 export function sendModemTestFrame() {
   return apiPost("/modem/send_test_frame");
 }

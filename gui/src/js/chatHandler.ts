@@ -20,6 +20,11 @@ import { displayToast } from "./popupHandler.js";
 //const FD = require("./src/js/freedata.js");
 import { btoa_FD, sortByProperty } from "./freedata.js";
 
+import { sendModemARQRaw } from "../js/api.js";
+
+const split_char = "0;1;";
+
+
 // define default message object
 interface Attachment {
   content_type: string;
@@ -1073,4 +1078,44 @@ async function checkForWaitingMessages(dxcall) {
     .catch((err) => {
       console.log(err);
     });
+}
+
+export function sendMessage(obj) {
+  let dxcallsign = obj.dxcallsign;
+  let checksum = obj.checksum;
+  let uuid = obj.uuid;
+  let command = obj.command;
+
+  let filename = Object.keys(obj._attachments)[0];
+  //let filetype = filename.split(".")[1]
+  let filetype = obj._attachments[filename].content_type;
+  let file = obj._attachments[filename].data;
+
+
+  let data_with_attachment =
+    obj.timestamp +
+    split_char +
+    obj.msg +
+    split_char +
+    filename +
+    split_char +
+    filetype +
+    split_char +
+    file;
+
+  let data = btoa_FD(
+    "m" +
+      split_char +
+      command +
+      split_char +
+      checksum +
+      split_char +
+      uuid +
+      split_char +
+      data_with_attachment,
+  );
+
+   let mycallsign = settings.remote.STATION.mycall + '-' + settings.remote.STATION.myssid;
+  sendModemARQRaw(mycallsign, dxcallsign, data, uuid)
+
 }

@@ -212,7 +212,7 @@ def callsign_to_bytes(callsign: str) -> bytes:
         # log.debug("[HLP] callsign_to_bytes: Error converting callsign to bytes:", e=err)
         pass
     except Exception as err:
-        log.debug("[HLP] callsign_to_bytes: Error converting callsign to bytes:", e=err)
+        log.debug("[HLP] callsign_to_bytes: Error converting callsign to bytes:", e=err, data=callsign)
 
     # Need this step to reduce the needed payload by the callsign
     # (stripping "-" out of the callsign)

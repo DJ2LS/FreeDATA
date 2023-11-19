@@ -1,6 +1,8 @@
 from queues import DATA_QUEUE_TRANSMIT
 import base64
 import structlog
+import threading
+from random import randrange
 log = structlog.get_logger("COMMANDS")
 
 def cqcqcq(data):
@@ -38,6 +40,29 @@ def modem_send_test_frame():
         "[CMD] Send test frame"
     )
     DATA_QUEUE_TRANSMIT.put(["SEND_TEST_FRAME"])
+    
+def modem_arq_send_raw(data):
+
+    # wait some random time
+    threading.Event().wait(randrange(5, 25, 5) / 10.0)
+
+    base64data = data["data"]
+
+    # check if transmission uuid provided else set no-uuid
+    try:
+        arq_uuid = data["uuid"]
+    except Exception:
+        arq_uuid = "no-uuid"
+
+    if len(base64data) % 4:
+        raise TypeError
+
+    binarydata = base64.b64decode(base64data)
+
+    DATA_QUEUE_TRANSMIT.put(
+        ["ARQ_RAW", binarydata, arq_uuid, data["mycallsign"], data["dxcallsign"]]
+    )
+
 
 def modem_fec_transmit(data):
     log.info(

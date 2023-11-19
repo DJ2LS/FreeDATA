@@ -44,11 +44,14 @@ class DATA:
         self.stats = stats.stats(config, event_queue, states)
         self.event_queue = event_queue
 
+        # Functions here expect mycallsign to be in callxx-# format; so cheat a little bit here:
+
         self.mycallsign = config['STATION']['mycall']
         self.myssid = config['STATION']['myssid']
-
-        # Functions here expect mycallsign to be in callxx-# format; so cheat a little bit here:
         self.mycallsign += "-" + str(self.myssid)
+        encoded_call = helpers.callsign_to_bytes(self.mycallsign)
+        self.mycallsign = helpers.bytes_to_callsign(encoded_call)
+
 
         self.ssid_list = config['STATION']['ssid_list']
         self.mycallsign_crc = helpers.get_crc_24(self.mycallsign)
@@ -102,7 +105,7 @@ class DATA:
         self.IS_ARQ_SESSION_MASTER = False
         self.arq_session_last_received = 0
         self.arq_session_timeout = 30
-        self.session_connect_max_retries = 15
+        self.session_connect_max_retries = 10
         self.irs_buffer_position = 0
 
         self.arq_compression_factor = 0
@@ -151,7 +154,6 @@ class DATA:
 
         # event for checking arq_state_event
         self.arq_state_event = threading.Event()
-
         # -------------- AVAILABLE MODES START-----------
         # IMPORTANT: LISTS MUST BE OF EQUAL LENGTH
 
@@ -314,6 +316,8 @@ class DATA:
         """Dispatch incoming UI instructions for transmitting operations"""
         while True:
 
+
+
             data = self.data_queue_transmit.get()
             # if we are already in ARQ_STATE, or we're receiving codec2 traffic
             # let's wait with processing data
@@ -349,8 +353,7 @@ class DATA:
             elif data[0] == "CONNECT":
                 # [1] mycallsign
                 # [2] dxcallsign
-                # [3] attempts
-                self.arq_session_handler(data[1], data[2], data[3])
+                self.arq_session_handler(data[1], data[2])
 
             elif data[0] == "PING":
                 # [1] mycallsign
@@ -370,11 +373,9 @@ class DATA:
             elif data[0] == "ARQ_RAW":
                 # [1] DATA_OUT bytes
                 # [2] self.transmission_uuid str
-                # [3] mycallsign with ssid
-                # [4] dxcallsign with ssid
-                # [5] attempts
-                # [6] hmac salt hash
-                self.open_dc_and_transmit(data[1], data[2], data[3], data[4], data[5], data[6])
+                # [3] mycallsign with ssid str
+                # [4] dxcallsign with ssid str
+                self.open_dc_and_transmit(data[1], data[2], data[3], data[4])
 
 
             elif data[0] == "FEC_IS_WRITING":
@@ -549,12 +550,12 @@ class DATA:
 
         # add mycallsign and dxcallsign to network message if they not exist
         # and make sure we are not overwrite them if they exist
+
         try:
             if "mycallsign" not in jsondata:
-                jsondata["mycallsign"] = self.mycallsign
+                jsondata["mycallsign"] = str(self.mycallsign, "UTF-8")
             if "dxcallsign" not in jsondata:
-                print(self.dxcallsign)
-                jsondata["dxcallsign"] = self.dxcallsign
+                jsondata["dxcallsign"] = str(self.dxcallsign, "UTF-8")
         except Exception as e:
             self.log.debug("[Modem] error adding callsigns to network message", e=e)
 
@@ -1709,7 +1710,7 @@ class DATA:
     ############################################################################################################
     # ARQ SESSION HANDLER
     ############################################################################################################
-    def arq_session_handler(self, mycallsign, dxcallsign, attempts) -> bool:
+    def arq_session_handler(self, mycallsign, dxcallsign) -> bool:
         """
         Create a session with `self.dxcallsign` and wait until the session is open.
 
@@ -1717,20 +1718,21 @@ class DATA:
             True if the session was opened successfully
             False if the session open request failed
         """
-        # override connection attempts
-        self.session_connect_max_retries = attempts
 
-        self.mycallsign = mycallsign
-        self.dxcallsign = dxcallsign
+        encoded_call = helpers.callsign_to_bytes(mycallsign)
+        mycallsign = helpers.bytes_to_callsign(encoded_call)
 
-        self.states.set("dxcallsign", self.dxcallsign)
-        self.dxcallsign_crc = helpers.get_crc_24(self.dxcallsign)
+        encoded_call = helpers.callsign_to_bytes(dxcallsign)
+        dxcallsign = helpers.bytes_to_callsign(encoded_call)
+
+        self.states.set("dxcallsign", dxcallsign)
+        dxcallsign_crc = helpers.get_crc_24(dxcallsign)
 
         self.log.info(
             "[Modem] SESSION ["
-            + str(self.mycallsign, "UTF-8")
+            + str(mycallsign, "UTF-8")
             + "]>> <<["
-            + str(self.dxcallsign, "UTF-8")
+            + str(dxcallsign, "UTF-8")
             + "]",
             self.states.arq_session_state,
         )
@@ -1749,8 +1751,8 @@ class DATA:
                 freedata="modem-message",
                 arq="session",
                 status="connecting",
-                mycallsign=str(self.mycallsign, 'UTF-8'),
-                dxcallsign=str(self.dxcallsign, 'UTF-8'),
+                mycallsign=str(mycallsign, 'UTF-8'),
+                dxcallsign=str(dxcallsign, 'UTF-8'),
             )
         if self.states.is_arq_session and self.states.arq_session_state == "connected":
             # self.states.set("arq_session_state", "connected")
@@ -1758,16 +1760,16 @@ class DATA:
                 freedata="modem-message",
                 arq="session",
                 status="connected",
-                mycallsign=str(self.mycallsign, 'UTF-8'),
-                dxcallsign=str(self.dxcallsign, 'UTF-8'),
+                mycallsign=str(mycallsign, 'UTF-8'),
+                dxcallsign=str(dxcallsign, 'UTF-8'),
             )
             return True
 
         self.log.warning(
             "[Modem] SESSION FAILED ["
-            + str(self.mycallsign, "UTF-8")
+            + str(mycallsign, "UTF-8")
             + "]>>X<<["
-            + str(self.dxcallsign, "UTF-8")
+            + str(dxcallsign, "UTF-8")
             + "]",
             attempts=self.session_connect_max_retries,  # Adjust for 0-based for user display
             reason="maximum connection attempts reached",
@@ -1779,8 +1781,8 @@ class DATA:
             arq="session",
             status="failed",
             reason="timeout",
-            mycallsign=str(self.mycallsign, 'UTF-8'),
-            dxcallsign=str(self.dxcallsign, 'UTF-8'),
+            mycallsign=str(mycallsign, 'UTF-8'),
+            dxcallsign=str(dxcallsign, 'UTF-8'),
         )
         return False
 
@@ -1986,7 +1988,7 @@ class DATA:
             )
             self.log.info(
                 "[Modem] SESSION ["
-                + str(mycallsign, "UTF-8")
+                + str(self.mycallsign, "UTF-8")
                 + "]<<X>>["
                 + str(self.dxcallsign, "UTF-8")
                 + "]",
@@ -1997,7 +1999,7 @@ class DATA:
                 freedata="modem-message",
                 arq="session",
                 status="close",
-                mycallsign=str(mycallsign, 'UTF-8'),
+                mycallsign=str(self.mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
 
@@ -2089,8 +2091,6 @@ class DATA:
             transmission_uuid: str,
             mycallsign,
             dxcallsign,
-            attempts: int,
-            hmac_salt: str
     ) -> bool:
         """
         Open data channel and transmit data
@@ -2099,22 +2099,37 @@ class DATA:
           data_out:bytes:
           transmission_uuid:str:
           mycallsign:bytes:
-          attempts:int: Overriding number of attempts initiating a connection
 
         Returns:
             True if the data session was opened and the data was sent
             False if the data session was not opened
         """
-        # overwrite mycallsign in case of different SSID
         self.mycallsign = mycallsign
-        self.dxcallsign = dxcallsign
+
+        # additional step for being sure our callsign is correctly
+        # in case we are not getting a station ssid
+        # then we are forcing a station ssid = 0
+        if not self.states.is_arq_session:
+            dxcallsign = helpers.callsign_to_bytes(dxcallsign)
+            dxcallsign = helpers.bytes_to_callsign(dxcallsign)
+            self.dxcallsign = dxcallsign
+
         self.dxcallsign_crc = helpers.get_crc_24(self.dxcallsign)
 
-        # override session connection attempts
-        self.data_channel_max_retries = attempts
+        # check if hmac hash is provided
+        try:
+            self.log.info("[SCK] [HMAC] Looking for salt/token", local=mycallsign, remote=dxcallsign)
+            hmac_salt = helpers.get_hmac_salt(dxcallsign, mycallsign)
+            self.log.info("[SCK] [HMAC] Salt info", local=mycallsign, remote=dxcallsign, salt=hmac_salt)
+        except Exception:
+            self.log.warning("[SCK] [HMAC] No salt/token found")
+            hmac_salt = ''
+
+
 
         self.states.set("is_modem_busy", True)
         self.arq_file_transfer = True
+        self.beacon_paused = True
 
         self.transmission_uuid = transmission_uuid
 
@@ -2130,7 +2145,7 @@ class DATA:
         self.arq_open_data_channel(mycallsign)
 
         # if data channel is open, return true else false
-        if self.states.is_arq_state_event.is_set():
+        if self.arq_state_event.is_set():
             # start arq transmission
             self.arq_transmit(data_out, hmac_salt)
             return True
@@ -2167,6 +2182,9 @@ class DATA:
             # Attempt to clean up the far-side, if it received the
             # open_session frame and can still hear us.
             self.close_session()
+
+            # release beacon pause
+            self.beacon_paused = False
 
             # otherwise return false
             return False
@@ -2216,14 +2234,14 @@ class DATA:
                 freedata="modem-message",
                 arq="transmission",
                 status="opening",
-                mycallsign=str(mycallsign, 'UTF-8'),
+                mycallsign=mycallsign,
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
                 irs=helpers.bool_to_string(self.is_IRS)
             )
 
             self.log.info(
                 "[Modem] ARQ | DATA | TX | ["
-                + str(mycallsign, "UTF-8")
+                + mycallsign
                 + "]>> <<["
                 + str(self.dxcallsign, "UTF-8")
                 + "]",
@@ -2235,7 +2253,7 @@ class DATA:
                 self.channel_busy_handler()
 
             # if channel free, enqueue frame for tx
-            if not self.states.is_arq_state_event.is_set():
+            if not self.arq_state_event.is_set():
                 self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
 
             # wait until timeout or event set
@@ -2243,7 +2261,7 @@ class DATA:
             random_wait_time = randrange(int(self.duration_sig1_frame * 10), int(self.datachannel_opening_interval * 10), 1)  / 10
             self.arq_state_event.wait(timeout=random_wait_time)
 
-            if self.states.is_arq_state_event.is_set():
+            if self.arq_state_event.is_set():
                 return True
             if not self.states.is_modem_busy:
                 return False
@@ -2281,7 +2299,7 @@ class DATA:
         # Station B already tries connecting to Station A.
         # For avoiding ignoring repeated connect request in case of packet loss
         # we are only ignoring packets in case we are ISS
-        if self.states.is_arq_state_event.is_set() and not self.is_IRS:
+        if self.arq_state_event.is_set() and not self.is_IRS:
             return False
 
         self.is_IRS = True
@@ -2855,7 +2873,7 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="modem-message",
             cq="transmitting",
-            mycallsign=self.mycallsign,
+            mycallsign=str(self.mycallsign, "UTF-8"),
             dxcallsign="None",
         )
         cq_frame = bytearray(self.length_sig0_frame)
@@ -2888,7 +2906,7 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="modem-message",
             cq="received",
-            mycallsign=self.mycallsign,
+            mycallsign=str(self.mycallsign, "UTF-8"),
             dxcallsign=str(dxcallsign, "UTF-8"),
             dxgrid=str(self.dxgrid, "UTF-8"),
         )
@@ -2937,7 +2955,7 @@ class DATA:
             dxcallsign=str(dxcallsign, "UTF-8"),
         )
         self.log.info("[Modem] Sending QRV!")
-
+        print(self.mycallsign)
         qrv_frame = bytearray(self.length_sig0_frame)
         qrv_frame[:1] = bytes([FR_TYPE.QRV.value])
         qrv_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
