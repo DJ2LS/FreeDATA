@@ -463,7 +463,7 @@ class DATA:
             if frametype in self.rx_dispatcher:
                 # Process frames "known" by rx_dispatcher
                 # self.log.debug(f"[Modem] {self.rx_dispatcher[frametype][1]} RECEIVED....")
-                self.rx_dispatcher[frametype][0](bytes_out[:-2])
+                self.rx_dispatcher[frametype][0](bytes_out[:-2],snr)
 
             # Process frametypes requiring a different set of arguments.
             elif FR_TYPE.BURST_51.value >= frametype >= FR_TYPE.BURST_01.value:
