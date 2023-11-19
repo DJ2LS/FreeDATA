@@ -325,8 +325,8 @@ export default {
                 data-bs-html="true"
                 title="Recieving data: illuminates <strong class='text-success'>green</strong> if receiving codec2 data"
                 v-bind:class="{
-                  'btn-success': state.is_codec2_traffic === 'True',
-                  'btn-outline-secondary': state.is_codec2_traffic === 'False',
+                  'btn-success': state.is_codec2_traffic === true,
+                  'btn-outline-secondary': state.is_codec2_traffic === false,
                 }"
               >
                 data
