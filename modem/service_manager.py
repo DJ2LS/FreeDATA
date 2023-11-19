@@ -13,8 +13,8 @@ class SM:
 
         self.modem = False
         self.data_handler = False
-
-        self.config = app.config_manager.read()
+        self.app = app
+        self.config = self.app.config_manager.read()
         self.modem_events = app.modem_events
         self.modem_fft = app.modem_fft
         self.modem_service = app.modem_service
@@ -53,7 +53,12 @@ class SM:
 
 
     def start_modem(self):
+        # read config
+        self.config = self.app.config_manager.read()
+
+        # test audio devices
         audio_test = self.test_audio()
+
         if False not in audio_test and None not in audio_test and not self.states.is_modem_running:
             self.log.info("starting modem....")
             self.modem = modem.RF(self.config, self.modem_events, self.modem_fft, self.modem_service, self.states)

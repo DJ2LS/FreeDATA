@@ -315,7 +315,6 @@ class DATA:
         while True:
 
             data = self.data_queue_transmit.get()
-            print(data)
             # if we are already in ARQ_STATE, or we're receiving codec2 traffic
             # let's wait with processing data
             # this should avoid weird toggle states where both stations

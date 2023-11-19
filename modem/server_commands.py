@@ -3,12 +3,12 @@ import base64
 import structlog
 log = structlog.get_logger("COMMANDS")
 
-def cqcqcq():
+def cqcqcq(data):
     try:
         DATA_QUEUE_TRANSMIT.put(["CQ"])
         return
     except Exception as err:
-        log.warning("[CMD] error while transmiting CQ", e=err)
+        log.warning("[CMD] error while transmiting CQ", e=err, command=data)
 
 def ping_ping(data):
     try:

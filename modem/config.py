@@ -66,8 +66,6 @@ class CONFIG:
             'respond_to_cq': bool,
             'rx_buffer_size': int,
             'tx_delay': int,
-            'enable_hmac': bool,
-            'enable_morse_identifier': bool,
             'beacon_interval': int,
         },
     }

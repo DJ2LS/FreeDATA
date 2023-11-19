@@ -100,7 +100,7 @@ def post_cqcqcq():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for triggering a CQ via POST"})
     if app.states.is_modem_running:
-        server_commands.cqcqcq()
+        server_commands.cqcqcq(request.json)
     return api_response({"cmd": "cqcqcq"})
 
 @app.route('/modem/beacon', methods=['POST'])
