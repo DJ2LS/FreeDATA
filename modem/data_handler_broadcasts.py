@@ -1,14 +1,36 @@
 import time
 from modem_frametypes import FRAME_TYPE as FR_TYPE
-from codec2 import FREEDV_MODE, FREEDV_MODE_USED_SLOTS
+from codec2 import FREEDV_MODE
 from queues import MODEM_TRANSMIT_QUEUE
 import threading
 import helpers
 import codec2
+import modem
+from random import randrange
+import uuid
+import structlog
+
+
+TESTMODE = False
+
+
 class BROADCAST:
 
-    def __init__(self):
-        pass
+    def __init__(self, config, event_queue, states):
+        self.log = structlog.get_logger("DHBC")
+
+
+        self.states = states
+        self.event_queue = event_queue
+        self.config = config
+
+        self.beacon_interval = 0
+        self.beacon_interval_timer = 0
+        self.beacon_paused = False
+        self.beacon_thread = threading.Thread(
+            target=self.run_beacon, name="watchdog", daemon=True
+        )
+        self.beacon_thread.start()
 
 
     def send_test_frame(self) -> None:
@@ -274,3 +296,101 @@ class BROADCAST:
         )
 
 
+# ----------- BROADCASTS
+    def run_beacon(self) -> None:
+        """
+        Controlling function for running a beacon
+        Args:
+
+          self: arq class
+
+        Returns:
+
+        """
+        try:
+            while True:
+                threading.Event().wait(0.5)
+                while self.states.is_beacon_running:
+                    if (
+                            not self.states.is_arq_session
+                            and not self.arq_file_transfer
+                            and not self.beacon_paused
+                            #and not self.states.channel_busy
+                            and not self.states.is_modem_busy
+                            and not self.states.is_arq_state
+                    ):
+                        self.send_data_to_socket_queue(
+                            freedata="modem-message",
+                            beacon="transmitting",
+                            dxcallsign="None",
+                            interval=self.beacon_interval,
+                        )
+                        self.log.info(
+                            "[Modem] Sending beacon!", interval=self.beacon_interval
+                        )
+
+                        beacon_frame = bytearray(self.length_sig0_frame)
+                        beacon_frame[:1] = bytes([FR_TYPE.BEACON.value])
+                        beacon_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
+                        beacon_frame[7:11] = helpers.encode_grid(self.mygrid)
+
+                        if self.enable_fsk:
+                            self.log.info("[Modem] ENABLE FSK", state=self.enable_fsk)
+                            self.enqueue_frame_for_tx(
+                                [beacon_frame],
+                                c2_mode=FREEDV_MODE.fsk_ldpc_0.value,
+                            )
+                        else:
+                            self.enqueue_frame_for_tx([beacon_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1,
+                                                      repeat_delay=0)
+                            if self.enable_morse_identifier:
+                                MODEM_TRANSMIT_QUEUE.put(["morse", 1, 0, self.mycallsign])
+
+                    self.beacon_interval_timer = time.time() + self.beacon_interval
+                    while (
+                            time.time() < self.beacon_interval_timer
+                            and self.states.is_beacon_running
+                            and not self.beacon_paused
+                    ):
+                        threading.Event().wait(0.01)
+
+        except Exception as err:
+            self.log.debug("[Modem] run_beacon: ", exception=err)
+
+    def received_beacon(self, data_in: bytes, snr) -> None:
+        """
+        Called if we received a beacon
+        Args:
+          data_in:bytes:
+
+        """
+        # here we add the received station to the heard stations buffer
+        beacon_callsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
+        self.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
+        self.send_data_to_socket_queue(
+            freedata="modem-message",
+            beacon="received",
+            uuid=str(uuid.uuid4()),
+            timestamp=int(time.time()),
+            dxcallsign=str(beacon_callsign, "UTF-8"),
+            dxgrid=str(self.dxgrid, "UTF-8"),
+            snr=str(snr),
+        )
+
+        self.log.info(
+            "[Modem] BEACON RCVD ["
+            + str(beacon_callsign, "UTF-8")
+            + "]["
+            + str(self.dxgrid, "UTF-8")
+            + "] ",
+            snr=snr,
+        )
+        helpers.add_to_heard_stations(
+            beacon_callsign,
+            self.dxgrid,
+            "BEACON",
+            snr,
+            self.modem_frequency_offset,
+            self.states.radio_frequency,
+            self.states.heard_stations
+        )

@@ -3,10 +3,14 @@ from modem_frametypes import FRAME_TYPE as FR_TYPE
 from codec2 import FREEDV_MODE
 import helpers
 import uuid
+import structlog
 
 class PING:
-    def __init__(self):
-        pass
+    def __init__(self, config, event_queue, states):
+        self.log = structlog.get_logger("DHPING")
+        self.states = states
+        self.event_queue = event_queue
+        self.config = config
 
     # ---------- PING
     def transmit_ping(self, mycallsign: bytes, dxcallsign: bytes) -> None:

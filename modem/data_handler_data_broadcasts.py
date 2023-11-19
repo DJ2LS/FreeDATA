@@ -6,12 +6,16 @@ import modem
 import base64
 import ujson as json
 
-class broadcastHandler:
+class DATABROADCAST:
     """Terminal Node Controller for FreeDATA"""
 
     log = structlog.get_logger("BROADCAST")
 
-    def __init__(self, config, event_queue) -> None:
+    def __init__(self, config, event_queue, states) -> None:
+        self.log = structlog.get_logger("DHDBC")
+        self.states = states
+        self.event_queue = event_queue
+
         self.mycallsign = config['STATION']['mycall']
 
         self.fec_wakeup_callsign = bytes()
