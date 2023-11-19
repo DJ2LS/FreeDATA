@@ -15,8 +15,9 @@ import structlog
 log = structlog.get_logger("explorer")
 
 class explorer():
-    def __init__(self, config, states):
+    def __init__(self, app, config, states):
         self.config = config
+        self.app = app
         self.states = states
         self.explorer_url = "https://api.freedata.app/explorer.php"
         self.publish_interval = 120
@@ -39,7 +40,7 @@ class explorer():
         band = "USB"
         callsign = str(self.config['STATION']['mycall'])
         gridsquare = str(self.config['STATION']['mygrid'])
-        version = str(self.states.modem_version)
+        version = str(self.app.MODEM_VERSION)
         bandwidth = str(self.config['MODEM']['enable_low_bandwidth_mode'])
         beacon = str(self.states.is_beacon_running)
         strength = str(self.states.radio_strength)

@@ -3,8 +3,6 @@ import ujson as json
 class STATES:
     def __init__(self, statequeue):
 
-        self.modem_version = 0.0
-
         # state related settings
         self.statequeue = statequeue
         self.newstate = None
@@ -67,7 +65,6 @@ class STATES:
             
 
     def getAsJSON(self, isChangedState):
-        
         msgtype = "state-change"
         if (not isChangedState):
             msgtype = "state"

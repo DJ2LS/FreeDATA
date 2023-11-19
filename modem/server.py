@@ -16,9 +16,11 @@ app = Flask(__name__)
 CORS(app)
 CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
-app.config['SOCK_SERVER_OPTIONS'] = {'ping_interval': 5}
-print(app.config)
-print(app.config['SOCK_SERVER_OPTIONS'])
+app.config['SOCK_SERVER_OPTIONS'] = {'ping_interval': 10}
+
+# define global MODEM_VERSION
+app.MODEM_VERSION = "0.12.0-alpha"
+
 # set config file to use
 def set_config():
     if 'FREEDATA_CONFIG' in os.environ:
@@ -62,6 +64,7 @@ def index():
     return api_response({'name': 'FreeDATA API',
                     'description': '',
                     'api_version': 1,
+                    'modem_version': app.MODEM_VERSION,
                     'license': 'GPL3.0',
                     'documentation': 'https://wiki.freedata.app',
                     })
@@ -196,7 +199,6 @@ def transmit_sock_data_worker(client_list, event_queue):
                 client.send(event)
             except Exception:
                 client_list.remove(client)
-
 
 
 def sock_watchdog(sock, client_list, event_queue):
