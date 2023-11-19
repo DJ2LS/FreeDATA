@@ -89,7 +89,7 @@ def get_crc_24(data: bytes) -> bytes:
         CRC-24 (OpenPGP) of the provided data as bytes
     """
     if not isinstance(data, (bytes)):
-        data = bytes(data,"utf-8")
+        data = bytes(data,'utf-8')
     crc_algorithm = crcengine.create(
         0x864CFB,
         24,
@@ -177,7 +177,7 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency, 
 #            heard_stations_list[idx] = item
 
 
-def callsign_to_bytes(callsign) -> bytes:
+def callsign_to_bytes(callsign: str) -> bytes:
     """
 
     Args:
@@ -206,13 +206,13 @@ def callsign_to_bytes(callsign) -> bytes:
 
     # Try converting to bytestring if possible type string
     try:
-        callsign = bytes(callsign, "utf-8")
+        callsign = callsign.encode("utf-8")
     except TypeError:
         # This is expected depending on the type of the `callsign` argument.
         # log.debug("[HLP] callsign_to_bytes: Error converting callsign to bytes:", e=err)
         pass
     except Exception as err:
-        log.debug("[HLP] callsign_to_bytes: Error callsign SSID to integer:", e=err)
+        log.debug("[HLP] callsign_to_bytes: Error converting callsign to bytes:", e=err)
 
     # Need this step to reduce the needed payload by the callsign
     # (stripping "-" out of the callsign)
@@ -225,7 +225,7 @@ def callsign_to_bytes(callsign) -> bytes:
         # log.debug("[HLP] callsign_to_bytes: Error callsign SSID to integer:", e=err)
         pass
     except Exception as err:
-        log.debug("[HLP] callsign_to_bytes: Error callsign SSID to integer:", e=err)
+        log.debug("[HLP] callsign_to_bytes: Error splitting callsign/ssid:", e=err)
 
     # callsign = callsign[0]
     # bytestring = bytearray(8)
@@ -286,7 +286,7 @@ def bytes_to_callsign(bytestring: bytes) -> bytes:
     return bytes(f"{callsign}-{ssid}", "utf-8")
 
 
-def check_callsign(callsign: bytes, crc_to_check: bytes, ssid_list):
+def check_callsign(callsign: str, crc_to_check: bytes, ssid_list):
     """
     Function to check a crc against a callsign to calculate the
     ssid by generating crc until we find the correct SSID
@@ -299,7 +299,9 @@ def check_callsign(callsign: bytes, crc_to_check: bytes, ssid_list):
         [True, Callsign + SSID]
         False
     """
-
+    if not isinstance(callsign, (bytes)):
+        callsign = bytes(callsign,'utf-8')
+    
     log.debug("[HLP] check_callsign: Checking:", callsign=callsign)
     try:
         # We want the callsign without SSID
@@ -309,18 +311,18 @@ def check_callsign(callsign: bytes, crc_to_check: bytes, ssid_list):
         # This is expected when `callsign` doesn't have a dash.
         pass
     except Exception as err:
-        log.debug("[HLP] check_callsign: Error callsign SSID to integer:", e=err)
+        log.debug("[HLP] check_callsign: Error converting to bytes:", e=err)
 
     for ssid in ssid_list:
-        call_with_ssid = bytearray(callsign)
-        call_with_ssid.extend("-".encode("utf-8"))
-        call_with_ssid.extend(str(ssid).encode("utf-8"))
+        call_with_ssid = callsign + b'-' + (str(ssid)).encode('utf-8')
+        #call_with_ssid.extend("-".encode("utf-8"))
+        #call_with_ssid.extend(str(ssid).encode("utf-8"))
 
         callsign_crc = get_crc_24(call_with_ssid)
 
         if callsign_crc == crc_to_check:
             log.debug("[HLP] check_callsign matched:", call_with_ssid=call_with_ssid)
-            return [True, bytes(call_with_ssid)]
+            return [True, call_with_ssid]
 
     return [False, b'']
 
