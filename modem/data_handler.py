@@ -551,9 +551,10 @@ class DATA:
         # and make sure we are not overwrite them if they exist
         try:
             if "mycallsign" not in jsondata:
-                jsondata["mycallsign"] = str(self.mycallsign, "UTF-8")
+                jsondata["mycallsign"] = self.mycallsign
             if "dxcallsign" not in jsondata:
-                jsondata["dxcallsign"] = str(self.dxcallsign, "UTF-8")
+                print(self.dxcallsign)
+                jsondata["dxcallsign"] = self.dxcallsign
         except Exception as e:
             self.log.debug("[Modem] error adding callsigns to network message", e=e)
 
