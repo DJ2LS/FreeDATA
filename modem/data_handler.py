@@ -26,9 +26,13 @@ import structlog
 import stats
 import ujson as json
 from codec2 import FREEDV_MODE, FREEDV_MODE_USED_SLOTS
-from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT, RX_BUFFER
+from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT, RX_BUFFER, MODEM_TRANSMIT_QUEUE
 from modem_frametypes import FRAME_TYPE as FR_TYPE
-import broadcast
+import data_handler_data_broadcasts
+
+
+import data_handler_broadcasts
+import data_handler_ping
 
 TESTMODE = False
 
@@ -40,6 +44,11 @@ class DATA:
 
     def __init__(self, config, event_queue, states) -> None:
         self.states = states
+
+        # init data handlers
+        self.broadcasts = data_handler_broadcasts.BROADCAST()
+        self.ping = data_handler_ping.PING()
+        
 
         self.stats = stats.stats(config, event_queue, states)
         self.event_queue = event_queue
@@ -143,7 +152,7 @@ class DATA:
         self.rx_n_frames_per_burst = 0
         self.max_n_frames_per_burst = 1
 
-        self.broadcast = broadcast.broadcastHandler(config, self.event_queue)
+        self.data_broadcast =  data_handler_data_broadcasts.broadcastHandler(config, self.event_queue)
 
         # Flag to indicate if we received a low bandwidth mode channel opener
         self.received_LOW_BANDWIDTH_MODE = False
@@ -262,23 +271,23 @@ class DATA:
             FR_TYPE.BEACON.value: (self.received_beacon, "BEACON"),
             FR_TYPE.BURST_ACK.value: (self.burst_ack_nack_received, "BURST ACK"),
             FR_TYPE.BURST_NACK.value: (self.burst_ack_nack_received, "BURST NACK"),
-            FR_TYPE.CQ.value: (self.received_cq, "CQ"),
+            FR_TYPE.CQ.value: (self.broadcasts.received_cq, "CQ"),
             FR_TYPE.FR_ACK.value: (self.frame_ack_received, "FRAME ACK"),
             FR_TYPE.FR_NACK.value: (self.frame_nack_received, "FRAME NACK"),
             FR_TYPE.FR_REPEAT.value: (self.burst_rpt_received, "REPEAT REQUEST"),
-            FR_TYPE.PING_ACK.value: (self.received_ping_ack, "PING ACK"),
-            FR_TYPE.PING.value: (self.received_ping, "PING"),
-            FR_TYPE.QRV.value: (self.received_qrv, "QRV"),
-            FR_TYPE.IS_WRITING.value: (self.received_is_writing, "IS_WRITING"),
-            FR_TYPE.FEC.value: (self.broadcast.received_fec, "FEC"),
-            FR_TYPE.FEC_WAKEUP.value: (self.broadcast.received_fec_wakeup, "FEC WAKEUP"),
+            FR_TYPE.PING_ACK.value: (self.ping.received_ping_ack, "PING ACK"),
+            FR_TYPE.PING.value: (self.ping.received_ping, "PING"),
+            FR_TYPE.QRV.value: (self.broadcasts.received_qrv, "QRV"),
+            FR_TYPE.IS_WRITING.value: (self.broadcasts.received_is_writing, "IS_WRITING"),
+            FR_TYPE.FEC.value: (self.data_broadcast.received_fec, "FEC"),
+            FR_TYPE.FEC_WAKEUP.value: (self.data_broadcast.received_fec_wakeup, "FEC WAKEUP"),
 
         }
         self.command_dispatcher = {
             # "CONNECT": (self.arq_session_handler, "CONNECT"),
-            "CQ": (self.transmit_cq, "CQ"),
+            "CQ": (self.broadcasts.transmit_cq, "CQ"),
             "DISCONNECT": (self.close_session, "DISCONNECT"),
-            "SEND_TEST_FRAME": (self.send_test_frame, "TEST"),
+            "SEND_TEST_FRAME": (self.broadcasts.send_test_frame, "TEST"),
             "STOP": (self.stop_transmission, "STOP"),
         }
 
@@ -358,13 +367,13 @@ class DATA:
             elif data[0] == "PING":
                 # [1] mycallsign
                 # [2] dxcallsign
-                self.transmit_ping(data[1], data[2])
+                self.ping.transmit_ping(data[1], data[2])
 
             elif data[0] == "BEACON":
                 # [1] INTERVAL int
                 # [2] STATE bool
                 
-                if len(data)==3:
+                if len(data) == 3:
                     self.beacon_interval = data[1]
                     self.states.set("is_beacon_running", True)
                 else:
@@ -381,14 +390,14 @@ class DATA:
             elif data[0] == "FEC_IS_WRITING":
                 # [1] DATA_OUT bytes
                 # [2] MODE str datac0/1/3...
-                self.send_fec_is_writing(data[1])
+                self.broadcasts.send_fec_is_writing(data[1])
 
             elif data[0] == "FEC":
                 # [1] WAKEUP bool
                 # [2] MODE str datac0/1/3...
                 # [3] PAYLOAD
                 # [4] MYCALLSIGN
-                self.send_fec(data[1], data[2], data[3], data[4])
+                self.broadcasts.send_fec(data[1], data[2], data[3], data[4])
             else:
                 self.log.error(
                     "[Modem] worker_transmit: received invalid command:", data=data
@@ -522,7 +531,7 @@ class DATA:
         self.log.debug("[Modem] enqueue_frame_for_tx", c2_mode=FREEDV_MODE(c2_mode).name, data=frame_to_tx,
                        type=frame_type)
 
-        modem.MODEM_TRANSMIT_QUEUE.put([c2_mode, copies, repeat_delay, frame_to_tx])
+        MODEM_TRANSMIT_QUEUE.put([c2_mode, copies, repeat_delay, frame_to_tx])
 
         # Wait while transmitting
         while self.states.is_transmitting:
@@ -1957,7 +1966,7 @@ class DATA:
 
         # transmit morse identifier if configured
         if self.enable_morse_identifier:
-            modem.MODEM_TRANSMIT_QUEUE.put(["morse", 1, 0, self.mycallsign])
+            MODEM_TRANSMIT_QUEUE.put(["morse", 1, 0, self.mycallsign])
         self.arq_cleanup()
 
     def received_session_close(self, data_in: bytes, snr):
@@ -2535,187 +2544,6 @@ class DATA:
             )
             self.stop_transmission()
 
-    # ---------- PING
-    def transmit_ping(self, mycallsign: bytes, dxcallsign: bytes) -> None:
-        """
-        Funktion for controlling pings
-        Args:
-          mycallsign:bytes:
-          dxcallsign:bytes:
-
-        """
-        # check if specific callsign is set with different SSID than the Modem is initialized
-        try:
-            mycallsign = helpers.callsign_to_bytes(mycallsign)
-            mycallsign = helpers.bytes_to_callsign(mycallsign)
-        except Exception:
-            mycallsign = self.mycallsign
-
-        if not str(dxcallsign).strip():
-            self.log.warning("[Modem] Missing required callsign", dxcallsign=dxcallsign)
-            return
-
-        # additional step for being sure our callsign is correctly
-        # in case we are not getting a station ssid
-        # then we are forcing a station ssid = 0
-        dxcallsign = helpers.callsign_to_bytes(dxcallsign)
-        dxcallsign = helpers.bytes_to_callsign(dxcallsign)
-
-        self.dxcallsign = dxcallsign
-        self.dxcallsign_crc = helpers.get_crc_24(self.dxcallsign)
-        self.send_data_to_socket_queue(
-            freedata="modem-message",
-            ping="transmitting",
-            dxcallsign=str(dxcallsign, "UTF-8"),
-        )
-        self.log.info(
-            "[Modem] PING REQ ["
-            + mycallsign
-            + "] >>> ["
-            + str(dxcallsign, "UTF-8")
-            + "]"
-        )
-
-        ping_frame = bytearray(self.length_sig0_frame)
-        ping_frame[:1] = bytes([FR_TYPE.PING.value])
-        ping_frame[1:4] = self.dxcallsign_crc
-        ping_frame[4:7] = helpers.get_crc_24(mycallsign)
-        ping_frame[7:13] = helpers.callsign_to_bytes(mycallsign)
-
-        if self.enable_fsk:
-            self.log.info("[Modem] ENABLE FSK", state=self.enable_fsk)
-            self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
-        else:
-            self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.sig0.value)
-
-    def received_ping(self, data_in: bytes, snr) -> None:
-        """
-        Called if we received a ping
-
-        Args:
-          data_in:bytes:
-
-        """
-        dxcallsign_crc = bytes(data_in[4:7])
-        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[7:13]))
-
-        # check if callsign ssid override
-        valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4], self.ssid_list)
-        if not valid:
-            # PING packet not for me.
-            self.log.debug("[Modem] received_ping: ping not for this station.")
-            return
-
-        self.dxcallsign_crc = dxcallsign_crc
-        self.dxcallsign = dxcallsign
-        self.log.info(
-            "[Modem] PING REQ ["
-            + str(mycallsign, "UTF-8")
-            + "] <<< ["
-            + str(dxcallsign, "UTF-8")
-            + "]",
-            snr=snr,
-        )
-
-        self.dxgrid = b'------'
-        helpers.add_to_heard_stations(
-            dxcallsign,
-            self.dxgrid,
-            "PING",
-            snr,
-            self.modem_frequency_offset,
-            self.states.radio_frequency,
-            self.states.heard_stations
-        )
-
-        self.send_data_to_socket_queue(
-            freedata="modem-message",
-            ping="received",
-            uuid=str(uuid.uuid4()),
-            timestamp=int(time.time()),
-            dxgrid=str(self.dxgrid, "UTF-8"),
-            dxcallsign=str(dxcallsign, "UTF-8"),
-            mycallsign=str(mycallsign, "UTF-8"),
-            snr=str(snr),
-        )
-        if self.respond_to_call:
-            self.transmit_ping_ack(snr)
-
-    def transmit_ping_ack(self, snr):
-        """
-
-        transmit a ping ack frame
-        called by def received_ping
-        """
-        ping_frame = bytearray(self.length_sig0_frame)
-        ping_frame[:1] = bytes([FR_TYPE.PING_ACK.value])
-        ping_frame[1:4] = self.dxcallsign_crc
-        ping_frame[4:7] = self.mycallsign_crc
-        ping_frame[7:11] = helpers.encode_grid(self.mygrid)
-        ping_frame[13:14] = helpers.snr_to_bytes(snr)
-
-        if self.enable_fsk:
-            self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
-        else:
-            self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.sig0.value)
-
-    def received_ping_ack(self, data_in: bytes, snr) -> None:
-        """
-        Called if a PING ack has been received
-        Args:
-          data_in:bytes:
-
-        """
-
-        # check if we received correct ping
-        # check if callsign ssid override
-        _valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4], self.ssid_list)
-        if _valid:
-
-            self.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
-            dxsnr = helpers.snr_from_bytes(data_in[13:14])
-            self.send_data_to_socket_queue(
-                freedata="modem-message",
-                ping="acknowledge",
-                uuid=str(uuid.uuid4()),
-                timestamp=int(time.time()),
-                dxgrid=str(self.dxgrid, "UTF-8"),
-                dxcallsign=str(self.dxcallsign, "UTF-8"),
-                mycallsign=str(mycallsign, "UTF-8"),
-                snr=str(snr),
-                dxsnr=str(dxsnr)
-            )
-            # combined_snr = own rx snr / snr on dx side
-            combined_snr = f"{snr}/{dxsnr}"
-            helpers.add_to_heard_stations(
-                self.dxcallsign,
-                self.dxgrid,
-                "PING-ACK",
-                combined_snr,
-                self.modem_frequency_offset,
-                self.states.radio_frequency,
-                self.states.heard_stations
-            )
-
-            self.log.info(
-                "[Modem] PING ACK ["
-                + str(mycallsign, "UTF-8")
-                + "] >|< ["
-                + str(self.dxcallsign, "UTF-8")
-                + "]",
-                snr=snr,
-                dxsnr=dxsnr,
-            )
-            self.states.set("is_modem_busy", False)
-        else:
-            self.log.info(
-                "[Modem] FOREIGN PING ACK ["
-                + str(self.mycallsign, "UTF-8")
-                + "] ??? ["
-                + str(bytes(data_in[4:7]), "UTF-8")
-                + "]",
-                snr=snr,
-            )
 
     def stop_transmission(self) -> None:
         """
@@ -2809,7 +2637,7 @@ class DATA:
                             self.enqueue_frame_for_tx([beacon_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1,
                                                       repeat_delay=0)
                             if self.enable_morse_identifier:
-                                modem.MODEM_TRANSMIT_QUEUE.put(["morse", 1, 0, self.mycallsign])
+                                MODEM_TRANSMIT_QUEUE.put(["morse", 1, 0, self.mycallsign])
 
                     self.beacon_interval_timer = time.time() + self.beacon_interval
                     while (
@@ -2860,179 +2688,6 @@ class DATA:
             self.states.heard_stations
         )
 
-    def transmit_cq(self) -> None:
-        """
-        Transmit a CQ
-        Args:
-            self
-
-        Returns:
-            Nothing
-        """
-        self.log.info("[Modem] CQ CQ CQ")
-        self.send_data_to_socket_queue(
-            freedata="modem-message",
-            cq="transmitting",
-            mycallsign=str(self.mycallsign, "UTF-8"),
-            dxcallsign="None",
-        )
-        cq_frame = bytearray(self.length_sig0_frame)
-        cq_frame[:1] = bytes([FR_TYPE.CQ.value])
-        cq_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
-        cq_frame[7:11] = helpers.encode_grid(self.mygrid)
-
-        self.log.debug("[Modem] CQ Frame:", data=[cq_frame])
-
-        if self.enable_fsk:
-            self.log.info("[Modem] ENABLE FSK", state=self.enable_fsk)
-            self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
-        else:
-            self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
-
-    def received_cq(self, data_in: bytes, snr) -> None:
-        """
-        Called when we receive a CQ frame
-        Args:
-          data_in:bytes:
-
-        Returns:
-            Nothing
-        """
-        # here we add the received station to the heard stations buffer
-        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
-        self.log.debug("[Modem] received_cq:", dxcallsign=dxcallsign)
-        self.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
-
-        self.send_data_to_socket_queue(
-            freedata="modem-message",
-            cq="received",
-            mycallsign=str(self.mycallsign, "UTF-8"),
-            dxcallsign=str(dxcallsign, "UTF-8"),
-            dxgrid=str(self.dxgrid, "UTF-8"),
-        )
-        self.log.info(
-            "[Modem] CQ RCVD ["
-            + str(dxcallsign, "UTF-8")
-            + "]["
-            + str(self.dxgrid, "UTF-8")
-            + "] ",
-            snr=snr,
-        )
-        helpers.add_to_heard_stations(
-            dxcallsign,
-            self.dxgrid,
-            "CQ CQ CQ",
-            snr,
-            self.modem_frequency_offset,
-            self.states.radio_frequency,
-            self.states.heard_stations
-        )
-
-        if self.respond_to_cq and self.respond_to_call:
-            self.transmit_qrv(dxcallsign, snr)
-
-    def transmit_qrv(self, dxcallsign: bytes, snr) -> None:
-        """
-        Called when we send a QRV frame
-        Args:
-          self,
-          dxcallsign
-
-        """
-        # Sleep a random amount of time before responding to make it more likely to be
-        # heard when many stations respond. Each DATAC0 frame is 0.44 sec (440ms) in
-        # duration, plus overhead. Set the wait interval to be random between 0 and
-        # self.duration_sig1_frame * 4 == 4 slots
-        # in self.duration_sig1_frame increments.
-        # FIXME This causes problems when running ctests - we need to figure out why
-        if not TESTMODE:
-            self.log.info("[Modem] Waiting for QRV slot...")
-            helpers.wait(randrange(0, int(self.duration_sig1_frame * 4), self.duration_sig1_frame * 10 // 10.0))
-
-        self.send_data_to_socket_queue(
-            freedata="modem-message",
-            qrv="transmitting",
-            dxcallsign=str(dxcallsign, "UTF-8"),
-        )
-        self.log.info("[Modem] Sending QRV!")
-        print(self.mycallsign)
-        qrv_frame = bytearray(self.length_sig0_frame)
-        qrv_frame[:1] = bytes([FR_TYPE.QRV.value])
-        qrv_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
-        qrv_frame[7:11] = helpers.encode_grid(self.mygrid)
-        qrv_frame[11:12] = helpers.snr_to_bytes(snr)
-
-        if self.enable_fsk:
-            self.log.info("[Modem] ENABLE FSK", state=self.enable_fsk)
-            self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
-        else:
-            self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
-
-    def received_qrv(self, data_in: bytes, snr) -> None:
-        """
-        Called when we receive a QRV frame
-        Args:
-          data_in:bytes:
-
-        """
-        # here we add the received station to the heard stations buffer
-        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
-        self.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
-        dxsnr = helpers.snr_from_bytes(data_in[11:12])
-
-        combined_snr = f"{snr}/{dxsnr}"
-
-        self.send_data_to_socket_queue(
-            freedata="modem-message",
-            qrv="received",
-            dxcallsign=str(dxcallsign, "UTF-8"),
-            dxgrid=str(self.dxgrid, "UTF-8"),
-            snr=str(snr),
-            dxsnr=str(dxsnr)
-        )
-
-        self.log.info(
-            "[Modem] QRV RCVD ["
-            + str(dxcallsign, "UTF-8")
-            + "]["
-            + str(self.dxgrid, "UTF-8")
-            + "] ",
-            snr=snr,
-            dxsnr=dxsnr
-        )
-        helpers.add_to_heard_stations(
-            dxcallsign,
-            self.dxgrid,
-            "QRV",
-            combined_snr,
-            self.modem_frequency_offset,
-            self.states.radio_frequency,
-            self.states.heard_stations
-        )
-
-
-
-    def received_is_writing(self, data_in: bytes, snr) -> None:
-        """
-        Called when we receive a IS WRITING frame
-        Args:
-          data_in:bytes:
-
-        """
-        # here we add the received station to the heard stations buffer
-        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
-
-        self.send_data_to_socket_queue(
-            freedata="modem-message",
-            fec="is_writing",
-            dxcallsign=str(dxcallsign, "UTF-8")
-        )
-
-        self.log.info(
-            "[Modem] IS_WRITING RCVD ["
-            + str(dxcallsign, "UTF-8")
-            + "] ",
-        )
 
 
     def channel_busy_handler(self):
@@ -3536,60 +3191,4 @@ class DATA:
                     self.transmit_session_heartbeat()
                     threading.Event().wait(2)
 
-    def send_test_frame(self) -> None:
-        """Send an empty test frame"""
-        test_frame = bytearray(126)
-        test_frame[:1] = bytes([FR_TYPE.TEST_FRAME.value])
-        self.enqueue_frame_for_tx(
-            frame_to_tx=[test_frame], c2_mode=FREEDV_MODE.datac13.value
-        )
-
-    def send_fec(self, mode, wakeup, payload, mycallsign):
-        """Send an empty test frame"""
-
-        mode_int = codec2.freedv_get_mode_value_by_name(mode)
-        payload_per_frame = modem.get_bytes_per_frame(mode_int) - 2
-        fec_payload_length = payload_per_frame - 1
-
-        # check callsign
-        if mycallsign in [None]:
-            mycallsign = self.mycallsign
-        mycallsign = helpers.callsign_to_bytes(mycallsign)
-        mycallsign = helpers.bytes_to_callsign(mycallsign)
-
-        if wakeup:
-            mode_int_wakeup = codec2.freedv_get_mode_value_by_name("sig0")
-            payload_per_wakeup_frame = modem.get_bytes_per_frame(mode_int_wakeup) - 2
-            fec_wakeup_frame = bytearray(payload_per_wakeup_frame)
-            fec_wakeup_frame[:1] = bytes([FR_TYPE.FEC_WAKEUP.value])
-            fec_wakeup_frame[1:7] = helpers.callsign_to_bytes(mycallsign)
-            fec_wakeup_frame[7:8] = bytes([mode_int])
-            fec_wakeup_frame[8:9] = bytes([1]) # n payload bursts
-            print(mode_int_wakeup)
-
-            self.enqueue_frame_for_tx(
-                frame_to_tx=[fec_wakeup_frame], c2_mode=codec2.FREEDV_MODE["sig1"].value
-            )
-        time.sleep(1)
-        fec_frame = bytearray(payload_per_frame)
-        fec_frame[:1] = bytes([FR_TYPE.FEC.value])
-        fec_frame[1:payload_per_frame] = bytes(payload[:fec_payload_length])
-        self.enqueue_frame_for_tx(
-            frame_to_tx=[fec_frame], c2_mode=codec2.FREEDV_MODE[mode].value
-        )
-
-    def send_fec_is_writing(self, mycallsign) -> None:
-        """Send an fec is writing frame"""
-
-        fec_frame = bytearray(14)
-        fec_frame[:1] = bytes([FR_TYPE.IS_WRITING.value])
-        fec_frame[1:7] = helpers.callsign_to_bytes(mycallsign)
-
-        # send burst only if channel not busy - but without waiting
-        # otherwise burst will be dropped
-        if not self.states.channel_busy and not self.states.is_transmitting:
-            self.enqueue_frame_for_tx(
-                frame_to_tx=[fec_frame], c2_mode=codec2.FREEDV_MODE["sig0"].value
-            )
-        else:
-            return False
+    
