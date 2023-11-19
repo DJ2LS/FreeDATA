@@ -15,7 +15,31 @@ from data_handler_arq import ARQ
 class IRS(ARQ):
     def __init__(self, config, event_queue, states):
         super().__init__(config, event_queue, states)
-        pass
+
+
+        self.arq_rx_burst_buffer = []
+        self.arq_rx_frame_buffer = b""
+        self.rx_n_max_retries_per_burst = 40
+        self.rx_n_frame_of_burst = 0
+        self.rx_n_frames_per_burst = 0
+
+
+        self.rx_frame_bof_received = False
+        self.rx_frame_eof_received = False
+
+        self.rx_start_of_transmission = 0  # time of transmission start
+
+
+        # minimum payload for arq burst
+        # import for avoiding byteorder bug and buffer search area
+        self.arq_burst_header_size = 3
+        self.arq_burst_minimum_payload = 56 - self.arq_burst_header_size
+        self.arq_burst_maximum_payload = 510 - self.arq_burst_header_size
+        # save last used payload for optimising buffer search area
+        self.arq_burst_last_payload = self.arq_burst_maximum_payload
+
+
+
 
     def arq_process_received_data_frame(self, data_frame, snr, signed):
         """

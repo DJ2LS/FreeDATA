@@ -17,7 +17,15 @@ from data_handler_arq import ARQ
 class ISS(ARQ):
     def __init__(self, config, event_queue, states):
         super().__init__(config, event_queue, states)
-        pass
+
+        self.tx_n_max_retries_per_burst = 40
+        self.datachannel_opening_interval = self.duration_sig1_frame + self.channel_busy_timeout + 1  # time between attempts when opening data channel
+        self.irs_buffer_position = 0
+        # actual n retries of burst
+        self.tx_n_retry_of_burst = 0
+        self.burst_ack_snr = 0  # SNR from received burst ack frames
+
+
 
     def arq_transmit(self, data_out: bytes, hmac_salt: bytes):
         """

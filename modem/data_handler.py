@@ -37,112 +37,95 @@ class DATA:
         self.event_queue = event_queue
         self.config = config
 
-        # init data handlers
-        self.broadcasts = BROADCAST(config, event_queue, states)
-        self.data_broadcasts = DATABROADCAST(config, event_queue, states)
-        self.ping = PING(config, event_queue, states)
+        class DATA:
+            """Terminal Node Controller for FreeDATA"""
 
-        # Initialize ARQ
-        self.arq = ARQ(config, event_queue, states)
-        self.arq_irs = IRS(config, event_queue, states)
-        self.arq_iss = ISS(config, event_queue, states)
-        self.arq_session = SESSION(config, event_queue, states)
+            def __init__(self, config, event_queue, states):
+                self._initialize_handlers(config, event_queue, states)
+                self._initialize_queues()
+                self._initialize_dispatchers()
+                self._start_worker_threads()
 
+            def _initialize_handlers(self, config, event_queue, states):
+                """Initializes various data handlers."""
+                self.broadcasts = BROADCAST(config, event_queue, states)
+                self.data_broadcasts = DATABROADCAST(config, event_queue, states)
+                self.ping = PING(config, event_queue, states)
+                self.arq = ARQ(config, event_queue, states)
+                self.arq_irs = IRS(config, event_queue, states)
+                self.arq_iss = ISS(config, event_queue, states)
+                self.arq_session = SESSION(config, event_queue, states)
 
+            def _initialize_queues(self):
+                """Initializes data queues."""
+                self.data_queue_transmit = DATA_QUEUE_TRANSMIT
+                self.data_queue_received = DATA_QUEUE_RECEIVED
 
+            def _initialize_dispatchers(self):
+                """Initializes dispatchers for handling different frame types."""
+                # Dictionary of functions and log messages used in process_data
+                # instead of a long series of if-elif-else statements.
+                self.rx_dispatcher = {
+                    FR_TYPE.ARQ_DC_OPEN_ACK_N.value: (
+                        self.arq_iss.arq_received_channel_is_open,
+                        "ARQ OPEN ACK (Narrow)",
+                    ),
+                    FR_TYPE.ARQ_DC_OPEN_ACK_W.value: (
+                        self.arq_iss.arq_received_channel_is_open,
+                        "ARQ OPEN ACK (Wide)",
+                    ),
+                    FR_TYPE.ARQ_DC_OPEN_N.value: (
+                        self.arq_irs.arq_received_data_channel_opener,
+                        "ARQ Data Channel Open (Narrow)",
+                    ),
+                    FR_TYPE.ARQ_DC_OPEN_W.value: (
+                        self.arq_irs.arq_received_data_channel_opener,
+                        "ARQ Data Channel Open (Wide)",
+                    ),
+                    FR_TYPE.ARQ_SESSION_CLOSE.value: (
+                        self.arq_session.received_session_close,
+                        "ARQ CLOSE SESSION",
+                    ),
+                    FR_TYPE.ARQ_SESSION_HB.value: (
+                        self.arq_session.received_session_heartbeat,
+                        "ARQ HEARTBEAT",
+                    ),
+                    FR_TYPE.ARQ_SESSION_OPEN.value: (
+                        self.arq_session.received_session_opener,
+                        "ARQ OPEN SESSION",
+                    ),
+                    FR_TYPE.ARQ_STOP.value: (self.arq.received_stop_transmission, "ARQ STOP TX"),
+                    FR_TYPE.BEACON.value: (self.broadcasts.received_beacon, "BEACON"),
+                    FR_TYPE.BURST_ACK.value: (self.arq_iss.burst_ack_nack_received, "BURST ACK"),
+                    FR_TYPE.BURST_NACK.value: (self.arq_iss.burst_ack_nack_received, "BURST NACK"),
+                    FR_TYPE.CQ.value: (self.broadcasts.received_cq, "CQ"),
+                    FR_TYPE.FR_ACK.value: (self.arq_iss.frame_ack_received, "FRAME ACK"),
+                    FR_TYPE.FR_NACK.value: (self.arq_iss.frame_nack_received, "FRAME NACK"),
+                    FR_TYPE.FR_REPEAT.value: (self.arq_iss.burst_rpt_received, "REPEAT REQUEST"),
+                    FR_TYPE.PING_ACK.value: (self.ping.received_ping_ack, "PING ACK"),
+                    FR_TYPE.PING.value: (self.ping.received_ping, "PING"),
+                    FR_TYPE.QRV.value: (self.broadcasts.received_qrv, "QRV"),
+                    FR_TYPE.IS_WRITING.value: (self.broadcasts.received_is_writing, "IS_WRITING"),
+                    FR_TYPE.FEC.value: (self.data_broadcasts.received_fec, "FEC"),
+                    FR_TYPE.FEC_WAKEUP.value: (self.data_broadcasts.received_fec_wakeup, "FEC WAKEUP"),
 
-        self.data_queue_transmit = DATA_QUEUE_TRANSMIT
-        self.data_queue_received = DATA_QUEUE_RECEIVED
+                }
+                self.command_dispatcher = {
+                    # "CONNECT": (self.arq_session_handler, "CONNECT"),
+                    "CQ": (self.broadcasts.transmit_cq, "CQ"),
+                    "DISCONNECT": (self.arq_session.close_session, "DISCONNECT"),
+                    "SEND_TEST_FRAME": (self.broadcasts.send_test_frame, "TEST"),
+                    "STOP": (self.arq.stop_transmission, "STOP"),
+                }
 
-        # Dictionary of functions and log messages used in process_data
-        # instead of a long series of if-elif-else statements.
-        self.rx_dispatcher = {
-            FR_TYPE.ARQ_DC_OPEN_ACK_N.value: (
-                self.arq_iss.arq_received_channel_is_open,
-                "ARQ OPEN ACK (Narrow)",
-            ),
-            FR_TYPE.ARQ_DC_OPEN_ACK_W.value: (
-                self.arq_iss.arq_received_channel_is_open,
-                "ARQ OPEN ACK (Wide)",
-            ),
-            FR_TYPE.ARQ_DC_OPEN_N.value: (
-                self.arq_irs.arq_received_data_channel_opener,
-                "ARQ Data Channel Open (Narrow)",
-            ),
-            FR_TYPE.ARQ_DC_OPEN_W.value: (
-                self.arq_irs.arq_received_data_channel_opener,
-                "ARQ Data Channel Open (Wide)",
-            ),
-            FR_TYPE.ARQ_SESSION_CLOSE.value: (
-                self.arq_session.received_session_close,
-                "ARQ CLOSE SESSION",
-            ),
-            FR_TYPE.ARQ_SESSION_HB.value: (
-                self.arq_session.received_session_heartbeat,
-                "ARQ HEARTBEAT",
-            ),
-            FR_TYPE.ARQ_SESSION_OPEN.value: (
-                self.arq_session.received_session_opener,
-                "ARQ OPEN SESSION",
-            ),
-            FR_TYPE.ARQ_STOP.value: (self.arq.received_stop_transmission, "ARQ STOP TX"),
-            FR_TYPE.BEACON.value: (self.broadcasts.received_beacon, "BEACON"),
-            FR_TYPE.BURST_ACK.value: (self.arq_iss.burst_ack_nack_received, "BURST ACK"),
-            FR_TYPE.BURST_NACK.value: (self.arq_iss.burst_ack_nack_received, "BURST NACK"),
-            FR_TYPE.CQ.value: (self.broadcasts.received_cq, "CQ"),
-            FR_TYPE.FR_ACK.value: (self.arq_iss.frame_ack_received, "FRAME ACK"),
-            FR_TYPE.FR_NACK.value: (self.arq_iss.frame_nack_received, "FRAME NACK"),
-            FR_TYPE.FR_REPEAT.value: (self.arq_iss.burst_rpt_received, "REPEAT REQUEST"),
-            FR_TYPE.PING_ACK.value: (self.ping.received_ping_ack, "PING ACK"),
-            FR_TYPE.PING.value: (self.ping.received_ping, "PING"),
-            FR_TYPE.QRV.value: (self.broadcasts.received_qrv, "QRV"),
-            FR_TYPE.IS_WRITING.value: (self.broadcasts.received_is_writing, "IS_WRITING"),
-            FR_TYPE.FEC.value: (self.data_broadcasts.received_fec, "FEC"),
-            FR_TYPE.FEC_WAKEUP.value: (self.data_broadcasts.received_fec_wakeup, "FEC WAKEUP"),
-
-        }
-        self.command_dispatcher = {
-            # "CONNECT": (self.arq_session_handler, "CONNECT"),
-            "CQ": (self.broadcasts.transmit_cq, "CQ"),
-            "DISCONNECT": (self.arq_session.close_session, "DISCONNECT"),
-            "SEND_TEST_FRAME": (self.broadcasts.send_test_frame, "TEST"),
-            "STOP": (self.arq.stop_transmission, "STOP"),
-        }
-
-        # Start worker and watchdog threads
-        worker_thread_transmit = threading.Thread(
-            target=self.worker_transmit, name="worker thread transmit", daemon=True
-        )
-        worker_thread_transmit.start()
-
-        worker_thread_receive = threading.Thread(
-            target=self.worker_receive, name="worker thread receive", daemon=True
-        )
-        worker_thread_receive.start()
-
-
-
-
-        # Start worker and watchdog threads
-        worker_thread_transmit = threading.Thread(
-            target=self.worker_transmit, name="worker thread transmit", daemon=True
-        )
-        worker_thread_transmit.start()
-
-        worker_thread_receive = threading.Thread(
-            target=self.worker_receive, name="worker thread receive", daemon=True
-        )
-        worker_thread_receive.start()
-
-
-
+            def _start_worker_threads(self):
+                """Starts worker threads for transmit and receive operations."""
+                threading.Thread(target=self.worker_transmit, name="Transmit Worker", daemon=True).start()
+                threading.Thread(target=self.worker_receive, name="Receive Worker", daemon=True).start()
 
     def worker_transmit(self) -> None:
         """Dispatch incoming UI instructions for transmitting operations"""
         while True:
-
-
-
             data = self.data_queue_transmit.get()
             # if we are already in ARQ_STATE, or we're receiving codec2 traffic
             # let's wait with processing data
@@ -257,12 +240,9 @@ class DATA:
         # check for callsign CRC
         _valid1, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[1:4]), self.ssid_list)
         _valid2, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[2:5]), self.ssid_list)
-
         # check for session ID
-        # signalling frames
-        _valid3 = helpers.check_session_id(self.session_id, bytes(bytes_out[1:2]))
-        # arq data frames
-        _valid4 = helpers.check_session_id(self.session_id, bytes(bytes_out[2:3]))
+        _valid3 = helpers.check_session_id(self.session_id, bytes(bytes_out[1:2]))  # signalling frames
+        _valid4 = helpers.check_session_id(self.session_id, bytes(bytes_out[2:3]))  # arq data frames
         if (
                 _valid1
                 or _valid2
@@ -297,7 +277,7 @@ class DATA:
                 # snr = self.calculate_snr(freedv)
                 self.log.debug("[Modem] RX SNR", snr=snr)
                 # send payload data to arq checker without CRC16
-                self.arq.arq_data_received(
+                self.arq_irs.arq_data_received(
                     bytes(bytes_out[:-2]), bytes_per_frame, snr, freedv
                 )
 

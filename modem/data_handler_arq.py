@@ -15,32 +15,28 @@ from modem_frametypes import FRAME_TYPE as FR_TYPE
 TESTMODE = False
 class ARQ:
     def __init__(self, config, event_queue, states):
+        self.log = structlog.get_logger("DHARQ")
 
         self.event_queue = event_queue
         self.states = states
 
+        # ARQ PROTOCOL VERSION
+        # v.5 - signalling frame uses datac0
+        # v.6 - signalling frame uses datac13
+        # v.7 - adjusting ARQ timeout
+        # v.8 - adjusting ARQ structure
+        self.arq_protocol_version = 8
 
-
-        self.log = structlog.get_logger("DHARQ")
         self.stats = stats.stats(config, event_queue, states)
 
-
-
-
-
-
-
-        # Functions here expect mycallsign to be in callxx-# format; so cheat a little bit here:
-
+        # load config
         self.mycallsign = config['STATION']['mycall']
         self.myssid = config['STATION']['myssid']
         self.mycallsign += "-" + str(self.myssid)
         encoded_call = helpers.callsign_to_bytes(self.mycallsign)
         self.mycallsign = helpers.bytes_to_callsign(encoded_call)
-
         self.ssid_list = config['STATION']['ssid_list']
         self.mycallsign_crc = helpers.get_crc_24(self.mycallsign)
-
         self.mygrid = config['STATION']['mygrid']
         self.enable_fsk = config['MODEM']['enable_fsk']
         self.respond_to_cq = config['MODEM']['respond_to_cq']
@@ -49,22 +45,19 @@ class ARQ:
         self.enable_morse_identifier = config['MODEM']['enable_morse_identifier']
         self.arq_rx_buffer_size = config['MODEM']['rx_buffer_size']
         self.enable_experimental_features = False
+        # flag to indicate if modem running in low bandwidth mode
+        self.low_bandwidth_mode = config["MODEM"]["enable_low_bandwidth_mode"]
+
         # Enable general responding to channel openers for example
         # this can be combined with a callsign blacklist for example
         self.respond_to_call = True
 
-        # ARQ PROTOCOL VERSION
-        # v.5 - signalling frame uses datac0
-        # v.6 - signalling frame uses datac13
-        # v.7 - adjusting ARQ timeouts, not done yet
-        self.arq_protocol_version = 8
+
         self.modem_frequency_offset = 0
 
         self.dxcallsign = b"ZZ9YY-0"
         self.dxcallsign_crc = b''
         self.dxgrid = b''
-
-
 
         # length of signalling frame
         self.length_sig0_frame = 14
@@ -88,18 +81,13 @@ class ARQ:
         self.arq_session_last_received = 0
         self.arq_session_timeout = 30
         self.session_connect_max_retries = 10
-        self.irs_buffer_position = 0
 
         self.arq_compression_factor = 0
-
-        # actual n retries of burst
-        self.tx_n_retry_of_burst = 0
 
         self.transmission_uuid = ""
 
         self.burst_last_received = 0.0  # time of last "live sign" of a burst
         self.data_channel_last_received = 0.0  # time of last "live sign" of a frame
-        self.burst_ack_snr = 0  # SNR from received burst ack frames
 
         # Flag to indicate if we received an ACK frame for a burst
         self.burst_ack = False
@@ -110,25 +98,22 @@ class ARQ:
         self.rpt_request_buffer = []  # requested frames, saved in a list
         self.burst_rpt_counter = 0
 
-        self.rx_start_of_transmission = 0  # time of transmission start
 
         # 3 bytes for the BOF Beginning of File indicator in a data frame
         self.data_frame_bof = b"BOF"
         # 3 bytes for the EOF End of File indicator in a data frame
         self.data_frame_eof = b"EOF"
-        self.arq_rx_burst_buffer = []
-        self.arq_rx_frame_buffer = b""
-        self.tx_n_max_retries_per_burst = 40
-        self.rx_n_max_retries_per_burst = 40
+
+
+
+
+
         self.n_retries_per_burst = 0
-        self.rx_n_frame_of_burst = 0
-        self.rx_n_frames_per_burst = 0
         self.max_n_frames_per_burst = 1
 
         # Flag to indicate if we received a low bandwidth mode channel opener
         self.received_LOW_BANDWIDTH_MODE = False
-        # flag to indicate if modem running in low bandwidth mode
-        self.low_bandwidth_mode = config["MODEM"]["enable_low_bandwidth_mode"]
+
 
         self.data_channel_max_retries = 15
 
@@ -182,13 +167,6 @@ class ARQ:
         self.speed_level = len(self.mode_list) - 1  # speed level for selecting mode
         self.states.set("arq_speed_level", self.speed_level)
 
-        # minimum payload for arq burst
-        # import for avoiding byteorder bug and buffer search area
-        self.arq_burst_header_size = 3
-        self.arq_burst_minimum_payload = 56 - self.arq_burst_header_size
-        self.arq_burst_maximum_payload = 510 - self.arq_burst_header_size
-        # save last used payload for optimising buffer search area
-        self.arq_burst_last_payload = self.arq_burst_maximum_payload
 
         self.is_IRS = False
         self.burst_nack = False
@@ -196,16 +174,10 @@ class ARQ:
         self.frame_nack_counter = 0
         self.frame_received_counter = 0
 
-        self.rx_frame_bof_received = False
-        self.rx_frame_eof_received = False
 
         # TIMEOUTS
-        self.burst_ack_timeout_seconds = 4.5  # timeout for burst  acknowledges
-        self.data_frame_ack_timeout_seconds = 4.5  # timeout for data frame acknowledges
-        self.rpt_ack_timeout_seconds = 4.5  # timeout for rpt frame acknowledges
         self.transmission_timeout = 180  # transmission timeout in seconds
         self.channel_busy_timeout = 3  # time how long we want to wait until channel busy state overrides
-        self.datachannel_opening_interval = self.duration_sig1_frame + self.channel_busy_timeout + 1  # time between attempts when opening data channel
 
 
 
@@ -304,12 +276,6 @@ class ARQ:
             self.enqueue_frame_for_tx([ident_frame], c2_mode=FREEDV_MODE.sig0.value)
         else:
             return ident_frame
-
-
-
-
-
-
 
     def send_disconnect_frame(self) -> None:
         """Build and send a disconnect frame"""

@@ -12,7 +12,7 @@ class SESSION(ARQ):
 
     def __init__(self, config, event_queue, states):
         super().__init__(config, event_queue, states)
-        pass
+
     def received_session_close(self, data_in: bytes, snr):
         """
         Closes the session when a close session frame is received and
