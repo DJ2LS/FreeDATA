@@ -24,7 +24,6 @@ import { sendModemARQRaw } from "../js/api.js";
 
 const split_char = "0;1;";
 
-
 // define default message object
 interface Attachment {
   content_type: string;
@@ -1091,7 +1090,6 @@ export function sendMessage(obj) {
   let filetype = obj._attachments[filename].content_type;
   let file = obj._attachments[filename].data;
 
-
   let data_with_attachment =
     obj.timestamp +
     split_char +
@@ -1115,7 +1113,7 @@ export function sendMessage(obj) {
       data_with_attachment,
   );
 
-   let mycallsign = settings.remote.STATION.mycall + '-' + settings.remote.STATION.myssid;
-  sendModemARQRaw(mycallsign, dxcallsign, data, uuid)
-
+  let mycallsign =
+    settings.remote.STATION.mycall + "-" + settings.remote.STATION.myssid;
+  sendModemARQRaw(mycallsign, dxcallsign, data, uuid);
 }

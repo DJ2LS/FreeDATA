@@ -70,11 +70,11 @@ export function sendModemPing(dxcall) {
 
 export function sendModemARQRaw(mycall, dxcall, data, uuid) {
   return apiPost("/modem/send_arq_raw", {
-                                            mycallsign: mycall,
-                                            dxcallsign: dxcall,
-                                            data: data,
-                                            uuid: uuid
-                                         });
+    mycallsign: mycall,
+    dxcallsign: dxcall,
+    data: data,
+    uuid: uuid,
+  });
 }
 
 export function sendModemTestFrame() {
