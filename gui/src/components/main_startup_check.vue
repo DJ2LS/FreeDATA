@@ -21,6 +21,7 @@ import {
   getModemState,
 } from "../js/api";
 import { audioInputOptions, audioOutputOptions } from "../js/deviceFormHelper";
+import { serialDeviceOptions } from "../js/deviceFormHelper";
 
 const version = import.meta.env.PACKAGE_VERSION;
 var updateAvailable = process.env.FDUpdateAvail;
@@ -347,13 +348,20 @@ function testHamlib() {
                       >
 
                       <select
-                        class="form-select form-select-sm"
-                        aria-label=".form-select-sm"
-                        id="hamlib_deviceport"
-                        style="width: 7rem"
-                        @change="onChange"
-                        v-model="settings.remote.RADIO.serial_port"
-                      ></select>
+                      class="form-select form-select-sm"
+                      aria-label=".form-select-sm"
+                      id="hamlib_deviceport"
+                      style="width: 7rem"
+                      @change="onChange"
+                      v-model="settings.remote.RADIO.serial_port"
+                    >
+                      <option
+                        v-for="option in serialDeviceOptions()"
+                        v-bind:value="option.port"
+                      >
+                        {{ option.port }}
+                      </option>
+                    </select>
                     </div>
                   </div>
                   <div
