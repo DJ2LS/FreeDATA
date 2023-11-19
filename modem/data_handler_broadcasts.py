@@ -9,16 +9,14 @@ import modem
 from random import randrange
 import uuid
 import structlog
-
+import ujson as json
 
 TESTMODE = False
-
 
 class BROADCAST:
 
     def __init__(self, config, event_queue, states):
         self.log = structlog.get_logger("DHBC")
-
 
         self.states = states
         self.event_queue = event_queue
@@ -31,6 +29,25 @@ class BROADCAST:
             target=self.run_beacon, name="watchdog", daemon=True
         )
         self.beacon_thread.start()
+
+
+        # length of signalling frame
+        self.length_sig0_frame = 14
+        self.modem_frequency_offset = 0
+
+        # load config
+        self.mycallsign = config['STATION']['mycall']
+        self.myssid = config['STATION']['myssid']
+        self.mycallsign += "-" + str(self.myssid)
+        encoded_call = helpers.callsign_to_bytes(self.mycallsign)
+        self.mycallsign = helpers.bytes_to_callsign(encoded_call)
+        self.mygrid = config['STATION']['mygrid']
+        self.enable_fsk = config['MODEM']['enable_fsk']
+        self.respond_to_cq = config['MODEM']['respond_to_cq']
+        self.respond_to_call = True
+
+        self.duration_datac13 = 2.0
+        self.duration_sig1_frame = self.duration_datac13
 
 
     def send_test_frame(self) -> None:
@@ -131,12 +148,17 @@ class BROADCAST:
             Nothing
         """
         self.log.info("[Modem] CQ CQ CQ")
-        self.send_data_to_socket_queue(
-            freedata="modem-message",
-            cq="transmitting",
-            mycallsign=str(self.mycallsign, "UTF-8"),
-            dxcallsign="None",
-        )
+
+        event_data = json.dumps({
+            "freedata": "modem-message",
+            "cq": "transmitting",
+            "mycallsign": str(self.mycallsign, "UTF-8"),
+            "dxcallsign": "None"
+        })
+        # finally push data to our network queue
+        self.event_queue.put(event_data)
+
+
         cq_frame = bytearray(self.length_sig0_frame)
         cq_frame[:1] = bytes([FR_TYPE.CQ.value])
         cq_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
@@ -164,13 +186,17 @@ class BROADCAST:
         self.log.debug("[Modem] received_cq:", dxcallsign=dxcallsign)
         self.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
 
-        self.send_data_to_socket_queue(
-            freedata="modem-message",
-            cq="received",
-            mycallsign=str(self.mycallsign, "UTF-8"),
-            dxcallsign=str(dxcallsign, "UTF-8"),
-            dxgrid=str(self.dxgrid, "UTF-8"),
-        )
+
+        event_data = json.dumps({
+            "freedata": "modem-message",
+            "cq": "received",
+            "mycallsign": str(self.mycallsign, "UTF-8"),
+            "dxcallsign": str(dxcallsign, "UTF-8"),
+            "dxgrid":str(self.dxgrid, "UTF-8"),
+        })
+        # finally push data to our network queue
+        self.event_queue.put(event_data)
+
         self.log.info(
             "[Modem] CQ RCVD ["
             + str(dxcallsign, "UTF-8")
@@ -210,11 +236,15 @@ class BROADCAST:
             self.log.info("[Modem] Waiting for QRV slot...")
             helpers.wait(randrange(0, int(self.duration_sig1_frame * 4), self.duration_sig1_frame * 10 // 10.0))
 
-        self.send_data_to_socket_queue(
-            freedata="modem-message",
-            qrv="transmitting",
-            dxcallsign=str(dxcallsign, "UTF-8"),
-        )
+
+        event_data = json.dumps({
+            "freedata": "modem-message",
+            "qrv": "transmitting",
+            "dxcallsign": str(dxcallsign, "UTF-8"),
+        })
+        # finally push data to our network queue
+        self.event_queue.put(event_data)
+
         self.log.info("[Modem] Sending QRV!")
         print(self.mycallsign)
         qrv_frame = bytearray(self.length_sig0_frame)
@@ -243,14 +273,16 @@ class BROADCAST:
 
         combined_snr = f"{snr}/{dxsnr}"
 
-        self.send_data_to_socket_queue(
-            freedata="modem-message",
-            qrv="received",
-            dxcallsign=str(dxcallsign, "UTF-8"),
-            dxgrid=str(self.dxgrid, "UTF-8"),
-            snr=str(snr),
-            dxsnr=str(dxsnr)
-        )
+        event_data = json.dumps({
+            "freedata": "modem-message",
+            "qrv": "received",
+            "dxcallsign": str(dxcallsign, "UTF-8"),
+            "dxgrid":str(self.dxgrid, "UTF-8"),
+            "snr":str(snr),
+            "dxsnr": str(dxsnr)
+        })
+        # finally push data to our network queue
+        self.event_queue.put(event_data)
 
         self.log.info(
             "[Modem] QRV RCVD ["
