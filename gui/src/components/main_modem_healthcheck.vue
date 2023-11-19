@@ -11,7 +11,7 @@ function getOverallHealth() {
   let health = 0;
   if (state.modem_connection !== "connected") health += 5;
   if (!state.is_modem_running) health += 3;
-  if ( state.radio_status === false) health += 2;
+  if (state.radio_status === false) health += 2;
   if (process.env.FDUpdateAvail === "1") health += 1;
   return health;
 }
