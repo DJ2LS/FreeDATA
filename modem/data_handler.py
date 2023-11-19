@@ -2888,7 +2888,7 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="modem-message",
             cq="received",
-            mycallsign=str(self.mycallsign, "UTF-8"),
+            mycallsign=self.mycallsign,
             dxcallsign=str(dxcallsign, "UTF-8"),
             dxgrid=str(self.dxgrid, "UTF-8"),
         )
