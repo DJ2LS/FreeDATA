@@ -361,7 +361,8 @@ class DATA:
             elif data[0] == "BEACON":
                 # [1] INTERVAL int
                 # [2] STATE bool
-                if data[2]:
+                
+                if len(data)==3:
                     self.beacon_interval = data[1]
                     self.states.set("is_beacon_running", True)
                 else:

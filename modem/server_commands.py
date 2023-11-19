@@ -22,14 +22,16 @@ def ping_ping(data):
             "[CMD] PING command execution error", e=err, command=data
         )
 
-def beacon(data):
-    beacon_state = data['enabled'] in ['True']
-    #Beacon.beacon_state = beacon_state
+def beacon(data, interval=300):
+    beacon_state = data['enabled'] in [True]
+    
     log.info(
         "[CMD] Changing beacon state", state=beacon_state
     )
-    DATA_QUEUE_TRANSMIT.put(["BEACON", 300, beacon_state])
-
+    if (beacon_state):
+        DATA_QUEUE_TRANSMIT.put(["BEACON", interval, beacon_state])
+    else:
+        DATA_QUEUE_TRANSMIT.put(["BEACON", beacon_state])
 def modem_send_test_frame():
 
     log.info(
