@@ -14,12 +14,15 @@ import helpers
 import structlog
 from modem_frametypes import FRAME_TYPE as FR_TYPE
 
-import data_handler_broadcasts
-import data_handler_data_broadcasts
-import data_handler_ping
-import data_handler_arq
-from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT, RX_BUFFER, MODEM_TRANSMIT_QUEUE
+from data_handler_broadcasts import BROADCAST
+from data_handler_data_broadcasts import DATABROADCAST
+from data_handler_ping import PING
 
+from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT, RX_BUFFER, MODEM_TRANSMIT_QUEUE
+from data_handler_arq_iss import ISS
+from data_handler_arq_irs import IRS
+from data_handler_arq import ARQ
+from data_handler_arq_session import SESSION
 
 TESTMODE = False
 
@@ -35,10 +38,18 @@ class DATA:
         self.config = config
 
         # init data handlers
-        self.broadcasts = data_handler_broadcasts.BROADCAST(config, event_queue, states)
-        self.data_broadcasts = data_handler_data_broadcasts.DATABROADCAST(config, event_queue, states)
-        self.ping = data_handler_ping.PING(config, event_queue, states)
-        self.arq = data_handler_arq.ARQ(config, event_queue, states)
+        self.broadcasts = BROADCAST(config, event_queue, states)
+        self.data_broadcasts = DATABROADCAST(config, event_queue, states)
+        self.ping = PING(config, event_queue, states)
+
+        # Initialize ARQ
+        self.arq = ARQ(config, event_queue, states)
+        self.arq_irs = IRS(config, event_queue, states)
+        self.arq_iss = ISS(config, event_queue, states)
+        self.arq_session = SESSION(config, event_queue, states)
+
+
+
 
         self.data_queue_transmit = DATA_QUEUE_TRANSMIT
         self.data_queue_received = DATA_QUEUE_RECEIVED
@@ -47,41 +58,41 @@ class DATA:
         # instead of a long series of if-elif-else statements.
         self.rx_dispatcher = {
             FR_TYPE.ARQ_DC_OPEN_ACK_N.value: (
-                self.arq.arq_received_channel_is_open,
+                self.arq_iss.arq_received_channel_is_open,
                 "ARQ OPEN ACK (Narrow)",
             ),
             FR_TYPE.ARQ_DC_OPEN_ACK_W.value: (
-                self.arq.arq_received_channel_is_open,
+                self.arq_iss.arq_received_channel_is_open,
                 "ARQ OPEN ACK (Wide)",
             ),
             FR_TYPE.ARQ_DC_OPEN_N.value: (
-                self.arq.arq_received_data_channel_opener,
+                self.arq_irs.arq_received_data_channel_opener,
                 "ARQ Data Channel Open (Narrow)",
             ),
             FR_TYPE.ARQ_DC_OPEN_W.value: (
-                self.arq.arq_received_data_channel_opener,
+                self.arq_irs.arq_received_data_channel_opener,
                 "ARQ Data Channel Open (Wide)",
             ),
             FR_TYPE.ARQ_SESSION_CLOSE.value: (
-                self.arq.received_session_close,
+                self.arq_session.received_session_close,
                 "ARQ CLOSE SESSION",
             ),
             FR_TYPE.ARQ_SESSION_HB.value: (
-                self.arq.received_session_heartbeat,
+                self.arq_session.received_session_heartbeat,
                 "ARQ HEARTBEAT",
             ),
             FR_TYPE.ARQ_SESSION_OPEN.value: (
-                self.arq.received_session_opener,
+                self.arq_session.received_session_opener,
                 "ARQ OPEN SESSION",
             ),
             FR_TYPE.ARQ_STOP.value: (self.arq.received_stop_transmission, "ARQ STOP TX"),
             FR_TYPE.BEACON.value: (self.broadcasts.received_beacon, "BEACON"),
-            FR_TYPE.BURST_ACK.value: (self.arq.burst_ack_nack_received, "BURST ACK"),
-            FR_TYPE.BURST_NACK.value: (self.arq.burst_ack_nack_received, "BURST NACK"),
+            FR_TYPE.BURST_ACK.value: (self.arq_iss.burst_ack_nack_received, "BURST ACK"),
+            FR_TYPE.BURST_NACK.value: (self.arq_iss.burst_ack_nack_received, "BURST NACK"),
             FR_TYPE.CQ.value: (self.broadcasts.received_cq, "CQ"),
-            FR_TYPE.FR_ACK.value: (self.arq.frame_ack_received, "FRAME ACK"),
-            FR_TYPE.FR_NACK.value: (self.arq.frame_nack_received, "FRAME NACK"),
-            FR_TYPE.FR_REPEAT.value: (self.arq.burst_rpt_received, "REPEAT REQUEST"),
+            FR_TYPE.FR_ACK.value: (self.arq_iss.frame_ack_received, "FRAME ACK"),
+            FR_TYPE.FR_NACK.value: (self.arq_iss.frame_nack_received, "FRAME NACK"),
+            FR_TYPE.FR_REPEAT.value: (self.arq_iss.burst_rpt_received, "REPEAT REQUEST"),
             FR_TYPE.PING_ACK.value: (self.ping.received_ping_ack, "PING ACK"),
             FR_TYPE.PING.value: (self.ping.received_ping, "PING"),
             FR_TYPE.QRV.value: (self.broadcasts.received_qrv, "QRV"),
@@ -93,7 +104,7 @@ class DATA:
         self.command_dispatcher = {
             # "CONNECT": (self.arq_session_handler, "CONNECT"),
             "CQ": (self.broadcasts.transmit_cq, "CQ"),
-            "DISCONNECT": (self.arq.close_session, "DISCONNECT"),
+            "DISCONNECT": (self.arq_session.close_session, "DISCONNECT"),
             "SEND_TEST_FRAME": (self.broadcasts.send_test_frame, "TEST"),
             "STOP": (self.arq.stop_transmission, "STOP"),
         }
