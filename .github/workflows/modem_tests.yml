@@ -53,6 +53,7 @@ jobs:
 
       - name: run config tests
         shell: bash
+        working-directory: modem
         run: |
           python3 tests/test_config.py
 
