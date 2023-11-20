@@ -24,8 +24,7 @@ def enqueue_frame_for_tx(
     :type repeat_delay: int, optional
     """
     frame_type = FR_TYPE(int.from_bytes(frame_to_tx[0][:1], byteorder="big")).name
-    #log.debug("[Modem] enqueue_frame_for_tx", c2_mode=FREEDV_MODE(c2_mode).name, data=frame_to_tx,
-                   type=frame_type)
+    #log.debug("[Modem] enqueue_frame_for_tx", c2_mode=FREEDV_MODE(c2_mode).name, data=frame_to_tx, type=frame_type)
 
     MODEM_TRANSMIT_QUEUE.put([c2_mode, copies, repeat_delay, frame_to_tx])
 
