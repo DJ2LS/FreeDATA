@@ -29,9 +29,9 @@ const tooltipList = [...tooltipTriggerList].map(
   (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl),
 );
 
-//loadSettings();
+import { getRemote } from "./store/settingsStore";
+import { initConnections } from "./js/event_sock.js";
 
-//import "./js/daemon";
-//import "./js/sock.js";
-
-import "./js/event_sock.js";
+getRemote().then(() => {
+  initConnections();
+});

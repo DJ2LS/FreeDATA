@@ -74,13 +74,9 @@ export function onChange() {
 }
 
 export function getRemote() {
-  getConfig().then((conf) => {
+  return getConfig().then((conf) => {
     settingsStore.remote = conf;
   });
-}
-
-if (settingsStore.remote.STATION.mycall === "") {
-  getRemote();
 }
 
 watch(settingsStore.local, (oldValue, newValue) => {

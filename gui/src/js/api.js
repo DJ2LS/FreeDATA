@@ -1,13 +1,12 @@
 import { settingsStore as settings } from "../store/settingsStore.js";
 
-function buildURL(endpoint) {
-  const url =
-    "http://" + settings.local.host + ":" + settings.local.port + endpoint;
+function buildURL(params, endpoint) {
+  const url = "http://" + params.host + ":" + params.port + endpoint;
   return url;
 }
 
 async function apiGet(endpoint) {
-  const response = await fetch(buildURL(endpoint));
+  const response = await fetch(buildURL(settings.local, endpoint));
   if (!response.ok) {
     throw new Error(`REST response not ok: ${response.statusText}`);
   }
@@ -17,7 +16,7 @@ async function apiGet(endpoint) {
 
 export async function apiPost(endpoint, payload = {}) {
   try {
-    const response = await fetch(buildURL(endpoint), {
+    const response = await fetch(buildURL(settings.local, endpoint), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

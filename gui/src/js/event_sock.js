@@ -48,6 +48,8 @@ function connect(endpoint, dispatcher) {
 }
 
 // Initial connection attempts to endpoints
-connect("states", stateDispatcher);
-connect("events", eventDispatcher);
-connect("fft", addDataToWaterfall);
+export function initConnections() {
+  connect("states", stateDispatcher);
+  connect("events", eventDispatcher);
+  connect("fft", addDataToWaterfall);
+}
