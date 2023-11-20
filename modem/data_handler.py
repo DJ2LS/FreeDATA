@@ -181,7 +181,7 @@ class DATA:
                 # [2] self.transmission_uuid str
                 # [3] mycallsign with ssid str
                 # [4] dxcallsign with ssid str
-                self.arq.open_dc_and_transmit(data[1], data[2], data[3], data[4])
+                self.arq_iss.open_dc_and_transmit(data[1], data[2], data[3], data[4])
 
 
             elif data[0] == "FEC_IS_WRITING":
