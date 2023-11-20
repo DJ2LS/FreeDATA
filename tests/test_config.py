@@ -5,10 +5,10 @@ class TestConfigMethods(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.config = config.CONFIG('modem/config.ini')
+        cls.config = config.CONFIG('modem/config.ini.example')
 
     def test_config_exists(self):
-        c = config.CONFIG('modem/config.ini')
+        c = config.CONFIG('modem/config.ini.example')
         self.assertTrue(c.config_exists())
 
         c = config.CONFIG('modem/nonexistant.ini')

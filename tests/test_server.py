@@ -15,7 +15,7 @@ class TestIntegration(unittest.TestCase):
     def setUpClass(cls):
         cmd = "flask --app modem/server run"
         my_env = os.environ.copy()
-        my_env["FREEDATA_CONFIG"] = "modem/config.ini"
+        my_env["FREEDATA_CONFIG"] = "modem/config.ini.example"
         cls.process = Popen(shlex.split(cmd), stdin=PIPE, env=my_env)
         time.sleep(1)
 
