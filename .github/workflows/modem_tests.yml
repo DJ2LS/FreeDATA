@@ -1,4 +1,6 @@
-name: CTest
+name: Modem tests
+
+on: [push]
 
 jobs:
   build:
@@ -30,25 +32,26 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
 
-      - name: Install packages
+      - name: Install system packages
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install octave octave-common octave-signal sox portaudio19-dev python3-pyaudio
-          pip3 install psutil crcengine ujson pyserial numpy structlog sounddevice pyaudio requests websocket-client
-          pip3 install pytest pytest-rerunfailures
+          sudo apt-get install octave octave-common octave-signal sox
+
+      - name: Install python packages
+        shell: bash
+        run: |
+          pip install -r requirements.txt
 
       - name: Build codec2
         shell: bash
+        working-directory: modem/lib/
         run: |
           git clone https://github.com/drowe67/codec2.git
           cd codec2
           mkdir -p build_linux && cd build_linux && cmake .. && make
 
-      - name: run ctests
+      - name: run tests
         shell: bash
-        working-directory: ${{github.workspace}}
         run: |
-          mkdir build && cd build
-          cmake -DCODEC2_BUILD_DIR=$GITHUB_WORKSPACE/codec2/build_linux ..
-          ctest --output-on-failure
+          python3 tests/test_server.py
