@@ -51,7 +51,12 @@ jobs:
           cd codec2
           mkdir -p build_linux && cd build_linux && cmake .. && make
 
-      - name: run tests
+      - name: run config tests
+        shell: bash
+        run: |
+          python3 tests/test_config.py
+
+      - name: run server tests
         shell: bash
         run: |
           python3 tests/test_server.py
