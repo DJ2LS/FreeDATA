@@ -35,13 +35,13 @@ jobs:
       - name: Install system packages
         shell: bash
         run: |
-          sudo apt-get update
+          sudo apt-get update || true
           sudo apt-get install octave octave-common octave-signal sox
 
       - name: Install python packages
         shell: bash
         run: |
-          pip install -r requirements.txt
+          pip3 install -r requirements.txt
 
       - name: Build codec2
         shell: bash
