@@ -11,6 +11,7 @@ import modem
 import numpy as np
 from codec2 import FREEDV_MODE
 from modem_frametypes import FRAME_TYPE as FR_TYPE
+import event_manager
 
 from data_handler_arq import ARQ
 
@@ -57,7 +58,7 @@ class ISS(ARQ):
         self.arq_compression_factor = np.clip(compression_factor, 0, 255)
         compression_factor = bytes([int(self.arq_compression_factor * 10)])
 
-        self.send_data_to_socket_queue(
+        self.event_manager.send_custom_event(
             freedata="modem-message",
             arq="transmission",
             status="transmitting",
@@ -272,7 +273,7 @@ class ISS(ARQ):
                 tx_start_of_transmission, bufferposition_end, len(data_out)
             )
 
-            self.send_data_to_socket_queue(
+            self.event_manager.send_custom_event(
                 freedata="modem-message",
                 arq="transmission",
                 status="transmitting",
@@ -314,7 +315,7 @@ class ISS(ARQ):
         # gui database is too slow for handling this within 0.001 seconds
         # so let's sleep a little
         threading.Event().wait(0.2)
-        self.send_data_to_socket_queue(
+        self.event_manager.send_custom_event(
             freedata="modem-message",
             arq="transmission",
             status="transmitted",
@@ -344,7 +345,7 @@ class ISS(ARQ):
         """
         will be called if we not successfully transmitted all of queued data
         """
-        self.send_data_to_socket_queue(
+        self.event_manager.send_custom_event(
             freedata="modem-message",
             arq="transmission",
             status="failed",
@@ -482,7 +483,7 @@ class ISS(ARQ):
             self.states.radio_frequency,
             self.states.heard_stations
         )
-        self.send_data_to_socket_queue(
+        self.event_manager.send_custom_event(
             freedata="modem-message",
             arq="transmission",
             status="failed",
@@ -586,7 +587,7 @@ class ISS(ARQ):
         while not self.states.is_arq_session and not self.arq_session_timeout:
             threading.Event().wait(0.01)
             self.states.set("arq_session_state", "connecting")
-            self.send_data_to_socket_queue(
+            self.event_manager.send_custom_event(
                 freedata="modem-message",
                 arq="session",
                 status="connecting",
@@ -595,7 +596,7 @@ class ISS(ARQ):
             )
         if self.states.is_arq_session and self.states.arq_session_state == "connected":
             # self.states.set("arq_session_state", "connected")
-            self.send_data_to_socket_queue(
+            self.event_manager.send_custom_event(
                 freedata="modem-message",
                 arq="session",
                 status="connected",
@@ -615,7 +616,7 @@ class ISS(ARQ):
             state=self.states.arq_session_state,
         )
         self.states.set("arq_session_state", "failed")
-        self.send_data_to_socket_queue(
+        self.event_manager.send_custom_event(
             freedata="modem-message",
             arq="session",
             status="failed",
@@ -659,7 +660,7 @@ class ISS(ARQ):
                     state=self.states.arq_session_state,
                 )
 
-                self.send_data_to_socket_queue(
+                self.event_manager.send_custom_event(
                     freedata="modem-message",
                     arq="session",
                     status="connecting",
@@ -694,7 +695,7 @@ class ISS(ARQ):
                 return False
 
         # Given the while condition, it will only exit when `self.states.is_arq_session` is True
-        self.send_data_to_socket_queue(
+        self.event_manager.send_custom_event(
             freedata="modem-message",
             arq="session",
             status="connected",
@@ -771,7 +772,7 @@ class ISS(ARQ):
                 "[Modem] arq_open_data_channel:", transmission_uuid=self.transmission_uuid
             )
 
-            self.send_data_to_socket_queue(
+            self.event_manager.send_custom_event(
                 freedata="modem-message",
                 arq="transmission",
                 status="failed",
@@ -846,7 +847,7 @@ class ISS(ARQ):
 
         for attempt in range(self.data_channel_max_retries):
 
-            self.send_data_to_socket_queue(
+            self.event_manager.send_custom_event(
                 freedata="modem-message",
                 arq="transmission",
                 status="opening",
@@ -895,7 +896,7 @@ class ISS(ARQ):
         """
         protocol_version = int.from_bytes(bytes(data_in[13:14]), "big")
         if protocol_version == self.arq_protocol_version:
-            self.send_data_to_socket_queue(
+            self.event_manager.send_custom_event(
                 freedata="modem-message",
                 arq="transmission",
                 status="opened",
@@ -949,7 +950,7 @@ class ISS(ARQ):
             self.data_channel_last_received = int(time.time())
 
         else:
-            self.send_data_to_socket_queue(
+            self.event_manager.send_custom_event(
                 freedata="modem-message",
                 arq="transmission",
                 status="failed",

@@ -134,7 +134,7 @@ class IRS(ARQ):
                 data=base64_data
             )
 
-        self.send_data_to_socket_queue(
+        self.event_manager.send_custom_event(
             freedata="modem-message",
             arq="transmission",
             status="received",
@@ -218,7 +218,7 @@ class IRS(ARQ):
         self.dxcallsign = helpers.bytes_to_callsign(bytes(data_in[7:13]))
         self.states.set("dxcallsign", self.dxcallsign)
 
-        self.send_data_to_socket_queue(
+        self.event_manager.send_custom_event(
             freedata="modem-message",
             arq="transmission",
             status="opening",
@@ -338,7 +338,7 @@ class IRS(ARQ):
 
         self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
 
-        self.send_data_to_socket_queue(
+        self.event_manager.send_custom_event(
             freedata="modem-message",
             arq="transmission",
             status="opened",
@@ -652,7 +652,7 @@ class IRS(ARQ):
                 )
 
                 # send a network message with information
-                self.send_data_to_socket_queue(
+                self.event_manager.send_custom_event(
                     freedata="modem-message",
                     arq="transmission",
                     status="receiving",
@@ -732,7 +732,7 @@ class IRS(ARQ):
                 )
                 self.arq_process_received_data_frame(data_frame, snr, signed=False)
             else:
-                self.send_data_to_socket_queue(
+                self.event_manager.send_custom_event(
                     freedata="modem-message",
                     arq="transmission",
                     status="failed",

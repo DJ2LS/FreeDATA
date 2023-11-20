@@ -48,7 +48,7 @@ class SESSION(ARQ):
                 self.states.arq_session_state,
             )
 
-            self.send_data_to_socket_queue(
+            self.event_manager.send_custom_event(
                 freedata="modem-message",
                 arq="session",
                 status="close",
@@ -70,7 +70,7 @@ class SESSION(ARQ):
         connection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_HB.value])
         connection_frame[1:2] = self.session_id
 
-        self.send_data_to_socket_queue(
+        self.event_manager.send_custom_event(
             freedata="modem-message",
             arq="session",
             status="connected",
@@ -104,7 +104,7 @@ class SESSION(ARQ):
                 self.states.heard_stations
             )
 
-            self.send_data_to_socket_queue(
+            self.event_manager.send_custom_event(
                 freedata="modem-message",
                 arq="session",
                 status="connected",
@@ -149,7 +149,7 @@ class SESSION(ARQ):
             self.states.arq_session_state,
         )
 
-        self.send_data_to_socket_queue(
+        self.event_manager.send_custom_event(
             freedata="modem-message",
             arq="session",
             status="close",
@@ -223,7 +223,7 @@ class SESSION(ARQ):
         self.states.is_arq_session = True
         self.states.set("is_modem_busy", True)
 
-        self.send_data_to_socket_queue(
+        self.event_manager.send_custom_event(
             freedata="modem-message",
             arq="session",
             status="connected",

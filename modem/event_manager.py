@@ -23,3 +23,7 @@ class EventManager:
         jsondata = {"buffer-overflow": str(data)}
         data_out = json.dumps(jsondata)
         self.broadcast(data_out)
+
+    def send_custom_event(self, **jsondata):
+        data_out = json.dumps(jsondata)
+        self.broadcast(data_out)

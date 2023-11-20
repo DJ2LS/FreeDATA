@@ -13,6 +13,7 @@ import threading
 import helpers
 import structlog
 from modem_frametypes import FRAME_TYPE as FR_TYPE
+import event_manager
 
 from data_handler_broadcasts import BROADCAST
 from data_handler_data_broadcasts import DATABROADCAST
@@ -53,6 +54,8 @@ class DATA:
         self.arq_irs = IRS(config, event_queue, states)
         self.arq_iss = ISS(config, event_queue, states)
         self.arq_session = SESSION(config, event_queue, states)
+
+        self.event_manager = event_manager.EventManager([event_queue])
 
     def _initialize_queues(self):
         """Initializes data queues."""

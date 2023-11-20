@@ -8,7 +8,7 @@ import stats
 import structlog
 from codec2 import FREEDV_MODE, FREEDV_MODE_USED_SLOTS
 from modem_frametypes import FRAME_TYPE as FR_TYPE
-
+import event_manager
 
 TESTMODE = False
 class ARQ:
@@ -17,6 +17,8 @@ class ARQ:
 
         self.event_queue = event_queue
         self.states = states
+        self.event_manager = event_manager.EventManager([event_queue])
+
 
         # ARQ PROTOCOL VERSION
         # v.5 - signalling frame uses datac0
@@ -301,7 +303,7 @@ class ARQ:
         """
         self.log.warning("[Modem] Stopping transmission!")
 
-        self.send_data_to_socket_queue(
+        self.event_manager.send_custom_event(
             freedata="modem-message",
             arq="transmission",
             status="stopped",
@@ -329,7 +331,7 @@ class ARQ:
         self.log.warning("[Modem] Stopping transmission!")
         self.states.set("is_modem_busy", False)
         self.states.set("is_arq_state", False)
-        self.send_data_to_socket_queue(
+        self.event_manager.send_custom_event(
             freedata="modem-message",
             arq="transmission",
             status="stopped",
@@ -347,7 +349,7 @@ class ARQ:
         Returns:
         """
         self.log.warning("[Modem] Channel busy, waiting until free...")
-        self.send_data_to_socket_queue(
+        self.event_manager.send_custom_event(
             freedata="modem-message",
             channel="busy",
             status="waiting",
@@ -671,7 +673,7 @@ class ARQ:
                     + str(self.dxcallsign, "UTF-8")
                     + "]"
                 )
-                self.send_data_to_socket_queue(
+                self.event_manager.send_custom_event(
                     freedata="modem-message",
                     arq="transmission",
                     status="failed",
@@ -702,7 +704,7 @@ class ARQ:
                     + str(self.dxcallsign, "UTF-8")
                     + "]"
                 )
-                self.send_data_to_socket_queue(
+                self.event_manager.send_custom_event(
                     freedata="modem-message",
                     arq="session",
                     status="failed",

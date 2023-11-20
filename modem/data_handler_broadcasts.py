@@ -9,7 +9,7 @@ import modem
 from random import randrange
 import uuid
 import structlog
-from data_handler_helpers import enqueue_frame_for_tx, send_data_to_socket_queue
+import event_manager
 
 TESTMODE = False
 
@@ -20,6 +20,10 @@ class BROADCAST:
         self.states = states
         self.event_queue = event_queue
         self.config = config
+        
+        self.event_manager = event_manager.EventManager([event_queue])
+
+        
 
         self.beacon_interval = 0
         self.beacon_interval_timer = 0
@@ -53,9 +57,7 @@ class BROADCAST:
         """Send an empty test frame"""
         test_frame = bytearray(126)
         test_frame[:1] = bytes([FR_TYPE.TEST_FRAME.value])
-        enqueue_frame_for_tx(
-            frame_to_tx=[test_frame], c2_mode=FREEDV_MODE.datac13.value
-        )
+        self.enqueue_frame_for_tx(frame_to_tx=[test_frame], c2_mode=FREEDV_MODE.datac13.value)
 
     def send_fec(self, mode, wakeup, payload, mycallsign):
         """Send an empty test frame"""
@@ -80,14 +82,14 @@ class BROADCAST:
             fec_wakeup_frame[8:9] = bytes([1]) # n payload bursts
             print(mode_int_wakeup)
 
-            enqueue_frame_for_tx(
+            self.enqueue_frame_for_tx(
                 frame_to_tx=[fec_wakeup_frame], c2_mode=codec2.FREEDV_MODE["sig1"].value
             )
         time.sleep(1)
         fec_frame = bytearray(payload_per_frame)
         fec_frame[:1] = bytes([FR_TYPE.FEC.value])
         fec_frame[1:payload_per_frame] = bytes(payload[:fec_payload_length])
-        enqueue_frame_for_tx(
+        self.enqueue_frame_for_tx(
             frame_to_tx=[fec_frame], c2_mode=codec2.FREEDV_MODE[mode].value
         )
 
@@ -101,7 +103,7 @@ class BROADCAST:
         # send burst only if channel not busy - but without waiting
         # otherwise burst will be dropped
         if not self.states.channel_busy and not self.states.is_transmitting:
-            enqueue_frame_for_tx(
+            self.enqueue_frame_for_tx(
                 frame_to_tx=[fec_frame], c2_mode=codec2.FREEDV_MODE["sig0"].value
             )
         else:
@@ -120,14 +122,14 @@ class BROADCAST:
         """
         self.log.info("[Modem] CQ CQ CQ")
 
-        send_data_to_socket_queue(
+        self.event_manager.send_custom_event(
             freedata="modem-message",
             cq="transmitting",
             mycallsign=str(self.mycallsign, "UTF-8"),
             dxcallsign="None",
         )
 
-
+        
         cq_frame = bytearray(self.length_sig0_frame)
         cq_frame[:1] = bytes([FR_TYPE.CQ.value])
         cq_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
@@ -137,9 +139,9 @@ class BROADCAST:
 
         if self.enable_fsk:
             self.log.info("[Modem] ENABLE FSK", state=self.enable_fsk)
-            enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
+            self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
-            enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
+            self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
 
     def received_cq(self, data_in: bytes, snr) -> None:
         """
@@ -155,7 +157,7 @@ class BROADCAST:
         self.log.debug("[Modem] received_cq:", dxcallsign=dxcallsign)
         self.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
 
-        send_data_to_socket_queue(
+        self.event_manager.send_custom_event(
             freedata="modem-message",
             cq="received",
             mycallsign=str(self.mycallsign, "UTF-8"),
@@ -202,7 +204,7 @@ class BROADCAST:
             self.log.info("[Modem] Waiting for QRV slot...")
             helpers.wait(randrange(0, int(self.duration_sig1_frame * 4), self.duration_sig1_frame * 10 // 10.0))
 
-        send_data_to_socket_queue(
+        self.event_manager.send_custom_event(
             freedata="modem-message",
             qrv="transmitting",
             dxcallsign=str(dxcallsign, "UTF-8"),
@@ -218,9 +220,9 @@ class BROADCAST:
 
         if self.enable_fsk:
             self.log.info("[Modem] ENABLE FSK", state=self.enable_fsk)
-            enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
+            self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
-            enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
+            self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
 
     def received_qrv(self, data_in: bytes, snr) -> None:
         """
@@ -236,7 +238,7 @@ class BROADCAST:
 
         combined_snr = f"{snr}/{dxsnr}"
 
-        send_data_to_socket_queue(
+        self.event_manager.send_custom_event(
             freedata="modem-message",
             qrv="received",
             dxcallsign=str(dxcallsign, "UTF-8"),
@@ -276,7 +278,7 @@ class BROADCAST:
         # here we add the received station to the heard stations buffer
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
 
-        send_data_to_socket_queue(
+        self.event_manager.send_custom_event(
             freedata="modem-message",
             fec="is_writing",
             dxcallsign=str(dxcallsign, "UTF-8")
@@ -312,7 +314,7 @@ class BROADCAST:
                             and not self.states.is_modem_busy
                             and not self.states.is_arq_state
                     ):
-                        send_data_to_socket_queue(
+                        self.event_manager.send_custom_event(
                             freedata="modem-message",
                             beacon="transmitting",
                             dxcallsign="None",
@@ -329,12 +331,12 @@ class BROADCAST:
 
                         if self.enable_fsk:
                             self.log.info("[Modem] ENABLE FSK", state=self.enable_fsk)
-                            enqueue_frame_for_tx(
+                            self.enqueue_frame_for_tx(
                                 [beacon_frame],
                                 c2_mode=FREEDV_MODE.fsk_ldpc_0.value,
                             )
                         else:
-                            enqueue_frame_for_tx([beacon_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1,
+                            self.enqueue_frame_for_tx([beacon_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1,
                                                       repeat_delay=0)
                             if self.enable_morse_identifier:
                                 MODEM_TRANSMIT_QUEUE.put(["morse", 1, 0, self.mycallsign])
@@ -360,7 +362,7 @@ class BROADCAST:
         # here we add the received station to the heard stations buffer
         beacon_callsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
         self.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
-        send_data_to_socket_queue(
+        self.event_manager.send_custom_event(
             freedata="modem-message",
             beacon="received",
             uuid=str(uuid.uuid4()),
@@ -387,3 +389,31 @@ class BROADCAST:
             self.states.radio_frequency,
             self.states.heard_stations
         )
+
+    def enqueue_frame_for_tx(
+            self,
+            frame_to_tx,  # : list[bytearray], # this causes a crash on python 3.7
+            c2_mode=FREEDV_MODE.sig0.value,
+            copies=1,
+            repeat_delay=0,
+    ) -> None:
+        """
+        Send (transmit) supplied frame to Modem
+
+        :param frame_to_tx: Frame data to send
+        :type frame_to_tx: list of bytearrays
+        :param c2_mode: Codec2 mode to use, defaults to datac13
+        :type c2_mode: int, optional
+        :param copies: Number of frame copies to send, defaults to 1
+        :type copies: int, optional
+        :param repeat_delay: Delay time before sending repeat frame, defaults to 0
+        :type repeat_delay: int, optional
+        """
+        # frame_type = FR_TYPE(int.from_bytes(frame_to_tx[0][:1], byteorder="big")).name
+        # log.debug("[Modem] enqueue_frame_for_tx", c2_mode=FREEDV_MODE(c2_mode).name, data=frame_to_tx,type=frame_type)
+
+        MODEM_TRANSMIT_QUEUE.put([c2_mode, copies, repeat_delay, frame_to_tx])
+
+        # Wait while transmitting
+        while self.states.is_transmitting:
+            threading.Event().wait(0.01)
