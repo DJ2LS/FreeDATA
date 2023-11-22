@@ -21,14 +21,6 @@ def ping_ping(dxcall):
             "[CMD] PING command execution error", e=err
         )
 
-def beacon(beacon_state, interval=300):
-    log.info(
-        "[CMD] Changing beacon state", state=beacon_state
-    )
-    if (beacon_state):
-        DATA_QUEUE_TRANSMIT.put(["BEACON", interval, beacon_state])
-    else:
-        DATA_QUEUE_TRANSMIT.put(["BEACON", beacon_state])
 def modem_send_test_frame():
 
     log.info(

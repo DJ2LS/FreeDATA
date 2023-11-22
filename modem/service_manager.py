@@ -18,7 +18,7 @@ class SM:
         self.modem_events = app.modem_events
         self.modem_fft = app.modem_fft
         self.modem_service = app.modem_service
-        self.states = app.states
+        self.states = app.state_manager
 
         runner_thread = threading.Thread(
             target=self.runner, name="runner thread", daemon=True

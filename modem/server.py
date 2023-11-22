@@ -9,7 +9,6 @@ import queue
 import server_commands
 import service_manager
 import state_manager
-import threading
 import ujson as json
 import websocket_manager as wsm
 import api_validations as validations
@@ -47,7 +46,7 @@ app.modem_fft = queue.Queue() # queue which holds latest fft data
 app.modem_service = queue.Queue() # start / stop modem service
 
 # init state manager
-app.states = state_manager.STATES(app.state_queue)
+app.state_manager = state_manager.StateManager(app.state_queue)
 
 # start service manager
 service_manager.SM(app)
@@ -111,13 +110,13 @@ def get_serial_devices():
 
 @app.route('/modem/state', methods=['GET'])
 def get_modem_state():
-    return api_response(app.states.sendState())
+    return api_response(app.state_manager.sendState())
 
 @app.route('/modem/cqcqcq', methods=['POST', 'GET'])
 def post_cqcqcq():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for triggering a CQ via POST"})
-    if app.states.is_modem_running:
+    if app.state_manager.is_modem_running:
         server_commands.cqcqcq()
     return api_response({"cmd": "cqcqcq"})
 
@@ -125,16 +124,18 @@ def post_cqcqcq():
 def post_beacon():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for controlling BEACON STATE via POST"})
-    if not app.states.is_modem_running:
+    if not isinstance(request.json['enabled'], bool):
+        api_abort(f"Incorrect value for 'enabled'. Shoud be bool.")
+    if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
-    server_commands.beacon(request.json['enable_beacon'])
+    app.state_manager.set('is_beacon_running', request.json['enabled'])
     return api_response(request.json)
 
 @app.route('/modem/ping_ping', methods=['POST'])
 def post_ping():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for controlling PING via POST"})
-    if not app.states.is_modem_running:
+    if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
     validate(request.json, 'dxcall', validations.validate_freedata_callsign)
     server_commands.ping_ping(request.json['dxcall'])
@@ -144,7 +145,7 @@ def post_ping():
 def post_send_test_frame():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for triggering a TEST_FRAME via POST"})
-    if app.states.is_modem_running:
+    if app.state_manager.is_modem_running:
         server_commands.modem_send_test_frame()
     return api_response({"cmd": "test_frame"})
 
@@ -152,7 +153,7 @@ def post_send_test_frame():
 def post_send_fec_frame():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for triggering a FEC frame via POST"})
-    if app.states.is_modem_running:
+    if app.state_manager.is_modem_running:
         server_commands.modem_fec_transmit(request.json)
     return api_response(request.json)
 
@@ -160,7 +161,7 @@ def post_send_fec_frame():
 def post_send_fec_is_writing():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for triggering a IS WRITING frame via POST"})
-    if app.states.is_modem_running:
+    if app.state_manager.is_modem_running:
         server_commands.modem_fec_is_writing(request.json)
     return api_response(request.json)
 

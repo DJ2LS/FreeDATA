@@ -1,6 +1,6 @@
 import time
 import ujson as json
-class STATES:
+class StateManager:
     def __init__(self, statequeue):
 
         # state related settings
