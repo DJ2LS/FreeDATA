@@ -11,6 +11,7 @@ import service_manager
 import state_manager
 import threading
 import ujson as json
+import websocket_manager as wsm
 
 app = Flask(__name__)
 CORS(app)
@@ -192,63 +193,15 @@ def post_modem_send_raw():
 # @app.route('/rig/frequency', methods=['POST'])
 # @app.route('/rig/test_hamlib', methods=['POST'])
 
-
-
-
-
-def transmit_sock_data_worker(client_list, event_queue):
-    while True:
-        event = event_queue.get()
-        clients = client_list.copy()
-        for client in clients:
-            try:
-                client.send(event)
-            except Exception:
-                client_list.remove(client)
-
-
-def sock_watchdog(sock, client_list, event_queue):
-    event_queue.put(json.dumps({"freedata-message": "hello-client"}))
-    
-    client_list.add(sock)
-    while True:
-        try:
-            sock.receive(timeout=1)
-        except Exception as e:
-            print(f"client connection lost: {e}")
-            try:
-                client_list.remove(sock)
-            except Exception as err:
-                print(f"error removing client from list: {e} | {err}")
-            break
-    return
-
 # Event websocket
 @sock.route('/events')
 def sock_events(sock):
-    sock_watchdog(sock, events_client_list, app.modem_events)
+    wsm.handle_connection(sock, wsm.events_client_list, app.modem_events)
 
 @sock.route('/fft')
 def sock_fft(sock):
-    sock_watchdog(sock, fft_client_list, app.modem_fft)
+    wsm.handle_connection(sock, wsm.fft_client_list, app.modem_fft)
 
 @sock.route('/states')
 def sock_states(sock):
-    sock_watchdog(sock, states_client_list, app.state_queue)
-    
-
-# websocket multi client support for using with queued information.
-# our client set which contains all connected websocket clients
-events_client_list = set()
-fft_client_list = set()
-states_client_list = set()
-
-# start a worker thread for every socket endpoint
-events_thread = threading.Thread(target=transmit_sock_data_worker, daemon=True, args=(events_client_list, app.modem_events))
-events_thread.start()
-
-states_thread = threading.Thread(target=transmit_sock_data_worker, daemon=True, args=(states_client_list, app.state_queue))
-states_thread.start()
-
-fft_thread = threading.Thread(target=transmit_sock_data_worker, daemon=True, args=(fft_client_list, app.modem_fft))
-fft_thread.start()
+    wsm.handle_connection(sock, wsm.states_client_list, app.state_queue)
