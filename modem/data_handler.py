@@ -170,16 +170,6 @@ class DATA:
                 mycallsign = f"{self.config['STATION']['mycall']}-{self.config['STATION']['myssid']}"
                 self.ping.transmit_ping(mycallsign, data[2])
 
-            elif data[0] == "BEACON":
-                # [1] INTERVAL int
-                # [2] STATE bool
-                
-                if len(data) == 3:
-                    self.beacon_interval = data[1]
-                    self.states.set("is_beacon_running", True)
-                else:
-                    self.states.set("is_beacon_running", False)
-
             elif data[0] == "ARQ_RAW":
                 # [1] DATA_OUT bytes
                 # [2] self.transmission_uuid str
