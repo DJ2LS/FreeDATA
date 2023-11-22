@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, abort, Response
 from flask_sock import Sock
 from flask_cors import CORS
 import os
@@ -12,6 +12,7 @@ import state_manager
 import threading
 import ujson as json
 import websocket_manager as wsm
+import api_validations as validations
 
 app = Flask(__name__)
 CORS(app)
@@ -55,9 +56,22 @@ service_manager.SM(app)
 app.modem_service.put("start")
 
 # returns a standard API response
-def api_response(data):
-    return make_response(jsonify(data), 200)
+def api_response(data, status = 200):
+    return make_response(jsonify(data), status)
 
+def api_abort(message, code):
+    jsonError = json.dumps({'error': message})
+    abort(Response(jsonError, code))
+
+# validates a parameter
+def validate(req, param, validator, isRequired = True):
+    if param not in req:
+        if isRequired:
+            api_abort(f"Required parameter '{param}' is missing.", 400)
+        else:
+            return True
+    if not validator(req[param]):
+        api_abort(f"Value of '{param}' is invalid.", 400)
 
 ## REST API
 @app.route('/', methods=['GET'])
@@ -104,23 +118,26 @@ def post_cqcqcq():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for triggering a CQ via POST"})
     if app.states.is_modem_running:
-        server_commands.cqcqcq(request.json)
+        server_commands.cqcqcq()
     return api_response({"cmd": "cqcqcq"})
 
 @app.route('/modem/beacon', methods=['POST'])
 def post_beacon():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for controlling BEACON STATE via POST"})
-    if app.states.is_modem_running:
-        server_commands.beacon(request.json)
+    if not app.states.is_modem_running:
+        api_abort('Modem not running', 503)
+    server_commands.beacon(request.json['enable_beacon'])
     return api_response(request.json)
 
 @app.route('/modem/ping_ping', methods=['POST'])
 def post_ping():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for controlling PING via POST"})
-    if app.states.is_modem_running:
-        server_commands.ping_ping(request.json)
+    if not app.states.is_modem_running:
+        api_abort('Modem not running', 503)
+    validate(request.json, 'dxcall', validations.validate_freedata_callsign)
+    server_commands.ping_ping(request.json['dxcall'])
     return api_response(request.json)
 
 @app.route('/modem/send_test_frame', methods=['POST'])

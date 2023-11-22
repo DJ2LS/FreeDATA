@@ -13,12 +13,12 @@ class PING:
         self.config = config
 
     # ---------- PING
-    def transmit_ping(self, mycallsign: bytes, dxcallsign: bytes) -> None:
+    def transmit_ping(self, mycallsign: str, dxcallsign: str) -> None:
         """
-        Funktion for controlling pings
+        Function for controlling pings
         Args:
-          mycallsign:bytes:
-          dxcallsign:bytes:
+          mycallsign
+          dxcallsign
 
         """
         # check if specific callsign is set with different SSID than the Modem is initialized
@@ -40,14 +40,15 @@ class PING:
 
         self.dxcallsign = dxcallsign
         self.dxcallsign_crc = helpers.get_crc_24(self.dxcallsign)
-        self.send_data_to_socket_queue(
-            freedata="modem-message",
-            ping="transmitting",
-            dxcallsign=str(dxcallsign, "UTF-8"),
-        )
+        self.event_queue.put({
+            'freedata': "modem-message",
+            'ping': "transmitting",
+            'dxcallsign': str(dxcallsign, "UTF-8"),
+        })
+
         self.log.info(
             "[Modem] PING REQ ["
-            + mycallsign
+            + str(mycallsign, "UTF-8")
             + "] >>> ["
             + str(dxcallsign, "UTF-8")
             + "]"

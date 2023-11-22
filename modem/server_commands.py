@@ -5,28 +5,23 @@ import threading
 from random import randrange
 log = structlog.get_logger("COMMANDS")
 
-def cqcqcq(data):
+def cqcqcq():
     try:
         DATA_QUEUE_TRANSMIT.put(["CQ"])
         return
     except Exception as err:
-        log.warning("[CMD] error while transmiting CQ", e=err, command=data)
+        log.warning("[CMD] error while transmiting CQ", e=err)
 
-def ping_ping(data):
+def ping_ping(dxcall):
     try:
-        dxcallsign = data["dxcall"]
-        if not str(dxcallsign).strip():
-            return
-        DATA_QUEUE_TRANSMIT.put(["PING", None, dxcallsign])
+        DATA_QUEUE_TRANSMIT.put(["PING", None, dxcall])
         
     except Exception as err:
         log.warning(
-            "[CMD] PING command execution error", e=err, command=data
+            "[CMD] PING command execution error", e=err
         )
 
-def beacon(data, interval=300):
-    beacon_state = data['enabled'] in [True]
-    
+def beacon(beacon_state, interval=300):
     log.info(
         "[CMD] Changing beacon state", state=beacon_state
     )
@@ -41,18 +36,12 @@ def modem_send_test_frame():
     )
     DATA_QUEUE_TRANSMIT.put(["SEND_TEST_FRAME"])
     
-def modem_arq_send_raw(data):
+def modem_arq_send_raw(mycallsign, dxcallsign, payload, arq_uuid = "no-uuid"):
 
     # wait some random time
     threading.Event().wait(randrange(5, 25, 5) / 10.0)
 
-    base64data = data["data"]
-
-    # check if transmission uuid provided else set no-uuid
-    try:
-        arq_uuid = data["uuid"]
-    except Exception:
-        arq_uuid = "no-uuid"
+    base64data = payload
 
     if len(base64data) % 4:
         raise TypeError
@@ -60,36 +49,26 @@ def modem_arq_send_raw(data):
     binarydata = base64.b64decode(base64data)
 
     DATA_QUEUE_TRANSMIT.put(
-        ["ARQ_RAW", binarydata, arq_uuid, data["mycallsign"], data["dxcallsign"]]
+        ["ARQ_RAW", binarydata, arq_uuid, mycallsign, dxcallsign]
     )
 
 
-def modem_fec_transmit(data):
+def modem_fec_transmit(mode, wakeup, base64data, mycallsign = None):
     log.info(
         "[CMD] Send fec frame"
     )
-    mode = data["mode"]
-    wakeup = data["wakeup"]
-    base64data = data["payload"]
     if len(base64data) % 4:
         raise TypeError
     payload = base64.b64decode(base64data)
 
-    try:
-        mycallsign = data["mycallsign"]
-    except:
-        mycallsign = None
-
     DATA_QUEUE_TRANSMIT.put(["FEC", mode, wakeup, payload, mycallsign])
 
-def modem_fec_is_writing(data):
+def modem_fec_is_writing(mycallsign):
     try:
-        mycallsign = data["mycallsign"]
         DATA_QUEUE_TRANSMIT.put(["FEC_IS_WRITING", mycallsign])
     except Exception as err:
         log.warning(
             "[SCK] Send fec frame command execution error",
             e=err,
-            command=data,
         )
 

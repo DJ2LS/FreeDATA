@@ -165,9 +165,10 @@ class DATA:
                 self.arq.arq_session_handler(data[1], data[2])
 
             elif data[0] == "PING":
-                # [1] mycallsign
+                # [1] mycallsign // this is being injected as None
                 # [2] dxcallsign
-                self.ping.transmit_ping(data[1], data[2])
+                mycallsign = f"{self.config['STATION']['mycall']}-{self.config['STATION']['myssid']}"
+                self.ping.transmit_ping(mycallsign, data[2])
 
             elif data[0] == "BEACON":
                 # [1] INTERVAL int
