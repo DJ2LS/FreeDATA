@@ -228,14 +228,10 @@ class MeshRouter():
                         #print(len(_))
                         frame_list.append(mesh_broadcast_frame_header + _)
 
-                    self.states.set("is_transmitting", True)
                     c2_mode = FREEDV_MODE.datac4.value
                     self.log.info("[MESH] broadcasting routing table", frame_list=frame_list, frames=len(split_result))
                     modem.MODEM_TRANSMIT_QUEUE.put([c2_mode, 1, 0, frame_list])
 
-                    # Wait while transmitting
-                    while self.states.is_transmitting:
-                        threading.Event().wait(0.01)
                 except Exception as e:
                     self.log.warning("[MESH] broadcasting routing table", e=e)
 
@@ -548,14 +544,7 @@ class MeshRouter():
         self.log.debug("[Modem] enqueue_frame_for_tx", c2_mode=FREEDV_MODE(c2_mode).name, data=frame_to_tx,
                        type=frame_type)
 
-        # Set the TRANSMITTING flag before adding an object to the transmit queue
-        # TODO This is not that nice, we could improve this somehow
-        self.states.set("is_transmitting", True)
         modem.MODEM_TRANSMIT_QUEUE.put([c2_mode, copies, repeat_delay, frame_to_tx])
-
-        # Wait while transmitting
-        while self.states.is_transmitting:
-            threading.Event().wait(0.01)
 
 
     def transmit_mesh_signalling_ping(self, destination, origin):

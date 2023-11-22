@@ -1,5 +1,6 @@
 import time
 import ujson as json
+import threading
 class StateManager:
     def __init__(self, statequeue):
 
@@ -19,7 +20,11 @@ class StateManager:
         self.is_beacon_running = False
         self.is_arq_state = False
         self.is_arq_session = False
-        self.is_transmitting = False
+
+        # If true, any wait() call is blocking
+        self.transmitting_event = threading.Event()
+        self.setTransmitting(False)
+        
         self.audio_dbfs = 0
         self.dxcallsign: bytes = b"ZZ9YY-0"
         self.dxgrid: bytes = b"------"
@@ -52,7 +57,6 @@ class StateManager:
 
     def sendStateUpdate (self):
         self.statequeue.put(self.newstate)
-            
 
     def set(self, key, value):
         setattr(self, key, value)
@@ -63,7 +67,6 @@ class StateManager:
             self.newstate = new_state
             self.sendStateUpdate()
             
-
     def getAsJSON(self, isChangedState):
         msgtype = "state-change"
         if (not isChangedState):
@@ -78,3 +81,17 @@ class StateManager:
             "radio_status": self.radio_status,
             "radio_frequency": self.radio_frequency,
         })
+    
+    # .wait() blocks until the event is set
+    def isTransmitting(self):
+        return not self.transmitting_event.is_set()
+    
+    # .wait() blocks until the event is set
+    def setTransmitting(self, transmitting: bool):
+        if transmitting:
+            self.transmitting_event.clear()
+        else:
+            self.transmitting_event.set()
+
+    def waitForTransmission(self):
+        self.transmitting_event.wait()

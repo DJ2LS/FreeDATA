@@ -102,7 +102,7 @@ class BROADCAST:
 
         # send burst only if channel not busy - but without waiting
         # otherwise burst will be dropped
-        if not self.states.channel_busy and not self.states.is_transmitting:
+        if not self.states.channel_busy and not self.states.isTransmitting():
             self.enqueue_frame_for_tx(
                 frame_to_tx=[fec_frame], c2_mode=codec2.FREEDV_MODE["sig0"].value
             )
@@ -415,5 +415,5 @@ class BROADCAST:
         MODEM_TRANSMIT_QUEUE.put([c2_mode, copies, repeat_delay, frame_to_tx])
 
         # Wait while transmitting
-        while self.states.is_transmitting:
-            threading.Event().wait(0.01)
+        # I don't think this is necessary
+        self.states.waitForTransmission()

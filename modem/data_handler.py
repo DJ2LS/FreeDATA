@@ -293,9 +293,3 @@ class DATA:
                 frame=bytes_out[:-2].hex(),
                 frame_type=FR_TYPE(int.from_bytes(bytes_out[:1], byteorder="big")).name,
             )
-
-
-
-
-
-

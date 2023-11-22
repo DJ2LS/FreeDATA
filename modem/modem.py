@@ -84,8 +84,8 @@ class RF:
         self.rigctld_ip = config['RIGCTLD']['ip']
         self.rigctld_port = config['RIGCTLD']['port']
 
+        self.states.setTransmitting(False)
 
-        self.states.set("is_transmitting", False)
         self.ptt_state = False
         self.radio_alc = 0.0
 
@@ -469,7 +469,9 @@ class RF:
         else:
             return False
 
-        self.states.set("is_transmitting", True)
+        # Wait for some other thread that might be transmitting
+        self.states.waitForTransmission()
+        self.states.setTransmitting(True)
         # if we're transmitting FreeDATA signals, reset channel busy state
         self.states.set("channel_busy", False)
 
@@ -628,7 +630,7 @@ class RF:
         self.mod_out_locked = True
 
         self.modem_transmit_queue.task_done()
-        self.states.set("is_transmitting", False)
+        self.states.setTransmitting(False)
 
         end_of_transmission = time.time()
         transmission_time = end_of_transmission - start_of_transmission
@@ -664,7 +666,8 @@ class RF:
                                alc_level=str(self.radio_alc))
 
     def transmit_morse(self, repeats, repeat_delay, frames):
-        self.states.set("is_transmitting", True)
+        self.states.waitForTransmission()
+        self.states.setTransmitting(True)
         # if we're transmitting FreeDATA signals, reset channel busy state
         self.states.set("channel_busy", False)
         self.log.debug(
@@ -711,8 +714,7 @@ class RF:
         self.mod_out_locked = True
 
         self.modem_transmit_queue.task_done()
-        self.states.set("is_transmitting", False)
-        threading.Event().set()
+        self.states.setTransmitting(False)
 
         end_of_transmission = time.time()
         transmission_time = end_of_transmission - start_of_transmission
@@ -1300,7 +1302,7 @@ class RF:
                 threading.Event().wait(0.1)
                 self.states.set("radio_bandwidth", self.radio.get_bandwidth())
                 threading.Event().wait(0.1)
-                if self.states.is_transmitting:
+                if self.states.isTransmitting():
                     self.radio_alc = self.radio.get_alc()
                     threading.Event().wait(0.1)
                 self.states.set("radio_rf_power", self.radio.get_level())
@@ -1341,7 +1343,7 @@ class RF:
             # Therefore we are setting it to 100 so it will be highlighted
             # Have to do this when we are not transmitting so our
             # own sending data will not affect this too much
-            if not self.states.is_transmitting:
+            if not self.states.isTransmitting():
                 dfft[dfft > avg + 15] = 100
 
                 # Calculate audio dbfs
@@ -1401,7 +1403,7 @@ class RF:
                 # Check for signals higher than average by checking for "100"
                 # If we have a signal, increment our channel_busy delay counter
                 # so we have a smoother state toggle
-                if np.sum(slotdfft[slotdfft > avg + 15]) >= 200 and not self.states.is_transmitting:
+                if np.sum(slotdfft[slotdfft > avg + 15]) >= 200 and not self.states.isTransmitting():
                     addDelay=True
                     self.states.channel_busy_slot[slot] = True
                 else:

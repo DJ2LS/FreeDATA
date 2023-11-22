@@ -573,7 +573,7 @@ class ARQ:
                             self.speed_level] * frames_left) + self.duration_sig0_frame + self.channel_busy_timeout + 1
         timeout_percent = 100 - (time_left / waiting_time * 100)
         # timeout_percent = 0
-        if timeout_percent >= 75 and not self.states.is_codec2_traffic and not self.states.is_transmitting:
+        if timeout_percent >= 75 and not self.states.is_codec2_traffic and not self.states.isTransmitting():
             override = True
         else:
             override = False
@@ -585,7 +585,7 @@ class ARQ:
         # better wait some more time because data might be important for us
         # reason for this situation can be delays on IRS and ISS, maybe because both had a busy channel condition.
         # Nevertheless, we need to keep timeouts short for efficiency
-        if timeout <= time.time() or modem_error_state and not self.states.is_codec2_traffic and not self.states.is_transmitting or override:
+        if timeout <= time.time() or modem_error_state and not self.states.is_codec2_traffic and not self.states.isTransmitting() or override:
             self.log.warning(
                 "[Modem] Burst decoding error or timeout",
                 attempt=self.n_retries_per_burst,
