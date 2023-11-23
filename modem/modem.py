@@ -75,7 +75,8 @@ class RF:
         self.tx_audio_level = config['AUDIO']['tx_audio_level']
         self.enable_audio_auto_tune = config['AUDIO']['enable_auto_tune']
         self.enable_fsk = config['MODEM']['enable_fsk']
-        self.enable_fft = config['MODEM']['enable_fft']
+        #Dynamically enable FFT when a client connects to FFT web socket
+        self.enable_fft = False
         self.tx_delay = config['MODEM']['tx_delay']
         self.tuning_range_fmin = config['MODEM']['tuning_range_fmin']
         self.tuning_range_fmax = config['MODEM']['tuning_range_fmax']
@@ -300,8 +301,10 @@ class RF:
             x = self.audio_received_queue.get()
             x = np.frombuffer(x, dtype=np.int16)
             # x = self.resampler.resample48_to_8(x)
-            if self.enable_fft:
-                self.calculate_fft(x)
+            
+            #FFT should always be enabled as busy detection is done here
+            #if self.enable_fft:
+            self.calculate_fft(x)
 
             length_x = len(x)
             for data_buffer, receive in [
@@ -416,8 +419,8 @@ class RF:
 
             if not self.modoutqueue or self.mod_out_locked:
                 data_out48k = np.zeros(frames, dtype=np.int16)
-                if self.enable_fft:
-                    self.calculate_fft(x)
+                #if self.enable_fft:
+                self.calculate_fft(x)
             else:
                 # TODO Moved to this place for testing
                 # Maybe we can avoid moments of silence before transmitting
@@ -425,8 +428,8 @@ class RF:
                 self.event_manager.send_ptt_change(True)
 
                 data_out48k = self.modoutqueue.popleft()
-                if self.enable_fft:
-                    self.calculate_fft(data_out48k)
+                #if self.enable_fft:
+                self.calculate_fft(data_out48k)
         except Exception as e:
             self.log.warning(f"[MDM] audio callback not ready yet: {e}")
 
@@ -1422,11 +1425,11 @@ class RF:
                 if self.channel_busy_delay == 0:
                     self.states.set("channel_busy", False)
 
-            # erase queue if greater than 10
-            if self.fft_queue.qsize() >= 10:
-                self.fft_queue = queue.Queue()
-
-            self.fft_queue.put(dfftlist[:315]) # 315 --> bandwidth 3200
+            if (self.enable_fft):
+                # erase queue if greater than 10
+                if self.fft_queue.qsize() >= 10:
+                    self.fft_queue = queue.Queue()
+                self.fft_queue.put(dfftlist[:315]) # 315 --> bandwidth 3200
         except Exception as err:
             self.log.error(f"[MDM] calculate_fft: Exception: {err}")
             self.log.debug("[MDM] Setting fft=0")
@@ -1464,6 +1467,8 @@ class RF:
         codec2.api.freedv_set_sync(self.dat0_datac4_freedv, 0)
         codec2.api.freedv_set_sync(self.fsk_ldpc_freedv_0, 0)
 
+    def set_FFT_stream(self, enable: bool):
+        self.enable_fft = enable
 
 def open_codec2_instance(mode: int) -> ctypes.c_void_p:
     """

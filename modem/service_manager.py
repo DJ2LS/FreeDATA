@@ -17,6 +17,7 @@ class SM:
         self.config = self.app.config_manager.read()
         self.modem_events = app.modem_events
         self.modem_fft = app.modem_fft
+        self.enable_fft = False
         self.modem_service = app.modem_service
         self.states = app.state_manager
 
@@ -36,6 +37,7 @@ class SM:
                 self.log.info("------------------ FreeDATA ------------------")
                 self.log.info("------------------  MODEM   ------------------")
                 self.start_modem()
+
             elif cmd in ['stop'] and self.modem:
                 self.stop_modem()
                 # we need to wait a bit for avoiding a portaudio crash
@@ -47,7 +49,12 @@ class SM:
                 threading.Event().wait(0.5)
                 if self.start_modem():
                     self.modem_events.put(json.dumps({"freedata": "modem-event", "event": "restart"}))
-
+            elif cmd in ['fft:true']:
+                self.modem.set_FFT_stream(True)
+                self.enable_fft=True
+            elif cmd in ['fft:false']:
+                self.modem.set_FFT_stream(False)
+                self.enable_fft=False
             else:
                 self.log.warning("[SVC] modem command processing failed", cmd=cmd, state=self.states.is_modem_running)
 
@@ -64,11 +71,12 @@ class SM:
             self.modem = modem.RF(self.config, self.modem_events, self.modem_fft, self.modem_service, self.states)
             self.data_handler = data_handler.DATA(self.config, self.modem_events, self.states)
             self.states.set("is_modem_running", True)
+            self.modem.set_FFT_stream(self.enable_fft)
             return True
         elif self.states.is_modem_running:
             self.log.warning("modem already running")
             return False
-
+        
         else:
             self.log.warning("starting modem failed", input_test=audio_test[0], output_test=audio_test[1])
             self.states.set("is_modem_running", False)
