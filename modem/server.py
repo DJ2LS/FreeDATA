@@ -184,7 +184,7 @@ def post_modem_stop():
 
 @app.route('/version', methods=['GET'])
 def get_modem_version():
-    return api_response({"version": 0})
+    return api_response({"version": app.MODEM_VERSION})
 
 @app.route('/modem/send_arq_raw', methods=['POST'])
 def post_modem_send_raw():
@@ -218,8 +218,13 @@ def sock_events(sock):
 
 @sock.route('/fft')
 def sock_fft(sock):
+    if len(wsm.fft_client_list) == 0:
+        app.modem_service.put("fft:true")
+        print("Streaming data to FFT socket since a client is connected")
     wsm.handle_connection(sock, wsm.fft_client_list, app.modem_fft)
 
 @sock.route('/states')
 def sock_states(sock):
     wsm.handle_connection(sock, wsm.states_client_list, app.state_queue)
+
+wsm.startThreads(app)

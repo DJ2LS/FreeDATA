@@ -41,7 +41,7 @@ def transmit_sock_data_worker(client_list, event_queue):
                 client_list.remove(client)
 
 # start a worker thread for every socket endpoint
-def startThreads(events_worker, d):
+def startThreads(app):
     events_thread = threading.Thread(target=transmit_sock_data_worker, daemon=True, args=(events_client_list, app.modem_events))
     events_thread.start()
 
