@@ -1,5 +1,6 @@
 import threading
 import data_handler
+import frame_dispatcher
 import modem
 import structlog
 import audio
@@ -50,10 +51,10 @@ class SM:
                 if self.start_modem():
                     self.modem_events.put(json.dumps({"freedata": "modem-event", "event": "restart"}))
             elif cmd in ['fft:true']:
-                self.modem.set_FFT_stream(True)
+                #self.modem.set_FFT_stream(True)
                 self.enable_fft=True
             elif cmd in ['fft:false']:
-                self.modem.set_FFT_stream(False)
+                #self.modem.set_FFT_stream(False)
                 self.enable_fft=False
             else:
                 self.log.warning("[SVC] modem command processing failed", cmd=cmd, state=self.states.is_modem_running)
@@ -69,7 +70,8 @@ class SM:
         if False not in audio_test and None not in audio_test and not self.states.is_modem_running:
             self.log.info("starting modem....")
             self.modem = modem.RF(self.config, self.modem_events, self.modem_fft, self.modem_service, self.states)
-            self.data_handler = data_handler.DATA(self.config, self.modem_events, self.states)
+            #self.data_handler = data_handler.DATA(self.config, self.modem_events, self.states)
+            self.frame_dispatcher = frame_dispatcher.DISPATCHER(self.config, self.modem_events, self.states)
             self.states.set("is_modem_running", True)
             self.modem.set_FFT_stream(self.enable_fft)
             return True
@@ -86,9 +88,9 @@ class SM:
     def stop_modem(self):
         self.log.info("stopping modem....")
         del self.modem
-        del self.data_handler
+        #del self.data_handler
         self.modem = False
-        self.data_handler = False
+        #self.data_handler = False
         self.states.set("is_modem_running", False)
 
     def test_audio(self):

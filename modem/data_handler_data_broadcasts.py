@@ -5,13 +5,15 @@ import time
 import modem
 import base64
 import ujson as json
-
-class DATABROADCAST:
+from data_handler import DATA
+class DATABROADCAST(DATA):
     """Terminal Node Controller for FreeDATA"""
 
     log = structlog.get_logger("BROADCAST")
 
     def __init__(self, config, event_queue, states) -> None:
+        super().__init__(config, event_queue, states)
+
         self.log = structlog.get_logger("DHDBC")
         self.states = states
         self.event_queue = event_queue

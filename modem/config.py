@@ -101,6 +101,7 @@ class CONFIG:
     # Validates config data
     def validate(self, data):
         for section in data:
+            print(section)
             for setting in data[section]:
                 if not isinstance(data[section][setting], self.config_types[section][setting]):
                     message = (f"{section}.{setting} must be {self.config_types[section][setting]}."

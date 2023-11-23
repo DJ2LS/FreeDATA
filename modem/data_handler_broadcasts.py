@@ -11,11 +11,15 @@ import uuid
 import structlog
 import event_manager
 
+from data_handler import DATA
+
 TESTMODE = False
 
-class BROADCAST:
+class BROADCAST(DATA):
 
     def __init__(self, config, event_queue, states):
+        super().__init__(config, event_queue, states)
+
         self.log = structlog.get_logger("DHBC")
         self.states = states
         self.event_queue = event_queue
@@ -23,7 +27,6 @@ class BROADCAST:
         
         self.event_manager = event_manager.EventManager([event_queue])
 
-        
 
         self.beacon_interval = 0
         self.beacon_interval_timer = 0

@@ -10,11 +10,14 @@ from codec2 import FREEDV_MODE, FREEDV_MODE_USED_SLOTS
 from modem_frametypes import FRAME_TYPE as FR_TYPE
 import event_manager
 
+from data_handler import DATA
 TESTMODE = False
-class ARQ:
+class ARQ(DATA):
     def __init__(self, config, event_queue, states):
-        self.log = structlog.get_logger("DHARQ")
+        super().__init__(config, event_queue, states)
 
+        self.log = structlog.get_logger("DHARQ")
+        print(self.test_variable)
         self.event_queue = event_queue
         self.states = states
         self.event_manager = event_manager.EventManager([event_queue])

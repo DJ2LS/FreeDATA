@@ -4,9 +4,11 @@ from codec2 import FREEDV_MODE
 import helpers
 import uuid
 import structlog
-
-class PING:
+from data_handler import DATA
+class PING(DATA):
     def __init__(self, config, event_queue, states):
+        super().__init__(config, event_queue, states)
+
         self.log = structlog.get_logger("DHPING")
         self.states = states
         self.event_queue = event_queue
