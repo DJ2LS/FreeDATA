@@ -35,11 +35,13 @@ export async function apiPost(endpoint, payload = {}) {
   }
 }
 
-export function getVersion() {
-  return apiGet("/version");
+export async function getVersion() {
+  let data = await apiGet("/version").then(res => {return res});
+  return data.version;
+  //return data["version"];
 }
 
-export function getConfig() {
+export async function getConfig() {
   return apiGet("/config");
 }
 

@@ -28,10 +28,14 @@ var updateAvailable = process.env.FDUpdateAvail;
 
 // start modemCheck modal once on startup
 onMounted(() => {
-  getModemState();
-  getVersion();
+  getModemState().then();
+  getVersion().then(res => {state.modem_version=res});
   new Modal("#modemCheck", {}).show();
 });
+
+function refreshModem() {
+  getModemState();
+}
 
 function getModemStateLocal() {
   // Returns active/inactive if modem is running for modem status label
@@ -195,6 +199,20 @@ function testHamlib() {
                         }"
                       >
                         <i class="bi bi-stop-fill"></i>
+                      </button>
+                    </label>
+                    <label class="input-group-text">
+                      <button
+                        type="button"
+                        id="refreshModem"
+                        class="btn btn-sm btn-outline-secondary"
+                        data-bs-toggle="tooltip"
+                        data-bs-trigger="hover"
+                        data-bs-html="false"
+                        title="Refresh modem status."
+                        @click="refreshModem"
+                      >
+                        <i class="bi bi-bullseye"></i>
                       </button>
                     </label>
                   </div>
