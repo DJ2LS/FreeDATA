@@ -27,7 +27,6 @@ class DISPATCHER():
         self._initialize_handlers(config, event_queue, states)
         self._initialize_dispatchers()
         self._initialize_queues()
-        self._start_worker_threads()
 
     def _initialize_handlers(self, config, event_queue, states):
         """Initializes various data handlers."""
@@ -109,34 +108,19 @@ class DISPATCHER():
         threading.Thread(target=self.worker_transmit, name="Transmit Worker", daemon=True).start()
         threading.Thread(target=self.worker_receive, name="Receive Worker", daemon=True).start()
 
+    def start(self):
+        self._start_worker_threads()
+
     def worker_transmit(self) -> None:
         """Dispatch incoming UI instructions for transmitting operations"""
         while True:
             data = self.data_queue_transmit.get()
-            # if we are already in ARQ_STATE, or we're receiving codec2 traffic
-            # let's wait with processing data
-            # this should avoid weird toggle states where both stations
-            # stuck in IRS
-            #
-            # send transmission queued information once
-            if self.states.is_arq_state or self.states.is_codec2_traffic:
-                self.log.debug(
-                    "[Modem] TX DISPATCHER - waiting with processing command ",
-                    is_arq_state=self.states.is_arq_state,
+            self.log.debug(
+                    "[Modem] TX DISPATCHER - got a transmit command",
+                    command=data,
                 )
 
-                self.send_data_to_socket_queue(
-                    freedata="modem-message",
-                    command=data[0],
-                    status="queued",
-                )
-
-                # now stay in while loop until state released
-                while self.states.is_arq_state or self.states.is_codec2_traffic:
-                    threading.Event().wait(0.01)
-
-                # and finally sleep some time
-                threading.Event().wait(1.0)
+            
 
             # Dispatch commands known to command_dispatcher
             if data[0] in self.command_dispatcher:

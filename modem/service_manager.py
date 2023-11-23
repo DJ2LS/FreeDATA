@@ -72,6 +72,7 @@ class SM:
             self.modem = modem.RF(self.config, self.modem_events, self.modem_fft, self.modem_service, self.states)
             #self.data_handler = data_handler.DATA(self.config, self.modem_events, self.states)
             self.frame_dispatcher = frame_dispatcher.DISPATCHER(self.config, self.modem_events, self.states)
+            self.frame_dispatcher.start()
             self.states.set("is_modem_running", True)
             self.modem.set_FFT_stream(self.enable_fft)
             return True

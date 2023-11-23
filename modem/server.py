@@ -12,6 +12,9 @@ import state_manager
 import ujson as json
 import websocket_manager as wsm
 import api_validations as validations
+from tx_command.tx_command import TxCommand
+from tx_command.ping_command import PingCommand
+from queues import DATA_QUEUE_TRANSMIT as tx_cmd_queue
 
 app = Flask(__name__)
 CORS(app)
@@ -71,6 +74,12 @@ def validate(req, param, validator, isRequired = True):
             return True
     if not validator(req[param]):
         api_abort(f"Value of '{param}' is invalid.", 400)
+
+# Takes a transmit command and puts it in the transmit command queue
+def enqueue_tx_command(cmd_class, params = {}):
+    command = cmd_class(modem, params)
+    tx_cmd_queue.put(command)
+    app.logger.info(f"Command {type(command).__name__} enqueued.")
 
 ## REST API
 @app.route('/', methods=['GET'])
@@ -138,8 +147,8 @@ def post_ping():
     if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
     validate(request.json, 'dxcall', validations.validate_freedata_callsign)
-    server_commands.ping_ping(request.json['dxcall'])
-    return api_response(request.json)
+    enqueue_tx_command(PingCommand, request.json)
+    return 'ok'
 
 @app.route('/modem/send_test_frame', methods=['POST'])
 def post_send_test_frame():
