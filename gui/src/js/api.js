@@ -36,7 +36,9 @@ export async function apiPost(endpoint, payload = {}) {
 }
 
 export async function getVersion() {
-  let data = await apiGet("/version").then(res => {return res});
+  let data = await apiGet("/version").then((res) => {
+    return res;
+  });
   return data.version;
   //return data["version"];
 }
