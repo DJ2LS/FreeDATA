@@ -30,6 +30,7 @@ class StateManager:
         self.dxgrid: bytes = b"------"
         self.heard_stations = []
 
+        self.arq_instance_table = {}
         self.arq_session_state = 'disconnected'
         self.arq_speed_level = 0
         self.arq_total_bytes = 0
@@ -49,6 +50,9 @@ class StateManager:
         self.radio_strength = 0
         # Set rig control status regardless or rig control method
         self.radio_status = False
+
+
+
 
     def sendState (self):
         currentState = self.getAsJSON(False)
@@ -95,3 +99,20 @@ class StateManager:
 
     def waitForTransmission(self):
         self.transmitting_event.wait()
+
+
+
+    def register_arq_instance_by_id(self, id, instance):
+        self.arq_instance_table[id] = instance
+
+    def get_arq_instance_by_id(self, id):
+        return self.arq_instance_table.get(id)
+
+    def delete_arq_instance_by_id(self, id):
+        instances = self.arq_instance_table.pop(id, None)
+        if None not in instances:
+            for key in instances:
+                del instances[key]
+            return True
+        return False
+

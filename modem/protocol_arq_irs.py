@@ -9,7 +9,7 @@ from codec2 import FREEDV_MODE
 from queues import RX_BUFFER
 from modem_frametypes import FRAME_TYPE as FR_TYPE
 
-from data_handler_arq import ARQ
+from protocol_arq import ARQ
 
 
 class IRS(ARQ):
@@ -176,7 +176,6 @@ class IRS(ARQ):
             + "]",
             snr=snr,
         )
-
 
 
     def arq_received_data_channel_opener(self, data_in: bytes, snr):

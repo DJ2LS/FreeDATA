@@ -1,4 +1,8 @@
+"""
+FRAME DISPATCHER - We are dispatching the received frames to the needed functions
 
+
+"""
 import threading
 import helpers
 import structlog
@@ -10,10 +14,10 @@ from data_handler_broadcasts import BROADCAST
 from data_handler_data_broadcasts import DATABROADCAST
 from data_handler_ping import PING
 
-from data_handler_arq_iss import ISS
-from data_handler_arq_irs import IRS
-from data_handler_arq import ARQ
-from data_handler_arq_session import SESSION
+from protocol_arq_iss import ISS
+from protocol_arq_irs import IRS
+from protocol_arq import ARQ
+from protocol_arq_session import SESSION
 
 
 class DISPATCHER():
@@ -39,6 +43,7 @@ class DISPATCHER():
         self.arq_iss = ISS(config, event_queue, states)
         self.arq_session = SESSION(config, event_queue, states)
 
+
         self.event_manager = event_manager.EventManager([event_queue])
 
     def _initialize_dispatchers(self):
@@ -55,11 +60,11 @@ class DISPATCHER():
                 "ARQ OPEN ACK (Wide)",
             ),
             FR_TYPE.ARQ_DC_OPEN_N.value: (
-                self.arq_irs.arq_received_data_channel_opener,
+                self.initialize_arq_transmission_irs,
                 "ARQ Data Channel Open (Narrow)",
             ),
             FR_TYPE.ARQ_DC_OPEN_W.value: (
-                self.arq_irs.arq_received_data_channel_opener,
+                self.initialize_arq_transmission_irs,
                 "ARQ Data Channel Open (Wide)",
             ),
             FR_TYPE.ARQ_SESSION_CLOSE.value: (
@@ -145,7 +150,6 @@ class DISPATCHER():
                 # [3] mycallsign with ssid str
                 # [4] dxcallsign with ssid str
                 self.arq_iss.open_dc_and_transmit(data[1], data[2], data[3], data[4])
-
 
             elif data[0] == "FEC_IS_WRITING":
                 # [1] DATA_OUT bytes
@@ -262,3 +266,28 @@ class DISPATCHER():
         ):
             return True
         return False
+
+    def get_id_from_frame(self, data):
+        if data[:1] in [FR_TYPE.ARQ_DC_OPEN_N, FR_TYPE.ARQ_DC_OPEN_W]:
+            session_id = data[13:14]
+            return session_id
+        return None
+
+    def initialize_arq_instance(self):
+        self.arq = ARQ(self.config, self.event_queue, self.states)
+        self.arq_irs = IRS(self.config, self.event_queue, self.states)
+        self.arq_iss = ISS(self.config, self.event_queue, self.states)
+        self.arq_session = SESSION(self.config, self.event_queue, self.states)
+
+        return {
+            'arq': self.arq,
+            'arq_irs': self.arq_irs,
+            'arq_iss': self.arq_iss,
+            'arq_session': self.arq_session
+        }
+
+    def initialize_arq_transmission_irs(self, data):
+        if id := self.get_id_from_frame(data):
+            instance = self.initialize_arq_instance()
+            self.states.register_arq_instance_by_id(id, instance)
+            instance['arq_irs'].arq_received_data_channel_opener

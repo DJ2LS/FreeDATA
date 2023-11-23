@@ -12,12 +12,11 @@ import event_manager
 
 from data_handler import DATA
 TESTMODE = False
-class ARQ(DATA):
+class ARQ:
     def __init__(self, config, event_queue, states):
         super().__init__(config, event_queue, states)
 
         self.log = structlog.get_logger("DHARQ")
-        print(self.test_variable)
         self.event_queue = event_queue
         self.states = states
         self.event_manager = event_manager.EventManager([event_queue])
@@ -224,7 +223,6 @@ class ARQ(DATA):
         self.enqueue_frame_for_tx([disconnection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=3, repeat_delay=0)
 
 
-
     def check_if_mode_fits_to_busy_slot(self):
         """
         Check if actual mode is fitting into given busy state
@@ -385,6 +383,13 @@ class ARQ(DATA):
         """
         Cleanup function which clears all ARQ states
         """
+
+        # TODO
+        # We need to check if we are in a ARQ session
+        # Then we cant delete the session_id for now
+        self.states.delete_arq_instance_by_id(self.session_id)
+
+
         if TESTMODE:
             self.log.debug("[Modem] TESTMODE: arq_cleanup: Not performing cleanup.")
             return
@@ -432,13 +437,6 @@ class ARQ(DATA):
         # reset max retries possibly overriden by api
         self.session_connect_max_retries = 10
         self.data_channel_max_retries = 10
-
-        # we need to keep these values if in ARQ_SESSION
-        if not self.states.is_arq_session:
-            self.states.set("is_modem_busy", False)
-            self.dxcallsign = b"AA0AA-0"
-            self.mycallsign = self.mycallsign
-            self.session_id = bytes(1)
 
         self.states.set("arq_session_state", "disconnected")
         self.states.arq_speed_list = []

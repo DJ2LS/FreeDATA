@@ -5,7 +5,7 @@ from codec2 import FREEDV_MODE
 from queues import MODEM_TRANSMIT_QUEUE
 from modem_frametypes import FRAME_TYPE as FR_TYPE
 
-from data_handler_arq import ARQ
+from protocol_arq import ARQ
 
 
 class SESSION(ARQ):
