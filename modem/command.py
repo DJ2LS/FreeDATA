@@ -3,18 +3,20 @@ from modem.modem import RF
 
 class TxCommand():
 
-    def __init__(self, modem: RF, apiParams):
+    def __init__(self, apiParams):
         self.setParamsFromApi(apiParams)
-        self.modem = modem
         self.frame_factory = DataFrameFactory(modem)
 
     def setParamsFromApi(self, apiParams):
         pass
 
+    def getName(self):
+        return type(self).__name__
+
     def getPayload(self):
         pass
     
-    def execute(self, modem):
+    def execute(self, modem_state, tx_frame_queue):
         pass
 
     def transmit(self, frame):

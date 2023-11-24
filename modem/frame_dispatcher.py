@@ -119,13 +119,13 @@ class DISPATCHER():
     def worker_transmit(self) -> None:
         """Dispatch incoming UI instructions for transmitting operations"""
         while True:
-            data = self.data_queue_transmit.get()
+            command = self.data_queue_transmit.get()
             self.log.debug(
                     "[Modem] TX DISPATCHER - got a transmit command",
-                    command=data,
+                    command=command.getName(),
                 )
+            command.execute()
 
-            
 
             # Dispatch commands known to command_dispatcher
             if data[0] in self.command_dispatcher:

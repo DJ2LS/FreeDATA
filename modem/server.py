@@ -77,7 +77,7 @@ def validate(req, param, validator, isRequired = True):
 
 # Takes a transmit command and puts it in the transmit command queue
 def enqueue_tx_command(cmd_class, params = {}):
-    command = cmd_class(modem, params)
+    command = cmd_class(service_manager.modem, params)
     tx_cmd_queue.put(command)
     app.logger.info(f"Command {type(command).__name__} enqueued.")
 

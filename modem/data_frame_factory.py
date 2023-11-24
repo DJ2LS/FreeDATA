@@ -35,7 +35,7 @@ class DataFrameFactory:
         fec_frame[1:7] = helpers.callsign_to_bytes(self.myfullcall)
         return fec_frame
 
-    def build_qrv(self):
+    def build_qrv(self, snr):
         qrv_frame = bytearray(self.length_sig0_frame)
         qrv_frame[:1] = bytes([FR_TYPE.QRV.value])
         qrv_frame[1:7] = helpers.callsign_to_bytes(self.myfullcall)

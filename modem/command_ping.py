@@ -6,6 +6,10 @@ class PingCommand(TxCommand):
         self.dxcall = apiParams['dxcall']
         return super().setParamsFromApi()
 
-    def execute(self):
-        self.frame_factory.build_ping(self.dxcall)
+    def execute(self, modem_state, tx_frame_queue):
+        frame = self.frame_factory.build_ping(self.dxcall)
         
+
+        return super().execute(modem_state, tx_frame_queue)
+
+
