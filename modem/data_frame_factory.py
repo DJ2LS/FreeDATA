@@ -58,8 +58,9 @@ class DataFrameFactory:
         return beacon_frame
     
     def build_fec_wakeup(self, mode):
+        mode_int = codec2.freedv_get_mode_value_by_name(mode)
         mode_int_wakeup = codec2.freedv_get_mode_value_by_name("sig0")
-        payload_per_wakeup_frame = self.modem.get_bytes_per_frame(mode_int_wakeup) - 2
+        payload_per_wakeup_frame = codec2.get_bytes_per_frame(mode_int_wakeup) - 2
         fec_wakeup_frame = bytearray(payload_per_wakeup_frame)
         fec_wakeup_frame[:1] = bytes([FR_TYPE.FEC_WAKEUP.value])
         fec_wakeup_frame[1:7] = helpers.callsign_to_bytes(self.myfullcall)
@@ -67,7 +68,10 @@ class DataFrameFactory:
         fec_wakeup_frame[8:9] = bytes([1]) # n payload bursts
         return fec_wakeup_frame
 
-    def build_fec(self, payload):
+    def build_fec(self, mode, payload):
+        mode_int = codec2.freedv_get_mode_value_by_name(mode)
+        payload_per_frame = codec2.get_bytes_per_frame(mode_int) - 2
+        fec_payload_length = payload_per_frame - 1
         fec_frame = bytearray(payload_per_frame)
         fec_frame[:1] = bytes([FR_TYPE.FEC.value])
         fec_frame[1:payload_per_frame] = bytes(payload[:fec_payload_length])
