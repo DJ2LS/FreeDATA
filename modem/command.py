@@ -17,7 +17,7 @@ class TxCommand():
     def get_name(self):
         return type(self).__name__
 
-    def emit_event(self):
+    def emit_event(self, event_queue):
         pass
 
     def log_message(self):
@@ -26,14 +26,17 @@ class TxCommand():
     def build_frame(self):
         pass
 
+    def get_c2_mode(self):
+        c2_mode = FREEDV_MODE.fsk_ldpc_0.value if self.config.enable_fsk else FREEDV_MODE.sig0.value
+        return c2_mode
+
     def transmit(self, tx_frame_queue):
         frame = self.build_frame()
-        c2_mode = FREEDV_MODE.fsk_ldpc_0.value if self.config.enable_fsk else FREEDV_MODE.sig0.value
-        tx_queue_item = [c2_mode, 1, 0, frame]
+        tx_queue_item = [self.get_c2_mode(), 1, 0, frame]
         tx_frame_queue.put(tx_queue_item)
 
-    def run(self, tx_frame_queue: queue.Queue):
-        self.emit_event()
+    def run(self, event_queue: queue.Queue, tx_frame_queue: queue.Queue):
+        self.emit_event(event_queue)
         self.logger.info(self.log_message)
         self.transmit(tx_frame_queue)
         pass

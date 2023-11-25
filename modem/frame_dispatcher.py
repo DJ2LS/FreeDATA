@@ -120,8 +120,8 @@ class DISPATCHER():
         """Dispatch incoming UI instructions for transmitting operations"""
         while True:
             command = self.data_queue_transmit.get()
-            command.execute(MODEM_TRANSMIT_QUEUE)
-            next
+            command.execute(self.event_queue, MODEM_TRANSMIT_QUEUE)
+            continue
 
             # Dispatch commands known to command_dispatcher
             if data[0] in self.command_dispatcher:

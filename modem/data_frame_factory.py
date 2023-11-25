@@ -5,14 +5,21 @@ import codec2
 class DataFrameFactory:
 
     def __init__(self):
-        self.modem_config = modem.config
-        self.modem_state = modem.state
-
         self.myfullcall = f"{self.modem_config['STATION']['mycall']}-{self.modem_config['STATION']['myssid']}"
 
-    def build(self):
-        build_method = getattr(self, self.type.name)
-        return build_method()
+    def get_bytes_per_frame(mode: int) -> int:
+        """
+        Provide bytes per frame information for accessing from data handler
+
+        :param mode: Codec2 mode to query
+        :type mode: int or str
+        :return: Bytes per frame of the supplied codec2 data mode
+        :rtype: int
+        """
+        freedv = codec2.open_instance(mode)
+        # TODO add close session
+        # get number of bytes per frame for mode
+        return int(codec2.api.freedv_get_bits_per_modem_frame(freedv) / 8)
 
     def build_ping(self, dxcallsign):
         ping_frame = bytearray(self.length_sig0_frame)
@@ -50,7 +57,7 @@ class DataFrameFactory:
         beacon_frame[7:11] = helpers.encode_grid(self.mygrid)
         return beacon_frame
     
-    def build_fec_wakeup(self):
+    def build_fec_wakeup(self, mode):
         mode_int_wakeup = codec2.freedv_get_mode_value_by_name("sig0")
         payload_per_wakeup_frame = self.modem.get_bytes_per_frame(mode_int_wakeup) - 2
         fec_wakeup_frame = bytearray(payload_per_wakeup_frame)

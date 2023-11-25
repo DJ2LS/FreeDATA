@@ -425,3 +425,46 @@ class resampler:
         self.filter_mem8 = in8_mem[: self.MEM8]
 
         return out48
+
+def open_instance(mode: int) -> ctypes.c_void_p:
+    """
+    Return a codec2 instance of the type `mode`
+
+    :param mode: Type of codec2 instance to return
+    :type mode: Union[int, str]
+    :return: C-function of the requested codec2 instance
+    :rtype: ctypes.c_void_p
+    """
+    if mode in [FREEDV_MODE.fsk_ldpc_0.value]:
+        return ctypes.cast(
+            api.freedv_open_advanced(
+                FREEDV_MODE.fsk_ldpc.value,
+                ctypes.byref(api.FREEDV_MODE_FSK_LDPC_0_ADV),
+            ),
+            ctypes.c_void_p,
+        )
+
+    if mode in [FREEDV_MODE.fsk_ldpc_1.value]:
+        return ctypes.cast(
+            api.freedv_open_advanced(
+                FREEDV_MODE.fsk_ldpc.value,
+                ctypes.byref(api.FREEDV_MODE_FSK_LDPC_1_ADV),
+            ),
+            ctypes.c_void_p,
+        )
+
+    return ctypes.cast(api.freedv_open(mode), ctypes.c_void_p)
+
+def get_bytes_per_frame(mode: int) -> int:
+    """
+    Provide bytes per frame information for accessing from data handler
+
+    :param mode: Codec2 mode to query
+    :type mode: int or str
+    :return: Bytes per frame of the supplied codec2 data mode
+    :rtype: int
+    """
+    freedv = open_instance(mode)
+    # TODO add close session
+    # get number of bytes per frame for mode
+    return int(api.freedv_get_bits_per_modem_frame(freedv) / 8)

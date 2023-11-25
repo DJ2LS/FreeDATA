@@ -963,13 +963,13 @@ class RF:
             )
 
         # INIT TX MODES - here we need all modes. 
-        self.freedv_datac0_tx = open_codec2_instance(codec2.FREEDV_MODE.datac0.value)
-        self.freedv_datac1_tx = open_codec2_instance(codec2.FREEDV_MODE.datac1.value)
-        self.freedv_datac3_tx = open_codec2_instance(codec2.FREEDV_MODE.datac3.value)
-        self.freedv_datac4_tx = open_codec2_instance(codec2.FREEDV_MODE.datac4.value)
-        self.freedv_datac13_tx = open_codec2_instance(codec2.FREEDV_MODE.datac13.value)
-        self.freedv_ldpc0_tx = open_codec2_instance(codec2.FREEDV_MODE.fsk_ldpc_0.value)
-        self.freedv_ldpc1_tx = open_codec2_instance(codec2.FREEDV_MODE.fsk_ldpc_1.value)
+        self.freedv_datac0_tx = codec2.open_instance(codec2.FREEDV_MODE.datac0.value)
+        self.freedv_datac1_tx = codec2.open_instance(codec2.FREEDV_MODE.datac1.value)
+        self.freedv_datac3_tx = codec2.open_instance(codec2.FREEDV_MODE.datac3.value)
+        self.freedv_datac4_tx = codec2.open_instance(codec2.FREEDV_MODE.datac4.value)
+        self.freedv_datac13_tx = codec2.open_instance(codec2.FREEDV_MODE.datac13.value)
+        self.freedv_ldpc0_tx = codec2.open_instance(codec2.FREEDV_MODE.fsk_ldpc_0.value)
+        self.freedv_ldpc1_tx = codec2.open_instance(codec2.FREEDV_MODE.fsk_ldpc_1.value)
 
     def init_codec2_mode(self, mode, adv):
         """
@@ -1469,49 +1469,6 @@ class RF:
 
     def set_FFT_stream(self, enable: bool):
         self.enable_fft = enable
-
-def open_codec2_instance(mode: int) -> ctypes.c_void_p:
-    """
-    Return a codec2 instance of the type `mode`
-
-    :param mode: Type of codec2 instance to return
-    :type mode: Union[int, str]
-    :return: C-function of the requested codec2 instance
-    :rtype: ctypes.c_void_p
-    """
-    if mode in [codec2.FREEDV_MODE.fsk_ldpc_0.value]:
-        return ctypes.cast(
-            codec2.api.freedv_open_advanced(
-                codec2.FREEDV_MODE.fsk_ldpc.value,
-                ctypes.byref(codec2.api.FREEDV_MODE_FSK_LDPC_0_ADV),
-            ),
-            ctypes.c_void_p,
-        )
-
-    if mode in [codec2.FREEDV_MODE.fsk_ldpc_1.value]:
-        return ctypes.cast(
-            codec2.api.freedv_open_advanced(
-                codec2.FREEDV_MODE.fsk_ldpc.value,
-                ctypes.byref(codec2.api.FREEDV_MODE_FSK_LDPC_1_ADV),
-            ),
-            ctypes.c_void_p,
-        )
-
-    return ctypes.cast(codec2.api.freedv_open(mode), ctypes.c_void_p)
-
-def get_bytes_per_frame(mode: int) -> int:
-    """
-    Provide bytes per frame information for accessing from data handler
-
-    :param mode: Codec2 mode to query
-    :type mode: int or str
-    :return: Bytes per frame of the supplied codec2 data mode
-    :rtype: int
-    """
-    freedv = open_codec2_instance(mode)
-    # TODO add close session
-    # get number of bytes per frame for mode
-    return int(codec2.api.freedv_get_bits_per_modem_frame(freedv) / 8)
 
 def set_audio_volume(datalist: np.ndarray, dB: float) -> np.ndarray:
     """
