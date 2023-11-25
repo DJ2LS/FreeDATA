@@ -4,7 +4,7 @@ import codec2
 
 class DataFrameFactory:
 
-    def __init__(self, modem):
+    def __init__(self):
         self.modem_config = modem.config
         self.modem_state = modem.state
 
@@ -60,7 +60,7 @@ class DataFrameFactory:
         fec_wakeup_frame[8:9] = bytes([1]) # n payload bursts
         return fec_wakeup_frame
 
-    def build_fec(self):
+    def build_fec(self, payload):
         fec_frame = bytearray(payload_per_frame)
         fec_frame[:1] = bytes([FR_TYPE.FEC.value])
         fec_frame[1:payload_per_frame] = bytes(payload[:fec_payload_length])

@@ -8,7 +8,7 @@ import helpers
 import structlog
 from modem_frametypes import FRAME_TYPE as FR_TYPE
 import event_manager
-from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT
+from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT, MODEM_TRANSMIT_QUEUE
 
 from data_handler_broadcasts import BROADCAST
 from data_handler_data_broadcasts import DATABROADCAST
@@ -120,12 +120,8 @@ class DISPATCHER():
         """Dispatch incoming UI instructions for transmitting operations"""
         while True:
             command = self.data_queue_transmit.get()
-            self.log.debug(
-                    "[Modem] TX DISPATCHER - got a transmit command",
-                    command=command.getName(),
-                )
-            command.execute()
-
+            command.execute(MODEM_TRANSMIT_QUEUE)
+            next
 
             # Dispatch commands known to command_dispatcher
             if data[0] in self.command_dispatcher:
