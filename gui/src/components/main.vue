@@ -336,9 +336,9 @@ function stopAllTransmissions() {
             role="tabpanel"
             aria-labelledby="list-grid-list"
           >
-           <Dynamic_components2 />
+            <Dynamic_components2 />
           </div>
-          
+
           <div
             class="tab-pane fade"
             id="list-chat"
