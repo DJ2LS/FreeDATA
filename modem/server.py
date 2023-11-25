@@ -6,14 +6,16 @@ import serial_ports
 from config import CONFIG
 import audio
 import queue
-import server_commands
 import service_manager
 import state_manager
 import ujson as json
 import websocket_manager as wsm
 import api_validations as validations
-from command import TxCommand
-from command_ping import PingCommand
+import command_ping
+import command_cq
+import command_ping
+import command_feq
+import command_test
 from queues import DATA_QUEUE_TRANSMIT as tx_cmd_queue
 
 app = Flask(__name__)
@@ -125,9 +127,10 @@ def get_modem_state():
 def post_cqcqcq():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for triggering a CQ via POST"})
-    if app.state_manager.is_modem_running:
-        server_commands.cqcqcq()
-    return api_response({"cmd": "cqcqcq"})
+    if not app.state_manager.is_modem_running:
+        api_abort('Modem not running', 503)
+    enqueue_tx_command(command_cq.CQCommand)
+    return "ok"
 
 @app.route('/modem/beacon', methods=['POST'])
 def post_beacon():
@@ -147,32 +150,35 @@ def post_ping():
     if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
     validate(request.json, 'dxcall', validations.validate_freedata_callsign)
-    enqueue_tx_command(PingCommand, request.json)
+    enqueue_tx_command(command_ping.PingCommand, request.json)
     return 'ok'
 
 @app.route('/modem/send_test_frame', methods=['POST'])
 def post_send_test_frame():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for triggering a TEST_FRAME via POST"})
-    if app.state_manager.is_modem_running:
-        server_commands.modem_send_test_frame()
-    return api_response({"cmd": "test_frame"})
+    if not app.state_manager.is_modem_running:
+        api_abort('Modem not running', 503)
+    enqueue_tx_command(command_test.TestCommand)
+    return "ok"
 
 @app.route('/modem/fec_transmit', methods=['POST'])
 def post_send_fec_frame():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for triggering a FEC frame via POST"})
-    if app.state_manager.is_modem_running:
-        server_commands.modem_fec_transmit(request.json)
-    return api_response(request.json)
+    if not app.state_manager.is_modem_running:
+        api_abort('Modem not running', 503)
+    enqueue_tx_command(command_feq.FecCommand, request.json)
+    return "ok"
 
 @app.route('/modem/fec_is_writing', methods=['POST'])
 def post_send_fec_is_writing():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for triggering a IS WRITING frame via POST"})
-    if app.state_manager.is_modem_running:
-        server_commands.modem_fec_is_writing(request.json)
-    return api_response(request.json)
+    if not app.state_manager.is_modem_running:
+        api_abort('Modem not running', 503)
+    #server_commands.modem_fec_is_writing(request.json)
+    return 'Not implemented yet'
 
 @app.route('/modem/start', methods=['POST'])
 def post_modem_start():
@@ -199,8 +205,11 @@ def get_modem_version():
 def post_modem_send_raw():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for SENDING RAW DATA via POST"})
-    server_commands.modem_arq_send_raw(request.json)
-    return api_response(request.json)
+    if not app.state_manager.is_modem_running:
+        api_abort('Modem not running', 503)
+
+    # server_commands.modem_arq_send_raw(request.json)
+    return "Not implemented yet"
 
 # @app.route('/modem/arq_connect', methods=['POST'])
 # @app.route('/modem/arq_disconnect', methods=['POST'])

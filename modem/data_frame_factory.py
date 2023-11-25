@@ -76,3 +76,7 @@ class DataFrameFactory:
         fec_frame[:1] = bytes([FR_TYPE.FEC.value])
         fec_frame[1:payload_per_frame] = bytes(payload[:fec_payload_length])
         return fec_frame
+
+    def build_test(self):
+        test_frame = bytearray(126)
+        test_frame[:1] = bytes([FR_TYPE.TEST_FRAME.value])

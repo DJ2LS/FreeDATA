@@ -95,13 +95,6 @@ class DISPATCHER():
             FR_TYPE.FEC_WAKEUP.value: (self.data_broadcasts.received_fec_wakeup, "FEC WAKEUP"),
 
         }
-        self.command_dispatcher = {
-            # "CONNECT": (self.arq_session_handler, "CONNECT"),
-            "CQ": (self.broadcasts.transmit_cq, "CQ"),
-            "DISCONNECT": (self.arq_session.close_session, "DISCONNECT"),
-            "SEND_TEST_FRAME": (self.broadcasts.send_test_frame, "TEST"),
-            "STOP": (self.arq.stop_transmission, "STOP"),
-        }
 
     def _initialize_queues(self):
         """Initializes data queues."""
@@ -121,47 +114,6 @@ class DISPATCHER():
         while True:
             command = self.data_queue_transmit.get()
             command.execute(self.event_queue, MODEM_TRANSMIT_QUEUE)
-            continue
-
-            # Dispatch commands known to command_dispatcher
-            if data[0] in self.command_dispatcher:
-                self.log.debug(f"[Modem] TX {self.command_dispatcher[data[0]][1]}...")
-                self.command_dispatcher[data[0]][0]()
-
-            # Dispatch commands that need more arguments.
-            elif data[0] == "CONNECT":
-                # [1] mycallsign
-                # [2] dxcallsign
-                self.arq.arq_session_handler(data[1], data[2])
-
-            elif data[0] == "PING":
-                # [1] mycallsign // this is being injected as None
-                # [2] dxcallsign
-                mycallsign = f"{self.config['STATION']['mycall']}-{self.config['STATION']['myssid']}"
-                self.ping.transmit_ping(mycallsign, data[2])
-
-            elif data[0] == "ARQ_RAW":
-                # [1] DATA_OUT bytes
-                # [2] self.transmission_uuid str
-                # [3] mycallsign with ssid str
-                # [4] dxcallsign with ssid str
-                self.arq_iss.open_dc_and_transmit(data[1], data[2], data[3], data[4])
-
-            elif data[0] == "FEC_IS_WRITING":
-                # [1] DATA_OUT bytes
-                # [2] MODE str datac0/1/3...
-                self.broadcasts.send_fec_is_writing(data[1])
-
-            elif data[0] == "FEC":
-                # [1] WAKEUP bool
-                # [2] MODE str datac0/1/3...
-                # [3] PAYLOAD
-                # [4] MYCALLSIGN
-                self.broadcasts.send_fec(data[1], data[2], data[3], data[4])
-            else:
-                self.log.error(
-                    "[Modem] worker_transmit: received invalid command:", data=data
-                )
 
     def worker_receive(self) -> None:
         """Queue received data for processing"""

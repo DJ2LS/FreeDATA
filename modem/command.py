@@ -1,5 +1,5 @@
 from data_frame_factory import DataFrameFactory
-from modem.modem import RF
+from modem import RF
 import queue
 from codec2 import FREEDV_MODE
 
@@ -26,18 +26,22 @@ class TxCommand():
     def build_frame(self):
         pass
 
-    def get_c2_mode(self):
+    def get_tx_mode(self):
         c2_mode = FREEDV_MODE.fsk_ldpc_0.value if self.config.enable_fsk else FREEDV_MODE.sig0.value
         return c2_mode
-
-    def transmit(self, tx_frame_queue):
-        frame = self.build_frame()
-        tx_queue_item = {
+    
+    def make_modem_queue_item(self, mode, repeat, repeat_delay, frame):
+        item = {
             'mode': self.get_c2_mode(),
             'repeat': 1,
             'repeat_delay': 0,
             'frame': frame
         }
+        return item
+
+    def transmit(self, tx_frame_queue):
+        frame = self.build_frame()
+        tx_queue_item = self.make_modem_queue_item(self.get_tx_mode(), 1, 0, frame)
         tx_frame_queue.put(tx_queue_item)
 
     def run(self, event_queue: queue.Queue, tx_frame_queue: queue.Queue):
