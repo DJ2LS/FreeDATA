@@ -1145,14 +1145,12 @@ class RF:
             # we could do a cleanup after a transmission so theres no reason sending twice
             queuesize = self.modem_transmit_queue.qsize()
             self.log.debug("[MDM] self.modem_transmit_queue", qsize=queuesize)
-            data = self.modem_transmit_queue.get()
+            tx = self.modem_transmit_queue.get()
 
-            if data[0] in ["morse"]:
-                self.transmit_morse(repeats=data[1], repeat_delay=data[2], frames=data[3])
+            if tx['mode'] in ["morse"]:
+                self.transmit_morse(tx['repeat'], tx['repeat_delay'], tx['frame'])
             else:
-                self.transmit(
-                    mode=data[0], repeats=data[1], repeat_delay=data[2], frames=data[3]
-                )
+                self.transmit(tx['mode'], tx['repeat'], tx['repeat_delay'], tx['frame'])
             # self.modem_transmit_queue.task_done()
 
     def worker_received(self) -> None:

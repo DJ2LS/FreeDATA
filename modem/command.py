@@ -32,7 +32,12 @@ class TxCommand():
 
     def transmit(self, tx_frame_queue):
         frame = self.build_frame()
-        tx_queue_item = [self.get_c2_mode(), 1, 0, frame]
+        tx_queue_item = {
+            'mode': self.get_c2_mode(),
+            'repeat': 1,
+            'repeat_delay': 0,
+            'frame': frame
+        }
         tx_frame_queue.put(tx_queue_item)
 
     def run(self, event_queue: queue.Queue, tx_frame_queue: queue.Queue):
