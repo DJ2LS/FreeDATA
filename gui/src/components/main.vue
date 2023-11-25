@@ -18,6 +18,7 @@ import main_active_audio_level from "./main_active_audio_level.vue";
 import chat from "./chat.vue";
 import infoScreen from "./infoScreen.vue";
 import main_modem_healthcheck from "./main_modem_healthcheck.vue";
+import Dynamic_components2 from "./dynamic_components2.vue";
 
 function stopAllTransmissions() {
   console.log("stopping transmissions");
@@ -103,6 +104,16 @@ function stopAllTransmissions() {
               role="tab"
               aria-controls="list-logger"
               ><i class="bi bi-activity h3"></i
+            ></a>
+            <a
+              class="list-group-item list-group-item-dark list-group-item-action border-0 rounded-3 mb-2"
+              id="list-grid-list"
+              data-bs-toggle="list"
+              href="#list-grid"
+              role="tab"
+              aria-controls="list-grid"
+              title="Grid test"
+              ><i class="bi bi-grid h3"></i
             ></a>
 
             <a
@@ -319,6 +330,15 @@ function stopAllTransmissions() {
           >
             <infoScreen />
           </div>
+          <div
+            class="tab-pane fade"
+            id="list-grid"
+            role="tabpanel"
+            aria-labelledby="list-grid-list"
+          >
+           <Dynamic_components2 />
+          </div>
+          
           <div
             class="tab-pane fade"
             id="list-chat"
