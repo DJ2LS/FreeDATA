@@ -12,8 +12,8 @@ import state_manager
 import ujson as json
 import websocket_manager as wsm
 import api_validations as validations
-from tx_command.tx_command import TxCommand
-from tx_command.ping_command import PingCommand
+from command import TxCommand
+from command_ping import PingCommand
 from queues import DATA_QUEUE_TRANSMIT as tx_cmd_queue
 
 app = Flask(__name__)
@@ -77,9 +77,9 @@ def validate(req, param, validator, isRequired = True):
 
 # Takes a transmit command and puts it in the transmit command queue
 def enqueue_tx_command(cmd_class, params = {}):
-    command = cmd_class(service_manager.modem, params)
+    command = cmd_class(app.config, app.logger, params)
     tx_cmd_queue.put(command)
-    app.logger.info(f"Command {type(command).__name__} enqueued.")
+    app.logger.info(f"Command {command.get_name()} enqueued.")
 
 ## REST API
 @app.route('/', methods=['GET'])
