@@ -41,19 +41,15 @@ function getMaidenheadDistance(dxGrid) {
     <div class="card-header">
       <i class="bi bi-list-columns-reverse" style="font-size: 1rem"></i>&nbsp;
       <strong>Heard stations</strong>
-          </div>
-            
-          
- 
+    </div>
+
     <div class="card-body">
       <div class="table-responsive">
         <!-- START OF TABLE FOR HEARD STATIONS -->
         <table class="table table-sm" id="tblHeardStationList">
           <thead>
             <tr>
-              <th scope="col" id="thTime">
-                Time
-              </th>
+              <th scope="col" id="thTime">Time</th>
               <th scope="col" id="thDxcall">DXCall</th>
               <th scope="col" id="thDxgrid">Grid</th>
               <th scope="col" id="thSnr">SNR</th>
@@ -75,7 +71,7 @@ function getMaidenheadDistance(dxGrid) {
               <td>
                 <span class="badge bg-secondary">{{ item.dxgrid }}</span>
               </td>
->
+              >
               <td>
                 <span class="badge bg-secondary">{{ item.snr }}</span>
               </td>
@@ -87,8 +83,6 @@ function getMaidenheadDistance(dxGrid) {
 
       <!-- END OF HEARD STATIONS TABLE -->
     </div>
-    <div class="card-footer text-body-secondary">
-   
-  </div>
+    <div class="card-footer text-body-secondary"></div>
   </div>
 </template>
