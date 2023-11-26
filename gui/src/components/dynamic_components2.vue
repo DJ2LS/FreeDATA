@@ -201,7 +201,7 @@ function quickfill() {
             </button>
             <button
               type="button"
-              @click="addNewWidget2(gridWidgets[3])"
+              @click="addNewWidget2(gridWidgets[4])"
               class="btn btn-outline-secondary"
               data-bs-dismiss="modal"
             >
@@ -209,7 +209,7 @@ function quickfill() {
             </button>
             <button
               type="button"
-              @click="addNewWidget2(gridWidgets[4])"
+              @click="addNewWidget2(gridWidgets[3])"
               class="btn btn-outline-secondary"
               data-bs-dismiss="modal"
             >
