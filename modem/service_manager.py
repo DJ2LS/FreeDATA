@@ -86,7 +86,7 @@ class SM:
         self.frame_dispatcher.start()
 
         self.states.set("is_modem_running", True)
-        self.modem.set_FFT_stream(self.enable_fft)
+        self.modem.set_FFT_stream(self.enable_fft_stream)
 
         return True
         
