@@ -20,6 +20,8 @@ import infoScreen from "./infoScreen.vue";
 import main_modem_healthcheck from "./main_modem_healthcheck.vue";
 import Dynamic_components2 from "./dynamic_components2.vue";
 
+import { stopTransmission } from "../js/sock";
+
 function stopAllTransmissions() {
   console.log("stopping transmissions");
   stopTransmission();
@@ -167,22 +169,25 @@ function stopAllTransmissions() {
               <!------------------------------------------------------------------------------------------>
               <div class="container">
                 <div class="row">
-                  <main_active_rig_control />
-                  <!--<main_rig_control />-->
-
                   <div class="col-5">
+                    <main_active_rig_control />
+                  </div>
+                  <div class="col-4">
+                    <main_active_broadcasts />
+                  </div>
+                  <div class="col-3">
                     <main_active_audio_level />
                   </div>
-                  <div class="col">
-                    <main_active_broadcasts />
+                </div>
+                <div class="row">
+                <div class="col-7">
+                    <main_active_heard_stations />
                   </div>
                   <div class="col-5">
                     <main_active_stats />
                   </div>
-                  <div class="col">
-                    <main_active_heard_stations />
-                  </div>
                 </div>
+                
               </div>
             </div>
           </div>

@@ -38,7 +38,7 @@ export const useStateStore = defineStore("stateStore", () => {
   var arq_state = ref("");
   var beacon_state = ref("False");
 
-  var audio_recording = ref("");
+  var audio_recording = ref(false);
 
   var hamlib_status = ref("");
   var tx_audio_level = ref("");
