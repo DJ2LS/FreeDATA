@@ -482,7 +482,7 @@ class IRS(ARQ):
         self.frame_received_counter = 0
 
     def arq_data_received(
-            self, data_in: bytes, bytes_per_frame: int, snr: float, freedv
+            self, deconstructed_frame: list, bytes_per_frame: int, snr: float, freedv
     ) -> None:
         """
         Args:
@@ -495,7 +495,7 @@ class IRS(ARQ):
         """
         # We've arrived here from process_data which already checked that the frame
         # is intended for this station.
-        data_in = bytes(data_in)
+        data_in = deconstructed_frame["data"]
 
         # only process data if we are in ARQ and BUSY state else return to quit
         if not self.states.is_arq_state and not self.states.is_modem_busy:

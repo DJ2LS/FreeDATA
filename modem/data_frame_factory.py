@@ -121,6 +121,11 @@ class DataFrameFactory:
                     # we are overriding the tempaltes mycallsign, because it will become
                     # the dxcallsign when receiving
                     extracted_data["dxcallsign"] = helpers.bytes_to_callsign(data)
+                elif key == "dxcallsign":
+                    # we are overriding the tempaltes dxcallsign, because it will become
+                    # the mycallsign when receiving
+                    extracted_data["mycallsign"] = helpers.bytes_to_callsign(data)
+
                 elif key == "gridsquare":
                     extracted_data[key] = helpers.decode_grid(data)
                 else:

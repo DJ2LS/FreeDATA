@@ -324,7 +324,7 @@ class ARQ:
         self.arq_cleanup()
 
     def received_stop_transmission(
-            self, data_in: bytes
+            self, deconstructed_frame: list
     ) -> None:  # pylint: disable=unused-argument
         """
         Received a transmission stop

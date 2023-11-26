@@ -68,7 +68,7 @@ class PING(DATA):
         else:
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.sig0.value)
 
-    def received_ping(self, data_in: bytes, snr) -> None:
+    def received_ping(self, deconstructed_frame: list, snr) -> None:
         """
         Called if we received a ping
 
@@ -76,11 +76,19 @@ class PING(DATA):
           data_in:bytes:
 
         """
-        dxcallsign_crc = bytes(data_in[4:7])
-        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[7:13]))
+        # use --> deconstructed_frame
+
+
+
+
+        #dxcallsign_crc = bytes(data_in[4:7])
+        mycallsign_crc = deconstructed_frame["mycallsign_crc"]
+        dxcallsign_crc = deconstructed_frame["dxcallsign_crc"]
+        dxcallsign = deconstructed_frame["dxcallsign"]
+        #dxcallsign = helpers.bytes_to_callsign(bytes(data_in[7:13]))
 
         # check if callsign ssid override
-        valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4], self.ssid_list)
+        valid, mycallsign = helpers.check_callsign(self.mycallsign, mycallsign_crc, self.ssid_list)
         if not valid:
             # PING packet not for me.
             self.log.debug("[Modem] received_ping: ping not for this station.")

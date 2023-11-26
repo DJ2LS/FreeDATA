@@ -9,6 +9,8 @@ import structlog
 from modem_frametypes import FRAME_TYPE as FR_TYPE
 import event_manager
 from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT, MODEM_TRANSMIT_QUEUE
+from data_frame_factory import DataFrameFactory
+
 
 from data_handler_broadcasts import BROADCAST
 from data_handler_data_broadcasts import DATABROADCAST
@@ -34,6 +36,10 @@ class DISPATCHER():
 
     def _initialize_handlers(self, config, event_queue, states):
         """Initializes various data handlers."""
+
+        self.frame_factory = DataFrameFactory()
+
+
         self.broadcasts = BROADCAST(config, event_queue, states)
         self.data_broadcasts = DATABROADCAST(config, event_queue, states)
         self.ping = PING(config, event_queue, states)
@@ -142,22 +148,20 @@ class DISPATCHER():
         """
 
         if self.check_if_valid_frame(bytes_out):
-            frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
-            # Dispatch activity based on received frametype
+            # get frame as dictionary
+            deconstructed_frame = self.frame_factory.deconstruct(bytes_out)
+            frametype = deconstructed_frame["frame_type"]
+
+                        # Dispatch activity based on received frametype
             if frametype in self.rx_dispatcher:
                 # Process frames "known" by rx_dispatcher
                 # self.log.debug(f"[Modem] {self.rx_dispatcher[frametype][1]} RECEIVED....")
-                self.rx_dispatcher[frametype][0](bytes_out[:-2], snr)
+                self.rx_dispatcher[frametype][0](deconstructed_frame, snr)
 
             # Process frametypes requiring a different set of arguments.
             elif FR_TYPE.BURST_51.value >= frametype >= FR_TYPE.BURST_01.value:
-                # get snr of received data
-                # FIXME find a fix for this - after moving to classes, this no longer works
-                # snr = self.calculate_snr(freedv)
-                self.log.debug("[Modem] RX SNR", snr=snr)
-                # send payload data to arq checker without CRC16
                 self.arq_irs.arq_data_received(
-                    bytes(bytes_out[:-2]), bytes_per_frame, snr, freedv
+                    deconstructed_frame, bytes_per_frame, snr, freedv
                 )
 
                 # if we received the last frame of a burst or the last remaining rpt frame, do a modem unsync
@@ -167,7 +171,7 @@ class DISPATCHER():
 
             # TESTFRAMES
             elif frametype == FR_TYPE.TEST_FRAME.value:
-                self.log.debug("[Modem] TESTFRAME RECEIVED", frame=bytes_out[:])
+                self.log.debug("[Modem] TESTFRAME RECEIVED", frame=deconstructed_frame)
 
             # Unknown frame type
             else:
