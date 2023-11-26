@@ -2,15 +2,11 @@ import time
 from modem_frametypes import FRAME_TYPE as FR_TYPE
 from codec2 import FREEDV_MODE
 from queues import MODEM_TRANSMIT_QUEUE
-import threading
 import helpers
-import codec2
-import modem
 from random import randrange
 import uuid
 import structlog
 import event_manager
-import beacon
 import command_qrv
 
 from data_handler import DATA
@@ -28,9 +24,6 @@ class BROADCAST(DATA):
         self.config = config
         
         self.event_manager = event_manager.EventManager([event_queue])
-
-        self.beacon = beacon.Beacon(self.config, self.states, event_queue, self.log, MODEM_TRANSMIT_QUEUE)
-        self.beacon.start()
 
         # length of signalling frame
         self.length_sig0_frame = 14

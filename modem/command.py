@@ -1,5 +1,4 @@
 from data_frame_factory import DataFrameFactory
-from modem import RF
 import queue
 from codec2 import FREEDV_MODE
 
