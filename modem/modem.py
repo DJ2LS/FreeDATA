@@ -28,6 +28,7 @@ from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUE
 import audio
 import event_manager
 from modem_frametypes import FRAME_TYPE
+import beacon
 
 TESTMODE = False
 RXCHANNEL = ""
@@ -132,6 +133,9 @@ class RF:
 
         self.fft_queue = fft_queue
 
+        self.beacon = beacon.Beacon(self.config, self.states, event_queue, 
+                                    self.log, MODEM_TRANSMIT_QUEUE)
+
         self.start_modem()
 
 
@@ -171,6 +175,9 @@ class RF:
             # init decoding threads
             self.init_data_threads()
             atexit.register(self.stream.stop)
+
+            # init beacon
+            self.beacon.start()
         else:
             return False
 
@@ -182,6 +189,9 @@ class RF:
             # self.stream = lambda: None
             # self.stream.active = False
             # self.stream.stop
+
+            self.beacon.stop()
+
         except Exception:
             self.log.error("[MDM] Error stopping modem")
 

@@ -1,21 +1,20 @@
 import threading
 import data_frame_factory
-import time
 import command_beacon
-from state_manager import StateManager
 
 class Beacon:
 
     BEACON_LOOP_INTERVAL = 1
 
-    def __init__(self, config, modem_states: StateManager, event_queue, logger, modem_tx_queue):
+    def __init__(self, config, states, event_queue, logger, modem_tx_queue):
 
         self.modem_config = config
-        self.states = modem_states
+        self.states = states
         self.event_queue = event_queue
         self.log = logger
         self.tx_frame_queue = modem_tx_queue
 
+        self.loop_running = True
         self.paused = False
         self.thread = None
         self.event = threading.Event()
@@ -26,21 +25,15 @@ class Beacon:
         beacon_thread = threading.Thread(target=self.run_beacon, name="beacon", daemon=True)
         beacon_thread.start()
 
+    def stop(self):
+        self.loop_running = False
+
     def refresh(self):
         self.event.set()
         self.event.clear()
 
     def run_beacon(self) -> None:
-        """
-        Controlling function for running a beacon
-        Args:
-
-            self: arq class
-
-        Returns:
-
-        """
-        while True:
+        while self.loop_running:
             while (self.states.is_beacon_running and 
                 not self.paused and 
                 True):
