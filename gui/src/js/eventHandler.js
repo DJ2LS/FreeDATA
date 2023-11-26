@@ -39,6 +39,7 @@ export function stateDispatcher(data) {
     stateStore.beacon_state = data["is_beacon_running"];
     stateStore.radio_status = data["radio_status"];
     stateStore.frequency = data["radio_frequency"];
+    stateStore.mode = data["radio_mode"];
     /*
     self.is_arq_state = False
     self.is_arq_session = False

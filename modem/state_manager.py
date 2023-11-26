@@ -84,6 +84,7 @@ class StateManager:
             "is_beacon_running": self.is_beacon_running,
             "radio_status": self.radio_status,
             "radio_frequency": self.radio_frequency,
+            "radio_mode": self.radio_mode,
         }
     
     # .wait() blocks until the event is set
