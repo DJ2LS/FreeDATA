@@ -21,7 +21,8 @@ class TxCommand():
         pass
 
     def log_message(self):
-        return f"TX Command {self.get_name()}"
+        message = f"Running {self.get_name()}"
+        return message
 
     def build_frame(self):
         pass
@@ -46,6 +47,6 @@ class TxCommand():
 
     def run(self, event_queue: queue.Queue, tx_frame_queue: queue.Queue):
         self.emit_event(event_queue)
-        self.logger.info(self.log_message)
+        self.logger.info(self.log_message())
         self.transmit(tx_frame_queue)
         pass
