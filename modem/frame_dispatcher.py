@@ -106,13 +106,10 @@ class DISPATCHER():
         self.data_queue_transmit = DATA_QUEUE_TRANSMIT
         self.data_queue_received = DATA_QUEUE_RECEIVED
 
-    def _start_worker_threads(self):
+    def start(self):
         """Starts worker threads for transmit and receive operations."""
         threading.Thread(target=self.worker_transmit, name="Transmit Worker", daemon=True).start()
         threading.Thread(target=self.worker_receive, name="Receive Worker", daemon=True).start()
-
-    def start(self):
-        self._start_worker_threads()
 
     def worker_transmit(self) -> None:
         """Dispatch incoming UI instructions for transmitting operations"""

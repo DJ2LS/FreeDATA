@@ -64,28 +64,30 @@ class SM:
         # read config
         self.config = self.app.config_manager.read()
 
+        if self.states.is_modem_running:
+            self.log.warning("modem already running")
+            return False
+
         # test audio devices
         audio_test = self.test_audio()
 
-        if False not in audio_test and None not in audio_test and not self.states.is_modem_running:
-            self.log.info("starting modem....")
-            self.modem = modem.RF(self.config, self.modem_events, self.modem_fft, self.modem_service, self.states)
-            #self.data_handler = data_handler.DATA(self.config, self.modem_events, self.states)
-            self.frame_dispatcher = frame_dispatcher.DISPATCHER(self.config, self.modem_events, self.states)
-            self.frame_dispatcher.start()
-            self.states.set("is_modem_running", True)
-            self.modem.set_FFT_stream(self.enable_fft)
-            return True
-        elif self.states.is_modem_running:
-            self.log.warning("modem already running")
-            return False
-        
-        else:
+        if False in audio_test or None in audio_test or self.states.is_modem_running:
             self.log.warning("starting modem failed", input_test=audio_test[0], output_test=audio_test[1])
             self.states.set("is_modem_running", False)
-            self.modem_events.put(json.dumps({"freedata": "modem-event", "event": "failed"}))
+            self.modem_events.put({"freedata": "modem-event", "event": "failed"})
             return False
 
+        self.log.info("starting modem....")
+        self.modem = modem.RF(self.config, self.modem_events, self.modem_fft, self.modem_service, self.states)
+
+        self.frame_dispatcher = frame_dispatcher.DISPATCHER(self.config, self.modem_events, self.states)
+        self.frame_dispatcher.start()
+
+        self.states.set("is_modem_running", True)
+        self.modem.set_FFT_stream(self.enable_fft)
+
+        return True
+        
     def stop_modem(self):
         self.log.info("stopping modem....")
         del self.modem
