@@ -1,9 +1,10 @@
 import threading
 import data_frame_factory
 import time
+import command_beacon
 
 modem_config = None
-modem_states = None
+states = None
 beacon_interval = 0
 beacon_interval_timer = 0
 beacon_paused = False
@@ -12,9 +13,9 @@ frame_factory = None
 event_manager = None
 log = None
 
-def init(config, states, ev_manager, logger):
+def init(config, modem_states, ev_manager, logger):
     modem_config = config
-    modem_states = states
+    states = modem_states
     frame_factory = data_frame_factory.DataFrameFactory(modem_config)
     event_manager = ev_manager
     log = logger
@@ -42,46 +43,23 @@ def run_beacon() -> None:
             while states.is_beacon_running:
                 if (
                         not states.is_arq_session
-                        and not arq_file_transfer
+                        #and not arq_file_transfer
                         and not beacon_paused
-                        #and not self.states.channel_busy
+                        #and not states.channel_busy
                         and not states.is_modem_busy
                         and not states.is_arq_state
                 ):
-                    event_manager.send_custom_event(
-                        freedata="modem-message",
-                        beacon="transmitting",
-                        dxcallsign="None",
-                        interval=self.beacon_interval,
-                    )
-                    self.log.info(
-                        "[Modem] Sending beacon!", interval=self.beacon_interval
-                    )
+                    
+                    cmd = command_beacon.BeaconCommand(modem_config, log)
+                    cmd.run()
 
-                    beacon_frame = bytearray(self.length_sig0_frame)
-                    beacon_frame[:1] = bytes([FR_TYPE.BEACON.value])
-                    beacon_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
-                    beacon_frame[7:11] = helpers.encode_grid(self.mygrid)
-
-                    if self.enable_fsk:
-                        self.log.info("[Modem] ENABLE FSK", state=self.enable_fsk)
-                        self.enqueue_frame_for_tx(
-                            [beacon_frame],
-                            c2_mode=FREEDV_MODE.fsk_ldpc_0.value,
-                        )
-                    else:
-                        self.enqueue_frame_for_tx([beacon_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1,
-                                                    repeat_delay=0)
-                        if self.enable_morse_identifier:
-                            MODEM_TRANSMIT_QUEUE.put(["morse", 1, 0, self.mycallsign])
-
-                self.beacon_interval_timer = time.time() + self.beacon_interval
+                beacon_interval_timer = time.time() + beacon_interval
                 while (
-                        time.time() < self.beacon_interval_timer
-                        and self.states.is_beacon_running
-                        and not self.beacon_paused
+                        time.time() < beacon_interval_timer
+                        and states.is_beacon_running
+                        and not beacon_paused
                 ):
                     threading.Event().wait(0.01)
 
     except Exception as err:
-        self.log.debug("[Modem] run_beacon: ", exception=err)
+        log.debug("[Modem] run_beacon: ", exception=err)
