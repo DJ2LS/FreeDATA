@@ -180,14 +180,13 @@ function stopAllTransmissions() {
                   </div>
                 </div>
                 <div class="row">
-                <div class="col-7">
+                  <div class="col-7">
                     <main_active_heard_stations />
                   </div>
                   <div class="col-5">
                     <main_active_stats />
                   </div>
                 </div>
-                
               </div>
             </div>
           </div>
