@@ -2,64 +2,53 @@ import threading
 import data_frame_factory
 import time
 import command_beacon
+from state_manager import StateManager
 
-modem_config = None
-states = None
-beacon_interval = 0
-beacon_interval_timer = 0
-beacon_paused = False
-beacon_thread = None
-frame_factory = None
-event_manager = None
-log = None
+class Beacon:
 
-def init(config, modem_states, ev_manager, logger):
-    modem_config = config
-    states = modem_states
-    frame_factory = data_frame_factory.DataFrameFactory(modem_config)
-    event_manager = ev_manager
-    log = logger
+    BEACON_LOOP_INTERVAL = 1
 
-def start():
-    beacon_thread = threading.Thread(
-        target=start, name="beacon", daemon=True
-    )
+    def __init__(self, config, modem_states: StateManager, event_queue, logger, modem_tx_queue):
 
-    beacon_thread.start()
+        self.modem_config = config
+        self.states = modem_states
+        self.event_queue = event_queue
+        self.log = logger
+        self.tx_frame_queue = modem_tx_queue
 
-def run_beacon() -> None:
-    """
-    Controlling function for running a beacon
-    Args:
+        self.paused = False
+        self.thread = None
+        self.event = threading.Event()
 
-        self: arq class
+        self.frame_factory = data_frame_factory.DataFrameFactory(config)
 
-    Returns:
+    def start(self):
+        beacon_thread = threading.Thread(target=self.run_beacon, name="beacon", daemon=True)
+        beacon_thread.start()
 
-    """
-    try:
+    def refresh(self):
+        self.event.set()
+        self.event.clear()
+
+    def run_beacon(self) -> None:
+        """
+        Controlling function for running a beacon
+        Args:
+
+            self: arq class
+
+        Returns:
+
+        """
         while True:
-            threading.Event().wait(0.5)
-            while states.is_beacon_running:
-                if (
-                        not states.is_arq_session
-                        #and not arq_file_transfer
-                        and not beacon_paused
-                        #and not states.channel_busy
-                        and not states.is_modem_busy
-                        and not states.is_arq_state
-                ):
-                    
-                    cmd = command_beacon.BeaconCommand(modem_config, log)
-                    cmd.run()
+            while (self.states.is_beacon_running and 
+                not self.paused and 
+                True):
+                #not self.states.channel_busy):
 
-                beacon_interval_timer = time.time() + beacon_interval
-                while (
-                        time.time() < beacon_interval_timer
-                        and states.is_beacon_running
-                        and not beacon_paused
-                ):
-                    threading.Event().wait(0.01)
+                cmd = command_beacon.BeaconCommand(self.modem_config, self.log)
+                cmd.run(self.event_queue, self.tx_frame_queue)
+                self.event.wait(self.modem_config['MODEM']['beacon_interval'])
 
-    except Exception as err:
-        log.debug("[Modem] run_beacon: ", exception=err)
+            self.event.wait(self.BEACON_LOOP_INTERVAL)
+        

@@ -29,8 +29,8 @@ class BROADCAST(DATA):
         
         self.event_manager = event_manager.EventManager([event_queue])
 
-        beacon.init(self.config, self.states, self.event_manager, self.log)
-        beacon.start()
+        self.beacon = beacon.Beacon(self.config, self.states, event_queue, self.log, MODEM_TRANSMIT_QUEUE)
+        self.beacon.start()
 
         # length of signalling frame
         self.length_sig0_frame = 14
