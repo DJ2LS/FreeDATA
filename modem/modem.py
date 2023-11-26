@@ -1147,10 +1147,11 @@ class RF:
             self.log.debug("[MDM] self.modem_transmit_queue", qsize=queuesize)
             tx = self.modem_transmit_queue.get()
 
+            # TODO Why we is this taking an array instead of a single frame?
             if tx['mode'] in ["morse"]:
-                self.transmit_morse(tx['repeat'], tx['repeat_delay'], tx['frame'])
+                self.transmit_morse(tx['repeat'], tx['repeat_delay'], [tx['frame']])
             else:
-                self.transmit(tx['mode'], tx['repeat'], tx['repeat_delay'], tx['frame'])
+                self.transmit(tx['mode'], tx['repeat'], tx['repeat_delay'], [tx['frame']])
             # self.modem_transmit_queue.task_done()
 
     def worker_received(self) -> None:

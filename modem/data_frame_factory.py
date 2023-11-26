@@ -21,8 +21,11 @@ decoded_frame: {'frame_type': 'CQ', 'mycallsign': b'DJ2LS-9', 'gridsquare': 'JN4
 
 class DataFrameFactory:
 
-    def __init__(self):
-        self.myfullcall = f"{self.modem_config['STATION']['mycall']}-{self.modem_config['STATION']['myssid']}"
+    LENGTH_SIG0_FRAME = 14
+
+    def __init__(self, config):
+        self.myfullcall = f"{config['STATION']['mycall']}-{config['STATION']['myssid']}"
+        self.mygrid = config['STATION']['mygrid']
 
         # table for holding our frame templates
         self.template_list = {}
@@ -34,14 +37,14 @@ class DataFrameFactory:
     def _load_broadcast_templates(self):
         # cq frame
         self.template_list[FR_TYPE.CQ.value] = {
-            "frame_length": self.length_sig0_frame,
+            "frame_length": self.LENGTH_SIG0_FRAME,
             "mycallsign": 6,
             "gridsquare": 4
         }
 
         # qrv frame
         self.template_list[FR_TYPE.QRV.value] = {
-            "frame_length": self.length_sig0_frame,
+            "frame_length": self.LENGTH_SIG0_FRAME,
             "mycallsign": 6,
             "gridsquare": 4,
             "snr": 1
@@ -49,7 +52,7 @@ class DataFrameFactory:
 
         # beacon frame
         self.template_list[FR_TYPE.BEACON.value] = {
-            "frame_length": self.length_sig0_frame,
+            "frame_length": self.LENGTH_SIG0_FRAME,
             "mycallsign": 6,
             "gridsquare": 4
         }
@@ -57,7 +60,7 @@ class DataFrameFactory:
     def _load_ping_templates(self):
         # ping frame
         self.template_list[FR_TYPE.PING.value] = {
-            "frame_length": self.length_sig0_frame,
+            "frame_length": self.LENGTH_SIG0_FRAME,
             "dxcallsign_crc": 3,
             "mycallsign_crc": 3,
             "mycallsign": 6
@@ -66,7 +69,7 @@ class DataFrameFactory:
     def _load_fec_templates(self):
         # fec wakeup frame
         self.template_list[FR_TYPE.FEC_WAKEUP.value] = {
-            "frame_length": self.length_sig0_frame,
+            "frame_length": self.LENGTH_SIG0_FRAME,
             "mycallsign": 6,
             "mode": 1,
             "n_bursts": 1,
@@ -74,13 +77,13 @@ class DataFrameFactory:
 
         # fec frame
         self.template_list[FR_TYPE.FEC.value] = {
-            "frame_length": self.length_sig0_frame,
-            "data": self.length_sig0_frame - 1
+            "frame_length": self.LENGTH_SIG0_FRAME,
+            "data": self.LENGTH_SIG0_FRAME - 1
         }
 
         # fec is writing frame
         self.template_list[FR_TYPE.IS_WRITING.value] = {
-            "frame_length": self.length_sig0_frame,
+            "frame_length": self.LENGTH_SIG0_FRAME,
             "mycallsign": 6
         }
 

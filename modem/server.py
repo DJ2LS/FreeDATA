@@ -67,6 +67,9 @@ def api_abort(message, code):
     jsonError = json.dumps({'error': message})
     abort(Response(jsonError, code))
 
+def api_ok(message = "ok"):
+    return api_response({'message': message})
+
 # validates a parameter
 def validate(req, param, validator, isRequired = True):
     if param not in req:
@@ -79,7 +82,7 @@ def validate(req, param, validator, isRequired = True):
 
 # Takes a transmit command and puts it in the transmit command queue
 def enqueue_tx_command(cmd_class, params = {}):
-    command = cmd_class(app.config, app.logger, params)
+    command = cmd_class(app.config_manager.read(), app.logger, params)
     tx_cmd_queue.put(command)
     app.logger.info(f"Command {command.get_name()} enqueued.")
 
@@ -130,7 +133,7 @@ def post_cqcqcq():
     if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
     enqueue_tx_command(command_cq.CQCommand)
-    return "ok"
+    return api_ok()
 
 @app.route('/modem/beacon', methods=['POST'])
 def post_beacon():
@@ -151,7 +154,7 @@ def post_ping():
         api_abort('Modem not running', 503)
     validate(request.json, 'dxcall', validations.validate_freedata_callsign)
     enqueue_tx_command(command_ping.PingCommand, request.json)
-    return 'ok'
+    return api_ok()
 
 @app.route('/modem/send_test_frame', methods=['POST'])
 def post_send_test_frame():
@@ -160,7 +163,7 @@ def post_send_test_frame():
     if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
     enqueue_tx_command(command_test.TestCommand)
-    return "ok"
+    return api_ok()
 
 @app.route('/modem/fec_transmit', methods=['POST'])
 def post_send_fec_frame():
@@ -169,7 +172,7 @@ def post_send_fec_frame():
     if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
     enqueue_tx_command(command_feq.FecCommand, request.json)
-    return "ok"
+    return api_ok()
 
 @app.route('/modem/fec_is_writing', methods=['POST'])
 def post_send_fec_is_writing():
@@ -195,7 +198,7 @@ def post_modem_stop():
     print("stop received...")
 
     app.modem_service.put("stop")
-    return api_response(request.json)
+    return api_ok()
 
 @app.route('/version', methods=['GET'])
 def get_modem_version():

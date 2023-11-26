@@ -9,7 +9,7 @@ class TxCommand():
         self.config = config
         self.logger = logger
         self.set_params_from_api(apiParams)
-        self.frame_factory = DataFrameFactory()
+        self.frame_factory = DataFrameFactory(config)
 
     def set_params_from_api(self, apiParams):
         pass
@@ -27,12 +27,12 @@ class TxCommand():
         pass
 
     def get_tx_mode(self):
-        c2_mode = FREEDV_MODE.fsk_ldpc_0.value if self.config.enable_fsk else FREEDV_MODE.sig0.value
+        c2_mode = FREEDV_MODE.fsk_ldpc_0.value if self.config['MODEM']['enable_fsk'] else FREEDV_MODE.sig0.value
         return c2_mode
     
     def make_modem_queue_item(self, mode, repeat, repeat_delay, frame):
         item = {
-            'mode': self.get_c2_mode(),
+            'mode': self.get_tx_mode(),
             'repeat': 1,
             'repeat_delay': 0,
             'frame': frame

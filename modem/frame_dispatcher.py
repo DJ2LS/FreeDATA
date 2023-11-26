@@ -25,7 +25,7 @@ from protocol_arq_session import SESSION
 class DISPATCHER():
 
     def __init__(self, config, event_queue, states):
-        print("loading frame dispatcher.....")
+        print("loading frame dispatcher.....\n")
         self.config = config
         self.event_queue = event_queue
         self.states = states
@@ -37,8 +37,7 @@ class DISPATCHER():
     def _initialize_handlers(self, config, event_queue, states):
         """Initializes various data handlers."""
 
-        self.frame_factory = DataFrameFactory()
-
+        self.frame_factory = DataFrameFactory(config)
 
         self.broadcasts = BROADCAST(config, event_queue, states)
         self.data_broadcasts = DATABROADCAST(config, event_queue, states)
@@ -119,7 +118,7 @@ class DISPATCHER():
         """Dispatch incoming UI instructions for transmitting operations"""
         while True:
             command = self.data_queue_transmit.get()
-            command.execute(self.event_queue, MODEM_TRANSMIT_QUEUE)
+            command.run(self.event_queue, MODEM_TRANSMIT_QUEUE)
 
     def worker_receive(self) -> None:
         """Queue received data for processing"""

@@ -14,7 +14,6 @@ from data_handler import DATA
 TESTMODE = False
 class ARQ:
     def __init__(self, config, event_queue, states):
-        super().__init__(config, event_queue, states)
 
         self.log = structlog.get_logger("DHARQ")
         self.event_queue = event_queue

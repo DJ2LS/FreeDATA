@@ -10,20 +10,13 @@ class EventManager:
             q.put(data)
 
     def send_ptt_change(self, on:bool = False):
-        jsondata = {"ptt": str(on)}
-        data_out = json.dumps(jsondata)
-        self.broadcast(data_out)
+        self.broadcast({"ptt": str(on)})
 
     def send_scatter_change(self, data):
-        jsondata = {"scatter": str(data)}
-        data_out = json.dumps(jsondata)
-        self.broadcast(data_out)
+        self.broadcast({"scatter": str(data)})
 
     def send_buffer_overflow(self, data):
-        jsondata = {"buffer-overflow": str(data)}
-        data_out = json.dumps(jsondata)
-        self.broadcast(data_out)
+        self.broadcast({"buffer-overflow": str(data)})
 
-    def send_custom_event(self, **jsondata):
-        data_out = json.dumps(jsondata)
-        self.broadcast(data_out)
+    def send_custom_event(self, **event_data):
+        self.broadcast(event_data)

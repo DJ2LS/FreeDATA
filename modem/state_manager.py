@@ -55,7 +55,7 @@ class StateManager:
 
 
     def sendState (self):
-        currentState = self.getAsJSON(False)
+        currentState = self.get_state_event(False)
         self.statequeue.put(currentState)
         return currentState
 
@@ -66,17 +66,17 @@ class StateManager:
         setattr(self, key, value)
         #print(f"State ==> Setting {key} to value {value}")
         # only process data if changed
-        new_state = self.getAsJSON(True)
+        new_state = self.get_state_event(True)
         if new_state != self.newstate:
             self.newstate = new_state
             self.sendStateUpdate()
             
-    def getAsJSON(self, isChangedState):
+    def get_state_event(self, isChangedState):
         msgtype = "state-change"
         if (not isChangedState):
             msgtype = "state"
 
-        return json.dumps({
+        return {
             "freedata-message": msgtype,
             "channel_busy": self.channel_busy,
             "is_codec2_traffic": self.is_codec2_traffic,
@@ -84,7 +84,7 @@ class StateManager:
             "is_beacon_running": self.is_beacon_running,
             "radio_status": self.radio_status,
             "radio_frequency": self.radio_frequency,
-        })
+        }
     
     # .wait() blocks until the event is set
     def isTransmitting(self):
