@@ -8,11 +8,11 @@ import "../../node_modules/gridstack/dist/gridstack.min.css";
 import { GridStack } from "gridstack";
 import { settingsStore as settings } from "../store/settingsStore.js";
 
-import hsl from "./main_active_heard_stations.vue";
-import stats from "./main_active_stats.vue";
-import audio from "./main_active_audio_level.vue";
-import rigctl from "./main_active_rig_control.vue";
-import beacon from "./main_active_broadcasts.vue";
+import active_heard_stations from "./main_active_heard_stations.vue";
+import active_stats from "./main_active_stats.vue";
+import active_audio_level from "./main_active_audio_level.vue";
+import active_rig_control from "./main_active_rig_control.vue";
+import active_broadcats from "./main_active_broadcasts.vue";
 import { stateDispatcher } from "../js/eventHandler";
 let count = ref(0);
 let info = ref("");
@@ -96,11 +96,11 @@ function showModal() {
   new Modal("#tileModal", {}).show();
 }
 function quickfill() {
-  addNewWidget2(hsl);
-  addNewWidget2(stats);
-  addNewWidget2(audio);
-  addNewWidget2(rigctl);
-  addNewWidget2(beacon);
+  addNewWidget2(active_heard_stations);
+  addNewWidget2(active_stats);
+  addNewWidget2(active_audio_level);
+  addNewWidget2(active_rig_control);
+  addNewWidget2(active_broadcats);
 }
 </script>
 
@@ -122,7 +122,7 @@ function quickfill() {
     >
       <div class="grid-stack-item-content">
         <button @click="remove(w)" class="btn-close grid-stack-floaty-btn">
-          <i style="font-size: x-small" class="bi bi-trash3 h3"></i>
+          
         </button>
         <component :is="w.component2" v-bind="w" />
       </div>
@@ -148,7 +148,7 @@ function quickfill() {
           >
             <button
               type="button"
-              @click="addNewWidget2(hsl)"
+              @click="addNewWidget2(active_heard_stations)"
               class="btn btn-outline-secondary"
               data-bs-dismiss="modal"
             >
@@ -156,7 +156,7 @@ function quickfill() {
             </button>
             <button
               type="button"
-              @click="addNewWidget2(stats)"
+              @click="addNewWidget2(active_stats)"
               class="btn btn-outline-secondary"
               data-bs-dismiss="modal"
             >
@@ -164,7 +164,7 @@ function quickfill() {
             </button>
             <button
               type="button"
-              @click="addNewWidget2(audio)"
+              @click="addNewWidget2(active_audio_level)"
               class="btn btn-outline-secondary"
               data-bs-dismiss="modal"
             >
@@ -172,7 +172,7 @@ function quickfill() {
             </button>
             <button
               type="button"
-              @click="addNewWidget2(beacon)"
+              @click="addNewWidget2(active_broadcats)"
               class="btn btn-outline-secondary"
               data-bs-dismiss="modal"
             >
@@ -180,7 +180,7 @@ function quickfill() {
             </button>
             <button
               type="button"
-              @click="addNewWidget2(rigctl)"
+              @click="addNewWidget2(active_rig_control)"
               class="btn btn-outline-secondary"
               data-bs-dismiss="modal"
             >
