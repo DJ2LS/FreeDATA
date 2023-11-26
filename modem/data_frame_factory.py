@@ -213,3 +213,4 @@ class DataFrameFactory:
     def build_test(self):
         test_frame = bytearray(126)
         test_frame[:1] = bytes([FR_TYPE.TEST_FRAME.value])
+        return test_frame
