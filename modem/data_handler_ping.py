@@ -14,60 +14,6 @@ class PING(DATA):
         self.event_queue = event_queue
         self.config = config
 
-    # ---------- PING
-    def transmit_ping(self, mycallsign: str, dxcallsign: str) -> None:
-        """
-        Function for controlling pings
-        Args:
-          mycallsign
-          dxcallsign
-
-        """
-        # check if specific callsign is set with different SSID than the Modem is initialized
-        try:
-            mycallsign = helpers.callsign_to_bytes(mycallsign)
-            mycallsign = helpers.bytes_to_callsign(mycallsign)
-        except Exception:
-            mycallsign = self.mycallsign
-
-        if not str(dxcallsign).strip():
-            self.log.warning("[Modem] Missing required callsign", dxcallsign=dxcallsign)
-            return
-
-        # additional step for being sure our callsign is correctly
-        # in case we are not getting a station ssid
-        # then we are forcing a station ssid = 0
-        dxcallsign = helpers.callsign_to_bytes(dxcallsign)
-        dxcallsign = helpers.bytes_to_callsign(dxcallsign)
-
-        self.dxcallsign = dxcallsign
-        self.dxcallsign_crc = helpers.get_crc_24(self.dxcallsign)
-        self.event_queue.put({
-            'freedata': "modem-message",
-            'ping': "transmitting",
-            'dxcallsign': str(dxcallsign, "UTF-8"),
-        })
-
-        self.log.info(
-            "[Modem] PING REQ ["
-            + str(mycallsign, "UTF-8")
-            + "] >>> ["
-            + str(dxcallsign, "UTF-8")
-            + "]"
-        )
-
-        ping_frame = bytearray(self.length_sig0_frame)
-        ping_frame[:1] = bytes([FR_TYPE.PING.value])
-        ping_frame[1:4] = self.dxcallsign_crc
-        ping_frame[4:7] = helpers.get_crc_24(mycallsign)
-        ping_frame[7:13] = helpers.callsign_to_bytes(mycallsign)
-
-        if self.enable_fsk:
-            self.log.info("[Modem] ENABLE FSK", state=self.enable_fsk)
-            self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
-        else:
-            self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.sig0.value)
-
     def received_ping(self, deconstructed_frame: list, snr) -> None:
         """
         Called if we received a ping
