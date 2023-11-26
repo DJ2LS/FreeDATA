@@ -6,12 +6,18 @@ function buildURL(params, endpoint) {
 }
 
 async function apiGet(endpoint) {
+  try  {
   const response = await fetch(buildURL(settings.local, endpoint));
   if (!response.ok) {
     throw new Error(`REST response not ok: ${response.statusText}`);
   }
   const data = await response.json();
   return data;
+  }   catch(error)  {
+    console.error("Error getting from REST:", error);
+  }
+   
+ 
 }
 
 export async function apiPost(endpoint, payload = {}) {
