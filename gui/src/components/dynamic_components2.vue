@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, reactive, nextTick } from "vue";
+import { ref, onMounted, reactive, nextTick, shallowRef } from "vue";
 import { Modal } from "bootstrap";
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -14,6 +14,7 @@ import active_audio_level from "./main_active_audio_level.vue";
 import active_rig_control from "./main_active_rig_control.vue";
 import active_broadcats from "./main_active_broadcasts.vue";
 import { stateDispatcher } from "../js/eventHandler";
+
 let count = ref(0);
 let info = ref("");
 let gridFloat = ref(false);
@@ -21,13 +22,30 @@ let color = ref("black");
 let gridInfo = ref("");
 let grid = null; // DO NOT use ref(null) as proxies GS will break all logic when comparing structures... see https://github.com/gridstack/gridstack.js/issues/2115
 let items = ref([]);
-
+class gridWidget{
+  component2;
+  size;
+  text;
+  constructor(component, size, text) {
+    this.component2 = component;
+    this.size = size;
+    this.text = text;
+  }
+}
+const gridWidgets = [
+  new gridWidget(active_heard_stations,{ x: 0, y: 0, w: 7, h: 20 },"Heard stations"),
+  new gridWidget(active_stats,{ x: 0, y: 0, w: 5, h: 28 },"Stats (waterfall, etc)"),
+  new gridWidget(active_audio_level,{ x: 0, y: 0, w: 5, h: 12 },"Audio"),
+  new gridWidget(active_rig_control,{ x: 0, y: 0, w: 6, h: 12 },"Rig control"),
+  new gridWidget(active_broadcats,{  x: 1, y: 1, w: 5, h: 12 },"Broadcats"),
+];
 onMounted(() => {
   grid = GridStack.init({
     // DO NOT user grid.value = GridStack.init(), see above
     float: true,
-    cellHeight: "70px",
-    minRow: 12,
+    cellHeight: "10px",
+    minRow: 50,
+    margin: 5,
   });
 
   grid.on("dragstop", function (event, element) {
@@ -60,9 +78,9 @@ function onChange(event, changeItems) {
   });
 }
 function addNewWidget2(componentToAdd) {
-  const node = items[count.value] || { x: 0, y: 0, w: 3, h: 3 };
+  const node = items[count.value] || {...componentToAdd.size};
   node.id = "w_" + count.value++;
-  node.component2 = componentToAdd;
+  node.component2 = shallowRef({...componentToAdd.component2});
   items.value.push(node);
   nextTick(() => {
     grid.makeWidget(node.id);
@@ -96,11 +114,9 @@ function showModal() {
   new Modal("#tileModal", {}).show();
 }
 function quickfill() {
-  addNewWidget2(active_heard_stations);
-  addNewWidget2(active_stats);
-  addNewWidget2(active_audio_level);
-  addNewWidget2(active_rig_control);
-  addNewWidget2(active_broadcats);
+  gridWidgets.forEach(async (gw) => {
+    await addNewWidget2(gw);
+})
 }
 </script>
 
@@ -124,7 +140,7 @@ function quickfill() {
         <button @click="remove(w)" class="btn-close grid-stack-floaty-btn">
           
         </button>
-        <component :is="w.component2" v-bind="w" />
+        <component :is="w.component2" />
       </div>
     </div>
   </div>
@@ -148,7 +164,7 @@ function quickfill() {
           >
             <button
               type="button"
-              @click="addNewWidget2(active_heard_stations)"
+              @click="addNewWidget2(gridWidgets[0])"
               class="btn btn-outline-secondary"
               data-bs-dismiss="modal"
             >
@@ -156,7 +172,7 @@ function quickfill() {
             </button>
             <button
               type="button"
-              @click="addNewWidget2(active_stats)"
+              @click="addNewWidget2(gridWidgets[1])"
               class="btn btn-outline-secondary"
               data-bs-dismiss="modal"
             >
@@ -164,7 +180,7 @@ function quickfill() {
             </button>
             <button
               type="button"
-              @click="addNewWidget2(active_audio_level)"
+              @click="addNewWidget2(gridWidgets[2])"
               class="btn btn-outline-secondary"
               data-bs-dismiss="modal"
             >
@@ -172,7 +188,7 @@ function quickfill() {
             </button>
             <button
               type="button"
-              @click="addNewWidget2(active_broadcats)"
+              @click="addNewWidget2(gridWidgets[3])"
               class="btn btn-outline-secondary"
               data-bs-dismiss="modal"
             >
@@ -180,7 +196,7 @@ function quickfill() {
             </button>
             <button
               type="button"
-              @click="addNewWidget2(active_rig_control)"
+              @click="addNewWidget2(gridWidgets[4])"
               class="btn btn-outline-secondary"
               data-bs-dismiss="modal"
             >
