@@ -22,7 +22,7 @@ let color = ref("black");
 let gridInfo = ref("");
 let grid = null; // DO NOT use ref(null) as proxies GS will break all logic when comparing structures... see https://github.com/gridstack/gridstack.js/issues/2115
 let items = ref([]);
-class gridWidget{
+class gridWidget {
   component2;
   size;
   text;
@@ -33,11 +33,23 @@ class gridWidget{
   }
 }
 const gridWidgets = [
-  new gridWidget(active_heard_stations,{ x: 0, y: 0, w: 7, h: 20 },"Heard stations"),
-  new gridWidget(active_stats,{ x: 0, y: 0, w: 5, h: 28 },"Stats (waterfall, etc)"),
-  new gridWidget(active_audio_level,{ x: 0, y: 0, w: 5, h: 12 },"Audio"),
-  new gridWidget(active_rig_control,{ x: 0, y: 0, w: 6, h: 12 },"Rig control"),
-  new gridWidget(active_broadcats,{  x: 1, y: 1, w: 5, h: 12 },"Broadcats"),
+  new gridWidget(
+    active_heard_stations,
+    { x: 0, y: 0, w: 7, h: 20 },
+    "Heard stations",
+  ),
+  new gridWidget(
+    active_stats,
+    { x: 0, y: 0, w: 5, h: 28 },
+    "Stats (waterfall, etc)",
+  ),
+  new gridWidget(active_audio_level, { x: 0, y: 0, w: 5, h: 12 }, "Audio"),
+  new gridWidget(
+    active_rig_control,
+    { x: 0, y: 0, w: 6, h: 12 },
+    "Rig control",
+  ),
+  new gridWidget(active_broadcats, { x: 1, y: 1, w: 5, h: 12 }, "Broadcats"),
 ];
 onMounted(() => {
   grid = GridStack.init({
@@ -78,9 +90,9 @@ function onChange(event, changeItems) {
   });
 }
 function addNewWidget2(componentToAdd) {
-  const node = items[count.value] || {...componentToAdd.size};
+  const node = items[count.value] || { ...componentToAdd.size };
   node.id = "w_" + count.value++;
-  node.component2 = shallowRef({...componentToAdd.component2});
+  node.component2 = shallowRef({ ...componentToAdd.component2 });
   items.value.push(node);
   nextTick(() => {
     grid.makeWidget(node.id);
@@ -116,7 +128,7 @@ function showModal() {
 function quickfill() {
   gridWidgets.forEach(async (gw) => {
     await addNewWidget2(gw);
-})
+  });
 }
 </script>
 
@@ -137,9 +149,10 @@ function quickfill() {
       :gs-auto-position="true"
     >
       <div class="grid-stack-item-content">
-        <button @click="remove(w)" class="btn-close grid-stack-floaty-btn">
-          
-        </button>
+        <button
+          @click="remove(w)"
+          class="btn-close grid-stack-floaty-btn"
+        ></button>
         <component :is="w.component2" />
       </div>
     </div>

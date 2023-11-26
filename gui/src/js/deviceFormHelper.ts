@@ -10,8 +10,7 @@ const skel = JSON.parse(`
     "id": "0000",
     "name": "No devices received from modem",
     "native_index": 0
-}]`
-)
+}]`);
 export function loadAudioDevices() {
   getAudioDevices().then((devices) => {
     audioDevices = devices;
@@ -25,16 +24,14 @@ export function loadSerialDevices() {
 }
 
 export function audioInputOptions() {
-  if ((audioDevices === undefined))
-  {
+  if (audioDevices === undefined) {
     return skel;
   }
   return audioDevices.in;
 }
 
 export function audioOutputOptions() {
-  if ((audioDevices === undefined))
-  {
+  if (audioDevices === undefined) {
     return skel;
   }
   return audioDevices.out;
