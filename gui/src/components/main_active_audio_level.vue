@@ -6,6 +6,8 @@ setActivePinia(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
+import { record_audio } from "../js/sock";
+
 function startStopRecordAudio() {
   record_audio();
 }
@@ -19,7 +21,7 @@ function startStopRecordAudio() {
             <i class="bi bi-volume-up" style="font-size: 1.2rem"></i>
           </div>
           <div class="col-3">
-            <strong class="fs-5">Audio</strong>
+            <strong>Audio</strong>
           </div>
           <div class="col-7">
             <button
@@ -37,8 +39,8 @@ function startStopRecordAudio() {
               class="btn btn-sm"
               @click="startStopRecordAudio()"
               v-bind:class="{
-                'btn-outline-secondary': state.audio_recording === 'False',
-                'btn-secondary': state.audio_recording === 'True',
+                'btn-outline-secondary': state.audio_recording == false,
+                'btn-secondary': state.audio_recording == true,
               }"
             >
               Record
