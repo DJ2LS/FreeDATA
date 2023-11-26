@@ -9,7 +9,7 @@ import { GridStack } from "gridstack";
 import { settingsStore as settings } from "../store/settingsStore.js";
 
 import active_heard_stations from "./grid_active_heard_stations.vue";
-import mini_heard_stations from "./grid_active_heard_stations_mini.vue"
+import mini_heard_stations from "./grid_active_heard_stations_mini.vue";
 import active_stats from "./main_active_stats.vue";
 import active_audio_level from "./main_active_audio_level.vue";
 import active_rig_control from "./main_active_rig_control.vue";
@@ -51,7 +51,11 @@ const gridWidgets = [
     "Rig control",
   ),
   new gridWidget(active_broadcats, { x: 1, y: 1, w: 5, h: 12 }, "Broadcats"),
-  new gridWidget(mini_heard_stations, { x: 1, y: 1, w: 5, h: 20 }, "Mini Heard stations"),
+  new gridWidget(
+    mini_heard_stations,
+    { x: 1, y: 1, w: 5, h: 20 },
+    "Mini Heard stations",
+  ),
 ];
 onMounted(() => {
   grid = GridStack.init({
@@ -245,6 +249,5 @@ function quickfill() {
   z-index: 1000;
   float: right;
   top: 6px;
-
 }
 </style>
