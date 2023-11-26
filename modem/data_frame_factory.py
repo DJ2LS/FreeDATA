@@ -176,8 +176,6 @@ class DataFrameFactory:
         }
         return self.construct(FR_TYPE.QRV, payload)
 
-
-
     def build_beacon(self):
         payload = {
             "mycallsign": helpers.callsign_to_bytes(self.myfullcall),

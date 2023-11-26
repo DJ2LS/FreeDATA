@@ -5,7 +5,7 @@ from codec2 import FREEDV_MODE
 
 class TxCommand():
 
-    def __init__(self, config, logger, apiParams):
+    def __init__(self, config, logger, apiParams = {}):
         self.config = config
         self.logger = logger
         self.set_params_from_api(apiParams)
