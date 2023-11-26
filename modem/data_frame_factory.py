@@ -23,6 +23,10 @@ class DataFrameFactory:
 
     def __init__(self):
         self.myfullcall = f"{self.modem_config['STATION']['mycall']}-{self.modem_config['STATION']['myssid']}"
+
+        # table for holding our frame templates
+        self.template_list = {}
+
         self._load_broadcast_templates()
         self._load_ping_templates()
         self._load_fec_templates()
