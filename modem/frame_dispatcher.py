@@ -146,7 +146,10 @@ class DISPATCHER():
         if self.check_if_valid_frame(bytes_out):
             # get frame as dictionary
             deconstructed_frame = self.frame_factory.deconstruct(bytes_out)
-            frametype = deconstructed_frame["frame_type"]
+            frametype = deconstructed_frame["frame_type_int"]
+            print(deconstructed_frame)
+            print(frametype)
+
 
                         # Dispatch activity based on received frametype
             if frametype in self.rx_dispatcher:

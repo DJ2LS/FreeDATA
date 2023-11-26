@@ -114,6 +114,7 @@ class DataFrameFactory:
             raise ValueError(f"Unknown frame type: {frametype}")
 
         extracted_data["frame_type"] = FR_TYPE(frametype).name
+        extracted_data["frame_type_int"] = frametype
 
         for key, item_length in frame_template.items():
             if key != "frame_length":
