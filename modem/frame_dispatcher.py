@@ -5,12 +5,10 @@ FRAME DISPATCHER - We are dispatching the received frames to the needed function
 """
 import threading
 import helpers
-import structlog
 from modem_frametypes import FRAME_TYPE as FR_TYPE
 import event_manager
 from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT, MODEM_TRANSMIT_QUEUE
 from data_frame_factory import DataFrameFactory
-
 
 from data_handler_broadcasts import BROADCAST
 from data_handler_data_broadcasts import DATABROADCAST
