@@ -168,6 +168,7 @@ class BROADCAST(DATA):
         # here we add the received station to the heard stations buffer
         beacon_callsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
         self.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
+
         self.event_manager.send_custom_event(
             freedata="modem-message",
             beacon="received",
