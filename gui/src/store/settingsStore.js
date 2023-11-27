@@ -1,12 +1,14 @@
-import { reactive, watch } from "vue";
+import { reactive, ref, watch } from "vue";
 
 import { getConfig, setConfig } from "../js/api";
+import { initWaterfall } from "../js/waterfallHandler";
 
 export const settingsStore = reactive({
   local: {
     host: "127.0.0.1",
     port: "5000",
     enable_fft: false,
+    spectrum: "waterfall",
   },
   remote: {
     AUDIO: {

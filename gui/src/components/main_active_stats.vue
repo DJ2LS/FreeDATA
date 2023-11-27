@@ -27,16 +27,16 @@ import { computed } from "vue";
 function selectStatsControl(obj) {
   switch (obj.delegateTarget.id) {
     case "list-waterfall-list":
-      settings.spectrum = "waterfall";
+      settings.local.spectrum = "waterfall";
       break;
     case "list-scatter-list":
-      settings.spectrum = "scatter";
+      settings.local.spectrum = "scatter";
       break;
     case "list-chart-list":
-      settings.spectrum = "chart";
+      settings.local.spectrum = "chart";
       break;
     default:
-      settings.spectrum = "waterfall";
+      settings.local.spectrum = "waterfall";
   }
   //saveSettingsToFile();
 }
@@ -202,7 +202,7 @@ export default {
                   href="#list-waterfall"
                   role="tab"
                   aria-controls="list-waterfall"
-                  v-bind:class="{ active: settings.spectrum === 'waterfall' }"
+                  v-bind:class="{ active: settings.local.spectrum === 'waterfall' }"
                   @click="selectStatsControl($event)"
                   ><strong><i class="bi bi-water"></i></strong
                 ></a>
@@ -213,7 +213,7 @@ export default {
                   href="#list-scatter"
                   role="tab"
                   aria-controls="list-scatter"
-                  v-bind:class="{ active: settings.spectrum === 'scatter' }"
+                  v-bind:class="{ active: settings.local.spectrum === 'scatter' }"
                   @click="selectStatsControl($event)"
                   ><strong><i class="bi bi-border-outer"></i></strong
                 ></a>
@@ -224,7 +224,7 @@ export default {
                   href="#list-chart"
                   role="tab"
                   aria-controls="list-chart"
-                  v-bind:class="{ active: settings.spectrum === 'chart' }"
+                  v-bind:class="{ active: settings.local.spectrum === 'chart' }"
                   @click="selectStatsControl($event)"
                   ><strong><i class="bi bi-graph-up-arrow"></i></strong
                 ></a>
@@ -352,7 +352,7 @@ export default {
       <div class="tab-content" id="nav-stats-tabContent">
         <div
           class="tab-pane fade"
-          v-bind:class="{ 'show active': settings.spectrum === 'waterfall' }"
+          v-bind:class="{ 'show active': settings.local.spectrum === 'waterfall' }"
           id="list-waterfall"
           role="stats_tabpanel"
           aria-labelledby="list-waterfall-list"
@@ -366,7 +366,7 @@ export default {
         </div>
         <div
           class="tab-pane fade"
-          v-bind:class="{ 'show active': settings.spectrum === 'scatter' }"
+          v-bind:class="{ 'show active': settings.local.spectrum === 'scatter' }"
           id="list-scatter"
           role="tabpanel"
           aria-labelledby="list-scatter-list"
@@ -375,7 +375,7 @@ export default {
         </div>
         <div
           class="tab-pane fade"
-          v-bind:class="{ 'show active': settings.spectrum === 'chart' }"
+          v-bind:class="{ 'show active': settings.local.spectrum === 'chart' }"
           id="list-chart"
           role="tabpanel"
           aria-labelledby="list-chart-list"
