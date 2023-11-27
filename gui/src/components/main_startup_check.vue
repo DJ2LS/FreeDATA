@@ -28,7 +28,6 @@ var updateAvailable = process.env.FDUpdateAvail;
 
 // start modemCheck modal once on startup
 onMounted(() => {
-  getModemState().then();
   getVersion().then((res) => {
     state.modem_version = res;
   });

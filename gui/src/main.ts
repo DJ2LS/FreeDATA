@@ -31,7 +31,9 @@ const tooltipList = [...tooltipTriggerList].map(
 
 import { getRemote } from "./store/settingsStore";
 import { initConnections } from "./js/event_sock.js";
+import { getModemState } from "./js/api";
 
 getRemote().then(() => {
   initConnections();
+  getModemState();
 });
