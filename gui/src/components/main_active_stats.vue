@@ -202,7 +202,9 @@ export default {
                   href="#list-waterfall"
                   role="tab"
                   aria-controls="list-waterfall"
-                  v-bind:class="{ active: settings.local.spectrum === 'waterfall' }"
+                  v-bind:class="{
+                    active: settings.local.spectrum === 'waterfall',
+                  }"
                   @click="selectStatsControl($event)"
                   ><strong><i class="bi bi-water"></i></strong
                 ></a>
@@ -213,7 +215,9 @@ export default {
                   href="#list-scatter"
                   role="tab"
                   aria-controls="list-scatter"
-                  v-bind:class="{ active: settings.local.spectrum === 'scatter' }"
+                  v-bind:class="{
+                    active: settings.local.spectrum === 'scatter',
+                  }"
                   @click="selectStatsControl($event)"
                   ><strong><i class="bi bi-border-outer"></i></strong
                 ></a>
@@ -352,7 +356,9 @@ export default {
       <div class="tab-content" id="nav-stats-tabContent">
         <div
           class="tab-pane fade"
-          v-bind:class="{ 'show active': settings.local.spectrum === 'waterfall' }"
+          v-bind:class="{
+            'show active': settings.local.spectrum === 'waterfall',
+          }"
           id="list-waterfall"
           role="stats_tabpanel"
           aria-labelledby="list-waterfall-list"
@@ -366,7 +372,9 @@ export default {
         </div>
         <div
           class="tab-pane fade"
-          v-bind:class="{ 'show active': settings.local.spectrum === 'scatter' }"
+          v-bind:class="{
+            'show active': settings.local.spectrum === 'scatter',
+          }"
           id="list-scatter"
           role="tabpanel"
           aria-labelledby="list-scatter-list"

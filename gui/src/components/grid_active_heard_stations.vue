@@ -96,6 +96,5 @@ function getMaidenheadDistance(dxGrid) {
 
       <!-- END OF HEARD STATIONS TABLE -->
     </div>
-
   </div>
 </template>
