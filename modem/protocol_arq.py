@@ -6,6 +6,7 @@ import helpers
 import modem
 import stats
 import structlog
+from data_frame_factory import DataFrameFactory
 from codec2 import FREEDV_MODE, FREEDV_MODE_USED_SLOTS
 from modem_frametypes import FRAME_TYPE as FR_TYPE
 import event_manager
@@ -20,6 +21,7 @@ class ARQ:
         self.states = states
         self.event_manager = event_manager.EventManager([event_queue])
 
+        self.frame_factory = DataFrameFactory(config)
 
         # ARQ PROTOCOL VERSION
         # v.5 - signalling frame uses datac0

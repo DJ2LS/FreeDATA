@@ -22,6 +22,7 @@ decoded_frame: {'frame_type': 'CQ', 'origin': b'DJ2LS-9', 'gridsquare': 'JN49EA'
 class DataFrameFactory:
 
     LENGTH_SIG0_FRAME = 14
+    LENGTH_SIG1_FRAME = 14
 
     def __init__(self, config):
         self.myfullcall = f"{config['STATION']['mycall']}-{config['STATION']['myssid']}"

@@ -432,13 +432,19 @@ class IRS(ARQ):
     def send_burst_nack_frame(self, snr: bytes) -> None:
         """Build and send NACK frame for received DATA frame"""
 
-        nack_frame = bytearray(self.length_sig1_frame)
-        nack_frame[:1] = bytes([FR_TYPE.FR_NACK.value])
-        nack_frame[1:2] = self.session_id
-        nack_frame[2:3] = helpers.snr_to_bytes(snr)
-        nack_frame[3:4] = bytes([int(self.speed_level)])
-        nack_frame[4:8] = len(self.arq_rx_frame_buffer).to_bytes(4, byteorder="big")
+        # nack_frame = bytearray(self.length_sig1_frame)
+        # nack_frame[:1] = bytes([FR_TYPE.FR_NACK.value])
+        # nack_frame[1:2] = self.session_id
+        # nack_frame[2:3] = helpers.snr_to_bytes(snr)
+        # nack_frame[3:4] = bytes([int(self.speed_level)])
+        # nack_frame[4:8] = len(self.arq_rx_frame_buffer).to_bytes(4, byteorder="big")
 
+
+        nack_frame = self.frame_factory.build_arq_frame_nack(session_id=self.session_id,
+                                                           snr=snr,
+                                                           speed_level=self.speed_level,
+                                                           len_arq_rx_frame_buffer=len(self.arq_rx_frame_buffer)
+                                                           )
         # TRANSMIT NACK FRAME FOR BURST
         # TODO Do we have to send ident frame?
         # self.enqueue_frame_for_tx([ack_frame, self.send_ident_frame(False)], c2_mode=FREEDV_MODE.sig1.value, copies=3, repeat_delay=0)
@@ -463,13 +469,20 @@ class IRS(ARQ):
 
         # Create and send ACK frame
         self.log.info("[Modem] ARQ | RX | SENDING NACK")
-        nack_frame = bytearray(self.length_sig1_frame)
-        nack_frame[:1] = bytes([FR_TYPE.BURST_NACK.value])
-        nack_frame[1:2] = self.session_id
-        nack_frame[2:3] = helpers.snr_to_bytes(0)
-        nack_frame[3:4] = bytes([int(self.speed_level)])
-        nack_frame[4:5] = bytes([int(tx_n_frames_per_burst)])
-        nack_frame[5:9] = len(self.arq_rx_frame_buffer).to_bytes(4, byteorder="big")
+        # nack_frame = bytearray(self.length_sig1_frame)
+        # nack_frame[:1] = bytes([FR_TYPE.BURST_NACK.value])
+        # nack_frame[1:2] = self.session_id
+        # nack_frame[2:3] = helpers.snr_to_bytes(0)
+        # nack_frame[3:4] = bytes([int(self.speed_level)])
+        # nack_frame[4:5] = bytes([int(tx_n_frames_per_burst)])
+        # nack_frame[5:9] = len(self.arq_rx_frame_buffer).to_bytes(4, byteorder="big")
+
+        nack_frame = self.frame_factory.build_arq_burst_nack(session_id=self.session_id,
+                                                             snr=0,
+                                                             speed_level=self.speed_level,
+                                                             len_arq_rx_frame_buffer=len(self.arq_rx_frame_buffer),
+                                                             n_frames_per_burst=bytes([int(tx_n_frames_per_burst)])
+                                                           )
 
         # wait if  we have a channel busy condition
         if self.states.channel_busy:
@@ -783,12 +796,18 @@ class IRS(ARQ):
     def send_burst_ack_frame(self, snr) -> None:
         """Build and send ACK frame for burst DATA frame"""
 
-        ack_frame = bytearray(self.length_sig1_frame)
-        ack_frame[:1] = bytes([FR_TYPE.BURST_ACK.value])
-        ack_frame[1:2] = self.session_id
-        ack_frame[2:3] = helpers.snr_to_bytes(snr)
-        ack_frame[3:4] = bytes([int(self.speed_level)])
-        ack_frame[4:8] = len(self.arq_rx_frame_buffer).to_bytes(4, byteorder="big")
+        # ack_frame = bytearray(self.length_sig1_frame)
+        # ack_frame[:1] = bytes([FR_TYPE.BURST_ACK.value])
+        # ack_frame[1:2] = self.session_id
+        # ack_frame[2:3] = helpers.snr_to_bytes(snr)
+        # ack_frame[3:4] = bytes([int(self.speed_level)])
+        # ack_frame[4:8] = len(self.arq_rx_frame_buffer).to_bytes(4, byteorder="big")
+
+        ack_frame = self.frame_factory.build_arq_burst_ack(session_id=self.session_id,
+                                                           snr=snr,
+                                                           speed_level=self.speed_level,
+                                                           len_arq_rx_frame_buffer=len(self.arq_rx_frame_buffer)
+                                                           )
 
         # wait if  we have a channel busy condition
         if self.states.channel_busy:
@@ -800,11 +819,12 @@ class IRS(ARQ):
     def send_data_ack_frame(self, snr) -> None:
         """Build and send ACK frame for received DATA frame"""
 
-        ack_frame = bytearray(self.length_sig1_frame)
-        ack_frame[:1] = bytes([FR_TYPE.FR_ACK.value])
-        ack_frame[1:2] = self.session_id
-        ack_frame[2:3] = helpers.snr_to_bytes(snr)
+        # ack_frame = bytearray(self.length_sig1_frame)
+        # ack_frame[:1] = bytes([FR_TYPE.FR_ACK.value])
+        # ack_frame[1:2] = self.session_id
+        # ack_frame[2:3] = helpers.snr_to_bytes(snr)
 
+        ack_frame = self.frame_factory.build_arq_frame_ack(session_id=self.session_id, snr=snr)
         # wait if  we have a channel busy condition
         if self.states.channel_busy:
             self.channel_busy_handler()
