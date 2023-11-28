@@ -19,7 +19,7 @@ export const useStateStore = defineStore("stateStore", () => {
   var speed_level = ref(0);
   var fft = ref();
   var channel_busy = ref(false);
-  var channel_busy_slot = ref([false,false,false,false,false]);
+  var channel_busy_slot = ref([false, false, false, false, false]);
   var scatter = ref();
   var s_meter_strength_percent = ref(0);
   var s_meter_strength_raw = ref(0);
