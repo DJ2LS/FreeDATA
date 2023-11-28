@@ -1399,6 +1399,7 @@ class RF:
             slot3 = [120, 176]
             slot4 = [176, 231]
             slot5 = [231, len(dfftlist)]
+            slotbusy = [False,False,False,False,False]
 
             # Set to true if we should increment delay count; else false to decrement
             addDelay=False
@@ -1413,11 +1414,11 @@ class RF:
                 # so we have a smoother state toggle
                 if np.sum(slotdfft[slotdfft > avg + 15]) >= 200 and not self.states.isTransmitting():
                     addDelay=True
-                    self.states.channel_busy_slot[slot] = True
-                else:
-                    self.states.channel_busy_slot[slot] = False
+                    slotbusy[slot]=True
+                    #self.states.channel_busy_slot[slot] = True
                 # increment slot
                 slot += 1
+                self.states.set_channel_slot_busy(slotbusy)
             if addDelay:
                 # Limit delay counter to a maximum of 200. The higher this value,
                 # the longer we will wait until releasing state

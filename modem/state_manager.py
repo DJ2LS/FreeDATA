@@ -51,9 +51,6 @@ class StateManager:
         # Set rig control status regardless or rig control method
         self.radio_status = False
 
-
-
-
     def sendState (self):
         currentState = self.get_state_event(False)
         self.statequeue.put(currentState)
@@ -70,7 +67,15 @@ class StateManager:
         if new_state != self.newstate:
             self.newstate = new_state
             self.sendStateUpdate()
-            
+
+    def set_channel_slot_busy(self, array):
+        for i in range(0,len(array),1):
+            if not array[i] == self.channel_busy_slot[i]:
+                self.channel_busy_slot = array
+                self.newstate = self.get_state_event(True)
+                self.sendStateUpdate()
+                continue
+    
     def get_state_event(self, isChangedState):
         msgtype = "state-change"
         if (not isChangedState):
@@ -85,6 +90,7 @@ class StateManager:
             "radio_status": self.radio_status,
             "radio_frequency": self.radio_frequency,
             "radio_mode": self.radio_mode,
+            "channel_busy_slot": self.channel_busy_slot,
         }
     
     # .wait() blocks until the event is set
@@ -100,8 +106,6 @@ class StateManager:
 
     def waitForTransmission(self):
         self.transmitting_event.wait()
-
-
 
     def register_arq_instance_by_id(self, id, instance):
         self.arq_instance_table[id] = instance

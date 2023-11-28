@@ -243,9 +243,9 @@ export default {
                 data-bs-trigger="hover"
                 data-bs-html="true"
                 v-bind:class="{
-                  'btn-warning': state.getChannelBusySlotState(0) === true,
+                  'btn-warning': state.channel_busy_slot[0] === true,
                   'btn-outline-secondary':
-                    state.getChannelBusySlotState(0) === false,
+                  state.channel_busy_slot[0] === false,
                 }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
@@ -260,9 +260,9 @@ export default {
                 data-bs-trigger="hover"
                 data-bs-html="true"
                 v-bind:class="{
-                  'btn-warning': state.getChannelBusySlotState(1) === true,
+                  'btn-warning': state.channel_busy_slot[1] === true,
                   'btn-outline-secondary':
-                    state.getChannelBusySlotState(1) === false,
+                  state.channel_busy_slot[1] === false,
                 }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
@@ -277,9 +277,9 @@ export default {
                 data-bs-trigger="hover"
                 data-bs-html="true"
                 v-bind:class="{
-                  'btn-warning': state.getChannelBusySlotState(2) === true,
+                  'btn-warning': state.channel_busy_slot[2] === true,
                   'btn-outline-secondary':
-                    state.getChannelBusySlotState(2) === false,
+                  state.channel_busy_slot[2] === false,
                 }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
@@ -294,9 +294,9 @@ export default {
                 data-bs-trigger="hover"
                 data-bs-html="true"
                 v-bind:class="{
-                  'btn-warning': state.getChannelBusySlotState(3) === true,
+                  'btn-warning': state.channel_busy_slot[3] === true,
                   'btn-outline-secondary':
-                    state.getChannelBusySlotState(3) === false,
+                  state.channel_busy_slot[3] === false,
                 }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
@@ -311,9 +311,9 @@ export default {
                 data-bs-trigger="hover"
                 data-bs-html="true"
                 v-bind:class="{
-                  'btn-warning': state.getChannelBusySlotState(4) === true,
+                  'btn-warning': state.channel_busy_slot[4] === true,
                   'btn-outline-secondary':
-                    state.getChannelBusySlotState(4) === false,
+                  state.channel_busy_slot[4] === false,
                 }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
