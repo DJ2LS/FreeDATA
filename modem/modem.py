@@ -115,6 +115,7 @@ class RF:
         # https://github.com/DJ2LS/FreeDATA/issues/127
         # https://github.com/DJ2LS/FreeDATA/issues/99
         self.mod_out_locked = True
+        self.rms_counter = 0
 
         # Make sure our resampler will work
         assert (self.AUDIO_SAMPLE_RATE_RX / self.MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48  # type: ignore
@@ -1330,7 +1331,7 @@ class RF:
         whether the channel is "busy."
         """
         # Initialize dbfs counter
-        rms_counter = 0
+        # rms_counter = 0
 
         # https://gist.github.com/ZWMiller/53232427efc5088007cab6feee7c6e4c
         # Fast Fourier Transform, 10*log10(abs) is to scale it to dB
@@ -1357,8 +1358,8 @@ class RF:
                 # Calculate audio dbfs
                 # https://stackoverflow.com/a/9763652
                 # calculate dbfs every 50 cycles for reducing CPU load
-                rms_counter += 1
-                if rms_counter > 50:
+                self.rms_counter += 1
+                if self.rms_counter > 5:
                     d = np.frombuffer(data, np.int16).astype(np.float32)
                     # calculate RMS and then dBFS
                     # https://dsp.stackexchange.com/questions/8785/how-to-compute-dbfs
@@ -1372,8 +1373,7 @@ class RF:
                     except Exception as e:
                         self.states.set("audio_dbfs", -100)
 
-
-                    rms_counter = 0
+                    self.rms_counter = 0
 
             # Convert data to int to decrease size
             dfft = dfft.astype(int)

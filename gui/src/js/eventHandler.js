@@ -34,7 +34,10 @@ export function stateDispatcher(data) {
     stateStore.channel_busy = data["channel_busy"];
     stateStore.is_codec2_traffic = data["is_codec2_traffic"];
     stateStore.is_modem_running = data["is_modem_running"];
-    stateStore.dbfs_level = data["audio_dbfs"];
+    stateStore.dbfs_level = Math.round(data["audio_dbfs"]);
+    stateStore.dbfs_level_percent = Math.round(
+      Math.pow(10, data["audio_dbfs"] / 20) * 100,
+    );
     stateStore.channel_busy_slot = data["channel_busy_slot"];
     stateStore.beacon_state = data["is_beacon_running"];
     stateStore.radio_status = data["radio_status"];

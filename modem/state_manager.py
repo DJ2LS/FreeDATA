@@ -91,6 +91,7 @@ class StateManager:
             "radio_frequency": self.radio_frequency,
             "radio_mode": self.radio_mode,
             "channel_busy_slot": self.channel_busy_slot,
+            "audio_dbfs": self.audio_dbfs,
         }
     
     # .wait() blocks until the event is set
