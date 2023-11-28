@@ -20,24 +20,25 @@ class TxCommand():
         pass
 
     def log_message(self):
-        message = f"Running {self.get_name()}"
-        return message
+        return f"Running {self.get_name()}"
 
     def build_frame(self):
         pass
 
     def get_tx_mode(self):
-        c2_mode = FREEDV_MODE.fsk_ldpc_0.value if self.config['MODEM']['enable_fsk'] else FREEDV_MODE.sig0.value
-        return c2_mode
+        return (
+            FREEDV_MODE.fsk_ldpc_0.value
+            if self.config['MODEM']['enable_fsk']
+            else FREEDV_MODE.sig0.value
+        )
     
     def make_modem_queue_item(self, mode, repeat, repeat_delay, frame):
-        item = {
+        return {
             'mode': self.get_tx_mode(),
             'repeat': 1,
             'repeat_delay': 0,
-            'frame': frame
+            'frame': frame,
         }
-        return item
 
     def transmit(self, tx_frame_queue):
         frame = self.build_frame()
@@ -48,4 +49,3 @@ class TxCommand():
         self.emit_event(event_queue)
         self.logger.info(self.log_message())
         self.transmit(tx_frame_queue)
-        pass

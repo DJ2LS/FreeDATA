@@ -7,14 +7,14 @@ How to use this class:
 
 builder = DataFrameFactory()
 payload = {
-    "mycallsign" : helpers.callsign_to_bytes("DJ2LS-9"),
+    "origin" : helpers.callsign_to_bytes("DJ2LS-9"),
     "gridsquare": helpers.encode_grid("JN49ea"),
     "data": bytes(4)
 }
 
 frame = builder.construct(FR_TYPE.CQ, payload)
 decoded_frame = builder.deconstruct(frame)
-decoded_frame: {'frame_type': 'CQ', 'mycallsign': b'DJ2LS-9', 'gridsquare': 'JN49EA', 'data': bytearray(b'\x00\x00\x00\x00')}
+decoded_frame: {'frame_type': 'CQ', 'origin': b'DJ2LS-9', 'gridsquare': 'JN49EA', 'data': bytearray(b'\x00\x00\x00\x00')}
 
 """
 
@@ -39,14 +39,14 @@ class DataFrameFactory:
         # cq frame
         self.template_list[FR_TYPE.CQ.value] = {
             "frame_length": self.LENGTH_SIG0_FRAME,
-            "mycallsign": 6,
+            "origin": 6,
             "gridsquare": 4
         }
 
         # qrv frame
         self.template_list[FR_TYPE.QRV.value] = {
             "frame_length": self.LENGTH_SIG0_FRAME,
-            "mycallsign": 6,
+            "origin": 6,
             "gridsquare": 4,
             "snr": 1
         }
@@ -54,7 +54,7 @@ class DataFrameFactory:
         # beacon frame
         self.template_list[FR_TYPE.BEACON.value] = {
             "frame_length": self.LENGTH_SIG0_FRAME,
-            "mycallsign": 6,
+            "origin": 6,
             "gridsquare": 4
         }
 
@@ -62,16 +62,16 @@ class DataFrameFactory:
         # ping frame
         self.template_list[FR_TYPE.PING.value] = {
             "frame_length": self.LENGTH_SIG0_FRAME,
-            "dxcallsign_crc": 3,
-            "mycallsign_crc": 3,
-            "mycallsign": 6
+            "destination_crc": 3,
+            "origin_crc": 3,
+            "origin": 6
         }
 
     def _load_fec_templates(self):
         # fec wakeup frame
         self.template_list[FR_TYPE.FEC_WAKEUP.value] = {
             "frame_length": self.LENGTH_SIG0_FRAME,
-            "mycallsign": 6,
+            "origin": 6,
             "mode": 1,
             "n_bursts": 1,
         }
@@ -85,7 +85,7 @@ class DataFrameFactory:
         # fec is writing frame
         self.template_list[FR_TYPE.IS_WRITING.value] = {
             "frame_length": self.LENGTH_SIG0_FRAME,
-            "mycallsign": 6
+            "origin": 6
         }
 
     def _load_arq_templates(self):
@@ -93,15 +93,52 @@ class DataFrameFactory:
         # same structure for narrow and wide types
         arq_dc_open_ack = {
             "frame_length": self.LENGTH_SIG0_FRAME,
-            "dxcallsign_crc": 3,
-            "mycallsign_crc": 3,
-            "mycallsign": 6,
+            "destination_crc": 3,
+            "origin_crc": 3,
+            "origin": 6,
             "session_id": 1,
         }
-
         # arq connect frames
         self.template_list[FR_TYPE.ARQ_DC_OPEN_ACK_N.value] = arq_dc_open_ack
         self.template_list[FR_TYPE.ARQ_DC_OPEN_ACK_W.value] = arq_dc_open_ack
+
+        # arq burst ack 
+        self.template_list[FR_TYPE.BURST_ACK.value] = {
+            "frame_length": self.LENGTH_SIG1_FRAME,
+            "session_id": 1,
+            "snr":1,
+            "speed_level": 1,
+            "len_arq_rx_frame_buffer": 4
+        }
+
+        # arq frame ack TODO We should rename this to "session ack"
+        self.template_list[FR_TYPE.FR_ACK.value] = {
+            "frame_length": self.LENGTH_SIG1_FRAME,
+            "session_id": 1,
+            "snr":1
+        }
+        
+        # arq burst nack
+        self.template_list[FR_TYPE.BURST_NACK.value] = {
+            "frame_length": self.LENGTH_SIG1_FRAME,
+            "session_id": 1,
+            "snr": 1,
+            "speed_level": 1,
+            "len_arq_rx_frame_buffer": 4,
+            "n_frames_per_burst": 1
+
+        }
+
+        # arq frame nack --> TODO We should rename this to "session nack"
+        self.template_list[FR_TYPE.FR_NACK.value] = {
+            "frame_length": self.LENGTH_SIG1_FRAME,
+            "session_id": 1,
+            "snr": 1,
+            "speed_level": 1,
+            "len_arq_rx_frame_buffer": 4,
+            "n_frames_per_burst": 1
+
+        }
 
     def construct(self, frametype, content):
         frame_template = self.template_list[frametype.value]
@@ -135,7 +172,7 @@ class DataFrameFactory:
                 data = frame[buffer_position: buffer_position + item_length]
 
                 # Process the data based on the key
-                if key in ["mycallsign", "dxcallsign"]:
+                if key in ["origin", "destination"]:
                     extracted_data[key] = helpers.bytes_to_callsign(data).decode()
 
                 elif key == "gridsquare":
@@ -162,24 +199,24 @@ class DataFrameFactory:
         # get number of bytes per frame for mode
         return int(codec2.api.freedv_get_bits_per_modem_frame(freedv) / 8)
 
-    def build_ping(self, dxcallsign):
+    def build_ping(self, destination):
         payload = {
-            "dxcallsign_crc": helpers.get_crc_24(dxcallsign),
-            "mycallsign_crc": helpers.get_crc_24(self.myfullcall),
-            "mycallsign": helpers.callsign_to_bytes(self.myfullcall),
+            "destination_crc": helpers.get_crc_24(destination),
+            "origin_crc": helpers.get_crc_24(self.myfullcall),
+            "origin": helpers.callsign_to_bytes(self.myfullcall),
         }
         return self.construct(FR_TYPE.PING, payload)
     
     def build_cq(self):
         payload = {
-            "mycallsign": helpers.callsign_to_bytes(self.myfullcall),
+            "origin": helpers.callsign_to_bytes(self.myfullcall),
             "gridsquare": helpers.encode_grid(self.mygrid)
         }
         return self.construct(FR_TYPE.CQ, payload)
 
     def build_qrv(self, snr):
         payload = {
-            "mycallsign": helpers.callsign_to_bytes(self.myfullcall),
+            "origin": helpers.callsign_to_bytes(self.myfullcall),
             "gridsquare": helpers.encode_grid(self.mygrid),
             "snr": helpers.snr_to_bytes(snr)
         }
@@ -187,14 +224,14 @@ class DataFrameFactory:
 
     def build_beacon(self):
         payload = {
-            "mycallsign": helpers.callsign_to_bytes(self.myfullcall),
+            "origin": helpers.callsign_to_bytes(self.myfullcall),
             "gridsquare": helpers.encode_grid(self.mygrid)
         }
         return self.construct(FR_TYPE.BEACON, payload)
 
     def build_fec_is_writing(self):
         payload = {
-            "mycallsign": helpers.callsign_to_bytes(self.myfullcall),
+            "origin": helpers.callsign_to_bytes(self.myfullcall),
         }
         return self.construct(FR_TYPE.IS_WRITING, payload)
 
@@ -202,7 +239,7 @@ class DataFrameFactory:
         mode_int = codec2.freedv_get_mode_value_by_name(mode)
 
         payload = {
-            "mycallsign": helpers.callsign_to_bytes(self.myfullcall),
+            "origin": helpers.callsign_to_bytes(self.myfullcall),
             "mode": bytes([mode_int]),
             "n_bursts": bytes([1]) # n payload bursts,
 
@@ -223,20 +260,78 @@ class DataFrameFactory:
         test_frame[:1] = bytes([FR_TYPE.TEST_FRAME.value])
         return test_frame
 
-    def build_arq_connect(self, isWideband, dxcallsign, session_id):
+    def build_arq_connect(self, isWideband, destination, session_id):
         
         payload = {
-            "dxcallsign_crc": helpers.get_crc_24(dxcallsign),
-            "mycallsign_crc": helpers.get_crc_24(self.myfullcall),
-            "mycallsign": helpers.callsign_to_bytes(self.myfullcall),
+            "destination_crc": helpers.get_crc_24(destination),
+            "origin_crc": helpers.get_crc_24(self.myfullcall),
+            "origin": helpers.callsign_to_bytes(self.myfullcall),
             "session_id": session_id.to_bytes(1, 'big'),
         }
 
-        if isWideband:
-            type = FR_TYPE.ARQ_DC_OPEN_ACK_W
-        else:
-            type = FR_TYPE.ARQ_DC_OPEN_ACK_N
+        channel_type = FR_TYPE.ARQ_DC_OPEN_ACK_W if isWideband else FR_TYPE.ARQ_DC_OPEN_ACK_N
+        return self.construct(channel_type, payload)
 
-        return self.construct(type, payload)
+    def build_arq_burst_ack(self, session_id: bytes, snr: int, speed_level: int, len_arq_rx_frame_buffer: int):
+        # ack_frame = bytearray(self.length_sig1_frame)
+        # ack_frame[:1] = bytes([FR_TYPE.BURST_ACK.value])
+        # ack_frame[1:2] = self.session_id
+        # ack_frame[2:3] = helpers.snr_to_bytes(snr)
+        # ack_frame[3:4] = bytes([int(self.speed_level)])
+        # ack_frame[4:8] = len(self.arq_rx_frame_buffer).to_bytes(4, byteorder="big")
+        
+        payload = {
+            "session_id": session_id,
+            "snr": helpers.snr_to_bytes(snr),
+            "speed_level": bytes([speed_level]),
+            "len_arq_rx_frame_buffer": bytes([len_arq_rx_frame_buffer])
+        }
+        return self.construct(FR_TYPE.BURST_ACK, payload)
+
+    def build_arq_frame_ack(self, session_id: bytes, snr: int):
+        # ack_frame = bytearray(self.length_sig1_frame)
+        # ack_frame[:1] = bytes([FR_TYPE.FR_ACK.value])
+        # ack_frame[1:2] = self.session_id
+        # ack_frame[2:3] = helpers.snr_to_bytes(snr)
+
+        payload = {
+            "session_id": session_id,
+            "snr": helpers.snr_to_bytes(snr)
+        }
+        return self.construct(FR_TYPE.FR_ACK, payload)
 
 
+    def build_arq_burst_nack(self, session_id: bytes, snr: int, speed_level: int, len_arq_rx_frame_buffer: int, n_frames_per_burst: int):
+        # nack_frame = bytearray(self.length_sig1_frame)
+        # nack_frame[:1] = bytes([FR_TYPE.BURST_NACK.value])
+        # nack_frame[1:2] = self.session_id
+        # nack_frame[2:3] = helpers.snr_to_bytes(0)
+        # nack_frame[3:4] = bytes([int(self.speed_level)])
+        # nack_frame[4:5] = bytes([int(tx_n_frames_per_burst)])
+        # nack_frame[5:9] = len(self.arq_rx_frame_buffer).to_bytes(4, byteorder="big")
+        payload = {
+            "session_id": session_id,
+            "snr": helpers.snr_to_bytes(snr),
+            "speed_level": bytes([speed_level]),
+            "len_arq_rx_frame_buffer": bytes([len_arq_rx_frame_buffer]),
+            "n_frames_per_burst": bytes([n_frames_per_burst])
+        }
+        return self.construct(FR_TYPE.BURST_NACK, payload)
+    
+    def build_arq_frame_nack(self, session_id: bytes, snr: int, speed_level: int, len_arq_rx_frame_buffer: int, n_frames_per_burst: int):
+        # nack_frame = bytearray(self.length_sig1_frame)
+        # nack_frame[:1] = bytes([FR_TYPE.FR_NACK.value])
+        # nack_frame[1:2] = self.session_id
+        # nack_frame[2:3] = helpers.snr_to_bytes(snr)
+        # nack_frame[3:4] = bytes([int(self.speed_level)])
+        # nack_frame[4:8] = len(self.arq_rx_frame_buffer).to_bytes(4, byteorder="big")
+
+        payload = {
+            "session_id": session_id,
+            "snr": helpers.snr_to_bytes(snr),
+            "speed_level": bytes([speed_level]),
+            "len_arq_rx_frame_buffer": bytes([len_arq_rx_frame_buffer]),
+            "n_frames_per_burst": bytes([n_frames_per_burst])
+
+        }
+        return self.construct(FR_TYPE.FR_NACK, payload)

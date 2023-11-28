@@ -194,11 +194,12 @@ class DISPATCHER():
         # we could also create an own function, which returns True.
 
 
-        #deconstructed_frame["mycallsign"]
+        deconstructed_frame["destination_crc"]
+        deconstructed_frame["origin_crc"]
 
         # check for callsign CRC
-        _valid1, _ = helpers.check_callsign(self.arq.mycallsign, bytes(bytes_out[1:4]), self.arq.ssid_list)
-        _valid2, _ = helpers.check_callsign(self.arq.mycallsign, bytes(bytes_out[2:5]), self.arq.ssid_list)
+        _valid1, _ = helpers.check_callsign(self.arq.mycallsign, deconstructed_frame["destination_crc"], self.arq.ssid_list)
+        _valid2, _ = helpers.check_callsign(self.arq.mycallsign, deconstructed_frame["origin_crc"], self.arq.ssid_list)
         # check for session ID
         _valid3 = helpers.check_session_id(self.arq.session_id, bytes(bytes_out[1:2]))  # signalling frames
         _valid4 = helpers.check_session_id(self.arq.session_id, bytes(bytes_out[2:3]))  # arq data frames
