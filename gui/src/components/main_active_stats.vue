@@ -244,8 +244,7 @@ export default {
                 data-bs-html="true"
                 v-bind:class="{
                   'btn-warning': state.channel_busy_slot[0] === true,
-                  'btn-outline-secondary':
-                  state.channel_busy_slot[0] === false,
+                  'btn-outline-secondary': state.channel_busy_slot[0] === false,
                 }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
@@ -261,8 +260,7 @@ export default {
                 data-bs-html="true"
                 v-bind:class="{
                   'btn-warning': state.channel_busy_slot[1] === true,
-                  'btn-outline-secondary':
-                  state.channel_busy_slot[1] === false,
+                  'btn-outline-secondary': state.channel_busy_slot[1] === false,
                 }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
@@ -278,8 +276,7 @@ export default {
                 data-bs-html="true"
                 v-bind:class="{
                   'btn-warning': state.channel_busy_slot[2] === true,
-                  'btn-outline-secondary':
-                  state.channel_busy_slot[2] === false,
+                  'btn-outline-secondary': state.channel_busy_slot[2] === false,
                 }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
@@ -295,8 +292,7 @@ export default {
                 data-bs-html="true"
                 v-bind:class="{
                   'btn-warning': state.channel_busy_slot[3] === true,
-                  'btn-outline-secondary':
-                  state.channel_busy_slot[3] === false,
+                  'btn-outline-secondary': state.channel_busy_slot[3] === false,
                 }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
@@ -312,8 +308,7 @@ export default {
                 data-bs-html="true"
                 v-bind:class="{
                   'btn-warning': state.channel_busy_slot[4] === true,
-                  'btn-outline-secondary':
-                  state.channel_busy_slot[4] === false,
+                  'btn-outline-secondary': state.channel_busy_slot[4] === false,
                 }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
