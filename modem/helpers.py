@@ -36,7 +36,7 @@ def wait(seconds: float) -> bool:
     return True
 
 
-def get_crc_8(data) -> bytes:
+def get_crc_8(data: str) -> bytes:
     """Author: DJ2LS
 
     Get the CRC8 of a byte string
@@ -55,7 +55,7 @@ def get_crc_8(data) -> bytes:
     return crc_data
 
 
-def get_crc_16(data) -> bytes:
+def get_crc_16(data: str) -> bytes:
     """Author: DJ2LS
 
     Get the CRC16 of a byte string
@@ -74,7 +74,7 @@ def get_crc_16(data) -> bytes:
     crc_algorithm = crcengine.new("crc16-ccitt-false")  # load crc16 library
     return crc_algorithm(data).to_bytes(2, byteorder="big")
 
-def get_crc_24(data: bytes) -> bytes:
+def get_crc_24(data: str) -> bytes:
     """Author: DJ2LS
 
     Get the CRC24-OPENPGP of a byte string
@@ -102,7 +102,7 @@ def get_crc_24(data: bytes) -> bytes:
     return crc_algorithm(data).to_bytes(3,byteorder="big")
 
 
-def get_crc_32(data: bytes) -> bytes:
+def get_crc_32(data: str) -> bytes:
     """Author: DJ2LS
 
     Get the CRC32 of a byte string

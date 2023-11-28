@@ -5,6 +5,7 @@ FRAME DISPATCHER - We are dispatching the received frames to the needed function
 """
 import threading
 import helpers
+import structlog
 from modem_frametypes import FRAME_TYPE as FR_TYPE
 import event_manager
 from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT, MODEM_TRANSMIT_QUEUE
@@ -23,7 +24,9 @@ from protocol_arq_session import SESSION
 class DISPATCHER():
 
     def __init__(self, config, event_queue, states):
-        print("loading frame dispatcher.....\n")
+        self.log = structlog.get_logger("frame_dispatcher")
+
+        self.log.info("loading frame dispatcher.....\n")
         self.config = config
         self.event_queue = event_queue
         self.states = states
@@ -140,10 +143,10 @@ class DISPATCHER():
         Returns:
 
         """
-
-        if self.check_if_valid_frame(bytes_out):
+        deconstructed_frame = self.frame_factory.deconstruct(bytes_out)
+        if self.check_if_valid_frame(deconstructed_frame):
             # get frame as dictionary
-            deconstructed_frame = self.frame_factory.deconstruct(bytes_out)
+
             frametype = deconstructed_frame["frame_type_int"]
             print(deconstructed_frame)
             print(frametype)
@@ -184,12 +187,14 @@ class DISPATCHER():
                 frame_type=FR_TYPE(int.from_bytes(bytes_out[:1], byteorder="big")).name,
             )
 
-    def check_if_valid_frame(self, bytes_out):
+    def check_if_valid_frame(self, deconstructed_frame):
         # Process data only if broadcast or we are the receiver
         # bytes_out[1:4] == callsign check for signalling frames,
         # bytes_out[2:5] == transmission
         # we could also create an own function, which returns True.
-        frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
+
+
+        #deconstructed_frame["mycallsign"]
 
         # check for callsign CRC
         _valid1, _ = helpers.check_callsign(self.arq.mycallsign, bytes(bytes_out[1:4]), self.arq.ssid_list)
@@ -197,29 +202,28 @@ class DISPATCHER():
         # check for session ID
         _valid3 = helpers.check_session_id(self.arq.session_id, bytes(bytes_out[1:2]))  # signalling frames
         _valid4 = helpers.check_session_id(self.arq.session_id, bytes(bytes_out[2:3]))  # arq data frames
-        if (
+        return bool(
+            (
                 _valid1
                 or _valid2
                 or _valid3
                 or _valid4
-                or frametype
+                or deconstructed_frame["frame_type_int"]
                 in [
-            FR_TYPE.CQ.value,
-            FR_TYPE.QRV.value,
-            FR_TYPE.PING.value,
-            FR_TYPE.BEACON.value,
-            FR_TYPE.IS_WRITING.value,
-            FR_TYPE.FEC.value,
-            FR_TYPE.FEC_WAKEUP.value,
-        ]
-        ):
-            return True
-        return False
+                    FR_TYPE.CQ.value,
+                    FR_TYPE.QRV.value,
+                    FR_TYPE.PING.value,
+                    FR_TYPE.BEACON.value,
+                    FR_TYPE.IS_WRITING.value,
+                    FR_TYPE.FEC.value,
+                    FR_TYPE.FEC_WAKEUP.value,
+                ]
+            )
+        )
 
     def get_id_from_frame(self, data):
         if data[:1] in [FR_TYPE.ARQ_DC_OPEN_N, FR_TYPE.ARQ_DC_OPEN_W]:
-            session_id = data[13:14]
-            return session_id
+            return data[13:14]
         return None
 
     def initialize_arq_instance(self):
@@ -239,4 +243,4 @@ class DISPATCHER():
         if id := self.get_id_from_frame(data):
             instance = self.initialize_arq_instance()
             self.states.register_arq_instance_by_id(id, instance)
-            instance['arq_irs'].arq_received_data_channel_opener
+            instance['arq_irs'].arq_received_data_channel_opener()

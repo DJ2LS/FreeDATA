@@ -118,7 +118,6 @@ class DataFrameFactory:
         return frame
 
     def deconstruct(self, frame):
-        extracted_data = {}
         buffer_position = 1
 
         # Extract frametype and get the corresponding template
@@ -129,8 +128,7 @@ class DataFrameFactory:
             # Handle the case where the frame type is not recognized
             raise ValueError(f"Unknown frame type: {frametype}")
 
-        extracted_data["frame_type"] = FR_TYPE(frametype).name
-        extracted_data["frame_type_int"] = frametype
+        extracted_data = {"frame_type": FR_TYPE(frametype).name, "frame_type_int": frametype}
 
         for key, item_length in frame_template.items():
             if key != "frame_length":
@@ -204,7 +202,7 @@ class DataFrameFactory:
         mode_int = codec2.freedv_get_mode_value_by_name(mode)
 
         payload = {
-            "mycallsign": helpers.FEC_WAKEUP(self.myfullcall),
+            "mycallsign": helpers.callsign_to_bytes(self.myfullcall),
             "mode": bytes([mode_int]),
             "n_bursts": bytes([1]) # n payload bursts,
 
