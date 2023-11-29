@@ -22,38 +22,27 @@ class PING(DATA):
           data_in:bytes:
 
         """
-        # use --> deconstructed_frame
-
-
-
-
-        #dxcallsign_crc = bytes(data_in[4:7])
-        mycallsign_crc = deconstructed_frame["mycallsign_crc"]
-        dxcallsign_crc = deconstructed_frame["dxcallsign_crc"]
-        dxcallsign = deconstructed_frame["dxcallsign"]
-        #dxcallsign = helpers.bytes_to_callsign(bytes(data_in[7:13]))
+        destination_crc = deconstructed_frame["destination_crc"]
+        origin_crc = deconstructed_frame["origin_crc"]
+        origin = deconstructed_frame["origin"]
 
         # check if callsign ssid override
-        valid, mycallsign = helpers.check_callsign(self.mycallsign, mycallsign_crc, self.ssid_list)
+        valid, mycallsign = helpers.check_callsign(self.config['STATION']['mycall'], destination_crc, self.config['STATION']['ssid_list'])
         if not valid:
             # PING packet not for me.
             self.log.debug("[Modem] received_ping: ping not for this station.")
             return
 
-        self.dxcallsign_crc = dxcallsign_crc
-        self.dxcallsign = dxcallsign
+        self.dxcallsign_crc = origin_crc
+        self.dxcallsign = origin
         self.log.info(
-            "[Modem] PING REQ ["
-            + str(mycallsign, "UTF-8")
-            + "] <<< ["
-            + str(dxcallsign, "UTF-8")
-            + "]",
+            f"[Modem] PING REQ from [{origin}] to [{mycallsign}]",
             snr=snr,
         )
 
         self.dxgrid = b'------'
         helpers.add_to_heard_stations(
-            dxcallsign,
+            origin,
             self.dxgrid,
             "PING",
             snr,
@@ -67,9 +56,9 @@ class PING(DATA):
             ping="received",
             uuid=str(uuid.uuid4()),
             timestamp=int(time.time()),
-            dxgrid=str(self.dxgrid, "UTF-8"),
-            dxcallsign=str(dxcallsign, "UTF-8"),
-            mycallsign=str(mycallsign, "UTF-8"),
+            dxgrid=self.dxgrid,
+            dxcallsign=origin,
+            mycallsign=mycallsign,
             snr=str(snr),
         )
         if self.respond_to_call:

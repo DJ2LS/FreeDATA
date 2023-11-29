@@ -34,7 +34,7 @@ class BROADCAST(DATA):
         self.myssid = config['STATION']['myssid']
         self.mycallsign += "-" + str(self.myssid)
         encoded_call = helpers.callsign_to_bytes(self.mycallsign)
-        self.mycallsign = helpers.bytes_to_callsign(encoded_call)
+        self.mycallsign_bytes = helpers.bytes_to_callsign(encoded_call)
         self.mygrid = config['STATION']['mygrid']
         self.enable_fsk = config['MODEM']['enable_fsk']
         self.respond_to_cq = config['MODEM']['respond_to_cq']
@@ -43,7 +43,7 @@ class BROADCAST(DATA):
         self.duration_datac13 = 2.0
         self.duration_sig1_frame = self.duration_datac13
 
-    def received_cq(self, data_in: bytes, snr) -> None:
+    def received_cq(self, frame_data, snr) -> None:
         """
         Called when we receive a CQ frame
         Args:
@@ -53,23 +53,23 @@ class BROADCAST(DATA):
             Nothing
         """
         # here we add the received station to the heard stations buffer
-        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
+        dxcallsign = frame_data['origin']
         self.log.debug("[Modem] received_cq:", dxcallsign=dxcallsign)
-        self.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
+        self.dxgrid = frame_data['gridsquare']
 
         self.event_manager.send_custom_event(
             freedata="modem-message",
             cq="received",
-            mycallsign=str(self.mycallsign, "UTF-8"),
-            dxcallsign=str(dxcallsign, "UTF-8"),
-            dxgrid=str(self.dxgrid, "UTF-8"),
+            mycallsign=self.mycallsign,
+            dxcallsign=dxcallsign,
+            dxgrid=self.dxgrid,
         )
 
         self.log.info(
             "[Modem] CQ RCVD ["
-            + str(dxcallsign, "UTF-8")
+            + dxcallsign
             + "]["
-            + str(self.dxgrid, "UTF-8")
+            + self.dxgrid
             + "] ",
             snr=snr,
         )

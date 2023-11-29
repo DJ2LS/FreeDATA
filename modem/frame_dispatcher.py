@@ -140,9 +140,9 @@ class DISPATCHER():
         Returns:
 
         """
-        deconstructed_frame = self.frame_factory.deconstruct(bytes_out)
-        if self.check_if_valid_frame(deconstructed_frame):
+        if True:
             # get frame as dictionary
+            deconstructed_frame = self.frame_factory.deconstruct(bytes_out)
 
             frametype = deconstructed_frame["frame_type_int"]
             print(deconstructed_frame)
@@ -179,45 +179,10 @@ class DISPATCHER():
         else:
             # for debugging purposes to receive all data
             self.log.debug(
-                "[Modem] Foreign frame received",
-                frame=bytes_out[:-2].hex(),
-                frame_type=FR_TYPE(int.from_bytes(bytes_out[:1], byteorder="big")).name,
-            )
-
-    def check_if_valid_frame(self, deconstructed_frame):
-        # Process data only if broadcast or we are the receiver
-        # bytes_out[1:4] == callsign check for signalling frames,
-        # bytes_out[2:5] == transmission
-        # we could also create an own function, which returns True.
-
-
-        #deconstructed_frame["destination_crc"]
-        #deconstructed_frame["origin_crc"]
-
-        # check for callsign CRC
-        _valid1, _ = helpers.check_callsign(self.arq.mycallsign, deconstructed_frame["destination_crc"], self.arq.ssid_list)
-        _valid2, _ = helpers.check_callsign(self.arq.mycallsign, deconstructed_frame["origin_crc"], self.arq.ssid_list)
-        # check for session ID
-        _valid3 = helpers.check_session_id(self.arq.session_id, bytes(bytes_out[1:2]))  # signalling frames
-        _valid4 = helpers.check_session_id(self.arq.session_id, bytes(bytes_out[2:3]))  # arq data frames
-        return bool(
-            (
-                _valid1
-                or _valid2
-                or _valid3
-                or _valid4
-                or deconstructed_frame["frame_type_int"]
-                in [
-                    FR_TYPE.CQ.value,
-                    FR_TYPE.QRV.value,
-                    FR_TYPE.PING.value,
-                    FR_TYPE.BEACON.value,
-                    FR_TYPE.IS_WRITING.value,
-                    FR_TYPE.FEC.value,
-                    FR_TYPE.FEC_WAKEUP.value,
-                ]
-            )
-        )
+                    f"[Modem] Foreign frame received ({ex})",
+                    frame=bytes_out[:-2].hex(),
+                    frame_type=FR_TYPE(int.from_bytes(bytes_out[:1], byteorder="big")).name,
+                )
 
     def get_id_from_frame(self, data):
         if data[:1] in [FR_TYPE.ARQ_DC_OPEN_N, FR_TYPE.ARQ_DC_OPEN_W]:
