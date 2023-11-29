@@ -140,7 +140,7 @@ class DISPATCHER():
         Returns:
 
         """
-        if True:
+        try:
             # get frame as dictionary
             deconstructed_frame = self.frame_factory.deconstruct(bytes_out)
 
@@ -176,12 +176,11 @@ class DISPATCHER():
                     "[Modem] ARQ - other frame type", frametype=FR_TYPE(frametype).name
                 )
 
-        else:
+        except Exception as ex:
             # for debugging purposes to receive all data
             self.log.debug(
                     f"[Modem] Foreign frame received ({ex})",
-                    frame=bytes_out[:-2].hex(),
-                    frame_type=FR_TYPE(int.from_bytes(bytes_out[:1], byteorder="big")).name,
+                    frame = deconstructed_frame,
                 )
 
     def get_id_from_frame(self, data):
