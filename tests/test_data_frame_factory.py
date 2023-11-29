@@ -38,7 +38,11 @@ class TestDataFrameFactory(unittest.TestCase):
         frame_session_id = int.from_bytes(frame_data['session_id'], 'big')
         self.assertEqual(frame_session_id , session_id)
 
-    #def testCQ(self):
+    def testCQ(self):
+        frame = self.factory.build_cq()
+        frame_data = self.factory.deconstruct(frame)
+        self.assertEqual(frame_data['origin'], self.factory.myfullcall)
+        self.assertEqual(frame_data['gridsquare'], self.factory.mygrid.upper())
         
 if __name__ == '__main__':
     unittest.main()
