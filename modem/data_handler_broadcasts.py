@@ -158,7 +158,7 @@ class BROADCAST(DATA):
         )
 
     # ----------- BROADCASTS
-    def received_beacon(self, data_in: bytes, snr) -> None:
+    def received_beacon(self, frame_data, snr) -> None:
         """
         Called if we received a beacon
         Args:
@@ -166,25 +166,21 @@ class BROADCAST(DATA):
 
         """
         # here we add the received station to the heard stations buffer
-        beacon_callsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
-        self.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
+        beacon_callsign = frame_data['origin']
+        self.dxgrid = frame_data['gridsquare']
 
         self.event_manager.send_custom_event(
             freedata="modem-message",
             beacon="received",
             uuid=str(uuid.uuid4()),
             timestamp=int(time.time()),
-            dxcallsign=str(beacon_callsign, "UTF-8"),
-            dxgrid=str(self.dxgrid, "UTF-8"),
+            dxcallsign=beacon_callsign,
+            dxgrid=self.dxgrid,
             snr=str(snr),
         )
 
         self.log.info(
-            "[Modem] BEACON RCVD ["
-            + str(beacon_callsign, "UTF-8")
-            + "]["
-            + str(self.dxgrid, "UTF-8")
-            + "] ",
+            f"[Modem] BEACON RCVD [{beacon_callsign}][{self.dxgrid}]",
             snr=snr,
         )
         helpers.add_to_heard_stations(
