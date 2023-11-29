@@ -17,15 +17,15 @@ class TestDataFrameFactory(unittest.TestCase):
     def testBeacon(self):
         beacon_frame = self.factory.build_beacon()
         beacon_data = self.factory.deconstruct(beacon_frame)
-        self.assertEqual(beacon_data['mycallsign'], self.factory.myfullcall.upper())
+        self.assertEqual(beacon_data['origin'], self.factory.myfullcall.upper())
         self.assertEqual(beacon_data['gridsquare'], self.factory.mygrid.upper())
 
     def testPing(self):
         dxcall = "DJ2LS-3"
         ping_frame = self.factory.build_ping(dxcall)
         ping_data = self.factory.deconstruct(ping_frame)
-        self.assertEqual(ping_data['mycallsign'], self.factory.myfullcall)
-        self.assertEqual(ping_data['dxcallsign_crc'], helpers.get_crc_24(dxcall))
+        self.assertEqual(ping_data['origin'], self.factory.myfullcall)
+        self.assertEqual(ping_data['destination_crc'], helpers.get_crc_24(dxcall))
 
     def testARQConnectWide(self):
         dxcall = "DJ2LS-4"
@@ -33,10 +33,12 @@ class TestDataFrameFactory(unittest.TestCase):
         frame = self.factory.build_arq_connect(True, dxcall, session_id)
         frame_data = self.factory.deconstruct(frame)
 
-        self.assertEqual(frame_data['mycallsign'], self.factory.myfullcall)
+        self.assertEqual(frame_data['origin'], self.factory.myfullcall)
 
         frame_session_id = int.from_bytes(frame_data['session_id'], 'big')
         self.assertEqual(frame_session_id , session_id)
 
+    #def testCQ(self):
+        
 if __name__ == '__main__':
     unittest.main()
