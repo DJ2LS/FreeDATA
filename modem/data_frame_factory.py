@@ -68,6 +68,15 @@ class DataFrameFactory:
             "origin": 6
         }
 
+        # ping ack
+        self.template_list[FR_TYPE.PING_ACK.value] = {
+            "frame_length": self.LENGTH_SIG0_FRAME,
+            "destination_crc": 3,
+            "origin_crc": 3,
+            "gridsquare": 4,
+            "snr": 1,
+        }
+
     def _load_fec_templates(self):
         # fec wakeup frame
         self.template_list[FR_TYPE.FEC_WAKEUP.value] = {
@@ -207,7 +216,16 @@ class DataFrameFactory:
             "origin": helpers.callsign_to_bytes(self.myfullcall),
         }
         return self.construct(FR_TYPE.PING, payload)
-    
+
+    def build_ping_ack(self, destination, snr):
+        payload = {
+            "destination_crc": helpers.get_crc_24(destination),
+            "origin_crc": helpers.get_crc_24(self.myfullcall),
+            "gridsquare": helpers.encode_grid(self.mygrid),
+            "snr": helpers.snr_to_bytes(snr)
+        }
+        return self.construct(FR_TYPE.PING_ACK, payload)
+
     def build_cq(self):
         payload = {
             "origin": helpers.callsign_to_bytes(self.myfullcall),

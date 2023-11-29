@@ -21,6 +21,7 @@ from protocol_arq import ARQ
 from protocol_arq_session import SESSION
 
 from frame_handler import FrameHandler
+from frame_handler_ping import PingFrameHandler
 
 class DISPATCHER():
 
@@ -41,7 +42,7 @@ class DISPATCHER():
         FR_TYPE.FR_NACK.value: {"class": FrameHandler, "name":  "FRAME NACK"},
         FR_TYPE.FR_REPEAT.value: {"class": FrameHandler, "name":  "REPEAT REQUEST"},
         FR_TYPE.PING_ACK.value: {"class": FrameHandler, "name":  "PING ACK"},
-        FR_TYPE.PING.value: {"class": FrameHandler, "name":  "PING"},
+        FR_TYPE.PING.value: {"class": PingFrameHandler, "name":  "PING"},
         FR_TYPE.QRV.value: {"class": FrameHandler, "name":  "QRV"},
         FR_TYPE.IS_WRITING.value: {"class": FrameHandler, "name": "IS_WRITING"},
         FR_TYPE.FEC.value: {"class": FrameHandler, "name":  "FEC"},
@@ -169,6 +170,7 @@ class DISPATCHER():
         # instantiate handler
         handler_class = self.FRAME_HANDLER[frametype]['class']
         handler = handler_class(self.FRAME_HANDLER[frametype]['name'],
+                                self.config,
                                 self.states,
                                 self.event_manager,
                                 MODEM_TRANSMIT_QUEUE,
