@@ -23,7 +23,7 @@ from protocol_arq_session import SESSION
 
 class DISPATCHER():
 
-    def __init__(self, config, event_queue, states):
+    def __init__(self, config, event_queue, states, data_q_rx):
         self.log = structlog.get_logger("frame_dispatcher")
 
         self.log.info("loading frame dispatcher.....\n")
@@ -33,7 +33,9 @@ class DISPATCHER():
 
         self._initialize_handlers(config, event_queue, states)
         self._initialize_dispatchers()
-        self._initialize_queues()
+
+        self.data_queue_transmit = DATA_QUEUE_TRANSMIT
+        self.data_queue_received = data_q_rx
 
     def _initialize_handlers(self, config, event_queue, states):
         """Initializes various data handlers."""
@@ -101,11 +103,6 @@ class DISPATCHER():
             FR_TYPE.FEC_WAKEUP.value: (self.data_broadcasts.received_fec_wakeup, "FEC WAKEUP"),
 
         }
-
-    def _initialize_queues(self):
-        """Initializes data queues."""
-        self.data_queue_transmit = DATA_QUEUE_TRANSMIT
-        self.data_queue_received = DATA_QUEUE_RECEIVED
 
     def start(self):
         """Starts worker threads for transmit and receive operations."""
@@ -194,8 +191,8 @@ class DISPATCHER():
         # we could also create an own function, which returns True.
 
 
-        deconstructed_frame["destination_crc"]
-        deconstructed_frame["origin_crc"]
+        #deconstructed_frame["destination_crc"]
+        #deconstructed_frame["origin_crc"]
 
         # check for callsign CRC
         _valid1, _ = helpers.check_callsign(self.arq.mycallsign, deconstructed_frame["destination_crc"], self.arq.ssid_list)

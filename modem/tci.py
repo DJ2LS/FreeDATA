@@ -5,15 +5,14 @@ import structlog
 import threading
 import websocket
 import time
-from queues import AUDIO_TRANSMIT_QUEUE, AUDIO_RECEIVED_QUEUE
 
 class TCICtrl:
-    def __init__(self, hostname='127.0.0.1', port=50001):
+    def __init__(self, audio_rx_q, audio_tx_q, hostname='127.0.0.1', port=50001):
         # websocket.enableTrace(True)
         self.log = structlog.get_logger("TCI")
 
-        self.audio_received_queue = AUDIO_RECEIVED_QUEUE
-        self.audio_transmit_queue = AUDIO_TRANSMIT_QUEUE
+        self.audio_received_queue = audio_rx_q
+        self.audio_transmit_queue = audio_tx_q
 
         self.hostname = str(hostname)
         self.port = str(port)

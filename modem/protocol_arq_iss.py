@@ -40,8 +40,8 @@ class ISS(ARQ):
 
         # set signalling modes we want to listen to
         # we are in an ongoing arq transmission, so we don't need sig0 actually
-        modem.RECEIVE_SIG0 = False
-        modem.RECEIVE_SIG1 = True
+        modem.demodulator.RECEIVE_SIG0 = False
+        modem.demodulator.RECEIVE_SIG1 = True
 
         self.tx_n_retry_of_burst = 0  # retries we already sent data
         # Maximum number of retries to send before declaring a frame is lost

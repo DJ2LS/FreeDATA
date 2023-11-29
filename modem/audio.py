@@ -6,6 +6,7 @@ import multiprocessing
 import crcengine
 import sounddevice as sd
 import structlog
+import numpy as np
 
 atexit.register(sd._terminate)
 
@@ -172,3 +173,37 @@ def test_audio_devices(input_id: str, output_id: str) -> list:
     sd._terminate()
     sd._initialize()
     return test_result
+
+def set_audio_volume(datalist: np.ndarray, dB: float) -> np.ndarray:
+    """
+    Scale values for the provided audio samples by dB.
+
+    :param datalist: Audio samples to scale
+    :type datalist: np.ndarray
+    :param dB: Decibels to scale samples, constrained to the range [-50, 50]
+    :type dB: float
+    :return: Scaled audio samples
+    :rtype: np.ndarray
+    """
+    try:
+        dB = float(dB)
+    except ValueError as e:
+        print(f"[MDM] Changing audio volume failed with error: {e}")
+        dB = 0.0  # 0 dB means no change
+
+    # Clip dB value to the range [-50, 50]
+    dB = np.clip(dB, -30, 20)
+
+    # Ensure datalist is an np.ndarray
+    if not isinstance(datalist, np.ndarray):
+        print("[MDM] Invalid data type for datalist. Expected np.ndarray.")
+        return datalist
+
+    # Convert dB to linear scale
+    scale_factor = 10 ** (dB / 20)
+
+    # Scale samples
+    scaled_data = datalist * scale_factor
+
+    # Clip values to int16 range and convert data type
+    return np.clip(scaled_data, -32768, 32767).astype(np.int16)

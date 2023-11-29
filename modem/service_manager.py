@@ -1,5 +1,4 @@
 import threading
-import data_handler
 import frame_dispatcher
 import modem
 import structlog
@@ -82,11 +81,15 @@ class SM:
         self.log.info("starting modem....")
         self.modem = modem.RF(self.config, self.modem_events, self.modem_fft, self.modem_service, self.states)
 
-        self.frame_dispatcher = frame_dispatcher.DISPATCHER(self.config, self.modem_events, self.states)
+        self.frame_dispatcher = frame_dispatcher.DISPATCHER(self.config, 
+                                                            self.modem_events, 
+                                                            self.states,
+                                                            self.modem.data_queue_received)
         self.frame_dispatcher.start()
 
         self.states.set("is_modem_running", True)
         self.modem.set_FFT_stream(self.enable_fft_stream)
+        self.modem.start_modem()
 
         return True
         

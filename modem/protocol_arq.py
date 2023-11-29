@@ -413,13 +413,13 @@ class ARQ:
         self.rx_n_frames_per_burst = 0
 
         # reset modem receiving state to reduce cpu load
-        modem.RECEIVE_SIG0 = True
-        modem.RECEIVE_SIG1 = False
-        modem.RECEIVE_DATAC1 = False
-        modem.RECEIVE_DATAC3 = False
-        modem.RECEIVE_DATAC4 = False
-        # modem.RECEIVE_FSK_LDPC_0 = False
-        modem.RECEIVE_FSK_LDPC_1 = False
+        modem.demodulator.RECEIVE_SIG0 = True
+        modem.demodulator.RECEIVE_SIG1 = False
+        modem.demodulator.RECEIVE_DATAC1 = False
+        modem.demodulator.RECEIVE_DATAC3 = False
+        modem.demodulator.RECEIVE_DATAC4 = False
+        # modem.demodulator.RECEIVE_FSK_LDPC_0 = False
+        modem.demodulator.RECEIVE_FSK_LDPC_1 = False
 
         self.is_IRS = False
         self.burst_nack = False
