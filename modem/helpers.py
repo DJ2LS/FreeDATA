@@ -322,7 +322,7 @@ def check_callsign(callsign: str, crc_to_check: bytes, ssid_list):
 
         if callsign_crc == crc_to_check:
             log.debug("[HLP] check_callsign matched:", call_with_ssid=call_with_ssid)
-            return [True, call_with_ssid]
+            return [True, call_with_ssid.decode()]
 
     return [False, b'']
 

@@ -40,29 +40,29 @@ class PING(DATA):
             snr=snr,
         )
 
-        self.dxgrid = b'------'
+        self.dxgrid = ""
         helpers.add_to_heard_stations(
             origin,
             self.dxgrid,
             "PING",
             snr,
-            self.modem_frequency_offset,
+            -999, # TODO we don't have the offset available here yet...
             self.states.radio_frequency,
             self.states.heard_stations
         )
 
-        self.send_data_to_socket_queue(
-            freedata="modem-message",
-            ping="received",
-            uuid=str(uuid.uuid4()),
-            timestamp=int(time.time()),
-            dxgrid=self.dxgrid,
-            dxcallsign=origin,
-            mycallsign=mycallsign,
-            snr=str(snr),
-        )
-        if self.respond_to_call:
-            self.transmit_ping_ack(snr)
+        self.event_queue.put({
+            "freedata": "modem-message",
+            "ping": "received",
+            "uuid": str(uuid.uuid4()),
+            "timestamp": int(time.time()),
+            "dxgrid": self.dxgrid,
+            "dxcallsign": origin,
+            "mycallsign": mycallsign,
+            "snr": str(snr),
+        })
+        
+        self.transmit_ping_ack(snr)
 
     def transmit_ping_ack(self, snr):
         """
@@ -70,6 +70,10 @@ class PING(DATA):
         transmit a ping ack frame
         called by def received_ping
         """
+
+        self.log.warning('DATA_HANDLER_PING: REVISE PING ACK!')
+        return
+
         ping_frame = bytearray(self.length_sig0_frame)
         ping_frame[:1] = bytes([FR_TYPE.PING_ACK.value])
         ping_frame[1:4] = self.dxcallsign_crc
