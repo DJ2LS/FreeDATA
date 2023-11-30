@@ -147,10 +147,6 @@ class DISPATCHER():
         """Queue received data for processing"""
         while True:
             data = self.data_queue_received.get()
-            # [0] bytes
-            # [1] freedv instance
-            # [2] bytes_per_frame
-            # [3] snr
             self.new_process_data(
                 data['payload'],
                 data['freedv'],
