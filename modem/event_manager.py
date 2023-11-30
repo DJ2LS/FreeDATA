@@ -6,6 +6,7 @@ class EventManager:
     def __init__(self, queues):
         self.queues = queues
         self.log = structlog.get_logger('Event Manager')
+        self.lastpttstate = False
 
     def broadcast(self, data):
         self.log.debug(f"Broadcasting event: {data}")
@@ -13,7 +14,10 @@ class EventManager:
             q.put(data)
 
     def send_ptt_change(self, on:bool = False):
-        self.broadcast({"ptt": str(on)})
+        if (on == self.lastpttstate):
+            return
+        self.lastpttstate= on
+        self.broadcast({"ptt": bool(on)})
 
     def send_scatter_change(self, data):
         self.broadcast({"scatter": str(data)})
