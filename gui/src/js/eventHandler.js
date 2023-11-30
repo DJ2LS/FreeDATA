@@ -23,7 +23,7 @@ export function connectionFailed(endpoint, event) {
 }
 export function stateDispatcher(data) {
   data = JSON.parse(data);
-  console.log(data);
+  //console.log(data);
 
   stateStore.modem_connection = "connected";
 
@@ -143,38 +143,57 @@ export function eventDispatcher(data) {
   if (data["dxcallsign"] == "AA0AA-0" || data["dxcallsign"] == "ZZ9YY-0") {
     return;
   }
+  console.info(data);
+  switch (data["ptt"]) {
+    case true:
+      // get ptt state as a first test
+      console.warn("PTT state true")
+      stateStore.ptt_state = data.ptt;
+      return;
+    default:
+      console.warn("PTT state false")
+        // get ptt state as a first test
+      stateStore.ptt_state = false;
+      return;
+  }
+  switch (data["freedata"]) {
+    case ("modem-event"):
+      switch (data["event"]) {
+        case "start":
+          displayToast("success", "bi-arrow-left-right", "Modem started", 5000);
+          return;
+  
+        case "stop":
+          displayToast("success", "bi-arrow-left-right", "Modem stopped", 5000);
+          return;
+  
+        case "restart":
+          displayToast(
+            "secondary",
+            "bi-bootstrap-reboot",
+            "Modem restarted",
+            5000,
+          );
+          return;
+  
+        case "failed":
+          displayToast(
+            "danger",
+            "bi-bootstrap-reboot",
+            "Modem startup failed | bad config?",
+            5000,
+          );
+          return;
+    default:
+      console.error("Unknown event message received:");
+      console.error(data);
+      break;
+  }
 
-  // get ptt state as a first test
-  stateStore.ptt_state = data.ptt;
 
   // catch modem related events
   if (data["freedata"] == "modem-event") {
-    switch (data["event"]) {
-      case "start":
-        displayToast("success", "bi-arrow-left-right", "Modem started", 5000);
-        return;
-
-      case "stop":
-        displayToast("success", "bi-arrow-left-right", "Modem stopped", 5000);
-        return;
-
-      case "restart":
-        displayToast(
-          "secondary",
-          "bi-bootstrap-reboot",
-          "Modem restarted",
-          5000,
-        );
-        return;
-
-      case "failed":
-        displayToast(
-          "danger",
-          "bi-bootstrap-reboot",
-          "Modem startup failed | bad config?",
-          5000,
-        );
-        return;
+    
     }
   }
 
