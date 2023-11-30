@@ -626,83 +626,6 @@ class ISS(ARQ):
         )
         return False
 
-    def open_session(self) -> bool:
-        """
-        Create and send the frame to request a connection.
-
-        Returns:
-            True if the session was opened successfully
-            False if the session open request failed
-        """
-        self.IS_ARQ_SESSION_MASTER = True
-        self.states.set("arq_session_state", "connecting")
-
-        # create a random session id
-        self.session_id = np.random.bytes(1)
-
-        connection_frame = bytearray(self.length_sig0_frame)
-        connection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_OPEN.value])
-        connection_frame[1:2] = self.session_id
-        connection_frame[2:5] = self.dxcallsign_crc
-        connection_frame[5:8] = self.mycallsign_crc
-        connection_frame[8:14] = helpers.callsign_to_bytes(self.mycallsign)
-
-        while not self.states.is_arq_session:
-            threading.Event().wait(0.01)
-            for attempt in range(self.session_connect_max_retries):
-                self.log.info(
-                    "[Modem] SESSION ["
-                    + str(self.mycallsign, "UTF-8")
-                    + "]>>?<<["
-                    + str(self.dxcallsign, "UTF-8")
-                    + "]",
-                    a=f"{str(attempt + 1)}/{str(self.session_connect_max_retries)}",
-                    state=self.states.arq_session_state,
-                )
-
-                self.event_manager.send_custom_event(
-                    freedata="modem-message",
-                    arq="session",
-                    status="connecting",
-                    attempt=attempt + 1,
-                    maxattempts=self.session_connect_max_retries,
-                    mycallsign=str(self.mycallsign, 'UTF-8'),
-                    dxcallsign=str(self.dxcallsign, 'UTF-8'),
-                )
-
-                self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
-
-                # Wait for a time, looking to see if `self.states.is_arq_session`
-                # indicates we've received a positive response from the far station.
-                timeout = time.time() + 3
-                while time.time() < timeout:
-                    threading.Event().wait(0.01)
-                    # Stop waiting if data channel is opened
-                    if self.states.is_arq_session:
-                        return True
-
-                    # Stop waiting and interrupt if data channel is getting closed while opening
-                    if self.states.arq_session_state == "disconnecting":
-                        # disabled this session close as its called twice
-                        # self.close_session()
-                        return False
-
-            # Session connect timeout, send close_session frame to
-            # attempt to clean up the far-side, if it received the
-            # open_session frame and can still hear us.
-            if not self.states.is_arq_session:
-                self.close_session()
-                return False
-
-        # Given the while condition, it will only exit when `self.states.is_arq_session` is True
-        self.event_manager.send_custom_event(
-            freedata="modem-message",
-            arq="session",
-            status="connected",
-            mycallsign=str(self.mycallsign, 'UTF-8'),
-            dxcallsign=str(self.dxcallsign, 'UTF-8'),
-        )
-        return True
 
     def open_dc_and_transmit(
             self,
@@ -838,13 +761,11 @@ class ISS(ARQ):
             frametype = bytes([FR_TYPE.ARQ_DC_OPEN_W.value])
             self.log.debug("[Modem] Requesting high bandwidth mode")
 
-        connection_frame = bytearray(self.length_sig0_frame)
-        connection_frame[:1] = frametype
-        connection_frame[1:4] = self.dxcallsign_crc
-        connection_frame[4:7] = self.mycallsign_crc
-        connection_frame[7:13] = helpers.callsign_to_bytes(mycallsign)
-        connection_frame[13:14] = self.session_id
-
+        # build connection frame
+        connection_frame = self.frame_factory.build_arq_connect(
+            session_id=self.session_id,
+            destination_crc=self.dxcallsign_crc,
+        )
         for attempt in range(self.data_channel_max_retries):
 
             self.event_manager.send_custom_event(

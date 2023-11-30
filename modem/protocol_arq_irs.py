@@ -329,13 +329,14 @@ class IRS(ARQ):
             frametype = bytes([FR_TYPE.ARQ_DC_OPEN_ACK_W.value])
             self.log.debug("[Modem] Responding with high bandwidth mode")
 
-        connection_frame = bytearray(self.length_sig0_frame)
-        connection_frame[:1] = frametype
-        connection_frame[1:2] = self.session_id
-        connection_frame[8:9] = bytes([self.speed_level])
-        connection_frame[13:14] = bytes([self.arq_protocol_version])
 
-        self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
+        connection_ack_frame = self.frame_factory.build_arq_connect_ack(
+            session_id=self.session_id,
+            speed_level=self.speed_level,
+            arq_protocol_version=self.arq_protocol_version
+        )
+
+        self.enqueue_frame_for_tx([connection_ack_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
 
         self.event_manager.send_custom_event(
             freedata="modem-message",

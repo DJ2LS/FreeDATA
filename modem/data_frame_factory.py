@@ -99,9 +99,9 @@ class DataFrameFactory:
         }
 
     def _load_arq_templates(self):
-
         # same structure for narrow and wide types
-        arq_dc_open_ack = {
+
+        arq_dc_open = {
             "frame_length": self.LENGTH_SIG0_FRAME,
             "destination_crc": 3,
             "origin_crc": 3,
@@ -109,8 +109,21 @@ class DataFrameFactory:
             "session_id": 1,
         }
         # arq connect frames
+        self.template_list[FR_TYPE.ARQ_DC_OPEN_N.value] = arq_dc_open
+        self.template_list[FR_TYPE.ARQ_DC_OPEN_W.value] = arq_dc_open
+
+        # same structure for narrow and wide types
+        arq_dc_open_ack = {
+            "frame_length": self.LENGTH_SIG0_FRAME,
+            "session_id": 1,
+            "speed_level": 1,
+            "arq_protocol_version": 1
+        }
+        # arq connect ack frames
         self.template_list[FR_TYPE.ARQ_DC_OPEN_ACK_N.value] = arq_dc_open_ack
         self.template_list[FR_TYPE.ARQ_DC_OPEN_ACK_W.value] = arq_dc_open_ack
+
+
 
         # arq burst ack 
         self.template_list[FR_TYPE.BURST_ACK.value] = {
@@ -288,8 +301,35 @@ class DataFrameFactory:
             "session_id": session_id.to_bytes(1, 'big'),
         }
 
+        channel_type = FR_TYPE.ARQ_DC_OPEN_W if isWideband else FR_TYPE.ARQ_DC_OPEN_N
+        return self.construct(channel_type, payload)
+
+    def build_arq_connect_ack(self, isWideband, session_id, speed_level,arq_protocol_version):
+
+        #connection_frame = bytearray(self.length_sig0_frame)
+        #connection_frame[:1] = frametype
+        #connection_frame[1:2] = self.session_id
+        #connection_frame[8:9] = bytes([self.speed_level])
+        #connection_frame[13:14] = bytes([self.arq_protocol_version])
+
+        payload = {
+            "session_id": session_id.to_bytes(1, 'big'),
+            "speed_level": bytes([speed_level]),
+            "arq_protocol_version": bytes([arq_protocol_version]),
+        }
+
         channel_type = FR_TYPE.ARQ_DC_OPEN_ACK_W if isWideband else FR_TYPE.ARQ_DC_OPEN_ACK_N
         return self.construct(channel_type, payload)
+
+    def build_arq_session_connect(self, isWideband, destination, session_id):
+
+        payload = {
+            "destination_crc": helpers.get_crc_24(destination),
+            "origin_crc": helpers.get_crc_24(self.myfullcall),
+            "origin": helpers.callsign_to_bytes(self.myfullcall),
+            "session_id": session_id.to_bytes(1, 'big'),
+        }
+        return self.construct(FR_TYPE.ARQ_SESSION_OPEN, payload)
 
     def build_arq_burst_ack(self, session_id: bytes, snr: int, speed_level: int, len_arq_rx_frame_buffer: int):
         # ack_frame = bytearray(self.length_sig1_frame)
