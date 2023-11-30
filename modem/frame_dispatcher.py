@@ -152,10 +152,14 @@ class DISPATCHER():
             # [2] bytes_per_frame
             # [3] snr
             self.new_process_data(
-                bytes_out=data[0], freedv=data[1], bytes_per_frame=data[2], snr=data[3]
+                data['payload'],
+                data['freedv'],
+                data['bytes_per_frame'],
+                data['snr'],
+                data['frequency_offset'],
             )
 
-    def new_process_data(self, bytes_out, freedv, bytes_per_frame: int, snr) -> None:
+    def new_process_data(self, bytes_out, freedv, bytes_per_frame: int, snr, offset) -> None:
         # get frame as dictionary
         deconstructed_frame = self.frame_factory.deconstruct(bytes_out)
         frametype = deconstructed_frame["frame_type_int"]
@@ -174,7 +178,7 @@ class DISPATCHER():
                                 MODEM_TRANSMIT_QUEUE,
                                 self.arq_sessions)
         
-        handler.handle(deconstructed_frame, snr, 0, freedv, bytes_per_frame)
+        handler.handle(deconstructed_frame, snr, offset, freedv, bytes_per_frame)
 
     def old_process_data(self, bytes_out, freedv, bytes_per_frame: int, snr) -> None:
         """

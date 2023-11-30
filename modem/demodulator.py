@@ -363,8 +363,31 @@ class Demodulator():
             # data[1] = freedv session
             # data[2] = bytes_per_frame
             # data[3] = snr
-            self.data_queue_received.put([data[0], data[1], data[2], data[3]])
+
+            item = {
+                'payload': data[0],
+                'freedv': data[1],
+                'bytes_per_frame': data[2],
+                'snr': data[3],
+                'frequency_offset': self.get_frequency_offset(data[1]),
+            }
+
+            self.data_queue_received.put(item)
             self.modem_received_queue.task_done()
+
+    def get_frequency_offset(self, freedv: ctypes.c_void_p) -> float:
+        """
+        Ask codec2 for the calculated (audio) frequency offset of the received signal.
+
+        :param freedv: codec2 instance to query
+        :type freedv: ctypes.c_void_p
+        :return: Offset of audio frequency in Hz
+        :rtype: float
+        """
+        modemStats = codec2.MODEMSTATS()
+        codec2.api.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
+        offset = round(modemStats.foff) * (-1)
+        return offset
 
     def demodulate_audio(
             self,
