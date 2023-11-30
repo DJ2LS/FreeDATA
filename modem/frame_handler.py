@@ -30,6 +30,10 @@ class FrameHandler():
 
     def add_to_heard_stations(self):
         frame = self.details['frame']
+
+        if 'origin' not in frame:
+            return
+
         dxgrid = frame['gridsquare'] if 'gridsquare' in frame else "------"
         helpers.add_to_heard_stations(
             frame['origin'],

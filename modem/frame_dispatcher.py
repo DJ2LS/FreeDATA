@@ -22,6 +22,7 @@ from protocol_arq_session import SESSION
 
 from frame_handler import FrameHandler
 from frame_handler_ping import PingFrameHandler
+from frame_handler_cq import CQFrameHandler
 
 class DISPATCHER():
 
@@ -37,7 +38,7 @@ class DISPATCHER():
         FR_TYPE.BEACON.value: {"class": FrameHandler, "name": "BEACON"},
         FR_TYPE.BURST_ACK.value: {"class": FrameHandler, "name":  "BURST ACK"},
         FR_TYPE.BURST_NACK.value: {"class": FrameHandler, "name":  "BURST NACK"},
-        FR_TYPE.CQ.value: {"class": FrameHandler, "name":  "CQ"},
+        FR_TYPE.CQ.value: {"class": CQFrameHandler, "name":  "CQ"},
         FR_TYPE.FR_ACK.value: {"class": FrameHandler, "name":  "FRAME ACK"},
         FR_TYPE.FR_NACK.value: {"class": FrameHandler, "name":  "FRAME NACK"},
         FR_TYPE.FR_REPEAT.value: {"class": FrameHandler, "name":  "REPEAT REQUEST"},
@@ -150,9 +151,6 @@ class DISPATCHER():
             # [1] freedv instance
             # [2] bytes_per_frame
             # [3] snr
-            self.old_process_data(
-                bytes_out=data[0], freedv=data[1], bytes_per_frame=data[2], snr=data[3]
-            )
             self.new_process_data(
                 bytes_out=data[0], freedv=data[1], bytes_per_frame=data[2], snr=data[3]
             )

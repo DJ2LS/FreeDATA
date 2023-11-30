@@ -4,25 +4,29 @@ import data_frame_factory
 
 class PingFrameHandler(frame_handler.FrameHandler):
 
-    def follow_protocol(self):
-        deconstructed_frame = self.details['frame']
-        origin = deconstructed_frame["origin"]
-
+    def is_frame_for_me(self):
         # check if callsign ssid override
         valid, mycallsign = helpers.check_callsign(
             self.config['STATION']['mycall'], 
-            deconstructed_frame["destination_crc"],
+            self.details["frame"]["destination_crc"],
             self.config['STATION']['ssid_list'])
 
         if not valid:
-            # PING packet not for me.
-            self.logger.debug("[Modem] received_ping: ping not for this station.")
+            ft = self.details['frame']['frame_type']
+            self.logger.info(f"[Modem] {ft} received but not for us.")
+
+        return valid
+    
+    def should_respond(self):
+        return self.is_frame_for_me()
+
+    def follow_protocol(self):
+
+        if not self.should_respond():
             return
 
-        self.dxcallsign_crc = deconstructed_frame["origin_crc"]
-        self.dxcallsign = origin
-        self.logger.info(
-            f"[Modem] PING REQ from [{origin}] to [{mycallsign}]",
+        self.logger.debug(
+            f"[Modem] Responding to request from [{self.details['frame']['origin']}]",
             snr=self.details['snr'],
         )
 
