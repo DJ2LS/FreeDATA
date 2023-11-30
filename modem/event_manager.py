@@ -1,11 +1,14 @@
 import json
+import structlog
 
 class EventManager:
 
     def __init__(self, queues):
         self.queues = queues
+        self.log = structlog.get_logger('Event Manager')
 
     def broadcast(self, data):
+        self.log.debug(f"Broadcasting event: {data}")
         for q in self.queues:
             q.put(data)
 

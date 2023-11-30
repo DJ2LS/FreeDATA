@@ -4,11 +4,6 @@ import data_frame_factory
 
 class PingFrameHandler(frame_handler.FrameHandler):
 
-    def make_event(self):
-        event = super().make_event()
-        event['ping'] = "received"
-        return event
-
     def follow_protocol(self):
         deconstructed_frame = self.details['frame']
         origin = deconstructed_frame["origin"]

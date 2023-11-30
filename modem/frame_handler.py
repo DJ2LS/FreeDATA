@@ -44,6 +44,7 @@ class FrameHandler():
     def make_event(self):
         event = {
             "freedata": "modem-message",
+            "received": self.details['frame']['frame_type'],
             "uuid": str(uuid.uuid4()),
             "timestamp": int(time.time()),
             "mycallsign": self.config['STATION']['mycall'],
