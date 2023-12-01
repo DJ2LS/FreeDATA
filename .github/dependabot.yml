@@ -7,13 +7,8 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-
-  # Maintain dependencies for npm
-  - package-ecosystem: "npm"
-    directory: "/gui"
-    schedule:
-      interval: "daily"
-
+    target-branch: "develop"
+    
   # Maintain dependencies for npm
   - package-ecosystem: "npm"
     directory: "/gui"
@@ -26,3 +21,4 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    target-branch: "develop"
