@@ -143,7 +143,7 @@ export function eventDispatcher(data) {
   if (data["dxcallsign"] == "AA0AA-0" || data["dxcallsign"] == "ZZ9YY-0") {
     return;
   }
-  
+
   console.info(data);
   if (data["scatter"] !== undefined) {
     //console.warn("Got scatter data!!!!");
@@ -161,28 +161,38 @@ export function eventDispatcher(data) {
   }
 
   switch (data["freedata"]) {
-    case ("modem-message"):
-      switch(data["received"]){
-        case ("BEACON"):
+    case "modem-message":
+      switch (data["received"]) {
+        case "BEACON":
           //Beacon received
-          displayToast("info", "bi-broadcast", "Beacon from " + data["dxcallsign"], 5000);
+          displayToast(
+            "info",
+            "bi-broadcast",
+            "Beacon from " + data["dxcallsign"],
+            5000,
+          );
           return;
-        case("QRV"):
+        case "QRV":
           //Qrv received
-          displayToast("success", "bi-person-raised-hand",  "QRV from " + data["dxcallsign"], 5000);
+          displayToast(
+            "success",
+            "bi-person-raised-hand",
+            "QRV from " + data["dxcallsign"],
+            5000,
+          );
           return;
       }
 
-    case ("modem-event"):
+    case "modem-event":
       switch (data["event"]) {
         case "start":
           displayToast("success", "bi-arrow-left-right", "Modem started", 5000);
           return;
-  
+
         case "stop":
           displayToast("success", "bi-arrow-left-right", "Modem stopped", 5000);
           return;
-  
+
         case "restart":
           displayToast(
             "secondary",
@@ -191,7 +201,7 @@ export function eventDispatcher(data) {
             5000,
           );
           return;
-  
+
         case "failed":
           displayToast(
             "danger",
@@ -200,13 +210,11 @@ export function eventDispatcher(data) {
             5000,
           );
           return;
-    default:
-      console.warn("Unknown event message received:");
-      console.warn(data);
-      break;
-  }
-
-
+        default:
+          console.warn("Unknown event message received:");
+          console.warn(data);
+          break;
+      }
   }
 
   /*
