@@ -28,7 +28,9 @@ class StateManager:
         self.audio_dbfs = 0
         self.dxcallsign: bytes = b"ZZ9YY-0"
         self.dxgrid: bytes = b"------"
-        self.heard_stations = []
+
+        self.heard_stations = []  # TODO remove it... heard stations list == deprecated
+        self.activities_list = {}
 
         self.arq_instance_table = {}
         self.arq_session_state = 'disconnected'
@@ -92,6 +94,8 @@ class StateManager:
             "radio_mode": self.radio_mode,
             "channel_busy_slot": self.channel_busy_slot,
             "audio_dbfs": self.audio_dbfs,
+            "heard_stations": self.heard_stations,
+            "activities": self.activities_list,
         }
     
     # .wait() blocks until the event is set
@@ -122,3 +126,17 @@ class StateManager:
             return True
         return False
 
+    def add_activity(self, activity_data):
+        # Generate a random 8-byte string as hex
+        activity_id = np.random.bytes(8).hex()
+
+        # if timestamp not provided, add it here
+        if 'timestamp' not in activity_data:
+            activity_data['timestamp'] = int(time.time())
+
+        # if frequency not provided, add it here
+        if 'frequency' not in activity_data:
+            activity_data['frequency'] = self.radio_frequency
+
+        self.activities_list[activity_id] = activity_data
+        self.sendStateUpdate()

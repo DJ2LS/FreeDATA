@@ -173,7 +173,16 @@ class DISPATCHER():
                                 self.event_manager,
                                 MODEM_TRANSMIT_QUEUE,
                                 self.arq_sessions)
-        
+
+        activity = {
+            "dxcallsign": deconstructed_frame["origin"],
+            "direction": "received",
+            "dxgrid": deconstructed_frame["gridsquare"],
+            "snr": snr,
+            "offset": offset,
+            "activity_type": self.FRAME_HANDLER[frametype]['name']
+        }
+        self.states.add_activity(activity)
         handler.handle(deconstructed_frame, snr, offset, freedv, bytes_per_frame)
 
     def old_process_data(self, bytes_out, freedv, bytes_per_frame: int, snr) -> None:
