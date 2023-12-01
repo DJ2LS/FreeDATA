@@ -100,20 +100,20 @@ async function createWindow() {
 app.whenReady().then(() => {
   createWindow();
 
-console.log(platform())
+  console.log(platform());
   //Generate daemon binary path
   var daemonPath = "";
   switch (platform().toLowerCase()) {
     case "darwin":
-       daemonPath = join(process.resourcesPath, "modem", "freedata-server");
+      daemonPath = join(process.resourcesPath, "modem", "freedata-server");
     case "linux":
-       daemonPath = join(process.resourcesPath, "modem", "freedata-server");
+      daemonPath = join(process.resourcesPath, "modem", "freedata-server");
       break;
     case "win32":
-       daemonPath = join(process.resourcesPath, "modem", "freedata-server.exe");
-       break;
+      daemonPath = join(process.resourcesPath, "modem", "freedata-server.exe");
+      break;
     case "win64":
-       daemonPath = join(process.resourcesPath, "modem", "freedata-server.exe");
+      daemonPath = join(process.resourcesPath, "modem", "freedata-server.exe");
       break;
     default:
       console.log("Unhandled OS Platform: ", platform());
@@ -125,21 +125,19 @@ console.log(platform())
     console.log("Starting freedata-server binary");
     console.log("daemonPath:", daemonPath);
     console.log("CWD:", join(daemonPath, ".."));
-/*
+    /*
     var daemonProcess = spawn("freedata-server", [], {
       cwd: join(process.env.DIST, "modem"),
       shell: true
     });
 */
-/*
+    /*
 daemonProcess = spawn(daemonPath, [], {
       shell: true
     });
     console.log(daemonProcess)
 */
-    daemonProcess = spawn(daemonPath, [], {
-    });
-
+    daemonProcess = spawn(daemonPath, [], {});
 
     // return process messages
     daemonProcess.on("error", (err) => {
@@ -154,7 +152,7 @@ daemonProcess = spawn(daemonPath, [], {
     });
     daemonProcess.stderr.on("data", (data) => {
       // daemonProcessLog.info(`${data}`);
-      console.log(data)
+      console.log(data);
     });
     daemonProcess.on("close", (code) => {
       // daemonProcessLog.warn(`daemonProcess exited with code ${code}`);
