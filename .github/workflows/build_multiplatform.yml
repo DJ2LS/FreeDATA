@@ -283,53 +283,10 @@ jobs:
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.CERTIFICATE_OSX_APPLICATION }}
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
 
-      - name: Build binaries macOS
-        if: ${{startsWith(matrix.os, 'macos')}}
-        working-directory: modem
-        run: |
-          # now build modem binaries
-          pyinstaller -y freedata.spec
-          # and to some final cleanup
-          # cp -r -f dist/modem/* dist/
-          # rm -r dist/modem
-
       - name: Build binaries Linux and Windows
-        if: ${{!startsWith(matrix.os, 'macos')}}
         working-directory: modem
         run: |
-          # pyinstaller freedata.spec
-          # python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --onefile daemon.py -o ${{ matrix.daemon_binary_name }}
-          # python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --onefile main.py -o ${{ matrix.modem_binary_name }}
-          python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone daemon.py
-          python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone main.py
-
-      - name: Copy binaries - Linux
-        if: ${{startsWith(matrix.os, 'ubuntu')}}
-        working-directory: modem
-        run: |
-          cp -r -f daemon.dist/* dist/modem
-          cp -r -f main.dist/* dist/modem
-
-      - name: Copy binaries - Windows
-        if: ${{startsWith(matrix.os, 'windows')}}
-        working-directory: modem
-        # These are powershell aliases, not UNIX commands.
-        run: |
-          cp -r -Force daemon.dist/* dist/modem
-          cp -r -Force main.dist/* dist/modem
-
-      - name: Rename modem binaries
-        # we don't need renaming for pyinstaller builds as output name is defined
-        if: ${{!startsWith(matrix.os, 'macos')}}
-        working-directory: modem
-        run: |
-          mv dist/modem/daemon* dist/modem/${{ matrix.daemon_binary_name }}
-          mv dist/modem/main* dist/modem/${{ matrix.modem_binary_name }}
-
-      - uses: actions/download-artifact@v3
-        with:
-           path: modem/dist/modem
-
+          python3 -m nuitka --enable-plugin=numpy --remove-output --assume-yes-for-downloads --standalone server.py
 
       - name: LIST ALL FILES
         run: ls -R
@@ -338,7 +295,7 @@ jobs:
         if: ${{!startsWith(matrix.os, 'windows')}}
         working-directory: modem
         run: |
-          if ! test -d "dist/modem/_sounddevice_data"; then
+          if ! test -d "server.dist/modem/_sounddevice_data"; then
           git clone https://github.com/spatialaudio/portaudio-binaries dist/modem/_sounddevice_data/portaudio-binaries
           fi
 
@@ -346,7 +303,7 @@ jobs:
         if: ${{startsWith(matrix.os, 'windows')}}
         working-directory: modem
         run: |
-          if(Test-Path -Path "dist/modem/_sounddevice_data"){
+          if(Test-Path -Path "server.dist/modem/_sounddevice_data"){
           echo "sounddevice folder already exists"
           } else {
           git clone https://github.com/spatialaudio/portaudio-binaries dist/modem/_sounddevice_data/portaudio-binaries
@@ -379,8 +336,7 @@ jobs:
         with:
             type: 'zip'
             filename: '${{ matrix.zip_name }}.zip'
-            # directory: ./modem/dist/modem
-            directory: ./modem/dist/modem
+            directory: ./modem/server.dist
             path: .
             # exclusions: '*.git* /*node_modules/* .editorconfig'
 
@@ -389,24 +345,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           draft: true
-          files: ./modem/dist/modem/${{ matrix.zip_name }}.zip
-          #files: ./modem/dist/${{ matrix.zip_name }}.zip
+          files: ./modem/server.dist/${{ matrix.zip_name }}.zip
 
       - name: LIST ALL FILES
         run: ls -R
-
-      #- name: Upload Modem artifacts
-      #  uses: actions/upload-artifact@v3
-      #  if: ${{!startsWith(github.ref, 'refs/tags/v')}}
-      #  with:
-      #    name: ${{ matrix.zip_name }}.zip
-      #    # path: ./modem/dist/modem/${{ matrix.zip_name }}.zip
-      #    path: ./modem/dist/modem/${{ matrix.zip_name }}.zip#
-
-      #- name: Upload App bundle artifacts
-      #  uses: actions/upload-artifact@v3
-      #  if: ${{!startsWith(github.ref, 'refs/tags/v')}}
-      #  with:
-      #    name: app_bundle_${{ matrix.os }}.zip
-      #     # path: ./modem/dist/modem/${{ matrix.zip_name }}.zip
-      #    path: ./gui/dist/*

@@ -19,13 +19,13 @@
   "files": [
     "dist",
     "dist-electron",
-    "../modem/dist/modem/",
+    "../modem/server.dist/",
   ],
 
     "extraResources": [
 
       {
-        "from": "../modem/dist/modem/",
+        "from": "../modem/server.dist/",
         "to": "modem",
         "filter": [
           "**/*",

@@ -53,11 +53,5 @@ jobs:
 
       - name: run config tests
         shell: bash
-        working-directory: modem
         run: |
-          python3 tests/test_config.py
-
-      - name: run server tests
-        shell: bash
-        run: |
-          python3 tests/test_server.py
+          python -m unittest discover tests
