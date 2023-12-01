@@ -185,6 +185,9 @@ class DISPATCHER():
         if "origin" in deconstructed_frame:
             activity["origin"] = deconstructed_frame["origin"]
 
+        if "destination" in deconstructed_frame:
+            activity["destination"] = deconstructed_frame["destination"]
+
         if "gridsquare" in deconstructed_frame:
             activity["gridsquare"] = deconstructed_frame["gridsquare"]
 

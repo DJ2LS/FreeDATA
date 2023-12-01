@@ -1,6 +1,7 @@
 import time
 import ujson as json
 import threading
+import numpy as np
 class StateManager:
     def __init__(self, statequeue):
 
@@ -94,7 +95,6 @@ class StateManager:
             "radio_mode": self.radio_mode,
             "channel_busy_slot": self.channel_busy_slot,
             "audio_dbfs": self.audio_dbfs,
-            "heard_stations": self.heard_stations,
             "activities": self.activities_list,
         }
     
