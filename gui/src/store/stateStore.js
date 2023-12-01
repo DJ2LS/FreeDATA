@@ -14,13 +14,13 @@ export const useStateStore = defineStore("stateStore", () => {
   var dbfs_level = ref(0);
   var radio_status = ref(false);
 
-  var ptt_state = ref("False");
+  var ptt_state = ref(false);
 
   var speed_level = ref(0);
   var fft = ref();
   var channel_busy = ref(false);
   var channel_busy_slot = ref([false, false, false, false, false]);
-  var scatter = ref();
+  var scatter = ref([]);
   var s_meter_strength_percent = ref(0);
   var s_meter_strength_raw = ref(0);
 

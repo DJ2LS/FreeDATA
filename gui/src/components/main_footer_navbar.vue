@@ -18,8 +18,8 @@ const state = useStateStore(pinia);
           <button
             class="btn btn-sm btn-secondary me-1"
             v-bind:class="{
-              'btn-danger': state.ptt_state === 'True',
-              'btn-secondary': state.ptt_state === 'False',
+              'btn-danger': state.ptt_state == true,
+              'btn-secondary': state.ptt_state == false,
             }"
             id="ptt_state"
             type="button"
