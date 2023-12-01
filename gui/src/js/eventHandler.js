@@ -159,7 +159,20 @@ export function eventDispatcher(data) {
       stateStore.ptt_state = data.ptt;
       return;
   }
+
   switch (data["freedata"]) {
+    case ("modem-message"):
+      switch(data["received"]){
+        case ("BEACON"):
+          //Beacon received
+          displayToast("info", "bi-broadcast", "Beacon from " + data["dxcallsign"], 5000);
+          return;
+        case("QRV"):
+          //Qrv received
+          displayToast("success", "bi-person-raised-hand",  "QRV from " + data["dxcallsign"], 5000);
+          return;
+      }
+
     case ("modem-event"):
       switch (data["event"]) {
         case "start":
@@ -188,16 +201,12 @@ export function eventDispatcher(data) {
           );
           return;
     default:
-      console.error("Unknown event message received:");
-      console.error(data);
+      console.warn("Unknown event message received:");
+      console.warn(data);
       break;
   }
 
 
-  // catch modem related events
-  if (data["freedata"] == "modem-event") {
-    
-    }
   }
 
   /*
