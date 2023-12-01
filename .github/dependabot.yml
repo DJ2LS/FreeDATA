@@ -13,13 +13,7 @@ updates:
     directory: "/gui"
     schedule:
       interval: "daily"
-
-  # Maintain dependencies for npm
-  - package-ecosystem: "npm"
-    directory: "/gui"
-    schedule:
-      interval: "daily"
-    target-branch: "ls-gui-single-pager"
+    target-branch: "develop"
 
   # Maintain dependencies for pip
   - package-ecosystem: "pip"
