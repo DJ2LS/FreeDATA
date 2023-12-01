@@ -20,7 +20,7 @@ class EventManager:
         self.broadcast({"ptt": bool(on)})
 
     def send_scatter_change(self, data):
-        self.broadcast({"scatter": str(data)})
+        self.broadcast({"scatter": json.dumps(data)})
 
     def send_buffer_overflow(self, data):
         self.broadcast({"buffer-overflow": str(data)})

@@ -143,17 +143,20 @@ export function eventDispatcher(data) {
   if (data["dxcallsign"] == "AA0AA-0" || data["dxcallsign"] == "ZZ9YY-0") {
     return;
   }
+  
   console.info(data);
+  if (data["scatter"] !== undefined) {
+    //console.warn("Got scatter data!!!!");
+    stateStore.scatter = JSON.parse(data["scatter"]);
+    return;
+  }
+
   switch (data["ptt"]) {
     case true:
+    case false:
       // get ptt state as a first test
-      console.warn("PTT state true")
+      //console.warn("PTT state true")
       stateStore.ptt_state = data.ptt;
-      return;
-    default:
-      console.warn("PTT state false")
-        // get ptt state as a first test
-      stateStore.ptt_state = false;
       return;
   }
   switch (data["freedata"]) {
