@@ -16,6 +16,8 @@ import command_cq
 import command_ping
 import command_feq
 import command_test
+import command_arq_raw
+
 from queues import DATA_QUEUE_TRANSMIT as tx_cmd_queue
 
 app = Flask(__name__)
@@ -82,7 +84,7 @@ def validate(req, param, validator, isRequired = True):
 
 # Takes a transmit command and puts it in the transmit command queue
 def enqueue_tx_command(cmd_class, params = {}):
-    command = cmd_class(app.config_manager.read(), app.logger, params)
+    command = cmd_class(app.config_manager.read(), app.logger, app.state_manager, app.modem_events,  params)
     tx_cmd_queue.put(command)
     app.logger.info(f"Command {command.get_name()} enqueued.")
 
@@ -210,6 +212,7 @@ def post_modem_send_raw():
         return api_response({"info": "endpoint for SENDING RAW DATA via POST"})
     if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
+    enqueue_tx_command(command_arq_raw.ARQRawCommand, request.json)
 
     # server_commands.modem_arq_send_raw(request.json)
     return "Not implemented yet"

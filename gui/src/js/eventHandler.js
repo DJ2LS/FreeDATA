@@ -23,7 +23,7 @@ export function connectionFailed(endpoint, event) {
 }
 export function stateDispatcher(data) {
   data = JSON.parse(data);
-  //console.log(data);
+  console.log(data);
 
   stateStore.modem_connection = "connected";
 
@@ -43,6 +43,8 @@ export function stateDispatcher(data) {
     stateStore.radio_status = data["radio_status"];
     stateStore.frequency = data["radio_frequency"];
     stateStore.mode = data["radio_mode"];
+
+    stateStore.heard_stations = data["heard_stations"];
     /*
     self.is_arq_state = False
     self.is_arq_session = False

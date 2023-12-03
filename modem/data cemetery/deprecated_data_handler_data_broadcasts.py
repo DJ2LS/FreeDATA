@@ -5,7 +5,7 @@ import time
 import modem
 import base64
 import ujson as json
-from data_handler import DATA
+from deprecated_data_handler import DATA
 class DATABROADCAST(DATA):
     """Terminal Node Controller for FreeDATA"""
 

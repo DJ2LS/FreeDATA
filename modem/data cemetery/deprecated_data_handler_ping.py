@@ -4,7 +4,7 @@ from codec2 import FREEDV_MODE
 import helpers
 import uuid
 import structlog
-from data_handler import DATA
+from deprecated_data_handler import DATA
 class PING(DATA):
     def __init__(self, config, event_queue, states):
         super().__init__(config, event_queue, states)
