@@ -10,10 +10,12 @@ import { settingsStore as settings } from "../store/settingsStore.js";
 
 import active_heard_stations from "./grid_active_heard_stations.vue";
 import mini_heard_stations from "./grid_active_heard_stations_mini.vue";
-import active_stats from "./main_active_stats.vue";
-import active_audio_level from "./main_active_audio_level.vue";
+import active_stats from "./grid_active_stats.vue";
+import active_audio_level from "./grid_active_audio.vue";
 import active_rig_control from "./main_active_rig_control.vue";
 import active_broadcats from "./main_active_broadcasts.vue";
+import s_meter from "./grid_s-meter.vue";
+import dbfs_meter from "./grid_dbfs.vue";
 import { stateDispatcher } from "../js/eventHandler";
 
 let count = ref(0);
@@ -41,10 +43,10 @@ const gridWidgets = [
   ),
   new gridWidget(
     active_stats,
-    { x: 0, y: 0, w: 5, h: 28 },
+    { x: 0, y: 0, w: 4, h: 35 },
     "Stats (waterfall, etc)",
   ),
-  new gridWidget(active_audio_level, { x: 0, y: 0, w: 5, h: 12 }, "Audio"),
+  new gridWidget(active_audio_level, { x: 0, y: 0, w: 5, h: 11 }, "Audio"),
   new gridWidget(
     active_rig_control,
     { x: 0, y: 0, w: 6, h: 12 },
@@ -53,8 +55,18 @@ const gridWidgets = [
   new gridWidget(active_broadcats, { x: 1, y: 1, w: 5, h: 12 }, "Broadcats"),
   new gridWidget(
     mini_heard_stations,
-    { x: 1, y: 1, w: 5, h: 20 },
+    { x: 1, y: 1, w: 2, h: 27 },
     "Mini Heard stations",
+  ),
+  new gridWidget(
+    s_meter,
+    { x: 1, y: 1, w: 2, h: 4 },
+    "S-Meter",
+  ),
+  new gridWidget(
+    dbfs_meter,
+    { x: 1, y: 1, w: 2, h: 4 },
+    "Dbfs Meter",
   ),
 ];
 onMounted(() => {
@@ -64,6 +76,9 @@ onMounted(() => {
     cellHeight: "10px",
     minRow: 50,
     margin: 5,
+    resizable: {
+      handles: 'se,sw'
+    }
   });
 
   grid.on("dragstop", function (event, element) {
