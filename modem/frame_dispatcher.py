@@ -4,7 +4,6 @@ FRAME DISPATCHER - We are dispatching the received frames to the needed function
 
 """
 import threading
-import helpers
 import structlog
 from modem_frametypes import FRAME_TYPE as FR_TYPE
 import event_manager
@@ -79,7 +78,6 @@ class DISPATCHER():
         self.arq_irs = IRS(config, event_queue, states)
         self.arq_iss = ISS(config, event_queue, states)
         self.arq_session = SESSION(config, event_queue, states)
-
 
         self.event_manager = event_manager.EventManager([event_queue])
 
@@ -173,28 +171,6 @@ class DISPATCHER():
                                 self.event_manager,
                                 MODEM_TRANSMIT_QUEUE,
                                 self.arq_sessions)
-
-
-
-        activity = {
-            "direction": "received",
-            "snr": snr,
-            "offset": offset,
-            "activity_type": self.FRAME_HANDLER[frametype]['name']
-        }
-        if "origin" in deconstructed_frame:
-            activity["origin"] = deconstructed_frame["origin"]
-
-        if "destination" in deconstructed_frame:
-            activity["destination"] = deconstructed_frame["destination"]
-
-        if "gridsquare" in deconstructed_frame:
-            activity["gridsquare"] = deconstructed_frame["gridsquare"]
-
-        if "session_id" in deconstructed_frame:
-            activity["session_id"] = deconstructed_frame["session_id"]
-
-        self.states.add_activity(activity)
 
         handler.handle(deconstructed_frame, snr, offset, freedv, bytes_per_frame)
 
