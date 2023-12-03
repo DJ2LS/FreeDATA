@@ -9,6 +9,11 @@ export const settingsStore = reactive({
     enable_fft: false,
     spectrum: "waterfall",
     wf_theme: 0,
+    theme: "default_light",
+    high_graphics: true,
+    update_channel: "alpha",
+    enable_sys_notification: true,
+
   },
   remote: {
     AUDIO: {

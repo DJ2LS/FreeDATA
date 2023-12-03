@@ -19,7 +19,7 @@ function saveSettings() {
       class="form-select form-select-sm w-50"
       id="theme_selector"
       @change="saveSettings"
-      v-model="settings.theme"
+      v-model="settings.local.theme"
       disabled
     >
       <option value="default_light">Default (light)</option>
@@ -78,7 +78,7 @@ function saveSettings() {
           type="checkbox"
           id="GraphicsSwitch"
           @change="saveSettings"
-          v-model="settings.high_graphics"
+          v-model="settings.local.high_graphics"
           disabled
         />
         <label class="form-check-label" for="GraphicsSwitch"
@@ -104,7 +104,7 @@ function saveSettings() {
       class="form-select form-select-sm w-50"
       id="update_channel_selector"
       @change="saveSettings"
-      v-model="settings.update_channel"
+      v-model="settings.local.update_channel"
       disabled
     >
       <option value="latest">stable</option>
@@ -121,7 +121,7 @@ function saveSettings() {
           type="checkbox"
           id="NotificationSwitch"
           @change="saveSettings"
-          v-model="settings.enable_sys_notification"
+          v-model="settings.local.enable_sys_notification"
           disabled
         />
         <label class="form-check-label" for="NotificationSwitch"
@@ -130,22 +130,5 @@ function saveSettings() {
       </div>
     </label>
   </div>
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Auto-start Modem/rigctld</label>
-    <label class="input-group-text w-50">
-      <div class="form-check form-switch form-check-inline">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          id="AutoStartSwitch"
-          @change="saveSettings"
-          v-model="settings.auto_start"
-          disabled
-        />
-        <label class="form-check-label" for="AutoStartSwitch"
-          >Start on app launch</label
-        >
-      </div>
-    </label>
-  </div>
+
 </template>

@@ -9,23 +9,7 @@ import { settingsStore as settings } from "../store/settingsStore.js";
 </script>
 
 <template>
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Enable autotune</label>
-    <label class="input-group-text w-50">
-      <div class="form-check form-switch form-check-inline ms-2">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          id="autoTuneSwitch"
-          @change="setConfig"
-          v-model="settings.auto_tune"
-        />
-        <label class="form-check-label" for="autoTuneSwitch"
-          >adjust ALC on TX</label
-        >
-      </div>
-    </label>
-  </div>
+
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50">Enable FSK mode</label>
     <label class="input-group-text w-50">
@@ -35,7 +19,7 @@ import { settingsStore as settings } from "../store/settingsStore.js";
           type="checkbox"
           id="fskModeSwitch"
           @change="setConfig"
-          v-model="settings.enable_fsk"
+          v-model="settings.remote.MODEM.enable_fsk"
           disabled
         />
         <label class="form-check-label" for="fskModeSwitch"
@@ -53,7 +37,7 @@ import { settingsStore as settings } from "../store/settingsStore.js";
           type="checkbox"
           id="enableMeshSwitch"
           @change="setConfig"
-          v-model="settings.enable_mesh_features"
+          v-model="settings.remote.MESH.enable_protocol"
         />
         <label class="form-check-label" for="enableMeshSwitch"
           >experimental! REALLY!</label
