@@ -38,7 +38,7 @@ class explorer():
 
         frequency = 0 if self.states.radio_frequency is None else self.states.radio_frequency
         band = "USB"
-        callsign = str(self.config['STATION']['mycall'])
+        callsign = str(self.config['STATION']['mycall']) + "-" + str(self.config["STATION"]['myssid'])
         gridsquare = str(self.config['STATION']['mygrid'])
         version = str(self.app.MODEM_VERSION)
         bandwidth = str(self.config['MODEM']['enable_low_bandwidth_mode'])
@@ -52,8 +52,8 @@ class explorer():
 
         for i in self.states.heard_stations:
             try:
-                callsign = str(i[0], "UTF-8")
-                grid = str(i[1], "UTF-8")
+                callsign = i[0]
+                grid = i[1]
                 timestamp = i[2]
                 frequency = i[6]
                 try:
