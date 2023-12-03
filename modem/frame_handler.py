@@ -36,7 +36,7 @@ class FrameHandler():
         activity = {
             "direction": "received",
             "snr": self.details['snr'],
-            "offset": self.details['offset'],
+            "offset": self.details['freq_offset'],
             "activity_type": frame["frame_type"]
         }
         if "origin" in frame:
