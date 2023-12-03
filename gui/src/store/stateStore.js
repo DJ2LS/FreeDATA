@@ -31,7 +31,7 @@ export const useStateStore = defineStore("stateStore", () => {
   var arq_total_bytes = ref(0);
   var arq_transmission_percent = ref(0);
 
-  var heard_stations = ref("");
+  var activities = ref([]);
   var dxcallsign = ref("");
 
   var arq_session_state = ref("");
@@ -113,7 +113,7 @@ export const useStateStore = defineStore("stateStore", () => {
     arq_session_state,
     is_codec2_traffic,
     rf_level,
-    heard_stations,
+    activities,
     beacon_state,
     rigctld_started,
     rigctld_process,

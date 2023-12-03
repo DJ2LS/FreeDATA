@@ -43,6 +43,7 @@ export function stateDispatcher(data) {
     stateStore.radio_status = data["radio_status"];
     stateStore.frequency = data["radio_frequency"];
     stateStore.mode = data["radio_mode"];
+    stateStore.activities = Object.entries(data["activities"]).reverse();
     /*
     self.is_arq_state = False
     self.is_arq_session = False

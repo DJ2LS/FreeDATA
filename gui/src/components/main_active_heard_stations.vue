@@ -29,9 +29,10 @@ function getDateTime(timestampRaw) {
 
 function getMaidenheadDistance(dxGrid) {
   try {
-    return parseInt(distance(settings.mygrid, dxGrid));
+    
+    return parseInt(distance(settings.remote.STATION.mygrid, dxGrid));
   } catch (e) {
-    //
+    console.warn(e);
   }
 }
 </script>
@@ -81,33 +82,33 @@ function getMaidenheadDistance(dxGrid) {
           </thead>
           <tbody id="heardstations">
             <!--https://vuejs.org/guide/essentials/list.html-->
-            <tr v-for="item in state.heard_stations" :key="item.timestamp">
+            <tr v-for="item in state.activities" :key="item[0]">
               <td>
                 <span class="badge bg-secondary">{{
-                  getDateTime(item.timestamp)
+                  getDateTime(item[1].timestamp)
                 }}</span>
               </td>
               <td>
                 <span class="badge bg-secondary"
-                  >{{ item.frequency / 1000 }} kHz</span
+                  >{{ item[1].frequency / 1000 }} kHz</span
                 >
               </td>
               <td>
-                <span class="badge bg-secondary">{{ item.dxcallsign }}</span>
+                <span class="badge bg-secondary">{{ item[1].origin }}</span>
               </td>
               <td>
-                <span class="badge bg-secondary">{{ item.dxgrid }}</span>
+                <span class="badge bg-secondary">{{ item[1].gridsquare }}</span>
               </td>
               <td>
                 <span class="badge bg-secondary"
-                  >{{ getMaidenheadDistance(item.dxgrid) }} km</span
+                  >{{ getMaidenheadDistance(item[1].gridsquare) }} km</span
                 >
               </td>
               <td>
-                <span class="badge bg-secondary">{{ item.datatype }}</span>
+                <span class="badge bg-secondary">{{ item[1].activity_type }}</span>
               </td>
               <td>
-                <span class="badge bg-secondary">{{ item.snr }}</span>
+                <span class="badge bg-secondary">{{ item[1].snr }}</span>
               </td>
               <!--<td>{{ item.offset }}</td>-->
             </tr>
