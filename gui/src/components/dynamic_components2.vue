@@ -12,8 +12,8 @@ import active_heard_stations from "./grid_active_heard_stations.vue";
 import mini_heard_stations from "./grid_active_heard_stations_mini.vue";
 import active_stats from "./grid_active_stats.vue";
 import active_audio_level from "./grid_active_audio.vue";
-import active_rig_control from "./main_active_rig_control.vue";
-import active_broadcats from "./main_active_broadcasts.vue";
+import active_rig_control from "./grid_active_rig_control.vue";
+import active_broadcats from "./grid_active_broadcasts.vue";
 import s_meter from "./grid_s-meter.vue";
 import dbfs_meter from "./grid_dbfs.vue";
 import { stateDispatcher } from "../js/eventHandler";
@@ -46,16 +46,16 @@ const gridWidgets = [
     { x: 0, y: 0, w: 4, h: 35 },
     "Stats (waterfall, etc)",
   ),
-  new gridWidget(active_audio_level, { x: 0, y: 0, w: 5, h: 11 }, "Audio"),
+  new gridWidget(active_audio_level, { x: 0, y: 0, w: 4, h: 13 }, "Audio"),
   new gridWidget(
     active_rig_control,
     { x: 0, y: 0, w: 6, h: 12 },
     "Rig control",
   ),
-  new gridWidget(active_broadcats, { x: 1, y: 1, w: 5, h: 12 }, "Broadcats"),
+  new gridWidget(active_broadcats, { x: 1, y: 1, w: 4, h: 12 }, "Broadcats"),
   new gridWidget(
     mini_heard_stations,
-    { x: 1, y: 1, w: 2, h: 27 },
+    { x: 1, y: 1, w: 3, h: 27 },
     "Mini Heard stations",
   ),
   new gridWidget(
