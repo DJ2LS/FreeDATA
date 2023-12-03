@@ -8,8 +8,8 @@ setActivePinia(pinia);
 import { settingsStore as settings } from "../store/settingsStore.js";
 
 function saveSettings() {
-  saveSettingsToFile();
-  setColormap(settings.wftheme);
+  //saveSettingsToFile();
+  setColormap(settings.local.wf_theme);
 }
 </script>
 <template>
@@ -58,7 +58,7 @@ function saveSettings() {
       class="form-select form-select-sm w-50"
       id="wftheme_selector"
       @change="saveSettings"
-      v-model="settings.wftheme"
+      v-model="settings.local.wf_theme"
     >
       <option value="2">Default</option>
       <option value="0">Turbo</option>

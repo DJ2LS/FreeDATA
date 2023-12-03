@@ -13,6 +13,7 @@ export function initWaterfall() {
     spectrumPercent: 0,
     wf_rows: 192, //Assuming 1 row = 1 pixe1, 192 is the height of the spectrum container
   });
+  setColormap(settings.local.wf_theme);
 }
 
 export function addDataToWaterfall(data) {
