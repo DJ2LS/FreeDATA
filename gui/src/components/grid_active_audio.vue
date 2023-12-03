@@ -30,7 +30,7 @@ function startStopRecordAudio() {
     <div class="card-body">
       <div class="container-wide">
         <div class="row">
-          <div class="col-6">
+          <div class="col-lg-6">
             <div
               class="progress mb-0 rounded-0 rounded-top"
               style="height: 22px"
