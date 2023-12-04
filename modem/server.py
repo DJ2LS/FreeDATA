@@ -18,8 +18,6 @@ import command_feq
 import command_test
 import command_arq_raw
 
-from queues import DATA_QUEUE_TRANSMIT as tx_cmd_queue
-
 app = Flask(__name__)
 CORS(app)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -56,7 +54,7 @@ app.modem_service = queue.Queue() # start / stop modem service
 app.state_manager = state_manager.StateManager(app.state_queue)
 
 # start service manager
-service_manager.SM(app)
+app.service_manager = service_manager.SM(app)
 
 # start modem service
 app.modem_service.put("start")
@@ -85,7 +83,7 @@ def validate(req, param, validator, isRequired = True):
 # Takes a transmit command and puts it in the transmit command queue
 def enqueue_tx_command(cmd_class, params = {}):
     command = cmd_class(app.config_manager.read(), app.logger, app.state_manager, app.modem_events,  params)
-    tx_cmd_queue.put(command)
+    command.run(app.modem_events, app.service_manager.modem.modem_transmit_queue)
     app.logger.info(f"Command {command.get_name()} enqueued.")
 
 ## REST API

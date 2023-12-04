@@ -7,9 +7,6 @@ DATA_QUEUE_TRANSMIT = queue.Queue()
 DATA_QUEUE_RECEIVED = queue.Queue()
 
 # Initialize FIFO queue to store received frames
-MODEM_TRANSMIT_QUEUE = queue.Queue()
-
-# Initialize FIFO queue to store received frames
 MESH_RECEIVED_QUEUE = queue.Queue()
 MESH_QUEUE_TRANSMIT = queue.Queue()
 MESH_SIGNALLING_TABLE = []

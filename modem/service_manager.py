@@ -84,7 +84,8 @@ class SM:
         self.frame_dispatcher = frame_dispatcher.DISPATCHER(self.config, 
                                                             self.modem_events, 
                                                             self.states,
-                                                            self.modem.data_queue_received)
+                                                            self.modem.data_queue_received,
+                                                            self.modem.modem_transmit_queue)
         self.frame_dispatcher.start()
 
         self.states.set("is_modem_running", True)
@@ -107,3 +108,4 @@ class SM:
         self.log.info("tested audio devices", result=audio_test)
 
         return audio_test
+    

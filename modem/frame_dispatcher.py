@@ -7,7 +7,6 @@ import threading
 import structlog
 from modem_frametypes import FRAME_TYPE as FR_TYPE
 import event_manager
-from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT, MODEM_TRANSMIT_QUEUE
 from data_frame_factory import DataFrameFactory
 
 #from deprecated_data_handler_broadcasts import BROADCAST
@@ -49,7 +48,7 @@ class DISPATCHER():
         FR_TYPE.FEC_WAKEUP.value: {"class": FrameHandler, "name":  "FEC WAKEUP"},
     }
 
-    def __init__(self, config, event_queue, states, data_q_rx):
+    def __init__(self, config, event_queue, states, data_q_rx, modem_tx_q):
         self.log = structlog.get_logger("frame_dispatcher")
 
         self.log.info("loading frame dispatcher.....\n")
@@ -60,8 +59,8 @@ class DISPATCHER():
         self._initialize_handlers(config, event_queue, states)
         #self._initialize_dispatchers()
 
-        self.data_queue_transmit = DATA_QUEUE_TRANSMIT
         self.data_queue_received = data_q_rx
+        self.modem_transmit_queue = modem_tx_q
 
         self.arq_sessions = []
 
@@ -81,18 +80,9 @@ class DISPATCHER():
 
         self.event_manager = event_manager.EventManager([event_queue])
 
-
-
     def start(self):
         """Starts worker threads for transmit and receive operations."""
-        threading.Thread(target=self.worker_transmit, name="Transmit Worker", daemon=True).start()
         threading.Thread(target=self.worker_receive, name="Receive Worker", daemon=True).start()
-
-    def worker_transmit(self) -> None:
-        """Dispatch incoming UI instructions for transmitting operations"""
-        while True:
-            command = self.data_queue_transmit.get()
-            command.run(self.event_queue, MODEM_TRANSMIT_QUEUE)
 
     def worker_receive(self) -> None:
         """Queue received data for processing"""
@@ -122,7 +112,7 @@ class DISPATCHER():
                                 self.config,
                                 self.states,
                                 self.event_manager,
-                                MODEM_TRANSMIT_QUEUE,
+                                self.modem_transmit_queue,
                                 self.arq_sessions)
 
         handler.handle(deconstructed_frame, snr, offset, freedv, bytes_per_frame)

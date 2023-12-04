@@ -2,7 +2,6 @@
 import time
 import helpers
 from codec2 import FREEDV_MODE
-from queues import MODEM_TRANSMIT_QUEUE
 from modem_frametypes import FRAME_TYPE as FR_TYPE
 
 from protocol_arq import ARQ

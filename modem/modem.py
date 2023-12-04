@@ -22,7 +22,7 @@ import sounddevice as sd
 import structlog
 import tci
 import cw
-from queues import MODEM_TRANSMIT_QUEUE, RIGCTLD_COMMAND_QUEUE
+from queues import RIGCTLD_COMMAND_QUEUE
 import audio
 import event_manager
 from modem_frametypes import FRAME_TYPE
@@ -89,7 +89,7 @@ class RF:
         # Make sure our resampler will work
         assert (self.AUDIO_SAMPLE_RATE_RX / self.MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48  # type: ignore
 
-        self.modem_transmit_queue = MODEM_TRANSMIT_QUEUE
+        self.modem_transmit_queue = queue.Queue()
         self.modem_received_queue = queue.Queue()
 
         self.audio_received_queue = queue.Queue()
@@ -112,7 +112,7 @@ class RF:
                                             self.event_manager)
 
         self.beacon = beacon.Beacon(self.config, self.states, event_queue, 
-                                    self.log, MODEM_TRANSMIT_QUEUE)
+                                    self.log, self.modem_transmit_queue)
 
     # --------------------------------------------------------------------------------------------------------
     def tci_tx_callback(self) -> None:
