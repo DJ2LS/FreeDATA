@@ -302,7 +302,7 @@ class RF:
           frames:
 
         """
-        self.reset_data_sync()
+        self.demodulator.reset_data_sync()
 
         if mode == codec2.FREEDV_MODE.datac0.value:
             freedv = self.freedv_datac0_tx
@@ -865,19 +865,6 @@ class RF:
             self.log.debug("[MDM] Setting fft=0")
             # else 0
             self.fft_queue.put([0])
-
-    def reset_data_sync(self) -> None:
-        """
-        reset sync state for data modes
-
-        :param frames_per_burst: Number of frames per burst requested
-        :type frames_per_burst: int
-        """
-
-        #codec2.api.freedv_set_sync(self.dat0_datac1_freedv, 0)
-        #codec2.api.freedv_set_sync(self.dat0_datac3_freedv, 0)
-        #codec2.api.freedv_set_sync(self.dat0_datac4_freedv, 0)
-        #codec2.api.freedv_set_sync(self.fsk_ldpc_freedv_0, 0)
 
     def set_FFT_stream(self, enable: bool):
         # Set config boolean regarding wheter it should sent FFT data to queue

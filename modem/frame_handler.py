@@ -28,6 +28,32 @@ class FrameHandler():
             'bytes_per_frame': 0
         }
 
+
+
+    def add_to_activity_list(self):
+        frame = self.details['frame']
+
+        activity = {
+            "direction": "received",
+            "snr": self.details['snr'],
+            "freq_offset": self.details['freq_offset'],
+            "activity_type": frame["frame_type"]
+        }
+        if "origin" in frame:
+            activity["origin"] = frame["origin"]
+
+        if "destination" in frame:
+            activity["destination"] = frame["destination"]
+
+        if "gridsquare" in frame:
+            activity["gridsquare"] = frame["gridsquare"]
+
+        if "session_id" in frame:
+            activity["session_id"] = frame["session_id"]
+
+        self.states.add_activity(activity)
+
+
     def add_to_heard_stations(self):
         frame = self.details['frame']
 
@@ -97,5 +123,6 @@ class FrameHandler():
 
         self.log()
         self.add_to_heard_stations()
+        self.add_to_activity_list()
         self.emit_event()
         self.follow_protocol()

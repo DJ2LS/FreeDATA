@@ -9,7 +9,7 @@ import structlog
 import event_manager
 import command_qrv
 
-from data_handler import DATA
+from deprecated_data_handler import DATA
 
 TESTMODE = False
 

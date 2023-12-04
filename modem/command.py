@@ -4,9 +4,11 @@ from codec2 import FREEDV_MODE
 
 class TxCommand():
 
-    def __init__(self, config, logger, apiParams = {}):
+    def __init__(self, config, logger, state_manager, modem_events, apiParams = {}):
         self.config = config
         self.logger = logger
+        self.state_manager = state_manager
+        self.modem_events = modem_events
         self.set_params_from_api(apiParams)
         self.frame_factory = DataFrameFactory(config)
 

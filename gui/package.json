@@ -78,7 +78,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-vue": "^9.17.0",
     "typescript": "^5.2.2",
-    "vite": "^5.0.2",
+    "vite": "^5.0.4",
     "vite-plugin-electron": "^0.15.4",
     "vite-plugin-electron-renderer": "^0.14.5",
     "vitest": "^0.34.6",

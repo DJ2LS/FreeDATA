@@ -11,7 +11,6 @@ from codec2 import FREEDV_MODE, FREEDV_MODE_USED_SLOTS
 from modem_frametypes import FRAME_TYPE as FR_TYPE
 import event_manager
 
-from data_handler import DATA
 TESTMODE = False
 class ARQ:
     def __init__(self, config, event_queue, states):

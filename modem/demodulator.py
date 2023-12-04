@@ -657,4 +657,15 @@ class Demodulator():
             # only take every tenth data point
             self.event_manager.send_scatter_change(scatterdata[::10])
 
+    def reset_data_sync(self) -> None:
+        """
+        reset sync state for data modes
 
+        :param frames_per_burst: Number of frames per burst requested
+        :type frames_per_burst: int
+        """
+
+        codec2.api.freedv_set_sync(self.dat0_datac1_freedv, 0)
+        codec2.api.freedv_set_sync(self.dat0_datac3_freedv, 0)
+        codec2.api.freedv_set_sync(self.dat0_datac4_freedv, 0)
+        codec2.api.freedv_set_sync(self.fsk_ldpc_freedv_0, 0)
