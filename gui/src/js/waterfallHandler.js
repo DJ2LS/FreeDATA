@@ -8,22 +8,19 @@ import { settingsStore as settings } from "../store/settingsStore.js";
 
 var spectrum = new Object();
 
-export function initWaterfall() {
-  spectrum = new Spectrum("waterfall", {
+export function initWaterfall(id) {
+    spectrum = new Spectrum(id, {
     spectrumPercent: 0,
-    wf_rows: 192, //Assuming 1 row = 1 pixe1, 192 is the height of the spectrum container
+    wf_rows: 1024, //Assuming 1 row = 1 pixe1, 192 is the height of the spectrum container
+    wf_size: 1024,
   });
-  setColormap(settings.local.wf_theme);
+  spectrum.setColorMap(settings.local.wf_theme);
+  return spectrum;
 }
 
 export function addDataToWaterfall(data) {
   data = JSON.parse(data);
-  try {
-    spectrum.addData(data);
-  } catch (e) {
-    //console.log(e);
-  }
-}
+  window.dispatchEvent(new CustomEvent("wf-data-avail", {detail: data}));}
 /**
  * Setwaterfall colormap array by index
  * @param {number} index colormap index to use

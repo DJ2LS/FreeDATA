@@ -274,14 +274,16 @@ Spectrum.prototype.updateSpectrumRatio = function () {
 };
 
 Spectrum.prototype.resize = function () {
-  var width = this.canvas.clientWidth;
-  var height = this.canvas.clientHeight;
+  var width = this.parent.clientWidth;
+  var height =this.parent.clientHeight;
   // little helper for setting height of clientHeight is not working as expected
   if (height == 0){
     var height = 250
 
   }
-
+  if (width == 0){
+    width=500;
+  }
 
   if (this.canvas.width != width || this.canvas.height != height) {
     this.canvas.width = width;
@@ -473,7 +475,7 @@ export function Spectrum(id, options) {
 
   // Create main canvas and adjust dimensions to match actual
   this.canvas = document.getElementById(id);
-
+  this.parent = this.canvas.parentElement;
   this.canvas.height = this.canvas.clientHeight;
   this.canvas.width = this.canvas.clientWidth;
 

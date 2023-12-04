@@ -170,7 +170,7 @@ const scatterChartData = computed(() => ({
 
 <script lang="ts">
 import { initWaterfall } from "../js/waterfallHandler.js";
-
+var localSpectrum;
 export default {
   mounted() {
     // This code will be executed after the component is mounted to the DOM
@@ -178,7 +178,8 @@ export default {
     //const myElement = this.$refs.waterfall; // Access the DOM element with ref
 
     // init waterfall
-    initWaterfall();
+    localSpectrum = initWaterfall("waterfall-main");
+    window.addEventListener("wf-data-avail",function(evt) {localSpectrum.addData(evt.detail);},false);
   },
 };
 </script>
@@ -359,10 +360,10 @@ export default {
           aria-labelledby="list-waterfall-list"
         >
           <canvas
-            ref="waterfall"
-            id="waterfall"
-            style="position: relative; z-index: 2"
-            class="force-gpu h-100 w-100"
+            ref="waterfall-main"
+            id="waterfall-main"
+            style="position: relative; z-index: 2;aspect-ratio:unset; width: 100%; height: 200px;"
+            class="force-gpu"
           ></canvas>
         </div>
         <div

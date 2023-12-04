@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // @ts-nocheck
 // reason for no check is, that we have some mixing of typescript and chart js which seems to be not to be fixed that easy
-
+import { initWaterfall } from "../js/waterfallHandler.js";
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
@@ -22,7 +22,7 @@ import {
   Legend,
 } from "chart.js";
 import { Line, Scatter } from "vue-chartjs";
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 
 function selectStatsControl(obj) {
   switch (obj.delegateTarget.id) {
@@ -166,29 +166,22 @@ const scatterChartData = computed(() => ({
     },
   ],
 }));
-</script>
-
-<script lang="ts">
-import { initWaterfall } from "../js/waterfallHandler.js";
-
-export default {
-  mounted() {
+var localSpectrum;
+onMounted(() => {
     // This code will be executed after the component is mounted to the DOM
     // You can access DOM elements or perform other initialization here
     //const myElement = this.$refs.waterfall; // Access the DOM element with ref
 
     // init waterfall
-    initWaterfall();
-  },
-};
+  localSpectrum = initWaterfall("waterfall-grid");
+  window.addEventListener("wf-data-avail",function(evt) {localSpectrum.addData(evt.detail);},false);
+});
+
 </script>
 
 <template>
   <div class="card h-100" >
     <div class="card-header">
-      <div class="">
-        <div class="">
-          <div class="">
             <div class="btn-group" role="group">
               <div
                 class="list-group bg-body-tertiary list-group-horizontal"
@@ -331,16 +324,13 @@ export default {
                 data
               </button>
             </div>
-          </div>
 
 
-        </div>
-      </div>
     </div>
     <div class="card-body w-100 h-100 overflow-auto">
-      <div class="tab-content" id="nav-stats-tabContent">
+      <div class="tab-content h-100 w-100" id="nav-stats-tabContent">
         <div
-          class="tab-pane fade"
+          class="tab-pane fade h-100 w-100"
           v-bind:class="{
             'show active': settings.local.spectrum === 'waterfall',
           }"
@@ -349,10 +339,8 @@ export default {
           aria-labelledby="list-waterfall-list"
         >
           <canvas
-            ref="waterfall"
-            id="waterfall"
-            style="position: relative; z-index: 2;width:100%; height: 100%;"
-            class="force-gpu h-100 w-100"
+            id="waterfall-grid"
+            class="force-gpu"
           ></canvas>
         </div>
         <div
