@@ -8,6 +8,7 @@ import helpers
 import queue
 from state_manager import StateManager
 from command_ping import PingCommand
+from command_cq import CQCommand
 
 class TestDataFrameFactory(unittest.TestCase):
 
@@ -54,6 +55,19 @@ class TestDataFrameFactory(unittest.TestCase):
         # Check ACK
         self.shortcutTransmission()
         self.assertEventReceivedType('PING_ACK')    
+
+    def testCQWithQRV(self):
+        self.config['MODEM']['respond_to_cq'] = True
+
+        api_params = {}
+        cmd = CQCommand(self.config, self.state_manager, self.event_queue, api_params)
+        cmd.run(self.event_queue, self.modem_transmit_queue)
+
+        self.shortcutTransmission()
+        self.assertEventReceivedType('CQ')
+
+        self.shortcutTransmission()
+        self.assertEventReceivedType('QRV')
 
 if __name__ == '__main__':
     unittest.main()
