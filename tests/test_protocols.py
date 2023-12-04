@@ -10,7 +10,7 @@ from state_manager import StateManager
 from command_ping import PingCommand
 from command_cq import CQCommand
 
-class TestDataFrameFactory(unittest.TestCase):
+class TestProtocols(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
