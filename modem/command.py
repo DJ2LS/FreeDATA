@@ -1,12 +1,13 @@
 from data_frame_factory import DataFrameFactory
 import queue
 from codec2 import FREEDV_MODE
+import structlog
 
 class TxCommand():
 
-    def __init__(self, config, logger, state_manager, modem_events, apiParams = {}):
+    def __init__(self, config, state_manager, modem_events, apiParams = {}):
         self.config = config
-        self.logger = logger
+        self.logger = structlog.get_logger("Command")
         self.state_manager = state_manager
         self.modem_events = modem_events
         self.set_params_from_api(apiParams)
