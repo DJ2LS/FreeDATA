@@ -3,9 +3,6 @@ Hold queues used by more than one module to eliminate cyclic imports.
 """
 import queue
 
-DATA_QUEUE_TRANSMIT = queue.Queue()
-DATA_QUEUE_RECEIVED = queue.Queue()
-
 # Initialize FIFO queue to store received frames
 MESH_RECEIVED_QUEUE = queue.Queue()
 MESH_QUEUE_TRANSMIT = queue.Queue()
