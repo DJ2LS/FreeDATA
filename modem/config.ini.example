@@ -5,7 +5,7 @@ modemport = 3050
 mycall = XX1XXX
 mygrid = JN18cv
 myssid = 6
-ssid_list = []
+ssid_list = [1, 7]
 enable_explorer = True
 enable_stats = True
 
