@@ -29,7 +29,6 @@ function getDateTime(timestampRaw) {
 
 function getMaidenheadDistance(dxGrid) {
   try {
-    
     return parseInt(distance(settings.remote.STATION.mygrid, dxGrid));
   } catch (e) {
     console.warn(e);
@@ -105,7 +104,9 @@ function getMaidenheadDistance(dxGrid) {
                 >
               </td>
               <td>
-                <span class="badge bg-secondary">{{ item[1].activity_type }}</span>
+                <span class="badge bg-secondary">{{
+                  item[1].activity_type
+                }}</span>
               </td>
               <td>
                 <span class="badge bg-secondary">{{ item[1].snr }}</span>

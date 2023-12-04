@@ -13,7 +13,6 @@ export const settingsStore = reactive({
     high_graphics: true,
     update_channel: "alpha",
     enable_sys_notification: true,
-
   },
   remote: {
     AUDIO: {

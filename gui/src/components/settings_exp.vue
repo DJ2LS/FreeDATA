@@ -9,7 +9,6 @@ import { settingsStore as settings } from "../store/settingsStore.js";
 </script>
 
 <template>
-
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50">Enable FSK mode</label>
     <label class="input-group-text w-50">

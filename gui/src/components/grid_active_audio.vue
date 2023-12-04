@@ -16,14 +16,29 @@ function startStopRecordAudio() {
   <div class="card w-100 h-100">
     <div class="card-header">
       <div class="dropdown">
-        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-          
-        </button>
+        <button
+          class="btn btn-sm btn-outline-secondary dropdown-toggle"
+          type="button"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+        ></button>
         <i class="bi bi-volume-up" style="font-size: 1rem"></i>&nbsp;
-      <strong>Audio</strong>
+        <strong>Audio</strong>
         <ul class="dropdown-menu">
-          <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#audioModal" href="#">Tune</a></li>
-          <li><a class="dropdown-item" @click="startStopRecordAudio" href="#">Record</a></li>
+          <li>
+            <a
+              class="dropdown-item"
+              data-bs-toggle="modal"
+              data-bs-target="#audioModal"
+              href="#"
+              >Tune</a
+            >
+          </li>
+          <li>
+            <a class="dropdown-item" @click="startStopRecordAudio" href="#"
+              >Record</a
+            >
+          </li>
         </ul>
       </div>
     </div>

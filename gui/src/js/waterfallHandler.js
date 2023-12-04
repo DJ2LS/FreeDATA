@@ -9,7 +9,7 @@ import { settingsStore as settings } from "../store/settingsStore.js";
 var spectrum = new Object();
 
 export function initWaterfall(id) {
-    spectrum = new Spectrum(id, {
+  spectrum = new Spectrum(id, {
     spectrumPercent: 0,
     wf_rows: 1024, //Assuming 1 row = 1 pixe1, 192 is the height of the spectrum container
     wf_size: 1024,
@@ -20,7 +20,8 @@ export function initWaterfall(id) {
 
 export function addDataToWaterfall(data) {
   data = JSON.parse(data);
-  window.dispatchEvent(new CustomEvent("wf-data-avail", {detail: data}));}
+  window.dispatchEvent(new CustomEvent("wf-data-avail", { detail: data }));
+}
 /**
  * Setwaterfall colormap array by index
  * @param {number} index colormap index to use

@@ -16,7 +16,7 @@ function getDateTime(timestampRaw) {
     navigator.language,
     {
       hourCycle: "h23",
-     
+
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
@@ -51,7 +51,7 @@ function getMaidenheadDistance(dxGrid) {
             <tr>
               <th scope="col" id="thTime">Time</th>
               <th scope="col" id="thDxcall">DXCall</th>
- 
+
               <th scope="col" id="thSnr">SNR</th>
               <!--<th scope="col">Off</th>-->
             </tr>
@@ -60,13 +60,11 @@ function getMaidenheadDistance(dxGrid) {
             <!--https://vuejs.org/guide/essentials/list.html-->
             <tr v-for="item in state.activities" :key="item[0]">
               <td>
-                <span class="fs-6">{{
-                  getDateTime(item[1].timestamp)
-                }}</span>
+                <span class="fs-6">{{ getDateTime(item[1].timestamp) }}</span>
               </td>
 
               <td>
-                <span >{{ item[1].origin }}</span>
+                <span>{{ item[1].origin }}</span>
               </td>
               <td>
                 <span>{{ item[1].snr }}</span>

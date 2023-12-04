@@ -168,164 +168,167 @@ const scatterChartData = computed(() => ({
 }));
 var localSpectrum;
 onMounted(() => {
-    // This code will be executed after the component is mounted to the DOM
-    // You can access DOM elements or perform other initialization here
-    //const myElement = this.$refs.waterfall; // Access the DOM element with ref
+  // This code will be executed after the component is mounted to the DOM
+  // You can access DOM elements or perform other initialization here
+  //const myElement = this.$refs.waterfall; // Access the DOM element with ref
 
-    // init waterfall
+  // init waterfall
   localSpectrum = initWaterfall("waterfall-grid");
-  window.addEventListener("wf-data-avail",function(evt) {localSpectrum.addData(evt.detail);},false);
+  window.addEventListener(
+    "wf-data-avail",
+    function (evt) {
+      localSpectrum.addData(evt.detail);
+    },
+    false,
+  );
 });
-
 </script>
 
 <template>
-  <div class="card h-100" >
+  <div class="card h-100">
     <div class="card-header">
-            <div class="btn-group" role="group">
-              <div
-                class="list-group bg-body-tertiary list-group-horizontal"
-                id="list-tab"
-                role="tablist"
-              >
-                <a
-                  class="py-0 list-group-item list-group-item-dark list-group-item-action"
-                  id="list-waterfall-list"
-                  data-bs-toggle="list"
-                  href="#list-waterfall"
-                  role="tab"
-                  aria-controls="list-waterfall"
-                  v-bind:class="{
-                    active: settings.local.spectrum === 'waterfall',
-                  }"
-                  @click="selectStatsControl($event)"
-                  ><strong><i class="bi bi-water"></i></strong
-                ></a>
-                <a
-                  class="py-0 list-group-item list-group-item-dark list-group-item-action"
-                  id="list-scatter-list"
-                  data-bs-toggle="list"
-                  href="#list-scatter"
-                  role="tab"
-                  aria-controls="list-scatter"
-                  v-bind:class="{
-                    active: settings.local.spectrum === 'scatter',
-                  }"
-                  @click="selectStatsControl($event)"
-                  ><strong><i class="bi bi-border-outer"></i></strong
-                ></a>
-                <a
-                  class="py-0 list-group-item list-group-item-dark list-group-item-action"
-                  id="list-chart-list"
-                  data-bs-toggle="list"
-                  href="#list-chart"
-                  role="tab"
-                  aria-controls="list-chart"
-                  v-bind:class="{ active: settings.local.spectrum === 'chart' }"
-                  @click="selectStatsControl($event)"
-                  ><strong><i class="bi bi-graph-up-arrow"></i></strong
-                ></a>
-              </div>
-            </div>
-            <div class="btn-group" role="group" aria-label="Busy indicators">
-              <button
-                class="btn btn-sm ms-1 p-1 disabled"
-                type="button"
-                data-bs-placement="top"
-                data-bs-toggle="tooltip"
-                data-bs-trigger="hover"
-                data-bs-html="true"
-                v-bind:class="{
-                  'btn-warning': state.channel_busy_slot[0] === true,
-                  'btn-outline-secondary': state.channel_busy_slot[0] === false,
-                }"
-                title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
-              >
-                S1
-              </button>
+      <div class="btn-group" role="group">
+        <div
+          class="list-group bg-body-tertiary list-group-horizontal"
+          id="list-tab"
+          role="tablist"
+        >
+          <a
+            class="py-0 list-group-item list-group-item-dark list-group-item-action"
+            id="list-waterfall-list"
+            data-bs-toggle="list"
+            href="#list-waterfall"
+            role="tab"
+            aria-controls="list-waterfall"
+            v-bind:class="{
+              active: settings.local.spectrum === 'waterfall',
+            }"
+            @click="selectStatsControl($event)"
+            ><strong><i class="bi bi-water"></i></strong
+          ></a>
+          <a
+            class="py-0 list-group-item list-group-item-dark list-group-item-action"
+            id="list-scatter-list"
+            data-bs-toggle="list"
+            href="#list-scatter"
+            role="tab"
+            aria-controls="list-scatter"
+            v-bind:class="{
+              active: settings.local.spectrum === 'scatter',
+            }"
+            @click="selectStatsControl($event)"
+            ><strong><i class="bi bi-border-outer"></i></strong
+          ></a>
+          <a
+            class="py-0 list-group-item list-group-item-dark list-group-item-action"
+            id="list-chart-list"
+            data-bs-toggle="list"
+            href="#list-chart"
+            role="tab"
+            aria-controls="list-chart"
+            v-bind:class="{ active: settings.local.spectrum === 'chart' }"
+            @click="selectStatsControl($event)"
+            ><strong><i class="bi bi-graph-up-arrow"></i></strong
+          ></a>
+        </div>
+      </div>
+      <div class="btn-group" role="group" aria-label="Busy indicators">
+        <button
+          class="btn btn-sm ms-1 p-1 disabled"
+          type="button"
+          data-bs-placement="top"
+          data-bs-toggle="tooltip"
+          data-bs-trigger="hover"
+          data-bs-html="true"
+          v-bind:class="{
+            'btn-warning': state.channel_busy_slot[0] === true,
+            'btn-outline-secondary': state.channel_busy_slot[0] === false,
+          }"
+          title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
+        >
+          S1
+        </button>
 
-              <button
-                class="btn btn-sm p-1 disabled"
-                type="button"
-                data-bs-placement="top"
-                data-bs-toggle="tooltip"
-                data-bs-trigger="hover"
-                data-bs-html="true"
-                v-bind:class="{
-                  'btn-warning': state.channel_busy_slot[1] === true,
-                  'btn-outline-secondary': state.channel_busy_slot[1] === false,
-                }"
-                title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
-              >
-                S2
-              </button>
+        <button
+          class="btn btn-sm p-1 disabled"
+          type="button"
+          data-bs-placement="top"
+          data-bs-toggle="tooltip"
+          data-bs-trigger="hover"
+          data-bs-html="true"
+          v-bind:class="{
+            'btn-warning': state.channel_busy_slot[1] === true,
+            'btn-outline-secondary': state.channel_busy_slot[1] === false,
+          }"
+          title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
+        >
+          S2
+        </button>
 
-              <button
-                class="btn btn-sm p-1 disabled"
-                type="button"
-                data-bs-placement="top"
-                data-bs-toggle="tooltip"
-                data-bs-trigger="hover"
-                data-bs-html="true"
-                v-bind:class="{
-                  'btn-warning': state.channel_busy_slot[2] === true,
-                  'btn-outline-secondary': state.channel_busy_slot[2] === false,
-                }"
-                title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
-              >
-                S3
-              </button>
+        <button
+          class="btn btn-sm p-1 disabled"
+          type="button"
+          data-bs-placement="top"
+          data-bs-toggle="tooltip"
+          data-bs-trigger="hover"
+          data-bs-html="true"
+          v-bind:class="{
+            'btn-warning': state.channel_busy_slot[2] === true,
+            'btn-outline-secondary': state.channel_busy_slot[2] === false,
+          }"
+          title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
+        >
+          S3
+        </button>
 
-              <button
-                class="btn btn-sm p-1 disabled"
-                type="button"
-                data-bs-placement="top"
-                data-bs-toggle="tooltip"
-                data-bs-trigger="hover"
-                data-bs-html="true"
-                v-bind:class="{
-                  'btn-warning': state.channel_busy_slot[3] === true,
-                  'btn-outline-secondary': state.channel_busy_slot[3] === false,
-                }"
-                title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
-              >
-                S4
-              </button>
+        <button
+          class="btn btn-sm p-1 disabled"
+          type="button"
+          data-bs-placement="top"
+          data-bs-toggle="tooltip"
+          data-bs-trigger="hover"
+          data-bs-html="true"
+          v-bind:class="{
+            'btn-warning': state.channel_busy_slot[3] === true,
+            'btn-outline-secondary': state.channel_busy_slot[3] === false,
+          }"
+          title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
+        >
+          S4
+        </button>
 
-              <button
-                class="btn btn-sm p-1 disabled"
-                type="button"
-                data-bs-placement="top"
-                data-bs-toggle="tooltip"
-                data-bs-trigger="hover"
-                data-bs-html="true"
-                v-bind:class="{
-                  'btn-warning': state.channel_busy_slot[4] === true,
-                  'btn-outline-secondary': state.channel_busy_slot[4] === false,
-                }"
-                title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
-              >
-                S5
-              </button>
+        <button
+          class="btn btn-sm p-1 disabled"
+          type="button"
+          data-bs-placement="top"
+          data-bs-toggle="tooltip"
+          data-bs-trigger="hover"
+          data-bs-html="true"
+          v-bind:class="{
+            'btn-warning': state.channel_busy_slot[4] === true,
+            'btn-outline-secondary': state.channel_busy_slot[4] === false,
+          }"
+          title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
+        >
+          S5
+        </button>
 
-              <button
-                class="btn btn-sm p-1 disabled"
-                type="button"
-                data-bs-placement="top"
-                data-bs-toggle="tooltip"
-                data-bs-trigger="hover"
-                data-bs-html="true"
-                title="Recieving data: illuminates <strong class='text-success'>green</strong> if receiving codec2 data"
-                v-bind:class="{
-                  'btn-success': state.is_codec2_traffic === true,
-                  'btn-outline-secondary': state.is_codec2_traffic === false,
-                }"
-              >
-                data
-              </button>
-            </div>
-
-
+        <button
+          class="btn btn-sm p-1 disabled"
+          type="button"
+          data-bs-placement="top"
+          data-bs-toggle="tooltip"
+          data-bs-trigger="hover"
+          data-bs-html="true"
+          title="Recieving data: illuminates <strong class='text-success'>green</strong> if receiving codec2 data"
+          v-bind:class="{
+            'btn-success': state.is_codec2_traffic === true,
+            'btn-outline-secondary': state.is_codec2_traffic === false,
+          }"
+        >
+          data
+        </button>
+      </div>
     </div>
     <div class="card-body w-100 h-100 overflow-auto">
       <div class="tab-content h-100 w-100" id="nav-stats-tabContent">
@@ -338,10 +341,7 @@ onMounted(() => {
           role="stats_tabpanel"
           aria-labelledby="list-waterfall-list"
         >
-          <canvas
-            id="waterfall-grid"
-            class="force-gpu"
-          ></canvas>
+          <canvas id="waterfall-grid" class="force-gpu"></canvas>
         </div>
         <div
           class="tab-pane fade"

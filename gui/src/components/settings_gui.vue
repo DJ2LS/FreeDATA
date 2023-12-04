@@ -130,5 +130,4 @@ function saveSettings() {
       </div>
     </label>
   </div>
-
 </template>

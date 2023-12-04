@@ -84,7 +84,9 @@ function getMaidenheadDistance(dxGrid) {
                 >
               </td>
               <td>
-                <span class="badge bg-secondary">{{ item[1].activity_type }}</span>
+                <span class="badge bg-secondary">{{
+                  item[1].activity_type
+                }}</span>
               </td>
               <td>
                 <span class="badge bg-secondary">{{ item[1].snr }}</span>

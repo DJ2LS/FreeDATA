@@ -58,16 +58,8 @@ const gridWidgets = [
     { x: 1, y: 1, w: 3, h: 27 },
     "Mini Heard stations",
   ),
-  new gridWidget(
-    s_meter,
-    { x: 1, y: 1, w: 2, h: 4 },
-    "S-Meter",
-  ),
-  new gridWidget(
-    dbfs_meter,
-    { x: 1, y: 1, w: 2, h: 4 },
-    "Dbfs Meter",
-  ),
+  new gridWidget(s_meter, { x: 1, y: 1, w: 2, h: 4 }, "S-Meter"),
+  new gridWidget(dbfs_meter, { x: 1, y: 1, w: 2, h: 4 }, "Dbfs Meter"),
 ];
 onMounted(() => {
   grid = GridStack.init({
@@ -77,8 +69,8 @@ onMounted(() => {
     minRow: 50,
     margin: 5,
     resizable: {
-      handles: 'se,sw'
-    }
+      handles: "se,sw",
+    },
   });
 
   grid.on("dragstop", function (event, element) {

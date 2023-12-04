@@ -179,7 +179,13 @@ export default {
 
     // init waterfall
     localSpectrum = initWaterfall("waterfall-main");
-    window.addEventListener("wf-data-avail",function(evt) {localSpectrum.addData(evt.detail);},false);
+    window.addEventListener(
+      "wf-data-avail",
+      function (evt) {
+        localSpectrum.addData(evt.detail);
+      },
+      false,
+    );
   },
 };
 </script>
@@ -362,7 +368,13 @@ export default {
           <canvas
             ref="waterfall-main"
             id="waterfall-main"
-            style="position: relative; z-index: 2;aspect-ratio:unset; width: 100%; height: 200px;"
+            style="
+              position: relative;
+              z-index: 2;
+              aspect-ratio: unset;
+              width: 100%;
+              height: 200px;
+            "
             class="force-gpu"
           ></canvas>
         </div>
