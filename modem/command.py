@@ -36,9 +36,9 @@ class TxCommand():
     
     def make_modem_queue_item(self, mode, repeat, repeat_delay, frame):
         return {
-            'mode': self.get_tx_mode(),
-            'repeat': 1,
-            'repeat_delay': 0,
+            'mode': mode,
+            'repeat': repeat,
+            'repeat_delay': repeat_delay,
             'frame': frame,
         }
 
