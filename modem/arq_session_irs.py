@@ -1,8 +1,9 @@
 import threading
 import data_frame_factory
 import queue
+import arq_session
 
-class ARQSessionIRS():
+class ARQSessionIRS(arq_session.ARQSession):
 
     STATE_CONN_REQ_RECEIVED = 0
     STATE_WAITING_DATA = 1
@@ -15,9 +16,8 @@ class ARQSessionIRS():
     TIMEOUT_DATA = 2
 
     def __init__(self, config: dict, tx_frame_queue: queue.Queue, dxcall: str, session_id: int):
-        self.config = config
-        self.tx_frame_queue = tx_frame_queue
-        self.dxcall = dxcall
+        super().__init__(config, tx_frame_queue, dxcall)
+
         self.id = session_id
 
         self.received_data = b''
@@ -37,9 +37,6 @@ class ARQSessionIRS():
     def set_state(self, state):
         self.log(f"ARQ Session {self.id} state {self.state}")
         self.state = state
-
-    def transmit_frame(self, frame: bytearray):
-        self.tx_frame_queue.put(frame)
 
     def set_modem_decode_modes(self, modes):
         pass

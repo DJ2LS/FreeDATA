@@ -49,7 +49,7 @@ class TestARQSession(unittest.TestCase):
         self.iss_to_irs_channel = threading.Thread(target=self.channelWorker, 
                                               args=[self.iss_modem_transmit_queue, 
                                                     self.irs_frame_dispatcher],
-                                                    name = "IRS to ISS channel")
+                                                    name = "ISS to IRS channel")
         self.iss_to_irs_channel.start()
 
         self.irs_to_iss_channel = threading.Thread(target=self.channelWorker, 

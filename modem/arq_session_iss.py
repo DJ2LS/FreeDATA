@@ -41,15 +41,6 @@ class ARQSessionISS(arq_session.ARQSession):
         self.log(f"ARQ Session {self.id} state {self.state}")
         self.state = state
 
-    def transmit_frame(self, frame: bytearray):
-        modem_queue_item = {
-            'mode': self.get_mode_by_speed_level(self.speed_level),
-            'repeat': 1,
-            'repeat_delay': 1,
-            'frame': frame,
-        }
-        self.tx_frame_queue.put(modem_queue_item)
-
     def runner(self):
         if not self.connect():
             return False
