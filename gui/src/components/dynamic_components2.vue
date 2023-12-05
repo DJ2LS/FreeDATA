@@ -16,6 +16,7 @@ import active_rig_control from "./grid_active_rig_control.vue";
 import active_broadcats from "./grid_active_broadcasts.vue";
 import s_meter from "./grid_s-meter.vue";
 import dbfs_meter from "./grid_dbfs.vue";
+import grid_activities from "./grid_activities.vue";
 import { stateDispatcher } from "../js/eventHandler";
 
 let count = ref(0);
@@ -60,6 +61,11 @@ const gridWidgets = [
   ),
   new gridWidget(s_meter, { x: 1, y: 1, w: 2, h: 4 }, "S-Meter"),
   new gridWidget(dbfs_meter, { x: 1, y: 1, w: 2, h: 4 }, "Dbfs Meter"),
+  new gridWidget(
+    grid_activities,
+    { x: 1, y: 1, w: 3, h: 27 },
+    "Activities",
+  ),
 ];
 onMounted(() => {
   grid = GridStack.init({
@@ -68,6 +74,9 @@ onMounted(() => {
     cellHeight: "10px",
     minRow: 50,
     margin: 5,
+    draggable: {
+      scroll: true,
+    },
     resizable: {
       handles: "se,sw",
     },
@@ -148,6 +157,7 @@ function quickfill() {
 <template>
   <button type="button" @click="showModal">Add Widget pos [0,0]</button>
   <button type="button" @click="quickfill">Quickfill</button>
+  <div class="grid-container vh-100"> 
   <div class="grid-stack">
     <div
       v-for="(w, indexs) in items"
@@ -169,6 +179,7 @@ function quickfill() {
         <component :is="w.component2" />
       </div>
     </div>
+  </div>
   </div>
   <div class="modal fade" id="tileModal" tabindex="-1">
     <div class="modal-dialog">
@@ -257,4 +268,8 @@ function quickfill() {
   float: right;
   top: 6px;
 }
+.grid-container {
+      border: 1px solid blue;
+      overflow-y: auto;
+    }
 </style>
