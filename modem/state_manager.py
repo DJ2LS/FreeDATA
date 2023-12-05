@@ -127,10 +127,12 @@ class StateManager:
     def get_arq_iss_session(self, id):
         if id not in self.arq_iss_sessions:
             raise RuntimeError(f"ARQ ISS Session '{id}' not found!")
+        return self.arq_iss_sessions[id]
 
     def get_arq_irs_session(self, id):
         if id not in self.arq_irs_sessions:
             raise RuntimeError(f"ARQ IRS Session '{id}' not found!")
+        return self.arq_irs_sessions[id]
 
     def remove_arq_iss_session(self, id):
         if id not in self.arq_iss_sessions:

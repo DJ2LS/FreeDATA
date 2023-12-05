@@ -201,7 +201,7 @@ class DataFrameFactory:
                 elif key == "gridsquare":
                     extracted_data[key] = helpers.decode_grid(data)
 
-                elif key == "session_id":
+                elif key in ["session_id", "speed_level"]:
                     extracted_data[key] = int.from_bytes(data, 'big')
 
                 else:

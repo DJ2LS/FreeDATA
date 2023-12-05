@@ -77,10 +77,10 @@ class ARQSessionISS(arq_session.ARQSession):
     # Sends the full payload in multiple frames
     def send_data(self):
         offset = 0
-        while offset < len(self.payload):
+        while offset < len(self.data):
             max_size = self.get_max_size_for_speed_level(self.speed_level)
-            end_offset = min(len(self.payload), max_size)
-            frame_payload = self.payload[offset:end_offset]
+            end_offset = min(len(self.data), max_size)
+            frame_payload = self.data[offset:end_offset]
             data_frame = self.frame_factory.build_arq_session_send(self.speed_level, 
                                                                    self.dxcall, 
                                                                    frame_payload)

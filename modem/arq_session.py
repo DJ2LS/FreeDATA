@@ -1,6 +1,7 @@
 import queue, threading
 from codec2 import FREEDV_MODE
 import data_frame_factory
+import structlog
 
 class ARQSession():
 
@@ -11,6 +12,7 @@ class ARQSession():
     ]
 
     def __init__(self, config: dict, tx_frame_queue: queue.Queue, dxcall: str):
+        self.logger = structlog.get_logger(type(self).__name__)
         self.config = config
 
         self.dxcall = dxcall
@@ -34,3 +36,6 @@ class ARQSession():
         }
         self.tx_frame_queue.put(modem_queue_item)
 
+    def setState(self, state):
+        self.state = state
+        self.logger.info(f"state changed to {state}")
