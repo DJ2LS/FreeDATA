@@ -140,31 +140,40 @@ export function stateDispatcher(data) {
 }
 function build_HSL() {
   //Use data from activities to build HSL list
-  for (let i=0; i < stateStore.activities.length; i++) {
-    if (stateStore.activities[i][1].direction != "received" || stateStore.activities[i][1].origin == undefined){
+  for (let i = 0; i < stateStore.activities.length; i++) {
+    if (
+      stateStore.activities[i][1].direction != "received" ||
+      stateStore.activities[i][1].origin == undefined
+    ) {
       //Ignore stations without origin and not received type
       //console.warn("HSL: Ignoring " + stateStore.activities[i][0]);
       continue;
     }
     let found = false;
-    for (let ii=0; ii < stateStore.heard_stations.length;ii++) {
-      if (stateStore.heard_stations[ii].origin == stateStore.activities[i][1].origin) {
+    for (let ii = 0; ii < stateStore.heard_stations.length; ii++) {
+      if (
+        stateStore.heard_stations[ii].origin ==
+        stateStore.activities[i][1].origin
+      ) {
         //Station already in HSL, check if newer than one in HSL
-        found=true;
-        if (stateStore.heard_stations[ii].timestamp < stateStore.activities[i][1].timestamp) {
+        found = true;
+        if (
+          stateStore.heard_stations[ii].timestamp <
+          stateStore.activities[i][1].timestamp
+        ) {
           //Update existing entry in HSL
           stateStore.heard_stations[ii] = stateStore.activities[i][1];
         }
-      }  
+      }
     }
     if (found == false) {
       //Station not in HSL, let us add it
       stateStore.heard_stations.push(stateStore.activities[i][1]);
     }
-    }
-    stateStore.heard_stations.sort((a,b) => b.timestamp - a.timestamp); // b - a for reverse sort
   }
-  
+  stateStore.heard_stations.sort((a, b) => b.timestamp - a.timestamp); // b - a for reverse sort
+}
+
 export function eventDispatcher(data) {
   data = JSON.parse(data);
 
@@ -211,10 +220,18 @@ export function eventDispatcher(data) {
             5000,
           );
           return;
-          case "PING_ACK":
-            //Qrv received
-        displayToast("success", "bi-arrow-left-right", "Received ping-ack from " + "callsignisbroken" + " | " +  data["dxgrid"], 5000);
-            return;
+        case "PING_ACK":
+          //Qrv received
+          displayToast(
+            "success",
+            "bi-arrow-left-right",
+            "Received ping-ack from " +
+              "callsignisbroken" +
+              " | " +
+              data["dxgrid"],
+            5000,
+          );
+          return;
       }
 
     case "modem-event":

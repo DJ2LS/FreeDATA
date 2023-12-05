@@ -61,11 +61,7 @@ const gridWidgets = [
   ),
   new gridWidget(s_meter, { x: 1, y: 1, w: 2, h: 4 }, "S-Meter"),
   new gridWidget(dbfs_meter, { x: 1, y: 1, w: 2, h: 4 }, "Dbfs Meter"),
-  new gridWidget(
-    grid_activities,
-    { x: 1, y: 1, w: 3, h: 27 },
-    "Activities",
-  ),
+  new gridWidget(grid_activities, { x: 1, y: 1, w: 3, h: 27 }, "Activities"),
 ];
 onMounted(() => {
   grid = GridStack.init({
@@ -157,29 +153,29 @@ function quickfill() {
 <template>
   <button type="button" @click="showModal">Add Widget pos [0,0]</button>
   <button type="button" @click="quickfill">Quickfill</button>
-  <div class="grid-container vh-100"> 
-  <div class="grid-stack">
-    <div
-      v-for="(w, indexs) in items"
-      class="grid-stack-item"
-      :gs-x="w.x"
-      :gs-y="w.y"
-      :gs-w="w.w"
-      :gs-h="w.h"
-      :gs-id="w.id"
-      :id="w.id"
-      :key="w.id"
-      :gs-auto-position="true"
-    >
-      <div class="grid-stack-item-content">
-        <button
-          @click="remove(w)"
-          class="btn-close grid-stack-floaty-btn"
-        ></button>
-        <component :is="w.component2" />
+  <div class="grid-container vh-100">
+    <div class="grid-stack">
+      <div
+        v-for="(w, indexs) in items"
+        class="grid-stack-item"
+        :gs-x="w.x"
+        :gs-y="w.y"
+        :gs-w="w.w"
+        :gs-h="w.h"
+        :gs-id="w.id"
+        :id="w.id"
+        :key="w.id"
+        :gs-auto-position="true"
+      >
+        <div class="grid-stack-item-content">
+          <button
+            @click="remove(w)"
+            class="btn-close grid-stack-floaty-btn"
+          ></button>
+          <component :is="w.component2" />
+        </div>
       </div>
     </div>
-  </div>
   </div>
   <div class="modal fade" id="tileModal" tabindex="-1">
     <div class="modal-dialog">
@@ -269,7 +265,7 @@ function quickfill() {
   top: 6px;
 }
 .grid-container {
-      border: 1px solid blue;
-      overflow-y: auto;
-    }
+  border: 1px solid blue;
+  overflow-y: auto;
+}
 </style>
