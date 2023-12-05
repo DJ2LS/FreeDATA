@@ -2,8 +2,10 @@ import threading
 import data_frame_factory
 import queue
 import random
+from codec2 import FREEDV_MODE
+import arq_session
 
-class ARQSessionISS():
+class ARQSessionISS(arq_session.ARQSession):
 
     STATE_DISCONNECTED = 0
     STATE_CONNECTING = 1
@@ -19,9 +21,7 @@ class ARQSessionISS():
     TIMEOUT_TRANSFER = 2
 
     def __init__(self, config: dict, tx_frame_queue: queue.Queue, dxcall: str, data: bytearray):
-        self.config = config
-        self.tx_frame_queue = tx_frame_queue
-        self.dxcall = dxcall
+        super().__init__(config, tx_frame_queue, dxcall)
         self.data = data
 
         self.state = self.STATE_DISCONNECTED
@@ -43,7 +43,7 @@ class ARQSessionISS():
 
     def transmit_frame(self, frame: bytearray):
         modem_queue_item = {
-            'mode': self.mode,
+            'mode': self.get_mode_by_speed_level(self.speed_level),
             'repeat': 1,
             'repeat_delay': 1,
             'frame': frame,
@@ -61,7 +61,7 @@ class ARQSessionISS():
         self.thread.run()
     
     def connect(self):
-        self.set_state(self.STATE_CONNECTING)
+        self.state =  self.STATE_CONNECTING
 
         connect_frame = self.frame_factory.build_arq_session_connect(True, self.dxcall, self.id)
 

@@ -18,7 +18,7 @@ class ARQSessionIRS():
         self.config = config
         self.tx_frame_queue = tx_frame_queue
         self.dxcall = dxcall
-        self.session_id = session_id
+        self.id = session_id
 
         self.received_data = b''
 
@@ -44,12 +44,12 @@ class ARQSessionIRS():
     def set_modem_decode_modes(self, modes):
         pass
 
-    def runner(self, request):
+    def runner(self):
         isWideband = True
         speed = 1
         version = 1
 
-        ack_frame = self.frame_factory.build_arq_connect_ack(isWideband, self.session_id, speed, version)
+        ack_frame = self.frame_factory.build_arq_connect_ack(isWideband, self.id, speed, version)
         self.transmit_frame(ack_frame)
 
         self.set_modem_decode_modes(None)
