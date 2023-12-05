@@ -58,16 +58,16 @@ function getMaidenheadDistance(dxGrid) {
           </thead>
           <tbody id="miniHeardStations">
             <!--https://vuejs.org/guide/essentials/list.html-->
-            <tr v-for="item in state.activities" :key="item[0]">
+            <tr v-for="item in state.heard_stations" :key="item.origin">
               <td>
-                <span class="fs-6">{{ getDateTime(item[1].timestamp) }}</span>
+                <span class="fs-6">{{ getDateTime(item.timestamp) }}</span>
               </td>
 
               <td>
-                <span>{{ item[1].origin }}</span>
+                <span>{{ item.origin }}</span>
               </td>
               <td>
-                <span>{{ item[1].snr }}</span>
+                <span>{{ item.snr }}</span>
               </td>
               <!--<td>{{ item.offset }}</td>-->
             </tr>
