@@ -329,7 +329,8 @@ class DataFrameFactory:
             "origin": helpers.callsign_to_bytes(self.myfullcall),
             "session_id": session_id.to_bytes(1, 'big'),
         }
-        return self.construct(FR_TYPE.ARQ_SESSION_OPEN, payload)
+        channel_type = FR_TYPE.ARQ_DC_OPEN_W if isWideband else FR_TYPE.ARQ_DC_OPEN_N
+        return self.construct(channel_type, payload)
 
     def build_arq_burst_ack(self, session_id: bytes, snr: int, speed_level: int, len_arq_rx_frame_buffer: int):
         # ack_frame = bytearray(self.length_sig1_frame)

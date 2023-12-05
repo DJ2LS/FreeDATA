@@ -9,15 +9,13 @@ from codec2 import FREEDV_MODE
 class FrameHandler():
 
     def __init__(self, name: str, config, states: StateManager, event_manager: EventManager, 
-                 tx_frame_queue: Queue,
-                 arq_sessions: list) -> None:
+                 tx_frame_queue: Queue) -> None:
         
         self.name = name
         self.config = config
         self.states = states
         self.event_manager = event_manager
         self.tx_frame_queue = tx_frame_queue
-        self.arq_sessions = arq_sessions
         self.logger = structlog.get_logger("Frame Handler")
 
         self.details = {
