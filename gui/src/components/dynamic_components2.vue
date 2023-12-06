@@ -265,7 +265,6 @@ function quickfill() {
   top: 6px;
 }
 .grid-container {
-  border: 1px solid blue;
   overflow-y: auto;
 }
 </style>
