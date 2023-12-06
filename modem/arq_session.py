@@ -12,7 +12,7 @@ class ARQSession():
     ]
 
     SIZE_BY_SPEED = [
-        
+
     ]
 
     def __init__(self, config: dict, tx_frame_queue: queue.Queue, dxcall: str):
@@ -32,6 +32,7 @@ class ARQSession():
         return self.MODE_BY_SPEED[speed_level]
 
     def transmit_frame(self, frame: bytearray):
+        self.logger.info("Transmitting frame")
         modem_queue_item = {
             'mode': self.get_mode_by_speed_level(self.speed_level),
             'repeat': 1,

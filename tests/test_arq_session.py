@@ -52,7 +52,8 @@ class TestARQSession(unittest.TestCase):
             frame_bytes = bytes(transmission_item['frame'])
             if random.randint(0, 100) < self.loss_probability:
                 self.logger.info("Frame lost...")
-                next
+                continue
+            self.logger.info("Redirecting frame")
             frame_dispatcher.new_process_data(frame_bytes, None, len(frame_bytes), 0, 0)
 
     def establishChannels(self):

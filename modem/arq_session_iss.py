@@ -34,11 +34,8 @@ class ARQSessionISS(arq_session.ARQSession):
     def generate_id(self):
         return random.randint(1,255)
 
-    def log(self, message):
-        pass
-
     def set_state(self, state):
-        self.log(f"ARQ Session {self.id} state {self.state}")
+        self.logger.info(f"ARQ Session {self.id} state {self.state}")
         self.state = state
 
     def runner(self):
@@ -59,6 +56,7 @@ class ARQSessionISS(arq_session.ARQSession):
         retries = self.RETRIES_CONNECT
         while retries > 0:
             self.transmit_frame(connect_frame)
+            self.logger.info("Waiting for CONN ACK...")
             if self.event_connection_ack_received.wait(self.TIMEOUT_CONNECT_ACK):
                 self.setState(self.STATE_CONNECTED)
                 return True
