@@ -76,7 +76,7 @@ class ARQSessionISS(arq_session.ARQSession):
     def send_data(self):
         offset = 0
         while offset < len(self.data):
-            max_size = self.get_max_size_for_speed_level(self.speed_level)
+            max_size = self.get_payload_size(self.speed_level)
             end_offset = min(len(self.data), max_size)
             frame_payload = self.data[offset:end_offset]
             data_frame = self.frame_factory.build_arq_session_send(self.speed_level, 

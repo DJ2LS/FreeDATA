@@ -1,18 +1,14 @@
 import queue, threading
-from codec2 import FREEDV_MODE
+import codec2
 import data_frame_factory
 import structlog
 
 class ARQSession():
 
     MODE_BY_SPEED = [
-        FREEDV_MODE.datac4.value,
-        FREEDV_MODE.datac3.value,
-        FREEDV_MODE.datac1.value,
-    ]
-
-    SIZE_BY_SPEED = [
-
+        codec2.FREEDV_MODE.datac4.value,
+        codec2.FREEDV_MODE.datac3.value,
+        codec2.FREEDV_MODE.datac1.value,
     ]
 
     def __init__(self, config: dict, tx_frame_queue: queue.Queue, dxcall: str):
@@ -44,3 +40,7 @@ class ARQSession():
     def setState(self, state):
         self.state = state
         self.logger.info(f"state changed to {state}")
+
+    def get_payload_size(self, speed_level):
+        mode = self.MODE_BY_SPEED[speed_level]
+        return codec2.get_bytes_per_frame(mode)
