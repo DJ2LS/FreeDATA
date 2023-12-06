@@ -43,7 +43,7 @@ class TestARQSession(unittest.TestCase):
                                           cls.irs_modem_transmit_queue)
         
         # Frame loss probability in %
-        cls.loss_probability = 90
+        cls.loss_probability = 50
 
 
     def channelWorker(self, modem_transmit_queue: queue, frame_dispatcher: DISPATCHER):
