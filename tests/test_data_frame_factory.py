@@ -35,8 +35,7 @@ class TestDataFrameFactory(unittest.TestCase):
 
         self.assertEqual(frame_data['origin'], self.factory.myfullcall)
 
-        frame_session_id = int.from_bytes(frame_data['session_id'], 'big')
-        self.assertEqual(frame_session_id , session_id)
+        self.assertEqual(frame_data['session_id'] , session_id)
 
     def testCQ(self):
         frame = self.factory.build_cq()

@@ -2,10 +2,11 @@ from data_frame_factory import DataFrameFactory
 import queue
 from codec2 import FREEDV_MODE
 import structlog
+from state_manager import StateManager
 
 class TxCommand():
 
-    def __init__(self, config, state_manager, modem_events, apiParams = {}):
+    def __init__(self, config: dict, state_manager: StateManager, modem_events: queue.Queue, apiParams:dict = {}):
         self.config = config
         self.logger = structlog.get_logger("Command")
         self.state_manager = state_manager

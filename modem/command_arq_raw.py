@@ -1,36 +1,23 @@
+import queue
 from command import TxCommand
 import api_validations
-from protocol_arq_iss import ISS
-from protocol_arq import ARQ
-
+import base64
+from queue import Queue
+from arq_session_iss import ARQSessionISS
 class ARQRawCommand(TxCommand):
-
-    def __int__(self, state_manager):
-        # open a new arq instance here
-        self.initialize_arq_instance()
 
     def set_params_from_api(self, apiParams):
         self.dxcall = apiParams['dxcall']
         if not api_validations.validate_freedata_callsign(self.dxcall):
             self.dxcall = f"{self.dxcall}-0"
-        return super().set_params_from_api(apiParams)
 
-    def initialize_arq_transmission_iss(self, data):
-        if id := self.get_id_from_frame(data):
-            instance = self.initialize_arq_instance()
-            self.states.register_arq_instance_by_id(id, instance)
-            instance['arq_irs'].arq_received_data_channel_opener()
+        self.data = base64.b64decode(apiParams['data'])
 
+    def run(self, event_queue: Queue, tx_frame_queue: Queue):
+        self.emit_event(event_queue)
+        self.logger.info(self.log_message())
 
-    def initialize_arq_instance(self):
-        self.arq = ARQ(self.config, self.event_queue, self.state_manager)
-        self.arq_iss = ISS(self.config, self.event_queue, self.state_manager)
-
-        return {
-            'arq': self.arq,
-            'arq_irs': self.arq_irs,
-            'arq_iss': self.arq_iss,
-            'arq_session': self.arq_session
-        }
-    def build_frame(self):
-        return self.frame_factory.build_arq_connect(destination=self.dxcall, session_id=b'', isWideband=True)
+        iss = ARQSessionISS(self.config, tx_frame_queue, self.dxcall, self.data)
+        self.state_manager.register_arq_iss_session(iss)
+        iss.run()
+        return iss

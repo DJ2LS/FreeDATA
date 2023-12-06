@@ -21,18 +21,19 @@ from protocol_arq_session import SESSION
 from frame_handler import FrameHandler
 from frame_handler_ping import PingFrameHandler
 from frame_handler_cq import CQFrameHandler
+from frame_handler_arq import ARQFrameHandler
 
 class DISPATCHER():
 
     FRAME_HANDLER = {
-        FR_TYPE.ARQ_DC_OPEN_ACK_N.value: {"class": FrameHandler, "name": "ARQ OPEN ACK (Narrow)"},
-        FR_TYPE.ARQ_DC_OPEN_ACK_W.value: {"class": FrameHandler, "name": "ARQ OPEN ACK (Wide)"},
-        FR_TYPE.ARQ_DC_OPEN_N.value: {"class": FrameHandler, "name": "ARQ Data Channel Open (Narrow)"},
-        FR_TYPE.ARQ_DC_OPEN_W.value: {"class": FrameHandler, "name": "ARQ Data Channel Open (Wide)"},
-        FR_TYPE.ARQ_SESSION_CLOSE.value: {"class": FrameHandler, "name": "ARQ CLOSE SESSION"},
-        FR_TYPE.ARQ_SESSION_HB.value: {"class": FrameHandler, "name": "ARQ HEARTBEAT"},
-        FR_TYPE.ARQ_SESSION_OPEN.value: {"class": FrameHandler, "name": "ARQ OPEN SESSION"},
-        FR_TYPE.ARQ_STOP.value: {"class": FrameHandler, "name": "ARQ STOP TX"},
+        FR_TYPE.ARQ_DC_OPEN_ACK_N.value: {"class": ARQFrameHandler, "name": "ARQ OPEN ACK (Narrow)"},
+        FR_TYPE.ARQ_DC_OPEN_ACK_W.value: {"class": ARQFrameHandler, "name": "ARQ OPEN ACK (Wide)"},
+        FR_TYPE.ARQ_DC_OPEN_N.value: {"class": ARQFrameHandler, "name": "ARQ Data Channel Open (Narrow)"},
+        FR_TYPE.ARQ_DC_OPEN_W.value: {"class": ARQFrameHandler, "name": "ARQ Data Channel Open (Wide)"},
+        FR_TYPE.ARQ_SESSION_CLOSE.value: {"class": ARQFrameHandler, "name": "ARQ CLOSE SESSION"},
+        FR_TYPE.ARQ_SESSION_HB.value: {"class": ARQFrameHandler, "name": "ARQ HEARTBEAT"},
+        FR_TYPE.ARQ_SESSION_OPEN.value: {"class": ARQFrameHandler, "name": "ARQ OPEN SESSION"},
+        FR_TYPE.ARQ_STOP.value: {"class": ARQFrameHandler, "name": "ARQ STOP TX"},
         FR_TYPE.BEACON.value: {"class": FrameHandler, "name": "BEACON"},
         FR_TYPE.BURST_ACK.value: {"class": FrameHandler, "name":  "BURST ACK"},
         FR_TYPE.BURST_NACK.value: {"class": FrameHandler, "name":  "BURST NACK"},
@@ -112,8 +113,7 @@ class DISPATCHER():
                                 self.config,
                                 self.states,
                                 self.event_manager,
-                                self.modem_transmit_queue,
-                                self.arq_sessions)
+                                self.modem_transmit_queue)
 
         handler.handle(deconstructed_frame, snr, offset, freedv, bytes_per_frame)
 

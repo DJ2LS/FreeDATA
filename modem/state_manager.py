@@ -33,7 +33,9 @@ class StateManager:
         self.heard_stations = []  # TODO remove it... heard stations list == deprecated
         self.activities_list = {}
 
-        self.arq_instance_table = {}
+        self.arq_iss_sessions = {}
+        self.arq_irs_sessions = {}
+        
         self.arq_session_state = 'disconnected'
         self.arq_speed_level = 0
         self.arq_total_bytes = 0
@@ -112,19 +114,35 @@ class StateManager:
     def waitForTransmission(self):
         self.transmitting_event.wait()
 
-    def register_arq_instance_by_id(self, id, instance):
-        self.arq_instance_table[id] = instance
+    def register_arq_iss_session(self, session):
+        if session.id in self.arq_iss_sessions:
+            raise RuntimeError(f"ARQ ISS Session '{session.id}' already exists!")
+        self.arq_iss_sessions[session.id] = session
 
-    def get_arq_instance_by_id(self, id):
-        return self.arq_instance_table.get(id)
+    def register_arq_irs_session(self, session):
+        if session.id in self.arq_irs_sessions:
+            raise RuntimeError(f"ARQ IRS Session '{session.id}' already exists!")
+        self.arq_irs_sessions[session.id] = session
 
-    def delete_arq_instance_by_id(self, id):
-        instances = self.arq_instance_table.pop(id, None)
-        if None not in instances:
-            for key in instances:
-                del instances[key]
-            return True
-        return False
+    def get_arq_iss_session(self, id):
+        if id not in self.arq_iss_sessions:
+            raise RuntimeError(f"ARQ ISS Session '{id}' not found!")
+        return self.arq_iss_sessions[id]
+
+    def get_arq_irs_session(self, id):
+        if id not in self.arq_irs_sessions:
+            raise RuntimeError(f"ARQ IRS Session '{id}' not found!")
+        return self.arq_irs_sessions[id]
+
+    def remove_arq_iss_session(self, id):
+        if id not in self.arq_iss_sessions:
+            raise RuntimeError(f"ARQ ISS Session '{id}' not found!")
+        del self.arq_iss_sessions[id]
+
+    def remove_arq_irs_session(self, id):
+        if id not in self.arq_irs_sessions:
+            raise RuntimeError(f"ARQ ISS Session '{id}' not found!")
+        del self.arq_irs_sessions[id]
 
     def add_activity(self, activity_data):
         # Generate a random 8-byte string as hex
