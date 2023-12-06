@@ -11,6 +11,10 @@ class ARQSession():
         FREEDV_MODE.datac1.value,
     ]
 
+    SIZE_BY_SPEED = [
+        
+    ]
+
     def __init__(self, config: dict, tx_frame_queue: queue.Queue, dxcall: str):
         self.logger = structlog.get_logger(type(self).__name__)
         self.config = config

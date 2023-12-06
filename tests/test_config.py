@@ -1,5 +1,5 @@
 import unittest
-from modem import config
+import config
 
 class TestConfigMethods(unittest.TestCase):
 
