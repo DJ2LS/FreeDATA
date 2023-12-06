@@ -46,14 +46,12 @@ function getMaidenheadDistance(dxGrid) {
     <div class="card-body overflow-auto">
       <div class="table-responsive">
         <!-- START OF TABLE FOR HEARD STATIONS -->
-        <table class="table table-sm" id="tblHeardStationList">
+        <table class="table table-sm table-striped" id="tblHeardStationList">
           <thead>
             <tr>
               <th scope="col" id="thTime">Time</th>
               <th scope="col" id="thDxcall">DXCall</th>
 
-              <th scope="col" id="thSnr">SNR</th>
-              <!--<th scope="col">Off</th>-->
             </tr>
           </thead>
           <tbody id="miniHeardStations">
@@ -65,9 +63,6 @@ function getMaidenheadDistance(dxGrid) {
 
               <td>
                 <span>{{ item.origin }}</span>
-              </td>
-              <td>
-                <span>{{ item.snr }}</span>
               </td>
               <!--<td>{{ item.offset }}</td>-->
             </tr>

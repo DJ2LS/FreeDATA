@@ -16,7 +16,7 @@ function getDateTime(timestampRaw) {
     navigator.language,
     {
       hourCycle: "h23",
-      year: "numeric",
+      year: "2-digit",
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
@@ -46,7 +46,7 @@ function getMaidenheadDistance(dxGrid) {
     <div class="card-body overflow-auto">
       <div class="table-responsive">
         <!-- START OF TABLE FOR HEARD STATIONS -->
-        <table class="table table-sm" id="tblHeardStationList">
+        <table class="table table-sm table-striped" id="tblHeardStationList">
           <thead>
             <tr>
               <th scope="col" id="thTime">Time</th>
@@ -61,35 +61,31 @@ function getMaidenheadDistance(dxGrid) {
           </thead>
           <tbody id="gridHeardStations">
             <!--https://vuejs.org/guide/essentials/list.html-->
-            <tr v-for="item in state.activities" :key="item[0]">
+            <tr v-for="item in state.heard_stations" :key="item.origin">
               <td>
-                <span class="badge bg-secondary">{{
-                  getDateTime(item[1].timestamp)
-                }}</span>
+                {{
+                  getDateTime(item.timestamp)
+                }}
               </td>
               <td>
-                <span class="badge bg-secondary"
-                  >{{ item[1].frequency / 1000 }} kHz</span
-                >
+             {{ item.frequency / 1000 }} kHz
               </td>
               <td>
-                <span class="badge bg-secondary">{{ item[1].origin }}</span>
+                {{ item.origin }}
               </td>
               <td>
-                <span class="badge bg-secondary">{{ item[1].gridsquare }}</span>
+                {{ item.gridsquare }}
               </td>
               <td>
-                <span class="badge bg-secondary"
-                  >{{ getMaidenheadDistance(item[1].gridsquare) }} km</span
-                >
+                  {{ getMaidenheadDistance(item.gridsquare) }} km
               </td>
               <td>
-                <span class="badge bg-secondary">{{
-                  item[1].activity_type
-                }}</span>
+                {{
+                  item.activity_type
+                }}
               </td>
               <td>
-                <span class="badge bg-secondary">{{ item[1].snr }}</span>
+                {{ item.snr }}
               </td>
             </tr>
           </tbody>
