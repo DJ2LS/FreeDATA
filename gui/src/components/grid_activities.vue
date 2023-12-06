@@ -30,9 +30,10 @@ function getDateTime(timestampRaw) {
     <div class="card-body overflow-auto" style="align-items: start">
       <div v-for="item in state.activities" :key="item[0]">
         <h6 style="text-align: start" class="mb-0">
-          {{ item[1].origin }} - <span>{{ getDateTime(item[1].timestamp) }}</span>
+          {{ item[1].origin }} -
+          <span>{{ getDateTime(item[1].timestamp) }}</span>
         </h6>
-        <p class="mb-2" style="text-align: start; font-size:smaller">
+        <p class="mb-2" style="text-align: start; font-size: smaller">
           {{ item[1].activity_type }} - {{ item[1].direction }}
         </p>
       </div>

@@ -51,7 +51,6 @@ function getMaidenheadDistance(dxGrid) {
             <tr>
               <th scope="col" id="thTime">Time</th>
               <th scope="col" id="thDxcall">DXCall</th>
-
             </tr>
           </thead>
           <tbody id="miniHeardStations">

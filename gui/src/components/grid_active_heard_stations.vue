@@ -63,26 +63,18 @@ function getMaidenheadDistance(dxGrid) {
             <!--https://vuejs.org/guide/essentials/list.html-->
             <tr v-for="item in state.heard_stations" :key="item.origin">
               <td>
-                {{
-                  getDateTime(item.timestamp)
-                }}
+                {{ getDateTime(item.timestamp) }}
               </td>
-              <td>
-             {{ item.frequency / 1000 }} kHz
-              </td>
+              <td>{{ item.frequency / 1000 }} kHz</td>
               <td>
                 {{ item.origin }}
               </td>
               <td>
                 {{ item.gridsquare }}
               </td>
+              <td>{{ getMaidenheadDistance(item.gridsquare) }} km</td>
               <td>
-                  {{ getMaidenheadDistance(item.gridsquare) }} km
-              </td>
-              <td>
-                {{
-                  item.activity_type
-                }}
+                {{ item.activity_type }}
               </td>
               <td>
                 {{ item.snr }}
