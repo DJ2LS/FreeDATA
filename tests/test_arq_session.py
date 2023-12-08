@@ -70,6 +70,10 @@ class TestARQSession(unittest.TestCase):
         self.irs_to_iss_channel.start()
 
     def testARQSession(self):
+
+        # set Packet Error Rate (PER) / frame loss probability
+        self.loss_probability = 0
+
         self.establishChannels()
         params = {
             'dxcall': "DJ2LS-3",

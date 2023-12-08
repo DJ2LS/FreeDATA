@@ -79,13 +79,12 @@ class ARQSessionISS(arq_session.ARQSession):
             max_size = self.get_payload_size(self.speed_level)
             end_offset = min(len(self.data), max_size)
             frame_payload = self.data[offset:end_offset]
-            data_frame = self.frame_factory.build_arq_session_send(self.speed_level, 
-                                                                   self.dxcall, 
-                                                                   frame_payload)
-            self.set_state(self.STATE_SENDING)
-            if not self.send_arq(data_frame):
-                return False
-            offset = end_offset + 1
+            # TODO build_arq_session_connect is wrong frame. It seems we need to create the correct function for this
+            #data_frame = self.frame_factory.build_arq_session_connect(self.speed_level, self.dxcall, frame_payload)
+            #self.set_state(self.STATE_SENDING)
+            #if not self.send_arq(data_frame):
+            #    return False
+            #offset = end_offset + 1
 
     # Send part of the payload using ARQ
     def send_arq(self, frame):

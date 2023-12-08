@@ -46,7 +46,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         speed = 1
         version = 1
 
-        ack_frame = self.frame_factory.build_arq_connect_ack(isWideband, self.id, speed, version)
+        ack_frame = self.frame_factory.build_arq_session_connect_ack(isWideband, self.id, speed, version)
         self.transmit_frame(ack_frame)
 
         self.set_modem_decode_modes(None)
