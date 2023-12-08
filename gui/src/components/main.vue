@@ -145,7 +145,9 @@ function stopAllTransmissions() {
       <div class="col-sm min-vh-100 m-0 p-0">
         <!-- content -->
 
+        <!-- TODO: Remove the top navbar entirely if not needed
         <main_top_navbar />
+      -->
 
         <div class="tab-content" id="nav-tabContent-settings">
           <div
