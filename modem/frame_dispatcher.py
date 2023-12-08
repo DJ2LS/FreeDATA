@@ -13,10 +13,10 @@ from data_frame_factory import DataFrameFactory
 #from deprecated_data_handler_data_broadcasts import DATABROADCAST
 #from deprecated_data_handler_ping import PING
 
-from protocol_arq_session_iss import ISS
-from protocol_arq_session_irs import IRS
-from protocol_arq_session import ARQ
-from protocol_arq_connection import SESSION
+from deprecated_protocol_arq_session_iss import ISS
+from deprecated_protocol_arq_session_irs import IRS
+from deprecated_protocol_arq_session import ARQ
+from deprecated_protocol_arq_connection import SESSION
 
 from frame_handler import FrameHandler
 from frame_handler_ping import PingFrameHandler

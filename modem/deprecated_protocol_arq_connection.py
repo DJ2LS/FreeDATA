@@ -4,7 +4,7 @@ import helpers
 from codec2 import FREEDV_MODE
 from modem_frametypes import FRAME_TYPE as FR_TYPE
 
-from protocol_arq_session import ARQ
+from deprecated_protocol_arq_session import ARQ
 
 
 class SESSION(ARQ):

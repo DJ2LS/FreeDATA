@@ -9,7 +9,7 @@ from codec2 import FREEDV_MODE
 from queues import RX_BUFFER
 from modem_frametypes import FRAME_TYPE as FR_TYPE
 
-from protocol_arq_session import ARQ
+from deprecated_protocol_arq_session import ARQ
 
 
 class IRS(ARQ):

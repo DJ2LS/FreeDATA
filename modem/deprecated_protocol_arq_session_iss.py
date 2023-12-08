@@ -13,7 +13,7 @@ from codec2 import FREEDV_MODE
 from modem_frametypes import FRAME_TYPE as FR_TYPE
 import event_manager
 
-from protocol_arq_session import ARQ
+from deprecated_protocol_arq_session import ARQ
 
 class ISS(ARQ):
     def __init__(self, config, event_queue, states):
