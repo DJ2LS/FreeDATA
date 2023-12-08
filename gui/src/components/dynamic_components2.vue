@@ -151,8 +151,16 @@ function quickfill() {
 </script>
 
 <template>
-  <button type="button" @click="showModal">Add Widget pos [0,0]</button>
-  <button type="button" @click="quickfill">Quickfill</button>
+  <button
+    class="btn btn-secondary fixed-middle-right rounded-0 rounded-start-4 p-1 pt-4 pb-4"
+    type="button"
+    data-bs-toggle="offcanvas"
+    data-bs-target="#offcanvasGridItems"
+    aria-controls="offcanvasGridItems"
+  >
+    <i class="bi bi-grip-vertical h1"></i>
+  </button>
+
   <div class="grid-container vh-100">
     <div class="grid-stack">
       <div
@@ -177,81 +185,234 @@ function quickfill() {
       </div>
     </div>
   </div>
-  <div class="modal fade" id="tileModal" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Add grid tile</h5>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="modal-body">
+
+  <div
+    class="offcanvas offcanvas-end"
+    data-bs-scroll="true"
+    data-bs-backdrop="true"
+    tabindex="-1"
+    id="offcanvasGridItems"
+    aria-labelledby="offcanvasGridItemsLabel"
+  >
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="offcanvasGridItemsLabel">
+        <button class="btn btn-secondary" type="button" @click="quickfill">
+          Quickfill grid
+        </button>
+      </h5>
+      <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="offcanvas"
+        aria-label="Close"
+      ></button>
+    </div>
+    <div class="offcanvas-body">
+      <div class="accordion" id="accordionExample">
+        <!-- Heard Stations -->
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingHeardStations">
+            <button
+              class="accordion-button"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapseHeardStations"
+              aria-expanded="true"
+              aria-controls="collapseHeardStations"
+            >
+              <strong>Heard Stations</strong>
+            </button>
+          </h2>
           <div
-            class="btn-group"
-            role="group"
-            aria-label="Basic outlined example"
+            id="collapseHeardStations"
+            class="accordion-collapse collapse show"
+            aria-labelledby="headingHeardStations"
+            data-bs-parent="#accordionExample"
           >
-            <button
-              type="button"
-              @click="addNewWidget2(gridWidgets[0])"
-              class="btn btn-outline-secondary"
-              data-bs-dismiss="modal"
-            >
-              Heard station list
-            </button>
-            <button
-              type="button"
-              @click="addNewWidget2(gridWidgets[1])"
-              class="btn btn-outline-secondary"
-              data-bs-dismiss="modal"
-            >
-              Stats (waterfall, etc)
-            </button>
-            <button
-              type="button"
-              @click="addNewWidget2(gridWidgets[2])"
-              class="btn btn-outline-secondary"
-              data-bs-dismiss="modal"
-            >
-              Audio
-            </button>
-            <button
-              type="button"
-              @click="addNewWidget2(gridWidgets[4])"
-              class="btn btn-outline-secondary"
-              data-bs-dismiss="modal"
-            >
-              Broadcasts
-            </button>
-            <button
-              type="button"
-              @click="addNewWidget2(gridWidgets[3])"
-              class="btn btn-outline-secondary"
-              data-bs-dismiss="modal"
-            >
-              Rig Control
-            </button>
+            <div class="accordion-body">
+              <button
+                type="button"
+                @click="addNewWidget2(gridWidgets[0])"
+                class="btn btn-outline-secondary"
+                data-bs-dismiss="modal"
+              >
+                Heard station list
+              </button>
+            </div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
+
+        <!-- Activities -->
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingActivities">
+            <button
+              class="accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapseActivities"
+              aria-expanded="false"
+              aria-controls="collapseActivities"
+            >
+              <strong>Activities</strong>
+            </button>
+          </h2>
+          <div
+            id="collapseActivities"
+            class="accordion-collapse collapse"
+            aria-labelledby="headingActivities"
+            data-bs-parent="#accordionExample"
           >
-            Close
-          </button>
-          <button type="button" class="btn btn-primary">Save changes</button>
+            <div class="accordion-body">
+              <!-- Content for Activities -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Radio Control -->
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingRadioControl">
+            <button
+              class="accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapseRadioControl"
+              aria-expanded="false"
+              aria-controls="collapseRadioControl"
+            >
+              <strong>Radio Control</strong>
+            </button>
+          </h2>
+          <div
+            id="collapseRadioControl"
+            class="accordion-collapse collapse"
+            aria-labelledby="headingRadioControl"
+            data-bs-parent="#accordionExample"
+          >
+            <div class="accordion-body">
+              <button
+                type="button"
+                @click="addNewWidget2(gridWidgets[3])"
+                class="btn btn-outline-secondary"
+                data-bs-dismiss="modal"
+              >
+                Rig Control
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Audio Control -->
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingAudioControl">
+            <button
+              class="accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapseAudioControl"
+              aria-expanded="false"
+              aria-controls="collapseAudioControl"
+            >
+              <strong>Audio Control</strong>
+            </button>
+          </h2>
+          <div
+            id="collapseAudioControl"
+            class="accordion-collapse collapse"
+            aria-labelledby="headingAudioControl"
+            data-bs-parent="#accordionExample"
+          >
+            <div class="accordion-body">
+              <button
+                type="button"
+                @click="addNewWidget2(gridWidgets[2])"
+                class="btn btn-outline-secondary"
+                data-bs-dismiss="modal"
+              >
+                Audio
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingStatistics">
+            <button
+              class="accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapseStatistics"
+              aria-expanded="false"
+              aria-controls="collapseStatistics"
+            >
+              <strong>Statistics</strong>
+            </button>
+          </h2>
+          <div
+            id="collapseStatistics"
+            class="accordion-collapse collapse"
+            aria-labelledby="headingStatistics"
+            data-bs-parent="#accordionExample"
+          >
+            <div class="accordion-body">
+              <button
+                type="button"
+                @click="addNewWidget2(gridWidgets[1])"
+                class="btn btn-outline-secondary"
+                data-bs-dismiss="modal"
+              >
+                Stats (waterfall, etc)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Broadcasts -->
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingBroadcasts">
+            <button
+              class="accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapseBroadcasts"
+              aria-expanded="false"
+              aria-controls="collapseBroadcasts"
+            >
+              <strong>Broadcasts</strong>
+            </button>
+          </h2>
+          <div
+            id="collapseBroadcasts"
+            class="accordion-collapse collapse"
+            aria-labelledby="headingBroadcasts"
+            data-bs-parent="#accordionExample"
+          >
+            <div class="accordion-body">
+              <button
+                type="button"
+                @click="addNewWidget2(gridWidgets[4])"
+                class="btn btn-outline-secondary"
+                data-bs-dismiss="modal"
+              >
+                Broadcasts
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </template>
+
 <style>
+.fixed-middle-right {
+  position: fixed; /* Fixed/sticky position */
+  top: 50%; /* Position at the middle of the viewport */
+  right: 0px; /* Place the button 20px from the right */
+  transform: translateY(-50%); /* Adjust for exact vertical centering */
+  z-index: 999; /* Ensure it's on top of other elements */
+}
+
 .grid-stack-item {
   text-align: center;
   overflow: auto;
