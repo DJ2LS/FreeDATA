@@ -101,7 +101,7 @@ class DataFrameFactory:
     def _load_arq_templates(self):
         # same structure for narrow and wide types
 
-        arq_dc_open = {
+        arq_session_open = {
             "frame_length": self.LENGTH_SIG0_FRAME,
             "destination_crc": 3,
             "origin_crc": 3,
@@ -109,21 +109,31 @@ class DataFrameFactory:
             "session_id": 1,
         }
         # arq connect frames
-        self.template_list[FR_TYPE.ARQ_SESSION_OPEN_N.value] = arq_dc_open
-        self.template_list[FR_TYPE.ARQ_SESSION_OPEN_W.value] = arq_dc_open
+        self.template_list[FR_TYPE.ARQ_SESSION_OPEN_N.value] = arq_session_open
+        self.template_list[FR_TYPE.ARQ_SESSION_OPEN_W.value] = arq_session_open
 
         # same structure for narrow and wide types
-        arq_dc_open_ack = {
+        arq_session_open_ack = {
             "frame_length": self.LENGTH_SIG0_FRAME,
             "session_id": 1,
             "speed_level": 1,
             "arq_protocol_version": 1
         }
         # arq connect ack frames
-        self.template_list[FR_TYPE.ARQ_SESSION_OPEN_ACK_N.value] = arq_dc_open_ack
-        self.template_list[FR_TYPE.ARQ_SESSION_OPEN_ACK_W.value] = arq_dc_open_ack
+        self.template_list[FR_TYPE.ARQ_SESSION_OPEN_ACK_N.value] = arq_session_open_ack
+        self.template_list[FR_TYPE.ARQ_SESSION_OPEN_ACK_W.value] = arq_session_open_ack
 
 
+
+        # arq data frame
+        # register n frames
+        for n_frame in range(0,50):
+            self.template_list[FR_TYPE.BURST_01.value + n_frame] = {
+                "frame_length": "dynamic",
+                "n_frames_per_burst": 1,
+                "session_id": 1,
+                "payload": "dynamic",
+            }
 
         # arq burst ack
         self.template_list[FR_TYPE.BURST_ACK.value] = {
@@ -163,10 +173,20 @@ class DataFrameFactory:
 
         }
 
-    def construct(self, frametype, content):
-        frame_template = self.template_list[frametype.value]
-        frame_length = frame_template["frame_length"]
-        frame = bytearray(frame_length)
+    def construct(self, frametype, content, frame_length=LENGTH_SIG1_FRAME):
+        # frame_length: can be set manually for data frames, whose length can be dynamic regarding corresponding mode
+
+        # data bursts have a frame type range of 01-50
+        if frametype in range(1, 50):
+            frame_template = self.template_list[frametype.value]
+            frame = bytearray(frame_length)
+            # override "dynamic" value of payload length
+            self.template_list[frame_template].payload = frame_length - 3
+
+        else:
+            frame_template = self.template_list[frametype.value]
+            frame_length = frame_template["frame_length"]
+            frame = bytearray(frame_length)
 
         buffer_position = 1
         for key, item_length in frame_template.items():
@@ -222,9 +242,11 @@ class DataFrameFactory:
         :rtype: int
         """
         freedv = codec2.open_instance(mode)
-        # TODO add close session
         # get number of bytes per frame for mode
-        return int(codec2.api.freedv_get_bits_per_modem_frame(freedv) / 8)
+        bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv) / 8)
+        # TODO add close session
+        return bytes_per_frame
+
 
     def build_ping(self, destination):
         payload = {
@@ -325,6 +347,16 @@ class DataFrameFactory:
 
         channel_type = FR_TYPE.ARQ_SESSION_OPEN_ACK_W if isWideband else FR_TYPE.ARQ_SESSION_OPEN_ACK_N
         return self.construct(channel_type, payload)
+
+    def build_arq_data_frame(self, session_id: bytes, n_frames_per_burst: int, max_size: int, n_frame: int, frame_payload: bytes):
+        payload = {
+            "n_frames_per_burst": bytes([n_frames_per_burst]),
+            "session_id": session_id,
+            "data": frame_payload
+        }
+
+        return self.construct(FR_TYPE.FR_TYPE.BURST_01.value + n_frame, payload, frame_length=max_size)
+
 
     def build_arq_burst_ack(self, session_id: bytes, snr: int, speed_level: int, len_arq_rx_frame_buffer: int):
         # ack_frame = bytearray(self.length_sig1_frame)

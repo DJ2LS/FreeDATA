@@ -74,17 +74,21 @@ class ARQSessionISS(arq_session.ARQSession):
 
     # Sends the full payload in multiple frames
     def send_data(self):
+        # Todo make this n frames per burst stuff part of the protocol again
+        # hard coding n frames per burst to 1 for now.
+        n_frames_per_burst = 1
+        n_frame = 1
+
         offset = 0
         while offset < len(self.data):
             max_size = self.get_payload_size(self.speed_level)
             end_offset = min(len(self.data), max_size)
             frame_payload = self.data[offset:end_offset]
-            # TODO build_arq_session_connect is wrong frame. It seems we need to create the correct function for this
-            #data_frame = self.frame_factory.build_arq_session_connect(self.speed_level, self.dxcall, frame_payload)
-            #self.set_state(self.STATE_SENDING)
-            #if not self.send_arq(data_frame):
-            #    return False
-            #offset = end_offset + 1
+            data_frame = self.frame_factory.build_arq_data_frame(self.id, n_frames_per_burst, max_size, n_frame, frame_payload)
+            self.set_state(self.STATE_SENDING)
+            if not self.send_arq(data_frame):
+                return False
+            offset = end_offset + 1
 
     # Send part of the payload using ARQ
     def send_arq(self, frame):
