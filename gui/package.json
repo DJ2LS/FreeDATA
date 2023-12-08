@@ -42,7 +42,7 @@
     "bootstrap-icons": "1.10.5",
     "bootswatch": "5.3.1",
     "browser-image-compression": "2.0.2",
-    "chart.js": "4.3.3",
+    "chart.js": "4.4.1",
     "chartjs-plugin-annotation": "3.0.1",
     "electron-log": "5.0.0",
     "electron-updater": "6.1.6",
