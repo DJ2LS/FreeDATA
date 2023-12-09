@@ -3,12 +3,12 @@
 const { distance } = require("qth-locator");
 
 import { setActivePinia } from "pinia";
-import pinia from "../store/index";
+import pinia from "../../store/index";
 setActivePinia(pinia);
 
-import { settingsStore as settings } from "../store/settingsStore.js";
+import { settingsStore as settings } from "../../store/settingsStore.js";
 
-import { useStateStore } from "../store/stateStore.js";
+import { useStateStore } from "../../store/stateStore.js";
 const state = useStateStore(pinia);
 
 function getDateTime(timestampRaw) {
@@ -16,7 +16,7 @@ function getDateTime(timestampRaw) {
     navigator.language,
     {
       hourCycle: "h23",
-
+      year: "2-digit",
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
@@ -50,20 +50,35 @@ function getMaidenheadDistance(dxGrid) {
           <thead>
             <tr>
               <th scope="col" id="thTime">Time</th>
+              <th scope="col" id="thFreq">Freq</th>
               <th scope="col" id="thDxcall">DXCall</th>
+              <th scope="col" id="thDxgrid">Grid</th>
+              <th scope="col" id="thDist">Dist</th>
+              <th scope="col" id="thType">Type</th>
+              <th scope="col" id="thSnr">SNR</th>
+              <!--<th scope="col">Off</th>-->
             </tr>
           </thead>
-          <tbody id="miniHeardStations">
+          <tbody id="gridHeardStations">
             <!--https://vuejs.org/guide/essentials/list.html-->
             <tr v-for="item in state.heard_stations" :key="item.origin">
               <td>
-                <span class="fs-6">{{ getDateTime(item.timestamp) }}</span>
+                {{ getDateTime(item.timestamp) }}
               </td>
-
+              <td>{{ item.frequency / 1000 }} kHz</td>
               <td>
-                <span>{{ item.origin }}</span>
+                {{ item.origin }}
               </td>
-              <!--<td>{{ item.offset }}</td>-->
+              <td>
+                {{ item.gridsquare }}
+              </td>
+              <td>{{ getMaidenheadDistance(item.gridsquare) }} km</td>
+              <td>
+                {{ item.activity_type }}
+              </td>
+              <td>
+                {{ item.snr }}
+              </td>
             </tr>
           </tbody>
         </table>

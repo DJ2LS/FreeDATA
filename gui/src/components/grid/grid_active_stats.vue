@@ -1,14 +1,14 @@
 <script setup lang="ts">
 // @ts-nocheck
 // reason for no check is, that we have some mixing of typescript and chart js which seems to be not to be fixed that easy
-import { initWaterfall } from "../js/waterfallHandler.js";
+import { initWaterfall } from "../../js/waterfallHandler.js";
 import { setActivePinia } from "pinia";
-import pinia from "../store/index";
+import pinia from "../../store/index";
 setActivePinia(pinia);
 
-import { settingsStore as settings } from "../store/settingsStore.js";
+import { settingsStore as settings } from "../../store/settingsStore.js";
 
-import { useStateStore } from "../store/stateStore.js";
+import { useStateStore } from "../../store/stateStore.js";
 const state = useStateStore(pinia);
 
 import {

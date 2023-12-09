@@ -8,15 +8,15 @@ import "../../node_modules/gridstack/dist/gridstack.min.css";
 import { GridStack } from "gridstack";
 import { settingsStore as settings } from "../store/settingsStore.js";
 
-import active_heard_stations from "./grid_active_heard_stations.vue";
-import mini_heard_stations from "./grid_active_heard_stations_mini.vue";
-import active_stats from "./grid_active_stats.vue";
-import active_audio_level from "./grid_active_audio.vue";
-import active_rig_control from "./grid_active_rig_control.vue";
-import active_broadcats from "./grid_active_broadcasts.vue";
-import s_meter from "./grid_s-meter.vue";
-import dbfs_meter from "./grid_dbfs.vue";
-import grid_activities from "./grid_activities.vue";
+import active_heard_stations from "./grid/grid_active_heard_stations.vue";
+import mini_heard_stations from "./grid/grid_active_heard_stations_mini.vue";
+import active_stats from "./grid/grid_active_stats.vue";
+import active_audio_level from "./grid/grid_active_audio.vue";
+import active_rig_control from "./grid/grid_active_rig_control.vue";
+import active_broadcats from "./grid/grid_active_broadcasts.vue";
+import s_meter from "./grid/grid_s-meter.vue";
+import dbfs_meter from "./grid/grid_dbfs.vue";
+import grid_activities from "./grid/grid_activities.vue";
 import { stateDispatcher } from "../js/eventHandler";
 
 let count = ref(0);
