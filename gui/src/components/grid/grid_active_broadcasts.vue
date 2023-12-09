@@ -1,15 +1,15 @@
 <script setup lang="ts">
 
 import { setActivePinia } from "pinia";
-import pinia from "../store/index";
+import pinia from "../../store/index";
 setActivePinia(pinia);
 
-import { settingsStore as settings} from "../store/settingsStore.js";
+import { settingsStore as settings} from "../../store/settingsStore.js";
 
-import { useStateStore } from "../store/stateStore.js";
+import { useStateStore } from "../../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { sendModemCQ, sendModemPing, setModemBeacon } from "../js/api.js";
+import { sendModemCQ, sendModemPing, setModemBeacon } from "../../js/api.js";
 
 function transmitPing() {
   sendModemPing((<HTMLInputElement>document.getElementById("dxCall")).value);

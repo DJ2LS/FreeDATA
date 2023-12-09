@@ -23,7 +23,7 @@ export function connectionFailed(endpoint, event) {
 }
 export function stateDispatcher(data) {
   data = JSON.parse(data);
-  console.log(data);
+  //console.log(data);
 
   stateStore.modem_connection = "connected";
 

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { setActivePinia } from "pinia";
-import pinia from "../store/index";
+import pinia from "../../store/index";
 setActivePinia(pinia);
 
-import { useStateStore } from "../store/stateStore.js";
+import { useStateStore } from "../../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { record_audio } from "../js/sock";
+import { record_audio } from "../../js/sock";
 
 function startStopRecordAudio() {
   record_audio();
