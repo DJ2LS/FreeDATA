@@ -223,10 +223,13 @@ class DataFrameFactory:
                 if key in ["origin", "destination"]:
                     extracted_data[key] = helpers.bytes_to_callsign(data).decode()
 
+                if key in ["origin_crc", "destination_crc"]:
+                    extracted_data[key] = data.hex()
+
                 elif key == "gridsquare":
                     extracted_data[key] = helpers.decode_grid(data)
 
-                elif key in ["session_id", "speed_level"]:
+                elif key in ["session_id", "speed_level", "n_frames_per_burst"]:
                     extracted_data[key] = int.from_bytes(data, 'big')
 
                 else:
