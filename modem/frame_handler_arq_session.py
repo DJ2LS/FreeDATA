@@ -24,7 +24,6 @@ class ARQFrameHandler(frame_handler.FrameHandler):
             iss_session:ARQSessionISS = self.states.get_arq_iss_session(frame['session_id'])
             iss_session.on_connection_ack_received(frame)
 
-
         # ARQ session data frame received
         if frame['frame_type_int'] in [FR.BURST_01.value, FR.BURST_02.value, FR.BURST_03.value, FR.BURST_04.value, FR.BURST_05.value]:
             print("received data frame....")

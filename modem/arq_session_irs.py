@@ -56,15 +56,13 @@ class ARQSessionIRS(arq_session.ARQSession):
                 self.log("Timeout waiting for data")
                 self.state = self.STATE_FAILED
                 return
-            else:
-                print("data received")
-                print(self.frame)
-            
+
         self.log("Finished ARQ IRS session")
 
     def run(self):
         self.thread = threading.Thread(target=self.runner, name=f"ARQ IRS Session {self.id}", daemon=True)
-        self.thread.run()
+        self.thread.start()
+
 
     def on_data_received(self, data_frame):
         if self.state != self.STATE_WAITING_DATA:
