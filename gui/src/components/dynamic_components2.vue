@@ -51,7 +51,8 @@ const gridWidgets = [
     { x: 0, y: 0, w: 16, h: 40 },
     "Detailed heard stations list",
     true,
-    true,"Activity"
+    true,
+    "Activity",
   ),
   new gridWidget(
     active_stats,
@@ -59,7 +60,7 @@ const gridWidgets = [
     "Stats (waterfall, etc)",
     true,
     true,
-    "Stats"
+    "Stats",
   ),
   new gridWidget(
     active_audio_level,
@@ -75,7 +76,7 @@ const gridWidgets = [
     "Rig control main",
     true,
     true,
-    "Rig"
+    "Rig",
   ),
   new gridWidget(
     active_broadcats,
@@ -83,7 +84,7 @@ const gridWidgets = [
     "Broadcats main",
     true,
     true,
-    "Broadcasts"
+    "Broadcasts",
   ),
   new gridWidget(
     mini_heard_stations,
@@ -91,16 +92,23 @@ const gridWidgets = [
     "Mini heard stations list",
     false,
     true,
-    "Activity"
+    "Activity",
   ),
-  new gridWidget(s_meter, { x: 1, y: 1, w: 4, h: 8 }, "S-Meter", false, true, "Rig"),
+  new gridWidget(
+    s_meter,
+    { x: 1, y: 1, w: 4, h: 8 },
+    "S-Meter",
+    false,
+    true,
+    "Rig",
+  ),
   new gridWidget(
     dbfs_meter,
     { x: 1, y: 1, w: 4, h: 8 },
     "Dbfs Meter",
     false,
     true,
-    "Audio"
+    "Audio",
   ),
   new gridWidget(
     grid_activities,
@@ -110,7 +118,6 @@ const gridWidgets = [
     true,
     "Activity",
   ),
-  
 ];
 onMounted(() => {
   grid = GridStack.init({
@@ -137,23 +144,23 @@ onMounted(() => {
 
   grid.on("change", onChange);
 
-  gridWidgets.forEach((gw) =>{
+  gridWidgets.forEach((gw) => {
     //Dynamically add widgets to widget menu
     let dom = document.getElementById("otherBod");
     switch (gw.category) {
       case "Activity":
         dom = document.getElementById("actBody");
         break;
-        case "Stats":
+      case "Stats":
         dom = document.getElementById("statsBody");
         break;
-        case "Audio":
+      case "Audio":
         dom = document.getElementById("audioBody");
         break;
-        case "Rig":
+      case "Rig":
         dom = document.getElementById("rigBody");
         break;
-        case "Broadcasts":
+      case "Broadcasts":
         dom = document.getElementById("bcBody");
         break;
       default:
@@ -161,7 +168,7 @@ onMounted(() => {
         break;
     }
     var index = gridWidgets.findIndex((w) => gw.text == w.text);
-    dom.insertAdjacentHTML("beforeend",`<div id="gridbtn-${index}""></div>`);
+    dom.insertAdjacentHTML("beforeend", `<div id="gridbtn-${index}""></div>`);
     let dom2 = document.getElementById(`gridbtn-${index}`);
     let vueComponent = h(grid_button,{btnText: gw.text,btnID:index});
     render(vueComponent,dom2);
@@ -274,7 +281,7 @@ function quickfill() {
       <h5 class="offcanvas-title" id="offcanvasGridItemsLabel">
         Manage grid widgets
       </h5>
-      
+
       <button
         type="button"
         class="btn-close"
@@ -283,8 +290,10 @@ function quickfill() {
       ></button>
     </div>
     <div class="offcanvas-body">
-      <p>Grid widgets allow you to customize the display for your own usage.  Here you may add additional widgets to fit your needs.
-        You can move and resize the individual widgets!
+      <p>
+        Grid widgets allow you to customize the display for your own usage. Here
+        you may add additional widgets to fit your needs. You can move and
+        resize the individual widgets!
       </p>
       <div>
         <button
@@ -294,10 +303,8 @@ function quickfill() {
         >
           Fill grid with common widgets
         </button>
-
-
       </div>
-      <hr>
+      <hr />
       <!-- Begin widget selector -->
       <div class="accordion" id="accordionExample">
         <!-- Heard Stations -->
@@ -320,9 +327,7 @@ function quickfill() {
             aria-labelledby="headingHeardStations"
             data-bs-parent="#accordionExample"
           >
-            <div class="accordion-body" id="actBody">
-
-            </div>
+            <div class="accordion-body" id="actBody"></div>
           </div>
         </div>
 
@@ -346,9 +351,7 @@ function quickfill() {
             aria-labelledby="headingActivities"
             data-bs-parent="#accordionExample"
           >
-            <div class="accordion-body" id="audioBody">
-              
-            </div>
+            <div class="accordion-body" id="audioBody"></div>
           </div>
         </div>
         <!-- Broadcasts -->
@@ -371,9 +374,7 @@ function quickfill() {
             aria-labelledby="headingBroadcasts"
             data-bs-parent="#accordionExample"
           >
-            <div class="accordion-body" id="bcBody">
-
-            </div>
+            <div class="accordion-body" id="bcBody"></div>
           </div>
         </div>
         <!-- Radio Control -->
@@ -396,9 +397,7 @@ function quickfill() {
             aria-labelledby="headingRadioControl"
             data-bs-parent="#accordionExample"
           >
-            <div class="accordion-body" id="rigBody">
-
-            </div>
+            <div class="accordion-body" id="rigBody"></div>
           </div>
         </div>
 
@@ -422,9 +421,7 @@ function quickfill() {
             aria-labelledby="headingAudioControl"
             data-bs-parent="#accordionExample"
           >
-            <div class="accordion-body" id="statsBody">
-              
-            </div>
+            <div class="accordion-body" id="statsBody"></div>
           </div>
         </div>
 
@@ -448,20 +445,18 @@ function quickfill() {
             aria-labelledby="headingStatistics"
             data-bs-parent="#accordionExample"
           >
-            <div class="accordion-body" id="otherBod">
-              
-            </div>
+            <div class="accordion-body" id="otherBod"></div>
           </div>
         </div>
       </div>
-      <hr>
+      <hr />
       <button
-          class="btn btn-sm btn-outline-warning"
-          type="button"
-          @click="clearAllItems"
-        >
-          Clear grid
-        </button>
+        class="btn btn-sm btn-outline-warning"
+        type="button"
+        @click="clearAllItems"
+      >
+        Clear grid
+      </button>
     </div>
   </div>
 </template>

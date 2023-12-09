@@ -35,6 +35,7 @@ class DISPATCHER():
         FR_TYPE.ARQ_CONNECTION_OPEN.value: {"class": ARQFrameHandler, "name": "ARQ OPEN SESSION"},
         FR_TYPE.ARQ_STOP.value: {"class": ARQFrameHandler, "name": "ARQ STOP TX"},
         FR_TYPE.BEACON.value: {"class": FrameHandler, "name": "BEACON"},
+        FR_TYPE.BURST_01.value:{"class": ARQFrameHandler, "name": "BURST_01"},
         FR_TYPE.BURST_ACK.value: {"class": FrameHandler, "name":  "BURST ACK"},
         FR_TYPE.BURST_NACK.value: {"class": FrameHandler, "name":  "BURST NACK"},
         FR_TYPE.CQ.value: {"class": CQFrameHandler, "name":  "CQ"},

@@ -35,7 +35,7 @@ class ARQSessionISS(arq_session.ARQSession):
         return random.randint(1,255)
 
     def set_state(self, state):
-        self.logger.info(f"ARQ Session {self.id} state {self.state}")
+        self.logger.info(f"ARQ Session ISS {self.id} state {self.state}")
         self.state = state
 
     def runner(self):
@@ -49,7 +49,7 @@ class ARQSessionISS(arq_session.ARQSession):
         self.thread.run()
     
     def connect(self):
-        self.state =  self.STATE_CONNECTING
+        self.state = self.STATE_CONNECTING
 
         connect_frame = self.frame_factory.build_arq_session_connect(True, self.dxcall, self.id)
 
@@ -69,8 +69,9 @@ class ARQSessionISS(arq_session.ARQSession):
         if self.state != self.STATE_CONNECTING:
             raise RuntimeError(f"ARQ Session: Received connection ACK while in state {self.state}")
 
-        self.speed_level = ack['speed_level']
+        self.build_arq_data_framespeed_level = ack['speed_level']
         self.event_connection_ack_received.set()
+
 
     # Sends the full payload in multiple frames
     def send_data(self):
@@ -84,6 +85,7 @@ class ARQSessionISS(arq_session.ARQSession):
             max_size = self.get_payload_size(self.speed_level)
             end_offset = min(len(self.data), max_size)
             frame_payload = self.data[offset:end_offset]
+            print(self.id)
             data_frame = self.frame_factory.build_arq_data_frame(self.id, n_frames_per_burst, max_size, n_frame, frame_payload)
             self.set_state(self.STATE_SENDING)
             if not self.send_arq(data_frame):

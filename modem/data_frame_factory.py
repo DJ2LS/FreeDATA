@@ -127,12 +127,12 @@ class DataFrameFactory:
 
         # arq data frame
         # register n frames
-        for n_frame in range(0,50):
-            self.template_list[FR_TYPE.BURST_01.value + n_frame] = {
+        for n_frame in range(1,5):
+            self.template_list[FR_TYPE.BURST_01.value + (n_frame-1)] = {
                 "frame_length": "dynamic",
                 "n_frames_per_burst": 1,
                 "session_id": 1,
-                "payload": "dynamic",
+                "data": "dynamic",
             }
 
         # arq burst ack
@@ -175,18 +175,19 @@ class DataFrameFactory:
 
     def construct(self, frametype, content, frame_length=LENGTH_SIG1_FRAME):
         # frame_length: can be set manually for data frames, whose length can be dynamic regarding corresponding mode
-
         # data bursts have a frame type range of 01-50
         if frametype in range(1, 50):
-            frame_template = self.template_list[frametype.value]
+            frame_template = self.template_list[frametype]
             frame = bytearray(frame_length)
             # override "dynamic" value of payload length
-            self.template_list[frame_template].payload = frame_length - 3
+            self.template_list[frametype]["data"] = frame_length - 3
+            frame[:1] = bytes([frametype])
 
         else:
             frame_template = self.template_list[frametype.value]
             frame_length = frame_template["frame_length"]
             frame = bytearray(frame_length)
+            frame[:1] = bytes([frametype.value])
 
         buffer_position = 1
         for key, item_length in frame_template.items():
@@ -194,7 +195,6 @@ class DataFrameFactory:
                 frame[buffer_position: buffer_position + item_length] = content[key]
                 buffer_position += item_length
 
-        frame[:1] = bytes([frametype.value])
         return frame
 
     def deconstruct(self, frame):
@@ -212,16 +212,24 @@ class DataFrameFactory:
 
         for key, item_length in frame_template.items():
             if key != "frame_length":
-                data = frame[buffer_position: buffer_position + item_length]
+                # data is always on the last payload slots
+                if item_length in ["dynamic"] and key in["data"]:
+                    data = frame[buffer_position:]
+                    item_length = len(data)
+                else:
+                    data = frame[buffer_position: buffer_position + item_length]
 
                 # Process the data based on the key
                 if key in ["origin", "destination"]:
                     extracted_data[key] = helpers.bytes_to_callsign(data).decode()
 
+                if key in ["origin_crc", "destination_crc"]:
+                    extracted_data[key] = data.hex()
+
                 elif key == "gridsquare":
                     extracted_data[key] = helpers.decode_grid(data)
 
-                elif key in ["session_id", "speed_level"]:
+                elif key in ["session_id", "speed_level", "n_frames_per_burst"]:
                     extracted_data[key] = int.from_bytes(data, 'big')
 
                 else:
@@ -319,9 +327,7 @@ class DataFrameFactory:
         return test_frame
 
     def build_arq_session_connect(self, isWideband, destination, session_id):
-        print(isWideband)
-        print(destination)
-        print(session_id)
+
         payload = {
             "destination_crc": helpers.get_crc_24(destination),
             "origin_crc": helpers.get_crc_24(self.myfullcall),
@@ -351,11 +357,11 @@ class DataFrameFactory:
     def build_arq_data_frame(self, session_id: bytes, n_frames_per_burst: int, max_size: int, n_frame: int, frame_payload: bytes):
         payload = {
             "n_frames_per_burst": bytes([n_frames_per_burst]),
-            "session_id": session_id,
+            "session_id": session_id.to_bytes(1, 'big'),
             "data": frame_payload
         }
 
-        return self.construct(FR_TYPE.FR_TYPE.BURST_01.value + n_frame, payload, frame_length=max_size)
+        return self.construct(FR_TYPE.BURST_01.value + (n_frame-1), payload, frame_length=max_size)
 
 
     def build_arq_burst_ack(self, session_id: bytes, snr: int, speed_level: int, len_arq_rx_frame_buffer: int):
