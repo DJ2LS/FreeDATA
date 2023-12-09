@@ -33,11 +33,11 @@ class gridWidget {
   quickFill;
   //Auto place; true to add where ever it fits; false uses position information
   autoPlace;
-  constructor(component, size, text, quickfill,autoPlace) {
+  constructor(component, size, text, quickfill, autoPlace) {
     this.component2 = component;
     this.size = size;
     this.text = text;
-    this.quickFill=quickfill;
+    this.quickFill = quickfill;
     this.autoPlace = autoPlace;
   }
 }
@@ -45,28 +45,60 @@ const gridWidgets = [
   new gridWidget(
     active_heard_stations,
     { x: 0, y: 0, w: 16, h: 40 },
-    "Heard stations",true,true
+    "Heard stations",
+    true,
+    true,
   ),
   new gridWidget(
     active_stats,
     { x: 16, y: 26, w: 8, h: 69 },
-    "Stats (waterfall, etc)",true,true
+    "Stats (waterfall, etc)",
+    true,
+    true,
   ),
-  new gridWidget(active_audio_level, { x: 16, y: 0, w: 8, h: 26 }, "Audio",true,true),
+  new gridWidget(
+    active_audio_level,
+    { x: 16, y: 0, w: 8, h: 26 },
+    "Audio",
+    true,
+    true,
+  ),
   new gridWidget(
     active_rig_control,
     { x: 6, y: 40, w: 10, h: 30 },
-    "Rig control",true,true
+    "Rig control",
+    true,
+    true,
   ),
-  new gridWidget(active_broadcats, { x: 6, y: 70, w: 10, h: 25 }, "Broadcats",true,true),
+  new gridWidget(
+    active_broadcats,
+    { x: 6, y: 70, w: 10, h: 25 },
+    "Broadcats",
+    true,
+    true,
+  ),
   new gridWidget(
     mini_heard_stations,
     { x: 1, y: 1, w: 6, h: 54 },
-    "Mini Heard stations",false,true
+    "Mini Heard stations",
+    false,
+    true,
   ),
-  new gridWidget(s_meter, { x: 1, y: 1, w: 4, h: 8 }, "S-Meter",false,true),
-  new gridWidget(dbfs_meter, { x: 1, y: 1, w: 4, h: 8 }, "Dbfs Meter",false,true),
-  new gridWidget(grid_activities, { x: 0, y: 40, w: 6, h: 55 }, "Activities",true,true),
+  new gridWidget(s_meter, { x: 1, y: 1, w: 4, h: 8 }, "S-Meter", false, true),
+  new gridWidget(
+    dbfs_meter,
+    { x: 1, y: 1, w: 4, h: 8 },
+    "Dbfs Meter",
+    false,
+    true,
+  ),
+  new gridWidget(
+    grid_activities,
+    { x: 0, y: 40, w: 6, h: 55 },
+    "Activities",
+    true,
+    true,
+  ),
 ];
 onMounted(() => {
   grid = GridStack.init({
@@ -86,7 +118,9 @@ onMounted(() => {
 
   grid.on("dragstop", function (event, element) {
     const node = element.gridstackNode;
-    console.info(`Moved #${node.id} to ${node.x}.${node.y}.  Dimensions:  ${node.w}x${node.h}`)
+    console.info(
+      `Moved #${node.id} to ${node.x}.${node.y}.  Dimensions:  ${node.w}x${node.h}`,
+    );
   });
 
   grid.on("change", onChange);
@@ -111,7 +145,7 @@ function addNewWidget2(componentToAdd) {
   const node = items[count.value] || { ...componentToAdd.size };
   node.id = "w_" + count.value++;
   node.component2 = shallowRef({ ...componentToAdd.component2 });
-  node.autoPlace=componentToAdd.autoPlace;
+  node.autoPlace = componentToAdd.autoPlace;
   items.value.push(node);
   nextTick(() => {
     grid.makeWidget(node.id);
@@ -127,20 +161,18 @@ function remove(widget) {
 
 function clearAllItems() {
   grid.removeAll(false);
-  count.value=0;
-  items.value=[];
+  count.value = 0;
+  items.value = [];
 }
 function quickfill() {
   gridWidgets.forEach(async (gw) => {
-    if (gw.quickFill === true){
-      gw.autoPlace=false;
+    if (gw.quickFill === true) {
+      gw.autoPlace = false;
       await addNewWidget2(gw);
       //Reset autoplace value
-      gw.autoPlace=true;
-    } 
-    
+      gw.autoPlace = true;
+    }
   });
-  
 }
 </script>
 
@@ -167,7 +199,7 @@ function quickfill() {
         :gs-id="w.id"
         :id="w.id"
         :key="w.id"
-        :gs-auto-position=w.autoPlace
+        :gs-auto-position="w.autoPlace"
       >
         <div class="grid-stack-item-content">
           <button
@@ -191,7 +223,6 @@ function quickfill() {
     <div class="offcanvas-header">
       <h5 class="offcanvas-title" id="offcanvasGridItemsLabel">
         Manage grid widgets
-        
       </h5>
       <button
         type="button"
@@ -202,15 +233,23 @@ function quickfill() {
     </div>
     <div class="offcanvas-body">
       <div>
-      <button class="btn btn-sm btn-outline-primary" type="button" @click="quickfill">
+        <button
+          class="btn btn-sm btn-outline-primary"
+          type="button"
+          @click="quickfill"
+        >
           Fill grid with common widgets
-        </button> &nbsp;
-        <button class="btn btn-sm btn-outline-warning" type="button" @click="clearAllItems">
+        </button>
+        &nbsp;
+        <button
+          class="btn btn-sm btn-outline-warning"
+          type="button"
+          @click="clearAllItems"
+        >
           Clear grid
         </button>
       </div>
-        <div>
-        </div>
+      <div></div>
       <div class="accordion" id="accordionExample">
         <!-- Heard Stations -->
         <div class="accordion-item">
