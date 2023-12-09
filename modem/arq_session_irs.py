@@ -13,7 +13,7 @@ class ARQSessionIRS(arq_session.ARQSession):
     RETRIES_CONNECT = 3
     RETRIES_TRANSFER = 3
 
-    TIMEOUT_DATA = 2
+    TIMEOUT_DATA = 6
 
     def __init__(self, config: dict, tx_frame_queue: queue.Queue, dxcall: str, session_id: int):
         super().__init__(config, tx_frame_queue, dxcall)
@@ -35,7 +35,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         pass
 
     def set_state(self, state):
-        self.log(f"ARQ Session {self.id} state {self.state}")
+        self.log(f"ARQ Session IRS {self.id} state {self.state}")
         self.state = state
 
     def set_modem_decode_modes(self, modes):
@@ -50,13 +50,15 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.transmit_frame(ack_frame)
 
         self.set_modem_decode_modes(None)
-
         self.state = self.STATE_WAITING_DATA
         while self.state == self.STATE_WAITING_DATA:
             if not self.event_data_received.wait(self.TIMEOUT_DATA):
                 self.log("Timeout waiting for data")
                 self.state = self.STATE_FAILED
                 return
+            else:
+                print("data received")
+                print(self.frame)
             
         self.log("Finished ARQ IRS session")
 
@@ -66,8 +68,9 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     def on_data_received(self, data_frame):
         if self.state != self.STATE_WAITING_DATA:
-            raise RuntimeError(f"ARQ Session: Received data while in state {self.state}")
+            raise RuntimeError(f"ARQ Session: Received data while in state {self.state}, expected {self.STATE_WAITING_DATA}")
 
+        self.received_data = data_frame["data"]
         self.event_data_received.set()
 
 
@@ -87,3 +90,4 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.event_connection_ack_received.clear()
         self.event_transfer_feedback.set()
         self.event_transfer_feedback.clear()
+        self.received_data = b''

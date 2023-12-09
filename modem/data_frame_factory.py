@@ -127,8 +127,8 @@ class DataFrameFactory:
 
         # arq data frame
         # register n frames
-        for n_frame in range(0,50):
-            self.template_list[FR_TYPE.BURST_01.value + n_frame] = {
+        for n_frame in range(1,5):
+            self.template_list[FR_TYPE.BURST_01.value + (n_frame-1)] = {
                 "frame_length": "dynamic",
                 "n_frames_per_burst": 1,
                 "session_id": 1,

@@ -11,8 +11,7 @@ class FRAME_TYPE(Enum):
     BURST_02 = 2
     BURST_03 = 3
     BURST_04 = 4
-    # ...
-    BURST_50 = 50
+    BURST_05 = 5
     BURST_ACK = 60
     FR_ACK = 61
     FR_REPEAT = 62

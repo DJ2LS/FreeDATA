@@ -35,7 +35,7 @@ class ARQSessionISS(arq_session.ARQSession):
         return random.randint(1,255)
 
     def set_state(self, state):
-        self.logger.info(f"ARQ Session {self.id} state {self.state}")
+        self.logger.info(f"ARQ Session ISS {self.id} state {self.state}")
         self.state = state
 
     def runner(self):
@@ -71,6 +71,7 @@ class ARQSessionISS(arq_session.ARQSession):
 
         self.build_arq_data_framespeed_level = ack['speed_level']
         self.event_connection_ack_received.set()
+
 
     # Sends the full payload in multiple frames
     def send_data(self):
