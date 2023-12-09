@@ -157,7 +157,7 @@ onMounted(() => {
         dom = document.getElementById("bcBody");
         break;
       default:
-        console.error("Uknown widget category:  " + gw.category);
+        console.error("Unknown widget category:  " + gw.category);
         break;
     }
     var index = gridWidgets.findIndex((w) => gw.text == w.text);
@@ -166,11 +166,12 @@ onMounted(() => {
     let vueComponent = h(grid_button,{btnText: gw.text,btnID:index});
     render(vueComponent,dom2);
   })
+
   window.addEventListener(
       "add-widget",
       function (eventdata) {
-        let data = eventdata.detail;
-        addNewWidget2(gridWidgets[data]);
+        let evt = <CustomEvent>eventdata;
+        addNewWidget2(gridWidgets[evt.detail]);
       },
       false,
     );
