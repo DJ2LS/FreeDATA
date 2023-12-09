@@ -20,56 +20,62 @@ import grid_activities from "./grid_activities.vue";
 import { stateDispatcher } from "../js/eventHandler";
 
 let count = ref(0);
-let info = ref("");
-let gridFloat = ref(false);
-let color = ref("black");
-let gridInfo = ref("");
 let grid = null; // DO NOT use ref(null) as proxies GS will break all logic when comparing structures... see https://github.com/gridstack/gridstack.js/issues/2115
 let items = ref([]);
 class gridWidget {
+  //Contains the vue component
   component2;
+  //Initial size and location if autoplace is false
   size;
+  //Text for dynamic button
   text;
-  constructor(component, size, text) {
+  //if true add when quick fill button is clicked
+  quickFill;
+  //Auto place; true to add where ever it fits; false uses position information
+  autoPlace;
+  constructor(component, size, text, quickfill,autoPlace) {
     this.component2 = component;
     this.size = size;
     this.text = text;
+    this.quickFill=quickfill;
+    this.autoPlace = autoPlace;
   }
 }
 const gridWidgets = [
   new gridWidget(
     active_heard_stations,
-    { x: 0, y: 0, w: 7, h: 20 },
-    "Heard stations",
+    { x: 0, y: 0, w: 16, h: 40 },
+    "Heard stations",true,true
   ),
   new gridWidget(
     active_stats,
-    { x: 0, y: 0, w: 4, h: 35 },
-    "Stats (waterfall, etc)",
+    { x: 16, y: 26, w: 8, h: 69 },
+    "Stats (waterfall, etc)",true,true
   ),
-  new gridWidget(active_audio_level, { x: 0, y: 0, w: 4, h: 13 }, "Audio"),
+  new gridWidget(active_audio_level, { x: 16, y: 0, w: 8, h: 26 }, "Audio",true,true),
   new gridWidget(
     active_rig_control,
-    { x: 0, y: 0, w: 6, h: 12 },
-    "Rig control",
+    { x: 6, y: 40, w: 10, h: 30 },
+    "Rig control",true,true
   ),
-  new gridWidget(active_broadcats, { x: 1, y: 1, w: 4, h: 12 }, "Broadcats"),
+  new gridWidget(active_broadcats, { x: 6, y: 70, w: 10, h: 25 }, "Broadcats",true,true),
   new gridWidget(
     mini_heard_stations,
-    { x: 1, y: 1, w: 3, h: 27 },
-    "Mini Heard stations",
+    { x: 1, y: 1, w: 6, h: 54 },
+    "Mini Heard stations",false,true
   ),
-  new gridWidget(s_meter, { x: 1, y: 1, w: 2, h: 4 }, "S-Meter"),
-  new gridWidget(dbfs_meter, { x: 1, y: 1, w: 2, h: 4 }, "Dbfs Meter"),
-  new gridWidget(grid_activities, { x: 1, y: 1, w: 3, h: 27 }, "Activities"),
+  new gridWidget(s_meter, { x: 1, y: 1, w: 4, h: 8 }, "S-Meter",false,true),
+  new gridWidget(dbfs_meter, { x: 1, y: 1, w: 4, h: 8 }, "Dbfs Meter",false,true),
+  new gridWidget(grid_activities, { x: 0, y: 40, w: 6, h: 55 }, "Activities",true,true),
 ];
 onMounted(() => {
   grid = GridStack.init({
-    // DO NOT user grid.value = GridStack.init(), see above
+    // DO NOT use grid.value = GridStack.init(), see above
     float: true,
-    cellHeight: "10px",
+    cellHeight: "5px",
     minRow: 50,
     margin: 5,
+    column: 24,
     draggable: {
       scroll: true,
     },
@@ -80,25 +86,18 @@ onMounted(() => {
 
   grid.on("dragstop", function (event, element) {
     const node = element.gridstackNode;
-    info.value = `you just dragged node #${node.id} to ${node.x},${node.y} – good job!`;
+    console.info(`Moved #${node.id} to ${node.x}.${node.y}.  Dimensions:  ${node.w}x${node.h}`)
   });
 
   grid.on("change", onChange);
-  // gridFloat.value = grid.float();
 });
 
-function changeFloat() {
-  gridFloat.value = !gridFloat.value;
-  grid.float(gridFloat.value);
-}
-
 function onChange(event, changeItems) {
-  updateInfo();
   // update item position
   changeItems.forEach((item) => {
     var widget = items.value.find((w) => w.id == item.id);
     if (!widget) {
-      alert("Widget not found: " + item.id);
+      console.error("Widget not found: " + item.id);
       return;
     }
     widget.x = item.x;
@@ -107,24 +106,16 @@ function onChange(event, changeItems) {
     widget.h = item.h;
   });
 }
+
 function addNewWidget2(componentToAdd) {
   const node = items[count.value] || { ...componentToAdd.size };
   node.id = "w_" + count.value++;
   node.component2 = shallowRef({ ...componentToAdd.component2 });
+  node.autoPlace=componentToAdd.autoPlace;
   items.value.push(node);
   nextTick(() => {
     grid.makeWidget(node.id);
-    updateInfo();
   });
-}
-
-function removeLastWidget() {
-  if (count.value == 0) return;
-  var id = `w_${count.value - 1}`;
-  var index = items.value.findIndex((w) => w.id == id);
-  if (index < 0) return;
-  var removed = items.value[index];
-  remove(removed);
 }
 
 function remove(widget) {
@@ -132,21 +123,24 @@ function remove(widget) {
   items.value.splice(index, 1);
   const selector = `#${widget.id}`;
   grid.removeWidget(selector, false);
-  updateInfo();
 }
 
-function updateInfo() {
-  color.value =
-    grid.engine.nodes.length == items.value.length ? "black" : "red";
-  gridInfo.value = `Grid engine: ${grid.engine.nodes.length}, widgets: ${items.value.length}`;
-}
-function showModal() {
-  new Modal("#tileModal", {}).show();
+function clearAllItems() {
+  grid.removeAll(false);
+  count.value=0;
+  items.value=[];
 }
 function quickfill() {
   gridWidgets.forEach(async (gw) => {
-    await addNewWidget2(gw);
+    if (gw.quickFill === true){
+      gw.autoPlace=false;
+      await addNewWidget2(gw);
+      //Reset autoplace value
+      gw.autoPlace=true;
+    } 
+    
   });
+  
 }
 </script>
 
@@ -158,7 +152,7 @@ function quickfill() {
     data-bs-target="#offcanvasGridItems"
     aria-controls="offcanvasGridItems"
   >
-    <i class="bi bi-grip-vertical h1"></i>
+    <i class="bi bi-grip-vertical h5"></i>
   </button>
 
   <div class="grid-container vh-100">
@@ -173,7 +167,7 @@ function quickfill() {
         :gs-id="w.id"
         :id="w.id"
         :key="w.id"
-        :gs-auto-position="true"
+        :gs-auto-position=w.autoPlace
       >
         <div class="grid-stack-item-content">
           <button
@@ -196,9 +190,8 @@ function quickfill() {
   >
     <div class="offcanvas-header">
       <h5 class="offcanvas-title" id="offcanvasGridItemsLabel">
-        <button class="btn btn-secondary" type="button" @click="quickfill">
-          Quickfill grid
-        </button>
+        Manage grid widgets
+        
       </h5>
       <button
         type="button"
@@ -208,6 +201,16 @@ function quickfill() {
       ></button>
     </div>
     <div class="offcanvas-body">
+      <div>
+      <button class="btn btn-sm btn-outline-primary" type="button" @click="quickfill">
+          Fill grid with common widgets
+        </button> &nbsp;
+        <button class="btn btn-sm btn-outline-warning" type="button" @click="clearAllItems">
+          Clear grid
+        </button>
+      </div>
+        <div>
+        </div>
       <div class="accordion" id="accordionExample">
         <!-- Heard Stations -->
         <div class="accordion-item">
@@ -427,5 +430,146 @@ function quickfill() {
 }
 .grid-container {
   overflow-y: auto;
+}
+.gs-24 > .grid-stack-item {
+  width: 4.167%;
+}
+.gs-24 > .grid-stack-item[gs-x="1"] {
+  left: 4.167%;
+}
+.gs-24 > .grid-stack-item[gs-w="2"] {
+  width: 8.333%;
+}
+.gs-24 > .grid-stack-item[gs-x="2"] {
+  left: 8.333%;
+}
+.gs-24 > .grid-stack-item[gs-w="3"] {
+  width: 12.5%;
+}
+.gs-24 > .grid-stack-item[gs-x="3"] {
+  left: 12.5%;
+}
+.gs-24 > .grid-stack-item[gs-w="4"] {
+  width: 16.667%;
+}
+.gs-24 > .grid-stack-item[gs-x="4"] {
+  left: 16.667%;
+}
+.gs-24 > .grid-stack-item[gs-w="5"] {
+  width: 20.833%;
+}
+.gs-24 > .grid-stack-item[gs-x="5"] {
+  left: 20.833%;
+}
+.gs-24 > .grid-stack-item[gs-w="6"] {
+  width: 25%;
+}
+.gs-24 > .grid-stack-item[gs-x="6"] {
+  left: 25%;
+}
+.gs-24 > .grid-stack-item[gs-w="7"] {
+  width: 29.167%;
+}
+.gs-24 > .grid-stack-item[gs-x="7"] {
+  left: 29.167%;
+}
+.gs-24 > .grid-stack-item[gs-w="8"] {
+  width: 33.333%;
+}
+.gs-24 > .grid-stack-item[gs-x="8"] {
+  left: 33.333%;
+}
+.gs-24 > .grid-stack-item[gs-w="9"] {
+  width: 37.5%;
+}
+.gs-24 > .grid-stack-item[gs-x="9"] {
+  left: 37.5%;
+}
+.gs-24 > .grid-stack-item[gs-w="10"] {
+  width: 41.667%;
+}
+.gs-24 > .grid-stack-item[gs-x="10"] {
+  left: 41.667%;
+}
+.gs-24 > .grid-stack-item[gs-w="11"] {
+  width: 45.833%;
+}
+.gs-24 > .grid-stack-item[gs-x="11"] {
+  left: 45.833%;
+}
+.gs-24 > .grid-stack-item[gs-w="12"] {
+  width: 50%;
+}
+.gs-24 > .grid-stack-item[gs-x="12"] {
+  left: 50%;
+}
+.gs-24 > .grid-stack-item[gs-w="13"] {
+  width: 54.167%;
+}
+.gs-24 > .grid-stack-item[gs-x="13"] {
+  left: 54.167%;
+}
+.gs-24 > .grid-stack-item[gs-w="14"] {
+  width: 58.333%;
+}
+.gs-24 > .grid-stack-item[gs-x="14"] {
+  left: 58.333%;
+}
+.gs-24 > .grid-stack-item[gs-w="15"] {
+  width: 62.5%;
+}
+.gs-24 > .grid-stack-item[gs-x="15"] {
+  left: 62.5%;
+}
+.gs-24 > .grid-stack-item[gs-w="16"] {
+  width: 66.667%;
+}
+.gs-24 > .grid-stack-item[gs-x="16"] {
+  left: 66.667%;
+}
+.gs-24 > .grid-stack-item[gs-w="17"] {
+  width: 70.833%;
+}
+.gs-24 > .grid-stack-item[gs-x="17"] {
+  left: 70.833%;
+}
+.gs-24 > .grid-stack-item[gs-w="18"] {
+  width: 75%;
+}
+.gs-24 > .grid-stack-item[gs-x="18"] {
+  left: 75%;
+}
+.gs-24 > .grid-stack-item[gs-w="19"] {
+  width: 79.167%;
+}
+.gs-24 > .grid-stack-item[gs-x="19"] {
+  left: 79.167%;
+}
+.gs-24 > .grid-stack-item[gs-w="20"] {
+  width: 83.333%;
+}
+.gs-24 > .grid-stack-item[gs-x="20"] {
+  left: 83.333%;
+}
+.gs-24 > .grid-stack-item[gs-w="21"] {
+  width: 87.5%;
+}
+.gs-24 > .grid-stack-item[gs-x="21"] {
+  left: 87.5%;
+}
+.gs-24 > .grid-stack-item[gs-w="22"] {
+  width: 91.667%;
+}
+.gs-24 > .grid-stack-item[gs-x="22"] {
+  left: 91.667%;
+}
+.gs-24 > .grid-stack-item[gs-w="23"] {
+  width: 95.833%;
+}
+.gs-24 > .grid-stack-item[gs-x="23"] {
+  left: 95.833%;
+}
+.gs-24 > .grid-stack-item[gs-w="24"] {
+  width: 100%;
 }
 </style>
