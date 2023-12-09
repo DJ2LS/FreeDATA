@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, reactive, nextTick, shallowRef } from "vue";
+import { ref, onMounted, nextTick, shallowRef, render, h } from "vue";
 import { Modal } from "bootstrap";
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -17,6 +17,7 @@ import active_broadcats from "./grid/grid_active_broadcasts.vue";
 import s_meter from "./grid/grid_s-meter.vue";
 import dbfs_meter from "./grid/grid_dbfs.vue";
 import grid_activities from "./grid/grid_activities.vue";
+import grid_button from "./grid/button.vue";
 import { stateDispatcher } from "../js/eventHandler";
 
 let count = ref(0);
@@ -33,21 +34,24 @@ class gridWidget {
   quickFill;
   //Auto place; true to add where ever it fits; false uses position information
   autoPlace;
-  constructor(component, size, text, quickfill, autoPlace) {
+  //Category to place in widget picker
+  category;
+  constructor(component, size, text, quickfill, autoPlace, category) {
     this.component2 = component;
     this.size = size;
     this.text = text;
     this.quickFill = quickfill;
     this.autoPlace = autoPlace;
+    this.category = category;
   }
 }
 const gridWidgets = [
   new gridWidget(
     active_heard_stations,
     { x: 0, y: 0, w: 16, h: 40 },
-    "Heard stations",
+    "Detailed heard stations list",
     true,
-    true,
+    true,"Activity"
   ),
   new gridWidget(
     active_stats,
@@ -55,50 +59,58 @@ const gridWidgets = [
     "Stats (waterfall, etc)",
     true,
     true,
+    "Stats"
   ),
   new gridWidget(
     active_audio_level,
     { x: 16, y: 0, w: 8, h: 26 },
+    "Audio main",
+    true,
+    true,
     "Audio",
-    true,
-    true,
   ),
   new gridWidget(
     active_rig_control,
     { x: 6, y: 40, w: 10, h: 30 },
-    "Rig control",
+    "Rig control main",
     true,
     true,
+    "Rig"
   ),
   new gridWidget(
     active_broadcats,
     { x: 6, y: 70, w: 10, h: 25 },
-    "Broadcats",
+    "Broadcats main",
     true,
     true,
+    "Broadcasts"
   ),
   new gridWidget(
     mini_heard_stations,
     { x: 1, y: 1, w: 6, h: 54 },
-    "Mini Heard stations",
+    "Mini heard stations list",
     false,
     true,
+    "Activity"
   ),
-  new gridWidget(s_meter, { x: 1, y: 1, w: 4, h: 8 }, "S-Meter", false, true),
+  new gridWidget(s_meter, { x: 1, y: 1, w: 4, h: 8 }, "S-Meter", false, true, "Rig"),
   new gridWidget(
     dbfs_meter,
     { x: 1, y: 1, w: 4, h: 8 },
     "Dbfs Meter",
     false,
     true,
+    "Audio"
   ),
   new gridWidget(
     grid_activities,
     { x: 0, y: 40, w: 6, h: 55 },
-    "Activities",
+    "Activities list",
     true,
     true,
+    "Activity",
   ),
+  
 ];
 onMounted(() => {
   grid = GridStack.init({
@@ -124,8 +136,45 @@ onMounted(() => {
   });
 
   grid.on("change", onChange);
-});
 
+  gridWidgets.forEach((gw) =>{
+    //Dynamically add widgets to widget menu
+    let dom = document.getElementById("otherBod");
+    switch (gw.category) {
+      case "Activity":
+        dom = document.getElementById("actBody");
+        break;
+        case "Stats":
+        dom = document.getElementById("statsBody");
+        break;
+        case "Audio":
+        dom = document.getElementById("audioBody");
+        break;
+        case "Rig":
+        dom = document.getElementById("rigBody");
+        break;
+        case "Broadcasts":
+        dom = document.getElementById("bcBody");
+        break;
+      default:
+        console.error("Uknown widget category:  " + gw.category);
+        break;
+    }
+    var index = gridWidgets.findIndex((w) => gw.text == w.text);
+    dom.insertAdjacentHTML("beforeend",`<div id="gridbtn-${index}""></div>`);
+    let dom2 = document.getElementById(`gridbtn-${index}`);
+    let vueComponent = h(grid_button,{btnText: gw.text,btnID:index});
+    render(vueComponent,dom2);
+  })
+  window.addEventListener(
+      "add-widget",
+      function (eventdata) {
+        let data = eventdata.detail;
+        addNewWidget2(gridWidgets[data]);
+      },
+      false,
+    );
+});
 function onChange(event, changeItems) {
   // update item position
   changeItems.forEach((item) => {
@@ -224,6 +273,7 @@ function quickfill() {
       <h5 class="offcanvas-title" id="offcanvasGridItemsLabel">
         Manage grid widgets
       </h5>
+      
       <button
         type="button"
         class="btn-close"
@@ -232,6 +282,9 @@ function quickfill() {
       ></button>
     </div>
     <div class="offcanvas-body">
+      <p>Grid widgets allow you to customize the display for your own usage.  Here you may add additional widgets to fit your needs.
+        You can move and resize the individual widgets!
+      </p>
       <div>
         <button
           class="btn btn-sm btn-outline-primary"
@@ -240,16 +293,11 @@ function quickfill() {
         >
           Fill grid with common widgets
         </button>
-        &nbsp;
-        <button
-          class="btn btn-sm btn-outline-warning"
-          type="button"
-          @click="clearAllItems"
-        >
-          Clear grid
-        </button>
+
+
       </div>
-      <div></div>
+      <hr>
+      <!-- Begin widget selector -->
       <div class="accordion" id="accordionExample">
         <!-- Heard Stations -->
         <div class="accordion-item">
@@ -262,7 +310,7 @@ function quickfill() {
               aria-expanded="true"
               aria-controls="collapseHeardStations"
             >
-              <strong>Heard Stations</strong>
+              <strong>Activity</strong>
             </button>
           </h2>
           <div
@@ -271,15 +319,8 @@ function quickfill() {
             aria-labelledby="headingHeardStations"
             data-bs-parent="#accordionExample"
           >
-            <div class="accordion-body">
-              <button
-                type="button"
-                @click="addNewWidget2(gridWidgets[0])"
-                class="btn btn-outline-secondary"
-                data-bs-dismiss="modal"
-              >
-                Heard station list
-              </button>
+            <div class="accordion-body" id="actBody">
+
             </div>
           </div>
         </div>
@@ -295,7 +336,7 @@ function quickfill() {
               aria-expanded="false"
               aria-controls="collapseActivities"
             >
-              <strong>Activities</strong>
+              <strong>Audio</strong>
             </button>
           </h2>
           <div
@@ -304,111 +345,11 @@ function quickfill() {
             aria-labelledby="headingActivities"
             data-bs-parent="#accordionExample"
           >
-            <div class="accordion-body">
-              <!-- Content for Activities -->
+            <div class="accordion-body" id="audioBody">
+              
             </div>
           </div>
         </div>
-
-        <!-- Radio Control -->
-        <div class="accordion-item">
-          <h2 class="accordion-header" id="headingRadioControl">
-            <button
-              class="accordion-button collapsed"
-              type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#collapseRadioControl"
-              aria-expanded="false"
-              aria-controls="collapseRadioControl"
-            >
-              <strong>Radio Control</strong>
-            </button>
-          </h2>
-          <div
-            id="collapseRadioControl"
-            class="accordion-collapse collapse"
-            aria-labelledby="headingRadioControl"
-            data-bs-parent="#accordionExample"
-          >
-            <div class="accordion-body">
-              <button
-                type="button"
-                @click="addNewWidget2(gridWidgets[3])"
-                class="btn btn-outline-secondary"
-                data-bs-dismiss="modal"
-              >
-                Rig Control
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Audio Control -->
-        <div class="accordion-item">
-          <h2 class="accordion-header" id="headingAudioControl">
-            <button
-              class="accordion-button collapsed"
-              type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#collapseAudioControl"
-              aria-expanded="false"
-              aria-controls="collapseAudioControl"
-            >
-              <strong>Audio Control</strong>
-            </button>
-          </h2>
-          <div
-            id="collapseAudioControl"
-            class="accordion-collapse collapse"
-            aria-labelledby="headingAudioControl"
-            data-bs-parent="#accordionExample"
-          >
-            <div class="accordion-body">
-              <button
-                type="button"
-                @click="addNewWidget2(gridWidgets[2])"
-                class="btn btn-outline-secondary"
-                data-bs-dismiss="modal"
-              >
-                Audio
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Statistics -->
-        <div class="accordion-item">
-          <h2 class="accordion-header" id="headingStatistics">
-            <button
-              class="accordion-button collapsed"
-              type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#collapseStatistics"
-              aria-expanded="false"
-              aria-controls="collapseStatistics"
-            >
-              <strong>Statistics</strong>
-            </button>
-          </h2>
-          <div
-            id="collapseStatistics"
-            class="accordion-collapse collapse"
-            aria-labelledby="headingStatistics"
-            data-bs-parent="#accordionExample"
-          >
-            <div class="accordion-body">
-              <button
-                type="button"
-                @click="addNewWidget2(gridWidgets[1])"
-                class="btn btn-outline-secondary"
-                data-bs-dismiss="modal"
-              >
-                Stats (waterfall, etc)
-              </button>
-            </div>
-          </div>
-        </div>
-
         <!-- Broadcasts -->
         <div class="accordion-item">
           <h2 class="accordion-header" id="headingBroadcasts">
@@ -429,19 +370,97 @@ function quickfill() {
             aria-labelledby="headingBroadcasts"
             data-bs-parent="#accordionExample"
           >
-            <div class="accordion-body">
-              <button
-                type="button"
-                @click="addNewWidget2(gridWidgets[4])"
-                class="btn btn-outline-secondary"
-                data-bs-dismiss="modal"
-              >
-                Broadcasts
-              </button>
+            <div class="accordion-body" id="bcBody">
+
+            </div>
+          </div>
+        </div>
+        <!-- Radio Control -->
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingRadioControl">
+            <button
+              class="accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapseRadioControl"
+              aria-expanded="false"
+              aria-controls="collapseRadioControl"
+            >
+              <strong>Radio Control</strong>
+            </button>
+          </h2>
+          <div
+            id="collapseRadioControl"
+            class="accordion-collapse collapse"
+            aria-labelledby="headingRadioControl"
+            data-bs-parent="#accordionExample"
+          >
+            <div class="accordion-body" id="rigBody">
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Audio Control -->
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingAudioControl">
+            <button
+              class="accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapseAudioControl"
+              aria-expanded="false"
+              aria-controls="collapseAudioControl"
+            >
+              <strong>Statistics</strong>
+            </button>
+          </h2>
+          <div
+            id="collapseAudioControl"
+            class="accordion-collapse collapse"
+            aria-labelledby="headingAudioControl"
+            data-bs-parent="#accordionExample"
+          >
+            <div class="accordion-body" id="statsBody">
+              
+            </div>
+          </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingStatistics">
+            <button
+              class="accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapseStatistics"
+              aria-expanded="false"
+              aria-controls="collapseStatistics"
+            >
+              <strong>Other</strong>
+            </button>
+          </h2>
+          <div
+            id="collapseStatistics"
+            class="accordion-collapse collapse"
+            aria-labelledby="headingStatistics"
+            data-bs-parent="#accordionExample"
+          >
+            <div class="accordion-body" id="otherBod">
+              
             </div>
           </div>
         </div>
       </div>
+      <hr>
+      <button
+          class="btn btn-sm btn-outline-warning"
+          type="button"
+          @click="clearAllItems"
+        >
+          Clear grid
+        </button>
     </div>
   </div>
 </template>
