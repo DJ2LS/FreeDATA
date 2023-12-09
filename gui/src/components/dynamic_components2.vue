@@ -81,7 +81,7 @@ const gridWidgets = [
   new gridWidget(
     active_broadcats,
     { x: 6, y: 70, w: 10, h: 25 },
-    "Broadcats main",
+    "Broadcasts main",
     true,
     true,
     "Broadcasts",
