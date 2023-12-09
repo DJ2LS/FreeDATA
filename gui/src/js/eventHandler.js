@@ -211,15 +211,15 @@ export function eventDispatcher(data) {
             5000,
           );
           return;
-          case "QRV":
-            //Qrv received
-            displayToast(
-              "success",
-              "bi-person-raised-hand",
-              "QRV from " + data["dxcallsign"],
-              5000,
-            );
-            return;
+        case "QRV":
+          //Qrv received
+          displayToast(
+            "success",
+            "bi-person-raised-hand",
+            "QRV from " + data["dxcallsign"],
+            5000,
+          );
+          return;
         case "PING":
           //Qrv received
           displayToast(
