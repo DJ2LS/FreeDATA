@@ -2,17 +2,43 @@ import { reactive, ref, watch } from "vue";
 
 import { getConfig, setConfig } from "../js/api";
 
+var nconf = require( "nconf");
+nconf.file({file: 'config/config.json'});
+
+
+// +++
+//GUI DEFAULT SETTINGS........
+//Set GUI defaults here, they will be used if not found in config/config.json
+//They should be an exact mirror (variable wise) of settingsStore.local
+//Nothing else should be needed aslong as components are using v-bind
+// +++
+nconf.defaults({
+  local: {
+  host: "127.0.0.1",
+  port: "5000",
+  enable_fft: true,
+  spectrum: "waterfall",
+  wf_theme: 2,
+  theme: "default_light",
+  high_graphics: true,
+  update_channel: "alpha",
+  enable_sys_notification: false,
+  }
+});
+
+nconf.required(['local:host','local:port']);
+
 export const settingsStore = reactive({
   local: {
     host: "127.0.0.1",
     port: "5000",
-    enable_fft: false,
+    enable_fft: true,
     spectrum: "waterfall",
-    wf_theme: 0,
+    wf_theme: 2,
     theme: "default_light",
     high_graphics: true,
     update_channel: "alpha",
-    enable_sys_notification: true,
+    enable_sys_notification: false,
   },
   remote: {
     AUDIO: {
@@ -73,6 +99,10 @@ export const settingsStore = reactive({
   },
 });
 
+//Save settings for GUI to config file
+settingsStore.local = nconf.get('local');
+saveSettingsToConfig();
+
 export function onChange() {
   setConfig(settingsStore.remote).then((conf) => {
     settingsStore.remote = conf;
@@ -86,6 +116,13 @@ export function getRemote() {
 }
 
 watch(settingsStore.local, (oldValue, newValue) => {
-  // TODO handle local file saving
-  const cenas = newValue;
+  //This function watches for changes, and triggers a save of local settings
+  saveSettingsToConfig();
 });
+
+function saveSettingsToConfig() {
+  nconf.set('local',settingsStore.local);
+  nconf.save();
+  console.log("Settings saved!");
+};
+
