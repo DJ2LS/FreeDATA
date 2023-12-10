@@ -2,9 +2,8 @@ import { reactive, ref, watch } from "vue";
 
 import { getConfig, setConfig } from "../js/api";
 
-var nconf = require( "nconf");
-nconf.file({file: 'config/config.json'});
-
+var nconf = require("nconf");
+nconf.file({ file: "config/config.json" });
 
 // +++
 //GUI DEFAULT SETTINGS........
@@ -14,19 +13,19 @@ nconf.file({file: 'config/config.json'});
 // +++
 nconf.defaults({
   local: {
-  host: "127.0.0.1",
-  port: "5000",
-  enable_fft: true,
-  spectrum: "waterfall",
-  wf_theme: 2,
-  theme: "default_light",
-  high_graphics: true,
-  update_channel: "alpha",
-  enable_sys_notification: false,
-  }
+    host: "127.0.0.1",
+    port: "5000",
+    enable_fft: true,
+    spectrum: "waterfall",
+    wf_theme: 2,
+    theme: "default_light",
+    high_graphics: true,
+    update_channel: "alpha",
+    enable_sys_notification: false,
+  },
 });
 
-nconf.required(['local:host','local:port']);
+nconf.required(["local:host", "local:port"]);
 
 export const settingsStore = reactive({
   local: {
@@ -100,7 +99,7 @@ export const settingsStore = reactive({
 });
 
 //Save settings for GUI to config file
-settingsStore.local = nconf.get('local');
+settingsStore.local = nconf.get("local");
 saveSettingsToConfig();
 
 export function onChange() {
@@ -121,8 +120,7 @@ watch(settingsStore.local, (oldValue, newValue) => {
 });
 
 function saveSettingsToConfig() {
-  nconf.set('local',settingsStore.local);
+  nconf.set("local", settingsStore.local);
   nconf.save();
   console.log("Settings saved!");
-};
-
+}

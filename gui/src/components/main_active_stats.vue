@@ -179,11 +179,6 @@ export default {
 
     // init waterfall
     localSpectrum = initWaterfall("waterfall-main");
-
-  
-
-    
-
   },
 };
 </script>

@@ -21,7 +21,7 @@ export function initWaterfall(id) {
 
 export function addDataToWaterfall(data) {
   data = JSON.parse(data);
-  spectrums.forEach(element => {
+  spectrums.forEach((element) => {
     //console.log(element);
     element.addData(data);
   });
@@ -32,13 +32,11 @@ export function addDataToWaterfall(data) {
  * @param {number} index colormap index to use
  */
 export function setColormap() {
-  
   let index = settings.local.wf_theme;
   if (isNaN(index)) index = 0;
-  console.log("Setting waterfall colormap to " + index)
-  spectrums.forEach(element => {
+  console.log("Setting waterfall colormap to " + index);
+  spectrums.forEach((element) => {
     //console.log(element);
     element.setColorMap(index);
   });
-  
 }
