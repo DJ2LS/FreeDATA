@@ -1,7 +1,8 @@
 <script setup lang="ts">
 // @ts-nocheck
 // reason for no check is, that we have some mixing of typescript and chart js which seems to be not to be fixed that easy
-import { initWaterfall } from "../../js/waterfallHandler.js";
+import {ref, computed, onMounted } from "vue";
+import { initWaterfall,setColormap } from "../../js/waterfallHandler.js";
 import { setActivePinia } from "pinia";
 import pinia from "../../store/index";
 setActivePinia(pinia);
@@ -22,21 +23,21 @@ import {
   Legend,
 } from "chart.js";
 import { Line, Scatter } from "vue-chartjs";
-import { computed, onMounted } from "vue";
 
-function selectStatsControl(obj) {
-  switch (obj.delegateTarget.id) {
-    case "list-waterfall-list":
-      settings.local.spectrum = "waterfall";
+const localSpectrumView = ref("waterfall");
+function selectStatsControl(item) {
+  switch (item) {
+    case "wf":
+      localSpectrumView.value = "waterfall";
       break;
-    case "list-scatter-list":
-      settings.local.spectrum = "scatter";
+    case "scatter":
+      localSpectrumView.value = "scatter";
       break;
-    case "list-chart-list":
-      settings.local.spectrum = "chart";
+    case "chart":
+      localSpectrumView.value = "chart";
       break;
     default:
-      settings.local.spectrum = "waterfall";
+      localSpectrumView.value = "waterfall";
   }
   //saveSettingsToFile();
 }
@@ -181,12 +182,13 @@ onMounted(() => {
     },
     false,
   );
+  setColormap(settings.local.wf_theme.valueOf);
 });
 </script>
 
 <template>
   <div class="card h-100">
-    <div class="card-header">
+    <div class="card-header p-1">
       <div class="btn-group" role="group">
         <div
           class="list-group bg-body-tertiary list-group-horizontal"
@@ -195,39 +197,33 @@ onMounted(() => {
         >
           <a
             class="py-0 list-group-item list-group-item-dark list-group-item-action"
-            id="list-waterfall-list"
             data-bs-toggle="list"
-            href="#list-waterfall"
             role="tab"
             aria-controls="list-waterfall"
             v-bind:class="{
-              active: settings.local.spectrum === 'waterfall',
+              active: localSpectrumView == 'waterfall',
             }"
-            @click="selectStatsControl($event)"
+            @click="selectStatsControl('wf')"
             ><strong><i class="bi bi-water"></i></strong
           ></a>
           <a
             class="py-0 list-group-item list-group-item-dark list-group-item-action"
-            id="list-scatter-list"
             data-bs-toggle="list"
-            href="#list-scatter"
             role="tab"
             aria-controls="list-scatter"
             v-bind:class="{
-              active: settings.local.spectrum === 'scatter',
+              active: localSpectrumView == 'scatter',
             }"
-            @click="selectStatsControl($event)"
+            @click="selectStatsControl('scatter')"
             ><strong><i class="bi bi-border-outer"></i></strong
           ></a>
           <a
             class="py-0 list-group-item list-group-item-dark list-group-item-action"
-            id="list-chart-list"
             data-bs-toggle="list"
-            href="#list-chart"
             role="tab"
             aria-controls="list-chart"
-            v-bind:class="{ active: settings.local.spectrum === 'chart' }"
-            @click="selectStatsControl($event)"
+            v-bind:class="{ active: localSpectrumView == 'chart' }"
+            @click="selectStatsControl('chart')"
             ><strong><i class="bi bi-graph-up-arrow"></i></strong
           ></a>
         </div>
@@ -330,34 +326,31 @@ onMounted(() => {
         </button>
       </div>
     </div>
-    <div class="card-body w-100 h-100 overflow-auto">
+    <div class="card-body w-100 h-100 overflow-auto p-2">
       <div class="tab-content h-100 w-100" id="nav-stats-tabContent">
         <div
           class="tab-pane fade h-100 w-100"
           v-bind:class="{
-            'show active': settings.local.spectrum === 'waterfall',
+            'show active': localSpectrumView == 'waterfall',
           }"
-          id="list-waterfall"
           role="stats_tabpanel"
           aria-labelledby="list-waterfall-list"
         >
           <canvas id="waterfall-grid" class="force-gpu"></canvas>
         </div>
         <div
-          class="tab-pane fade"
+          class="tab-pane fade h-100 w-100"
           v-bind:class="{
-            'show active': settings.local.spectrum === 'scatter',
+            'show active': localSpectrumView == 'scatter',
           }"
-          id="list-scatter"
           role="tabpanel"
           aria-labelledby="list-scatter-list"
         >
           <Scatter :data="scatterChartData" :options="scatterChartOptions" />
         </div>
         <div
-          class="tab-pane fade"
-          v-bind:class="{ 'show active': settings.local.spectrum === 'chart' }"
-          id="list-chart"
+          class="tab-pane fade h-100 w-100"
+          v-bind:class="{ 'show active': localSpectrumView == 'chart' }"
           role="tabpanel"
           aria-labelledby="list-chart-list"
         >

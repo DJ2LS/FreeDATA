@@ -27,7 +27,7 @@ var dxcallPing = ref("");
 </script>
 <template>
   <div class="card h-100">
-    <div class="card-header">
+    <div class="card-header p-0">
       <div>
         <div>
             <i class="bi bi-broadcast" style="font-size: 1.2rem"></i>&nbsp;
@@ -35,7 +35,7 @@ var dxcallPing = ref("");
         </div>
       </div>
     </div>
-    <div class="card-body overflow-auto">
+    <div class="card-body overflow-auto p-0">
       <div>
         <div >
           <div class="input-group input-group-sm mb-0">

@@ -38,12 +38,12 @@ function getMaidenheadDistance(dxGrid) {
 <template>
   <div class="card h-100">
     <!--325px-->
-    <div class="card-header">
-      <i class="bi bi-list-columns-reverse" style="font-size: 1rem"></i>&nbsp;
+    <div class="card-header p-0">
+      <i class="bi bi-list-columns-reverse" style="font-size: 1.2rem"></i>&nbsp;
       <strong>Heard stations</strong>
     </div>
 
-    <div class="card-body overflow-auto">
+    <div class="card-body overflow-auto p-0">
       <div class="table-responsive">
         <!-- START OF TABLE FOR HEARD STATIONS -->
         <table class="table table-sm table-striped" id="tblHeardStationList">

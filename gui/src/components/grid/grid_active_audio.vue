@@ -14,7 +14,7 @@ function startStopRecordAudio() {
 </script>
 <template>
   <div class="card w-100 h-100">
-    <div class="card-header">
+    <div class="card-header p-0">
       <div class="dropdown">
         <button
           class="btn btn-sm btn-outline-secondary dropdown-toggle"
@@ -42,7 +42,7 @@ function startStopRecordAudio() {
         </ul>
       </div>
     </div>
-    <div class="card-body">
+    <div class="card-body pt-0 pb-0 ">
       <div class="container-wide">
         <div class="row">
           <div class="col-lg-6">
