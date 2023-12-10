@@ -60,28 +60,40 @@ export function sortByPropertyDesc(property) {
  * @param {string} callsign callsign to check
  * @returns true or false if callsign appears to be valid with an SSID
  */
-export function validateCallsignWithSSID(callsign :string) {
+export function validateCallsignWithSSID(callsign: string) {
   var patt = new RegExp("^[A-Z,a-z]+[0-9][A-Z,a-z]*-(1[0-5]|[0-9])$");
-  
-  if (callsign === undefined || callsign==="" || patt.test(callsign) === false)
-  {
-    console.error("Call sign given is not in correct format or missing; callsign passed is:  " + callsign);
+
+  if (
+    callsign === undefined ||
+    callsign === "" ||
+    patt.test(callsign) === false
+  ) {
+    console.error(
+      "Call sign given is not in correct format or missing; callsign passed is:  " +
+        callsign,
+    );
     return false;
-  } 
+  }
   return true;
-};
+}
 /**
  * Validate/check if a call sign has an SSID
  * @param {string} callsign callsign to check
  * @returns true or false if callsign appears to be valid without an SSID
  */
-export function validateCallsignWithoutSSID(callsign :string) {
+export function validateCallsignWithoutSSID(callsign: string) {
   var patt = new RegExp("^[A-Za-z]+[0-9][A-Za-z]+$");
-  
-  if (callsign === undefined || callsign==="" || patt.test(callsign) === false)
-  {
-    console.error("Call sign given is not in correct format or missing; callsign passed is:  " + callsign);
+
+  if (
+    callsign === undefined ||
+    callsign === "" ||
+    patt.test(callsign) === false
+  ) {
+    console.error(
+      "Call sign given is not in correct format or missing; callsign passed is:  " +
+        callsign,
+    );
     return false;
-  } 
+  }
   return true;
-};
+}

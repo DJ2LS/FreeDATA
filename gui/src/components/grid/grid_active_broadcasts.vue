@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import {ref} from "vue";
+import { ref } from "vue";
 import { setActivePinia } from "pinia";
 import pinia from "../../store/index";
 setActivePinia(pinia);
 
-import { settingsStore as settings} from "../../store/settingsStore.js";
+import { settingsStore as settings } from "../../store/settingsStore.js";
 
 import { useStateStore } from "../../store/stateStore.js";
 const state = useStateStore(pinia);
@@ -18,8 +18,7 @@ function transmitPing() {
 function startStopBeacon() {
   if (state.beacon_state === true) {
     setModemBeacon(false);
-  }
-  else {
+  } else {
     setModemBeacon(true);
   }
 }
@@ -30,14 +29,14 @@ var dxcallPing = ref("");
     <div class="card-header p-0">
       <div>
         <div>
-            <i class="bi bi-broadcast" style="font-size: 1.2rem"></i>&nbsp;
-            <strong>Broadcasts</strong>
+          <i class="bi bi-broadcast" style="font-size: 1.2rem"></i>&nbsp;
+          <strong>Broadcasts</strong>
         </div>
       </div>
     </div>
     <div class="card-body overflow-auto p-0">
       <div>
-        <div >
+        <div>
           <div class="input-group input-group-sm mb-0">
             <input
               type="text"

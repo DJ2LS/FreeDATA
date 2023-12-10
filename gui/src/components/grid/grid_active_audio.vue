@@ -42,7 +42,7 @@ function startStopRecordAudio() {
         </ul>
       </div>
     </div>
-    <div class="card-body pt-0 pb-0 ">
+    <div class="card-body pt-0 pb-0">
       <div class="container-wide">
         <div class="row">
           <div class="col-lg-6">

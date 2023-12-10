@@ -1,8 +1,8 @@
 <script setup lang="ts">
 // @ts-nocheck
 // reason for no check is, that we have some mixing of typescript and chart js which seems to be not to be fixed that easy
-import {ref, computed, onMounted } from "vue";
-import { initWaterfall,setColormap } from "../../js/waterfallHandler.js";
+import { ref, computed, onMounted } from "vue";
+import { initWaterfall, setColormap } from "../../js/waterfallHandler.js";
 import { setActivePinia } from "pinia";
 import pinia from "../../store/index";
 setActivePinia(pinia);
