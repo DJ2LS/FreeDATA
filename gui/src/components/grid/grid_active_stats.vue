@@ -187,7 +187,7 @@ onMounted(() => {
     },
     false,
   );
-  setColormap(settings.local.wf_theme.valueOf);
+
   });
   
   

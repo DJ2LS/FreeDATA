@@ -9,7 +9,7 @@ import { settingsStore as settings } from "../store/settingsStore.js";
 
 function saveSettings() {
   //saveSettingsToFile();
-  setColormap(settings.local.wf_theme);
+  setColormap();
 }
 </script>
 <template>
