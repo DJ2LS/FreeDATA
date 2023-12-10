@@ -169,7 +169,7 @@ const scatterChartData = computed(() => ({
 </script>
 
 <script lang="ts">
-import { initWaterfall,setColormap } from "../js/waterfallHandler.js";
+import { initWaterfall, setColormap } from "../js/waterfallHandler.js";
 var localSpectrum;
 export default {
   mounted() {
@@ -186,11 +186,7 @@ export default {
       },
       false,
     );
-      setColormap(settings.local.wf_theme.valueOf);
-  
-
-    
-
+    setColormap(settings.local.wf_theme.valueOf);
   },
 };
 </script>
