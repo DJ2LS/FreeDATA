@@ -1,4 +1,8 @@
 import { settingsStore as settings } from "../store/settingsStore.js";
+import {
+  validateCallsignWithSSID,
+  validateCallsignWithoutSSID,
+} from "./freedata";
 
 function buildURL(params, endpoint) {
   const url = "http://" + params.host + ":" + params.port + endpoint;
@@ -72,7 +76,16 @@ export function sendModemCQ() {
 }
 
 export function sendModemPing(dxcall) {
-  return apiPost("/modem/ping_ping", { dxcall: dxcall });
+  if (
+    validateCallsignWithSSID(dxcall) === false &&
+    validateCallsignWithoutSSID(dxcall) === true
+  ) {
+    dxcall = String(dxcall).toUpperCase().trim();
+    dxcall = dxcall + "-0";
+  }
+  dxcall = String(dxcall).toUpperCase().trim();
+  if (validateCallsignWithSSID(dxcall))
+    return apiPost("/modem/ping_ping", { dxcall: dxcall });
 }
 
 export function sendModemARQRaw(mycall, dxcall, data, uuid) {

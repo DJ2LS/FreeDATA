@@ -1,10 +1,10 @@
 <script setup lang="ts">
-
+import { ref } from "vue";
 import { setActivePinia } from "pinia";
 import pinia from "../../store/index";
 setActivePinia(pinia);
 
-import { settingsStore as settings} from "../../store/settingsStore.js";
+import { settingsStore as settings } from "../../store/settingsStore.js";
 
 import { useStateStore } from "../../store/stateStore.js";
 const state = useStateStore(pinia);
@@ -12,31 +12,31 @@ const state = useStateStore(pinia);
 import { sendModemCQ, sendModemPing, setModemBeacon } from "../../js/api.js";
 
 function transmitPing() {
-  sendModemPing((<HTMLInputElement>document.getElementById("dxCall")).value);
+  sendModemPing(dxcallPing.value.toUpperCase());
 }
 
 function startStopBeacon() {
   if (state.beacon_state === true) {
     setModemBeacon(false);
-  }
-  else {
+  } else {
     setModemBeacon(true);
   }
 }
+var dxcallPing = ref("");
 </script>
 <template>
   <div class="card h-100">
-    <div class="card-header">
+    <div class="card-header p-0">
       <div>
         <div>
-            <i class="bi bi-broadcast" style="font-size: 1.2rem"></i>&nbsp;
-            <strong>Broadcasts</strong>
+          <i class="bi bi-broadcast" style="font-size: 1.2rem"></i>&nbsp;
+          <strong>Broadcasts</strong>
         </div>
       </div>
     </div>
-    <div class="card-body overflow-auto">
+    <div class="card-body overflow-auto p-0">
       <div>
-        <div >
+        <div>
           <div class="input-group input-group-sm mb-0">
             <input
               type="text"
@@ -44,10 +44,10 @@ function startStopBeacon() {
               style="max-width: 6rem; text-transform: uppercase"
               placeholder="DXcall"
               pattern="[A-Z]*"
-              id="dxCall"
               maxlength="11"
               aria-label="Input group"
               aria-describedby="btnGroupAddon"
+              v-model="dxcallPing"
             />
             <button
               class="btn btn-sm btn-outline-secondary ms-1"

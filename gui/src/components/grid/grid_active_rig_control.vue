@@ -26,12 +26,12 @@ function set_hamlib_rf_level() {
 
 <template>
   <div class="card h-100">
-    <div class="card-header">
+    <div class="card-header p-0">
       <i class="bi bi-house-door" style="font-size: 1.2rem"></i>&nbsp;
       <strong>Radio control</strong>
     </div>
 
-    <div class="card-body overflow-auto">
+    <div class="card-body overflow-auto p-0">
       <div class="input-group input-group-sm bottom-0 m-0">
         <div class="me-2">
           <div class="input-group input-group-sm">
