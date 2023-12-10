@@ -111,8 +111,9 @@ class ARQSessionIRS(arq_session.ARQSession):
         rx_n_frames_per_burst = data_frame["n_frames_per_burst"]
         session_id = data_frame["session_id"]
 
-        self.init_rx_buffer()
-        self.append_data_to_burst_buffer(data)
+        self.init_rx_buffer(rx_n_frames_per_burst)
+
+        self.append_data_to_burst_buffer(data, rx_n_frame_of_burst)
 
         # Check if we received all frames in the burst by checking if burst buffer has no more "Nones"
         if None not in self.arq_rx_burst_buffer:
@@ -122,10 +123,10 @@ class ARQSessionIRS(arq_session.ARQSession):
             # check if we already received the burst in a transmission before
             # use case: ACK packet from IRS to ISS got lost
             if self.arq_rx_frame_buffer.endswith(burst_data):
-                self.log.info("[Modem] ARQ | RX | Burst already received - sending ACK again")
+                self.log("[Modem] ARQ | RX | Burst already received - sending ACK again")
             else:
                 # add burst to our data buffer
-                self.add_burst_to_buffer(burst_data)
+                self.add_burst_to_buffer(burst_data, rx_n_frames_per_burst)
                 
                 # Check if we didn't receive a BOF and EOF yet to avoid sending
                 # ack frames if we already received all data
@@ -135,7 +136,7 @@ class ARQSessionIRS(arq_session.ARQSession):
                     
         else:
             # burst is missing some data...can happen for N > 1 frames per burst in case of packet loss
-            self.log.warning("[Modem] data_handler: missing data in burst buffer!",frame=rx_n_frame_of_burst + 1, frames=rx_n_frames_per_burst)
+            self.log("[Modem] data_handler: missing data in burst buffer!",frame=rx_n_frame_of_burst + 1, frames=rx_n_frames_per_burst)
 
         # check if we have a BOF ( Begin Of Frame ) or EOF (End Of Frame) flag in our data
         bof_position, eof_position = self.search_for_bof_eof_flag()
@@ -157,9 +158,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             
         else:
             print("something bad happened...")
-        
-        
-        
+
     # --------------------------------------------------------------------    
     # THIS AREA HOLDS RX CHAIN FUNCTIONS IN CHRONOLOGICAL PROCESSING ORDER
 
@@ -170,9 +169,12 @@ class ARQSessionIRS(arq_session.ARQSession):
         if len(self.arq_rx_burst_buffer) != rx_n_frames_per_burst:
             self.arq_rx_burst_buffer = [None] * rx_n_frames_per_burst
 
-    def append_data_to_burst_buffer(self, data):
+    def append_data_to_burst_buffer(self, data, rx_n_frame_of_burst):
+        arq_burst_header_size = 3
+        rx_n_frame_of_burst -= 1 # 1 == buffer position 0
+
         # Append data to rx burst buffer
-        self.arq_rx_burst_buffer[self.rx_n_frame_of_burst] = data_in[self.arq_burst_header_size:]  # type: ignore
+        self.arq_rx_burst_buffer[rx_n_frame_of_burst] = data[arq_burst_header_size:]  # type: ignore
 
     def put_burst_together(self):
         # then iterate through burst buffer and stick the burst together
@@ -185,11 +187,12 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.arq_rx_burst_buffer = []
         return burst_data
         
-    def add_burst_to_buffer(self, burst_data):
+    def add_burst_to_buffer(self, burst_data, rx_n_frames_per_burst):
         # Here we are going to search for our data in the last received bytes.
         # This reduces the chance we will lose the entire frame in the case of signalling frame loss
+        arq_burst_minimum_payload = 56 - 3 # TODO We shouldnt hardcode this or better: finding another way for this
 
-        search_area = self.arq_burst_last_data_size * self.rx_n_frames_per_burst
+        search_area = self.arq_burst_last_data_size * rx_n_frames_per_burst
         search_position = len(self.arq_rx_frame_buffer) - search_area
         # if search position < 0, then search position = 0
         search_position = max(0, search_position)
@@ -201,20 +204,20 @@ class ARQSessionIRS(arq_session.ARQSession):
         # use case: receive data, which already contains received data
         # while the payload of data received before is shorter than actual payload
         get_position = self.arq_rx_frame_buffer[search_position:].rfind(
-            burst_data[:self.arq_burst_minimum_payload]
+            burst_data[:arq_burst_minimum_payload]
         )
         # if we find data, replace it at this position with the new data and strip it
         if get_position >= 0:
             self.arq_rx_frame_buffer = self.arq_rx_frame_buffer[
                                        : search_position + get_position
                                        ]
-            self.log.warning(
+            self.log(
                 "[Modem] ARQ | RX | replacing existing buffer data",
                 area=search_area,
                 pos=get_position,
             )
         else:
-            self.log.debug("[Modem] ARQ | RX | appending data to buffer")
+            self.log("[Modem] ARQ | RX | appending data to buffer")
 
         # append data to our data store
         self.arq_rx_frame_buffer += burst_data
@@ -225,10 +228,15 @@ class ARQSessionIRS(arq_session.ARQSession):
     def check_if_last_data_received(self, frame):
         # Check if we didn't receive a BOF and EOF yet to avoid sending
         # ack frames if we already received all data
+        #return bool(
+        #    self.rx_frame_bof_received
+        #    or self.rx_frame_eof_received
+        #    or frame.find(self.data_frame_eof) >= 0
+        #)
+        # TODO WIP - I changed this, maybe we can get rid of some class wide variables..
         return bool(
-            self.rx_frame_bof_received
-            or self.rx_frame_eof_received
-            or frame.find(self.data_frame_eof) >= 0
+            frame.find(self.data_frame_bof) >= 0
+            and frame.find(self.data_frame_eof) >= 0
         )
     
     def acknowledge_burst(self):
