@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // @ts-nocheck
 // reason for no check is, that we have some mixing of typescript and chart js which seems to be not to be fixed that easy
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, nextTick } from "vue";
 import { initWaterfall, setColormap } from "../../js/waterfallHandler.js";
 import { setActivePinia } from "pinia";
 import pinia from "../../store/index";
@@ -168,14 +168,19 @@ const scatterChartData = computed(() => ({
   ],
 }));
 var localSpectrum;
+//Define and generate a unique ID for canvas
+const localSpectrumID = ref("");
+localSpectrumID.value = "gridwfid-" + (Math.random() + 1).toString(36).substring(7);
 onMounted(() => {
   // This code will be executed after the component is mounted to the DOM
   // You can access DOM elements or perform other initialization here
   //const myElement = this.$refs.waterfall; // Access the DOM element with ref
 
   // init waterfall
-  localSpectrum = initWaterfall("waterfall-grid");
-  window.addEventListener(
+  localSpectrum = initWaterfall(localSpectrumID.value);
+  nextTick(() => {
+
+    window.addEventListener(
     "wf-data-avail",
     function (evt) {
       localSpectrum.addData(evt.detail);
@@ -183,6 +188,11 @@ onMounted(() => {
     false,
   );
   setColormap(settings.local.wf_theme.valueOf);
+  });
+  
+  
+
+  
 });
 </script>
 
@@ -336,7 +346,7 @@ onMounted(() => {
           role="stats_tabpanel"
           aria-labelledby="list-waterfall-list"
         >
-          <canvas id="waterfall-grid" class="force-gpu"></canvas>
+          <canvas v-bind:id="localSpectrumID" class="force-gpu"></canvas>
         </div>
         <div
           class="tab-pane fade h-100 w-100"
