@@ -24,6 +24,13 @@ class ARQSession():
 
         self.id = None
 
+        # 3 bytes for the BOF Beginning of File indicator in a data frame
+        self.data_frame_bof = b"BOF"
+        # 3 bytes for the EOF End of File indicator in a data frame
+        self.data_frame_eof = b"EOF"
+
+
+
     def get_mode_by_speed_level(self, speed_level):
         return self.MODE_BY_SPEED[speed_level]
 
