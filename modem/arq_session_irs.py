@@ -73,11 +73,9 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.thread.start()
 
 
-    def on_data_received(self, data_frame):
+    def on_data_received(self):
         if self.state != self.STATE_WAITING_DATA:
             raise RuntimeError(f"ARQ Session: Received data while in state {self.state}, expected {self.STATE_WAITING_DATA}")
-
-        self.rx_data_chain(data_frame)
         self.event_data_received.set()
 
 
@@ -103,9 +101,6 @@ class ARQSessionIRS(arq_session.ARQSession):
         Function for processing received frames in correct order
         Args:
             data_frame: {'frame_type': 'BURST_01', 'frame_type_int': 1, 'n_frames_per_burst': 1, 'session_id': 118, 'data': b'Hello world!'}
-
-
-
         Returns:
 
         """
@@ -122,15 +117,15 @@ class ARQSessionIRS(arq_session.ARQSession):
         # Check if we received all frames in the burst by checking if burst buffer has no more "Nones"
         if None not in self.arq_rx_burst_buffer:
             # Stick burst together in case we received multiple frames per burst
-            burst_data = self.stick_burst_together()
+            burst_data = self.put_burst_together()
             
             # check if we already received the burst in a transmission before
             # use case: ACK packet from IRS to ISS got lost
             if self.arq_rx_frame_buffer.endswith(burst_data):
-                self.log.info("[Modem] ARQ | RX | Frame already received - sending ACK again")
+                self.log.info("[Modem] ARQ | RX | Burst already received - sending ACK again")
             else:
                 # add burst to our data buffer
-                self.proces_burst(burst_data)
+                self.add_burst_to_buffer(burst_data)
                 
                 # Check if we didn't receive a BOF and EOF yet to avoid sending
                 # ack frames if we already received all data
@@ -141,8 +136,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         else:
             # burst is missing some data...can happen for N > 1 frames per burst in case of packet loss
             self.log.warning("[Modem] data_handler: missing data in burst buffer!",frame=rx_n_frame_of_burst + 1, frames=rx_n_frames_per_burst)
-        
-            
+
         # check if we have a BOF ( Begin Of Frame ) or EOF (End Of Frame) flag in our data
         bof_position, eof_position = self.search_for_bof_eof_flag()
         if bof_position >= 0:
@@ -180,7 +174,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         # Append data to rx burst buffer
         self.arq_rx_burst_buffer[self.rx_n_frame_of_burst] = data_in[self.arq_burst_header_size:]  # type: ignore
 
-    def stick_burst_together(self):
+    def put_burst_together(self):
         # then iterate through burst buffer and stick the burst together
         # the temp burst buffer is needed for checking, if we already received data
         burst_data = b""
@@ -191,16 +185,11 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.arq_rx_burst_buffer = []
         return burst_data
         
-    def process_burst(self, burst_data):
+    def add_burst_to_buffer(self, burst_data):
         # Here we are going to search for our data in the last received bytes.
         # This reduces the chance we will lose the entire frame in the case of signalling frame loss
 
-        # self.arq_rx_frame_buffer --> existing data
-        # temp_burst_buffer --> new data
-        # search_area --> area where we want to search
-
         search_area = self.arq_burst_last_data_size * self.rx_n_frames_per_burst
-
         search_position = len(self.arq_rx_frame_buffer) - search_area
         # if search position < 0, then search position = 0
         search_position = max(0, search_position)
@@ -310,12 +299,10 @@ class ARQSessionIRS(arq_session.ARQSession):
         
         return data, checksum, size, compression_factor
 
-
     def calculate_checksums(self, data, checksum_expected):
         # TODO WIP, we need to fix this
         # lets do a crc calculation for our recevied data
         checksum_received = helpers.get_crc_32(data)
-
 
         # check if hmac signing enabled
         if self.enable_hmac:

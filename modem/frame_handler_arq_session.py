@@ -28,4 +28,5 @@ class ARQFrameHandler(frame_handler.FrameHandler):
         if frame['frame_type_int'] in [FR.BURST_01.value, FR.BURST_02.value, FR.BURST_03.value, FR.BURST_04.value, FR.BURST_05.value]:
             print("received data frame....")
             irs_session:ARQSessionIRS = self.states.get_arq_irs_session(frame['session_id'])
-            irs_session.on_data_received(frame)
+            irs_session.on_data_received()
+            irs_session.rx_data_chain(frame)
