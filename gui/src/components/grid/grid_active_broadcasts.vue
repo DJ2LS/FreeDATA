@@ -1,5 +1,5 @@
 <script setup lang="ts">
-
+import {ref} from "vue";
 import { setActivePinia } from "pinia";
 import pinia from "../../store/index";
 setActivePinia(pinia);
@@ -12,7 +12,7 @@ const state = useStateStore(pinia);
 import { sendModemCQ, sendModemPing, setModemBeacon } from "../../js/api.js";
 
 function transmitPing() {
-  sendModemPing((<HTMLInputElement>document.getElementById("dxCall")).value);
+  sendModemPing(dxcallPing.value.toUpperCase());
 }
 
 function startStopBeacon() {
@@ -23,6 +23,7 @@ function startStopBeacon() {
     setModemBeacon(true);
   }
 }
+var dxcallPing = ref("");
 </script>
 <template>
   <div class="card h-100">
@@ -44,10 +45,10 @@ function startStopBeacon() {
               style="max-width: 6rem; text-transform: uppercase"
               placeholder="DXcall"
               pattern="[A-Z]*"
-              id="dxCall"
               maxlength="11"
               aria-label="Input group"
               aria-describedby="btnGroupAddon"
+              v-model="dxcallPing"
             />
             <button
               class="btn btn-sm btn-outline-secondary ms-1"
