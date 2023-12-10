@@ -172,6 +172,12 @@ onMounted(() => {
     let dom2 = document.getElementById(`gridbtn-${index}`);
     let vueComponent = h(grid_button,{btnText: gw.text,btnID:index});
     render(vueComponent,dom2);
+
+    if ((items.value.length == 0))
+    {
+      //Prepolute grid if there are no items
+      quickfill();
+    }
   })
 
   window.addEventListener(
