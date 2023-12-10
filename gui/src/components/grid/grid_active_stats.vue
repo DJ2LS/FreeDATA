@@ -170,7 +170,8 @@ const scatterChartData = computed(() => ({
 var localSpectrum;
 //Define and generate a unique ID for canvas
 const localSpectrumID = ref("");
-localSpectrumID.value = "gridwfid-" + (Math.random() + 1).toString(36).substring(7);
+localSpectrumID.value =
+  "gridwfid-" + (Math.random() + 1).toString(36).substring(7);
 onMounted(() => {
   // This code will be executed after the component is mounted to the DOM
   // You can access DOM elements or perform other initialization here
@@ -178,21 +179,6 @@ onMounted(() => {
 
   // init waterfall
   localSpectrum = initWaterfall(localSpectrumID.value);
-  nextTick(() => {
-
-    window.addEventListener(
-    "wf-data-avail",
-    function (evt) {
-      localSpectrum.addData(evt.detail);
-    },
-    false,
-  );
-
-  });
-  
-  
-
-  
 });
 </script>
 
