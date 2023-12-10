@@ -7,7 +7,7 @@ setActivePinia(pinia);
 import { settingsStore as settings } from "../store/settingsStore.js";
 
 var spectrum = new Object();
-
+var spectrums = [];
 export function initWaterfall(id) {
   spectrum = new Spectrum(id, {
     spectrumPercent: 0,
@@ -15,19 +15,30 @@ export function initWaterfall(id) {
     wf_size: 1024,
   });
   spectrum.setColorMap(settings.local.wf_theme);
+  spectrums.push(spectrum);
   return spectrum;
 }
 
 export function addDataToWaterfall(data) {
   data = JSON.parse(data);
-  window.dispatchEvent(new CustomEvent("wf-data-avail", { detail: data }));
+  spectrums.forEach(element => {
+    //console.log(element);
+    element.addData(data);
+  });
+  //window.dispatchEvent(new CustomEvent("wf-data-avail", {bubbles:true, detail: data }));
 }
 /**
  * Setwaterfall colormap array by index
  * @param {number} index colormap index to use
  */
-export function setColormap(index) {
+export function setColormap() {
+  
+  let index = settings.local.wf_theme;
   if (isNaN(index)) index = 0;
-  //console.log("Setting waterfall colormap to " + index)
-  spectrum.setColorMap(index);
+  console.log("Setting waterfall colormap to " + index)
+  spectrums.forEach(element => {
+    //console.log(element);
+    element.setColorMap(index);
+  });
+  
 }
