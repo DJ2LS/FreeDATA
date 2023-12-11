@@ -483,10 +483,10 @@ function quickfill() {
 }
 .grid-stack-floaty-btn {
   position: absolute;
-  right: 0px;
+  right: 2px;
   z-index: 1000;
   float: right;
-  top: 6px;
+  top: 4px;
 }
 .grid-container {
   overflow-y: auto;
