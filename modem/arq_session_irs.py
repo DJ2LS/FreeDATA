@@ -15,10 +15,14 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     TIMEOUT_DATA = 6
 
-    def __init__(self, config: dict, tx_frame_queue: queue.Queue, dxcall: str, session_id: int):
+    def __init__(self, config: dict, tx_frame_queue: queue.Queue, dxcall: str, session_id: int, is_wide_band: bool):
         super().__init__(config, tx_frame_queue, dxcall)
 
         self.id = session_id
+        self.is_wide_band = is_wide_band
+        self.speed = 0
+        self.version = 1
+        self.snr = 0
 
         self.state = self.STATE_CONN_REQ_RECEIVED
 
@@ -40,9 +44,6 @@ class ARQSessionIRS(arq_session.ARQSession):
     def generate_id(self):
         pass
 
-    def log(self, message):
-        pass
-
     def set_state(self, state):
         self.log(f"ARQ Session IRS {self.id} state {self.state}")
         self.state = state
@@ -51,33 +52,45 @@ class ARQSessionIRS(arq_session.ARQSession):
         pass
 
     def runner(self):
-        isWideband = True
-        speed = 1
-        version = 1
-
-        ack_frame = self.frame_factory.build_arq_session_connect_ack(isWideband, self.id, speed, version)
-        self.transmit_frame(ack_frame)
-
         self.set_modem_decode_modes(None)
-        self.state = self.STATE_WAITING_DATA
-        while self.state == self.STATE_WAITING_DATA:
-            if not self.event_data_received.wait(self.TIMEOUT_DATA):
-                self.log("Timeout waiting for data")
-                self.state = self.STATE_FAILED
-                return
+        retries = self.RETRIES_TRANSFER
+        while retries > 0:
+            if self.event_data_received.wait(self.TIMEOUT_DATA):
+                retries = self.RETRIES_TRANSFER
+                self.append_data_to_burst_buffer()
+
+                self.send_data_nack()
+
+        self.state = self.STATE_FAILED
+        return
 
         self.log("Finished ARQ IRS session")
 
     def run(self):
+        self.send_session_ack()
+        self.state = self.STATE_WAITING_DATA
         self.thread = threading.Thread(target=self.runner, name=f"ARQ IRS Session {self.id}", daemon=True)
         self.thread.start()
 
+    def send_session_ack(self):
+        ack_frame = self.frame_factory.build_arq_session_connect_ack(
+            self.is_wide_band,
+            self.id, 
+            self.speed,
+            self.version)
+        self.transmit_frame(ack_frame)
 
-    def on_data_received(self):
+    def send_data_nack(self):
+        nack = self.frame_factory.build_arq_burst_nack(self.session_id, self.snr, self.speed_level, 
+                                                10, # WTF?
+                                                1)
+        self.transmit_frame(nack)
+
+    def on_data_received(self, frame):
         if self.state != self.STATE_WAITING_DATA:
             raise RuntimeError(f"ARQ Session: Received data while in state {self.state}, expected {self.STATE_WAITING_DATA}")
+        self.rx_data_chain(frame)
         self.event_data_received.set()
-
 
     def on_transfer_ack_received(self, ack):
         self.event_transfer_ack_received.set()
@@ -314,7 +327,7 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         # check if hmac signing enabled
         if self.enable_hmac:
-            self.log.info(
+            self.logger.info(
                 "[Modem] [HMAC] Enabled",
             )
             if salt_found := helpers.search_hmac_salt(
@@ -331,7 +344,7 @@ class ARQSessionIRS(arq_session.ARQSession):
                 # hmac signature wrong
                 self.arq_process_received_data_frame(data, snr, signed=False)
         elif checksum_expected == checksum_received:
-            self.log.warning(
+            self.logger.warning(
                 "[Modem] [HMAC] Disabled, using CRC",
             )
             self.arq_process_received_data_frame(data, snr, signed=False)
@@ -347,7 +360,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             )
 
             duration = time.time() - self.rx_start_of_transmission
-            self.log.warning(
+            self.logger.warning(
                 "[Modem] ARQ | RX | DATA FRAME NOT SUCCESSFULLY RECEIVED!",
                 e="wrong crc",
                 expected=checksum_expected.hex(),
@@ -362,7 +375,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             if self.enable_stats:
                 self.stats.push(frame_nack_counter=self.frame_nack_counter, status="wrong_crc", duration=duration)
 
-            self.log.info("[Modem] ARQ | RX | Sending NACK", finished=self.states.arq_seconds_until_finish,
+            self.logger.info("[Modem] ARQ | RX | Sending NACK", finished=self.states.arq_seconds_until_finish,
                           bytesperminute=self.states.arq_bytes_per_minute)
             self.send_burst_nack_frame(snr)
 

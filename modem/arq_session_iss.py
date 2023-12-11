@@ -112,11 +112,12 @@ class ARQSessionISS(arq_session.ARQSession):
         return False
 
     def on_transfer_ack_received(self, ack):
-        self.event_transfer_ack_received.set()
         self.speed_level = ack['speed_level']
+        self.event_transfer_ack_received.set()
 
     def on_transfer_nack_received(self, nack):
         self.speed_level = nack['speed_level']
+        self.event_transfer_ack_received.set()
 
     def on_disconnect_received(self):
         self.abort()

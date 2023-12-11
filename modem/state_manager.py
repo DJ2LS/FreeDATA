@@ -119,7 +119,7 @@ class StateManager:
             raise RuntimeError(f"ARQ ISS Session '{session.id}' already exists!")
         self.arq_iss_sessions[session.id] = session
 
-    def register_arq_irs_session(self, session):
+    def register_arq_irs_session(self, session, is_wide_band):
         if session.id in self.arq_irs_sessions:
             raise RuntimeError(f"ARQ IRS Session '{session.id}' already exists!")
         self.arq_irs_sessions[session.id] = session

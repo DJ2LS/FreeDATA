@@ -29,13 +29,16 @@ class ARQSession():
         # 3 bytes for the EOF End of File indicator in a data frame
         self.data_frame_eof = b"EOF"
 
-
+    def log(self, message, isWarning = False):
+        msg = f"[{type(self).__name__}]: {message}"
+        logger = self.logger.warn if isWarning else self.logger.info
+        logger(msg)
 
     def get_mode_by_speed_level(self, speed_level):
         return self.MODE_BY_SPEED[speed_level]
 
     def transmit_frame(self, frame: bytearray):
-        self.logger.info("Transmitting frame")
+        self.log("Transmitting frame")
         modem_queue_item = {
             'mode': self.get_mode_by_speed_level(self.speed_level),
             'repeat': 1,
@@ -46,7 +49,7 @@ class ARQSession():
 
     def setState(self, state):
         self.state = state
-        self.logger.info(f"state changed to {state}")
+        self.log(f"state changed to {state}")
 
     def get_payload_size(self, speed_level):
         mode = self.MODE_BY_SPEED[speed_level]

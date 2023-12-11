@@ -15,18 +15,19 @@ class ARQFrameHandler(frame_handler.FrameHandler):
         if frame['frame_type_int'] in [FR.ARQ_SESSION_OPEN_N.value, FR.ARQ_SESSION_OPEN_W.value]:
             session = ARQSessionIRS(self.config, 
                                     self.tx_frame_queue, 
-                                    frame['origin'], frame['session_id'])
-            self.states.register_arq_irs_session(session)
+                                    frame['origin'], 
+                                    frame['session_id'], 
+                                    frame['frame_type_int'] == FR.ARQ_SESSION_OPEN_W.value)
+            self.states.register_arq_irs_session(session, frame['frame_type_int'] == FR.ARQ_SESSION_OPEN_W.value)
             session.run()
 
         # ARQ session open ack received
-        if frame['frame_type_int'] in [FR.ARQ_SESSION_OPEN_ACK_N.value, FR.ARQ_SESSION_OPEN_ACK_W.value]:
+        elif frame['frame_type_int'] in [FR.ARQ_SESSION_OPEN_ACK_N.value, FR.ARQ_SESSION_OPEN_ACK_W.value]:
             iss_session:ARQSessionISS = self.states.get_arq_iss_session(frame['session_id'])
             iss_session.on_connection_ack_received(frame)
 
         # ARQ session data frame received
-        if frame['frame_type_int'] in [FR.BURST_01.value, FR.BURST_02.value, FR.BURST_03.value, FR.BURST_04.value, FR.BURST_05.value]:
+        elif frame['frame_type_int'] in [FR.BURST_01.value, FR.BURST_02.value, FR.BURST_03.value, FR.BURST_04.value, FR.BURST_05.value]:
             print("received data frame....")
             irs_session:ARQSessionIRS = self.states.get_arq_irs_session(frame['session_id'])
-            irs_session.on_data_received()
-            irs_session.rx_data_chain(frame)
+            irs_session.on_data_received(frame)
