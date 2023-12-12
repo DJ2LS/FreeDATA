@@ -99,30 +99,41 @@ class DataFrameFactory:
         }
 
     def _load_arq_templates(self):
-        # same structure for narrow and wide types
 
-        arq_session_open = {
+        self.template_list[FR_TYPE.ARQ_SESSION_OPEN.value] = {
             "frame_length": self.LENGTH_SIG0_FRAME,
             "destination_crc": 3,
-            "origin_crc": 3,
             "origin": 6,
             "session_id": 1,
         }
-        # arq connect frames
-        self.template_list[FR_TYPE.ARQ_SESSION_OPEN.value] = arq_session_open
 
-        # same structure for narrow and wide types
-        arq_session_open_ack = {
+        self.template_list[FR_TYPE.ARQ_SESSION_OPEN_ACK.value] = {
             "frame_length": self.LENGTH_SIG0_FRAME,
             "session_id": 1,
-            "speed_level": 1,
-            "arq_protocol_version": 1
+            "origin": 6,
+            "destination_crc": 3,
+            "version": 1,
+            "snr": 1,
         }
-        # arq connect ack frames
-        self.template_list[FR_TYPE.ARQ_SESSION_OPEN_ACK.value] = arq_session_open_ack
 
-        # arq data frame
-        # register n frames
+        self.template_list[FR_TYPE.ARQ_SESSION_INFO.value] = {
+            "frame_length": self.LENGTH_SIG0_FRAME,
+            "session_id": 1,
+            "total_length": 4,
+            "total_crc": 4,
+            "snr": 1,
+        }
+
+        self.template_list[FR_TYPE.ARQ_SESSION_INFO_ACK.value] = {
+            "frame_length": self.LENGTH_SIG0_FRAME,
+            "session_id": 1,
+            "total_crc": 4,
+            "snr": 1,
+            "speed_level": 1,
+            "frames_per_burst": 1,
+        }
+
+        # arq data burst frame
         self.template_list[FR_TYPE.BURST_FRAME.value] = {
             "frame_length": "dynamic",
             "n_frames_per_burst": 1,
@@ -139,13 +150,6 @@ class DataFrameFactory:
             "len_arq_rx_frame_buffer": 4
         }
 
-        # arq frame ack TODO We should rename this to "session ack"
-        self.template_list[FR_TYPE.FR_ACK.value] = {
-            "frame_length": self.LENGTH_SIG1_FRAME,
-            "session_id": 1,
-            "snr":1
-        }
-
         # arq burst nack
         self.template_list[FR_TYPE.BURST_NACK.value] = {
             "frame_length": self.LENGTH_SIG1_FRAME,
@@ -154,18 +158,6 @@ class DataFrameFactory:
             "speed_level": 1,
             "len_arq_rx_frame_buffer": 4,
             "n_frames_per_burst": 1
-
-        }
-
-        # arq frame nack --> TODO We should rename this to "session nack"
-        self.template_list[FR_TYPE.FR_NACK.value] = {
-            "frame_length": self.LENGTH_SIG1_FRAME,
-            "session_id": 1,
-            "snr": 1,
-            "speed_level": 1,
-            "len_arq_rx_frame_buffer": 4,
-            "n_frames_per_burst": 1
-
         }
 
     def construct(self, frametype, content, frame_length=LENGTH_SIG1_FRAME):
@@ -223,7 +215,7 @@ class DataFrameFactory:
                 elif key == "gridsquare":
                     extracted_data[key] = helpers.decode_grid(data)
 
-                elif key in ["session_id", "speed_level", "n_frames_per_burst", "arq_protocol_version"]:
+                elif key in ["session_id", "speed_level", "n_frames_per_burst", "version"]:
                     extracted_data[key] = int.from_bytes(data, 'big')
 
                 else:
@@ -320,35 +312,46 @@ class DataFrameFactory:
         test_frame[:1] = bytes([FR_TYPE.TEST_FRAME.value])
         return test_frame
 
-    def build_arq_session_connect(self, destination, session_id):
-
+    def build_arq_session_open(self, destination, session_id):
         payload = {
             "destination_crc": helpers.get_crc_24(destination),
-            "origin_crc": helpers.get_crc_24(self.myfullcall),
             "origin": helpers.callsign_to_bytes(self.myfullcall),
             "session_id": session_id.to_bytes(1, 'big'),
         }
-        channel_type = FR_TYPE.ARQ_SESSION_OPEN
-        return self.construct(channel_type, payload)
+        return self.construct(FR_TYPE.ARQ_SESSION_OPEN, payload)
 
-    def build_arq_session_connect_ack(self, session_id, speed_level,arq_protocol_version):
-
-        #connection_frame = bytearray(self.length_sig0_frame)
-        #connection_frame[:1] = frametype
-        #connection_frame[1:2] = self.session_id
-        #connection_frame[8:9] = bytes([self.speed_level])
-        #connection_frame[13:14] = bytes([self.arq_protocol_version])
-
+    def build_arq_session_open_ack(self, session_id, destination, version, snr):
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),
-            "speed_level": bytes([speed_level]),
-            "arq_protocol_version": bytes([arq_protocol_version]),
+            "origin": helpers.callsign_to_bytes(self.myfullcall),
+            "destination_crc": helpers.get_crc_24(destination),
+            "version": bytes([version]),
+            "snr": snr.to_bytes(1, 'big'),
         }
+        return self.construct(FR_TYPE.ARQ_SESSION_OPEN_ACK, payload)
+    
+    def build_arq_session_info(self, session_id: int, total_length: int, total_crc: bytes, snr):
+        payload = {
+            "session_id": session_id.to_bytes(1, 'big'),
+            "total_length": total_length.to_bytes(4, 'big'),
+            "total_crc": total_crc,
+            "snr": snr.to_bytes(1, 'big'),
+        }
+        return self.construct(FR_TYPE.ARQ_SESSION_INFO, payload)
 
-        channel_type = FR_TYPE.ARQ_SESSION_OPEN_ACK
-        return self.construct(channel_type, payload)
+    def build_arq_session_info_ack(self, session_id, total_crc, snr, speed_level, frames_per_burst):
+        payload = {
+            "frame_length": self.LENGTH_SIG0_FRAME,
+            "session_id": session_id.to_bytes(1, 'big'),
+            "total_crc": total_crc,
+            "snr": snr.to_bytes(1, 'big'),
+            "speed_level": speed_level.to_bytes(1, 'big'),
+            "frames_per_burst": frames_per_burst.to_bytes(1, 'big'),
+        }        
+        return self.construct(FR_TYPE.ARQ_SESSION_INFO_ACK, payload)
 
-    def build_arq_data_frame(self, session_id: bytes, n_frames_per_burst: int, max_size: int, n_frame: int, frame_payload: bytes):
+    def build_arq_burst_frame(self, session_id: int, max_size: int, n_frame: int, 
+                              frame_payload: bytes):
         payload = {
             "n_frames_per_burst": bytes([n_frames_per_burst]),
             "session_id": session_id.to_bytes(1, 'big'),
@@ -359,13 +362,6 @@ class DataFrameFactory:
 
 
     def build_arq_burst_ack(self, session_id: bytes, snr: int, speed_level: int, len_arq_rx_frame_buffer: int):
-        # ack_frame = bytearray(self.length_sig1_frame)
-        # ack_frame[:1] = bytes([FR_TYPE.BURST_ACK.value])
-        # ack_frame[1:2] = self.session_id
-        # ack_frame[2:3] = helpers.snr_to_bytes(snr)
-        # ack_frame[3:4] = bytes([int(self.speed_level)])
-        # ack_frame[4:8] = len(self.arq_rx_frame_buffer).to_bytes(4, byteorder="big")
-        
         payload = {
             "session_id": session_id,
             "snr": helpers.snr_to_bytes(snr),
@@ -379,7 +375,6 @@ class DataFrameFactory:
         # ack_frame[:1] = bytes([FR_TYPE.FR_ACK.value])
         # ack_frame[1:2] = self.session_id
         # ack_frame[2:3] = helpers.snr_to_bytes(snr)
-
         payload = {
             "session_id": session_id,
             "snr": helpers.snr_to_bytes(snr)
