@@ -15,11 +15,10 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     TIMEOUT_DATA = 6
 
-    def __init__(self, config: dict, tx_frame_queue: queue.Queue, dxcall: str, session_id: int, is_wide_band: bool):
+    def __init__(self, config: dict, tx_frame_queue: queue.Queue, dxcall: str, session_id: int):
         super().__init__(config, tx_frame_queue, dxcall)
 
         self.id = session_id
-        self.is_wide_band = is_wide_band
         self.speed = 0
         self.version = 1
         self.snr = 0
@@ -74,7 +73,6 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     def send_session_ack(self):
         ack_frame = self.frame_factory.build_arq_session_connect_ack(
-            self.is_wide_band,
             self.id, 
             self.speed,
             self.version)
@@ -89,7 +87,6 @@ class ARQSessionIRS(arq_session.ARQSession):
     def on_data_received(self, frame):
         if self.state != self.STATE_WAITING_DATA:
             raise RuntimeError(f"ARQ Session: Received data while in state {self.state}, expected {self.STATE_WAITING_DATA}")
-        self.rx_data_chain(frame)
         self.event_data_received.set()
 
     def on_transfer_ack_received(self, ack):
@@ -109,7 +106,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.event_transfer_feedback.set()
         self.event_transfer_feedback.clear()
 
-    def rx_data_chain(self, data_frame):
+    def rx_data_chain(self, data_frame, snr: int, frequency_offset: int):
         """
         Function for processing received frames in correct order
         Args:
