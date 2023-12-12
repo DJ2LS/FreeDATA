@@ -109,8 +109,7 @@ class DataFrameFactory:
             "session_id": 1,
         }
         # arq connect frames
-        self.template_list[FR_TYPE.ARQ_SESSION_OPEN_N.value] = arq_session_open
-        self.template_list[FR_TYPE.ARQ_SESSION_OPEN_W.value] = arq_session_open
+        self.template_list[FR_TYPE.ARQ_SESSION_OPEN.value] = arq_session_open
 
         # same structure for narrow and wide types
         arq_session_open_ack = {
@@ -120,10 +119,7 @@ class DataFrameFactory:
             "arq_protocol_version": 1
         }
         # arq connect ack frames
-        self.template_list[FR_TYPE.ARQ_SESSION_OPEN_ACK_N.value] = arq_session_open_ack
-        self.template_list[FR_TYPE.ARQ_SESSION_OPEN_ACK_W.value] = arq_session_open_ack
-
-
+        self.template_list[FR_TYPE.ARQ_SESSION_OPEN_ACK.value] = arq_session_open_ack
 
         # arq data frame
         # register n frames
@@ -325,7 +321,7 @@ class DataFrameFactory:
         test_frame[:1] = bytes([FR_TYPE.TEST_FRAME.value])
         return test_frame
 
-    def build_arq_session_connect(self, isWideband, destination, session_id):
+    def build_arq_session_connect(self, destination, session_id):
 
         payload = {
             "destination_crc": helpers.get_crc_24(destination),
@@ -333,10 +329,10 @@ class DataFrameFactory:
             "origin": helpers.callsign_to_bytes(self.myfullcall),
             "session_id": session_id.to_bytes(1, 'big'),
         }
-        channel_type = FR_TYPE.ARQ_SESSION_OPEN_W if isWideband else FR_TYPE.ARQ_SESSION_OPEN_N
+        channel_type = FR_TYPE.ARQ_SESSION_OPEN
         return self.construct(channel_type, payload)
 
-    def build_arq_session_connect_ack(self, isWideband, session_id, speed_level,arq_protocol_version):
+    def build_arq_session_connect_ack(self, session_id, speed_level,arq_protocol_version):
 
         #connection_frame = bytearray(self.length_sig0_frame)
         #connection_frame[:1] = frametype
@@ -350,7 +346,7 @@ class DataFrameFactory:
             "arq_protocol_version": bytes([arq_protocol_version]),
         }
 
-        channel_type = FR_TYPE.ARQ_SESSION_OPEN_ACK_W if isWideband else FR_TYPE.ARQ_SESSION_OPEN_ACK_N
+        channel_type = FR_TYPE.ARQ_SESSION_OPEN_ACK
         return self.construct(channel_type, payload)
 
     def build_arq_data_frame(self, session_id: bytes, n_frames_per_burst: int, max_size: int, n_frame: int, frame_payload: bytes):

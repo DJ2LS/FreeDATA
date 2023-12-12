@@ -51,7 +51,7 @@ class ARQSessionISS(arq_session.ARQSession):
     def connect(self):
         self.state = self.STATE_CONNECTING
 
-        connect_frame = self.frame_factory.build_arq_session_connect(True, self.dxcall, self.id)
+        connect_frame = self.frame_factory.build_arq_session_connect(self.dxcall, self.id)
 
         retries = self.RETRIES_CONNECT
         while retries > 0:

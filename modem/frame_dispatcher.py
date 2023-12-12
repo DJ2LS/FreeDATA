@@ -26,10 +26,8 @@ from frame_handler_arq_session import ARQFrameHandler
 class DISPATCHER():
 
     FRAME_HANDLER = {
-        FR_TYPE.ARQ_SESSION_OPEN_ACK_N.value: {"class": ARQFrameHandler, "name": "ARQ OPEN ACK (Narrow)"},
-        FR_TYPE.ARQ_SESSION_OPEN_ACK_W.value: {"class": ARQFrameHandler, "name": "ARQ OPEN ACK (Wide)"},
-        FR_TYPE.ARQ_SESSION_OPEN_N.value: {"class": ARQFrameHandler, "name": "ARQ Data Channel Open (Narrow)"},
-        FR_TYPE.ARQ_SESSION_OPEN_W.value: {"class": ARQFrameHandler, "name": "ARQ Data Channel Open (Wide)"},
+        FR_TYPE.ARQ_SESSION_OPEN_ACK.value: {"class": ARQFrameHandler, "name": "ARQ OPEN ACK"},
+        FR_TYPE.ARQ_SESSION_OPEN.value: {"class": ARQFrameHandler, "name": "ARQ Data Channel Open"},
         FR_TYPE.ARQ_CONNECTION_CLOSE.value: {"class": ARQFrameHandler, "name": "ARQ CLOSE SESSION"},
         FR_TYPE.ARQ_CONNECTION_HB.value: {"class": ARQFrameHandler, "name": "ARQ HEARTBEAT"},
         FR_TYPE.ARQ_CONNECTION_OPEN.value: {"class": ARQFrameHandler, "name": "ARQ OPEN SESSION"},
@@ -121,7 +119,7 @@ class DISPATCHER():
 
 
     def get_id_from_frame(self, data):
-        if data[:1] in [FR_TYPE.ARQ_SESSION_OPEN_N, FR_TYPE.ARQ_SESSION_OPEN_W]:
+        if data[:1] == FR_TYPE.ARQ_SESSION_OPEN:
             return data[13:14]
         return None
 
@@ -230,21 +228,13 @@ class DISPATCHER():
         # Dictionary of functions and log messages used in process_data
         # instead of a long series of if-elif-else statements.
         self.rx_dispatcher = {
-            FR_TYPE.ARQ_SESSION_OPEN_ACK_N.value: (
+            FR_TYPE.ARQ_SESSION_OPEN_ACK.value: (
                 self.arq_iss.arq_received_channel_is_open,
-                "ARQ OPEN ACK (Narrow)",
+                "ARQ OPEN ACK",
             ),
-            FR_TYPE.ARQ_SESSION_OPEN_ACK_W.value: (
-                self.arq_iss.arq_received_channel_is_open,
-                "ARQ OPEN ACK (Wide)",
-            ),
-            FR_TYPE.ARQ_SESSION_OPEN_N.value: (
+            FR_TYPE.ARQ_SESSION_OPEN.value: (
                 self.initialize_arq_transmission_irs,
-                "ARQ Data Channel Open (Narrow)",
-            ),
-            FR_TYPE.ARQ_SESSION_OPEN_W.value: (
-                self.initialize_arq_transmission_irs,
-                "ARQ Data Channel Open (Wide)",
+                "ARQ Data Channel Open",
             ),
             FR_TYPE.ARQ_CONNECTION_CLOSE.value: (
                 self.arq_session.received_session_close,
