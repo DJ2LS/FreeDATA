@@ -54,3 +54,7 @@ class ARQSession():
     def get_payload_size(self, speed_level):
         mode = self.MODE_BY_SPEED[speed_level]
         return codec2.get_bytes_per_frame(mode)
+
+    def set_details(self, snr, frequency_offset):
+        self.snr = snr
+        self.frequency_offset = frequency_offset

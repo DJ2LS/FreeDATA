@@ -20,25 +20,16 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         self.id = session_id
         self.speed = 0
+        self.frames_per_burst = 3
         self.version = 1
         self.snr = 0
+        self.dx_snr = 0
 
         self.state = self.STATE_CONN_REQ_RECEIVED
 
         self.event_data_received = threading.Event()
         
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
-
-        # naming:
-        # frame = single frame
-        # burst = one or more frames. A burst will be acknowledged with a ACK
-
-        # this is the buffer which holds received data temporarily for each burst
-        self.arq_rx_burst_buffer = []
-        # this is our buffer, holding data, after we received a full burst
-        self.arq_rx_frame_buffer = b""
-        # this variable holds the amount/size of data we've received the last time
-        self.arq_burst_last_data_size = 0
 
     def generate_id(self):
         pass
@@ -63,8 +54,6 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.state = self.STATE_FAILED
         return
 
-        self.log("Finished ARQ IRS session")
-
     def run(self):
         self.send_session_ack()
         self.state = self.STATE_WAITING_DATA
@@ -84,6 +73,23 @@ class ARQSessionIRS(arq_session.ARQSession):
                                                 10, # WTF?
                                                 1)
         self.transmit_frame(nack)
+
+    def calibrate_speed_settings(self):
+        # TODO use some heuristics here
+        self.speed = self.speed
+        self.frames_per_burst = self.frames_per_burst
+
+    def on_info_received(self, frame):
+        self.total_length = frame['total_length']
+        self.total_crc = frame['total_crc']
+        self.dx_snr = frame['snr']
+
+        self.calibrate_speed_settings()
+
+        info_ack = self.frame_factory.build_arq_session_info_ack(self.id, self.total_crc, 
+                                                      self.snr, self.speed_level, 
+                                                      self.frames_per_burst)
+        self.transmit_frame(info_ack)
 
     def on_data_received(self, frame):
         if self.state != self.STATE_WAITING_DATA:

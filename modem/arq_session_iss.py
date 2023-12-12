@@ -102,7 +102,8 @@ class ARQSessionISS(arq_session.ARQSession):
             end_offset = min(len(self.data), max_size)
             frame_payload = self.data[offset:end_offset]
             print(self.id)
-            data_frame = self.frame_factory.build_arq_data_frame(self.id, n_frames_per_burst, max_size, n_frame, frame_payload)
+            data_frame = self.frame_factory.build_arq_burst_frame(
+                self.id, offset, frame_payload)
             self.set_state(self.STATE_SENDING)
             if not self.send_arq(data_frame):
                 return False
