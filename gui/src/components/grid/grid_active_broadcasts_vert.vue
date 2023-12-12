@@ -29,11 +29,11 @@ var dxcallPing = ref("");
           <strong>Broadcasts</strong>
     </div>
     <div class="card-body overflow-auto p-0">
-          <div class="input-group input-group-sm mb-0">
-            <input
+      <div class="input-group w-100">
+        <input
               type="text"
               class="form-control"
-              style="max-width: 6rem; min-width: 3rem; text-transform: uppercase"
+              style="min-width: 3rem; text-transform: uppercase; height: 31px;"
               placeholder="DXcall"
               pattern="[A-Z]*"
               maxlength="11"
@@ -54,21 +54,11 @@ var dxcallPing = ref("");
             >
               Ping
             </button>
-
-            <button
-              class="btn btn-sm btn-outline-secondary ms-1"
-              id="sendCQ"
-              type="button"
-              title="Send a CQ to the world"
-              @click="sendModemCQ()"
-            >
-              Call CQ
-            </button>
-
-            <button
+</div>
+<button
               type="button"
               id="startBeacon"
-              class="btn btn-sm ms-1"
+              class="btn btn-sm w-100"
               @click="startStopBeacon()"
               v-bind:class="{
                 'btn-success': state.beacon_state === true,
@@ -78,8 +68,18 @@ var dxcallPing = ref("");
             >
               Toggle beacon
             </button>
-          </div>
-      <!-- end of row-->
+
+            <button
+              class="btn btn-sm btn-outline-secondary w-100"
+              id="sendCQ"
+              type="button"
+              title="Send a CQ to the world"
+              @click="sendModemCQ()"
+            >
+              Call CQ
+            </button>
+
+
     </div>
   </div>
 </template>

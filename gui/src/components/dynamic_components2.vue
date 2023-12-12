@@ -13,7 +13,8 @@ import mini_heard_stations from "./grid/grid_active_heard_stations_mini.vue";
 import active_stats from "./grid/grid_active_stats.vue";
 import active_audio_level from "./grid/grid_active_audio.vue";
 import active_rig_control from "./grid/grid_active_rig_control.vue";
-import active_broadcats from "./grid/grid_active_broadcasts.vue";
+import active_broadcasts from "./grid/grid_active_broadcasts.vue";
+import active_broadcasts_vert from "./grid/grid_active_broadcasts_vert.vue";
 import s_meter from "./grid/grid_s-meter.vue";
 import dbfs_meter from "./grid/grid_dbfs.vue";
 import grid_activities from "./grid/grid_activities.vue";
@@ -56,7 +57,7 @@ const gridWidgets = [
   ),
   new gridWidget(
     active_stats,
-    { x: 16, y: 26, w: 8, h: 69 },
+    { x: 16, y: 15, w: 8, h: 69 },
     "Stats (waterfall, etc)",
     true,
     true,
@@ -64,7 +65,7 @@ const gridWidgets = [
   ),
   new gridWidget(
     active_audio_level,
-    { x: 16, y: 0, w: 8, h: 26 },
+    { x: 16, y: 0, w: 8, h: 15 },
     "Audio main",
     true,
     true,
@@ -72,16 +73,16 @@ const gridWidgets = [
   ),
   new gridWidget(
     active_rig_control,
-    { x: 6, y: 40, w: 10, h: 30 },
+    { x: 6, y: 40, w: 9, h: 15 },
     "Rig control main",
     true,
     true,
     "Rig",
   ),
   new gridWidget(
-    active_broadcats,
-    { x: 6, y: 70, w: 10, h: 25 },
-    "Broadcasts main",
+    active_broadcasts,
+    { x: 6, y: 70, w: 6, h: 15 },
+    "Broadcasts main (horizontal)",
     true,
     true,
     "Broadcasts",
@@ -117,6 +118,14 @@ const gridWidgets = [
     true,
     true,
     "Activity",
+  ),
+  new gridWidget(
+    active_broadcasts_vert,
+    { x: 3, y: 27, w: 3, h: 27 },
+    "Broadcasts main (vertical)",
+    false,
+    true,
+    "Broadcasts",
   ),
 ];
 onMounted(() => {
