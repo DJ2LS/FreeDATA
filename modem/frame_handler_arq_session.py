@@ -11,6 +11,8 @@ class ARQFrameHandler(frame_handler.FrameHandler):
     def follow_protocol(self):
         # self.details == {'frame': {'frame_type': 'BURST_01', 'frame_type_int': 1, 'n_frames_per_burst': 1, 'session_id': 31, 'data': b'Hello world!'}, 'snr': 0, 'frequency_offset': 0, 'freedv_inst': None, 'bytes_per_frame': 15}
         frame = self.details['frame']
+        snr = self.details["snr"]
+        frequency_offset = self.details["frequency_offset"]
 
         # ARQ session open received
         if frame['frame_type_int'] in [FR.ARQ_SESSION_OPEN_N.value, FR.ARQ_SESSION_OPEN_W.value]:
@@ -30,6 +32,8 @@ class ARQFrameHandler(frame_handler.FrameHandler):
         # ARQ session data frame received
         elif frame['frame_type_int'] in [FR.BURST_01.value, FR.BURST_02.value, FR.BURST_03.value, FR.BURST_04.value, FR.BURST_05.value]:
             print("received data frame....")
+            print(frame)
+
             irs_session:ARQSessionIRS = self.states.get_arq_irs_session(frame['session_id'])
             irs_session.on_data_received(frame)
-            irs_session.rx_data_chain(frame)
+            irs_session.rx_data_chain(frame, snr, frequency_offset)

@@ -108,7 +108,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.event_transfer_feedback.set()
         self.event_transfer_feedback.clear()
 
-    def rx_data_chain(self, data_frame):
+    def rx_data_chain(self, data_frame, snr: int, frequency_offset: int):
         """
         Function for processing received frames in correct order
         Args:
