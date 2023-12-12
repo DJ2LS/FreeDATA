@@ -30,36 +30,35 @@ IRS->(1)ISS:BURST_ACK (ID, next_offset, speed level, frames, snr)
 
 ISS sends this first
 
-DATAC13 Mode (14 bytes)
+DATAC13 Mode (12 bytes)
 
 |field|bytes|
 |-|-|
 |session id|1|
 |origin|6|
-|destination|6|
-|crc|1|
+|destination_crc|3|
 
 
 #### SESSION_OPEN_ACK
 
-IRS sends this in response to a SESSION_OPEN_REQ
+Sent by the IRS in response to a SESSION_OPEN_REQ
 
-DATAC13 Mode (14 bytes)
+DATAC13 Mode (12 bytes)
 
 |field|bytes|
 |-|-|
 |session id|1|
 |origin|6|
+|destination_crc|3|
 |protocol version|1|
 |snr|1|
-|crc|3|
 
 
 #### SESSION_INFO
 
 ISS sends this in response to a SESSION_OPEN_ACK
 
-DATAC13 Mode (14 bytes)
+DATAC13 Mode (12 bytes)
 
 |field|bytes|
 |-|-|
@@ -67,14 +66,13 @@ DATAC13 Mode (14 bytes)
 |total bytes|4|
 |total crc|4|
 |snr|1|
-|crc|4|
 
 
 #### SESSION_INFO_ACK
 
 IRS sends this in response to a SESSION_INFO
 
-DATAC13 Mode (14 bytes)
+DATAC13 Mode (12 bytes)
 
 |field|bytes|
 |-|-|
@@ -83,7 +81,6 @@ DATAC13 Mode (14 bytes)
 |snr|1|
 |speed level|1|
 |frames per burst|1|
-|crc|4|
 
 
 #### Data Burst
