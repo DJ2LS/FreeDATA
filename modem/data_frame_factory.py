@@ -123,13 +123,12 @@ class DataFrameFactory:
 
         # arq data frame
         # register n frames
-        for n_frame in range(1,5):
-            self.template_list[FR_TYPE.BURST_01.value + (n_frame-1)] = {
-                "frame_length": "dynamic",
-                "n_frames_per_burst": 1,
-                "session_id": 1,
-                "data": "dynamic",
-            }
+        self.template_list[FR_TYPE.BURST_FRAME.value] = {
+            "frame_length": "dynamic",
+            "n_frames_per_burst": 1,
+            "session_id": 1,
+            "data": "dynamic",
+        }
 
         # arq burst ack
         self.template_list[FR_TYPE.BURST_ACK.value] = {
@@ -356,7 +355,7 @@ class DataFrameFactory:
             "data": frame_payload
         }
 
-        return self.construct(FR_TYPE.BURST_01.value + (n_frame-1), payload, frame_length=max_size)
+        return self.construct(FR_TYPE.BURST_FRAME.value, payload, frame_length=max_size)
 
 
     def build_arq_burst_ack(self, session_id: bytes, snr: int, speed_level: int, len_arq_rx_frame_buffer: int):

@@ -15,11 +15,10 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     TIMEOUT_DATA = 6
 
-    def __init__(self, config: dict, tx_frame_queue: queue.Queue, dxcall: str, session_id: int, is_wide_band: bool):
+    def __init__(self, config: dict, tx_frame_queue: queue.Queue, dxcall: str, session_id: int):
         super().__init__(config, tx_frame_queue, dxcall)
 
         self.id = session_id
-        self.is_wide_band = is_wide_band
         self.speed = 0
         self.version = 1
         self.snr = 0
@@ -74,7 +73,6 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     def send_session_ack(self):
         ack_frame = self.frame_factory.build_arq_session_connect_ack(
-            self.is_wide_band,
             self.id, 
             self.speed,
             self.version)

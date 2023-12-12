@@ -15,22 +15,21 @@ class ARQFrameHandler(frame_handler.FrameHandler):
         frequency_offset = self.details["frequency_offset"]
 
         # ARQ session open received
-        if frame['frame_type_int'] in [FR.ARQ_SESSION_OPEN_N.value, FR.ARQ_SESSION_OPEN_W.value]:
+        if frame['frame_type_int'] == FR.ARQ_SESSION_OPEN.value:
             session = ARQSessionIRS(self.config, 
                                     self.tx_frame_queue, 
                                     frame['origin'], 
-                                    frame['session_id'], 
-                                    frame['frame_type_int'] == FR.ARQ_SESSION_OPEN_W.value)
-            self.states.register_arq_irs_session(session, frame['frame_type_int'] == FR.ARQ_SESSION_OPEN_W.value)
+                                    frame['session_id'])
+            self.states.register_arq_irs_session(session)
             session.run()
 
         # ARQ session open ack received
-        elif frame['frame_type_int'] in [FR.ARQ_SESSION_OPEN_ACK_N.value, FR.ARQ_SESSION_OPEN_ACK_W.value]:
+        elif frame['frame_type_int'] == FR.ARQ_SESSION_OPEN_ACK.value:
             iss_session:ARQSessionISS = self.states.get_arq_iss_session(frame['session_id'])
             iss_session.on_connection_ack_received(frame)
 
         # ARQ session data frame received
-        elif frame['frame_type_int'] in [FR.BURST_01.value, FR.BURST_02.value, FR.BURST_03.value, FR.BURST_04.value, FR.BURST_05.value]:
+        elif frame['frame_type_int'] == FR.BURST_FRAME.value:
             print("received data frame....")
             print(frame)
 

@@ -7,16 +7,12 @@ from enum import Enum
 class FRAME_TYPE(Enum):
     """Lookup for frame types"""
 
-    BURST_01 = 1
-    BURST_02 = 2
-    BURST_03 = 3
-    BURST_04 = 4
-    BURST_05 = 5
-    BURST_ACK = 60
+    BURST_FRAME = 10
+    BURST_ACK = 11
+    BURST_NACK = 12
     FR_ACK = 61
     FR_REPEAT = 62
     FR_NACK = 63
-    BURST_NACK = 64
     MESH_BROADCAST = 100
     MESH_SIGNALLING_PING = 101
     MESH_SIGNALLING_PING_ACK = 102
