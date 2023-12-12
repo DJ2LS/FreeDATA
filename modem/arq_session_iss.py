@@ -4,6 +4,7 @@ import queue
 import random
 from codec2 import FREEDV_MODE
 import arq_session
+import helpers
 
 class ARQSessionISS(arq_session.ARQSession):
 
@@ -27,7 +28,8 @@ class ARQSessionISS(arq_session.ARQSession):
         self.state = self.STATE_DISCONNECTED
         self.id = self.generate_id()
 
-        self.event_connection_ack_received = threading.Event()
+        self.event_open_ack_received = threading.Event()
+        self.event_info_ack_received = threading.Event()
         self.event_transfer_ack_received = threading.Event()
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
 
@@ -39,39 +41,53 @@ class ARQSessionISS(arq_session.ARQSession):
         self.state = state
 
     def runner(self):
-        if not self.connect():
+        self.state = self.STATE_CONNECTING
+
+        if not self.session_open():
             return False
-    
+
+        if not self.session_info():
+            return False
+
         return self.send_data()
     
     def run(self):
         self.thread = threading.Thread(target=self.runner, name=f"ARQ ISS Session {self.id}", daemon=True)
         self.thread.run()
     
-    def connect(self):
-        self.state = self.STATE_CONNECTING
-
-        connect_frame = self.frame_factory.build_arq_session_connect(self.dxcall, self.id)
-
+    def handshake(self, frame, event):
         retries = self.RETRIES_CONNECT
         while retries > 0:
-            self.transmit_frame(connect_frame)
-            self.logger.info("Waiting for CONN ACK...")
-            if self.event_connection_ack_received.wait(self.TIMEOUT_CONNECT_ACK):
-                self.setState(self.STATE_CONNECTED)
+            self.transmit_frame(frame)
+            self.logger.info("Waiting...")
+            if event.wait(self.TIMEOUT_CONNECT_ACK):
                 return True
             retries = retries - 1
 
         self.setState(self.STATE_DISCONNECTED)
         return False
 
-    def on_connection_ack_received(self, ack):
+    def session_open(self):
+        open_frame = self.frame_factory.build_arq_session_open(self.dxcall, self.id)
+        return self.handshake(open_frame, self.event_open_ack_received)
+
+    def session_info(self):
+        info_frame = self.frame_factory.build_arq_session_info(self.id, len(self.data), 
+                                                               helpers.get_crc_32(self.data), 
+                                                               self.snr)
+        return self.handshake(info_frame, self.event_info_ack_received)
+
+    def on_open_ack_received(self, ack):
         if self.state != self.STATE_CONNECTING:
-            raise RuntimeError(f"ARQ Session: Received connection ACK while in state {self.state}")
+            raise RuntimeError(f"ARQ Session: Received OPEN ACK while in state {self.state}")
 
-        self.build_arq_data_framespeed_level = ack['speed_level']
-        self.event_connection_ack_received.set()
+        self.event_open_ack_received.set()
 
+    def on_info_ack_received(self, ack):
+        if self.state != self.STATE_CONNECTING:
+            raise RuntimeError(f"ARQ Session: Received INFO ACK while in state {self.state}")
+
+        self.event_info_ack_received.set()
 
     # Sends the full payload in multiple frames
     def send_data(self):

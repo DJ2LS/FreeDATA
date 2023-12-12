@@ -14,7 +14,6 @@ class ARQFrameHandler(frame_handler.FrameHandler):
         snr = self.details["snr"]
         frequency_offset = self.details["frequency_offset"]
 
-        # ARQ session open received
         if frame['frame_type_int'] == FR.ARQ_SESSION_OPEN.value:
             session = ARQSessionIRS(self.config, 
                                     self.tx_frame_queue, 
@@ -23,16 +22,22 @@ class ARQFrameHandler(frame_handler.FrameHandler):
             self.states.register_arq_irs_session(session)
             session.run()
 
-        # ARQ session open ack received
         elif frame['frame_type_int'] == FR.ARQ_SESSION_OPEN_ACK.value:
-            iss_session:ARQSessionISS = self.states.get_arq_iss_session(frame['session_id'])
-            iss_session.on_connection_ack_received(frame)
+            session:ARQSessionISS = self.states.get_arq_iss_session(frame['session_id'])
+            session.on_open_ack_received(frame)
 
-        # ARQ session data frame received
+        elif frame['frame_type_int'] == FR.ARQ_SESSION_INFO_ACK.value:
+            session:ARQSessionISS = self.states.get_arq_iss_session(frame['session_id'])
+            session.on_info_ack_received(frame)
+
         elif frame['frame_type_int'] == FR.BURST_FRAME.value:
-            print("received data frame....")
-            print(frame)
+            session:ARQSessionIRS = self.states.get_arq_irs_session(frame['session_id'])
+            session.on_data_received(frame)
 
-            irs_session:ARQSessionIRS = self.states.get_arq_irs_session(frame['session_id'])
-            irs_session.on_data_received(frame)
-            irs_session.rx_data_chain(frame, snr, frequency_offset)
+        elif frame['frame_type_int'] == FR.BURST_ACK.value:
+            session:ARQSessionISS = self.states.get_arq_iss_session(frame['session_id'])
+            session.on_burst_ack_received(frame)
+
+        elif frame['frame_type_int'] == FR.BURST_NACK.value:
+            session:ARQSessionISS = self.states.get_arq_iss_session(frame['session_id'])
+            session.on_burst_nack_received(frame)

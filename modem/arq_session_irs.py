@@ -72,10 +72,11 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.thread.start()
 
     def send_session_ack(self):
-        ack_frame = self.frame_factory.build_arq_session_connect_ack(
-            self.id, 
-            self.speed,
-            self.version)
+        ack_frame = self.frame_factory.build_arq_session_open_ack(
+            self.id,
+            self.dxcall, 
+            self.version,
+            self.snr)
         self.transmit_frame(ack_frame)
 
     def send_data_nack(self):
@@ -89,11 +90,11 @@ class ARQSessionIRS(arq_session.ARQSession):
             raise RuntimeError(f"ARQ Session: Received data while in state {self.state}, expected {self.STATE_WAITING_DATA}")
         self.event_data_received.set()
 
-    def on_transfer_ack_received(self, ack):
+    def on_burst_ack_received(self, ack):
         self.event_transfer_ack_received.set()
         self.speed_level = ack['speed_level']
 
-    def on_transfer_nack_received(self, nack):
+    def on_burst_nack_received(self, nack):
         self.speed_level = nack['speed_level']
 
     def on_disconnect_received(self):
