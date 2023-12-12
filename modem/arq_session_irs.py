@@ -89,7 +89,6 @@ class ARQSessionIRS(arq_session.ARQSession):
     def on_data_received(self, frame):
         if self.state != self.STATE_WAITING_DATA:
             raise RuntimeError(f"ARQ Session: Received data while in state {self.state}, expected {self.STATE_WAITING_DATA}")
-        self.rx_data_chain(frame)
         self.event_data_received.set()
 
     def on_transfer_ack_received(self, ack):

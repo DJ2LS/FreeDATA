@@ -32,3 +32,4 @@ class ARQFrameHandler(frame_handler.FrameHandler):
             print("received data frame....")
             irs_session:ARQSessionIRS = self.states.get_arq_irs_session(frame['session_id'])
             irs_session.on_data_received(frame)
+            irs_session.rx_data_chain(frame)
