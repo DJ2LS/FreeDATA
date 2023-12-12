@@ -9,6 +9,7 @@ from arq_session_iss import ARQSessionISS
 class ARQFrameHandler(frame_handler.FrameHandler):
 
     def follow_protocol(self):
+        # self.details == {'frame': {'frame_type': 'BURST_01', 'frame_type_int': 1, 'n_frames_per_burst': 1, 'session_id': 31, 'data': b'Hello world!'}, 'snr': 0, 'frequency_offset': 0, 'freedv_inst': None, 'bytes_per_frame': 15}
         frame = self.details['frame']
 
         # ARQ session open received

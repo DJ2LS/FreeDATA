@@ -199,7 +199,6 @@ class DataFrameFactory:
 
     def deconstruct(self, frame):
         buffer_position = 1
-
         # Extract frametype and get the corresponding template
         frametype = int.from_bytes(frame[:1], "big")
         frame_template = self.template_list.get(frametype)

@@ -21,7 +21,7 @@ class FrameHandler():
         self.details = {
             'frame' : None, 
             'snr' : 0, 
-            'freq_offset': 0, 
+            'frequency_offset': 0,
             'freedv_inst': None, 
             'bytes_per_frame': 0
         }
@@ -34,7 +34,7 @@ class FrameHandler():
         activity = {
             "direction": "received",
             "snr": self.details['snr'],
-            "freq_offset": self.details['freq_offset'],
+            "frequency_offset": self.details['frequency_offset'],
             "activity_type": frame["frame_type"]
         }
         if "origin" in frame:
@@ -64,7 +64,7 @@ class FrameHandler():
             dxgrid,
             self.name,
             self.details['snr'],
-            self.details['freq_offset'],
+            self.details['frequency_offset'],
             self.states.radio_frequency,
             self.states.heard_stations,
         )
@@ -112,10 +112,10 @@ class FrameHandler():
         self.logger.info(f"[Frame Handler] Handling frame {self.details['frame']}")
         pass
 
-    def handle(self, frame, snr, freq_offset, freedv_inst, bytes_per_frame):
+    def handle(self, frame, snr, frequency_offset, freedv_inst, bytes_per_frame):
         self.details['frame'] = frame
         self.details['snr'] = snr
-        self.details['freq_offset'] = freq_offset
+        self.details['frequency_offset'] = frequency_offset
         self.details['freedv_inst'] = freedv_inst
         self.details['bytes_per_frame'] = bytes_per_frame
 
