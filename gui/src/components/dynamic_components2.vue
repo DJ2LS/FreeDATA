@@ -19,6 +19,7 @@ import s_meter from "./grid/grid_s-meter.vue";
 import dbfs_meter from "./grid/grid_dbfs.vue";
 import grid_activities from "./grid/grid_activities.vue";
 import grid_button from "./grid/button.vue";
+import grid_ptt from "./grid/grid_ptt.vue";
 import { stateDispatcher } from "../js/eventHandler";
 
 let count = ref(0);
@@ -126,6 +127,14 @@ const gridWidgets = [
     false,
     true,
     "Broadcasts",
+  ),
+  new gridWidget(
+    grid_ptt,
+    { x: 3, y: 27, w: 2, h: 8 },
+    "PTT indicator",
+    false,
+    true,
+    "Rig",
   ),
 ];
 onMounted(() => {
