@@ -3,8 +3,10 @@ sys.path.append('modem')
 
 import unittest
 from config import CONFIG
-import data_frame_factory
+from data_frame_factory import DataFrameFactory
+from codec2 import FREEDV_MODE
 import helpers
+from modem_frametypes import FRAME_TYPE
 
 class TestDataFrameFactory(unittest.TestCase):
 
@@ -12,7 +14,7 @@ class TestDataFrameFactory(unittest.TestCase):
     def setUpClass(cls):
         config_manager = CONFIG('modem/config.ini.example')
         config = config_manager.read()
-        cls.factory = data_frame_factory.DataFrameFactory(config)
+        cls.factory = DataFrameFactory(config)
 
     def testBeacon(self):
         beacon_frame = self.factory.build_beacon()
@@ -25,16 +27,15 @@ class TestDataFrameFactory(unittest.TestCase):
         ping_frame = self.factory.build_ping(dxcall)
         ping_data = self.factory.deconstruct(ping_frame)
         self.assertEqual(ping_data['origin'], self.factory.myfullcall)
-        self.assertEqual(ping_data['destination_crc'], helpers.get_crc_24(dxcall))
+        self.assertEqual(ping_data['destination_crc'], helpers.get_crc_24(dxcall).hex())
 
-    def testARQConnectWide(self):
+    def testARQConnect(self):
         dxcall = "DJ2LS-4"
         session_id = 123
-        frame = self.factory.build_arq_connect(True, dxcall, session_id)
+        frame = self.factory.build_arq_session_open(dxcall, session_id)
         frame_data = self.factory.deconstruct(frame)
 
         self.assertEqual(frame_data['origin'], self.factory.myfullcall)
-
         self.assertEqual(frame_data['session_id'] , session_id)
 
     def testCQ(self):
@@ -42,6 +43,26 @@ class TestDataFrameFactory(unittest.TestCase):
         frame_data = self.factory.deconstruct(frame)
         self.assertEqual(frame_data['origin'], self.factory.myfullcall)
         self.assertEqual(frame_data['gridsquare'], self.factory.mygrid.upper())
+
+    def testBurstDataFrames(self):
+        session_id = 123
+        offset = 40
+        payload = b'Hello World!'
+        frame = self.factory.build_arq_burst_frame(FREEDV_MODE.datac3, 
+                                                session_id, offset, payload)
+        frame_data = self.factory.deconstruct(frame)
+        self.assertEqual(frame_data['session_id'], session_id)
+        self.assertEqual(frame_data['offset'], offset)
+        data = frame_data['data'][:len(payload)]
+        self.assertEqual(data, payload)
+
+        payload = payload * 1000
+        self.assertRaises(OverflowError, self.factory.build_arq_burst_frame,
+            FREEDV_MODE.datac3, session_id, offset, payload)
         
+    def testAvailablePayload(self):
+        avail = self.factory.get_available_data_payload_for_mode(FRAME_TYPE.BURST_FRAME, FREEDV_MODE.datac3)
+        self.assertEqual(avail, 123) # 128 bytes datac3 frame payload - BURST frame overhead
+
 if __name__ == '__main__':
     unittest.main()

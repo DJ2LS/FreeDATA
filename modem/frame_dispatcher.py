@@ -35,9 +35,9 @@ class DISPATCHER():
         FR_TYPE.ARQ_CONNECTION_OPEN.value: {"class": ARQFrameHandler, "name": "ARQ OPEN SESSION"},
         FR_TYPE.ARQ_STOP.value: {"class": ARQFrameHandler, "name": "ARQ STOP TX"},
         FR_TYPE.BEACON.value: {"class": FrameHandler, "name": "BEACON"},
-        FR_TYPE.BURST_FRAME.value:{"class": ARQFrameHandler, "name": "BURST_01"},
-        FR_TYPE.BURST_ACK.value: {"class": FrameHandler, "name":  "BURST ACK"},
-        FR_TYPE.BURST_NACK.value: {"class": FrameHandler, "name":  "BURST NACK"},
+        FR_TYPE.BURST_FRAME.value:{"class": ARQFrameHandler, "name": "BURST FRAME"},
+        FR_TYPE.BURST_ACK.value: {"class": ARQFrameHandler, "name":  "BURST ACK"},
+        FR_TYPE.BURST_NACK.value: {"class": ARQFrameHandler, "name":  "BURST NACK"},
         FR_TYPE.CQ.value: {"class": CQFrameHandler, "name":  "CQ"},
         FR_TYPE.FR_ACK.value: {"class": FrameHandler, "name":  "FRAME ACK"},
         FR_TYPE.FR_NACK.value: {"class": FrameHandler, "name":  "FRAME NACK"},
@@ -98,7 +98,7 @@ class DISPATCHER():
                 data['frequency_offset'],
             )
 
-    def new_process_data(self, bytes_out, freedv, bytes_per_frame: int, snr, offset) -> None:
+    def new_process_data(self, bytes_out, freedv, bytes_per_frame: int, snr, frequency_offset) -> None:
         # get frame as dictionary
         deconstructed_frame = self.frame_factory.deconstruct(bytes_out)
         frametype = deconstructed_frame["frame_type_int"]
@@ -116,7 +116,7 @@ class DISPATCHER():
                                 self.event_manager,
                                 self.modem_transmit_queue)
 
-        handler.handle(deconstructed_frame, snr, offset, freedv, bytes_per_frame)
+        handler.handle(deconstructed_frame, snr, frequency_offset, freedv, bytes_per_frame)
 
 
 

@@ -6,9 +6,9 @@ import structlog
 class ARQSession():
 
     MODE_BY_SPEED = [
-        codec2.FREEDV_MODE.datac4.value,
-        codec2.FREEDV_MODE.datac3.value,
-        codec2.FREEDV_MODE.datac1.value,
+        codec2.FREEDV_MODE.datac4,
+        codec2.FREEDV_MODE.datac3,
+        codec2.FREEDV_MODE.datac1,
     ]
 
     def __init__(self, config: dict, tx_frame_queue: queue.Queue, dxcall: str):
@@ -23,11 +23,6 @@ class ARQSession():
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
 
         self.id = None
-
-        # 3 bytes for the BOF Beginning of File indicator in a data frame
-        self.data_frame_bof = b"BOF"
-        # 3 bytes for the EOF End of File indicator in a data frame
-        self.data_frame_eof = b"EOF"
 
     def log(self, message, isWarning = False):
         msg = f"[{type(self).__name__}]: {message}"
@@ -47,10 +42,14 @@ class ARQSession():
         }
         self.tx_frame_queue.put(modem_queue_item)
 
-    def setState(self, state):
+    def set_state(self, state):
+        self.log(f"{type(self).__name__} state change from {self.state} to {state}")
         self.state = state
-        self.log(f"state changed to {state}")
 
     def get_payload_size(self, speed_level):
         mode = self.MODE_BY_SPEED[speed_level]
-        return codec2.get_bytes_per_frame(mode)
+        return codec2.get_bytes_per_frame(mode.value)
+
+    def set_details(self, snr, frequency_offset):
+        self.snr = snr
+        self.frequency_offset = frequency_offset

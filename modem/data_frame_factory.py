@@ -2,23 +2,6 @@ from modem_frametypes import FRAME_TYPE as FR_TYPE
 import helpers
 import codec2
 
-"""
-How to use this class:
-
-builder = DataFrameFactory()
-payload = {
-    "origin" : helpers.callsign_to_bytes("DJ2LS-9"),
-    "gridsquare": helpers.encode_grid("JN49ea"),
-    "data": bytes(4)
-}
-
-frame = builder.construct(FR_TYPE.CQ, payload)
-decoded_frame = builder.deconstruct(frame)
-decoded_frame: {'frame_type': 'CQ', 'origin': b'DJ2LS-9', 'gridsquare': 'JN49EA', 'data': bytearray(b'\x00\x00\x00\x00')}
-
-"""
-
-
 class DataFrameFactory:
 
     LENGTH_SIG0_FRAME = 14
@@ -135,7 +118,7 @@ class DataFrameFactory:
 
         # arq burst frame
         self.template_list[FR_TYPE.BURST_FRAME.value] = {
-            "frame_length": "dynamic",
+            "frame_length": None,
             "session_id": 1,
             "offset": 4,
             "data": "dynamic",
@@ -161,27 +144,31 @@ class DataFrameFactory:
             "snr": 1,
         }
 
-    def construct(self, frametype, content, frame_length=LENGTH_SIG1_FRAME):
-        # frame_length: can be set manually for data frames, whose length can be dynamic regarding corresponding mode
-        # data bursts have a frame type range of 01-50
-        if frametype in range(1, 50):
-            frame_template = self.template_list[frametype]
-            frame = bytearray(frame_length)
-            # override "dynamic" value of payload length
-            self.template_list[frametype]["data"] = frame_length - 3
-            frame[:1] = bytes([frametype])
+    def construct(self, frametype, content, frame_length = LENGTH_SIG1_FRAME):
 
+        frame_template = self.template_list[frametype.value]
+
+        if isinstance(frame_template["frame_length"], int):
+            length = frame_template["frame_length"]
         else:
-            frame_template = self.template_list[frametype.value]
-            frame_length = frame_template["frame_length"]
-            frame = bytearray(frame_length)
-            frame[:1] = bytes([frametype.value])
+            length = frame_length
+
+        frame = bytearray(frame_length)
+        frame[:1] = bytes([frametype.value])
 
         buffer_position = 1
         for key, item_length in frame_template.items():
-            if key != "frame_length":
-                frame[buffer_position: buffer_position + item_length] = content[key]
-                buffer_position += item_length
+            if key == "frame_length":
+                continue
+
+            if not isinstance(item_length, int):
+                item_length = len(content[key])
+
+            if buffer_position + item_length > frame_length:
+                raise OverflowError("Frame data overflow!")
+            
+            frame[buffer_position: buffer_position + item_length] = content[key]
+            buffer_position += item_length
 
         return frame
 
@@ -198,50 +185,52 @@ class DataFrameFactory:
         extracted_data = {"frame_type": FR_TYPE(frametype).name, "frame_type_int": frametype}
 
         for key, item_length in frame_template.items():
-            if key != "frame_length":
-                # data is always on the last payload slots
-                if item_length in ["dynamic"] and key in["data"]:
-                    data = frame[buffer_position:]
-                    item_length = len(data)
-                else:
-                    data = frame[buffer_position: buffer_position + item_length]
+            if key == "frame_length":
+                continue
 
-                # Process the data based on the key
-                if key in ["origin", "destination"]:
-                    extracted_data[key] = helpers.bytes_to_callsign(data).decode()
+            # data is always on the last payload slots
+            if item_length in ["dynamic"] and key in["data"]:
+                data = frame[buffer_position:]
+                item_length = len(data)
+            else:
+                data = frame[buffer_position: buffer_position + item_length]
 
-                if key in ["origin_crc", "destination_crc"]:
-                    extracted_data[key] = data.hex()
+            # Process the data based on the key
+            if key in ["origin", "destination"]:
+                extracted_data[key] = helpers.bytes_to_callsign(data).decode()
 
-                elif key == "gridsquare":
-                    extracted_data[key] = helpers.decode_grid(data)
+            elif key in ["origin_crc", "destination_crc", "total_crc"]:
+                extracted_data[key] = data.hex()
 
-                elif key in ["session_id", "speed_level", "frames_per_burst", "version"]:
-                    extracted_data[key] = int.from_bytes(data, 'big')
+            elif key == "gridsquare":
+                extracted_data[key] = helpers.decode_grid(data)
 
-                else:
-                    extracted_data[key] = data
+            elif key in ["session_id", "speed_level", 
+                            "frames_per_burst", "version",
+                            "snr", "offset", "total_length"]:
+                extracted_data[key] = int.from_bytes(data, 'big')
 
-                buffer_position += item_length
+            else:
+                extracted_data[key] = data
+
+            buffer_position += item_length
 
         return extracted_data
 
 
-    def get_bytes_per_frame(mode: int) -> int:
-        """
-        Provide bytes per frame information for accessing from data handler
-
-        :param mode: Codec2 mode to query
-        :type mode: int or str
-        :return: Bytes per frame of the supplied codec2 data mode
-        :rtype: int
-        """
-        freedv = codec2.open_instance(mode)
-        # get number of bytes per frame for mode
+    def get_bytes_per_frame(self, mode: codec2.FREEDV_MODE) -> int:
+        freedv = codec2.open_instance(mode.value)
         bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv) / 8)
-        # TODO add close session
         return bytes_per_frame
+    
+    def get_available_data_payload_for_mode(self, type: FR_TYPE, mode:codec2.FREEDV_MODE):
+        whole_frame_length = self.get_bytes_per_frame(mode)
 
+        available = whole_frame_length
+        for field, length in self.template_list[type.value].items():
+            if field != 'frame_length' and isinstance(length, int):
+                available -= length
+        return available
 
     def build_ping(self, destination):
         payload = {
@@ -344,25 +333,25 @@ class DataFrameFactory:
         payload = {
             "frame_length": self.LENGTH_SIG0_FRAME,
             "session_id": session_id.to_bytes(1, 'big'),
-            "total_crc": total_crc,
+            "total_crc": bytes.fromhex(total_crc),
             "snr": snr.to_bytes(1, 'big'),
             "speed_level": speed_level.to_bytes(1, 'big'),
             "frames_per_burst": frames_per_burst.to_bytes(1, 'big'),
         }        
         return self.construct(FR_TYPE.ARQ_SESSION_INFO_ACK, payload)
 
-    def build_arq_burst_frame(self, session_id: int, offset: int, data: bytes):
+    def build_arq_burst_frame(self, freedv_mode: codec2.FREEDV_MODE, session_id: int, offset: int, data: bytes):
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),
             "offset": offset.to_bytes(4, 'big'),
             "data": data,
         }
-        return self.construct(FR_TYPE.BURST_FRAME, payload)
+        return self.construct(FR_TYPE.BURST_FRAME, payload, self.get_bytes_per_frame(freedv_mode))
 
     def build_arq_burst_ack(self, session_id: bytes, offset, speed_level: int, 
                             frames_per_burst: int, snr: int):
         payload = {
-            "session_id": session_id,
+            "session_id": session_id.to_bytes(1, 'big'),
             "offset": offset.to_bytes(4, 'big'),
             "speed_level": speed_level.to_bytes(1, 'big'),
             "frames_per_burst": frames_per_burst.to_bytes(1, 'big'),
@@ -373,7 +362,7 @@ class DataFrameFactory:
     def build_arq_burst_nack(self, session_id: bytes, offset, speed_level: int, 
                             frames_per_burst: int, snr: int):
         payload = {
-            "session_id": session_id,
+            "session_id": session_id.to_bytes(1, 'big'),
             "offset": offset.to_bytes(4, 'big'),
             "speed_level": speed_level.to_bytes(1, 'big'),
             "frames_per_burst": frames_per_burst.to_bytes(1, 'big'),
