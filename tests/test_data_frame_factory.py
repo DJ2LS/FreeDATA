@@ -54,6 +54,10 @@ class TestDataFrameFactory(unittest.TestCase):
         self.assertEqual(frame_data['offset'], offset)
         data = frame_data['data'][:len(payload)]
         self.assertEqual(data, payload)
-        
+
+        payload = payload * 1000
+        self.assertRaises(RuntimeError, self.factory.build_arq_burst_frame,
+            FREEDV_MODE.datac3, session_id, offset, payload)
+
 if __name__ == '__main__':
     unittest.main()
