@@ -94,7 +94,8 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     def run(self):
         self.set_state(self.STATE_WAITING_DATA)
-        self.thread = threading.Thread(target=self.runner, name=f"ARQ IRS Session {self.id}", daemon=False)
+        self.thread = threading.Thread(target=self.runner, 
+                                       name=f"ARQ IRS Session {self.id}", daemon=False)
         self.thread.start()
 
     def send_open_ack(self):
@@ -123,6 +124,10 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.frames_per_burst = self.frames_per_burst
 
     def on_info_received(self, frame):
+        if self.state != self.STATE_CONN_REQ_RECEIVED:
+            self.logger.warning("Discarding received INFO.")
+            return
+        
         self.received_data = bytearray(frame['total_length'])
         self.received_crc = frame['total_crc']
         self.dx_snr = frame['snr']
@@ -134,7 +139,8 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     def on_data_received(self, frame):
         if self.state != self.STATE_WAITING_DATA:
-            raise RuntimeError(f"ARQ Session: Received data while in state {self.state}, expected {self.STATE_WAITING_DATA}")
+            self.logger.warning(f"ARQ Session: Received data while in state {self.state}. Ignoring.")
+            return
         
         self.received_frame = frame
         self.event_data_received.set()
@@ -144,10 +150,10 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.logger.info(f"Discarding data frame due to wrong offset", frame=self.frame_received)
             return False
 
-        remaining_data_length = len(self.receive_data) - self.received_bytes
+        remaining_data_length = len(self.received_data) - self.received_bytes
 
         # Is this the last data part?
-        if len(self.received_frame['data']) <= remaining_data_length:
+        if remaining_data_length <= len(self.received_frame['data']):
             # we only want the remaining length, not the entire frame data
             data_part = self.received_frame['data'][:remaining_data_length]
         else:

@@ -24,11 +24,6 @@ class ARQSession():
 
         self.id = None
 
-        # 3 bytes for the BOF Beginning of File indicator in a data frame
-        self.data_frame_bof = b"BOF"
-        # 3 bytes for the EOF End of File indicator in a data frame
-        self.data_frame_eof = b"EOF"
-
     def log(self, message, isWarning = False):
         msg = f"[{type(self).__name__}]: {message}"
         logger = self.logger.warn if isWarning else self.logger.info

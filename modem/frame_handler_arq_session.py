@@ -9,19 +9,27 @@ from arq_session_iss import ARQSessionISS
 class ARQFrameHandler(frame_handler.FrameHandler):
 
     def follow_protocol(self):
-        # self.details == {'frame': {'frame_type': 'BURST_01', 'frame_type_int': 1, 'n_frames_per_burst': 1, 'session_id': 31, 'data': b'Hello world!'}, 'snr': 0, 'frequency_offset': 0, 'freedv_inst': None, 'bytes_per_frame': 15}
         frame = self.details['frame']
         snr = self.details["snr"]
         frequency_offset = self.details["frequency_offset"]
 
         if frame['frame_type_int'] == FR.ARQ_SESSION_OPEN.value:
-            session = ARQSessionIRS(self.config, 
-                                    self.tx_frame_queue, 
-                                    frame['origin'], 
-                                    frame['session_id'])
-            self.states.register_arq_irs_session(session)
-            session.set_details(snr, frequency_offset)
-            session.run()
+            # Lost OPEN_ACK case .. ISS will retry opening a session
+            if frame['session_id'] in self.states.arq_irs_sessions:
+                session = self.states.arq_irs_sessions[frame['session_id']]
+                if session.state == ARQSessionIRS.STATE_CONN_REQ_RECEIVED:
+                    session.set_details(snr, frequency_offset)
+                else:
+                    self.logger.warning(f"IRS Session conflict for session {session.id}")
+            # Normal case when receiving a SESSION_OPEN for the first time
+            else:
+                session = ARQSessionIRS(self.config, 
+                                        self.tx_frame_queue, 
+                                        frame['origin'], 
+                                        frame['session_id'])
+                self.states.register_arq_irs_session(session)
+                session.set_details(snr, frequency_offset)
+                session.run()
 
         elif frame['frame_type_int'] == FR.ARQ_SESSION_OPEN_ACK.value:
             session:ARQSessionISS = self.states.get_arq_iss_session(frame['session_id'])

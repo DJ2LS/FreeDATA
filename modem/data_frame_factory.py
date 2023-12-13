@@ -199,7 +199,7 @@ class DataFrameFactory:
             if key in ["origin", "destination"]:
                 extracted_data[key] = helpers.bytes_to_callsign(data).decode()
 
-            elif key in ["origin_crc", "destination_crc"]:
+            elif key in ["origin_crc", "destination_crc", "total_crc"]:
                 extracted_data[key] = data.hex()
 
             elif key == "gridsquare":
@@ -207,7 +207,7 @@ class DataFrameFactory:
 
             elif key in ["session_id", "speed_level", 
                             "frames_per_burst", "version",
-                            "snr", "offset"]:
+                            "snr", "offset", "total_length"]:
                 extracted_data[key] = int.from_bytes(data, 'big')
 
             else:
@@ -333,7 +333,7 @@ class DataFrameFactory:
         payload = {
             "frame_length": self.LENGTH_SIG0_FRAME,
             "session_id": session_id.to_bytes(1, 'big'),
-            "total_crc": total_crc,
+            "total_crc": bytes.fromhex(total_crc),
             "snr": snr.to_bytes(1, 'big'),
             "speed_level": speed_level.to_bytes(1, 'big'),
             "frames_per_burst": frames_per_burst.to_bytes(1, 'big'),
