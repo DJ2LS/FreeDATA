@@ -342,7 +342,7 @@ class DataFrameFactory:
     def build_arq_burst_ack(self, session_id: bytes, offset, speed_level: int, 
                             frames_per_burst: int, snr: int):
         payload = {
-            "session_id": session_id,
+            "session_id": session_id.to_bytes(1, 'big'),
             "offset": offset.to_bytes(4, 'big'),
             "speed_level": speed_level.to_bytes(1, 'big'),
             "frames_per_burst": frames_per_burst.to_bytes(1, 'big'),
@@ -353,7 +353,7 @@ class DataFrameFactory:
     def build_arq_burst_nack(self, session_id: bytes, offset, speed_level: int, 
                             frames_per_burst: int, snr: int):
         payload = {
-            "session_id": session_id,
+            "session_id": session_id.to_bytes(1, 'big'),
             "offset": offset.to_bytes(4, 'big'),
             "speed_level": speed_level.to_bytes(1, 'big'),
             "frames_per_burst": frames_per_burst.to_bytes(1, 'big'),

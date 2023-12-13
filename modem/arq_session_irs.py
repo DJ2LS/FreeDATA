@@ -112,7 +112,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             builder = self.frame_factory.build_arq_burst_nack
 
         frame = builder (
-            self.session_id, self.received_bytes, 
+            self.id, self.received_bytes, 
             self.speed_level, self.frames_per_burst, self.snr)
         
         self.transmit_frame(frame)
@@ -129,14 +129,14 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         self.calibrate_speed_settings()
         self.set_modem_decode_modes(None)
-        
+
         self.event_info_received.set()
 
     def on_data_received(self, frame):
         if self.state != self.STATE_WAITING_DATA:
             raise RuntimeError(f"ARQ Session: Received data while in state {self.state}, expected {self.STATE_WAITING_DATA}")
         
-        self.frame_received = frame
+        self.received_frame = frame
         self.event_data_received.set()
 
     def process_incoming_data(self):
