@@ -165,7 +165,7 @@ class DataFrameFactory:
                 item_length = len(content[key])
 
             if buffer_position + item_length > frame_length:
-                raise RuntimeError("Frame data overflow!")
+                raise OverflowError("Frame data overflow!")
             
             frame[buffer_position: buffer_position + item_length] = content[key]
             buffer_position += item_length
