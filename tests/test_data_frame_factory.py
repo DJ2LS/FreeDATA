@@ -25,16 +25,15 @@ class TestDataFrameFactory(unittest.TestCase):
         ping_frame = self.factory.build_ping(dxcall)
         ping_data = self.factory.deconstruct(ping_frame)
         self.assertEqual(ping_data['origin'], self.factory.myfullcall)
-        self.assertEqual(ping_data['destination_crc'], helpers.get_crc_24(dxcall))
+        self.assertEqual(ping_data['destination_crc'], helpers.get_crc_24(dxcall).hex())
 
-    def testARQConnectWide(self):
+    def testARQConnect(self):
         dxcall = "DJ2LS-4"
         session_id = 123
-        frame = self.factory.build_arq_connect(True, dxcall, session_id)
+        frame = self.factory.build_arq_session_open(dxcall, session_id)
         frame_data = self.factory.deconstruct(frame)
 
         self.assertEqual(frame_data['origin'], self.factory.myfullcall)
-
         self.assertEqual(frame_data['session_id'] , session_id)
 
     def testCQ(self):
