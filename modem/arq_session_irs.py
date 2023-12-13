@@ -94,7 +94,7 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     def run(self):
         self.set_state(self.STATE_WAITING_DATA)
-        self.thread = threading.Thread(target=self.runner, name=f"ARQ IRS Session {self.id}", daemon=True)
+        self.thread = threading.Thread(target=self.runner, name=f"ARQ IRS Session {self.id}", daemon=False)
         self.thread.start()
 
     def send_open_ack(self):

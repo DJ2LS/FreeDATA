@@ -52,7 +52,7 @@ class ARQSessionISS(arq_session.ARQSession):
         return self.send_data()
     
     def run(self):
-        self.thread = threading.Thread(target=self.runner, name=f"ARQ ISS Session {self.id}", daemon=True)
+        self.thread = threading.Thread(target=self.runner, name=f"ARQ ISS Session {self.id}", daemon=False)
         self.thread.run()
     
     def handshake(self, frame, event):
@@ -123,11 +123,11 @@ class ARQSessionISS(arq_session.ARQSession):
         self.set_state(self.STATE_DISCONNECTED)
         return False
 
-    def on_transfer_ack_received(self, ack):
+    def on_burst_ack_received(self, ack):
         self.speed_level = ack['speed_level']
         self.event_transfer_ack_received.set()
 
-    def on_transfer_nack_received(self, nack):
+    def on_burst_nack_received(self, nack):
         self.speed_level = nack['speed_level']
         self.event_transfer_ack_received.set()
 
