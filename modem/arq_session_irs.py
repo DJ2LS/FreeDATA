@@ -6,8 +6,9 @@ import arq_session
 class ARQSessionIRS(arq_session.ARQSession):
 
     STATE_CONN_REQ_RECEIVED = 0
-    STATE_WAITING_DATA = 1
-    STATE_FAILED = 2
+    STATE_WAITING_INFO = 1
+    STATE_WAITING_DATA = 2
+    STATE_FAILED = 3
     STATE_ENDED = 10
 
     RETRIES_CONNECT = 3
@@ -51,10 +52,15 @@ class ARQSessionIRS(arq_session.ARQSession):
     def _all_data_received(self):
         return self.received_bytes == len(self.received_data)
 
-    def handshake(self):
-        self.send_open_ack()
+    def handshake_session(self):
+        if self.state in [self.STATE_CONN_REQ_RECEIVED, self.STATE_WAITING_INFO]:
+            self.send_open_ack()
+            self.set_state(self.STATE_WAITING_INFO)
+            return True
+        return False
 
-        if not self.event_info_received.wait(self.TIMEOUT_CONNECT):
+    def handshake_info(self):
+        if self.state == self.STATE_WAITING_INFO and not self.event_info_received.wait(self.TIMEOUT_CONNECT):
             return False
 
         self.send_info_ack()
@@ -86,14 +92,19 @@ class ARQSessionIRS(arq_session.ARQSession):
 
 
     def runner(self):
-        if not self.handshake(): 
+
+        if not self.handshake_session():
             return False
+
+        if not self.handshake_info():
+            return False
+
         if not self.receive_data(): 
             return False
         return True
 
     def run(self):
-        self.set_state(self.STATE_WAITING_DATA)
+        self.set_state(self.STATE_CONN_REQ_RECEIVED)
         self.thread = threading.Thread(target=self.runner, 
                                        name=f"ARQ IRS Session {self.id}", daemon=False)
         self.thread.start()
@@ -124,7 +135,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.frames_per_burst = self.frames_per_burst
 
     def on_info_received(self, frame):
-        if self.state != self.STATE_CONN_REQ_RECEIVED:
+        if self.state != self.STATE_WAITING_INFO:
             self.logger.warning("Discarding received INFO.")
             return
         

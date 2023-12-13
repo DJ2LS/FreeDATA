@@ -17,7 +17,7 @@ class ARQFrameHandler(frame_handler.FrameHandler):
             # Lost OPEN_ACK case .. ISS will retry opening a session
             if frame['session_id'] in self.states.arq_irs_sessions:
                 session = self.states.arq_irs_sessions[frame['session_id']]
-                if session.state == ARQSessionIRS.STATE_CONN_REQ_RECEIVED:
+                if session.state in [ARQSessionIRS.STATE_CONN_REQ_RECEIVED, ARQSessionIRS.STATE_WAITING_INFO]:
                     session.set_details(snr, frequency_offset)
                 else:
                     self.logger.warning(f"IRS Session conflict for session {session.id}")
