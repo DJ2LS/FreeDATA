@@ -6,9 +6,9 @@ import structlog
 class ARQSession():
 
     MODE_BY_SPEED = [
-        codec2.FREEDV_MODE.datac4.value,
-        codec2.FREEDV_MODE.datac3.value,
-        codec2.FREEDV_MODE.datac1.value,
+        codec2.FREEDV_MODE.datac4,
+        codec2.FREEDV_MODE.datac3,
+        codec2.FREEDV_MODE.datac1,
     ]
 
     def __init__(self, config: dict, tx_frame_queue: queue.Queue, dxcall: str):
@@ -53,7 +53,7 @@ class ARQSession():
 
     def get_payload_size(self, speed_level):
         mode = self.MODE_BY_SPEED[speed_level]
-        return codec2.get_bytes_per_frame(mode)
+        return codec2.get_bytes_per_frame(mode.value)
 
     def set_details(self, snr, frequency_offset):
         self.snr = snr

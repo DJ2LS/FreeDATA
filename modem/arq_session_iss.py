@@ -91,18 +91,13 @@ class ARQSessionISS(arq_session.ARQSession):
 
     # Sends the full payload in multiple frames
     def send_data(self):
-        # Todo make this n frames per burst stuff part of the protocol again
-        # hard coding n frames per burst to 1 for now.
-        n_frames_per_burst = 1
-        n_frame = 1
-
         offset = 0
         while offset < len(self.data):
             max_size = self.get_payload_size(self.speed_level)
             end_offset = min(len(self.data), max_size)
             frame_payload = self.data[offset:end_offset]
-            print(self.id)
             data_frame = self.frame_factory.build_arq_burst_frame(
+                self.MODE_BY_SPEED[self.speed_level],
                 self.id, offset, frame_payload)
             self.set_state(self.STATE_SENDING)
             if not self.send_arq(data_frame):

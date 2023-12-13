@@ -48,7 +48,8 @@ class ARQSessionIRS(arq_session.ARQSession):
             if self.event_data_received.wait(self.TIMEOUT_DATA):
                 retries = self.RETRIES_TRANSFER
                 self.append_data_to_burst_buffer()
-
+                self.send_data_nack
+            else:
                 self.send_data_nack()
 
         self.state = self.STATE_FAILED
@@ -68,8 +69,9 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.snr)
         self.transmit_frame(ack_frame)
 
-    def send_data_nack(self):
-        nack = self.frame_factory.build_arq_burst_nack(self.session_id, self.snr, self.speed_level, 
+    def send_data_ack_nack(self, ack: bool):
+        nack = self.frame_factory.build_arq_burst_nack(
+            self.session_id, self.snr, self.speed_level, 
                                                 10, # WTF?
                                                 1)
         self.transmit_frame(nack)
