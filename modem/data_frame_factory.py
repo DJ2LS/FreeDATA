@@ -158,9 +158,17 @@ class DataFrameFactory:
 
         buffer_position = 1
         for key, item_length in frame_template.items():
-            if key != "frame_length":
-                frame[buffer_position: buffer_position + item_length] = content[key]
-                buffer_position += item_length
+            if key == "frame_length":
+                continue
+
+            if not isinstance(item_length, int):
+                item_length = len(content[key])
+
+            if buffer_position + item_length > frame_length:
+                raise RuntimeError("Frame data overflow!")
+            
+            frame[buffer_position: buffer_position + item_length] = content[key]
+            buffer_position += item_length
 
         return frame
 
@@ -199,7 +207,7 @@ class DataFrameFactory:
 
             elif key in ["session_id", "speed_level", 
                             "frames_per_burst", "version",
-                            "snr"]:
+                            "snr", "offset"]:
                 extracted_data[key] = int.from_bytes(data, 'big')
 
             else:
@@ -210,8 +218,8 @@ class DataFrameFactory:
         return extracted_data
 
 
-    def get_bytes_per_frame(mode: int) -> int:
-        freedv = codec2.open_instance(mode)
+    def get_bytes_per_frame(self, mode: codec2.FREEDV_MODE) -> int:
+        freedv = codec2.open_instance(mode.value)
         bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv) / 8)
         return bytes_per_frame
 
@@ -323,7 +331,7 @@ class DataFrameFactory:
         }        
         return self.construct(FR_TYPE.ARQ_SESSION_INFO_ACK, payload)
 
-    def build_arq_burst_frame(self, freedv_mode: int, session_id: int, offset: int, data: bytes):
+    def build_arq_burst_frame(self, freedv_mode: codec2.FREEDV_MODE, session_id: int, offset: int, data: bytes):
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),
             "offset": offset.to_bytes(4, 'big'),

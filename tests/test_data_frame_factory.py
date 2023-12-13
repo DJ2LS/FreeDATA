@@ -3,7 +3,8 @@ sys.path.append('modem')
 
 import unittest
 from config import CONFIG
-import data_frame_factory
+from data_frame_factory import DataFrameFactory
+from codec2 import FREEDV_MODE
 import helpers
 
 class TestDataFrameFactory(unittest.TestCase):
@@ -12,7 +13,7 @@ class TestDataFrameFactory(unittest.TestCase):
     def setUpClass(cls):
         config_manager = CONFIG('modem/config.ini.example')
         config = config_manager.read()
-        cls.factory = data_frame_factory.DataFrameFactory(config)
+        cls.factory = DataFrameFactory(config)
 
     def testBeacon(self):
         beacon_frame = self.factory.build_beacon()
@@ -41,6 +42,18 @@ class TestDataFrameFactory(unittest.TestCase):
         frame_data = self.factory.deconstruct(frame)
         self.assertEqual(frame_data['origin'], self.factory.myfullcall)
         self.assertEqual(frame_data['gridsquare'], self.factory.mygrid.upper())
+
+    def testBurstDataFrames(self):
+        session_id = 123
+        offset = 40
+        payload = b'Hello World!'
+        frame = self.factory.build_arq_burst_frame(FREEDV_MODE.datac3, 
+                                                session_id, offset, payload)
+        frame_data = self.factory.deconstruct(frame)
+        self.assertEqual(frame_data['session_id'], session_id)
+        self.assertEqual(frame_data['offset'], offset)
+        data = frame_data['data'][:len(payload)]
+        self.assertEqual(data, payload)
         
 if __name__ == '__main__':
     unittest.main()
