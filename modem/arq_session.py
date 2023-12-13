@@ -47,9 +47,9 @@ class ARQSession():
         }
         self.tx_frame_queue.put(modem_queue_item)
 
-    def setState(self, state):
+    def set_state(self, state):
+        self.log(f"{type(self).__name__} state change from {self.state} to {state}")
         self.state = state
-        self.log(f"state changed to {state}")
 
     def get_payload_size(self, speed_level):
         mode = self.MODE_BY_SPEED[speed_level]
