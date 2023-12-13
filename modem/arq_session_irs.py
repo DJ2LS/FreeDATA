@@ -2,6 +2,7 @@ import threading
 import data_frame_factory
 import queue
 import arq_session
+import helpers
 
 class ARQSessionIRS(arq_session.ARQSession):
 
@@ -52,6 +53,9 @@ class ARQSessionIRS(arq_session.ARQSession):
     def _all_data_received(self):
         return self.received_bytes == len(self.received_data)
 
+    def _final_crc_check(self):
+        return self.received_crc == helpers.get_crc_32(bytes(self.received_data)).hex()
+
     def handshake_session(self):
         if self.state in [self.STATE_CONN_REQ_RECEIVED, self.STATE_WAITING_INFO]:
             self.send_open_ack()
@@ -86,8 +90,13 @@ class ARQSessionIRS(arq_session.ARQSession):
             retries -= 1
 
         if self._all_data_received():
-            self.set_state(self.STATE_ENDED)
-        else: 
+            if self._final_crc_check():
+                self.set_state(self.STATE_ENDED)
+            else:
+                self.logger.warning("CRC check failed.")
+                self.set_state(self.STATE_FAILED)
+
+        else:
             self.set_state(self.STATE_FAILED)
 
 
