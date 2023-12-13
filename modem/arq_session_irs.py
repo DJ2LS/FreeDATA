@@ -30,7 +30,6 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         self.event_info_received = threading.Event()
         self.event_data_received = threading.Event()
-
         
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
 
@@ -91,6 +90,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             return False
         if not self.receive_data(): 
             return False
+        return True
 
     def run(self):
         self.set_state(self.STATE_WAITING_DATA)
@@ -141,11 +141,22 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     def process_incoming_data(self):
         if self.received_frame['offset'] != self.received_bytes:
-            self.logger.info(f"Discarding data frame", frame=self.frame_received)
+            self.logger.info(f"Discarding data frame due to wrong offset", frame=self.frame_received)
             return False
 
-        self.received_data[self.received_frame['offset']:] = self.received_frame['data']
-        self.received_bytes += len(self.received_frame['data'])
+        remaining_data_length = len(self.receive_data) - self.received_bytes
+
+        # Is this the last data part?
+        if len(self.received_frame['data']) <= remaining_data_length:
+            # we only want the remaining length, not the entire frame data
+            data_part = self.received_frame['data'][:remaining_data_length]
+        else:
+            # we want the entire frame data
+            data_part = self.received_frame['data']
+
+        self.received_data[self.received_frame['offset']:] = data_part
+        self.received_bytes += len(data_part)
+
         return True
 
     def on_burst_ack_received(self, ack):

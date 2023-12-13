@@ -98,7 +98,7 @@ class DISPATCHER():
                 data['frequency_offset'],
             )
 
-    def new_process_data(self, bytes_out, freedv, bytes_per_frame: int, snr, offset) -> None:
+    def new_process_data(self, bytes_out, freedv, bytes_per_frame: int, snr, frequency_offset) -> None:
         # get frame as dictionary
         deconstructed_frame = self.frame_factory.deconstruct(bytes_out)
         frametype = deconstructed_frame["frame_type_int"]
@@ -116,7 +116,7 @@ class DISPATCHER():
                                 self.event_manager,
                                 self.modem_transmit_queue)
 
-        handler.handle(deconstructed_frame, snr, offset, freedv, bytes_per_frame)
+        handler.handle(deconstructed_frame, snr, frequency_offset, freedv, bytes_per_frame)
 
 
 

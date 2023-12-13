@@ -72,7 +72,7 @@ class TestARQSession(unittest.TestCase):
     def testARQSession(self):
 
         # set Packet Error Rate (PER) / frame loss probability
-        self.loss_probability = 0
+        self.loss_probability = 50
 
         self.establishChannels()
         params = {

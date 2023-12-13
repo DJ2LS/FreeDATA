@@ -222,6 +222,15 @@ class DataFrameFactory:
         freedv = codec2.open_instance(mode.value)
         bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv) / 8)
         return bytes_per_frame
+    
+    def get_available_data_payload_for_mode(self, type: FR_TYPE, mode:codec2.FREEDV_MODE):
+        whole_frame_length = self.get_bytes_per_frame(mode)
+
+        available = whole_frame_length
+        for field, length in self.template_list[type.value].items():
+            if field != 'frame_length' and isinstance(length, int):
+                available -= length
+        return available
 
     def build_ping(self, destination):
         payload = {

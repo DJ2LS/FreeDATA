@@ -64,7 +64,7 @@ class ARQSessionISS(arq_session.ARQSession):
                 return True
             retries = retries - 1
 
-        self.setState(self.STATE_DISCONNECTED)
+        self.set_state(self.STATE_DISCONNECTED)
         return False
 
     def session_open(self):

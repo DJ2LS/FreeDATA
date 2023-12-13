@@ -6,6 +6,7 @@ from config import CONFIG
 from data_frame_factory import DataFrameFactory
 from codec2 import FREEDV_MODE
 import helpers
+from modem_frametypes import FRAME_TYPE
 
 class TestDataFrameFactory(unittest.TestCase):
 
@@ -58,6 +59,10 @@ class TestDataFrameFactory(unittest.TestCase):
         payload = payload * 1000
         self.assertRaises(OverflowError, self.factory.build_arq_burst_frame,
             FREEDV_MODE.datac3, session_id, offset, payload)
+        
+    def testAvailablePayload(self):
+        avail = self.factory.get_available_data_payload_for_mode(FRAME_TYPE.BURST_FRAME, FREEDV_MODE.datac3)
+        self.assertEqual(avail, 123) # 128 bytes datac3 frame payload - BURST frame overhead
 
 if __name__ == '__main__':
     unittest.main()
