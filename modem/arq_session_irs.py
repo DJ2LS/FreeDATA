@@ -13,7 +13,7 @@ class ARQSessionIRS(arq_session.ARQSession):
     STATE_ENDED = 10
 
     RETRIES_CONNECT = 3
-    RETRIES_TRANSFER = 3
+    RETRIES_TRANSFER = 3 # we need to increase this
 
     TIMEOUT_CONNECT = 6
     TIMEOUT_DATA = 6
@@ -27,6 +27,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.version = 1
         self.snr = 0
         self.dx_snr = 0
+        self.retries = self.RETRIES_TRANSFER
 
         self.state = self.STATE_CONN_REQ_RECEIVED
 
@@ -79,15 +80,15 @@ class ARQSessionIRS(arq_session.ARQSession):
 
 
     def receive_data(self):
-        retries = self.RETRIES_TRANSFER
-        while retries > 0 and not self._all_data_received():
+        self.retries = self.RETRIES_TRANSFER
+        while self.retries > 0 and not self._all_data_received():
             if self.event_data_received.wait(self.TIMEOUT_DATA):
                 self.process_incoming_data()
                 self.send_data_ack_nack(True)
-                retries = self.RETRIES_TRANSFER
+                self.retries = self.RETRIES_TRANSFER
             else:
                 self.send_data_ack_nack(False)
-            retries -= 1
+            self.retries -= 1
 
         if self._all_data_received():
             if self._final_crc_check():
@@ -139,7 +140,20 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.transmit_frame(frame)
 
     def calibrate_speed_settings(self):
-        # TODO use some heuristics here
+
+        # decrement speed level after the 2nd retry
+        if self.RETRIES_TRANSFER - self.retries >= 2:
+            self.speed -= 1
+            self.speed = max(self.speed, 0)
+            return
+
+        # increment speed level after 2 successfully sent bursts and fitting snr
+        # TODO
+
+
+
+
+
         self.speed = self.speed
         self.frames_per_burst = self.frames_per_burst
 
