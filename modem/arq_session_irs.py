@@ -52,6 +52,8 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.received_bytes = 0
         self.received_crc = None
 
+        self.transmitted_acks = 0
+
     def set_modem_decode_modes(self, modes):
         pass
 
@@ -65,6 +67,13 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.transmit_frame(frame)
         self.log(f"Waiting {timeout} seconds...")
         if not self.event_frame_received.wait(timeout):
+            # use case: data burst got lost, we want to send a NACK with updated speed level
+            if self.state in [self.STATE_BURST_REPLY_SENT, self.STATE_INFO_ACK_SENT]:
+                self.transmitted_acks = 0
+                self.calibrate_speed_settings()
+                self.send_burst_nack()
+                return
+
             self.log("Timeout waiting for ISS. Session failed.")
             self.set_state(self.STATE_FAILED)
 
@@ -94,6 +103,12 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.launch_transmit_and_wait(info_ack, self.TIMEOUT_CONNECT)
         self.set_state(self.STATE_INFO_ACK_SENT)
 
+    def send_burst_nack(self):
+        self.calibrate_speed_settings()
+        nack = self.frame_factory.build_arq_burst_ack(self.id, self.received_bytes, self.speed_level, self.frames_per_burst, self.snr[0])
+        self.transmit_and_wait(nack)
+
+
     def process_incoming_data(self, frame):
         if frame['offset'] != self.received_bytes:
             self.logger.info(f"Discarding data frame due to wrong offset", frame=self.frame_received)
@@ -116,12 +131,14 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     def receive_data(self, burst_frame):
         self.process_incoming_data(burst_frame)
-
+        self.calibrate_speed_settings()
         ack = self.frame_factory.build_arq_burst_ack(
             self.id, self.received_bytes, 
             self.speed_level, self.frames_per_burst, self.snr[0])
 
         if not self.all_data_received():
+            # increase ack counter
+            self.transmitted_acks += 1
             self.transmit_and_wait(ack)
             self.set_state(self.STATE_BURST_REPLY_SENT)
             return
@@ -136,17 +153,12 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.set_state(self.STATE_FAILED)
 
     def calibrate_speed_settings(self):
-        return
-    
-        # decrement speed level after the 2nd retry
-        if self.RETRIES_TRANSFER - self.retries >= 2:
-            self.speed -= 1
-            self.speed = max(self.speed, 0)
-            return
+        # if we have two ACKS, then consider increasing speed level
+        if self.transmitted_acks >= 2:
+            self.transmitted_acks = 0
+            new_speed_level = min(self.speed_level + 1, len(self.SPEED_LEVEL_DICT) - 1)
 
-        # increment speed level after 2 successfully sent bursts and fitting snr
-        # TODO
+            # check first if the next mode supports the actual snr
+            if self.snr >= self.SPEED_LEVEL_DICT[new_speed_level]["min_snr"]:
+                self.speed_level = new_speed_level
 
-
-        self.speed = self.speed
-        self.frames_per_burst = self.frames_per_burst

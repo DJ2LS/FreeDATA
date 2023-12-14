@@ -105,7 +105,7 @@ class ARQSessionISS(arq_session.ARQSession):
             offset = self.confirmed_bytes
             payload = self.data[offset : offset + payload_size]
             data_frame = self.frame_factory.build_arq_burst_frame(
-                self.MODE_BY_SPEED[self.speed_level],
+                self.SPEED_LEVEL_DICT[self.speed_level]["mode"],
                 self.id, self.confirmed_bytes, payload)
             burst.append(data_frame)
 
