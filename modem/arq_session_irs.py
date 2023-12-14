@@ -2,16 +2,18 @@ import threading
 import data_frame_factory
 import queue
 import arq_session
+import helpers
 
 class ARQSessionIRS(arq_session.ARQSession):
 
     STATE_CONN_REQ_RECEIVED = 0
-    STATE_WAITING_DATA = 1
-    STATE_FAILED = 2
+    STATE_WAITING_INFO = 1
+    STATE_WAITING_DATA = 2
+    STATE_FAILED = 3
     STATE_ENDED = 10
 
     RETRIES_CONNECT = 3
-    RETRIES_TRANSFER = 3
+    RETRIES_TRANSFER = 3 # we need to increase this
 
     TIMEOUT_CONNECT = 6
     TIMEOUT_DATA = 6
@@ -25,6 +27,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.version = 1
         self.snr = 0
         self.dx_snr = 0
+        self.retries = self.RETRIES_TRANSFER
 
         self.state = self.STATE_CONN_REQ_RECEIVED
 
@@ -51,10 +54,18 @@ class ARQSessionIRS(arq_session.ARQSession):
     def _all_data_received(self):
         return self.received_bytes == len(self.received_data)
 
-    def handshake(self):
-        self.send_open_ack()
+    def _final_crc_check(self):
+        return self.received_crc == helpers.get_crc_32(bytes(self.received_data)).hex()
 
-        if not self.event_info_received.wait(self.TIMEOUT_CONNECT):
+    def handshake_session(self):
+        if self.state in [self.STATE_CONN_REQ_RECEIVED, self.STATE_WAITING_INFO]:
+            self.send_open_ack()
+            self.set_state(self.STATE_WAITING_INFO)
+            return True
+        return False
+
+    def handshake_info(self):
+        if self.state == self.STATE_WAITING_INFO and not self.event_info_received.wait(self.TIMEOUT_CONNECT):
             return False
 
         self.send_info_ack()
@@ -69,31 +80,41 @@ class ARQSessionIRS(arq_session.ARQSession):
 
 
     def receive_data(self):
-        retries = self.RETRIES_TRANSFER
-        while retries > 0 and not self._all_data_received():
+        self.retries = self.RETRIES_TRANSFER
+        while self.retries > 0 and not self._all_data_received():
             if self.event_data_received.wait(self.TIMEOUT_DATA):
                 self.process_incoming_data()
                 self.send_data_ack_nack(True)
-                retries = self.RETRIES_TRANSFER
+                self.retries = self.RETRIES_TRANSFER
             else:
                 self.send_data_ack_nack(False)
-            retries -= 1
+            self.retries -= 1
 
         if self._all_data_received():
-            self.set_state(self.STATE_ENDED)
-        else: 
+            if self._final_crc_check():
+                self.set_state(self.STATE_ENDED)
+            else:
+                self.logger.warning("CRC check failed.")
+                self.set_state(self.STATE_FAILED)
+
+        else:
             self.set_state(self.STATE_FAILED)
 
 
     def runner(self):
-        if not self.handshake(): 
+
+        if not self.handshake_session():
             return False
+
+        if not self.handshake_info():
+            return False
+
         if not self.receive_data(): 
             return False
         return True
 
     def run(self):
-        self.set_state(self.STATE_WAITING_DATA)
+        self.set_state(self.STATE_CONN_REQ_RECEIVED)
         self.thread = threading.Thread(target=self.runner, 
                                        name=f"ARQ IRS Session {self.id}", daemon=False)
         self.thread.start()
@@ -119,12 +140,25 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.transmit_frame(frame)
 
     def calibrate_speed_settings(self):
-        # TODO use some heuristics here
+
+        # decrement speed level after the 2nd retry
+        if self.RETRIES_TRANSFER - self.retries >= 2:
+            self.speed -= 1
+            self.speed = max(self.speed, 0)
+            return
+
+        # increment speed level after 2 successfully sent bursts and fitting snr
+        # TODO
+
+
+
+
+
         self.speed = self.speed
         self.frames_per_burst = self.frames_per_burst
 
     def on_info_received(self, frame):
-        if self.state != self.STATE_CONN_REQ_RECEIVED:
+        if self.state != self.STATE_WAITING_INFO:
             self.logger.warning("Discarding received INFO.")
             return
         

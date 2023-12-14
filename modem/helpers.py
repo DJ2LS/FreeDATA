@@ -49,6 +49,9 @@ def get_crc_8(data: str) -> bytes:
     Returns:
         CRC-8 (CCITT) of the provided data as bytes
     """
+    if not isinstance(data, (bytes)) or isinstance(data, (bytearray)):
+        data = bytes(data,"utf-8")
+
     crc_algorithm = crcengine.new("crc8-ccitt")  # load crc8 library
     crc_data = crc_algorithm(data)
     crc_data = crc_data.to_bytes(1, byteorder="big")
@@ -68,7 +71,7 @@ def get_crc_16(data: str) -> bytes:
     Returns:
         CRC-16 (CCITT) of the provided data as bytes
     """
-    if not isinstance(data, (bytes)):
+    if not isinstance(data, (bytes)) or isinstance(data, (bytearray)):
         data = bytes(data,"utf-8")
     
     crc_algorithm = crcengine.new("crc16-ccitt-false")  # load crc16 library
@@ -88,7 +91,7 @@ def get_crc_24(data: str) -> bytes:
     Returns:
         CRC-24 (OpenPGP) of the provided data as bytes
     """
-    if not isinstance(data, (bytes)):
+    if not isinstance(data, (bytes)) or isinstance(data, (bytearray)):
         data = bytes(data,'utf-8')
     crc_algorithm = crcengine.create(
         0x864CFB,
@@ -115,8 +118,8 @@ def get_crc_32(data: str) -> bytes:
     Returns:
         CRC-32 of the provided data as bytes
     """
-    if not isinstance(data, (bytes)):
-        data = bytes(data,"utf-8")
+    if not isinstance(data, (bytes)) or isinstance(data, (bytearray)):
+        data = bytes(data, "utf-8")
     crc_algorithm = crcengine.new("crc32")  # load crc32 library
     return crc_algorithm(data).to_bytes(4, byteorder="big")
 
