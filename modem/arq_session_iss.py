@@ -31,6 +31,8 @@ class ARQSessionISS(arq_session.ARQSession):
         self.event_open_ack_received = threading.Event()
         self.event_info_ack_received = threading.Event()
         self.event_transfer_ack_received = threading.Event()
+        self.event_transfer_data_ack_nack_received = threading.Event()
+
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
 
     def generate_id(self):
@@ -130,6 +132,9 @@ class ARQSessionISS(arq_session.ARQSession):
     def on_burst_nack_received(self, nack):
         self.speed_level = nack['speed_level']
         self.event_transfer_ack_received.set()
+
+    def on_data_ack_nack_received(self, ack_nack):
+        self.event_transfer_data_ack_nack_received.set()
 
     def on_disconnect_received(self):
         self.abort()

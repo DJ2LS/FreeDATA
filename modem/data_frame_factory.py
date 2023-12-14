@@ -117,7 +117,7 @@ class DataFrameFactory:
         }
 
         # arq burst frame
-        self.template_list[FR_TYPE.BURST_FRAME.value] = {
+        self.template_list[FR_TYPE.ARQ_BURST_FRAME.value] = {
             "frame_length": None,
             "session_id": 1,
             "offset": 4,
@@ -125,7 +125,7 @@ class DataFrameFactory:
         }
 
         # arq burst ack
-        self.template_list[FR_TYPE.BURST_ACK.value] = {
+        self.template_list[FR_TYPE.ARQ_BURST_ACK.value] = {
             "frame_length": self.LENGTH_SIG1_FRAME,
             "session_id": 1,
             "offset":4,
@@ -135,12 +135,20 @@ class DataFrameFactory:
         }
 
         # arq burst nack
-        self.template_list[FR_TYPE.BURST_NACK.value] = {
+        self.template_list[FR_TYPE.ARQ_BURST_NACK.value] = {
             "frame_length": self.LENGTH_SIG1_FRAME,
             "session_id": 1,
             "offset":4,
             "speed_level": 1,
             "frames_per_burst": 1,
+            "snr": 1,
+        }
+
+    # arq data ack nack
+        self.template_list[FR_TYPE.ARQ_DATA_ACK_NACK.value] = {
+            "frame_length": self.LENGTH_SIG1_FRAME,
+            "session_id": 1,
+            "state": 1,
             "snr": 1,
         }
 
@@ -207,7 +215,7 @@ class DataFrameFactory:
 
             elif key in ["session_id", "speed_level", 
                             "frames_per_burst", "version",
-                            "snr", "offset", "total_length"]:
+                            "snr", "offset", "total_length", "state"]:
                 extracted_data[key] = int.from_bytes(data, 'big')
 
             else:
@@ -346,7 +354,7 @@ class DataFrameFactory:
             "offset": offset.to_bytes(4, 'big'),
             "data": data,
         }
-        return self.construct(FR_TYPE.BURST_FRAME, payload, self.get_bytes_per_frame(freedv_mode))
+        return self.construct(FR_TYPE.ARQ_BURST_FRAME, payload, self.get_bytes_per_frame(freedv_mode))
 
     def build_arq_burst_ack(self, session_id: bytes, offset, speed_level: int, 
                             frames_per_burst: int, snr: int):
@@ -357,7 +365,7 @@ class DataFrameFactory:
             "frames_per_burst": frames_per_burst.to_bytes(1, 'big'),
             "snr": helpers.snr_to_bytes(snr),
         }
-        return self.construct(FR_TYPE.BURST_ACK, payload)
+        return self.construct(FR_TYPE.ARQ_BURST_ACK, payload)
 
     def build_arq_burst_nack(self, session_id: bytes, offset, speed_level: int, 
                             frames_per_burst: int, snr: int):
@@ -368,6 +376,12 @@ class DataFrameFactory:
             "frames_per_burst": frames_per_burst.to_bytes(1, 'big'),
             "snr": helpers.snr_to_bytes(snr),
         }
-        return self.construct(FR_TYPE.BURST_NACK, payload)
+        return self.construct(FR_TYPE.ARQ_BURST_NACK, payload)
 
-
+    def build_arq_data_ack_nack(self, session_id: bytes, state: int, snr: int):
+        payload = {
+            "session_id": session_id.to_bytes(1, 'big'),
+            "state": state.to_bytes(1, 'big'),
+            "snr": helpers.snr_to_bytes(snr),
+        }
+        return self.construct(FR_TYPE. ARQ_DATA_ACK_NACK, payload)

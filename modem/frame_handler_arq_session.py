@@ -46,19 +46,19 @@ class ARQFrameHandler(frame_handler.FrameHandler):
             session.set_details(snr, frequency_offset)
             session.on_info_ack_received(frame)
 
-        elif frame['frame_type_int'] == FR.BURST_FRAME.value:
+        elif frame['frame_type_int'] == FR.ARQ_BURST_FRAME.value:
             session:ARQSessionIRS = self.states.get_arq_irs_session(frame['session_id'])
             session.set_details(snr, frequency_offset)
             session.on_data_received(frame)
 
-        elif frame['frame_type_int'] == FR.BURST_ACK.value:
+        elif frame['frame_type_int'] == FR.ARQ_BURST_ACK.value:
             session:ARQSessionISS = self.states.get_arq_iss_session(frame['session_id'])
             session.set_details(snr, frequency_offset)
             session.on_burst_ack_received(frame)
 
-        elif frame['frame_type_int'] == FR.BURST_NACK.value:
+        elif frame['frame_type_int'] == FR.ARQ_DATA_ACK_NACK.value:
             session:ARQSessionISS = self.states.get_arq_iss_session(frame['session_id'])
             session.set_details(snr, frequency_offset)
-            session.on_burst_nack_received(frame)
+            session.on_data_ack_nack_received(frame)
         else:
             self.logger.warning("DISCARDING FRAME", frame=frame)

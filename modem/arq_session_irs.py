@@ -84,15 +84,17 @@ class ARQSessionIRS(arq_session.ARQSession):
         while self.retries > 0 and not self._all_data_received():
             if self.event_data_received.wait(self.TIMEOUT_DATA):
                 self.process_incoming_data()
-                self.send_data_ack_nack(True)
+                self.send_burst_ack_nack(True)
                 self.retries = self.RETRIES_TRANSFER
             else:
-                self.send_data_ack_nack(False)
+                self.send_burst_ack_nack(False)
             self.retries -= 1
 
         if self._all_data_received():
             if self._final_crc_check():
                 self.set_state(self.STATE_ENDED)
+                self.logger.info("------ ALL DATA RECEIVED ------", state=self.state, dxcall=self.dxcall, snr=self.snr)
+
             else:
                 self.logger.warning("CRC check failed.")
                 self.set_state(self.STATE_FAILED)
@@ -100,6 +102,8 @@ class ARQSessionIRS(arq_session.ARQSession):
         else:
             self.set_state(self.STATE_FAILED)
 
+        # finally send a data ack / nack
+        self.send_data_ack_nack()
 
     def runner(self):
 
@@ -127,7 +131,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.snr)
         self.transmit_frame(ack_frame)
 
-    def send_data_ack_nack(self, ack: bool):
+    def send_burst_ack_nack(self, ack: bool):
         if ack:
             builder = self.frame_factory.build_arq_burst_ack
         else:
@@ -138,6 +142,13 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.speed_level, self.frames_per_burst, self.snr)
         
         self.transmit_frame(frame)
+
+    def send_data_ack_nack(self):
+
+        builder = self.frame_factory.build_arq_data_ack_nack
+        frame = builder(self.id, self.state, self.snr)
+        self.transmit_frame(frame)
+
 
     def calibrate_speed_settings(self):
 
@@ -151,15 +162,12 @@ class ARQSessionIRS(arq_session.ARQSession):
         # TODO
 
 
-
-
-
         self.speed = self.speed
         self.frames_per_burst = self.frames_per_burst
 
     def on_info_received(self, frame):
         if self.state != self.STATE_WAITING_INFO:
-            self.logger.warning("Discarding received INFO.")
+            self.logger.warning("Discarding received INFO.", state=self.state)
             return
         
         self.received_data = bytearray(frame['total_length'])
