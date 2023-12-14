@@ -63,8 +63,9 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     def transmit_and_wait(self, frame, timeout):
         self.transmit_frame(frame)
+        self.log(f"Waiting {timeout} seconds...")
         if not self.event_frame_received.wait(timeout):
-            self.log("Timeout waiting for ISS to say something")
+            self.log("Timeout waiting for ISS. Session failed.")
             self.set_state(self.STATE_FAILED)
 
     def launch_transmit_and_wait(self, frame, timeout):
