@@ -91,6 +91,11 @@ class ARQSessionISS(arq_session.ARQSession):
         if 'offset' in irs_frame:
             self.confirmed_bytes = irs_frame['offset']
 
+        if self.confirmed_bytes == len(self.data):
+            self.set_state(self.STATE_ENDED)
+            self.log("All data transfered!")
+            return
+
         payload_size = self.get_data_payload_size()
         burst = []
         for f in range(0, self.frames_per_burst):
