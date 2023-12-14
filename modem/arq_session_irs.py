@@ -3,14 +3,16 @@ import data_frame_factory
 import queue
 import arq_session
 import helpers
+from modem_frametypes import FRAME_TYPE
 
 class ARQSessionIRS(arq_session.ARQSession):
 
-    STATE_CONN_REQ_RECEIVED = 0
-    STATE_WAITING_INFO = 1
-    STATE_WAITING_DATA = 2
-    STATE_FAILED = 3
-    STATE_ENDED = 10
+    STATE_NEW = 0
+    STATE_OPEN_ACK_SENT = 1
+    STATE_INFO_ACK_SENT = 2
+    STATE_BURST_REPLY_SENT = 3
+    STATE_ENDED = 4
+    STATE_FAILED = 5
 
     RETRIES_CONNECT = 3
     RETRIES_TRANSFER = 3 # we need to increase this
@@ -18,140 +20,123 @@ class ARQSessionIRS(arq_session.ARQSession):
     TIMEOUT_CONNECT = 6
     TIMEOUT_DATA = 6
 
+    STATE_TRANSITION = {
+        STATE_NEW: { 
+            FRAME_TYPE.ARQ_SESSION_OPEN.value : 'send_open_ack',
+        },
+        STATE_OPEN_ACK_SENT: { 
+            FRAME_TYPE.ARQ_SESSION_OPEN.value: 'send_open_ack',
+            FRAME_TYPE.ARQ_SESSION_INFO.value: 'send_info_ack',
+        },
+        STATE_INFO_ACK_SENT: {
+            FRAME_TYPE.ARQ_SESSION_INFO.value: 'send_info_ack',
+            FRAME_TYPE.ARQ_BURST_FRAME.value: 'receive_data',
+        },
+        STATE_BURST_REPLY_SENT: {
+            FRAME_TYPE.ARQ_BURST_FRAME.value: 'receive_data',
+        },
+    }
+
     def __init__(self, config: dict, tx_frame_queue: queue.Queue, dxcall: str, session_id: int):
         super().__init__(config, tx_frame_queue, dxcall)
 
         self.id = session_id
-        self.speed = 0
-        self.frames_per_burst = 3
+        self.dxcall = dxcall
         self.version = 1
-        self.snr = 0
-        self.dx_snr = 0
-        self.retries = self.RETRIES_TRANSFER
 
-        self.state = self.STATE_CONN_REQ_RECEIVED
+        self.state = self.STATE_NEW
 
-        self.event_info_received = threading.Event()
-        self.event_data_received = threading.Event()
-        
-        self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
-
-        self.received_frame = None
+        self.total_length = 0
+        self.total_crc = ''
         self.received_data = None
         self.received_bytes = 0
         self.received_crc = None
 
-    def generate_id(self):
-        pass
-
-    def set_state(self, state):
-        self.log(f"ARQ Session IRS {self.id} state {self.state}")
-        self.state = state
-
     def set_modem_decode_modes(self, modes):
         pass
 
-    def _all_data_received(self):
+    def all_data_received(self):
         return self.received_bytes == len(self.received_data)
 
-    def _final_crc_check(self):
-        return self.received_crc == helpers.get_crc_32(bytes(self.received_data)).hex()
+    def final_crc_check(self):
+        return self.total_crc == helpers.get_crc_32(bytes(self.received_data)).hex()
 
-    def handshake_session(self):
-        if self.state in [self.STATE_CONN_REQ_RECEIVED, self.STATE_WAITING_INFO]:
-            self.send_open_ack()
-            self.set_state(self.STATE_WAITING_INFO)
-            return True
-        return False
-
-    def handshake_info(self):
-        if self.state == self.STATE_WAITING_INFO and not self.event_info_received.wait(self.TIMEOUT_CONNECT):
-            return False
-
-        self.send_info_ack()
-        self.set_state(self.STATE_WAITING_DATA)
-        return True
-
-    def send_info_ack(self):
-            info_ack = self.frame_factory.build_arq_session_info_ack(
-                self.id, self.received_crc, self.snr, 
-                self.speed_level, self.frames_per_burst)
-            self.transmit_frame(info_ack)
-
-
-    def receive_data(self):
-        self.retries = self.RETRIES_TRANSFER
-        while self.retries > 0 and not self._all_data_received():
-            if self.event_data_received.wait(self.TIMEOUT_DATA):
-                self.process_incoming_data()
-                self.send_burst_ack_nack(True)
-                self.retries = self.RETRIES_TRANSFER
-            else:
-                self.send_burst_ack_nack(False)
-            self.retries -= 1
-
-        if self._all_data_received():
-            if self._final_crc_check():
-                self.set_state(self.STATE_ENDED)
-                self.logger.info("------ ALL DATA RECEIVED ------", state=self.state, dxcall=self.dxcall, snr=self.snr)
-
-            else:
-                self.logger.warning("CRC check failed.")
-                self.set_state(self.STATE_FAILED)
-
-        else:
+    def transmit_and_wait(self, frame, timeout):
+        self.transmit_frame(frame)
+        if not self.event_frame_received.wait(timeout):
+            self.log("Timeout waiting for ISS to say something")
             self.set_state(self.STATE_FAILED)
 
-        # finally send a data ack / nack
-        self.send_data_ack_nack()
-
-    def runner(self):
-
-        if not self.handshake_session():
-            return False
-
-        if not self.handshake_info():
-            return False
-
-        if not self.receive_data(): 
-            return False
-        return True
-
-    def run(self):
-        self.set_state(self.STATE_CONN_REQ_RECEIVED)
-        self.thread = threading.Thread(target=self.runner, 
-                                       name=f"ARQ IRS Session {self.id}", daemon=False)
-        self.thread.start()
-
-    def send_open_ack(self):
+    def launch_transmit_and_wait(self, frame, timeout):
+        thread_wait = threading.Thread(target = self.transmit_and_wait, 
+                                       args = [frame, timeout])
+        thread_wait.start()
+    
+    def send_open_ack(self, open_frame):
         ack_frame = self.frame_factory.build_arq_session_open_ack(
             self.id,
             self.dxcall, 
             self.version,
-            self.snr)
-        self.transmit_frame(ack_frame)
+            self.snr[0])
+        self.launch_transmit_and_wait(ack_frame, self.TIMEOUT_CONNECT)
+        self.set_state(self.STATE_OPEN_ACK_SENT)
 
-    def send_burst_ack_nack(self, ack: bool):
-        if ack:
-            builder = self.frame_factory.build_arq_burst_ack
+    def send_info_ack(self, info_frame):
+        # Get session info from ISS
+        self.received_data = bytearray(info_frame['total_length'])
+        self.total_crc = info_frame['total_crc']
+        self.dx_snr.append(info_frame['snr'])
+
+        info_ack = self.frame_factory.build_arq_session_info_ack(
+            self.id, self.total_crc, self.snr[0],
+            self.speed_level, self.frames_per_burst)
+        self.launch_transmit_and_wait(info_ack, self.TIMEOUT_CONNECT)
+        self.set_state(self.STATE_INFO_ACK_SENT)
+
+    def process_incoming_data(self, frame):
+        if frame['offset'] != self.received_bytes:
+            self.logger.info(f"Discarding data frame due to wrong offset", frame=self.frame_received)
+            return False
+
+        remaining_data_length = len(self.received_data) - self.received_bytes
+
+        # Is this the last data part?
+        if remaining_data_length <= len(frame['data']):
+            # we only want the remaining length, not the entire frame data
+            data_part = frame['data'][:remaining_data_length]
         else:
-            builder = self.frame_factory.build_arq_burst_nack
+            # we want the entire frame data
+            data_part = frame['data']
 
-        frame = builder (
+        self.received_data[frame['offset']:] = data_part
+        self.received_bytes += len(data_part)
+
+        return True
+
+    def receive_data(self, burst_frame):
+        self.process_incoming_data(burst_frame)
+
+        ack = self.frame_factory.build_arq_burst_ack(
             self.id, self.received_bytes, 
-            self.speed_level, self.frames_per_burst, self.snr)
-        
-        self.transmit_frame(frame)
+            self.speed_level, self.frames_per_burst, self.snr[0])
 
-    def send_data_ack_nack(self):
+        if not self.all_data_received():
+            self.transmit_and_wait(ack)
+            self.set_state(self.STATE_BURST_REPLY_SENT)
+            return
 
-        builder = self.frame_factory.build_arq_data_ack_nack
-        frame = builder(self.id, self.state, self.snr)
-        self.transmit_frame(frame)
+        if self.final_crc_check():
+            self.log("All data received successfully!")
+            self.transmit_frame(ack)
+            self.set_state(self.STATE_ENDED)
 
+        else:
+            self.log("CRC fail at the end of transmission!")
+            self.set_state(self.STATE_FAILED)
 
     def calibrate_speed_settings(self):
-
+        return
+    
         # decrement speed level after the 2nd retry
         if self.RETRIES_TRANSFER - self.retries >= 2:
             self.speed -= 1
@@ -164,58 +149,3 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         self.speed = self.speed
         self.frames_per_burst = self.frames_per_burst
-
-    def on_info_received(self, frame):
-        if self.state != self.STATE_WAITING_INFO:
-            self.logger.warning("Discarding received INFO.", state=self.state)
-            return
-        
-        self.received_data = bytearray(frame['total_length'])
-        self.received_crc = frame['total_crc']
-        self.dx_snr = frame['snr']
-
-        self.calibrate_speed_settings()
-        self.set_modem_decode_modes(None)
-
-        self.event_info_received.set()
-
-    def on_data_received(self, frame):
-        if self.state != self.STATE_WAITING_DATA:
-            self.logger.warning(f"ARQ Session: Received data while in state {self.state}. Ignoring.")
-            return
-        
-        self.received_frame = frame
-        self.event_data_received.set()
-
-    def process_incoming_data(self):
-        if self.received_frame['offset'] != self.received_bytes:
-            self.logger.info(f"Discarding data frame due to wrong offset", frame=self.frame_received)
-            return False
-
-        remaining_data_length = len(self.received_data) - self.received_bytes
-
-        # Is this the last data part?
-        if remaining_data_length <= len(self.received_frame['data']):
-            # we only want the remaining length, not the entire frame data
-            data_part = self.received_frame['data'][:remaining_data_length]
-        else:
-            # we want the entire frame data
-            data_part = self.received_frame['data']
-
-        self.received_data[self.received_frame['offset']:] = data_part
-        self.received_bytes += len(data_part)
-
-        return True
-
-    def on_burst_ack_received(self, ack):
-        self.event_transfer_ack_received.set()
-        self.speed_level = ack['speed_level']
-
-    def on_burst_nack_received(self, nack):
-        self.speed_level = nack['speed_level']
-
-    def on_disconnect_received(self):
-        self.abort()
-
-    def abort(self):
-        self.state = self.STATE_DISCONNECTED

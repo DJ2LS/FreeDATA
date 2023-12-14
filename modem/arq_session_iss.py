@@ -3,17 +3,18 @@ import data_frame_factory
 import queue
 import random
 from codec2 import FREEDV_MODE
+from modem_frametypes import FRAME_TYPE
 import arq_session
 import helpers
 
 class ARQSessionISS(arq_session.ARQSession):
 
-    STATE_DISCONNECTED = 0
-    STATE_CONNECTING = 1
-    STATE_CONNECTED = 2
-    STATE_SENDING = 3
-
-    STATE_ENDED = 10
+    STATE_NEW = 0
+    STATE_OPEN_SENT = 1
+    STATE_INFO_SENT = 2
+    STATE_BURST_SENT = 3
+    STATE_ENDED = 4
+    STATE_FAILED = 5
 
     RETRIES_CONNECT = 3
     RETRIES_TRANSFER = 3
@@ -21,139 +22,84 @@ class ARQSessionISS(arq_session.ARQSession):
     TIMEOUT_CONNECT_ACK = 5
     TIMEOUT_TRANSFER = 2
 
+    STATE_TRANSITION = {
+        STATE_OPEN_SENT: { 
+            FRAME_TYPE.ARQ_SESSION_OPEN_ACK.value: 'send_info',
+        },
+        STATE_INFO_SENT: {
+            FRAME_TYPE.ARQ_SESSION_OPEN_ACK.value: 'send_info',
+            FRAME_TYPE.ARQ_SESSION_INFO_ACK.value: 'send_data',
+        },
+        STATE_BURST_SENT: {
+            FRAME_TYPE.ARQ_SESSION_INFO_ACK.value: 'send_data',
+            FRAME_TYPE.ARQ_BURST_ACK.value: 'send_data',
+            FRAME_TYPE.ARQ_BURST_NACK.value: 'send_data',
+        },
+    }
+
     def __init__(self, config: dict, tx_frame_queue: queue.Queue, dxcall: str, data: bytearray):
         super().__init__(config, tx_frame_queue, dxcall)
         self.data = data
+        self.data_crc = ''
 
-        self.state = self.STATE_DISCONNECTED
+        self.confirmed_bytes = 0
+
+        self.state = self.STATE_NEW
         self.id = self.generate_id()
-
-        self.event_open_ack_received = threading.Event()
-        self.event_info_ack_received = threading.Event()
-        self.event_transfer_ack_received = threading.Event()
-        self.event_transfer_data_ack_nack_received = threading.Event()
 
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
 
     def generate_id(self):
         return random.randint(1,255)
-
-    def set_state(self, state):
-        self.logger.info(f"ARQ Session ISS {self.id} state {self.state}")
-        self.state = state
-
-    def runner(self):
-        self.state = self.STATE_CONNECTING
-
-        if not self.session_open():
-            return False
-
-        if not self.session_info():
-            return False
-
-        return self.send_data()
     
-    def run(self):
-        self.thread = threading.Thread(target=self.runner, name=f"ARQ ISS Session {self.id}", daemon=False)
-        self.thread.run()
-    
-    def handshake(self, frame, event):
-        retries = self.RETRIES_CONNECT
+    def transmit_wait_and_retry(self, frame_or_burst, timeout, retries):
         while retries > 0:
-            self.transmit_frame(frame)
-            self.logger.info("Waiting...")
-            if event.wait(self.TIMEOUT_CONNECT_ACK):
-                return True
+            if isinstance(frame_or_burst, list): burst = frame_or_burst
+            else: burst = [frame_or_burst]
+            for f in burst:
+                self.transmit_frame(f)
+            if self.event_frame_received.wait(timeout):
+                self.log("Timeout interrupted due to received frame.")
+                break
             retries = retries - 1
 
-        self.set_state(self.STATE_DISCONNECTED)
-        return False
+    def launch_twr(self, frame_or_burst, timeout, retries):
+        twr = threading.Thread(target = self.transmit_wait_and_retry, args=[frame_or_burst, timeout, retries])
+        twr.start()
 
-    def session_open(self):
-        open_frame = self.frame_factory.build_arq_session_open(self.dxcall, self.id)
-        return self.handshake(open_frame, self.event_open_ack_received)
+    def start(self):
+        session_open_frame = self.frame_factory.build_arq_session_open(self.dxcall, self.id)
+        self.launch_twr(session_open_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT)
+        self.set_state(self.STATE_OPEN_SENT)
 
-    def session_info(self):
+    def set_speed_and_frames_per_burst(self, frame):
+        self.speed_level = frame['speed_level']
+        self.log(f"Speed level set to {self.speed_level}")
+        self.frames_per_burst = frame['frames_per_burst']
+        self.log(f"Frames per burst set to {self.frames_per_burst}")
+
+    def send_info(self, open_ack_frame):
         info_frame = self.frame_factory.build_arq_session_info(self.id, len(self.data), 
                                                                helpers.get_crc_32(self.data), 
-                                                               self.snr)
-        return self.handshake(info_frame, self.event_info_ack_received)
+                                                               self.snr[0])
+        self.launch_twr(info_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT)
+        self.set_state(self.STATE_INFO_SENT)
 
-    def on_open_ack_received(self, ack):
-        if self.state != self.STATE_CONNECTING:
-            raise RuntimeError(f"ARQ Session: Received OPEN ACK while in state {self.state}")
+    def send_data(self, irs_frame):
+        self.set_speed_and_frames_per_burst(irs_frame)
 
-        self.event_open_ack_received.set()
+        if 'offset' in irs_frame:
+            self.confirmed_bytes = irs_frame['offset']
 
-    def on_info_ack_received(self, ack):
-        if self.state != self.STATE_CONNECTING:
-            raise RuntimeError(f"ARQ Session: Received INFO ACK while in state {self.state}")
-
-        self.event_info_ack_received.set()
-
-    # Sends the full payload in multiple frames
-    def send_data(self):
-        offset = 0
-        while offset < len(self.data):
-            max_size = self.get_payload_size(self.speed_level)
-            end_offset = min(len(self.data), max_size)
-            frame_payload = self.data[offset:end_offset]
+        payload_size = self.get_data_payload_size()
+        burst = []
+        for f in range(0, self.frames_per_burst):
+            offset = self.confirmed_bytes
+            payload = self.data[offset : offset + payload_size]
             data_frame = self.frame_factory.build_arq_burst_frame(
                 self.MODE_BY_SPEED[self.speed_level],
-                self.id, offset, frame_payload)
-            self.set_state(self.STATE_SENDING)
-            if not self.send_arq(data_frame):
-                return False
-            offset = end_offset + 1
+                self.id, self.confirmed_bytes, payload)
+            burst.append(data_frame)
 
-        self.awaiting_data_ack_nack()
-
-
-    # Send part of the payload using ARQ
-    def send_arq(self, frame):
-        retries = self.RETRIES_TRANSFER
-        while retries > 0:
-            # to know later if it has changed
-            speed_level = self.speed_level
-            self.transmit_frame(frame)
-            # wait for ack
-            if self.event_transfer_ack_received.wait(self.TIMEOUT_TRANSFER):
-                speed_level = self.speed_level
-                return True
-            
-            # don't decrement retries if speed level is changing
-            if self.speed_level == speed_level:
-                retries = retries - 1
-
-        self.set_state(self.STATE_DISCONNECTED)
-        return False
-
-    def awaiting_data_ack_nack(self):
-        # TODO Implement the final logics after receiving an ACK or NACK for transmitted data
-        self.logger.info(f"Awaiting data ack/nack")
-        if not self.event_transfer_data_ack_nack_received.wait(self.TIMEOUT_TRANSFER):
-            self.logger.warning(f"data ack / nack missed after timeout")
-        self.logger.info(f"data ack nack received...")
-
-    def on_burst_ack_received(self, ack):
-        self.speed_level = ack['speed_level']
-        self.event_transfer_ack_received.set()
-
-    def on_burst_nack_received(self, nack):
-        self.speed_level = nack['speed_level']
-        self.event_transfer_ack_received.set()
-
-    def on_data_ack_nack_received(self, ack_nack):
-        self.event_transfer_data_ack_nack_received.set()
-        state = ack_nack['state']
-        print(state)
-
-    def on_disconnect_received(self):
-        self.abort()
-
-    def abort(self):
-        self.state = self.STATE_DISCONNECTED
-        self.event_connection_ack_received.set()
-        self.event_connection_ack_received.clear()
-        self.event_transfer_feedback.set()
-        self.event_transfer_feedback.clear()
+        self.launch_twr(burst, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT)
+        self.set_state(self.STATE_BURST_SENT)
