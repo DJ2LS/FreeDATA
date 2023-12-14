@@ -19,7 +19,7 @@ ISS-->(1)IRS:Lost BURST (total or part)
 IRS->(1)ISS:BURST_NACK (ID, next_offset, speed level, frames, snr)
 
 ISS->(1)IRS:BURST (ID, offset, payload),(ID, offset, payload),(ID, offset, payload)
-IRS->(1)ISS:BURST_ACK (ID, next_offset, speed level, frames, snr)
+IRS->(1)ISS:DATA ACK NACK (ID, next_offset, speed level, frames, snr)
 ```
 
 
@@ -129,3 +129,13 @@ Sent by the IRS following unsuccessful decoding of burst or timeout.
 |next speed level|1|
 |next frames per burst|1|
 |snr|1|
+
+#### DATA ACK NACK
+
+Sent by the IRS after receiving data with a state information.
+
+| field      |bytes|
+|------------|-|
+| session id |1|
+| state      |1|
+| snr        |1|

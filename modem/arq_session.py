@@ -2,6 +2,7 @@ import queue, threading
 import codec2
 import data_frame_factory
 import structlog
+from modem_frametypes import FRAME_TYPE
 
 class ARQSession():
 
@@ -15,12 +16,17 @@ class ARQSession():
         self.logger = structlog.get_logger(type(self).__name__)
         self.config = config
 
+        self.snr = []
+
         self.dxcall = dxcall
+        self.dx_snr = []
 
         self.tx_frame_queue = tx_frame_queue
         self.speed_level = 0
+        self.frames_per_burst = 1
 
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
+        self.event_frame_received = threading.Event()
 
         self.id = None
 
@@ -46,10 +52,24 @@ class ARQSession():
         self.log(f"{type(self).__name__} state change from {self.state} to {state}")
         self.state = state
 
-    def get_payload_size(self, speed_level):
-        mode = self.MODE_BY_SPEED[speed_level]
-        return codec2.get_bytes_per_frame(mode.value)
+    def get_data_payload_size(self):
+        return self.frame_factory.get_available_data_payload_for_mode(
+            FRAME_TYPE.ARQ_BURST_FRAME,
+            self.MODE_BY_SPEED[self.speed_level]
+            )
 
     def set_details(self, snr, frequency_offset):
-        self.snr = snr
+        self.snr.append(snr)
         self.frequency_offset = frequency_offset
+
+    def on_frame_received(self, frame):
+        self.event_frame_received.set()
+        frame_type = frame['frame_type_int']
+        if self.state in self.STATE_TRANSITION:
+            if frame_type in self.STATE_TRANSITION[self.state]:
+                action_name = self.STATE_TRANSITION[self.state][frame_type]
+                getattr(self, action_name)(frame)
+                return
+        
+        self.log(f"Ignoring unknow transition from state {self.state} with frame {frame['frame_type']}")
+ 

@@ -19,5 +19,5 @@ class ARQRawCommand(TxCommand):
 
         iss = ARQSessionISS(self.config, tx_frame_queue, self.dxcall, self.data)
         self.state_manager.register_arq_iss_session(iss)
-        iss.run()
+        iss.start()
         return iss
