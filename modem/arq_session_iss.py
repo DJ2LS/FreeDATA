@@ -59,9 +59,11 @@ class ARQSessionISS(arq_session.ARQSession):
             for f in burst:
                 self.transmit_frame(f)
             if self.event_frame_received.wait(timeout):
-                self.log("Timeout interrupted due to received frame.")
                 break
+            self.log("Timeout...")
             retries = retries - 1
+        self.set_state(self.STATE_FAILED)
+        self.log("Session failed")
 
     def launch_twr(self, frame_or_burst, timeout, retries):
         twr = threading.Thread(target = self.transmit_wait_and_retry, args=[frame_or_burst, timeout, retries])
