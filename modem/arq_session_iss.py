@@ -106,6 +106,9 @@ class ARQSessionISS(arq_session.ARQSession):
                 return False
             offset = end_offset + 1
 
+        self.awaiting_data_ack_nack()
+
+
     # Send part of the payload using ARQ
     def send_arq(self, frame):
         retries = self.RETRIES_TRANSFER
@@ -125,6 +128,13 @@ class ARQSessionISS(arq_session.ARQSession):
         self.set_state(self.STATE_DISCONNECTED)
         return False
 
+    def awaiting_data_ack_nack(self):
+        # TODO Implement the final logics after receiving an ACK or NACK for transmitted data
+        self.logger.info(f"Awaiting data ack/nack")
+        if not self.event_transfer_data_ack_nack_received.wait(self.TIMEOUT_TRANSFER):
+            self.logger.warning(f"data ack / nack missed after timeout")
+        self.logger.info(f"data ack nack received...")
+
     def on_burst_ack_received(self, ack):
         self.speed_level = ack['speed_level']
         self.event_transfer_ack_received.set()
@@ -135,6 +145,8 @@ class ARQSessionISS(arq_session.ARQSession):
 
     def on_data_ack_nack_received(self, ack_nack):
         self.event_transfer_data_ack_nack_received.set()
+        state = ack_nack['state']
+        print(state)
 
     def on_disconnect_received(self):
         self.abort()
