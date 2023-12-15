@@ -322,8 +322,8 @@ class Demodulator():
             "fsk_ldpc1",
         )
 
-    def on_audio_received(self, audio_in_48k):
-            x = np.frombuffer(audio_in_48k, dtype=np.int16)
+    def sd_input_audio_callback(self, indata: np.ndarray, frames: int, time, status) -> None:
+            x = np.frombuffer(indata, dtype=np.int16)
             x = self.resampler.resample48_to_8(x)
             x = audio.set_audio_volume(x, self.rx_audio_level)
 
@@ -526,7 +526,7 @@ class Demodulator():
                 (self.sig1_datac13_buffer, self.RECEIVE_SIG1),
                 (self.dat0_datac1_buffer, self.RECEIVE_DATAC1),
                 (self.dat0_datac3_buffer, self.RECEIVE_DATAC3),
-                (self.dat0_datac4_buffer, RECEIVE_DATAC4),
+                (self.dat0_datac4_buffer, self.RECEIVE_DATAC4),
                 (self.fsk_ldpc_buffer_0, self.enable_fsk),
                 (self.fsk_ldpc_buffer_1, self.enable_fsk),
             ]:
@@ -613,7 +613,7 @@ class Demodulator():
             # snr = np.clip(
             #    snr, -127, 127
             # )  # limit to max value of -128/128 as a possible fix of #188
-            return snr
+            return int(snr)
         except Exception as err:
             self.log.error(f"[MDM] calculate_snr: Exception: {err}")
             return 0

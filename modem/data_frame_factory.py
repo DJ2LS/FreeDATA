@@ -153,7 +153,6 @@ class DataFrameFactory:
         }
 
     def construct(self, frametype, content, frame_length = LENGTH_SIG1_FRAME):
-
         frame_template = self.template_list[frametype.value]
 
         if isinstance(frame_template["frame_length"], int):
@@ -233,8 +232,9 @@ class DataFrameFactory:
     
     def get_available_data_payload_for_mode(self, type: FR_TYPE, mode:codec2.FREEDV_MODE):
         whole_frame_length = self.get_bytes_per_frame(mode)
-
-        available = whole_frame_length
+        available = whole_frame_length - 2 # - CRC16
+        available = available - 1  # - FRAME TYPE
+        print(self.template_list[type.value].items())
         for field, length in self.template_list[type.value].items():
             if field != 'frame_length' and isinstance(length, int):
                 available -= length

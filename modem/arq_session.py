@@ -6,11 +6,24 @@ from modem_frametypes import FRAME_TYPE
 
 class ARQSession():
 
-    MODE_BY_SPEED = [
-        codec2.FREEDV_MODE.datac4,
-        codec2.FREEDV_MODE.datac3,
-        codec2.FREEDV_MODE.datac1,
-    ]
+    SPEED_LEVEL_DICT = {
+        0: {
+            'mode': codec2.FREEDV_MODE.datac4,
+            'min_snr': -10,
+            'duration_per_frame': 5.17,
+        },
+        1: {
+            'mode': codec2.FREEDV_MODE.datac3,
+            'min_snr': 0,
+            'duration_per_frame': 3.19,
+        },
+        2: {
+            'mode': codec2.FREEDV_MODE.datac1,
+            'min_snr': 3,
+            'duration_per_frame': 4.18,
+        },
+    }
+
 
     def __init__(self, config: dict, tx_frame_queue: queue.Queue, dxcall: str):
         self.logger = structlog.get_logger(type(self).__name__)
@@ -36,12 +49,15 @@ class ARQSession():
         logger(msg)
 
     def get_mode_by_speed_level(self, speed_level):
-        return self.MODE_BY_SPEED[speed_level]
+        return self.SPEED_LEVEL_DICT[speed_level]["mode"]
 
-    def transmit_frame(self, frame: bytearray):
+    def transmit_frame(self, frame: bytearray, mode='auto'):
         self.log("Transmitting frame")
+        if mode in ['auto']:
+            mode = self.get_mode_by_speed_level(self.speed_level)
+
         modem_queue_item = {
-            'mode': self.get_mode_by_speed_level(self.speed_level),
+            'mode': mode,
             'repeat': 1,
             'repeat_delay': 1,
             'frame': frame,
@@ -55,7 +71,7 @@ class ARQSession():
     def get_data_payload_size(self):
         return self.frame_factory.get_available_data_payload_for_mode(
             FRAME_TYPE.ARQ_BURST_FRAME,
-            self.MODE_BY_SPEED[self.speed_level]
+            self.SPEED_LEVEL_DICT[self.speed_level]["mode"]
             )
 
     def set_details(self, snr, frequency_offset):
