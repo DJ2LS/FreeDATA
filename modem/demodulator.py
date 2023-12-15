@@ -322,8 +322,8 @@ class Demodulator():
             "fsk_ldpc1",
         )
 
-    def on_audio_received(self, audio_in_48k):
-            x = np.frombuffer(audio_in_48k, dtype=np.int16)
+    def sd_input_audio_callback(self, indata: np.ndarray, frames: int, time, status) -> None:
+            x = np.frombuffer(indata, dtype=np.int16)
             x = self.resampler.resample48_to_8(x)
             x = audio.set_audio_volume(x, self.rx_audio_level)
 
