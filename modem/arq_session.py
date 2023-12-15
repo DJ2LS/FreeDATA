@@ -25,7 +25,7 @@ class ARQSession():
     }
 
 
-    def __init__(self, config: dict, tx_frame_queue: queue.Queue, dxcall: str):
+    def __init__(self, config: dict, modem, dxcall: str):
         self.logger = structlog.get_logger(type(self).__name__)
         self.config = config
 
@@ -34,7 +34,7 @@ class ARQSession():
         self.dxcall = dxcall
         self.dx_snr = []
 
-        self.tx_frame_queue = tx_frame_queue
+        self.modem = modem
         self.speed_level = 0
         self.frames_per_burst = 1
 
@@ -56,13 +56,7 @@ class ARQSession():
         if mode in ['auto']:
             mode = self.get_mode_by_speed_level(self.speed_level)
 
-        modem_queue_item = {
-            'mode': mode,
-            'repeat': 1,
-            'repeat_delay': 1,
-            'frame': frame,
-        }
-        self.tx_frame_queue.put(modem_queue_item)
+        self.modem.transmit(mode, 1, 1, frame)
 
     def set_state(self, state):
         self.log(f"{type(self).__name__} state change from {self.state} to {state}")

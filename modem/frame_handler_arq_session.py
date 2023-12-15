@@ -22,8 +22,8 @@ class ARQFrameHandler(frame_handler.FrameHandler):
 
             # Normal case when receiving a SESSION_OPEN for the first time
             else:
-                session = ARQSessionIRS(self.config, 
-                                        self.tx_frame_queue, 
+                session = ARQSessionIRS(self.config,
+                                        self.modem,
                                         frame['origin'], 
                                         session_id)
                 self.states.register_arq_irs_session(session)

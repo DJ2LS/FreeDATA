@@ -44,12 +44,11 @@ class TxCommand():
             'frame': frame,
         }
 
-    def transmit(self, tx_frame_queue):
+    def transmit(self, modem):
         frame = self.build_frame()
-        tx_queue_item = self.make_modem_queue_item(self.get_tx_mode(), 1, 0, frame)
-        tx_frame_queue.put(tx_queue_item)
+        modem.transmit(self.get_tx_mode(), 1, 0, frame)
 
-    def run(self, event_queue: queue.Queue, tx_frame_queue: queue.Queue):
+    def run(self, event_queue: queue.Queue, modem):
         self.emit_event(event_queue)
         self.logger.info(self.log_message())
-        self.transmit(tx_frame_queue)
+        self.transmit(modem)

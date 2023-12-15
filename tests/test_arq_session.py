@@ -13,6 +13,13 @@ from frame_dispatcher import DISPATCHER
 import random
 import structlog
 
+class TestModem:
+    def __init__(self):
+        self.data_queue_received = queue.Queue()
+
+    def transmit(self, mode, repeats: int, repeat_delay: int, frames: bytearray) -> bool:
+        self.data_queue_received.put(frames)
+
 class TestARQSession(unittest.TestCase):
 
     @classmethod
@@ -23,24 +30,22 @@ class TestARQSession(unittest.TestCase):
         cls.logger = structlog.get_logger("TESTS")
 
         # ISS
-        cls.iss_modem_transmit_queue = queue.Queue()
+        cls.iss_modem = TestModem()
         cls.iss_state_manager = StateManager(queue.Queue())
         cls.iss_event_queue = queue.Queue()
         cls.iss_frame_dispatcher = DISPATCHER(cls.config, 
                                           cls.iss_event_queue, 
                                           cls.iss_state_manager, 
-                                          queue.Queue(),
-                                          cls.iss_modem_transmit_queue)
+                                          cls.iss_modem)
 
         # IRS
-        cls.irs_modem_transmit_queue = queue.Queue()
+        cls.irs_modem = TestModem()
         cls.irs_state_manager = StateManager(queue.Queue())
         cls.irs_event_queue = queue.Queue()
         cls.irs_frame_dispatcher = DISPATCHER(cls.config, 
                                           cls.irs_event_queue, 
                                           cls.irs_state_manager, 
-                                          queue.Queue(),
-                                          cls.irs_modem_transmit_queue)
+                                          cls.irs_modem)
         
         # Frame loss probability in %
         cls.loss_probability = 50
@@ -48,8 +53,7 @@ class TestARQSession(unittest.TestCase):
 
     def channelWorker(self, modem_transmit_queue: queue, frame_dispatcher: DISPATCHER):
         while True:
-            transmission_item = modem_transmit_queue.get()
-            frame_bytes = bytes(transmission_item['frame'])
+            frame_bytes = modem_transmit_queue.get()
             if random.randint(0, 100) < self.loss_probability:
                 self.logger.info(f"[{threading.current_thread().name}] Frame lost...")
                 continue
@@ -58,13 +62,13 @@ class TestARQSession(unittest.TestCase):
 
     def establishChannels(self):
         self.iss_to_irs_channel = threading.Thread(target=self.channelWorker, 
-                                                    args=[self.iss_modem_transmit_queue, 
+                                                    args=[self.iss_modem.data_queue_received, 
                                                     self.irs_frame_dispatcher],
                                                     name = "ISS to IRS channel")
         self.iss_to_irs_channel.start()
 
         self.irs_to_iss_channel = threading.Thread(target=self.channelWorker, 
-                                                    args=[self.irs_modem_transmit_queue, 
+                                                    args=[self.irs_modem.data_queue_received, 
                                                     self.iss_frame_dispatcher],
                                                     name = "IRS to ISS channel")
         self.irs_to_iss_channel.start()
@@ -80,7 +84,7 @@ class TestARQSession(unittest.TestCase):
             'data': base64.b64encode(bytes("Hello world!", encoding="utf-8")),
         }
         cmd = ARQRawCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)
-        cmd.run(self.iss_event_queue, self.iss_modem_transmit_queue)
+        cmd.run(self.iss_event_queue, self.iss_modem)
  
 if __name__ == '__main__':
     unittest.main()

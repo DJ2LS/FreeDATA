@@ -9,13 +9,13 @@ from codec2 import FREEDV_MODE
 class FrameHandler():
 
     def __init__(self, name: str, config, states: StateManager, event_manager: EventManager, 
-                 tx_frame_queue: Queue) -> None:
+                 modem) -> None:
         
         self.name = name
         self.config = config
         self.states = states
         self.event_manager = event_manager
-        self.tx_frame_queue = tx_frame_queue
+        self.modem = modem
         self.logger = structlog.get_logger("Frame Handler")
 
         self.details = {
@@ -86,14 +86,6 @@ class FrameHandler():
         event_data = self.make_event()
         self.event_manager.broadcast(event_data)
 
-    def make_modem_queue_item(self, mode, repeat, repeat_delay, frame):
-        return {
-            'mode': self.get_tx_mode(),
-            'repeat': repeat,
-            'repeat_delay': repeat_delay,
-            'frame': frame,
-        }
-
     def get_tx_mode(self):
         return (
             FREEDV_MODE.fsk_ldpc_0.value
@@ -102,8 +94,7 @@ class FrameHandler():
         )
 
     def transmit(self, frame):
-        tx_queue_item = self.make_modem_queue_item(self.get_tx_mode(), 1, 0, frame)
-        self.tx_frame_queue.put(tx_queue_item)
+        self.modem.transmit(self.get_tx_mode(), 1, 0, frame)
 
     def follow_protocol(self):
         pass
