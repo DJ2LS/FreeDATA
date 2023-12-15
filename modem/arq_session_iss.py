@@ -52,12 +52,12 @@ class ARQSessionISS(arq_session.ARQSession):
     def generate_id(self):
         return random.randint(1,255)
     
-    def transmit_wait_and_retry(self, frame_or_burst, timeout, retries):
+    def transmit_wait_and_retry(self, frame_or_burst, timeout, retries, mode):
         while retries > 0:
             if isinstance(frame_or_burst, list): burst = frame_or_burst
             else: burst = [frame_or_burst]
             for f in burst:
-                self.transmit_frame(f)
+                self.transmit_frame(f, mode)
             self.log(f"Waiting {timeout} seconds...")
             if self.event_frame_received.wait(timeout):
                 return
@@ -66,13 +66,13 @@ class ARQSessionISS(arq_session.ARQSession):
         self.set_state(self.STATE_FAILED)
         self.log("Session failed")
 
-    def launch_twr(self, frame_or_burst, timeout, retries):
-        twr = threading.Thread(target = self.transmit_wait_and_retry, args=[frame_or_burst, timeout, retries])
+    def launch_twr(self, frame_or_burst, timeout, retries, mode):
+        twr = threading.Thread(target = self.transmit_wait_and_retry, args=[frame_or_burst, timeout, retries, mode])
         twr.start()
 
     def start(self):
         session_open_frame = self.frame_factory.build_arq_session_open(self.dxcall, self.id)
-        self.launch_twr(session_open_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT)
+        self.launch_twr(session_open_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.datac13)
         self.set_state(self.STATE_OPEN_SENT)
 
     def set_speed_and_frames_per_burst(self, frame):

@@ -11,7 +11,6 @@ Created on Wed Dec 23 07:04:24 2020
 
 import atexit
 import ctypes
-import os
 import queue
 import threading
 import time
@@ -25,12 +24,8 @@ import cw
 from queues import RIGCTLD_COMMAND_QUEUE
 import audio
 import event_manager
-from modem_frametypes import FRAME_TYPE
 import beacon
 import demodulator
-
-TESTMODE = False
-TXCHANNEL = ""
 
 class RF:
     """Class to encapsulate interactions between the audio device and codec2"""
@@ -132,16 +127,14 @@ class RF:
     def start_modem(self):
         result = False
         
-        if not TESTMODE and self.radiocontrol not in ["tci"]:
+        if self.radiocontrol not in ["tci"]:
             result = self.init_audio()
             if not result:
                 raise RuntimeError("Unable to init audio devices")
             self.demodulator.start(self.stream)
 
-        elif not TESTMODE:
-            result = self.init_tci()
         else:
-            result = self.init_mkfifo()
+            result = self.init_tci()
 
         if result not in [False]:
             # init codec2 instances
@@ -245,34 +238,6 @@ class RF:
             daemon=True,
         )
         tci_tx_callback_thread.start()
-    def init_mkfifo(self):
-        class Object:
-            """An object for simulating audio stream"""
-            active = True
-
-        self.stream = Object()
-
-        # Create mkfifo buffers
-        try:
-            os.mkfifo(RXCHANNEL)
-            os.mkfifo(TXCHANNEL)
-        except Exception as err:
-            self.log.info(f"[MDM] init:mkfifo: Exception: {err}")
-
-        mkfifo_write_callback_thread = threading.Thread(
-            target=self.mkfifo_write_callback,
-            name="MKFIFO WRITE CALLBACK THREAD",
-            daemon=True,
-        )
-        mkfifo_write_callback_thread.start()
-
-        self.log.debug("[MDM] Starting mkfifo_read_callback")
-        mkfifo_read_callback_thread = threading.Thread(
-            target=self.mkfifo_read_callback,
-            name="MKFIFO READ CALLBACK THREAD",
-            daemon=True,
-        )
-        mkfifo_read_callback_thread.start()
 
     def mkfifo_write_callback(self) -> None:
         """Support testing by writing the audio data to a pipe."""
@@ -304,20 +269,16 @@ class RF:
         """
         self.demodulator.reset_data_sync()
 
-        if mode == codec2.FREEDV_MODE.datac0.value:
-            freedv = self.freedv_datac0_tx
-        elif mode == codec2.FREEDV_MODE.datac1.value:
-            freedv = self.freedv_datac1_tx
-        elif mode == codec2.FREEDV_MODE.datac3.value:
-            freedv = self.freedv_datac3_tx
-        elif mode == codec2.FREEDV_MODE.datac4.value:
-            freedv = self.freedv_datac4_tx
-        elif mode == codec2.FREEDV_MODE.datac13.value:
-            freedv = self.freedv_datac13_tx
-        elif mode == codec2.FREEDV_MODE.fsk_ldpc_0.value:
-            freedv = self.freedv_ldpc0_tx
-        elif mode == codec2.FREEDV_MODE.fsk_ldpc_1.value:
-            freedv = self.freedv_ldpc1_tx
+        # get freedv instance by mode
+        mode_transition = {
+            codec2.FREEDV_MODE.datac0: self.freedv_datac0_tx,
+            codec2.FREEDV_MODE.datac1: self.freedv_datac1_tx,
+            codec2.FREEDV_MODE.datac3: self.freedv_datac3_tx,
+            codec2.FREEDV_MODE.datac4: self.freedv_datac4_tx,
+            codec2.FREEDV_MODE.datac13: self.freedv_datac13_tx,
+        }
+        if mode in mode_transition:
+            freedv = mode_transition[mode]
         else:
             return False
 
@@ -659,7 +620,7 @@ class RF:
             queuesize = self.modem_transmit_queue.qsize()
             self.log.debug("[MDM] self.modem_transmit_queue", qsize=queuesize)
             tx = self.modem_transmit_queue.get()
-
+            print(tx)
             # TODO Why we is this taking an array instead of a single frame?
             if tx['mode'] in ["morse"]:
                 self.transmit_morse(tx['repeat'], tx['repeat_delay'], [tx['frame']])
@@ -870,20 +831,3 @@ class RF:
         # Set config boolean regarding wheter it should sent FFT data to queue
         self.enable_fft_stream = enable
 
-def get_modem_error_state():
-    """
-    get current state buffer and return True of contains 10
-
-    """
-
-    if RECEIVE_DATAC1 and 10 in DAT0_DATAC1_STATE:
-        DAT0_DATAC1_STATE.clear()
-        return True
-    if RECEIVE_DATAC3 and 10 in DAT0_DATAC3_STATE:
-        DAT0_DATAC3_STATE.clear()
-        return True
-    if RECEIVE_DATAC4 and 10 in DAT0_DATAC4_STATE:
-        DAT0_DATAC4_STATE.clear()
-        return True
-
-    return False

@@ -7,7 +7,8 @@ from arq_session_iss import ARQSessionISS
 class ARQRawCommand(TxCommand):
 
     def set_params_from_api(self, apiParams):
-        self.dxcall = apiParams['dxcall']
+        print(apiParams)
+        self.dxcall = apiParams['dxcallsign']
         if not api_validations.validate_freedata_callsign(self.dxcall):
             self.dxcall = f"{self.dxcall}-0"
 
