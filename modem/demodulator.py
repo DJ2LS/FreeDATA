@@ -613,7 +613,7 @@ class Demodulator():
             # snr = np.clip(
             #    snr, -127, 127
             # )  # limit to max value of -128/128 as a possible fix of #188
-            return snr
+            return int(snr)
         except Exception as err:
             self.log.error(f"[MDM] calculate_snr: Exception: {err}")
             return 0

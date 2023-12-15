@@ -65,8 +65,8 @@ class ARQSessionIRS(arq_session.ARQSession):
     def final_crc_check(self):
         return self.total_crc == helpers.get_crc_32(bytes(self.received_data)).hex()
 
-    def transmit_and_wait(self, frame, timeout):
-        self.transmit_frame(frame)
+    def transmit_and_wait(self, frame, timeout, mode):
+        self.transmit_frame(frame, mode)
         self.log(f"Waiting {timeout} seconds...")
         if not self.event_frame_received.wait(timeout):
             # use case: data burst got lost, we want to send a NACK with updated speed level

@@ -628,20 +628,6 @@ class RF:
                 self.transmit(tx['mode'], tx['repeat'], tx['repeat_delay'], [tx['frame']])
             # self.modem_transmit_queue.task_done()
 
-    def get_frequency_offset(self, freedv: ctypes.c_void_p) -> float:
-        """
-        Ask codec2 for the calculated (audio) frequency offset of the received signal.
-
-        :param freedv: codec2 instance to query
-        :type freedv: ctypes.c_void_p
-        :return: Offset of audio frequency in Hz
-        :rtype: float
-        """
-        modemStats = codec2.MODEMSTATS()
-        codec2.api.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
-        offset = round(modemStats.foff) * (-1)
-        return offset
-
     def init_rig_control(self):
         # Check how we want to control the radio
         if self.radiocontrol == "rigctld":
