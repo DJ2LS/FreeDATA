@@ -85,7 +85,7 @@ class ARQSessionISS(arq_session.ARQSession):
         info_frame = self.frame_factory.build_arq_session_info(self.id, len(self.data), 
                                                                helpers.get_crc_32(self.data), 
                                                                self.snr[0])
-        self.launch_twr(info_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT)
+        self.launch_twr(info_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.datac13)
         self.set_state(self.STATE_INFO_SENT)
 
     def send_data(self, irs_frame):
@@ -109,5 +109,5 @@ class ARQSessionISS(arq_session.ARQSession):
                 self.id, self.confirmed_bytes, payload)
             burst.append(data_frame)
 
-        self.launch_twr(burst, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT)
+        self.launch_twr(burst, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode='auto')
         self.set_state(self.STATE_BURST_SENT)

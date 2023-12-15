@@ -51,9 +51,9 @@ class ARQSession():
     def get_mode_by_speed_level(self, speed_level):
         return self.SPEED_LEVEL_DICT[speed_level]["mode"]
 
-    def transmit_frame(self, frame: bytearray, mode = False):
+    def transmit_frame(self, frame: bytearray, mode='auto'):
         self.log("Transmitting frame")
-        if not mode:
+        if mode in ['auto']:
             self.get_mode_by_speed_level(self.speed_level)
 
         modem_queue_item = {
