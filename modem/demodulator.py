@@ -526,7 +526,7 @@ class Demodulator():
                 (self.sig1_datac13_buffer, self.RECEIVE_SIG1),
                 (self.dat0_datac1_buffer, self.RECEIVE_DATAC1),
                 (self.dat0_datac3_buffer, self.RECEIVE_DATAC3),
-                (self.dat0_datac4_buffer, RECEIVE_DATAC4),
+                (self.dat0_datac4_buffer, self.RECEIVE_DATAC4),
                 (self.fsk_ldpc_buffer_0, self.enable_fsk),
                 (self.fsk_ldpc_buffer_1, self.enable_fsk),
             ]:

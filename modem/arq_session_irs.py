@@ -100,6 +100,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.dx_snr.append(info_frame['snr'])
 
         self.calibrate_speed_settings()
+        self.set_modem_listening_modes(self.speed_level)
         info_ack = self.frame_factory.build_arq_session_info_ack(
             self.id, self.total_crc, self.snr[0],
             self.speed_level, self.frames_per_burst)
@@ -108,8 +109,16 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     def send_burst_nack(self):
         self.calibrate_speed_settings()
+        self.set_modem_listening_modes(self.speed_level)
         nack = self.frame_factory.build_arq_burst_ack(self.id, self.received_bytes, self.speed_level, self.frames_per_burst, self.snr[0])
         self.transmit_and_wait(nack)
+
+
+    def set_modem_listening_modes(self, speed_level):
+        # TODO
+        # We want to set the modems listening modes somehow...
+        return
+
 
     def process_incoming_data(self, frame):
         if frame['offset'] != self.received_bytes:

@@ -280,6 +280,8 @@ class RF:
         if mode in mode_transition:
             freedv = mode_transition[mode]
         else:
+            print("wrong mode.................")
+            print(mode)
             return False
 
         # Wait for some other thread that might be transmitting
