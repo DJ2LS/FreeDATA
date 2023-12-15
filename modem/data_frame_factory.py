@@ -233,12 +233,11 @@ class DataFrameFactory:
     def get_available_data_payload_for_mode(self, type: FR_TYPE, mode:codec2.FREEDV_MODE):
         whole_frame_length = self.get_bytes_per_frame(mode)
         available = whole_frame_length - 2 # - CRC16
-        #available = available - 1  # - FRAME TYPE
-
+        available = available - 1  # - FRAME TYPE
+        print(self.template_list[type.value].items())
         for field, length in self.template_list[type.value].items():
             if field != 'frame_length' and isinstance(length, int):
                 available -= length
-
         return available
 
     def build_ping(self, destination):

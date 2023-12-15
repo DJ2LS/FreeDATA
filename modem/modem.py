@@ -268,7 +268,6 @@ class RF:
 
         """
         self.demodulator.reset_data_sync()
-
         # get freedv instance by mode
         mode_transition = {
             codec2.FREEDV_MODE.datac0: self.freedv_datac0_tx,

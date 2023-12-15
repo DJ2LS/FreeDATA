@@ -18,7 +18,7 @@ class ARQSessionISS(arq_session.ARQSession):
 
     RETRIES_CONNECT = 3
     TIMEOUT_CONNECT_ACK = 7
-    TIMEOUT_TRANSFER = 3
+    TIMEOUT_TRANSFER = 10
 
     STATE_TRANSITION = {
         STATE_OPEN_SENT: { 
@@ -52,6 +52,7 @@ class ARQSessionISS(arq_session.ARQSession):
     
     def transmit_wait_and_retry(self, frame_or_burst, timeout, retries, mode):
         while retries > 0:
+            self.event_frame_received = threading.Event()
             if isinstance(frame_or_burst, list): burst = frame_or_burst
             else: burst = [frame_or_burst]
             for f in burst:
