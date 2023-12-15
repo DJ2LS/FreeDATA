@@ -18,7 +18,7 @@ class ARQSessionISS(arq_session.ARQSession):
 
     RETRIES_CONNECT = 3
     TIMEOUT_CONNECT_ACK = 7
-    TIMEOUT_TRANSFER = 10
+    TIMEOUT_TRANSFER = 15
 
     STATE_TRANSITION = {
         STATE_OPEN_SENT: { 

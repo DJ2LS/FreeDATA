@@ -170,6 +170,6 @@ class ARQSessionIRS(arq_session.ARQSession):
             new_speed_level = min(self.speed_level + 1, len(self.SPEED_LEVEL_DICT) - 1)
 
             # check first if the next mode supports the actual snr
-            if self.snr >= self.SPEED_LEVEL_DICT[new_speed_level]["min_snr"]:
+            if self.snr[0] >= self.SPEED_LEVEL_DICT[new_speed_level]["min_snr"]:
                 self.speed_level = new_speed_level
 
