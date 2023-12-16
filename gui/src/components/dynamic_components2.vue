@@ -64,7 +64,7 @@ const gridWidgets = [
   ),
   new gridWidget(
     active_stats,
-    { x: 16, y: 17, w: 8, h: 80 },
+    { x: 16, y: 16, w: 8, h: 80 },
     "Stats (waterfall, etc)",
     true,
     true,
@@ -144,7 +144,7 @@ const gridWidgets = [
   ),
   new gridWidget(
     grid_mycall,
-    { x: 0, y: 95, w: 4, h: 9 },
+    { x: 8, y: 40, w: 5, h: 8 },
     "My callsign widget",
     true,
     true,
@@ -168,7 +168,7 @@ const gridWidgets = [
   ),
   new gridWidget(
     grid_freq,
-    { x: 20, y: 8, w: 4, h: 9 },
+    { x: 20, y: 8, w: 4, h: 8 },
     "Frequency widget",
     true,
     true,
