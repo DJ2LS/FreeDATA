@@ -56,9 +56,6 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         self.transmitted_acks = 0
 
-    def set_modem_decode_modes(self, modes):
-        pass
-
     def all_data_received(self):
         return self.received_bytes == len(self.received_data)
 
@@ -90,7 +87,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.dxcall, 
             self.version,
             self.snr[0])
-        self.launch_transmit_and_wait(ack_frame, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.datac13)
+        self.launch_transmit_and_wait(ack_frame, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(self.STATE_OPEN_ACK_SENT)
 
     def send_info_ack(self, info_frame):
@@ -100,23 +97,33 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.dx_snr.append(info_frame['snr'])
 
         self.calibrate_speed_settings()
-        self.set_modem_listening_modes(self.speed_level)
+        self.set_modem_decode_modes(self.speed_level)
         info_ack = self.frame_factory.build_arq_session_info_ack(
             self.id, self.total_crc, self.snr[0],
             self.speed_level, self.frames_per_burst)
-        self.launch_transmit_and_wait(info_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.datac13)
+        self.launch_transmit_and_wait(info_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(self.STATE_INFO_ACK_SENT)
 
     def send_burst_nack(self):
         self.calibrate_speed_settings()
-        self.set_modem_listening_modes(self.speed_level)
+        self.set_modem_decode_modes(self.speed_level)
         nack = self.frame_factory.build_arq_burst_ack(self.id, self.received_bytes, self.speed_level, self.frames_per_burst, self.snr[0])
         self.transmit_and_wait(nack)
 
 
-    def set_modem_listening_modes(self, speed_level):
-        # TODO
-        # We want to set the modems listening modes somehow...
+    def set_modem_decode_modes(self, speed_level):
+
+        for mode in self.modem.demodulator.MODE_DICT:
+            self.modem.demodulator.MODE_DICT[mode]["decode"] = False
+
+        # signalling is always true
+        self.modem.demodulator.MODE_DICT[FREEDV_MODE.signalling.value]["decode"] = True
+
+        mode = self.get_mode_by_speed_level(self.speed_level)
+        # Enable mode based on speed_level
+        self.modem.demodulator.MODE_DICT[mode.value]["decode"] = True
+        self.log(f"Modem set to speed level {speed_level}")
+
         return
 
 

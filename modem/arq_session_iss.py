@@ -71,7 +71,7 @@ class ARQSessionISS(arq_session.ARQSession):
 
     def start(self):
         session_open_frame = self.frame_factory.build_arq_session_open(self.dxcall, self.id)
-        self.launch_twr(session_open_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.datac13)
+        self.launch_twr(session_open_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(self.STATE_OPEN_SENT)
 
     def set_speed_and_frames_per_burst(self, frame):
@@ -84,7 +84,7 @@ class ARQSessionISS(arq_session.ARQSession):
         info_frame = self.frame_factory.build_arq_session_info(self.id, len(self.data), 
                                                                helpers.get_crc_32(self.data), 
                                                                self.snr[0])
-        self.launch_twr(info_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.datac13)
+        self.launch_twr(info_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(self.STATE_INFO_SENT)
 
     def send_data(self, irs_frame):

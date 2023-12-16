@@ -30,11 +30,7 @@ class TxCommand():
         pass
 
     def get_tx_mode(self):
-        return (
-            FREEDV_MODE.fsk_ldpc_0.value
-            if self.config['MODEM']['enable_fsk']
-            else FREEDV_MODE.sig0.value
-        )
+        return FREEDV_MODE.signalling
     
     def make_modem_queue_item(self, mode, repeat, repeat_delay, frame):
         return {
@@ -52,3 +48,9 @@ class TxCommand():
         self.emit_event(event_queue)
         self.logger.info(self.log_message())
         self.transmit(modem)
+
+    def test(self, event_queue: queue.Queue):
+        self.emit_event(event_queue)
+        self.logger.info(self.log_message())
+        frame = self.build_frame()
+        return frame

@@ -12,27 +12,33 @@ TESTMODE = False
 
 class Demodulator():
 
-    def __init__(self, config, audio_rx_q, modem_rx_q, data_q_rx, states, event_manager):
+    MODE_DICT = {}
+    # Iterate over the FREEDV_MODE enum members
+    for mode in codec2.FREEDV_MODE:
+        MODE_DICT[mode.value] = {
+            'decode': False,
+            'bytes_per_frame': None,
+            'bytes_out': None,
+            'audio_buffer': None,
+            'nin': None,
+            'instance': None,
+            'state_buffer': [],
+            'name': mode.name.upper(),
+            'decoding_thread': None
+        }
+
+    def __init__(self, config, audio_rx_q, modem_rx_q, data_q_rx, states, event_manager, fft_queue):
+        self.log = structlog.get_logger("Demodulator")
+
         self.tuning_range_fmin = config['MODEM']['tuning_range_fmin']
         self.tuning_range_fmax = config['MODEM']['tuning_range_fmax']
-        self.enable_fsk = config['MODEM']['enable_fsk']
         self.rx_audio_level = config['AUDIO']['rx_audio_level']
 
-        self.AUDIO_FRAMES_PER_BUFFER_RX = 2400 * 2  # 8192
+        self.AUDIO_FRAMES_PER_BUFFER_RX = 4800
         self.buffer_overflow_counter = [0, 0, 0, 0, 0, 0, 0, 0]
         self.is_codec2_traffic_counter = 0
         self.is_codec2_traffic_cooldown = 20
 
-        # Receive only specific modes to reduce CPU load
-        self.RECEIVE_SIG0 = True
-        self.RECEIVE_SIG1 = False
-        self.RECEIVE_DATAC1 = False
-        self.RECEIVE_DATAC3 = False
-        self.RECEIVE_DATAC4 = False
-
-        self.RXCHANNEL = ""
-
-        self.log = structlog.get_logger("Demodulator")
 
         self.audio_received_queue = audio_rx_q
         self.modem_received_queue = modem_rx_q
@@ -41,118 +47,32 @@ class Demodulator():
         self.states = states
         self.event_manager = event_manager
 
+        self.fft_queue = fft_queue
+
         # init codec2 resampler
         self.resampler = codec2.resampler()
 
-        self.init_state_buffers()
         self.init_codec2()
 
-    def init_state_buffers(self):
-        # state buffer
-        self.SIG0_DATAC13_STATE = []
-        self.SIG1_DATAC13_STATE = []
-        self.DAT0_DATAC1_STATE = []
-        self.DAT0_DATAC3_STATE = []
-        self.DAT0_DATAC4_STATE = []
+        # enable decoding of signalling modes
+        self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
 
-        self.FSK_LDPC0_STATE = []
-        self.FSK_LDPC1_STATE = []
 
     def init_codec2(self):
         # Open codec2 instances
-
-        # DATAC13
-        # SIGNALLING MODE 0 - Used for Connecting - Payload 14 Bytes
-        self.sig0_datac13_freedv, \
-                self.sig0_datac13_bytes_per_frame, \
-                self.sig0_datac13_bytes_out, \
-                self.sig0_datac13_buffer, \
-                self.sig0_datac13_nin = \
-                self.init_codec2_mode(codec2.FREEDV_MODE.datac13.value, None)
-
-        # DATAC13
-        # SIGNALLING MODE 1 - Used for ACK/NACK - Payload 5 Bytes
-        self.sig1_datac13_freedv, \
-                self.sig1_datac13_bytes_per_frame, \
-                self.sig1_datac13_bytes_out, \
-                self.sig1_datac13_buffer, \
-                self.sig1_datac13_nin = \
-                self.init_codec2_mode(codec2.FREEDV_MODE.datac13.value, None)
-
-        # DATAC1
-        self.dat0_datac1_freedv, \
-                self.dat0_datac1_bytes_per_frame, \
-                self.dat0_datac1_bytes_out, \
-                self.dat0_datac1_buffer, \
-                self.dat0_datac1_nin = \
-                self.init_codec2_mode(codec2.FREEDV_MODE.datac1.value, None)
-
-        # DATAC3
-        self.dat0_datac3_freedv, \
-                self.dat0_datac3_bytes_per_frame, \
-                self.dat0_datac3_bytes_out, \
-                self.dat0_datac3_buffer, \
-                self.dat0_datac3_nin = \
-                self.init_codec2_mode(codec2.FREEDV_MODE.datac3.value, None)
-
-        # DATAC4
-        self.dat0_datac4_freedv, \
-                self.dat0_datac4_bytes_per_frame, \
-                self.dat0_datac4_bytes_out, \
-                self.dat0_datac4_buffer, \
-                self.dat0_datac4_nin = \
-                self.init_codec2_mode(codec2.FREEDV_MODE.datac4.value, None)
+        for mode in codec2.FREEDV_MODE:
+            self.init_codec2_mode(mode.value)
 
 
-        # FSK LDPC - 0
-        self.fsk_ldpc_freedv_0, \
-                self.fsk_ldpc_bytes_per_frame_0, \
-                self.fsk_ldpc_bytes_out_0, \
-                self.fsk_ldpc_buffer_0, \
-                self.fsk_ldpc_nin_0 = \
-                self.init_codec2_mode(
-                codec2.FREEDV_MODE.fsk_ldpc.value,
-                codec2.api.FREEDV_MODE_FSK_LDPC_0_ADV
-            )
-
-        # FSK LDPC - 1
-        self.fsk_ldpc_freedv_1, \
-                self.fsk_ldpc_bytes_per_frame_1, \
-                self.fsk_ldpc_bytes_out_1, \
-                self.fsk_ldpc_buffer_1, \
-                self.fsk_ldpc_nin_1 = \
-                self.init_codec2_mode(
-                codec2.FREEDV_MODE.fsk_ldpc.value,
-                codec2.api.FREEDV_MODE_FSK_LDPC_1_ADV
-            )
-
-    def init_codec2_mode(self, mode, adv):
+    def init_codec2_mode(self, mode):
         """
         Init codec2 and return some important parameters
-
-        Args:
-          self:
-          mode:
-          adv:
-
-        Returns:
-            c2instance, bytes_per_frame, bytes_out, audio_buffer, nin
         """
-        if adv:
-            # FSK Long-distance Parity Code 1 - data frames
-            c2instance = ctypes.cast(
-                codec2.api.freedv_open_advanced(
-                    codec2.FREEDV_MODE.fsk_ldpc.value,
-                    ctypes.byref(adv),
-                ),
-                ctypes.c_void_p,
-            )
-        else:
 
-            # create codec2 instance
-            c2instance = ctypes.cast(
-                codec2.api.freedv_open(mode), ctypes.c_void_p
-            )
+        # create codec2 instance
+        c2instance = ctypes.cast(
+            codec2.api.freedv_open(mode), ctypes.c_void_p
+        )
 
         # set tuning range
         codec2.api.freedv_set_tuning_range(
@@ -179,180 +99,60 @@ class Demodulator():
         nin = codec2.api.freedv_nin(c2instance)
 
         # Additional Datac0-specific information - these are not referenced anywhere else.
-        # self.sig0_datac0_payload_per_frame = self.sig0_datac0_bytes_per_frame - 2
-        # self.sig0_datac0_n_nom_modem_samples = codec2.api.freedv_get_n_nom_modem_samples(
-        #     self.sig0_datac0_freedv
+        # self.signalling_datac0_payload_per_frame = self.signalling_datac0_bytes_per_frame - 2
+        # self.signalling_datac0_n_nom_modem_samples = codec2.api.freedv_get_n_nom_modem_samples(
+        #     self.signalling_datac0_freedv
         # )
-        # self.sig0_datac0_n_tx_modem_samples = codec2.api.freedv_get_n_tx_modem_samples(
-        #     self.sig0_datac0_freedv
+        # self.signalling_datac0_n_tx_modem_samples = codec2.api.freedv_get_n_tx_modem_samples(
+        #     self.signalling_datac0_freedv
         # )
-        # self.sig0_datac0_n_tx_preamble_modem_samples = (
-        #     codec2.api.freedv_get_n_tx_preamble_modem_samples(self.sig0_datac0_freedv)
+        # self.signalling_datac0_n_tx_preamble_modem_samples = (
+        #     codec2.api.freedv_get_n_tx_preamble_modem_samples(self.signalling_datac0_freedv)
         # )
-        # self.sig0_datac0_n_tx_postamble_modem_samples = (
-        #     codec2.api.freedv_get_n_tx_postamble_modem_samples(self.sig0_datac0_freedv)
+        # self.signalling_datac0_n_tx_postamble_modem_samples = (
+        #     codec2.api.freedv_get_n_tx_postamble_modem_samples(self.signalling_datac0_freedv)
         # )
 
-        # return values
-        return c2instance, bytes_per_frame, bytes_out, audio_buffer, nin
+        self.MODE_DICT[mode]["instance"] = c2instance
+        self.MODE_DICT[mode]["bytes_per_frame"] = bytes_per_frame
+        self.MODE_DICT[mode]["bytes_out"] = bytes_out
+        self.MODE_DICT[mode]["audio_buffer"] = audio_buffer
+        self.MODE_DICT[mode]["nin"] = nin
 
     def start(self, stream):
 
         self.stream = stream
 
-        # Start decoder threads
-        if self.enable_fsk:
-            audio_thread_fsk_ldpc0 = threading.Thread(
-                target=self.audio_fsk_ldpc_0, name="AUDIO_THREAD FSK LDPC0", daemon=True
+        for mode in self.MODE_DICT:
+            # Start decoder threads
+            self.MODE_DICT[mode]['decoding_thread'] = threading.Thread(
+                target=self.demodulate_audio,args=[mode], name=self.MODE_DICT[mode]['name'], daemon=True
             )
-            audio_thread_fsk_ldpc0.start()
+            self.MODE_DICT[mode]['decoding_thread'].start()
 
-            audio_thread_fsk_ldpc1 = threading.Thread(
-                target=self.audio_fsk_ldpc_1, name="AUDIO_THREAD FSK LDPC1", daemon=True
-            )
-            audio_thread_fsk_ldpc1.start()
-
-        else:
-            audio_thread_sig0_datac13 = threading.Thread(
-                target=self.audio_sig0_datac13, name="AUDIO_THREAD DATAC13 - 0", daemon=True
-            )
-            audio_thread_sig0_datac13.start()
-
-            audio_thread_sig1_datac13 = threading.Thread(
-                target=self.audio_sig1_datac13, name="AUDIO_THREAD DATAC13 - 1", daemon=True
-            )
-            audio_thread_sig1_datac13.start()
-
-            audio_thread_dat0_datac1 = threading.Thread(
-                target=self.audio_dat0_datac1, name="AUDIO_THREAD DATAC1", daemon=True
-            )
-            audio_thread_dat0_datac1.start()
-
-            audio_thread_dat0_datac3 = threading.Thread(
-                target=self.audio_dat0_datac3, name="AUDIO_THREAD DATAC3", daemon=True
-            )
-            audio_thread_dat0_datac3.start()
-
-            audio_thread_dat0_datac4 = threading.Thread(
-                target=self.audio_dat0_datac4, name="AUDIO_THREAD DATAC4", daemon=True
-            )
-            audio_thread_dat0_datac4.start()
-
-    def audio_sig0_datac13(self) -> None:
-        """Receive data encoded with datac13 - 0"""
-        self.sig0_datac13_nin = self.demodulate_audio(
-            self.sig0_datac13_buffer,
-            self.sig0_datac13_nin,
-            self.sig0_datac13_freedv,
-            self.sig0_datac13_bytes_out,
-            self.sig0_datac13_bytes_per_frame,
-            self.SIG0_DATAC13_STATE,
-            "sig0-datac13"
-        )
-
-    def audio_sig1_datac13(self) -> None:
-        """Receive data encoded with datac13 - 1"""
-        self.sig1_datac13_nin = self.demodulate_audio(
-            self.sig1_datac13_buffer,
-            self.sig1_datac13_nin,
-            self.sig1_datac13_freedv,
-            self.sig1_datac13_bytes_out,
-            self.sig1_datac13_bytes_per_frame,
-            self.SIG1_DATAC13_STATE,
-            "sig1-datac13"
-        )
-
-    def audio_dat0_datac4(self) -> None:
-        """Receive data encoded with datac4"""
-        self.dat0_datac4_nin = self.demodulate_audio(
-            self.dat0_datac4_buffer,
-            self.dat0_datac4_nin,
-            self.dat0_datac4_freedv,
-            self.dat0_datac4_bytes_out,
-            self.dat0_datac4_bytes_per_frame,
-            self.DAT0_DATAC4_STATE,
-            "dat0-datac4"
-        )
-
-    def audio_dat0_datac1(self) -> None:
-        """Receive data encoded with datac1"""
-        self.dat0_datac1_nin = self.demodulate_audio(
-            self.dat0_datac1_buffer,
-            self.dat0_datac1_nin,
-            self.dat0_datac1_freedv,
-            self.dat0_datac1_bytes_out,
-            self.dat0_datac1_bytes_per_frame,
-            self.DAT0_DATAC1_STATE,
-            "dat0-datac1"
-        )
-
-    def audio_dat0_datac3(self) -> None:
-        """Receive data encoded with datac3"""
-        self.dat0_datac3_nin = self.demodulate_audio(
-            self.dat0_datac3_buffer,
-            self.dat0_datac3_nin,
-            self.dat0_datac3_freedv,
-            self.dat0_datac3_bytes_out,
-            self.dat0_datac3_bytes_per_frame,
-            self.DAT0_DATAC3_STATE,
-            "dat0-datac3"
-        )
-
-    def audio_fsk_ldpc_0(self) -> None:
-        """Receive data encoded with FSK + LDPC0"""
-        self.fsk_ldpc_nin_0 = self.demodulate_audio(
-            self.fsk_ldpc_buffer_0,
-            self.fsk_ldpc_nin_0,
-            self.fsk_ldpc_freedv_0,
-            self.fsk_ldpc_bytes_out_0,
-            self.fsk_ldpc_bytes_per_frame_0,
-            self.FSK_LDPC0_STATE,
-            "fsk_ldpc0",
-        )
-
-    def audio_fsk_ldpc_1(self) -> None:
-        """Receive data encoded with FSK + LDPC1"""
-        self.fsk_ldpc_nin_1 = self.demodulate_audio(
-            self.fsk_ldpc_buffer_1,
-            self.fsk_ldpc_nin_1,
-            self.fsk_ldpc_freedv_1,
-            self.fsk_ldpc_bytes_out_1,
-            self.fsk_ldpc_bytes_per_frame_1,
-            self.FSK_LDPC1_STATE,
-            "fsk_ldpc1",
-        )
 
     def sd_input_audio_callback(self, indata: np.ndarray, frames: int, time, status) -> None:
-            x = np.frombuffer(indata, dtype=np.int16)
-            x = self.resampler.resample48_to_8(x)
-            x = audio.set_audio_volume(x, self.rx_audio_level)
+            audio_48k = np.frombuffer(indata, dtype=np.int16)
+            audio_8k = self.resampler.resample48_to_8(audio_48k)
+            audio.calculate_fft(audio_8k, self.fft_queue, self.states)
 
-            # audio recording for debugging purposes
-            # TODO Find a nice place for this
-            #if AudioParam.audio_record:
-            #    AudioParam.audio_record_file.writeframes(x)
+            audio_8k_level_adjusted = audio.set_audio_volume(audio_8k, self.rx_audio_level)
 
-            # Avoid decoding when transmitting to reduce CPU
-            # TODO Overriding this for testing purposes
-            # if not self.states.is_transmitting:
-            length_x = len(x)
+            length_audio_8k_level_adjusted = len(audio_8k_level_adjusted)
             # Avoid buffer overflow by filling only if buffer for
             # selected datachannel mode is not full
-            for audiobuffer, receive, index in [
-                (self.sig0_datac13_buffer, self.RECEIVE_SIG0, 0),
-                (self.sig1_datac13_buffer, self.RECEIVE_SIG1, 1),
-                (self.dat0_datac1_buffer, self.RECEIVE_DATAC1, 2),
-                (self.dat0_datac3_buffer, self.RECEIVE_DATAC3, 3),
-                (self.dat0_datac4_buffer, self.RECEIVE_DATAC4, 4),
-                (self.fsk_ldpc_buffer_0, self.enable_fsk, 5),
-                (self.fsk_ldpc_buffer_1, self.enable_fsk, 6),
-            ]:
-                if (audiobuffer.nbuffer + length_x) > audiobuffer.size:
-                    self.buffer_overflow_counter[index] += 1
-                    self.event_manager.send_buffer_overflow(self.buffer_overflow_counter)
-                elif receive:
-                    audiobuffer.push(x)
-            return x
+            index = 0
+            for mode in self.MODE_DICT:
+                mode_data = self.MODE_DICT[mode]
+                audiobuffer = mode_data['audio_buffer']
+                decode = mode_data['decode']
+                index += 1
+                if audiobuffer:
+                    if (audiobuffer.nbuffer + length_audio_8k_level_adjusted) > audiobuffer.size:
+                        self.buffer_overflow_counter[index] += 1
+                        self.event_manager.send_buffer_overflow(self.buffer_overflow_counter)
+                    elif decode:
+                        audiobuffer.push(audio_8k_level_adjusted)
 
     def worker_received(self) -> None:
         """Worker for FIFO queue for processing received frames"""
@@ -389,40 +189,20 @@ class Demodulator():
         offset = round(modemStats.foff) * (-1)
         return offset
 
-    def demodulate_audio(
-            self,
-            audiobuffer: codec2.audio_buffer,
-            nin: int,
-            freedv: ctypes.c_void_p,
-            bytes_out,
-            bytes_per_frame,
-            state_buffer,
-            mode_name,
-    ) -> int:
+    def demodulate_audio(self, mode) -> int:
         """
         De-modulate supplied audio stream with supplied codec2 instance.
         Decoded audio is placed into `bytes_out`.
-
-        :param audiobuffer: Incoming audio
-        :type audiobuffer: codec2.audio_buffer
-        :param nin: Number of frames codec2 is expecting
-        :type nin: int
-        :param freedv: codec2 instance
-        :type freedv: ctypes.c_void_p
-        :param bytes_out: Demodulated audio
-        :type bytes_out: _type_
-        :param bytes_per_frame: Number of bytes per frame
-        :type bytes_per_frame: int
-        :param state_buffer: modem states
-        :type state_buffer: int
-        :param mode_name: mode name
-        :type mode_name: str
-        :return: NIN from freedv instance
-        :rtype: int
         """
 
-        nbytes = 0
-        #try:
+        audiobuffer = self.MODE_DICT[mode]["audio_buffer"]
+        nin = self.MODE_DICT[mode]["nin"]
+        freedv = self.MODE_DICT[mode]["instance"]
+        bytes_out = self.MODE_DICT[mode]["bytes_out"]
+        bytes_per_frame= self.MODE_DICT[mode]["bytes_per_frame"]
+        state_buffer = self.MODE_DICT[mode]["state_buffer"]
+        mode_name = self.MODE_DICT[mode]["name"]
+
         while self.stream.active:
             threading.Event().wait(0.01)
             while audiobuffer.nbuffer >= nin:
@@ -440,13 +220,12 @@ class Demodulator():
 
                 if rx_status not in [0]:
                     # we need to disable this if in testmode as its causing problems with FIFO it seems
-                    if not TESTMODE:
-                        self.states.set("is_codec2_traffic", True)
-                        self.is_codec2_traffic_counter = self.is_codec2_traffic_cooldown
-                        if not self.states.channel_busy:
-                            self.log.debug("[MDM] Setting channel_busy since codec2 data detected")
-                            self.states.set("channel_busy", True)
-                            #self.channel_busy_delay += 10
+                    self.states.set("is_codec2_traffic", True)
+                    self.is_codec2_traffic_counter = self.is_codec2_traffic_cooldown
+                    if not self.states.channel_busy:
+                        self.log.debug("[MDM] Setting channel_busy since codec2 data detected")
+                        self.states.set("channel_busy", True)
+                        #self.channel_busy_delay += 10
                     self.log.debug(
                         "[MDM] [demod_audio] modem state", mode=mode_name, rx_status=rx_status,
                         sync_flag=codec2.api.rx_sync_flags_to_text[rx_status]
@@ -469,18 +248,7 @@ class Demodulator():
                 if nbytes == bytes_per_frame:
                     print(bytes(bytes_out))
 
-                    # ignore data channel opener frames for avoiding toggle states
-                    # use case: opener already received, but ack got lost and we are receiving
-                    # an opener again
-                    if mode_name in ["sig1-datac13"] and int.from_bytes(bytes(bytes_out[:1]), "big") in [
-                        FRAME_TYPE.ARQ_SESSION_OPEN.value,
-                        FRAME_TYPE.ARQ_DC_OPEN_W.value,
-                        FRAME_TYPE.ARQ_DC_OPEN_ACK_W.value,
-                        FRAME_TYPE.ARQ_DC_OPEN_N.value,
-                        FRAME_TYPE.ARQ_DC_OPEN_ACK_N.value
-                    ]:
-                        print("dropp")
-                    elif int.from_bytes(bytes(bytes_out[:1]), "big") in [
+                    if int.from_bytes(bytes(bytes_out[:1]), "big") in [
                         FRAME_TYPE.MESH_BROADCAST.value,
                         FRAME_TYPE.MESH_SIGNALLING_PING.value,
                         FRAME_TYPE.MESH_SIGNALLING_PING_ACK.value,
@@ -499,11 +267,6 @@ class Demodulator():
                         self.get_scatter(freedv)
                         state_buffer = []
 
-        #except Exception as e:
-        #    self.log.warning("[MDM] [demod_audio] Stream not active anymore", e=e)
-
-        return nin
-
     def tci_rx_callback(self) -> None:
         """
         Callback for TCI RX
@@ -514,61 +277,26 @@ class Demodulator():
 
         while True:
 
-            x = self.audio_received_queue.get()
-            x = np.frombuffer(x, dtype=np.int16)
-            # x = self.resampler.resample48_to_8(x)
-            
-            self.calculate_fft(x)
+            audio_48k = self.audio_received_queue.get()
+            audio_48k = np.frombuffer(audio_48k, dtype=np.int16)
 
-            length_x = len(x)
-            for data_buffer, receive in [
-                (self.sig0_datac13_buffer, self.RECEIVE_SIG0),
-                (self.sig1_datac13_buffer, self.RECEIVE_SIG1),
-                (self.dat0_datac1_buffer, self.RECEIVE_DATAC1),
-                (self.dat0_datac3_buffer, self.RECEIVE_DATAC3),
-                (self.dat0_datac4_buffer, self.RECEIVE_DATAC4),
-                (self.fsk_ldpc_buffer_0, self.enable_fsk),
-                (self.fsk_ldpc_buffer_1, self.enable_fsk),
-            ]:
-                if (
-                        not (data_buffer.nbuffer + length_x) > data_buffer.size
-                        and receive
-                ):
-                    data_buffer.push(x)
+            audio.calculate_fft(audio_48k, self.fft_queue, self.states)
 
-    def mkfifo_read_callback(self) -> None:
-        """
-        Support testing by reading the audio data from a pipe and
-        depositing the data into the codec data buffers.
-        """
-        while True:
-            threading.Event().wait(0.01)
-            # -----read
-            data_in48k = bytes()
-            with open("", "rb") as fifo:
-                for line in fifo:
-                    data_in48k += line
+            length_audio_48k = len(audio_48k)
+            index = 0
+            for mode in self.MODE_DICT:
+                mode_data = self.MODE_DICT[mode]
+                audiobuffer = mode_data['audio_buffer']
+                decode = mode_data['decode']
+                index += 1
+                if audiobuffer:
+                    if (audiobuffer.nbuffer + length_audio_48k) > audiobuffer.size:
+                        self.buffer_overflow_counter[index] += 1
+                        self.event_manager.send_buffer_overflow(self.buffer_overflow_counter)
+                    elif decode:
+                        audiobuffer.push(audio_48k)
 
-                    while len(data_in48k) >= 48:
-                        x = np.frombuffer(data_in48k[:48], dtype=np.int16)
-                        x = self.resampler.resample48_to_8(x)
-                        data_in48k = data_in48k[48:]
 
-                        length_x = len(x)
-                        for data_buffer, receive in [
-                            (self.sig0_datac13_buffer, self.RECEIVE_SIG0),
-                            (self.sig1_datac13_buffer, self.RECEIVE_SIG1),
-                            (self.dat0_datac1_buffer, self.RECEIVE_DATAC1),
-                            (self.dat0_datac3_buffer, self.RECEIVE_DATAC3),
-                            (self.dat0_datac4_buffer, self.RECEIVE_DATAC4),
-                            (self.fsk_ldpc_buffer_0, self.enable_fsk),
-                            (self.fsk_ldpc_buffer_1, self.enable_fsk),
-                        ]:
-                            if (
-                                    not (data_buffer.nbuffer + length_x) > data_buffer.size
-                                    and receive
-                            ):
-                                data_buffer.push(x)
 
     def set_frames_per_burst(self, frames_per_burst: int) -> None:
         """
@@ -586,7 +314,6 @@ class Demodulator():
         codec2.api.freedv_set_frames_per_burst(self.dat0_datac1_freedv, frames_per_burst)
         codec2.api.freedv_set_frames_per_burst(self.dat0_datac3_freedv, frames_per_burst)
         codec2.api.freedv_set_frames_per_burst(self.dat0_datac4_freedv, frames_per_burst)
-        codec2.api.freedv_set_frames_per_burst(self.fsk_ldpc_freedv_0, frames_per_burst)
 
     def calculate_snr(self, freedv: ctypes.c_void_p) -> float:
         """
@@ -659,13 +386,11 @@ class Demodulator():
 
     def reset_data_sync(self) -> None:
         """
-        reset sync state for data modes
+        reset sync state for modes
 
         :param frames_per_burst: Number of frames per burst requested
         :type frames_per_burst: int
         """
+        for mode in self.MODE_DICT:
+            codec2.api.freedv_set_sync(self.MODE_DICT[mode]["instance"], 0)
 
-        codec2.api.freedv_set_sync(self.dat0_datac1_freedv, 0)
-        codec2.api.freedv_set_sync(self.dat0_datac3_freedv, 0)
-        codec2.api.freedv_set_sync(self.dat0_datac4_freedv, 0)
-        codec2.api.freedv_set_sync(self.fsk_ldpc_freedv_0, 0)

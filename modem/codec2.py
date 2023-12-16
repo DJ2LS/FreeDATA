@@ -24,16 +24,12 @@ class FREEDV_MODE(Enum):
     """
     Enumeration for codec2 modes and names
     """
-    sig0 = 19
-    sig1 = 19
+    signalling = 19
     datac0 = 14
     datac1 = 10
     datac3 = 12
     datac4 = 18
     datac13 = 19
-    fsk_ldpc = 9
-    fsk_ldpc_0 = 200
-    fsk_ldpc_1 = 201
 
 
 class FREEDV_MODE_USED_SLOTS(Enum):
@@ -435,24 +431,24 @@ def open_instance(mode: int) -> ctypes.c_void_p:
     :return: C-function of the requested codec2 instance
     :rtype: ctypes.c_void_p
     """
-    if mode in [FREEDV_MODE.fsk_ldpc_0.value]:
-        return ctypes.cast(
-            api.freedv_open_advanced(
-                FREEDV_MODE.fsk_ldpc.value,
-                ctypes.byref(api.FREEDV_MODE_FSK_LDPC_0_ADV),
-            ),
-            ctypes.c_void_p,
-        )
-
-    if mode in [FREEDV_MODE.fsk_ldpc_1.value]:
-        return ctypes.cast(
-            api.freedv_open_advanced(
-                FREEDV_MODE.fsk_ldpc.value,
-                ctypes.byref(api.FREEDV_MODE_FSK_LDPC_1_ADV),
-            ),
-            ctypes.c_void_p,
-        )
-
+    #    if mode in [FREEDV_MODE.fsk_ldpc_0.value]:
+    #        return ctypes.cast(
+    #            api.freedv_open_advanced(
+    #                FREEDV_MODE.fsk_ldpc.value,
+    #                ctypes.byref(api.FREEDV_MODE_FSK_LDPC_0_ADV),
+    #            ),
+    #            ctypes.c_void_p,
+    #        )
+    #
+    #    if mode in [FREEDV_MODE.fsk_ldpc_1.value]:
+    #        return ctypes.cast(
+    #            api.freedv_open_advanced(
+    #                FREEDV_MODE.fsk_ldpc.value,
+    #                ctypes.byref(api.FREEDV_MODE_FSK_LDPC_1_ADV),
+    #            ),
+    #            ctypes.c_void_p,
+    #        )
+    #
     return ctypes.cast(api.freedv_open(mode), ctypes.c_void_p)
 
 def get_bytes_per_frame(mode: int) -> int:

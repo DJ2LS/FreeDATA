@@ -17,7 +17,6 @@ class SM:
         self.config = self.app.config_manager.read()
         self.modem_events = app.modem_events
         self.modem_fft = app.modem_fft
-        self.enable_fft_stream = False
         self.modem_service = app.modem_service
         self.states = app.state_manager
 
@@ -49,14 +48,6 @@ class SM:
                 threading.Event().wait(0.5)
                 if self.start_modem():
                     self.modem_events.put(json.dumps({"freedata": "modem-event", "event": "restart"}))
-            elif cmd in ['fft:true']:
-                # Tell modem it should put FFT data in the queue
-                self.modem.set_FFT_stream(True)
-                self.enable_fft_stream=True
-            elif cmd in ['fft:false']:
-                # Tell modem it should not put FFT data in the queue
-                self.modem.set_FFT_stream(False)
-                self.enable_fft_stream=False
             else:
                 self.log.warning("[SVC] modem command processing failed", cmd=cmd, state=self.states.is_modem_running)
 
@@ -88,7 +79,6 @@ class SM:
         self.frame_dispatcher.start()
 
         self.states.set("is_modem_running", True)
-        self.modem.set_FFT_stream(self.enable_fft_stream)
         self.modem.start_modem()
 
         return True
