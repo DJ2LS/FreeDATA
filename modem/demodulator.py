@@ -12,7 +12,7 @@ TESTMODE = False
 
 class Demodulator():
 
-    def __init__(self, config, audio_rx_q, modem_rx_q, data_q_rx, states, event_manager):
+    def __init__(self, config, audio_rx_q, modem_rx_q, data_q_rx, states, event_manager, fft_queue):
         self.tuning_range_fmin = config['MODEM']['tuning_range_fmin']
         self.tuning_range_fmax = config['MODEM']['tuning_range_fmax']
         self.enable_fsk = config['MODEM']['enable_fsk']
@@ -39,6 +39,8 @@ class Demodulator():
 
         self.states = states
         self.event_manager = event_manager
+
+        self.fft_queue = fft_queue
 
         # init codec2 resampler
         self.resampler = codec2.resampler()
@@ -226,21 +228,14 @@ class Demodulator():
             "dat0-datac3"
         )
 
-
     def sd_input_audio_callback(self, indata: np.ndarray, frames: int, time, status) -> None:
-            x = np.frombuffer(indata, dtype=np.int16)
-            x = self.resampler.resample48_to_8(x)
-            x = audio.set_audio_volume(x, self.rx_audio_level)
+            audio_48k = np.frombuffer(indata, dtype=np.int16)
+            audio_8k = self.resampler.resample48_to_8(audio_48k)
+            audio.calculate_fft(audio_8k, self.fft_queue, self.states)
 
-            # audio recording for debugging purposes
-            # TODO Find a nice place for this
-            #if AudioParam.audio_record:
-            #    AudioParam.audio_record_file.writeframes(x)
+            audio_8k_level_adjusted = audio.set_audio_volume(audio_8k, self.rx_audio_level)
 
-            # Avoid decoding when transmitting to reduce CPU
-            # TODO Overriding this for testing purposes
-            # if not self.states.is_transmitting:
-            length_x = len(x)
+            length_audio_8k_level_adjusted = len(audio_8k_level_adjusted)
             # Avoid buffer overflow by filling only if buffer for
             # selected datachannel mode is not full
             for audiobuffer, receive, index in [
@@ -249,12 +244,12 @@ class Demodulator():
                 (self.dat0_datac3_buffer, self.RECEIVE_DATAC3, 3),
                 (self.dat0_datac4_buffer, self.RECEIVE_DATAC4, 4),
             ]:
-                if (audiobuffer.nbuffer + length_x) > audiobuffer.size:
+                if (audiobuffer.nbuffer + length_audio_8k_level_adjusted) > audiobuffer.size:
                     self.buffer_overflow_counter[index] += 1
                     self.event_manager.send_buffer_overflow(self.buffer_overflow_counter)
                 elif receive:
-                    audiobuffer.push(x)
-            return x
+                    audiobuffer.push(audio_8k_level_adjusted)
+            return audio_8k_level_adjusted
 
     def worker_received(self) -> None:
         """Worker for FIFO queue for processing received frames"""
@@ -409,7 +404,7 @@ class Demodulator():
             x = np.frombuffer(x, dtype=np.int16)
             # x = self.resampler.resample48_to_8(x)
             
-            self.calculate_fft(x)
+            audio.calculate_fft(x, self.fft_queue, self.states)
 
             length_x = len(x)
             for data_buffer, receive in [
@@ -423,37 +418,6 @@ class Demodulator():
                         and receive
                 ):
                     data_buffer.push(x)
-
-    def mkfifo_read_callback(self) -> None:
-        """
-        Support testing by reading the audio data from a pipe and
-        depositing the data into the codec data buffers.
-        """
-        while True:
-            threading.Event().wait(0.01)
-            # -----read
-            data_in48k = bytes()
-            with open("", "rb") as fifo:
-                for line in fifo:
-                    data_in48k += line
-
-                    while len(data_in48k) >= 48:
-                        x = np.frombuffer(data_in48k[:48], dtype=np.int16)
-                        x = self.resampler.resample48_to_8(x)
-                        data_in48k = data_in48k[48:]
-
-                        length_x = len(x)
-                        for data_buffer, receive in [
-                            (self.signalling_datac13_buffer, self.RECEIVE_SIGNALLING),
-                            (self.dat0_datac1_buffer, self.RECEIVE_DATAC1),
-                            (self.dat0_datac3_buffer, self.RECEIVE_DATAC3),
-                            (self.dat0_datac4_buffer, self.RECEIVE_DATAC4),
-                        ]:
-                            if (
-                                    not (data_buffer.nbuffer + length_x) > data_buffer.size
-                                    and receive
-                            ):
-                                data_buffer.push(x)
 
     def set_frames_per_burst(self, frames_per_burst: int) -> None:
         """

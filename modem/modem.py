@@ -60,7 +60,6 @@ class RF:
         self.tci_ip = config['TCI']['tci_ip']
         self.tci_port = config['TCI']['tci_port']
 
-        self.channel_busy_delay = 0
 
         self.AUDIO_SAMPLE_RATE = 48000
         self.MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
@@ -96,7 +95,9 @@ class RF:
                                             self.modem_received_queue,
                                             self.data_queue_received,
                                             self.states,
-                                            self.event_manager)
+                                            self.event_manager,
+                                            self.fft_queue
+                                                   )
 
         self.beacon = beacon.Beacon(self.config, self.states, event_queue, 
                                     self.log, self.modem_transmit_queue)
@@ -513,7 +514,6 @@ class RF:
     def transmit_audio(self, audio_48k) -> None:
         self.radio.set_ptt(True)
         self.event_manager.send_ptt_change(True)
-        self.calculate_fft(audio_48k)
 
         if self.radiocontrol in ["tci"]:
             self.tci_tx_callback(audio_48k)
@@ -590,117 +590,3 @@ class RF:
                 )
                 threading.Event().wait(1)
 
-    def calculate_fft(self, data) -> None:
-        """
-        Calculate an average signal strength of the channel to assess
-        whether the channel is "busy."
-        """
-        # Initialize dbfs counter
-        # rms_counter = 0
-
-        # https://gist.github.com/ZWMiller/53232427efc5088007cab6feee7c6e4c
-        # Fast Fourier Transform, 10*log10(abs) is to scale it to dB
-        # and make sure it's not imaginary
-        try:
-            fftarray = np.fft.rfft(data)
-
-            # Set value 0 to 1 to avoid division by zero
-            fftarray[fftarray == 0] = 1
-            dfft = 10.0 * np.log10(abs(fftarray))
-
-            # get average of dfft
-            avg = np.mean(dfft)
-
-            # Detect signals which are higher than the
-            # average + 10 (+10 smoothes the output).
-            # Data higher than the average must be a signal.
-            # Therefore we are setting it to 100 so it will be highlighted
-            # Have to do this when we are not transmitting so our
-            # own sending data will not affect this too much
-            if not self.states.isTransmitting():
-                dfft[dfft > avg + 15] = 100
-
-                # Calculate audio dbfs
-                # https://stackoverflow.com/a/9763652
-                # calculate dbfs every 50 cycles for reducing CPU load
-                self.rms_counter += 1
-                if self.rms_counter > 5:
-                    d = np.frombuffer(data, np.int16).astype(np.float32)
-                    # calculate RMS and then dBFS
-                    # https://dsp.stackexchange.com/questions/8785/how-to-compute-dbfs
-                    # try except for avoiding runtime errors by division/0
-                    try:
-                        rms = int(np.sqrt(np.max(d ** 2)))
-                        if rms == 0:
-                            raise ZeroDivisionError
-                        audio_dbfs = 20 * np.log10(rms / 32768)
-                        self.states.set("audio_dbfs", audio_dbfs)
-                    except Exception as e:
-                        self.states.set("audio_dbfs", -100)
-
-                    self.rms_counter = 0
-
-            # Convert data to int to decrease size
-            dfft = dfft.astype(int)
-
-            # Create list of dfft
-            dfftlist = dfft.tolist()
-
-            # Reduce area where the busy detection is enabled
-            # We want to have this in correlation with mode bandwidth
-            # TODO This is not correctly and needs to be checked for correct maths
-            # dfftlist[0:1] = 10,15Hz
-            # Bandwidth[Hz] / 10,15
-            # narrowband = 563Hz = 56
-            # wideband = 1700Hz = 167
-            # 1500Hz = 148
-            # 2700Hz = 266
-            # 3200Hz = 315
-
-            # slot
-            slot = 0
-            slot1 = [0, 65]
-            slot2 = [65,120]
-            slot3 = [120, 176]
-            slot4 = [176, 231]
-            slot5 = [231, len(dfftlist)]
-            slotbusy = [False,False,False,False,False]
-
-            # Set to true if we should increment delay count; else false to decrement
-            addDelay=False
-            for range in [slot1, slot2, slot3, slot4, slot5]:
-
-                range_start = range[0]
-                range_end = range[1]
-                # define the area, we are detecting busy state
-                slotdfft = dfft[range_start:range_end]
-                # Check for signals higher than average by checking for "100"
-                # If we have a signal, increment our channel_busy delay counter
-                # so we have a smoother state toggle
-                if np.sum(slotdfft[slotdfft > avg + 15]) >= 200 and not self.states.isTransmitting():
-                    addDelay=True
-                    slotbusy[slot]=True
-                    #self.states.channel_busy_slot[slot] = True
-                # increment slot
-                slot += 1
-                self.states.set_channel_slot_busy(slotbusy)
-            if addDelay:
-                # Limit delay counter to a maximum of 200. The higher this value,
-                # the longer we will wait until releasing state
-                self.states.set("channel_busy", True)
-                self.channel_busy_delay = min(self.channel_busy_delay + 10, 200)
-            else:
-                # Decrement channel busy counter if no signal has been detected.
-                self.channel_busy_delay = max(self.channel_busy_delay - 1, 0)
-                # When our channel busy counter reaches 0, toggle state to False
-                if self.channel_busy_delay == 0:
-                    self.states.set("channel_busy", False)
-                # erase queue if greater than 10
-            if self.fft_queue.qsize() >= 10:
-                self.fft_queue = queue.Queue()
-            self.fft_queue.put(dfftlist[:315]) # 315 --> bandwidth 3200
-        except Exception as err:
-            self.log.error(f"[MDM] calculate_fft: Exception: {err}")
-            self.log.debug("[MDM] Setting fft=0")
-            # else 0
-            self.fft_queue.put([0])
