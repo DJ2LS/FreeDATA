@@ -56,9 +56,6 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         self.transmitted_acks = 0
 
-    def set_modem_decode_modes(self, modes):
-        pass
-
     def all_data_received(self):
         return self.received_bytes == len(self.received_data)
 
@@ -100,7 +97,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.dx_snr.append(info_frame['snr'])
 
         self.calibrate_speed_settings()
-        self.set_modem_listening_modes(self.speed_level)
+        self.set_modem_decode_modes(self.speed_level)
         info_ack = self.frame_factory.build_arq_session_info_ack(
             self.id, self.total_crc, self.snr[0],
             self.speed_level, self.frames_per_burst)
@@ -109,14 +106,24 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     def send_burst_nack(self):
         self.calibrate_speed_settings()
-        self.set_modem_listening_modes(self.speed_level)
+        self.set_modem_decode_modes(self.speed_level)
         nack = self.frame_factory.build_arq_burst_ack(self.id, self.received_bytes, self.speed_level, self.frames_per_burst, self.snr[0])
         self.transmit_and_wait(nack)
 
 
-    def set_modem_listening_modes(self, speed_level):
-        # TODO
-        # We want to set the modems listening modes somehow...
+    def set_modem_decode_modes(self, speed_level):
+        # decoding signalling is always on
+        self.modem.demodulator.RECEIVE_SIGNALLING = True
+        self.modem.demodulator.RECEIVE_DATAC4 = False
+        self.modem.demodulator.RECEIVE_DATAC3 = False
+        self.modem.demodulator.RECEIVE_DATAC1 = False
+
+        # Enable mode based on speed_level
+        self.modem.demodulator.MODE_DICT[
+            self.SPEED_LEVEL_DICT[self.speed_level["mode"].value]
+        ]["decode"] = True
+        self.log(f"Modem set to speed level {speed_level}")
+
         return
 
 
