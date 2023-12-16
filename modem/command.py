@@ -48,3 +48,9 @@ class TxCommand():
         self.emit_event(event_queue)
         self.logger.info(self.log_message())
         self.transmit(modem)
+
+    def test(self, event_queue: queue.Queue):
+        self.emit_event(event_queue)
+        self.logger.info(self.log_message())
+        frame = self.build_frame()
+        return frame

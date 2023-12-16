@@ -26,6 +26,8 @@ import event_manager
 import beacon
 import demodulator
 
+TESTMODE = False
+
 class RF:
     """Class to encapsulate interactions between the audio device and codec2"""
 
@@ -108,13 +110,14 @@ class RF:
         self.tci_module.push_audio(audio_48k)
 
     def start_modem(self):
-        result = False
-        
+        # testmode: We need to call the modem without audio parts for running protocol tests
+
         if self.radiocontrol not in ["tci"]:
-            result = self.init_audio()
+            result = self.init_audio() if not TESTMODE else True
             if not result:
                 raise RuntimeError("Unable to init audio devices")
-            self.demodulator.start(self.sd_input_stream)
+            if not TESTMODE:
+                self.demodulator.start(self.sd_input_stream)
 
         else:
             result = self.init_tci()
@@ -128,7 +131,8 @@ class RF:
 
             # init data thread
             self.init_data_threads()
-            atexit.register(self.sd_input_stream.stop)
+            if not TESTMODE:
+                atexit.register(self.sd_input_stream.stop)
 
             # init beacon
             self.beacon.start()
@@ -225,6 +229,7 @@ class RF:
             daemon=True,
         )
         tci_tx_callback_thread.start()
+        return True
 
     def audio_auto_tune(self):
         # enable / disable AUDIO TUNE Feature / ALC correction
@@ -267,6 +272,10 @@ class RF:
           frames:
 
         """
+        if TESTMODE:
+            return
+
+
         self.demodulator.reset_data_sync()
         # get freedv instance by mode
         mode_transition = {
@@ -438,6 +447,7 @@ class RF:
         end_of_transmission = time.time()
         transmission_time = end_of_transmission - start_of_transmission
         self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
+        return True
 
     def transmit_morse(self, repeats, repeat_delay, frames):
         self.states.waitForTransmission()

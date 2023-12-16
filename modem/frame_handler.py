@@ -6,6 +6,8 @@ import structlog
 import time, uuid
 from codec2 import FREEDV_MODE
 
+TESTMODE = False
+
 class FrameHandler():
 
     def __init__(self, name: str, config, states: StateManager, event_manager: EventManager, 
@@ -87,14 +89,13 @@ class FrameHandler():
         self.event_manager.broadcast(event_data)
 
     def get_tx_mode(self):
-        return (
-            FREEDV_MODE.fsk_ldpc_0.value
-            if self.config['MODEM']['enable_fsk']
-            else FREEDV_MODE.sig0.value
-        )
+        return FREEDV_MODE.signalling.value
 
     def transmit(self, frame):
-        self.modem.transmit(self.get_tx_mode(), 1, 0, frame)
+        if not TESTMODE:
+            self.modem.transmit(self.get_tx_mode(), 1, 0, frame)
+        else:
+            self.event_manager.broadcast(frame)
 
     def follow_protocol(self):
         pass
