@@ -93,29 +93,6 @@ class Demodulator():
                 self.dat0_datac4_nin = \
                 self.init_codec2_mode(codec2.FREEDV_MODE.datac4.value, None)
 
-
-        # FSK LDPC - 0
-        self.fsk_ldpc_freedv_0, \
-                self.fsk_ldpc_bytes_per_frame_0, \
-                self.fsk_ldpc_bytes_out_0, \
-                self.fsk_ldpc_buffer_0, \
-                self.fsk_ldpc_nin_0 = \
-                self.init_codec2_mode(
-                codec2.FREEDV_MODE.fsk_ldpc.value,
-                codec2.api.FREEDV_MODE_FSK_LDPC_0_ADV
-            )
-
-        # FSK LDPC - 1
-        self.fsk_ldpc_freedv_1, \
-                self.fsk_ldpc_bytes_per_frame_1, \
-                self.fsk_ldpc_bytes_out_1, \
-                self.fsk_ldpc_buffer_1, \
-                self.fsk_ldpc_nin_1 = \
-                self.init_codec2_mode(
-                codec2.FREEDV_MODE.fsk_ldpc.value,
-                codec2.api.FREEDV_MODE_FSK_LDPC_1_ADV
-            )
-
     def init_codec2_mode(self, mode, adv):
         """
         Init codec2 and return some important parameters
@@ -128,21 +105,11 @@ class Demodulator():
         Returns:
             c2instance, bytes_per_frame, bytes_out, audio_buffer, nin
         """
-        if adv:
-            # FSK Long-distance Parity Code 1 - data frames
-            c2instance = ctypes.cast(
-                codec2.api.freedv_open_advanced(
-                    codec2.FREEDV_MODE.fsk_ldpc.value,
-                    ctypes.byref(adv),
-                ),
-                ctypes.c_void_p,
-            )
-        else:
 
-            # create codec2 instance
-            c2instance = ctypes.cast(
-                codec2.api.freedv_open(mode), ctypes.c_void_p
-            )
+        # create codec2 instance
+        c2instance = ctypes.cast(
+            codec2.api.freedv_open(mode), ctypes.c_void_p
+        )
 
         # set tuning range
         codec2.api.freedv_set_tuning_range(
@@ -191,37 +158,25 @@ class Demodulator():
         self.stream = stream
 
         # Start decoder threads
-        if self.enable_fsk:
-            audio_thread_fsk_ldpc0 = threading.Thread(
-                target=self.audio_fsk_ldpc_0, name="AUDIO_THREAD FSK LDPC0", daemon=True
-            )
-            audio_thread_fsk_ldpc0.start()
+        audio_thread_signalling_datac13 = threading.Thread(
+            target=self.audio_signalling_datac13, name="AUDIO_THREAD DATAC13 - 0", daemon=True
+        )
+        audio_thread_signalling_datac13.start()
 
-            audio_thread_fsk_ldpc1 = threading.Thread(
-                target=self.audio_fsk_ldpc_1, name="AUDIO_THREAD FSK LDPC1", daemon=True
-            )
-            audio_thread_fsk_ldpc1.start()
+        audio_thread_dat0_datac1 = threading.Thread(
+            target=self.audio_dat0_datac1, name="AUDIO_THREAD DATAC1", daemon=True
+        )
+        audio_thread_dat0_datac1.start()
 
-        else:
-            audio_thread_signalling_datac13 = threading.Thread(
-                target=self.audio_signalling_datac13, name="AUDIO_THREAD DATAC13 - 0", daemon=True
-            )
-            audio_thread_signalling_datac13.start()
+        audio_thread_dat0_datac3 = threading.Thread(
+            target=self.audio_dat0_datac3, name="AUDIO_THREAD DATAC3", daemon=True
+        )
+        audio_thread_dat0_datac3.start()
 
-            audio_thread_dat0_datac1 = threading.Thread(
-                target=self.audio_dat0_datac1, name="AUDIO_THREAD DATAC1", daemon=True
-            )
-            audio_thread_dat0_datac1.start()
-
-            audio_thread_dat0_datac3 = threading.Thread(
-                target=self.audio_dat0_datac3, name="AUDIO_THREAD DATAC3", daemon=True
-            )
-            audio_thread_dat0_datac3.start()
-
-            audio_thread_dat0_datac4 = threading.Thread(
-                target=self.audio_dat0_datac4, name="AUDIO_THREAD DATAC4", daemon=True
-            )
-            audio_thread_dat0_datac4.start()
+        audio_thread_dat0_datac4 = threading.Thread(
+            target=self.audio_dat0_datac4, name="AUDIO_THREAD DATAC4", daemon=True
+        )
+        audio_thread_dat0_datac4.start()
 
     def audio_signalling_datac13(self) -> None:
         """Receive data encoded with datac13 - 0"""
@@ -271,29 +226,6 @@ class Demodulator():
             "dat0-datac3"
         )
 
-    def audio_fsk_ldpc_0(self) -> None:
-        """Receive data encoded with FSK + LDPC0"""
-        self.fsk_ldpc_nin_0 = self.demodulate_audio(
-            self.fsk_ldpc_buffer_0,
-            self.fsk_ldpc_nin_0,
-            self.fsk_ldpc_freedv_0,
-            self.fsk_ldpc_bytes_out_0,
-            self.fsk_ldpc_bytes_per_frame_0,
-            self.FSK_LDPC0_STATE,
-            "fsk_ldpc0",
-        )
-
-    def audio_fsk_ldpc_1(self) -> None:
-        """Receive data encoded with FSK + LDPC1"""
-        self.fsk_ldpc_nin_1 = self.demodulate_audio(
-            self.fsk_ldpc_buffer_1,
-            self.fsk_ldpc_nin_1,
-            self.fsk_ldpc_freedv_1,
-            self.fsk_ldpc_bytes_out_1,
-            self.fsk_ldpc_bytes_per_frame_1,
-            self.FSK_LDPC1_STATE,
-            "fsk_ldpc1",
-        )
 
     def sd_input_audio_callback(self, indata: np.ndarray, frames: int, time, status) -> None:
             x = np.frombuffer(indata, dtype=np.int16)
@@ -316,8 +248,6 @@ class Demodulator():
                 (self.dat0_datac1_buffer, self.RECEIVE_DATAC1, 2),
                 (self.dat0_datac3_buffer, self.RECEIVE_DATAC3, 3),
                 (self.dat0_datac4_buffer, self.RECEIVE_DATAC4, 4),
-                (self.fsk_ldpc_buffer_0, self.enable_fsk, 5),
-                (self.fsk_ldpc_buffer_1, self.enable_fsk, 6),
             ]:
                 if (audiobuffer.nbuffer + length_x) > audiobuffer.size:
                     self.buffer_overflow_counter[index] += 1
@@ -487,8 +417,6 @@ class Demodulator():
                 (self.dat0_datac1_buffer, self.RECEIVE_DATAC1),
                 (self.dat0_datac3_buffer, self.RECEIVE_DATAC3),
                 (self.dat0_datac4_buffer, self.RECEIVE_DATAC4),
-                (self.fsk_ldpc_buffer_0, self.enable_fsk),
-                (self.fsk_ldpc_buffer_1, self.enable_fsk),
             ]:
                 if (
                         not (data_buffer.nbuffer + length_x) > data_buffer.size
@@ -520,8 +448,6 @@ class Demodulator():
                             (self.dat0_datac1_buffer, self.RECEIVE_DATAC1),
                             (self.dat0_datac3_buffer, self.RECEIVE_DATAC3),
                             (self.dat0_datac4_buffer, self.RECEIVE_DATAC4),
-                            (self.fsk_ldpc_buffer_0, self.enable_fsk),
-                            (self.fsk_ldpc_buffer_1, self.enable_fsk),
                         ]:
                             if (
                                     not (data_buffer.nbuffer + length_x) > data_buffer.size
@@ -545,7 +471,6 @@ class Demodulator():
         codec2.api.freedv_set_frames_per_burst(self.dat0_datac1_freedv, frames_per_burst)
         codec2.api.freedv_set_frames_per_burst(self.dat0_datac3_freedv, frames_per_burst)
         codec2.api.freedv_set_frames_per_burst(self.dat0_datac4_freedv, frames_per_burst)
-        codec2.api.freedv_set_frames_per_burst(self.fsk_ldpc_freedv_0, frames_per_burst)
 
     def calculate_snr(self, freedv: ctypes.c_void_p) -> float:
         """
@@ -627,4 +552,3 @@ class Demodulator():
         codec2.api.freedv_set_sync(self.dat0_datac1_freedv, 0)
         codec2.api.freedv_set_sync(self.dat0_datac3_freedv, 0)
         codec2.api.freedv_set_sync(self.dat0_datac4_freedv, 0)
-        codec2.api.freedv_set_sync(self.fsk_ldpc_freedv_0, 0)

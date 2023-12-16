@@ -339,16 +339,10 @@ class RF:
 
             # Create modulation for all frames in the list
             for frame in frames:
+
                 # Write preamble to txbuffer
-                # codec2 fsk preamble may be broken -
-                # at least it sounds like that, so we are disabling it for testing
-                if self.MODE not in [
-                    codec2.FREEDV_MODE.fsk_ldpc_0.value,
-                    codec2.FREEDV_MODE.fsk_ldpc_1.value,
-                ]:
-                    # Write preamble to txbuffer
-                    codec2.api.freedv_rawdatapreambletx(freedv, mod_out_preamble)
-                    txbuffer += bytes(mod_out_preamble)
+                codec2.api.freedv_rawdatapreambletx(freedv, mod_out_preamble)
+                txbuffer += bytes(mod_out_preamble)
 
                 # Create buffer for data
                 # Use this if CRC16 checksum is required (DATAc1-3)
@@ -373,16 +367,10 @@ class RF:
                 codec2.api.freedv_rawdatatx(freedv, mod_out, data)
                 txbuffer += bytes(mod_out)
 
-                # codec2 fsk postamble may be broken -
-                # at least it sounds like that, so we are disabling it for testing
-                if self.MODE not in [
-                    codec2.FREEDV_MODE.fsk_ldpc_0.value,
-                    codec2.FREEDV_MODE.fsk_ldpc_1.value,
-                ]:
-                    # Write postamble to txbuffer
-                    codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
-                    # Append postamble to txbuffer
-                    txbuffer += bytes(mod_out_postamble)
+                # Write postamble to txbuffer
+                codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
+                # Append postamble to txbuffer
+                txbuffer += bytes(mod_out_postamble)
 
             # Add delay to end of frames
             samples_delay = int(self.MODEM_SAMPLE_RATE * (repeat_delay / 1000))  # type: ignore
@@ -514,8 +502,6 @@ class RF:
         self.freedv_datac3_tx = codec2.open_instance(codec2.FREEDV_MODE.datac3.value)
         self.freedv_datac4_tx = codec2.open_instance(codec2.FREEDV_MODE.datac4.value)
         self.freedv_datac13_tx = codec2.open_instance(codec2.FREEDV_MODE.datac13.value)
-        self.freedv_ldpc0_tx = codec2.open_instance(codec2.FREEDV_MODE.fsk_ldpc_0.value)
-        self.freedv_ldpc1_tx = codec2.open_instance(codec2.FREEDV_MODE.fsk_ldpc_1.value)
 
     def init_data_threads(self):
         worker_received = threading.Thread(
