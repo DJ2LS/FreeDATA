@@ -11,8 +11,8 @@ const state = useStateStore(pinia);
     class="d-flex justify-content-center align-items-center object-fill border rounded w-100 h-100 link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
     :class="state.ptt_state === true ? 'text-bg-warning' : 'text-bg-light'"
     data-bs-toggle="offcanvas"
-        data-bs-target="#offcanvasFrequency"
+    data-bs-target="#offcanvasFrequency"
   >
-   {{ state.frequency / 1000}} kHz
-</a>
+    {{ state.frequency / 1000 }} kHz
+  </a>
 </template>

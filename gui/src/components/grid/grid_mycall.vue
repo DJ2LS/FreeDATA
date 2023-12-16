@@ -14,9 +14,11 @@ function updateMyCall() {
 <template>
   <div
     class="d-flex justify-content-center align-items-center object-fill border rounded text-bg-light w-100 h-100"
-  ><strong>
-    {{ settingsStore.remote.STATION.mycall}}-{{ settingsStore.remote.STATION.myssid}}
-  </strong>
+  >
+    <strong>
+      {{ settingsStore.remote.STATION.mycall }}-{{
+        settingsStore.remote.STATION.myssid
+      }}
+    </strong>
   </div>
-  
 </template>
