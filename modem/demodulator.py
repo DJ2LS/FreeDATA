@@ -22,7 +22,7 @@ class Demodulator():
             'audio_buffer': None,
             'nin': None,
             'instance': None,
-            'state_buffer': None,
+            'state_buffer': [],
             'name': mode.name.upper(),
             'decoding_thread': None
         }
