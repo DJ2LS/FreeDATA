@@ -135,7 +135,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.logger.info(f"Discarding data frame due to wrong offset", frame=self.frame_received)
             return False
 
-        remaining_data_length = len(self.received_data) - self.received_bytes
+        remaining_data_length = self.total_length - self.received_bytes
 
         # Is this the last data part?
         if remaining_data_length <= len(frame['data']):
