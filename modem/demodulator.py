@@ -54,6 +54,9 @@ class Demodulator():
 
         self.init_codec2()
 
+        # enable decoding of signalling modes
+        self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
+
 
     def init_codec2(self):
         # Open codec2 instances
