@@ -21,6 +21,7 @@ export function initWaterfall(id) {
 
 export function addDataToWaterfall(data) {
   data = JSON.parse(data);
+  if (data.constructor !== Array) return;
   spectrums.forEach((element) => {
     //console.log(element);
     element.addData(data);
