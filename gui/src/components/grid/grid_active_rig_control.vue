@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { setActivePinia } from "pinia";
 import pinia from "../../store/index";
-import { setModemRigMode,setModemRigPowerLvl } from "../../js/api";
+import { setModemRigMode, setModemRigPowerLvl } from "../../js/api";
 setActivePinia(pinia);
 
 import { useStateStore } from "../../store/stateStore.js";
 const state = useStateStore(pinia);
-
 
 function set_hamlib_mode() {
   setModemRigMode(state.mode);
@@ -29,11 +28,20 @@ function set_hamlib_rf_level() {
         <div class="me-2">
           <div class="input-group input-group-sm">
             <span class="input-group-text">QRG</span>
-            <span class="input-group-text">{{ state.frequency / 1000 }} kHz</span>
+            <span class="input-group-text"
+              >{{ state.frequency / 1000 }} kHz</span
+            >
 
-            <button class="btn btn-secondary dropdown-toggle"               v-bind:class="{
+            <button
+              class="btn btn-secondary dropdown-toggle"
+              v-bind:class="{
                 disabled: state.hamlib_status === 'disconnected',
-              }" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasFrequency" aria-controls="offcanvasExample"></button>
+              }"
+              type="button"
+              data-bs-toggle="offcanvas"
+              data-bs-target="#offcanvasFrequency"
+              aria-controls="offcanvasExample"
+            ></button>
           </div>
         </div>
 

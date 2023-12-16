@@ -114,12 +114,11 @@ export function getModemState() {
 }
 
 export function setModemFrequency(newFrequency) {
-  console.error("setModemFrequency needs implemented")
+  console.error("setModemFrequency needs implemented");
 }
 export function setModemRigMode(mode) {
-  console.error("setModemRigMode needs implemented")
+  console.error("setModemRigMode needs implemented");
 }
 export function setModemRigPowerLvl(power) {
-  console.error("setModemRigPowerLvl needs implemented")
+  console.error("setModemRigPowerLvl needs implemented");
 }
-;
