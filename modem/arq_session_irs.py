@@ -120,7 +120,7 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         # Enable mode based on speed_level
         self.modem.demodulator.MODE_DICT[
-            self.SPEED_LEVEL_DICT[self.speed_level]
+            self.SPEED_LEVEL_DICT[self.speed_level]["mode"]
         ]["decode"] = True
         self.log(f"Modem set to speed level {speed_level}")
 
