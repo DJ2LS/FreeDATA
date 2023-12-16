@@ -14,7 +14,6 @@ import ctypes
 import queue
 import threading
 import time
-from collections import deque
 import codec2
 import numpy as np
 import sounddevice as sd
@@ -47,8 +46,6 @@ class RF:
 
         self.tx_audio_level = config['AUDIO']['tx_audio_level']
         self.enable_audio_auto_tune = config['AUDIO']['enable_auto_tune']
-        #Dynamically enable FFT data stream when a client connects to FFT web socket
-        self.enable_fft_stream = False
         self.tx_delay = config['MODEM']['tx_delay']
 
         self.radiocontrol = config['RADIO']['control']
@@ -272,11 +269,12 @@ class RF:
         self.demodulator.reset_data_sync()
         # get freedv instance by mode
         mode_transition = {
-            codec2.FREEDV_MODE.datac0.value: self.freedv_datac0_tx,
-            codec2.FREEDV_MODE.datac1.value: self.freedv_datac1_tx,
-            codec2.FREEDV_MODE.datac3.value: self.freedv_datac3_tx,
-            codec2.FREEDV_MODE.datac4.value: self.freedv_datac4_tx,
-            codec2.FREEDV_MODE.datac13.value: self.freedv_datac13_tx,
+            codec2.FREEDV_MODE.signalling: self.freedv_datac13_tx,
+            codec2.FREEDV_MODE.datac0: self.freedv_datac0_tx,
+            codec2.FREEDV_MODE.datac1: self.freedv_datac1_tx,
+            codec2.FREEDV_MODE.datac3: self.freedv_datac3_tx,
+            codec2.FREEDV_MODE.datac4: self.freedv_datac4_tx,
+            codec2.FREEDV_MODE.datac13: self.freedv_datac13_tx,
         }
         if mode in mode_transition:
             freedv = mode_transition[mode]
@@ -711,18 +709,12 @@ class RF:
                 # When our channel busy counter reaches 0, toggle state to False
                 if self.channel_busy_delay == 0:
                     self.states.set("channel_busy", False)
-            if (self.enable_fft_stream):
                 # erase queue if greater than 10
-                if self.fft_queue.qsize() >= 10:
-                    self.fft_queue = queue.Queue()
-                self.fft_queue.put(dfftlist[:315]) # 315 --> bandwidth 3200
+            if self.fft_queue.qsize() >= 10:
+                self.fft_queue = queue.Queue()
+            self.fft_queue.put(dfftlist[:315]) # 315 --> bandwidth 3200
         except Exception as err:
             self.log.error(f"[MDM] calculate_fft: Exception: {err}")
             self.log.debug("[MDM] Setting fft=0")
             # else 0
             self.fft_queue.put([0])
-
-    def set_FFT_stream(self, enable: bool):
-        # Set config boolean regarding wheter it should sent FFT data to queue
-        self.enable_fft_stream = enable
-

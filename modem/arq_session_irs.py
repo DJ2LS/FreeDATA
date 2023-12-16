@@ -90,7 +90,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.dxcall, 
             self.version,
             self.snr[0])
-        self.launch_transmit_and_wait(ack_frame, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.datac13)
+        self.launch_transmit_and_wait(ack_frame, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(self.STATE_OPEN_ACK_SENT)
 
     def send_info_ack(self, info_frame):
@@ -104,7 +104,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         info_ack = self.frame_factory.build_arq_session_info_ack(
             self.id, self.total_crc, self.snr[0],
             self.speed_level, self.frames_per_burst)
-        self.launch_transmit_and_wait(info_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.datac13)
+        self.launch_transmit_and_wait(info_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(self.STATE_INFO_ACK_SENT)
 
     def send_burst_nack(self):
