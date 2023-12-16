@@ -24,8 +24,7 @@ class Demodulator():
         self.is_codec2_traffic_cooldown = 20
 
         # Receive only specific modes to reduce CPU load
-        self.RECEIVE_SIG0 = True
-        self.RECEIVE_SIG1 = False
+        self.RECEIVE_SIGNALLING = True
         self.RECEIVE_DATAC1 = False
         self.RECEIVE_DATAC3 = False
         self.RECEIVE_DATAC4 = False
@@ -49,7 +48,7 @@ class Demodulator():
 
     def init_state_buffers(self):
         # state buffer
-        self.SIG0_DATAC13_STATE = []
+        self.SIGNALLING_DATAC13_STATE = []
         self.SIG1_DATAC13_STATE = []
         self.DAT0_DATAC1_STATE = []
         self.DAT0_DATAC3_STATE = []
@@ -63,20 +62,11 @@ class Demodulator():
 
         # DATAC13
         # SIGNALLING MODE 0 - Used for Connecting - Payload 14 Bytes
-        self.sig0_datac13_freedv, \
-                self.sig0_datac13_bytes_per_frame, \
-                self.sig0_datac13_bytes_out, \
-                self.sig0_datac13_buffer, \
-                self.sig0_datac13_nin = \
-                self.init_codec2_mode(codec2.FREEDV_MODE.datac13.value, None)
-
-        # DATAC13
-        # SIGNALLING MODE 1 - Used for ACK/NACK - Payload 5 Bytes
-        self.sig1_datac13_freedv, \
-                self.sig1_datac13_bytes_per_frame, \
-                self.sig1_datac13_bytes_out, \
-                self.sig1_datac13_buffer, \
-                self.sig1_datac13_nin = \
+        self.signalling_datac13_freedv, \
+                self.signalling_datac13_bytes_per_frame, \
+                self.signalling_datac13_bytes_out, \
+                self.signalling_datac13_buffer, \
+                self.signalling_datac13_nin = \
                 self.init_codec2_mode(codec2.FREEDV_MODE.datac13.value, None)
 
         # DATAC1
@@ -179,18 +169,18 @@ class Demodulator():
         nin = codec2.api.freedv_nin(c2instance)
 
         # Additional Datac0-specific information - these are not referenced anywhere else.
-        # self.sig0_datac0_payload_per_frame = self.sig0_datac0_bytes_per_frame - 2
-        # self.sig0_datac0_n_nom_modem_samples = codec2.api.freedv_get_n_nom_modem_samples(
-        #     self.sig0_datac0_freedv
+        # self.signalling_datac0_payload_per_frame = self.signalling_datac0_bytes_per_frame - 2
+        # self.signalling_datac0_n_nom_modem_samples = codec2.api.freedv_get_n_nom_modem_samples(
+        #     self.signalling_datac0_freedv
         # )
-        # self.sig0_datac0_n_tx_modem_samples = codec2.api.freedv_get_n_tx_modem_samples(
-        #     self.sig0_datac0_freedv
+        # self.signalling_datac0_n_tx_modem_samples = codec2.api.freedv_get_n_tx_modem_samples(
+        #     self.signalling_datac0_freedv
         # )
-        # self.sig0_datac0_n_tx_preamble_modem_samples = (
-        #     codec2.api.freedv_get_n_tx_preamble_modem_samples(self.sig0_datac0_freedv)
+        # self.signalling_datac0_n_tx_preamble_modem_samples = (
+        #     codec2.api.freedv_get_n_tx_preamble_modem_samples(self.signalling_datac0_freedv)
         # )
-        # self.sig0_datac0_n_tx_postamble_modem_samples = (
-        #     codec2.api.freedv_get_n_tx_postamble_modem_samples(self.sig0_datac0_freedv)
+        # self.signalling_datac0_n_tx_postamble_modem_samples = (
+        #     codec2.api.freedv_get_n_tx_postamble_modem_samples(self.signalling_datac0_freedv)
         # )
 
         # return values
@@ -213,15 +203,10 @@ class Demodulator():
             audio_thread_fsk_ldpc1.start()
 
         else:
-            audio_thread_sig0_datac13 = threading.Thread(
-                target=self.audio_sig0_datac13, name="AUDIO_THREAD DATAC13 - 0", daemon=True
+            audio_thread_signalling_datac13 = threading.Thread(
+                target=self.audio_signalling_datac13, name="AUDIO_THREAD DATAC13 - 0", daemon=True
             )
-            audio_thread_sig0_datac13.start()
-
-            audio_thread_sig1_datac13 = threading.Thread(
-                target=self.audio_sig1_datac13, name="AUDIO_THREAD DATAC13 - 1", daemon=True
-            )
-            audio_thread_sig1_datac13.start()
+            audio_thread_signalling_datac13.start()
 
             audio_thread_dat0_datac1 = threading.Thread(
                 target=self.audio_dat0_datac1, name="AUDIO_THREAD DATAC1", daemon=True
@@ -238,28 +223,16 @@ class Demodulator():
             )
             audio_thread_dat0_datac4.start()
 
-    def audio_sig0_datac13(self) -> None:
+    def audio_signalling_datac13(self) -> None:
         """Receive data encoded with datac13 - 0"""
-        self.sig0_datac13_nin = self.demodulate_audio(
-            self.sig0_datac13_buffer,
-            self.sig0_datac13_nin,
-            self.sig0_datac13_freedv,
-            self.sig0_datac13_bytes_out,
-            self.sig0_datac13_bytes_per_frame,
-            self.SIG0_DATAC13_STATE,
-            "sig0-datac13"
-        )
-
-    def audio_sig1_datac13(self) -> None:
-        """Receive data encoded with datac13 - 1"""
-        self.sig1_datac13_nin = self.demodulate_audio(
-            self.sig1_datac13_buffer,
-            self.sig1_datac13_nin,
-            self.sig1_datac13_freedv,
-            self.sig1_datac13_bytes_out,
-            self.sig1_datac13_bytes_per_frame,
-            self.SIG1_DATAC13_STATE,
-            "sig1-datac13"
+        self.signalling_datac13_nin = self.demodulate_audio(
+            self.signalling_datac13_buffer,
+            self.signalling_datac13_nin,
+            self.signalling_datac13_freedv,
+            self.signalling_datac13_bytes_out,
+            self.signalling_datac13_bytes_per_frame,
+            self.SIGNALLING_DATAC13_STATE,
+            "signalling-datac13"
         )
 
     def audio_dat0_datac4(self) -> None:
@@ -339,8 +312,7 @@ class Demodulator():
             # Avoid buffer overflow by filling only if buffer for
             # selected datachannel mode is not full
             for audiobuffer, receive, index in [
-                (self.sig0_datac13_buffer, self.RECEIVE_SIG0, 0),
-                (self.sig1_datac13_buffer, self.RECEIVE_SIG1, 1),
+                (self.signalling_datac13_buffer, self.RECEIVE_SIGNALLING, 0),
                 (self.dat0_datac1_buffer, self.RECEIVE_DATAC1, 2),
                 (self.dat0_datac3_buffer, self.RECEIVE_DATAC3, 3),
                 (self.dat0_datac4_buffer, self.RECEIVE_DATAC4, 4),
@@ -469,18 +441,7 @@ class Demodulator():
                 if nbytes == bytes_per_frame:
                     print(bytes(bytes_out))
 
-                    # ignore data channel opener frames for avoiding toggle states
-                    # use case: opener already received, but ack got lost and we are receiving
-                    # an opener again
-                    if mode_name in ["sig1-datac13"] and int.from_bytes(bytes(bytes_out[:1]), "big") in [
-                        FRAME_TYPE.ARQ_SESSION_OPEN.value,
-                        FRAME_TYPE.ARQ_DC_OPEN_W.value,
-                        FRAME_TYPE.ARQ_DC_OPEN_ACK_W.value,
-                        FRAME_TYPE.ARQ_DC_OPEN_N.value,
-                        FRAME_TYPE.ARQ_DC_OPEN_ACK_N.value
-                    ]:
-                        print("dropp")
-                    elif int.from_bytes(bytes(bytes_out[:1]), "big") in [
+                    if int.from_bytes(bytes(bytes_out[:1]), "big") in [
                         FRAME_TYPE.MESH_BROADCAST.value,
                         FRAME_TYPE.MESH_SIGNALLING_PING.value,
                         FRAME_TYPE.MESH_SIGNALLING_PING_ACK.value,
@@ -522,8 +483,7 @@ class Demodulator():
 
             length_x = len(x)
             for data_buffer, receive in [
-                (self.sig0_datac13_buffer, self.RECEIVE_SIG0),
-                (self.sig1_datac13_buffer, self.RECEIVE_SIG1),
+                (self.signalling_datac13_buffer, self.RECEIVE_SIGNALLING),
                 (self.dat0_datac1_buffer, self.RECEIVE_DATAC1),
                 (self.dat0_datac3_buffer, self.RECEIVE_DATAC3),
                 (self.dat0_datac4_buffer, self.RECEIVE_DATAC4),
@@ -556,8 +516,7 @@ class Demodulator():
 
                         length_x = len(x)
                         for data_buffer, receive in [
-                            (self.sig0_datac13_buffer, self.RECEIVE_SIG0),
-                            (self.sig1_datac13_buffer, self.RECEIVE_SIG1),
+                            (self.signalling_datac13_buffer, self.RECEIVE_SIGNALLING),
                             (self.dat0_datac1_buffer, self.RECEIVE_DATAC1),
                             (self.dat0_datac3_buffer, self.RECEIVE_DATAC3),
                             (self.dat0_datac4_buffer, self.RECEIVE_DATAC4),
