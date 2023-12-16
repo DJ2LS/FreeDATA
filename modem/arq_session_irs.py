@@ -57,7 +57,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.transmitted_acks = 0
 
     def all_data_received(self):
-        return self.received_bytes == len(self.received_data)
+        return self.total_length == self.received_bytes
 
     def final_crc_check(self):
         print(self.received_data)
@@ -96,6 +96,7 @@ class ARQSessionIRS(arq_session.ARQSession):
     def send_info_ack(self, info_frame):
         # Get session info from ISS
         self.received_data = bytearray(info_frame['total_length'])
+        self.total_length = info_frame['total_length']
         self.total_crc = info_frame['total_crc']
         self.dx_snr.append(info_frame['snr'])
 
