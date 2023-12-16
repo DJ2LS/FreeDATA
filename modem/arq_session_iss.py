@@ -35,8 +35,8 @@ class ARQSessionISS(arq_session.ARQSession):
         },
     }
 
-    def __init__(self, config: dict, tx_frame_queue: queue.Queue, dxcall: str, data: bytearray):
-        super().__init__(config, tx_frame_queue, dxcall)
+    def __init__(self, config: dict, modem, dxcall: str, data: bytearray):
+        super().__init__(config, modem, dxcall)
         self.data = data
         self.data_crc = ''
 

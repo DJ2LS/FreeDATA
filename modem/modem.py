@@ -87,7 +87,6 @@ class RF:
         self.modem_received_queue = queue.Queue()
 
         self.audio_received_queue = queue.Queue()
-        self.audio_transmit_queue = queue.Queue()
 
         self.data_queue_received = queue.Queue()
 
@@ -105,7 +104,6 @@ class RF:
         self.beacon = beacon.Beacon(self.config, self.states, event_queue, 
                                     self.log, self.modem_transmit_queue)
 
-    # --------------------------------------------------------------------------------------------------------
     def tci_tx_callback(self, audio_48k) -> None:
         self.radio.set_ptt(True)
         self.event_manager.send_ptt_change(True)
@@ -212,7 +210,7 @@ class RF:
         self.stream = Object()
 
         # lets init TCI module
-        self.tci_module = tci.TCICtrl(self.audio_received_queue, self.audio_transmit_queue)
+        self.tci_module = tci.TCICtrl(self.audio_received_queue)
 
         tci_rx_callback_thread = threading.Thread(
             target=self.tci_rx_callback,
@@ -230,7 +228,35 @@ class RF:
         )
         tci_tx_callback_thread.start()
 
-    # --------------------------------------------------------------------
+    def audio_auto_tune(self):
+        # enable / disable AUDIO TUNE Feature / ALC correction
+        if self.enable_audio_auto_tune:
+            if self.radio_alc == 0.0:
+                self.tx_audio_level = self.tx_audio_level + 20
+            elif 0.0 < self.radio_alc <= 0.1:
+                print("0.0 < self.radio_alc <= 0.1")
+                self.tx_audio_level = self.tx_audio_level + 2
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
+                               alc_level=str(self.radio_alc))
+            elif 0.1 < self.radio_alc < 0.2:
+                print("0.1 < self.radio_alc < 0.2")
+                self.tx_audio_level = self.tx_audio_level
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
+                               alc_level=str(self.radio_alc))
+            elif 0.2 < self.radio_alc < 0.99:
+                print("0.2 < self.radio_alc < 0.99")
+                self.tx_audio_level = self.tx_audio_level - 20
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
+                               alc_level=str(self.radio_alc))
+            elif 1.0 >= self.radio_alc:
+                print("1.0 >= self.radio_alc")
+                self.tx_audio_level = self.tx_audio_level - 40
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
+                               alc_level=str(self.radio_alc))
+            else:
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
+                               alc_level=str(self.radio_alc))
+
     def transmit(
             self, mode, repeats: int, repeat_delay: int, frames: bytearray
     ) -> bool:
@@ -310,6 +336,7 @@ class RF:
             "[MDM] TRANSMIT", mode=self.MODE, payload=payload_bytes_per_frame, delay=self.tx_delay
         )
 
+        if not isinstance(frames, list): frames = [frames]
         for _ in range(repeats):
 
             # Create modulation for all frames in the list
@@ -419,41 +446,11 @@ class RF:
         # After processing, set the locking state back to true to be prepared for next transmission
         self.mod_out_locked = True
 
-        self.modem_transmit_queue.task_done()
         self.states.setTransmitting(False)
 
         end_of_transmission = time.time()
         transmission_time = end_of_transmission - start_of_transmission
         self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
-
-    def audio_auto_tune(self):
-        # enable / disable AUDIO TUNE Feature / ALC correction
-        if self.enable_audio_auto_tune:
-            if self.radio_alc == 0.0:
-                self.tx_audio_level = self.tx_audio_level + 20
-            elif 0.0 < self.radio_alc <= 0.1:
-                print("0.0 < self.radio_alc <= 0.1")
-                self.tx_audio_level = self.tx_audio_level + 2
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
-                               alc_level=str(self.radio_alc))
-            elif 0.1 < self.radio_alc < 0.2:
-                print("0.1 < self.radio_alc < 0.2")
-                self.tx_audio_level = self.tx_audio_level
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
-                               alc_level=str(self.radio_alc))
-            elif 0.2 < self.radio_alc < 0.99:
-                print("0.2 < self.radio_alc < 0.99")
-                self.tx_audio_level = self.tx_audio_level - 20
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
-                               alc_level=str(self.radio_alc))
-            elif 1.0 >= self.radio_alc:
-                print("1.0 >= self.radio_alc")
-                self.tx_audio_level = self.tx_audio_level - 40
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
-                               alc_level=str(self.radio_alc))
-            else:
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
-                               alc_level=str(self.radio_alc))
 
     def transmit_morse(self, repeats, repeat_delay, frames):
         self.states.waitForTransmission()
@@ -528,11 +525,6 @@ class RF:
         )
         worker_received.start()
 
-        worker_transmit = threading.Thread(
-            target=self.worker_transmit, name="WORKER_THREAD", daemon=True
-        )
-        worker_transmit.start()
-
     # Low level modem audio transmit
     def transmit_audio(self, audio_48k) -> None:
         self.radio.set_ptt(True)
@@ -544,23 +536,6 @@ class RF:
         else:
             sd.play(audio_48k, blocking=True)
         return
-
-    def worker_transmit(self) -> None:
-        """Worker for FIFO queue for processing frames to be transmitted"""
-        while True:
-            # print queue size for debugging purposes
-            # TODO Lets check why we have several frames in our transmit queue which causes sometimes a double transmission
-            # we could do a cleanup after a transmission so theres no reason sending twice
-            queuesize = self.modem_transmit_queue.qsize()
-            self.log.debug("[MDM] self.modem_transmit_queue", qsize=queuesize)
-            tx = self.modem_transmit_queue.get()
-            print(tx)
-            # TODO Why we is this taking an array instead of a single frame?
-            if tx['mode'] in ["morse"]:
-                self.transmit_morse(tx['repeat'], tx['repeat_delay'], [tx['frame']])
-            else:
-                self.transmit(tx['mode'], tx['repeat'], tx['repeat_delay'], [tx['frame']])
-            # self.modem_transmit_queue.task_done()
 
     def init_rig_control(self):
         # Check how we want to control the radio

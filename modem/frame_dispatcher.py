@@ -39,7 +39,7 @@ class DISPATCHER():
         FR_TYPE.FEC_WAKEUP.value: {"class": FrameHandler, "name":  "FEC WAKEUP"},
     }
 
-    def __init__(self, config, event_queue, states, data_q_rx, modem_tx_q):
+    def __init__(self, config, event_queue, states, modem):
         self.log = structlog.get_logger("frame_dispatcher")
 
         self.log.info("loading frame dispatcher.....\n")
@@ -49,8 +49,8 @@ class DISPATCHER():
 
         self._initialize_handlers(config, event_queue, states)
 
-        self.data_queue_received = data_q_rx
-        self.modem_transmit_queue = modem_tx_q
+        self.modem = modem
+        self.data_queue_received = modem.data_queue_received
 
         self.arq_sessions = []
 
@@ -92,7 +92,7 @@ class DISPATCHER():
                                 self.config,
                                 self.states,
                                 self.event_manager,
-                                self.modem_transmit_queue)
+                                self.modem)
 
         handler.handle(deconstructed_frame, snr, frequency_offset, freedv, bytes_per_frame)
 

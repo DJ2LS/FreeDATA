@@ -83,8 +83,8 @@ def validate(req, param, validator, isRequired = True):
 # Takes a transmit command and puts it in the transmit command queue
 def enqueue_tx_command(cmd_class, params = {}):
     command = cmd_class(app.config_manager.read(), app.state_manager, app.modem_events,  params)
-    command.run(app.modem_events, app.service_manager.modem.modem_transmit_queue)
-    app.logger.info(f"Command {command.get_name()} enqueued.")
+    app.logger.info(f"Command {command.get_name()} running...")
+    command.run(app.modem_events, app.service_manager.modem)
 
 ## REST API
 @app.route('/', methods=['GET'])
