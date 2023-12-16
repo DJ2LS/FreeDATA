@@ -372,6 +372,7 @@ class RF:
                 # Append CRC to data buffer
                 buffer += crc
 
+                assert(bytes_per_frame == len(buffer))
                 data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
                 # modulate DATA and save it into mod_out pointer
                 codec2.api.freedv_rawdatatx(freedv, mod_out, data)

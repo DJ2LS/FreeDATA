@@ -156,10 +156,10 @@ class DataFrameFactory:
         frame_template = self.template_list[frametype.value]
 
         if isinstance(frame_template["frame_length"], int):
-            length = frame_template["frame_length"]
+            frame_length = frame_template["frame_length"]
         else:
-            length = frame_length
-
+            frame_length -= 2
+        print(frame_length)
         frame = bytearray(frame_length)
         frame[:1] = bytes([frametype.value])
 
@@ -170,13 +170,11 @@ class DataFrameFactory:
 
             if not isinstance(item_length, int):
                 item_length = len(content[key])
-
             if buffer_position + item_length > frame_length:
                 raise OverflowError("Frame data overflow!")
             
             frame[buffer_position: buffer_position + item_length] = content[key]
             buffer_position += item_length
-
         return frame
 
     def deconstruct(self, frame):
@@ -197,7 +195,7 @@ class DataFrameFactory:
 
             # data is always on the last payload slots
             if item_length in ["dynamic"] and key in["data"]:
-                data = frame[buffer_position:]
+                data = frame[buffer_position:-2]
                 item_length = len(data)
             else:
                 data = frame[buffer_position: buffer_position + item_length]
@@ -232,8 +230,8 @@ class DataFrameFactory:
     
     def get_available_data_payload_for_mode(self, type: FR_TYPE, mode:codec2.FREEDV_MODE):
         whole_frame_length = self.get_bytes_per_frame(mode)
-        available = whole_frame_length - 2 # - CRC16
-        available = available - 1  # - FRAME TYPE
+        available = whole_frame_length - 2 # 2Bytes CRC16
+        available -= 1 # Frame Type
         print(self.template_list[type.value].items())
         for field, length in self.template_list[type.value].items():
             if field != 'frame_length' and isinstance(length, int):
@@ -354,7 +352,8 @@ class DataFrameFactory:
             "offset": offset.to_bytes(4, 'big'),
             "data": data,
         }
-        return self.construct(FR_TYPE.ARQ_BURST_FRAME, payload, self.get_bytes_per_frame(freedv_mode))
+        frame = self.construct(FR_TYPE.ARQ_BURST_FRAME, payload, self.get_bytes_per_frame(freedv_mode))
+        return frame
 
     def build_arq_burst_ack(self, session_id: bytes, offset, speed_level: int, 
                             frames_per_burst: int, snr: int):

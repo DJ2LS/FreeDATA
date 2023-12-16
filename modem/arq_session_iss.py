@@ -84,6 +84,7 @@ class ARQSessionISS(arq_session.ARQSession):
         info_frame = self.frame_factory.build_arq_session_info(self.id, len(self.data), 
                                                                helpers.get_crc_32(self.data), 
                                                                self.snr[0])
+
         self.launch_twr(info_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(self.STATE_INFO_SENT)
 
@@ -97,8 +98,8 @@ class ARQSessionISS(arq_session.ARQSession):
             self.set_state(self.STATE_ENDED)
             self.log("All data transfered!")
             return
-        print(self.SPEED_LEVEL_DICT[self.speed_level])
         payload_size = self.get_data_payload_size()
+        print(f"payload size: {payload_size}")
         burst = []
         for f in range(0, self.frames_per_burst):
             offset = self.confirmed_bytes
@@ -107,6 +108,5 @@ class ARQSessionISS(arq_session.ARQSession):
                 self.SPEED_LEVEL_DICT[self.speed_level]["mode"],
                 self.id, self.confirmed_bytes, payload)
             burst.append(data_frame)
-
         self.launch_twr(burst, self.TIMEOUT_TRANSFER, self.RETRIES_CONNECT, mode='auto')
         self.set_state(self.STATE_BURST_SENT)

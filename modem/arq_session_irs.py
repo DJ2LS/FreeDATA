@@ -60,6 +60,9 @@ class ARQSessionIRS(arq_session.ARQSession):
         return self.received_bytes == len(self.received_data)
 
     def final_crc_check(self):
+        print(self.received_data)
+        print(self.total_crc)
+        print(helpers.get_crc_32(bytes(self.received_data)).hex())
         return self.total_crc == helpers.get_crc_32(bytes(self.received_data)).hex()
 
     def transmit_and_wait(self, frame, timeout, mode):
