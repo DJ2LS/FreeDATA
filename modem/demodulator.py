@@ -151,8 +151,6 @@ class Demodulator():
                     elif decode:
                         audiobuffer.push(audio_8k_level_adjusted)
 
-            return audio_8k_level_adjusted
-
     def worker_received(self) -> None:
         """Worker for FIFO queue for processing received frames"""
         while True:
