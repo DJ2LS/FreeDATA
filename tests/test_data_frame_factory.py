@@ -61,8 +61,8 @@ class TestDataFrameFactory(unittest.TestCase):
             FREEDV_MODE.datac3, session_id, offset, payload)
         
     def testAvailablePayload(self):
-        avail = self.factory.get_available_data_payload_for_mode(FRAME_TYPE.BURST_FRAME, FREEDV_MODE.datac3)
-        self.assertEqual(avail, 123) # 128 bytes datac3 frame payload - BURST frame overhead
+        avail = self.factory.get_available_data_payload_for_mode(FRAME_TYPE.ARQ_BURST_FRAME, FREEDV_MODE.datac3)
+        self.assertEqual(avail, 120) # 128 bytes datac3 frame payload - BURST frame overhead
 
 if __name__ == '__main__':
     unittest.main()

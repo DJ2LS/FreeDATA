@@ -9,6 +9,7 @@ import queue
 from state_manager import StateManager
 from command_ping import PingCommand
 from command_cq import CQCommand
+import modem
 
 class TestProtocols(unittest.TestCase):
 
@@ -22,14 +23,14 @@ class TestProtocols(unittest.TestCase):
 
         cls.event_queue = queue.Queue()
 
-        cls.data_queue_received = queue.Queue()
         cls.modem_transmit_queue = queue.Queue()
 
+        cls.modem = modem.RF(cls.config, cls.event_queue, queue.Queue(), queue.Queue(), cls.state_manager)
         cls.frame_dispatcher = DISPATCHER(cls.config, 
                                           cls.event_queue, 
                                           cls.state_manager, 
-                                          cls.data_queue_received,
-                                          cls.modem_transmit_queue)
+                                          cls.modem)
+
 
     def shortcutTransmission(self):
         transmission_item = self.modem_transmit_queue.get()
