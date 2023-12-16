@@ -6,7 +6,9 @@ import pinia from "../store/index";
 setActivePinia(pinia);
 import "../../node_modules/gridstack/dist/gridstack.min.css";
 import { GridStack } from "gridstack";
-import { settingsStore as settings } from "../store/settingsStore.js";
+import { useStateStore } from "../store/stateStore.js";
+const state = useStateStore(pinia);
+import { setModemFrequency } from "../js/api";
 
 import active_heard_stations from "./grid/grid_active_heard_stations.vue";
 import mini_heard_stations from "./grid/grid_active_heard_stations_mini.vue";
@@ -20,6 +22,10 @@ import dbfs_meter from "./grid/grid_dbfs.vue";
 import grid_activities from "./grid/grid_activities.vue";
 import grid_button from "./grid/button.vue";
 import grid_ptt from "./grid/grid_ptt.vue";
+import grid_mycall from "./grid/grid_mycall.vue";
+import grid_CQ_btn from "./grid/grid_CQ.vue";
+import grid_ping from "./grid/grid_ping.vue";
+import grid_freq from "./grid/grid_frequency.vue";
 import { stateDispatcher } from "../js/eventHandler";
 
 let count = ref(0);
@@ -58,7 +64,7 @@ const gridWidgets = [
   ),
   new gridWidget(
     active_stats,
-    { x: 16, y: 15, w: 8, h: 69 },
+    { x: 16, y: 17, w: 8, h: 80 },
     "Stats (waterfall, etc)",
     true,
     true,
@@ -68,7 +74,7 @@ const gridWidgets = [
     active_audio_level,
     { x: 16, y: 0, w: 8, h: 15 },
     "Audio main",
-    true,
+    false,
     true,
     "Audio",
   ),
@@ -76,7 +82,7 @@ const gridWidgets = [
     active_rig_control,
     { x: 6, y: 40, w: 9, h: 15 },
     "Rig control main",
-    true,
+    false,
     true,
     "Rig",
   ),
@@ -84,7 +90,7 @@ const gridWidgets = [
     active_broadcasts,
     { x: 6, y: 70, w: 6, h: 15 },
     "Broadcasts main (horizontal)",
-    true,
+    false,
     true,
     "Broadcasts",
   ),
@@ -98,17 +104,17 @@ const gridWidgets = [
   ),
   new gridWidget(
     s_meter,
-    { x: 1, y: 1, w: 4, h: 8 },
+    { x: 16, y: 0, w: 4, h: 8 },
     "S-Meter",
-    false,
+    true,
     true,
     "Rig",
   ),
   new gridWidget(
     dbfs_meter,
-    { x: 1, y: 1, w: 4, h: 8 },
+    { x: 20, y: 0, w: 4, h: 8 },
     "Dbfs Meter",
-    false,
+    true,
     true,
     "Audio",
   ),
@@ -122,21 +128,63 @@ const gridWidgets = [
   ),
   new gridWidget(
     active_broadcasts_vert,
-    { x: 3, y: 27, w: 3, h: 27 },
+    { x: 9, y: 55, w: 3, h: 27 },
     "Broadcasts main (vertical)",
-    false,
+    true,
     true,
     "Broadcasts",
   ),
   new gridWidget(
     grid_ptt,
+    { x: 17, y: 8, w: 2, h: 8 },
+    "Tx/PTT indicator",
+    true,
+    true,
+    "Rig",
+  ),
+  new gridWidget(
+    grid_mycall,
+    { x: 0, y: 95, w: 4, h: 9 },
+    "My callsign widget",
+    true,
+    true,
+    "Other",
+  ),
+  new gridWidget(
+    grid_CQ_btn,
     { x: 3, y: 27, w: 2, h: 8 },
-    "PTT indicator",
+    "CQ Button",
     false,
+    true,
+    "Broadcasts",
+  ),
+  new gridWidget(
+    grid_ping,
+    { x: 3, y: 27, w: 4, h: 9 },
+    "Ping Widget",
+    false,
+    true,
+    "Broadcasts",
+  ),
+  new gridWidget(
+    grid_freq,
+    { x: 20, y: 8, w: 4, h: 9 },
+    "Frequency widget",
+    true,
     true,
     "Rig",
   ),
 ];
+
+function updateFrequencyAndApply(frequency) {
+  state.new_frequency = frequency;
+  setModemFrequency(state.new_frequency);
+}
+
+function set_hamlib_frequency_manually() {
+  setModemFrequency(state.new_frequency);
+}
+
 onMounted(() => {
   grid = GridStack.init({
     // DO NOT use grid.value = GridStack.init(), see above
@@ -180,6 +228,9 @@ onMounted(() => {
         break;
       case "Broadcasts":
         dom = document.getElementById("bcBody");
+        break;
+      case "Other":
+
         break;
       default:
         console.error("Unknown widget category:  " + gw.category);
@@ -412,7 +463,7 @@ function quickfill() {
               aria-expanded="false"
               aria-controls="collapseRadioControl"
             >
-              <strong>Radio Control</strong>
+              <strong>Radio Control/Status</strong>
             </button>
           </h2>
           <div
@@ -483,6 +534,128 @@ function quickfill() {
       </button>
     </div>
   </div>
+
+  <div class="offcanvas offcanvas-end text-start"     data-bs-scroll="true"
+    data-bs-backdrop="false" tabindex="-1" id="offcanvasFrequency" aria-labelledby="offcanvasExampleLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasExampleLabel">Frequency selection</h5>
+      <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="offcanvas"
+        aria-label="Close"
+      ></button>
+
+    
+
+  </div>
+  <div class="offcanvas-body">
+    <p>
+    Commonly used frequencies are listed here, and are all USB.&nbsp; Simply click on a entry or manually enter a frequency in the textbox to tune your rig if rig control is enabled.
+    </p>
+    <ul
+              class="list-group"
+              aria-labelledby="dropdownMenuButton"
+              style="z-index: 50"
+            >
+              <li class="list-group-item">
+                <div class="input-group p-1">
+                  <span class="input-group-text">frequency</span>
+                  <input
+                    v-model="state.new_frequency"
+                    style="max-width: 8rem"
+                    pattern="[0-9]*"
+                    type="text"
+                    class="form-control form-control-sm"
+                    v-bind:class="{
+                      disabled: state.hamlib_status === 'disconnected',
+                    }"
+                    placeholder="Type frequency..."
+                    aria-label="Frequency"
+                  />
+                  <button
+                    class="btn btn-sm btn-outline-success"
+                    type="button"
+                    @click="set_hamlib_frequency_manually"
+                    v-bind:class="{
+                      disabled: state.hamlib_status === 'disconnected',
+                    }"
+                  >
+                    <i class="bi bi-check-square"></i>
+                  </button>
+                </div>
+              </li>
+
+              <!-- Dropdown Divider -->
+              <li class="list-group-item"><hr class="dropdown-divider" /></li>
+              <!-- Dropdown Items -->
+  <a href="#" class="list-group-item list-group-item-action" @click="updateFrequencyAndApply(50616000)">
+    <div class="d-flex w-100 justify-content-between">
+      <h5 class="mb-1">50.616 MHz</h5>
+      <small>EU / US</small>
+      <h6>6m</h6>
+    </div>
+  </a>
+  <a href="#" class="list-group-item list-group-item-action" @click="updateFrequencyAndApply(50308000)">
+    <div class="d-flex w-100 justify-content-between">
+      <h5 class="mb-1">50.308 MHz</h5>
+      <small>US</small>
+      <h6>6m</h6>
+    </div>
+  </a>
+  <a href="#" class="list-group-item list-group-item-action" @click="updateFrequencyAndApply(28093000)">
+    <div class="d-flex w-100 justify-content-between">
+      <h5 class="mb-1">28.093 MHz</h5>
+      <small>EU / US</small>
+      <h6>10m</h6>
+    </div>
+  </a>
+  <a href="#" class="list-group-item list-group-item-action" @click="updateFrequencyAndApply(27265000)">
+    <div class="d-flex w-100 justify-content-between">
+      <h5 class="mb-1">27.265 MHz</h5>
+      <small>Ch 26</small>
+      <h6>11m</h6>
+    </div>
+  </a>
+  <a href="#" class="list-group-item list-group-item-action" @click="updateFrequencyAndApply(27245000)">
+    <div class="d-flex w-100 justify-content-between">
+      <h5 class="mb-1">27.245 MHz</h5>
+      <small>Ch 25</small>
+      <h6>11m</h6>
+    </div>
+  </a>
+  <a href="#" class="list-group-item list-group-item-action" @click="updateFrequencyAndApply(24908000)">
+    <div class="d-flex w-100 justify-content-between">
+      <h5 class="mb-1">24.908 MHz</h5>
+      <small>EU / US</small>
+      <h6>12m</h6>
+    </div>
+  </a>        
+  <a href="#" class="list-group-item list-group-item-action" @click="updateFrequencyAndApply(21093000)">
+    <div class="d-flex w-100 justify-content-between">
+      <h5 class="mb-1">21.093 MHz</h5>
+      <small>EU / US</small>
+      <h6>15m</h6>
+    </div>
+  </a>        
+  <a href="#" class="list-group-item list-group-item-action" @click="updateFrequencyAndApply(14093000)">
+    <div class="d-flex w-100 justify-content-between">
+      <h5 class="mb-1">14.093 MHz</h5>
+      <small>EU / US</small>
+      <h6>20m</h6>
+    </div>
+  </a>        
+  <a href="#" class="list-group-item list-group-item-action" @click="updateFrequencyAndApply(7053000)">
+    <div class="d-flex w-100 justify-content-between">
+      <h5 class="mb-1">7.053 MHz</h5>
+      <small>EU / US</small>
+      <h6>40m</h6>
+    </div>
+  </a>        
+            </ul>
+  </div>
+</div>
+
 </template>
 
 <style>

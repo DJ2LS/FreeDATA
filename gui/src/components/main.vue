@@ -60,7 +60,7 @@ function stopAllTransmissions() {
               class="list-group-item list-group-item-dark list-group-item-action border-0 rounded-3 mb-2 active"
               id="list-modem-list"
               data-bs-toggle="list"
-              href="#list-modem"
+              href="#list-grid"
               role="tab"
               aria-controls="list-modem"
               title="Home"
@@ -111,7 +111,7 @@ function stopAllTransmissions() {
               class="list-group-item list-group-item-dark list-group-item-action border-0 rounded-3 mb-2"
               id="list-grid-list"
               data-bs-toggle="list"
-              href="#list-grid"
+              href="#list-modem"
               role="tab"
               aria-controls="list-grid"
               title="Grid test"
@@ -151,7 +151,7 @@ function stopAllTransmissions() {
 
         <div class="tab-content" id="nav-tabContent-settings">
           <div
-            class="tab-pane fade show active"
+            class="tab-pane fade"
             id="list-modem"
             role="tabpanel"
             aria-labelledby="list-modem-list"
@@ -337,7 +337,7 @@ function stopAllTransmissions() {
             <infoScreen />
           </div>
           <div
-            class="tab-pane fade"
+            class="tab-pane fade show active"
             id="list-grid"
             role="tabpanel"
             aria-labelledby="list-grid-list"

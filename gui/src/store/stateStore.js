@@ -5,8 +5,8 @@ import * as bootstrap from "bootstrap";
 export const useStateStore = defineStore("stateStore", () => {
   var busy_state = ref("-");
   var arq_state = ref("-");
-  var frequency = ref("-");
-  var new_frequency = ref(0);
+  var frequency = ref(0);
+  var new_frequency = ref(14093000);
   var mode = ref("-");
   var rf_level = ref("10");
   var bandwidth = ref("-");

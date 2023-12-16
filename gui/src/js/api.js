@@ -112,3 +112,14 @@ export function stopModem() {
 export function getModemState() {
   return apiGet("/modem/state");
 }
+
+export function setModemFrequency(newFrequency) {
+  console.error("setModemFrequency needs implemented")
+}
+export function setModemRigMode(mode) {
+  console.error("setModemRigMode needs implemented")
+}
+export function setModemRigPowerLvl(power) {
+  console.error("setModemRigPowerLvl needs implemented")
+}
+;

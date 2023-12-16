@@ -119,7 +119,7 @@ watch(settingsStore.local, (oldValue, newValue) => {
   saveSettingsToConfig();
 });
 
-function saveSettingsToConfig() {
+export function saveSettingsToConfig() {
   nconf.set("local", settingsStore.local);
   nconf.save();
   console.log("Settings saved!");
