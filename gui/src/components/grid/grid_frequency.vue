@@ -8,8 +8,8 @@ const state = useStateStore(pinia);
 </script>
 <template>
   <a
-    class="d-flex justify-content-center align-items-center object-fill border rounded w-100 h-100 link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
-    :class="state.ptt_state === true ? 'text-bg-warning' : 'text-bg-light'"
+    class="d-flex justify-content-center align-items-center object-fill border rounded w-100 h-100 link-underline link-underline-opacity-0 link-underline-opacity-75-hover text-bg-light"
+   
     data-bs-toggle="offcanvas"
     data-bs-target="#offcanvasFrequency"
   >
