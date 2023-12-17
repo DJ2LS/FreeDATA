@@ -116,7 +116,7 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     def process_incoming_data(self, frame):
         if frame['offset'] != self.received_bytes:
-            self.logger.info(f"Discarding data frame due to wrong offset", frame=self.frame_received)
+            self.logger.info(f"Discarding data frame due to wrong offset", frame=frame)
             return False
 
         remaining_data_length = self.total_length - self.received_bytes

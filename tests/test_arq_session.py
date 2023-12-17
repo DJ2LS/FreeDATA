@@ -13,6 +13,7 @@ from state_manager import StateManager
 from frame_dispatcher import DISPATCHER
 import random
 import structlog
+import numpy as np
 
 class TestModem:
     def __init__(self):
@@ -75,8 +76,7 @@ class TestARQSession(unittest.TestCase):
                                                     name = "IRS to ISS channel")
         self.irs_to_iss_channel.start()
 
-    def testARQSession(self):
-
+    def testARQSessionSmallPayload(self):
         # set Packet Error Rate (PER) / frame loss probability
         self.loss_probability = 30
 
@@ -87,6 +87,19 @@ class TestARQSession(unittest.TestCase):
         }
         cmd = ARQRawCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)
         cmd.run(self.iss_event_queue, self.iss_modem)
- 
+
+    def testARQSessionLargePayload(self):
+        # set Packet Error Rate (PER) / frame loss probability
+        self.loss_probability = 30
+
+        self.establishChannels()
+        params = {
+            'dxcall': "DJ2LS-3",
+            'data': base64.b64encode(np.random.bytes(1000)),
+        }
+        cmd = ARQRawCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)
+        cmd.run(self.iss_event_queue, self.iss_modem)
+
+
 if __name__ == '__main__':
     unittest.main()
