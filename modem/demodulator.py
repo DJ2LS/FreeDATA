@@ -39,7 +39,6 @@ class Demodulator():
         self.is_codec2_traffic_counter = 0
         self.is_codec2_traffic_cooldown = 20
 
-
         self.audio_received_queue = audio_rx_q
         self.modem_received_queue = modem_rx_q
         self.data_queue_received = data_q_rx
@@ -129,7 +128,6 @@ class Demodulator():
                 target=self.demodulate_audio,args=[mode], name=self.MODE_DICT[mode]['name'], daemon=True
             )
             self.MODE_DICT[mode]['decoding_thread'].start()
-
 
     def sd_input_audio_callback(self, indata: np.ndarray, frames: int, time, status) -> None:
             audio_48k = np.frombuffer(indata, dtype=np.int16)
@@ -246,26 +244,14 @@ class Demodulator():
                 audiobuffer.pop(nin)
                 nin = codec2.api.freedv_nin(freedv)
                 if nbytes == bytes_per_frame:
-                    print(bytes(bytes_out))
+                    self.log.debug(
+                        "[MDM] [demod_audio] Pushing received data to received_queue", nbytes=nbytes
+                    )
+                    snr = self.calculate_snr(freedv)
+                    self.get_scatter(freedv)
 
-                    if int.from_bytes(bytes(bytes_out[:1]), "big") in [
-                        FRAME_TYPE.MESH_BROADCAST.value,
-                        FRAME_TYPE.MESH_SIGNALLING_PING.value,
-                        FRAME_TYPE.MESH_SIGNALLING_PING_ACK.value,
-                    ]:
-                        self.log.debug(
-                            "[MDM] [demod_audio] moving data to mesh dispatcher", nbytes=nbytes
-                        )
-                        MESH_RECEIVED_QUEUE.put([bytes(bytes_out), snr])
-
-                    else:
-                        self.log.debug(
-                            "[MDM] [demod_audio] Pushing received data to received_queue", nbytes=nbytes
-                        )
-                        snr = self.calculate_snr(freedv)
-                        self.modem_received_queue.put([bytes_out, freedv, bytes_per_frame, snr])
-                        self.get_scatter(freedv)
-                        state_buffer = []
+                    self.modem_received_queue.put([bytes_out, freedv, bytes_per_frame, snr])
+                    state_buffer = []
 
     def tci_rx_callback(self) -> None:
         """
@@ -295,8 +281,6 @@ class Demodulator():
                         self.event_manager.send_buffer_overflow(self.buffer_overflow_counter)
                     elif decode:
                         audiobuffer.push(audio_48k)
-
-
 
     def set_frames_per_burst(self, frames_per_burst: int) -> None:
         """
@@ -403,6 +387,6 @@ class Demodulator():
 
         # Enable mode based on speed_level
         self.MODE_DICT[mode.value]["decode"] = True
-        self.log(f"Demodulator data mode {mode.name}")
+        self.log.info(f"Demodulator data mode {mode.name}")
 
         return
