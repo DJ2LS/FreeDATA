@@ -1,6 +1,4 @@
 import threading
-import data_frame_factory
-import queue
 import arq_session
 import helpers
 from modem_frametypes import FRAME_TYPE
@@ -56,6 +54,9 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         self.transmitted_acks = 0
 
+    def set_decode_mode(self):
+        self.modem.demodulator.set_decode_mode(self.get_mode_by_speed_level(self.speed_level))
+
     def all_data_received(self):
         return self.total_length == self.received_bytes
 
@@ -100,7 +101,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.dx_snr.append(info_frame['snr'])
 
         self.calibrate_speed_settings()
-        self.set_modem_decode_modes(self.speed_level)
+        self.set_decode_mode()
         info_ack = self.frame_factory.build_arq_session_info_ack(
             self.id, self.total_crc, self.snr[0],
             self.speed_level, self.frames_per_burst)
@@ -109,26 +110,9 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     def send_burst_nack(self):
         self.calibrate_speed_settings()
-        self.set_modem_decode_modes(self.speed_level)
+        self.set_decode_mode()
         nack = self.frame_factory.build_arq_burst_ack(self.id, self.received_bytes, self.speed_level, self.frames_per_burst, self.snr[0])
         self.launch_transmit_and_wait(nack, None, mode=FREEDV_MODE.signalling)
-
-
-    def set_modem_decode_modes(self, speed_level):
-
-        for mode in self.modem.demodulator.MODE_DICT:
-            self.modem.demodulator.MODE_DICT[mode]["decode"] = False
-
-        # signalling is always true
-        self.modem.demodulator.MODE_DICT[FREEDV_MODE.signalling.value]["decode"] = True
-
-        mode = self.get_mode_by_speed_level(self.speed_level)
-        # Enable mode based on speed_level
-        self.modem.demodulator.MODE_DICT[mode.value]["decode"] = True
-        self.log(f"Modem set to speed level {speed_level}")
-
-        return
-
 
     def process_incoming_data(self, frame):
         if frame['offset'] != self.received_bytes:

@@ -2,6 +2,7 @@ import sys
 sys.path.append('modem')
 
 import unittest
+import unittest.mock
 from config import CONFIG
 import helpers
 import queue
@@ -16,6 +17,7 @@ import structlog
 class TestModem:
     def __init__(self):
         self.data_queue_received = queue.Queue()
+        self.demodulator = unittest.mock.Mock()
 
     def transmit(self, mode, repeats: int, repeat_delay: int, frames: bytearray) -> bool:
         self.data_queue_received.put(frames)
