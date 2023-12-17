@@ -158,6 +158,8 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.set_state(self.STATE_FAILED)
 
     def calibrate_speed_settings(self):
+        self.speed_level = 0 # for now stay at lowest speed level
+        return
         # if we have two ACKS, then consider increasing speed level
         if self.transmitted_acks >= 2:
             self.transmitted_acks = 0
