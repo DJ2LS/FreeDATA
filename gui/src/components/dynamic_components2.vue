@@ -9,6 +9,7 @@ import { GridStack } from "gridstack";
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 import { setModemFrequency } from "../js/api";
+import { saveSettingsToConfig, settingsStore } from "../store/settingsStore";
 
 import active_heard_stations from "./grid/grid_active_heard_stations.vue";
 import mini_heard_stations from "./grid/grid_active_heard_stations_mini.vue";
@@ -36,13 +37,13 @@ class gridWidget {
   component2;
   //Initial size and location if autoplace is false
   size;
-  //Text for dynamic button
+  //Text for button label in widget picker
   text;
   //if true add when quick fill button is clicked
   quickFill;
   //Auto place; true to add where ever it fits; false uses position information
   autoPlace;
-  //Category to place in widget picker
+  //Category to place widget in widget picker
   category;
   constructor(component, size, text, quickfill, autoPlace, category) {
     this.component2 = component;
@@ -53,6 +54,7 @@ class gridWidget {
     this.category = category;
   }
 }
+//Array of grid widgets, do not change array order as it'll affect saved configs
 const gridWidgets = [
   new gridWidget(
     active_heard_stations,
@@ -242,9 +244,12 @@ onMounted(() => {
     let vueComponent = h(grid_button,{btnText: gw.text,btnID:index});
     render(vueComponent,dom2);
 
+    restoreGridLayoutFromConfig();
+
     if ((items.value.length == 0))
     {
-      //Prepolute grid if there are no items
+      //Pre-populate grid if there are no items
+      console.info("Grid config is empty; using default");
       quickfill();
     }
   })
@@ -253,7 +258,7 @@ onMounted(() => {
       "add-widget",
       function (eventdata) {
         let evt = <CustomEvent>eventdata;
-        addNewWidget2(gridWidgets[evt.detail]);
+        addNewWidget2(gridWidgets[evt.detail],true);
       },
       false,
     );
@@ -271,9 +276,40 @@ function onChange(event, changeItems) {
     widget.w = item.w;
     widget.h = item.h;
   });
+  saveGridLayout();
+}
+function restoreGridLayoutFromConfig(){
+    //Try to load grid from saved config
+    //On mounted seems to be called multiple times; so check to make sure items is empty first
+    //array format: 0 = x, 1 = y, 2 = w, 3 = h, 4 = gridwidget index
+    if (items.value.length == 0){
+      let savedGrid = JSON.parse(settingsStore.local.grid_layout);
+      if (savedGrid.length > 0 ) console.info("Restoring " + savedGrid.length + " widget(s) from config");
+      for (let i=0; i < savedGrid.length;i++ ){
+        //Refs are passed, so grab original settings for restoration
+        let tempGW = gridWidgets[parseInt(savedGrid[i][4])];
+        let backupGWsize = tempGW.size;
+        tempGW.autoPlace=false;
+        tempGW.size={x:savedGrid[i][0], y:savedGrid[i][1], w:savedGrid[i][2], h:savedGrid[i][3]}
+        addNewWidget2(tempGW, false);
+
+        tempGW.autoPlace=true;
+        tempGW.size = backupGWsize;
+      }
+  }
+}
+function saveGridLayout()
+{
+  let cfg = [];
+  for (let i=0; items.value.length > i; i++) {
+    var widget = gridWidgets.findIndex((gw) => gw.component2.__name == items.value[i].component2.__name)
+    cfg[i] = [items.value[i].x, items.value[i].y, items.value[i].w,items.value[i].h, widget ];
+  }
+  settingsStore.local.grid_layout=JSON.stringify(cfg);
+  saveSettingsToConfig();
 }
 
-function addNewWidget2(componentToAdd) {
+function addNewWidget2(componentToAdd :gridWidget,saveToConfig :boolean) {
   const node = items[count.value] || { ...componentToAdd.size };
   node.id = "w_" + count.value++;
   node.component2 = shallowRef({ ...componentToAdd.component2 });
@@ -281,7 +317,10 @@ function addNewWidget2(componentToAdd) {
   items.value.push(node);
   nextTick(() => {
     grid.makeWidget(node.id);
+    if (saveToConfig)
+      saveGridLayout();
   });
+  
 }
 
 function remove(widget) {
@@ -289,22 +328,25 @@ function remove(widget) {
   items.value.splice(index, 1);
   const selector = `#${widget.id}`;
   grid.removeWidget(selector, false);
+  saveGridLayout();
 }
 
 function clearAllItems() {
   grid.removeAll(false);
   count.value = 0;
   items.value = [];
+  saveGridLayout();
 }
 function quickfill() {
   gridWidgets.forEach(async (gw) => {
     if (gw.quickFill === true) {
       gw.autoPlace = false;
-      await addNewWidget2(gw);
+      addNewWidget2(gw, false);
       //Reset autoplace value
       gw.autoPlace = true;
     }
   });
+  saveGridLayout();
 }
 </script>
 

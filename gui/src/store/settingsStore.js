@@ -22,6 +22,7 @@ nconf.defaults({
     high_graphics: true,
     update_channel: "alpha",
     enable_sys_notification: false,
+    grid_layout: "[]",
   },
 });
 
@@ -38,6 +39,7 @@ export const settingsStore = reactive({
     high_graphics: true,
     update_channel: "alpha",
     enable_sys_notification: false,
+    grid_layout: "[]",
   },
   remote: {
     AUDIO: {
