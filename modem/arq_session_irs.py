@@ -69,13 +69,14 @@ class ARQSessionIRS(arq_session.ARQSession):
     def transmit_and_wait(self, frame, timeout, mode):
         self.transmit_frame(frame, mode)
         self.log(f"Waiting {timeout} seconds...")
-        if timeout and not self.event_frame_received.wait(timeout):
+        if not self.event_frame_received.wait(timeout):
+            # use case: data burst got lost, we want to send a NACK with updated speed level
             if self.state in [self.STATE_BURST_REPLY_SENT, self.STATE_INFO_ACK_SENT]:
                 self.transmitted_acks = 0
                 self.calibrate_speed_settings()
                 self.send_burst_nack()
                 return
-        
+
             self.log("Timeout waiting for ISS. Session failed.")
             self.set_state(self.STATE_FAILED)
 
@@ -112,7 +113,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.calibrate_speed_settings()
         self.set_decode_mode()
         nack = self.frame_factory.build_arq_burst_ack(self.id, self.received_bytes, self.speed_level, self.frames_per_burst, self.snr[0])
-        self.launch_transmit_and_wait(nack, None, mode=FREEDV_MODE.signalling)
+        self.transmit_frame(nack, mode=FREEDV_MODE.signalling)
 
     def process_incoming_data(self, frame):
         if frame['offset'] != self.received_bytes:
@@ -144,13 +145,13 @@ class ARQSessionIRS(arq_session.ARQSession):
         if not self.all_data_received():
             # increase ack counter
             self.transmitted_acks += 1
-            self.launch_transmit_and_wait(ack, None, mode=FREEDV_MODE.signalling)
+            self.transmit_frame(ack, mode=FREEDV_MODE.signalling)
             self.set_state(self.STATE_BURST_REPLY_SENT)
             return
 
         if self.final_crc_check():
             self.log("All data received successfully!")
-            self.launch_transmit_and_wait(ack, None, mode=FREEDV_MODE.signalling)
+            self.transmit_frame(ack, mode=FREEDV_MODE.signalling)
             self.set_state(self.STATE_ENDED)
 
         else:
