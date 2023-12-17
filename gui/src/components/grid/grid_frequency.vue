@@ -9,7 +9,6 @@ const state = useStateStore(pinia);
 <template>
   <a
     class="d-flex justify-content-center align-items-center object-fill border rounded w-100 h-100 link-underline link-underline-opacity-0 link-underline-opacity-75-hover text-bg-light"
-   
     data-bs-toggle="offcanvas"
     data-bs-target="#offcanvasFrequency"
   >
