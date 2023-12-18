@@ -58,7 +58,7 @@ jobs:
       - name: LIST ALL FILES ${{ github.workspace }}
         run: ls -R ${{ github.workspace }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: ${{startsWith(matrix.platform.name, 'native') }}
         with:
           name: libcodec2_${{ matrix.os }}_${{ matrix.platform.name }}.${{ matrix.libcodec2_filetype }}
@@ -88,7 +88,7 @@ jobs:
           make
           mv src/libcodec2.${{ matrix.platform.file }} ../tempfiles/libcodec2_${{ matrix.platform.name }}_${{ matrix.architecture }}.${{ matrix.platform.file }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: ${{startsWith(matrix.os, 'ubuntu-20') && !startsWith(matrix.platform.name, 'native') }}
         with:
           name: libcodec2_${{ matrix.os }}_${{ matrix.platform.name }}_${{ matrix.architecture }}.${{ matrix.platform.file }}
@@ -181,7 +181,7 @@ jobs:
         # ${PWD}/artifacts on the host.
         run: ls -al "${PWD}/artifacts"
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.libcodec2_os_name }}
           #path: $GITHUB_WORKSPACE/codec2/artifacts/*
@@ -396,7 +396,7 @@ jobs:
         run: ls -R
 
       #- name: Upload Modem artifacts
-      #  uses: actions/upload-artifact@v3
+      #  uses: actions/upload-artifact@v4
       #  if: ${{!startsWith(github.ref, 'refs/tags/v')}}
       #  with:
       #    name: ${{ matrix.zip_name }}.zip
@@ -404,7 +404,7 @@ jobs:
       #    path: ./modem/dist/modem/${{ matrix.zip_name }}.zip#
 
       #- name: Upload App bundle artifacts
-      #  uses: actions/upload-artifact@v3
+      #  uses: actions/upload-artifact@v4
       #  if: ${{!startsWith(github.ref, 'refs/tags/v')}}
       #  with:
       #    name: app_bundle_${{ matrix.os }}.zip
