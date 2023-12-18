@@ -243,7 +243,7 @@ jobs:
           mkdir -p dist/modem
 
       ##- name: Download libcodec2 artifact Modem DIST
-      ##  uses: actions/download-artifact@v3
+      ##  uses: actions/download-artifact@v4
       ##  with:
       ##    path: modem/dist/codec2
 
@@ -253,7 +253,7 @@ jobs:
           mkdir codec2
 
       - name: Download libcodec2 artifact Modem LIB
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: modem/lib/codec2
 
@@ -326,7 +326,7 @@ jobs:
           mv dist/modem/daemon* dist/modem/${{ matrix.daemon_binary_name }}
           mv dist/modem/main* dist/modem/${{ matrix.modem_binary_name }}
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
            path: modem/dist/modem
 
