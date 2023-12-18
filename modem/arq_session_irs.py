@@ -17,8 +17,8 @@ class ARQSessionIRS(arq_session.ARQSession):
     RETRIES_CONNECT = 3
     RETRIES_TRANSFER = 3 # we need to increase this
 
-    TIMEOUT_CONNECT = 6
-    TIMEOUT_DATA = 6
+    TIMEOUT_CONNECT = 3
+    TIMEOUT_DATA = 12
 
     STATE_TRANSITION = {
         STATE_NEW: { 
@@ -60,11 +60,9 @@ class ARQSessionIRS(arq_session.ARQSession):
     def all_data_received(self):
         return self.total_length == self.received_bytes
 
-    def final_crc_check(self):
-        print(self.received_data)
-        print(self.total_crc)
-        print(helpers.get_crc_32(bytes(self.received_data)).hex())
-        return self.total_crc == helpers.get_crc_32(bytes(self.received_data)).hex()
+    def final_crc_matches(self) -> bool:
+        match = self.total_crc == helpers.get_crc_32(bytes(self.received_data)).hex()
+        return match
 
     def transmit_and_wait(self, frame, timeout, mode):
         self.transmit_frame(frame, mode)
@@ -101,6 +99,8 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.total_crc = info_frame['total_crc']
         self.dx_snr.append(info_frame['snr'])
 
+        self.log(f"New transfer of {self.total_length} bytes")
+
         self.calibrate_speed_settings()
         self.set_decode_mode()
         info_ack = self.frame_factory.build_arq_session_info_ack(
@@ -117,7 +117,7 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     def process_incoming_data(self, frame):
         if frame['offset'] != self.received_bytes:
-            self.logger.info(f"Discarding data frame due to wrong offset", frame=frame)
+            self.log(f"Discarding data offset {frame['offset']}")
             return False
 
         remaining_data_length = self.total_length - self.received_bytes
@@ -132,6 +132,7 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         self.received_data[frame['offset']:] = data_part
         self.received_bytes += len(data_part)
+        self.log(f"Received {self.received_bytes}/{self.total_length} bytes")
 
         return True
 
@@ -149,7 +150,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.set_state(self.STATE_BURST_REPLY_SENT)
             return
 
-        if self.final_crc_check():
+        if self.final_crc_matches():
             self.log("All data received successfully!")
             self.transmit_frame(ack, mode=FREEDV_MODE.signalling)
             self.set_state(self.STATE_ENDED)

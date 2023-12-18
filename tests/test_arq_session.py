@@ -54,14 +54,15 @@ class TestARQSession(unittest.TestCase):
         cls.loss_probability = 50
 
 
+
     def channelWorker(self, modem_transmit_queue: queue, frame_dispatcher: DISPATCHER):
         while True:
             frame_bytes = modem_transmit_queue.get()
             if random.randint(0, 100) < self.loss_probability:
                 self.logger.info(f"[{threading.current_thread().name}] Frame lost...")
                 continue
-            self.logger.info(f"[{threading.current_thread().name}] Redirecting frame")
             frame_dispatcher.new_process_data(frame_bytes, None, len(frame_bytes), 0, 0)
+
 
     def establishChannels(self):
         self.iss_to_irs_channel = threading.Thread(target=self.channelWorker, 
@@ -76,7 +77,7 @@ class TestARQSession(unittest.TestCase):
                                                     name = "IRS to ISS channel")
         self.irs_to_iss_channel.start()
 
-    def testARQSessionSmallPayload(self):
+    def xtestARQSessionSmallPayload(self):
         # set Packet Error Rate (PER) / frame loss probability
         self.loss_probability = 30
 

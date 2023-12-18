@@ -101,8 +101,8 @@ class FrameHandler():
         pass
 
     def log(self):
-        self.logger.info(f"[Frame Handler] Handling frame {self.details['frame']}")
-        pass
+        return
+        self.logger.info(f"[Frame Handler] Handling frame {self.details['frame']['frame_type']}")
 
     def handle(self, frame, snr, frequency_offset, freedv_inst, bytes_per_frame):
         self.details['frame'] = frame

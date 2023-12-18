@@ -159,7 +159,6 @@ class DataFrameFactory:
             frame_length = frame_template["frame_length"]
         else:
             frame_length -= 2
-        print(frame_length)
         frame = bytearray(frame_length)
         frame[:1] = bytes([frametype.value])
 
@@ -232,7 +231,6 @@ class DataFrameFactory:
         whole_frame_length = self.get_bytes_per_frame(mode)
         available = whole_frame_length - 2 # 2Bytes CRC16
         available -= 1 # Frame Type
-        print(self.template_list[type.value].items())
         for field, length in self.template_list[type.value].items():
             if field != 'frame_length' and isinstance(length, int):
                 available -= length

@@ -9,7 +9,6 @@ class EventManager:
         self.lastpttstate = False
 
     def broadcast(self, data):
-        self.log.debug(f"Broadcasting event: {data}")
         for q in self.queues:
             q.put(data)
 

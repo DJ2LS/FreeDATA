@@ -74,6 +74,7 @@ class ARQSession():
 
     def on_frame_received(self, frame):
         self.event_frame_received.set()
+        self.log(f"Received {frame['frame_type']}")
         frame_type = frame['frame_type_int']
         if self.state in self.STATE_TRANSITION:
             if frame_type in self.STATE_TRANSITION[self.state]:
