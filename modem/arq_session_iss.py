@@ -15,6 +15,7 @@ class ISS_State(Enum):
     BURST_SENT = 3
     ENDED = 4
     FAILED = 5
+    ABORTED = 6
 
 class ARQSessionISS(arq_session.ARQSession):
 
