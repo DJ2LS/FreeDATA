@@ -78,6 +78,7 @@ class ARQSessionIRS(arq_session.ARQSession):
 
             self.log("Timeout waiting for ISS. Session failed.")
             self.set_state(IRS_State.FAILED)
+            self.event_manager.send_arq_finished(False, self.id, self.dxcall, self.total_length, False)
 
     def launch_transmit_and_wait(self, frame, timeout, mode):
         thread_wait = threading.Thread(target = self.transmit_and_wait, 
@@ -101,6 +102,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.dx_snr.append(info_frame['snr'])
 
         self.log(f"New transfer of {self.total_length} bytes")
+        self.event_manager.send_arq_session_new(False, self.id, self.dxcall, self.total_length)
 
         self.calibrate_speed_settings()
         self.set_decode_mode()
@@ -134,6 +136,8 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.received_data[frame['offset']:] = data_part
         self.received_bytes += len(data_part)
         self.log(f"Received {self.received_bytes}/{self.total_length} bytes")
+        self.event_manager.send_arq_session_progress(
+            False, self.id, self.dxcall, self.received_bytes, self.total_length)
 
         return True
 
@@ -155,10 +159,15 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.log("All data received successfully!")
             self.transmit_frame(ack, mode=FREEDV_MODE.signalling)
             self.set_state(IRS_State.ENDED)
+            self.event_manager.send_arq_session_finished(
+                False, self.id, self.dxcall, self.total_length, True)
 
         else:
             self.log("CRC fail at the end of transmission!")
             self.set_state(IRS_State.FAILED)
+            self.event_manager.send_arq_session_finished(
+                False, self.id, self.dxcall, self.total_length, False)
+
 
     def calibrate_speed_settings(self):
         self.speed_level = 0 # for now stay at lowest speed level

@@ -97,5 +97,3 @@ class ARQSession():
                 return
         
         self.log(f"Ignoring unknow transition from state {self.state} with frame {frame['frame_type']}")
-
-

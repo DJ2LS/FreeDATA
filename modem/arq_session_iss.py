@@ -66,6 +66,7 @@ class ARQSessionISS(arq_session.ARQSession):
             retries = retries - 1
         self.set_state(ISS_State.FAILED)
         self.log("Session failed")
+        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data), False)
 
     def launch_twr(self, frame_or_burst, timeout, retries, mode):
         twr = threading.Thread(target = self.transmit_wait_and_retry, args=[frame_or_burst, timeout, retries, mode])
@@ -96,10 +97,13 @@ class ARQSessionISS(arq_session.ARQSession):
         if 'offset' in irs_frame:
             self.confirmed_bytes = irs_frame['offset']
             self.log(f"IRS confirmed {self.confirmed_bytes}/{len(self.data)} bytes")
+            self.event_manager.send_arq_session_progress(
+                True, self.id, self.dxcall, self.confirmed_bytes, len(self.data))
 
         if self.confirmed_bytes == len(self.data):
             self.set_state(ISS_State.ENDED)
             self.log("All data transfered!")
+            self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data), True)
             return
         payload_size = self.get_data_payload_size()
         burst = []
