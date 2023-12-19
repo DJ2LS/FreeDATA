@@ -53,7 +53,7 @@ class TestARQSession(unittest.TestCase):
                                           cls.irs_modem)
         
         # Frame loss probability in %
-        cls.loss_probability = 50
+        cls.loss_probability = 30
 
 
 
@@ -93,7 +93,7 @@ class TestARQSession(unittest.TestCase):
 
     def testARQSessionLargePayload(self):
         # set Packet Error Rate (PER) / frame loss probability
-        self.loss_probability = 30
+        self.loss_probability = 50
 
         self.establishChannels()
         params = {

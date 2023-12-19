@@ -69,13 +69,6 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.transmit_frame(frame, mode)
         self.log(f"Waiting {timeout} seconds...")
         if not self.event_frame_received.wait(timeout):
-            # use case: data burst got lost, we want to send a NACK with updated speed level
-            if self.state in [IRS_State.BURST_REPLY_SENT, IRS_State.INFO_ACK_SENT]:
-                self.transmitted_acks = 0
-                self.calibrate_speed_settings()
-                self.send_burst_nack()
-                return
-
             self.log("Timeout waiting for ISS. Session failed.")
             self.set_state(IRS_State.FAILED)
             self.event_manager.send_arq_finished(False, self.id, self.dxcall, self.total_length, False)
@@ -106,6 +99,7 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         self.calibrate_speed_settings()
         self.set_decode_mode()
+
         info_ack = self.frame_factory.build_arq_session_info_ack(
             self.id, self.total_crc, self.snr[0],
             self.speed_level, self.frames_per_burst)
@@ -116,7 +110,8 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.calibrate_speed_settings()
         self.set_decode_mode()
         nack = self.frame_factory.build_arq_burst_ack(self.id, self.received_bytes, self.speed_level, self.frames_per_burst, self.snr[0])
-        self.transmit_frame(nack, mode=FREEDV_MODE.signalling)
+        self.launch_transmit_and_wait(nack, self.TIMEOUT_DATA, mode=FREEDV_MODE.signalling)
+        self.log("NACK sent")
 
     def process_incoming_data(self, frame):
         if frame['offset'] != self.received_bytes:
@@ -151,13 +146,14 @@ class ARQSessionIRS(arq_session.ARQSession):
         if not self.all_data_received():
             # increase ack counter
             self.transmitted_acks += 1
-            self.transmit_frame(ack, mode=FREEDV_MODE.signalling)
             self.set_state(IRS_State.BURST_REPLY_SENT)
+            self.launch_transmit_and_wait(ack, self.TIMEOUT_DATA, mode=FREEDV_MODE.signalling)
             return
 
         if self.final_crc_matches():
             self.log("All data received successfully!")
             self.transmit_frame(ack, mode=FREEDV_MODE.signalling)
+            self.log("ACK sent")
             self.set_state(IRS_State.ENDED)
             self.event_manager.send_arq_session_finished(
                 False, self.id, self.dxcall, self.total_length, True)
