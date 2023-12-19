@@ -378,7 +378,7 @@ function testHamlib() {
                           v-for="option in serialDeviceOptions()"
                           v-bind:value="option.port"
                         >
-                          {{ option.port }}
+                          {{ option.description }}
                         </option>
                       </select>
                     </div>

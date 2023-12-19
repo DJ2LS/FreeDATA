@@ -322,7 +322,7 @@ import { serialDeviceOptions } from "../js/deviceFormHelper";
         v-for="option in serialDeviceOptions()"
         v-bind:value="option.port"
       >
-        {{ option.port }}
+        {{ option.description }}
       </option>
     </select>
   </div>
@@ -404,7 +404,12 @@ import { serialDeviceOptions } from "../js/deviceFormHelper";
       @change="onChange"
       v-model="settings.remote.RADIO.ptt_port"
     >
-      <option selected value="ignore">-- ignore --</option>
+    <option
+        v-for="option in serialDeviceOptions()"
+        v-bind:value="option.port"
+      >
+        {{ option.description }}
+      </option>
     </select>
   </div>
   <div class="input-group input-group-sm mb-1">
