@@ -3,16 +3,17 @@ import arq_session
 import helpers
 from modem_frametypes import FRAME_TYPE
 from codec2 import FREEDV_MODE
+from enum import Enum
 
+class IRS_State(Enum):
+    NEW = 0
+    OPEN_ACK_SENT = 1
+    INFO_ACK_SENT = 2
+    BURST_REPLY_SENT = 3
+    ENDED = 4
+    FAILED = 5
 
 class ARQSessionIRS(arq_session.ARQSession):
-
-    STATE_NEW = 0
-    STATE_OPEN_ACK_SENT = 1
-    STATE_INFO_ACK_SENT = 2
-    STATE_BURST_REPLY_SENT = 3
-    STATE_ENDED = 4
-    STATE_FAILED = 5
 
     RETRIES_CONNECT = 3
     RETRIES_TRANSFER = 3 # we need to increase this
@@ -21,18 +22,18 @@ class ARQSessionIRS(arq_session.ARQSession):
     TIMEOUT_DATA = 12
 
     STATE_TRANSITION = {
-        STATE_NEW: { 
+        IRS_State.NEW: { 
             FRAME_TYPE.ARQ_SESSION_OPEN.value : 'send_open_ack',
         },
-        STATE_OPEN_ACK_SENT: { 
+        IRS_State.OPEN_ACK_SENT: { 
             FRAME_TYPE.ARQ_SESSION_OPEN.value: 'send_open_ack',
             FRAME_TYPE.ARQ_SESSION_INFO.value: 'send_info_ack',
         },
-        STATE_INFO_ACK_SENT: {
+        IRS_State.INFO_ACK_SENT: {
             FRAME_TYPE.ARQ_SESSION_INFO.value: 'send_info_ack',
             FRAME_TYPE.ARQ_BURST_FRAME.value: 'receive_data',
         },
-        STATE_BURST_REPLY_SENT: {
+        IRS_State.BURST_REPLY_SENT: {
             FRAME_TYPE.ARQ_BURST_FRAME.value: 'receive_data',
         },
     }
@@ -44,7 +45,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.dxcall = dxcall
         self.version = 1
 
-        self.state = self.STATE_NEW
+        self.state = IRS_State.NEW
 
         self.total_length = 0
         self.total_crc = ''
@@ -69,14 +70,14 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.log(f"Waiting {timeout} seconds...")
         if not self.event_frame_received.wait(timeout):
             # use case: data burst got lost, we want to send a NACK with updated speed level
-            if self.state in [self.STATE_BURST_REPLY_SENT, self.STATE_INFO_ACK_SENT]:
+            if self.state in [IRS_State.BURST_REPLY_SENT, IRS_State.INFO_ACK_SENT]:
                 self.transmitted_acks = 0
                 self.calibrate_speed_settings()
                 self.send_burst_nack()
                 return
 
             self.log("Timeout waiting for ISS. Session failed.")
-            self.set_state(self.STATE_FAILED)
+            self.set_state(IRS_State.FAILED)
 
     def launch_transmit_and_wait(self, frame, timeout, mode):
         thread_wait = threading.Thread(target = self.transmit_and_wait, 
@@ -90,7 +91,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.version,
             self.snr[0])
         self.launch_transmit_and_wait(ack_frame, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
-        self.set_state(self.STATE_OPEN_ACK_SENT)
+        self.set_state(IRS_State.OPEN_ACK_SENT)
 
     def send_info_ack(self, info_frame):
         # Get session info from ISS
@@ -107,7 +108,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.id, self.total_crc, self.snr[0],
             self.speed_level, self.frames_per_burst)
         self.launch_transmit_and_wait(info_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
-        self.set_state(self.STATE_INFO_ACK_SENT)
+        self.set_state(IRS_State.INFO_ACK_SENT)
 
     def send_burst_nack(self):
         self.calibrate_speed_settings()
@@ -147,17 +148,17 @@ class ARQSessionIRS(arq_session.ARQSession):
             # increase ack counter
             self.transmitted_acks += 1
             self.transmit_frame(ack, mode=FREEDV_MODE.signalling)
-            self.set_state(self.STATE_BURST_REPLY_SENT)
+            self.set_state(IRS_State.BURST_REPLY_SENT)
             return
 
         if self.final_crc_matches():
             self.log("All data received successfully!")
             self.transmit_frame(ack, mode=FREEDV_MODE.signalling)
-            self.set_state(self.STATE_ENDED)
+            self.set_state(IRS_State.ENDED)
 
         else:
             self.log("CRC fail at the end of transmission!")
-            self.set_state(self.STATE_FAILED)
+            self.set_state(IRS_State.FAILED)
 
     def calibrate_speed_settings(self):
         self.speed_level = 0 # for now stay at lowest speed level

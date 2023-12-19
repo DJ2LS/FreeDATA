@@ -2,6 +2,7 @@ import queue, threading
 import codec2
 import data_frame_factory
 import structlog
+from event_manager import EventManager
 from modem_frametypes import FRAME_TYPE
 
 class ARQSession():
@@ -37,6 +38,8 @@ class ARQSession():
         self.logger = structlog.get_logger(type(self).__name__)
         self.config = config
 
+        self.event_manager: EventManager = modem.event_manager
+
         self.snr = []
 
         self.dxcall = dxcall
@@ -67,7 +70,10 @@ class ARQSession():
         self.modem.transmit(mode, 1, 1, frame)
 
     def set_state(self, state):
-        self.log(f"{type(self).__name__} state change from {self.state} to {state}")
+        if self.state == state:
+            self.log(f"{type(self).__name__} state {self.state.name} unchanged.")
+        else:
+            self.log(f"{type(self).__name__} state change from {self.state.name} to {state.name}")
         self.state = state
 
     def get_data_payload_size(self):

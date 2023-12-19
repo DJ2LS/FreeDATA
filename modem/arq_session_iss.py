@@ -6,29 +6,31 @@ from codec2 import FREEDV_MODE
 from modem_frametypes import FRAME_TYPE
 import arq_session
 import helpers
+from enum import Enum
+
+class ISS_State(Enum):
+    NEW = 0
+    OPEN_SENT = 1
+    INFO_SENT = 2
+    BURST_SENT = 3
+    ENDED = 4
+    FAILED = 5
 
 class ARQSessionISS(arq_session.ARQSession):
-
-    STATE_NEW = 0
-    STATE_OPEN_SENT = 1
-    STATE_INFO_SENT = 2
-    STATE_BURST_SENT = 3
-    STATE_ENDED = 4
-    STATE_FAILED = 5
 
     RETRIES_CONNECT = 10
     TIMEOUT_CONNECT_ACK = 3
     TIMEOUT_TRANSFER = 3
 
     STATE_TRANSITION = {
-        STATE_OPEN_SENT: { 
+        ISS_State.OPEN_SENT: { 
             FRAME_TYPE.ARQ_SESSION_OPEN_ACK.value: 'send_info',
         },
-        STATE_INFO_SENT: {
+        ISS_State.INFO_SENT: {
             FRAME_TYPE.ARQ_SESSION_OPEN_ACK.value: 'send_info',
             FRAME_TYPE.ARQ_SESSION_INFO_ACK.value: 'send_data',
         },
-        STATE_BURST_SENT: {
+        ISS_State.BURST_SENT: {
             FRAME_TYPE.ARQ_SESSION_INFO_ACK.value: 'send_data',
             FRAME_TYPE.ARQ_BURST_ACK.value: 'send_data',
             FRAME_TYPE.ARQ_BURST_NACK.value: 'send_data',
@@ -42,7 +44,7 @@ class ARQSessionISS(arq_session.ARQSession):
 
         self.confirmed_bytes = 0
 
-        self.state = self.STATE_NEW
+        self.state = ISS_State.NEW
         self.id = self.generate_id()
 
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
@@ -62,7 +64,7 @@ class ARQSessionISS(arq_session.ARQSession):
                 return
             self.log("Timeout!")
             retries = retries - 1
-        self.set_state(self.STATE_FAILED)
+        self.set_state(ISS_State.FAILED)
         self.log("Session failed")
 
     def launch_twr(self, frame_or_burst, timeout, retries, mode):
@@ -72,7 +74,7 @@ class ARQSessionISS(arq_session.ARQSession):
     def start(self):
         session_open_frame = self.frame_factory.build_arq_session_open(self.dxcall, self.id)
         self.launch_twr(session_open_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
-        self.set_state(self.STATE_OPEN_SENT)
+        self.set_state(ISS_State.OPEN_SENT)
 
     def set_speed_and_frames_per_burst(self, frame):
         self.speed_level = frame['speed_level']
@@ -86,7 +88,7 @@ class ARQSessionISS(arq_session.ARQSession):
                                                                self.snr[0])
 
         self.launch_twr(info_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
-        self.set_state(self.STATE_INFO_SENT)
+        self.set_state(ISS_State.INFO_SENT)
 
     def send_data(self, irs_frame):
         self.set_speed_and_frames_per_burst(irs_frame)
@@ -96,7 +98,7 @@ class ARQSessionISS(arq_session.ARQSession):
             self.log(f"IRS confirmed {self.confirmed_bytes}/{len(self.data)} bytes")
 
         if self.confirmed_bytes == len(self.data):
-            self.set_state(self.STATE_ENDED)
+            self.set_state(ISS_State.ENDED)
             self.log("All data transfered!")
             return
         payload_size = self.get_data_payload_size()
@@ -109,4 +111,4 @@ class ARQSessionISS(arq_session.ARQSession):
                 self.id, self.confirmed_bytes, payload)
             burst.append(data_frame)
         self.launch_twr(burst, self.TIMEOUT_TRANSFER, self.RETRIES_CONNECT, mode='auto')
-        self.set_state(self.STATE_BURST_SENT)
+        self.set_state(ISS_State.BURST_SENT)

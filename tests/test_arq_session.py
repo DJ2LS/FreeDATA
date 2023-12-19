@@ -14,11 +14,13 @@ from frame_dispatcher import DISPATCHER
 import random
 import structlog
 import numpy as np
+from event_manager import EventManager
 
 class TestModem:
     def __init__(self):
         self.data_queue_received = queue.Queue()
         self.demodulator = unittest.mock.Mock()
+        self.event_manager = EventManager([queue.Queue()])
 
     def transmit(self, mode, repeats: int, repeat_delay: int, frames: bytearray) -> bool:
         self.data_queue_received.put(frames)
