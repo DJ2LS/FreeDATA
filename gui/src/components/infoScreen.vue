@@ -14,67 +14,73 @@ const cards = ref([
   {
     titleName: "Simon",
     titleCall: "DJ2LS",
-    role: "Founder & Core developer",
+    role: "Founder & Core Developer",
     imgSrc: "dj2ls.png",
   },
   {
     titleName: "Alan",
     titleCall: "N1QM",
-    role: "developer",
+    role: "Developer",
     imgSrc: "person-fill.svg",
   },
   {
     titleName: "Stefan",
     titleCall: "DK5SM",
-    role: "tester",
+    role: "Tester",
     imgSrc: "person-fill.svg",
   },
   {
     titleName: "Wolfgang",
     titleCall: "DL4IAZ",
-    role: "supporter",
+    role: "Supporter",
     imgSrc: "person-fill.svg",
   },
   {
     titleName: "David",
     titleCall: "VK5DGR",
-    role: "codec2 founder",
+    role: "Codec 2 Founder",
     imgSrc: "vk5dgr.jpeg",
   },
   {
     titleName: "John",
     titleCall: "EI7IG",
-    role: "tester",
+    role: "Tester",
     imgSrc: "ei7ig.jpeg",
   },
   {
     titleName: "Paul",
     titleCall: "N2KIQ",
-    role: "developer",
+    role: "Developer",
     imgSrc: "person-fill.svg",
   },
   {
     titleName: "Trip",
     titleCall: "KT4WO",
-    role: "tester",
+    role: "Tester",
     imgSrc: "kt4wo.png",
   },
   {
     titleName: "Manuel",
     titleCall: "DF7MH",
-    role: "tester",
+    role: "Tester",
     imgSrc: "person-fill.svg",
   },
   {
     titleName: "Darren",
     titleCall: "G0HWW",
-    role: "tester",
+    role: "Tester",
     imgSrc: "person-fill.svg",
   },
   {
     titleName: "Kai",
     titleCall: "LA3QMA",
-    role: "developer",
+    role: "Developer",
+    imgSrc: "person-fill.svg",
+  },
+  {
+    titleName: "Pedro",
+    titleCall: "F4JAW",
+    role: "Core Developer",
     imgSrc: "person-fill.svg",
   },
 ]);
@@ -90,8 +96,7 @@ onMounted(shuffleCards);
 <template>
   <!--<infoScreen_updater />-->
   <div class="container-fluid">
-    <div class="row mt-2">
-      <hr />
+    <div class="row">
       <h6>Important URLs</h6>
 
       <div
@@ -175,17 +180,18 @@ onMounted(shuffleCards);
         </div>
       </div>
     </div>
-    <div class="row mt-5">
-      <hr />
-      <h6>Special thanks to</h6>
+    <hr />
+    <div class="row">
+      
+      <h6>We would like to especially thank the following</h6>
     </div>
 
-    <div class="d-flex flex-nowrap overflow-x-auto vh-100">
-      <div class="row row-cols-1 row-cols-md-6 g-4 h-100">
+    <div class="d-flex flex-nowrap overflow-y-auto w-100" style="height: calc(100vh - 170px);overflow-x: hidden;">
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 row-cols-lg-6">
         <div class="d-inline-block" v-for="card in cards" :key="card.titleName">
           <div class="col">
             <div
-              class="card border-dark mb-3 ms-1 me-1"
+              class="card border-dark m-2"
               style="max-width: 15rem"
             >
               <img :src="card.imgSrc" class="card-img-top grayscale" />
