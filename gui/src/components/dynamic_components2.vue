@@ -361,7 +361,7 @@ function quickfill() {
     <i class="bi bi-grip-vertical h5"></i>
   </button>
 
-  <div class="grid-container vh-100">
+  <div class="grid-container" style="height: calc(100vh - 51px);">
     <div class="grid-stack">
       <div
         v-for="(w, indexs) in items"
