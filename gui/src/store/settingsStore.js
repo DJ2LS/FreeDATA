@@ -15,7 +15,6 @@ nconf.defaults({
   local: {
     host: "127.0.0.1",
     port: "5000",
-    enable_fft: true,
     spectrum: "waterfall",
     wf_theme: 2,
     theme: "default_light",
@@ -32,7 +31,6 @@ export const settingsStore = reactive({
   local: {
     host: "127.0.0.1",
     port: "5000",
-    enable_fft: true,
     spectrum: "waterfall",
     wf_theme: 2,
     theme: "default_light",
