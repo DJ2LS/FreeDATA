@@ -668,3 +668,44 @@ def check_if_file_exists(path):
             "[Modem] [FILE] Lookup failed", e=e, path=path,
         )
         return False
+
+
+def set_bit(byte, position, value):
+    """Set the bit at 'position' to 'value' in the given byte."""
+    if not 0 <= position <= 7:
+        raise ValueError("Position must be between 0 and 7")
+
+    if value:
+        return byte | (1 << position)
+    else:
+        return byte & ~(1 << position)
+
+def get_bit(byte, position):
+    """Get the boolean value of the bit at 'position' in the given byte."""
+    if not 0 <= position <= 7:
+        raise ValueError("Position must be between 0 and 7")
+
+    return (byte & (1 << position)) != 0
+
+def set_flag(byte, flag_name, value, flag_dict):
+    """Set the flag in the byte according to the flag dictionary.
+
+    # Define a dictionary mapping flag names to their bit positions
+        flag_dict = {
+            'FLAG1': 0,  # Bit position for FLAG1
+            'FLAG2': 1,  # Bit position for FLAG2, etc.
+            'FLAG3': 2
+        }
+
+    """
+    if flag_name not in flag_dict:
+        raise ValueError(f"Unknown flag name: {flag_name}")
+    position = flag_dict[flag_name]
+    return set_bit(byte, position, value)
+
+def get_flag(byte, flag_name, flag_dict):
+    """Get the value of the flag from the byte according to the flag dictionary."""
+    if flag_name not in flag_dict:
+        raise ValueError(f"Unknown flag name: {flag_name}")
+    position = flag_dict[flag_name]
+    return get_bit(byte, position)

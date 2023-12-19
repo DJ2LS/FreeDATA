@@ -25,6 +25,14 @@ class ARQSession():
     }
 
 
+    """
+        helpers.set_flag(byte, 'DATA-ACK-NACK', True, FLAG_POSITIONS)
+        helpers.get_flag(byte, 'DATA-ACK-NACK', FLAG_POSITIONS)    
+    """
+    FLAG_POSITIONS = {
+        'DATA-ACK-NACK': 0,  # Bit position for DATA-ACK-NACK
+    }
+
     def __init__(self, config: dict, modem, dxcall: str):
         self.logger = structlog.get_logger(type(self).__name__)
         self.config = config
@@ -83,4 +91,5 @@ class ARQSession():
                 return
         
         self.log(f"Ignoring unknow transition from state {self.state} with frame {frame['frame_type']}")
- 
+
+
