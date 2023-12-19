@@ -102,7 +102,7 @@ export const settingsStore = reactive({
 
 //Save settings for GUI to config file
 settingsStore.local = nconf.get("local");
-saveSettingsToConfig();
+saveLocalSettingsToConfig();
 
 export function onChange() {
   setConfig(settingsStore.remote).then((conf) => {
@@ -118,11 +118,11 @@ export function getRemote() {
 
 watch(settingsStore.local, (oldValue, newValue) => {
   //This function watches for changes, and triggers a save of local settings
-  saveSettingsToConfig();
+  saveLocalSettingsToConfig();
 });
 
-export function saveSettingsToConfig() {
+export function saveLocalSettingsToConfig() {
   nconf.set("local", settingsStore.local);
   nconf.save();
-  console.log("Settings saved!");
+  //console.log("Settings saved!");
 }

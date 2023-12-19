@@ -9,7 +9,7 @@ import { GridStack } from "gridstack";
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 import { setModemFrequency } from "../js/api";
-import { saveSettingsToConfig, settingsStore } from "../store/settingsStore";
+import { saveLocalSettingsToConfig, settingsStore } from "../store/settingsStore";
 
 import active_heard_stations from "./grid/grid_active_heard_stations.vue";
 import mini_heard_stations from "./grid/grid_active_heard_stations_mini.vue";
@@ -306,7 +306,7 @@ function saveGridLayout()
     cfg[i] = [items.value[i].x, items.value[i].y, items.value[i].w,items.value[i].h, widget ];
   }
   settingsStore.local.grid_layout=JSON.stringify(cfg);
-  saveSettingsToConfig();
+  saveLocalSettingsToConfig();
 }
 
 function addNewWidget2(componentToAdd :gridWidget,saveToConfig :boolean) {
