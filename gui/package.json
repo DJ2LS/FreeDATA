@@ -60,7 +60,7 @@
     "qth-locator": "2.1.0",
     "sass": "1.66.1",
     "socket.io": "4.7.2",
-    "uuid": "9.0.0",
+    "uuid": "9.0.1",
     "vue": "3.3.12",
     "vue-chartjs": "5.2.0",
     "vuemoji-picker": "0.2.0"
