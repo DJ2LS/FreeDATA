@@ -87,6 +87,7 @@ import { settingsStore as settings } from "../store/settingsStore.js";
           id="enable_auto_retry"
           @change="setConfig"
           v-model="settings.enable_auto_retry"
+          disabled
         />
       </div>
     </label>
@@ -99,6 +100,7 @@ import { settingsStore as settings } from "../store/settingsStore.js";
       id="max_retry_attempts"
       @change="setConfig"
       v-model="settings.max_retry_attempts"
+      disabled
     >
       <option value="1">1</option>
       <option value="2">2</option>
