@@ -76,7 +76,7 @@ import { audioInputOptions, audioOutputOptions } from "../js/deviceFormHelper";
       v-model="settings.remote.AUDIO.input_device"
     >
       <option v-for="option in audioInputOptions()" v-bind:value="option.id">
-        {{ option.name }}
+        {{ option.name }} [{{ option.api }}]
       </option>
     </select>
   </div>
@@ -92,7 +92,7 @@ import { audioInputOptions, audioOutputOptions } from "../js/deviceFormHelper";
       v-model="settings.remote.AUDIO.output_device"
     >
       <option v-for="option in audioOutputOptions()" v-bind:value="option.id">
-        {{ option.name }}
+        {{ option.name }} [{{ option.api }}]
       </option>
     </select>
   </div>

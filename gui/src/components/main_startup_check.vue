@@ -231,7 +231,7 @@ function testHamlib() {
                         v-for="option in audioInputOptions()"
                         v-bind:value="option.id"
                       >
-                        {{ option.name }}
+                        {{ option.name }} [{{ option.api }}]
                       </option>
                     </select>
                   </div>
@@ -250,7 +250,7 @@ function testHamlib() {
                         v-for="option in audioOutputOptions()"
                         v-bind:value="option.id"
                       >
-                        {{ option.name }}
+                        {{ option.name }} [{{ option.api }}]
                       </option>
                     </select>
                   </div>
