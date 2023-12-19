@@ -182,18 +182,17 @@ onMounted(shuffleCards);
     </div>
     <hr />
     <div class="row">
-      
       <h6>We would like to especially thank the following</h6>
     </div>
 
-    <div class="d-flex flex-nowrap overflow-y-auto w-100" style="height: calc(100vh - 170px);overflow-x: hidden;">
+    <div
+      class="d-flex flex-nowrap overflow-y-auto w-100"
+      style="height: calc(100vh - 170px); overflow-x: hidden"
+    >
       <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 row-cols-lg-6">
         <div class="d-inline-block" v-for="card in cards" :key="card.titleName">
           <div class="col">
-            <div
-              class="card border-dark m-2"
-              style="max-width: 15rem"
-            >
+            <div class="card border-dark m-2" style="max-width: 15rem">
               <img :src="card.imgSrc" class="card-img-top grayscale" />
               <div class="card-body">
                 <p class="card-text text-center">{{ card.role }}</p>

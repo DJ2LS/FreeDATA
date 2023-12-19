@@ -404,7 +404,7 @@ import { serialDeviceOptions } from "../js/deviceFormHelper";
       @change="onChange"
       v-model="settings.remote.RADIO.ptt_port"
     >
-    <option
+      <option
         v-for="option in serialDeviceOptions()"
         v-bind:value="option.port"
       >

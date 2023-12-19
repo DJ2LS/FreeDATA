@@ -20,7 +20,6 @@ function saveSettings() {
       id="theme_selector"
       @change="saveSettings"
       v-model="settings.local.theme"
-      
     >
       <option value="default_light">Default (light)</option>
       <option value="default_dark">Default (dark)</option>
@@ -79,7 +78,6 @@ function saveSettings() {
           id="GraphicsSwitch"
           @change="saveSettings"
           v-model="settings.local.high_graphics"
-          
         />
         <label class="form-check-label" for="GraphicsSwitch"
           >Higher CPU Usage</label
@@ -105,7 +103,6 @@ function saveSettings() {
       id="update_channel_selector"
       @change="saveSettings"
       v-model="settings.local.update_channel"
-      
     >
       <option value="latest">Stable</option>
       <option value="beta">Beta</option>
@@ -122,7 +119,6 @@ function saveSettings() {
           id="NotificationSwitch"
           @change="saveSettings"
           v-model="settings.local.enable_sys_notification"
-          
         />
         <label class="form-check-label" for="NotificationSwitch"
           >Show system pop-ups</label
