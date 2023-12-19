@@ -60,6 +60,7 @@ class ARQSessionISS(arq_session.ARQSession):
             else: burst = [frame_or_burst]
             for f in burst:
                 self.transmit_frame(f, mode)
+            self.event_frame_received.clear()
             self.log(f"Waiting {timeout} seconds...")
             if self.event_frame_received.wait(timeout):
                 return

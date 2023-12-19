@@ -70,12 +70,13 @@ class ARQSessionIRS(arq_session.ARQSession):
         return match
 
     def transmit_and_wait(self, frame, timeout, mode):
+        self.event_frame_received.clear()
         self.transmit_frame(frame, mode)
         self.log(f"Waiting {timeout} seconds...")
         if not self.event_frame_received.wait(timeout):
             self.log("Timeout waiting for ISS. Session failed.")
             self.set_state(IRS_State.FAILED)
-            self.event_manager.send_arq_finished(False, self.id, self.dxcall, self.total_length, False)
+            self.event_manager.send_arq_session_finished(False, self.id, self.dxcall, self.total_length, False)
 
     def launch_transmit_and_wait(self, frame, timeout, mode):
         thread_wait = threading.Thread(target = self.transmit_and_wait, 
