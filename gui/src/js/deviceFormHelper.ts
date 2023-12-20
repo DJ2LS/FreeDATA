@@ -3,8 +3,6 @@ import { getAudioDevices, getSerialDevices } from "./api";
 let audioDevices = await getAudioDevices();
 let serialDevices = await getSerialDevices();
 
-//Add an ignore option for rig and ptt for transceivers that don't require them
-serialDevices.push({ description: "-- ignore --", port: "ignore" });
 
 //Dummy device data sent if unable to get devices from modem to prevent GUI crash
 const skel = JSON.parse(`
@@ -43,5 +41,14 @@ export function audioOutputOptions() {
 }
 
 export function serialDeviceOptions() {
+  //Return ignore option if no serialDevices
+  if (serialDevices === undefined)
+    return [{ description: "-- ignore --", port: "ignore" }];
+
+  if (serialDevices.findIndex((device) => device.port == 'ignore') == -1) {
+    //Add an ignore option for rig and ptt for transceivers that don't require them
+    serialDevices.push({ description: "-- ignore --", port: "ignore" })
+  }
+    
   return serialDevices;
 }
