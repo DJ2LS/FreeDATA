@@ -88,7 +88,7 @@ class DISPATCHER():
         
         # instantiate handler
         handler_class = self.FRAME_HANDLER[frametype]['class']
-        handler = handler_class(self.FRAME_HANDLER[frametype]['name'],
+        handler: FrameHandler = handler_class(self.FRAME_HANDLER[frametype]['name'],
                                 self.config,
                                 self.states,
                                 self.event_manager,

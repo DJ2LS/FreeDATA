@@ -87,4 +87,4 @@ class ARQSession():
                 getattr(self, action_name)(frame)
                 return
         
-        self.log(f"Ignoring unknow transition from state {self.state} with frame {frame['frame_type']}")
+        self.log(f"Ignoring unknow transition from state {self.state.name} with frame {frame['frame_type']}")

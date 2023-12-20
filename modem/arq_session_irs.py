@@ -37,6 +37,9 @@ class ARQSessionIRS(arq_session.ARQSession):
         IRS_State.ENDED: {
             FRAME_TYPE.ARQ_BURST_FRAME.value: 'receive_data',
         },
+        IRS_State.FAILED: {
+            FRAME_TYPE.ARQ_BURST_FRAME.value: 'receive_data',
+        },
     }
 
     def __init__(self, config: dict, modem, dxcall: str, session_id: int):

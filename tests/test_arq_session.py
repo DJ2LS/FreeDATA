@@ -15,6 +15,7 @@ import random
 import structlog
 import numpy as np
 from event_manager import EventManager
+from data_frame_factory import DataFrameFactory
 
 class TestModem:
     def __init__(self, event_q):
@@ -23,7 +24,11 @@ class TestModem:
         self.event_manager = EventManager([event_q])
 
     def transmit(self, mode, repeats: int, repeat_delay: int, frames: bytearray) -> bool:
-        self.data_queue_received.put(frames)
+        transmission = {
+            'mode': mode,
+            'bytes': frames,
+        }
+        self.data_queue_received.put(transmission)
 
 class TestARQSession(unittest.TestCase):
 
@@ -32,6 +37,7 @@ class TestARQSession(unittest.TestCase):
         config_manager = CONFIG('modem/config.ini.example')
         cls.config = config_manager.read()
         cls.logger = structlog.get_logger("TESTS")
+        cls.frame_factory = DataFrameFactory(cls.config)
 
         # ISS
         cls.iss_state_manager = StateManager(queue.Queue())
@@ -60,10 +66,12 @@ class TestARQSession(unittest.TestCase):
         while self.channels_running:
             # Transfer data between both parties
             try:
-                frame_bytes = modem_transmit_queue.get(timeout=1)
+                transmission = modem_transmit_queue.get(timeout=1)
                 if random.randint(0, 100) < self.loss_probability:
                     self.logger.info(f"[{threading.current_thread().name}] Frame lost...")
                     continue
+
+                frame_bytes = transmission['bytes']
                 frame_dispatcher.new_process_data(frame_bytes, None, len(frame_bytes), 0, 0)
             except queue.Empty:
                 continue
