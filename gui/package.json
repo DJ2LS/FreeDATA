@@ -47,7 +47,7 @@
     "electron-log": "5.0.0",
     "electron-updater": "6.1.7",
     "emoji-picker-element": "1.20.1",
-    "emoji-picker-element-data": "1.4.0",
+    "emoji-picker-element-data": "1.6.0",
     "file-saver": "2.0.5",
     "gridstack": "10.0.0",
     "mime": "4.0.0",
@@ -60,7 +60,7 @@
     "qth-locator": "2.1.0",
     "sass": "1.66.1",
     "socket.io": "4.7.2",
-    "uuid": "9.0.0",
+    "uuid": "9.0.1",
     "vue": "3.3.12",
     "vue-chartjs": "5.2.0",
     "vuemoji-picker": "0.2.0"
