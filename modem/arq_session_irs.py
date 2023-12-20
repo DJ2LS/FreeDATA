@@ -144,11 +144,12 @@ class ARQSessionIRS(arq_session.ARQSession):
     def receive_data(self, burst_frame):
         self.process_incoming_data(burst_frame)
         self.calibrate_speed_settings()
-        ack = self.frame_factory.build_arq_burst_ack(
-            self.id, self.received_bytes, 
-            self.speed_level, self.frames_per_burst, self.snr[0])
 
         if not self.all_data_received():
+            ack = self.frame_factory.build_arq_burst_ack(
+                                                         self.id, self.received_bytes,
+                                                         self.speed_level, self.frames_per_burst, self.snr[0])
+
             # increase ack counter
             self.transmitted_acks += 1
             self.set_state(IRS_State.BURST_REPLY_SENT)
@@ -157,6 +158,13 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         if self.final_crc_matches():
             self.log("All data received successfully!")
+            ack = self.frame_factory.build_arq_burst_ack(self.id,
+                                                         self.received_bytes,
+                                                         self.speed_level,
+                                                         self.frames_per_burst,
+                                                         self.snr[0],
+                                                         flag_final=True,
+                                                         flag_checksum=True)
             self.transmit_frame(ack, mode=FREEDV_MODE.signalling)
             self.log("ACK sent")
             self.set_state(IRS_State.ENDED)
@@ -164,6 +172,15 @@ class ARQSessionIRS(arq_session.ARQSession):
                 False, self.id, self.dxcall, self.total_length, True)
 
         else:
+
+            ack = self.frame_factory.build_arq_burst_ack(self.id,
+                                                         self.received_bytes,
+                                                         self.speed_level,
+                                                         self.frames_per_burst,
+                                                         self.snr[0],
+                                                         flag_final=True,
+                                                         flag_checksum=False)
+            self.transmit_frame(ack, mode=FREEDV_MODE.signalling)
             self.log("CRC fail at the end of transmission!")
             self.set_state(IRS_State.FAILED)
             self.event_manager.send_arq_session_finished(
