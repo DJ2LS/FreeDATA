@@ -447,8 +447,8 @@ Spectrum.prototype.onKeypress = function (e) {
 
 export function Spectrum(id, options) {
 
-    console.log("waterfall init....")
-  console.log(document.getElementById(id))
+  //  console.log("waterfall init....")
+  //console.log(document.getElementById(id))
 
   // Handle options
   this.centerHz = options && options.centerHz ? options.centerHz : 1500;

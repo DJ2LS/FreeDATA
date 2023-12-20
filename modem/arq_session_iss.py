@@ -60,6 +60,7 @@ class ARQSessionISS(arq_session.ARQSession):
             else: burst = [frame_or_burst]
             for f in burst:
                 self.transmit_frame(f, mode)
+            self.event_frame_received.clear()
             self.log(f"Waiting {timeout} seconds...")
             if self.event_frame_received.wait(timeout):
                 return
@@ -101,11 +102,12 @@ class ARQSessionISS(arq_session.ARQSession):
             self.event_manager.send_arq_session_progress(
                 True, self.id, self.dxcall, self.confirmed_bytes, len(self.data))
 
-        if self.confirmed_bytes == len(self.data):
+        if self.confirmed_bytes == len(self.data) and irs_frame["flag"]["FINAL"]:
             self.set_state(ISS_State.ENDED)
             self.log("All data transfered!")
-            self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data), True)
+            self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data), irs_frame["flag"]["CHECKSUM"])
             return
+
         payload_size = self.get_data_payload_size()
         burst = []
         for f in range(0, self.frames_per_burst):
