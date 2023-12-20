@@ -113,7 +113,6 @@ window.onmessage = (ev) => {
 
 setTimeout(removeLoading, 4999);
 
-
 // IPC ACTION FOR AUTO UPDATER
 ipcRenderer.on("action-updater", (event, arg) => {
   if (arg.status == "download-progress") {

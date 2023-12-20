@@ -332,7 +332,10 @@ onMounted(() => {
           role="stats_tabpanel"
           aria-labelledby="list-waterfall-list"
         >
-          <canvas v-bind:id="localSpectrumID" :class="settings.local.high_graphics == true ? 'force-gpu' : ''"></canvas>
+          <canvas
+            v-bind:id="localSpectrumID"
+            :class="settings.local.high_graphics == true ? 'force-gpu' : ''"
+          ></canvas>
         </div>
         <div
           class="tab-pane fade h-100 w-100"
