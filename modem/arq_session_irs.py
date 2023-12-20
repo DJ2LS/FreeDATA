@@ -16,9 +16,6 @@ class IRS_State(Enum):
 
 class ARQSessionIRS(arq_session.ARQSession):
 
-    RETRIES_CONNECT = 3
-    RETRIES_TRANSFER = 3 # we need to increase this
-
     TIMEOUT_CONNECT = 3
     TIMEOUT_DATA = 12
 

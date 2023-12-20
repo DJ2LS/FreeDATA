@@ -67,8 +67,7 @@ class ARQSessionISS(arq_session.ARQSession):
             self.log("Timeout!")
             retries = retries - 1
         self.set_state(ISS_State.FAILED)
-        self.log("Session failed")
-        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data), False)
+        self.transmission_failed()
 
     def launch_twr(self, frame_or_burst, timeout, retries, mode):
         twr = threading.Thread(target = self.transmit_wait_and_retry, args=[frame_or_burst, timeout, retries, mode])
@@ -102,11 +101,13 @@ class ARQSessionISS(arq_session.ARQSession):
             self.event_manager.send_arq_session_progress(
                 True, self.id, self.dxcall, self.confirmed_bytes, len(self.data))
 
-        if self.confirmed_bytes == len(self.data) and irs_frame["flag"]["FINAL"]:
-            self.set_state(ISS_State.ENDED)
-            self.log("All data transfered!")
-            self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data), irs_frame["flag"]["CHECKSUM"])
-            return
+        if irs_frame["flag"]["FINAL"]:
+            if self.confirmed_bytes == len(self.data) and irs_frame["flag"]["CHECKSUM"]:
+                self.transmission_ended()
+                return
+            else:
+                self.transmission_failed()
+                return
 
         payload_size = self.get_data_payload_size()
         burst = []
@@ -119,3 +120,13 @@ class ARQSessionISS(arq_session.ARQSession):
             burst.append(data_frame)
         self.launch_twr(burst, self.TIMEOUT_TRANSFER, self.RETRIES_CONNECT, mode='auto')
         self.set_state(ISS_State.BURST_SENT)
+
+    def transmission_ended(self):
+        self.set_state(ISS_State.ENDED)
+        self.log("All data transfered!")
+        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data),True)
+
+    def transmission_failed(self):
+        self.set_state(ISS_State.FAILED)
+        self.log("Transmission failed!")
+        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data),False)

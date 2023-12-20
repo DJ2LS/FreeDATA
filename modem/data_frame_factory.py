@@ -124,6 +124,7 @@ class DataFrameFactory:
             "snr": 1,
             "speed_level": 1,
             "frames_per_burst": 1,
+            "flag": 1,
         }
 
         # arq burst frame
@@ -228,12 +229,12 @@ class DataFrameFactory:
 
                 data = int.from_bytes(data, "big")
                 extracted_data[key] = {}
-                if frametype == FR_TYPE.ARQ_BURST_ACK.value:
+                if frametype in [FR_TYPE.ARQ_BURST_ACK.value, FR_TYPE.ARQ_SESSION_INFO_ACK.value]:
                     flag_dict = self.ARQ_FLAGS
-                for flag in flag_dict:
-                    # Update extracted_data with the status of each flag
-                    # get_flag returns True or False based on the bit value at the flag's position
-                    extracted_data[key][flag] = helpers.get_flag(data, flag, flag_dict)
+                    for flag in flag_dict:
+                        # Update extracted_data with the status of each flag
+                        # get_flag returns True or False based on the bit value at the flag's position
+                        extracted_data[key][flag] = helpers.get_flag(data, flag, flag_dict)
             else:
                 extracted_data[key] = data
 
@@ -353,7 +354,11 @@ class DataFrameFactory:
         }
         return self.construct(FR_TYPE.ARQ_SESSION_INFO, payload)
 
-    def build_arq_session_info_ack(self, session_id, total_crc, snr, speed_level, frames_per_burst):
+    def build_arq_session_info_ack(self, session_id, total_crc, snr, speed_level, frames_per_burst, flag_final=False):
+        flag = 0b00000000
+        if flag_final:
+            flag = helpers.set_flag(flag, 'FINAL', True, self.ARQ_FLAGS)
+
         payload = {
             "frame_length": self.LENGTH_SIG0_FRAME,
             "session_id": session_id.to_bytes(1, 'big'),
@@ -361,6 +366,7 @@ class DataFrameFactory:
             "snr": snr.to_bytes(1, 'big'),
             "speed_level": speed_level.to_bytes(1, 'big'),
             "frames_per_burst": frames_per_burst.to_bytes(1, 'big'),
+            "flag": flag.to_bytes(1, 'big'),
         }        
         return self.construct(FR_TYPE.ARQ_SESSION_INFO_ACK, payload)
 
