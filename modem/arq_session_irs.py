@@ -12,7 +12,7 @@ class IRS_State(Enum):
     BURST_REPLY_SENT = 3
     ENDED = 4
     FAILED = 5
-    ABORTER = 6
+    ABORTED = 6
 
 class ARQSessionIRS(arq_session.ARQSession):
 
