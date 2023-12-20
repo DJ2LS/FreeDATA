@@ -188,7 +188,7 @@ export function newBroadcast(broadcastChannel, chatmessage) {
   };
 
   //sendMessage(newChatObj)
-  sendBroadcastChannel(newChatObj);
+  //sendBroadcastChannel(newChatObj);
 
   addObjToDatabase(newChatObj);
 }
@@ -394,11 +394,11 @@ async function dbClean() {
   //Too slow on older/slower machines
   //await db.compact();
 
-  let message = "Database maintenance is complete";
-  displayToast("info", "bi bi-info-circle", message, 5000);
+  let message = "Database maintenance is complete, ";
+  //displayToast("info", "bi bi-info-circle", message, 5000);
 
-  message = "Removed " + itemCount + " items from database";
-  displayToast("info", "bi bi-info-circle", message, 5000);
+  message += "removed " + itemCount + " items from database";
+  console.log(message);
 }
 
 // function to update transmission status
@@ -418,7 +418,7 @@ export function updateUnsortedChatListEntry(uuid, object, value) {
   var data = getFromUnsortedChatListByUUID(uuid);
   if (data) {
     data[object] = value;
-    console.log("Entry updated:", data[object]);
+    //console.log("Entry updated:", data[object]);
     chat.sorted_chat_list = sortChatList();
     return data;
   }
@@ -434,7 +434,7 @@ export function updateUnsortedChatListEntry(uuid, object, value) {
   }
   */
 
-  console.log("Entry not updated:", object);
+  //console.log("Entry not updated:", object);
   return null; // Return null if not found
 }
 
@@ -489,7 +489,7 @@ export function databaseUpsert(id, object, value) {
   })
     .then(function (res) {
       // success, res is {rev: '1-xxx', updated: true, id: 'myDocId'}
-      console.log(res);
+      //console.log(res);
     })
     .catch(function (err) {
       // error
@@ -775,11 +775,11 @@ export function newBeaconReceived(obj) {
   });
 
   // check if auto retry enabled
-  console.log("-----------------------------------------");
-  console.log(settings.enable_auto_retry.toUpperCase());
-  if (settings.enable_auto_retry.toUpperCase() == "TRUE") {
-    checkForWaitingMessages(dxcallsign);
-  }
+  //console.log("-----------------------------------------");
+  //console.log(settings.enable_auto_retry.toUpperCase());
+  //if (settings.enable_auto_retry.toUpperCase() == "TRUE") {
+  //  checkForWaitingMessages(dxcallsign);
+  //}
 }
 
 // function for handling a received message
@@ -1058,13 +1058,12 @@ async function checkForWaitingMessages(dxcall) {
         // this ensures, we are only sending one message at once
         // @ts-expect-error
         console.log(result.docs[0]);
-        console.log(
-          "attempt: " +
-            // @ts-expect-error
-            result.docs[0].attempt +
-            "/" +
-            settings.max_retry_attempts,
-        );
+        //console.log(
+        //  "attempt: " +
+        //    result.docs[0].attempt +
+        //    "/" +
+        //    settings.max_retry_attempts,
+        //);
         // @ts-expect-error
         if (result.docs[0].attempt < settings.max_retry_attempts) {
           console.log("repeating message...");
