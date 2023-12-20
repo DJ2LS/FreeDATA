@@ -4,7 +4,22 @@ import pinia from "../store/index";
 setActivePinia(pinia);
 
 import { useStateStore } from "../store/stateStore.js";
+import { settingsStore } from "../store/settingsStore";
+import { onMounted } from "vue";
+import { ipcRenderer } from "electron";
 const state = useStateStore(pinia);
+onMounted(() => {
+  window.addEventListener("DOMContentLoaded", () => {
+  // we are using this area for implementing the electron runUpdater
+  // we need access to DOM for displaying updater results in GUI
+  // close app, update and restart
+  document
+    .getElementById("update_and_install")
+    .addEventListener("click", () => {
+      ipcRenderer.send("request-restart-and-install-update");
+    });
+});
+})
 </script>
 
 <template>
@@ -55,7 +70,7 @@ const state = useStateStore(pinia);
         type="button"
         disabled
       >
-        Update channel | settings.update_channel
+        Update channel:&nbsp; {{ settingsStore.local.update_channel }}
       </button>
       <button
         class="btn btn-secondary btn-sm ms-1"
