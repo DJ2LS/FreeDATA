@@ -144,8 +144,6 @@ class RF:
             # self.stream.active = False
             # self.stream.stop
 
-            self.beacon.stop()
-
         except Exception:
             self.log.error("[MDM] Error stopping modem")
 
@@ -209,13 +207,6 @@ class RF:
 
         # lets init TCI module
         self.tci_module = tci.TCICtrl(self.audio_received_queue)
-
-        tci_rx_callback_thread = threading.Thread(
-            target=self.tci_rx_callback,
-            name="TCI RX CALLBACK THREAD",
-            daemon=True,
-        )
-        tci_rx_callback_thread.start()
 
         # let's start the audio tx callback
         self.log.debug("[MDM] Starting tci tx callback thread")

@@ -56,6 +56,12 @@ class Demodulator():
         # enable decoding of signalling modes
         self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
 
+        tci_rx_callback_thread = threading.Thread(
+            target=self.tci_rx_callback,
+            name="TCI RX CALLBACK THREAD",
+            daemon=True,
+        )
+        tci_rx_callback_thread.start()
 
     def init_codec2(self):
         # Open codec2 instances
