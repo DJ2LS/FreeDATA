@@ -101,8 +101,6 @@ export function stopTransmission() {
   return apiPost("/modem/stop_transmission");
 }
 
-
-
 export function sendModemTestFrame() {
   return apiPost("/modem/send_test_frame");
 }
