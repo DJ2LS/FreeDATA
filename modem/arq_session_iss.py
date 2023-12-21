@@ -26,6 +26,7 @@ class ARQSessionISS(arq_session.ARQSession):
     STATE_TRANSITION = {
         ISS_State.OPEN_SENT: { 
             FRAME_TYPE.ARQ_SESSION_OPEN_ACK.value: 'send_info',
+
         },
         ISS_State.INFO_SENT: {
             FRAME_TYPE.ARQ_SESSION_OPEN_ACK.value: 'send_info',
@@ -70,6 +71,8 @@ class ARQSessionISS(arq_session.ARQSession):
             retries = retries - 1
         self.set_state(ISS_State.FAILED)
         self.transmission_failed()
+        if self.final:
+            self.send_stop()
 
     def launch_twr(self, frame_or_burst, timeout, retries, mode):
         twr = threading.Thread(target = self.transmit_wait_and_retry, args=[frame_or_burst, timeout, retries, mode])
@@ -135,6 +138,11 @@ class ARQSessionISS(arq_session.ARQSession):
 
     def stop_transmission(self):
         self.log(f"Stopping transmission...")
+        self.set_state(ISS_State.FAILED)
+        self.final = True
+
+
+    def send_stop(self):
+        self.final = False
         stop_frame = self.frame_factory.build_arq_stop(self.id)
         self.launch_twr(stop_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
-        self.set_state(ISS_State.FAILED)
