@@ -199,14 +199,6 @@ class RF:
         # lets init TCI module
         self.tci_module = tci.TCICtrl(self.audio_received_queue)
 
-        # let's start the audio tx callback
-        self.log.debug("[MDM] Starting tci tx callback thread")
-        tci_tx_callback_thread = threading.Thread(
-            target=self.tci_tx_callback,
-            name="TCI TX CALLBACK THREAD",
-            daemon=True,
-        )
-        tci_tx_callback_thread.start()
         return True
 
     def audio_auto_tune(self):
