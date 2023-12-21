@@ -23,7 +23,6 @@ import cw
 from queues import RIGCTLD_COMMAND_QUEUE
 import audio
 import event_manager
-import beacon
 import demodulator
 
 TESTMODE = False
@@ -101,8 +100,7 @@ class RF:
                                             self.fft_queue
                                                    )
 
-        self.beacon = beacon.Beacon(self.config, self.states, event_queue, 
-                                    self.log, self.modem_transmit_queue)
+
 
     def tci_tx_callback(self, audio_48k) -> None:
         self.radio.set_ptt(True)
@@ -134,8 +132,6 @@ class RF:
             if not TESTMODE:
                 atexit.register(self.sd_input_stream.stop)
 
-            # init beacon
-            self.beacon.start()
         else:
             return False
 

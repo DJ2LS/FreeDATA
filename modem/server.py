@@ -143,7 +143,14 @@ def post_beacon():
         api_abort(f"Incorrect value for 'enabled'. Shoud be bool.")
     if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
-    app.state_manager.set('is_beacon_running', request.json['enabled'])
+
+    if not app.state_manager.is_beacon_running:
+        app.state_manager.set('is_beacon_running', request.json['enabled'])
+        app.modem_service.put("start_beacon")
+    else:
+        app.state_manager.set('is_beacon_running', request.json['enabled'])
+        app.modem_service.put("stop_beacon")
+
     return api_response(request.json)
 
 @app.route('/modem/ping_ping', methods=['POST'])
