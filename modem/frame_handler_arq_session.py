@@ -38,8 +38,9 @@ class ARQFrameHandler(frame_handler.FrameHandler):
             FR.ARQ_SESSION_OPEN_ACK.value,
             FR.ARQ_SESSION_INFO_ACK.value,
             FR.ARQ_BURST_ACK.value,
-            FR.ARQ_DATA_ACK_NACK.value
-        ]: 
+            FR.ARQ_STOP.value,
+            FR.ARQ_STOP_ACK.value
+        ]:
             session = self.states.get_arq_iss_session(session_id)
 
         else:

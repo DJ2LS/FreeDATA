@@ -20,7 +20,7 @@ import infoScreen from "./infoScreen.vue";
 import main_modem_healthcheck from "./main_modem_healthcheck.vue";
 import Dynamic_components2 from "./dynamic_components2.vue";
 
-import { stopTransmission } from "../js/sock";
+import { stopTransmission } from "../js/api";
 
 function stopAllTransmissions() {
   console.log("stopping transmissions");

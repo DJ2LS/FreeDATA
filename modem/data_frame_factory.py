@@ -127,6 +127,16 @@ class DataFrameFactory:
             "flag": 1,
         }
 
+        self.template_list[FR_TYPE.ARQ_STOP.value] = {
+            "frame_length": self.LENGTH_SIG0_FRAME,
+            "session_id": 1,
+        }
+
+        self.template_list[FR_TYPE.ARQ_STOP_ACK.value] = {
+            "frame_length": self.LENGTH_SIG0_FRAME,
+            "session_id": 1,
+        }
+
         # arq burst frame
         self.template_list[FR_TYPE.ARQ_BURST_FRAME.value] = {
             "frame_length": None,
@@ -146,23 +156,6 @@ class DataFrameFactory:
             "flag": 1,
         }
 
-        # arq burst nack
-        self.template_list[FR_TYPE.ARQ_BURST_NACK.value] = {
-            "frame_length": self.LENGTH_SIG1_FRAME,
-            "session_id": 1,
-            "offset":4,
-            "speed_level": 1,
-            "frames_per_burst": 1,
-            "snr": 1,
-        }
-
-    # arq data ack nack
-        self.template_list[FR_TYPE.ARQ_DATA_ACK_NACK.value] = {
-            "frame_length": self.LENGTH_SIG1_FRAME,
-            "session_id": 1,
-            "state": 1,
-            "snr": 1,
-        }
 
     def construct(self, frametype, content, frame_length = LENGTH_SIG1_FRAME):
         frame_template = self.template_list[frametype.value]
@@ -222,8 +215,11 @@ class DataFrameFactory:
 
             elif key in ["session_id", "speed_level", 
                             "frames_per_burst", "version",
-                            "snr", "offset", "total_length", "state"]:
+                            "offset", "total_length", "state"]:
                 extracted_data[key] = int.from_bytes(data, 'big')
+
+            elif key in ["snr"]:
+                extracted_data[key] = helpers.snr_from_bytes(data)
 
             elif key == "flag":
 
@@ -342,7 +338,8 @@ class DataFrameFactory:
             "origin": helpers.callsign_to_bytes(self.myfullcall),
             "destination_crc": helpers.get_crc_24(destination),
             "version": bytes([version]),
-            "snr": snr.to_bytes(1, 'big'),        }
+            "snr": helpers.snr_to_bytes(1),
+        }
         return self.construct(FR_TYPE.ARQ_SESSION_OPEN_ACK, payload)
     
     def build_arq_session_info(self, session_id: int, total_length: int, total_crc: bytes, snr):
@@ -350,9 +347,22 @@ class DataFrameFactory:
             "session_id": session_id.to_bytes(1, 'big'),
             "total_length": total_length.to_bytes(4, 'big'),
             "total_crc": total_crc,
-            "snr": snr.to_bytes(1, 'big'),
+            "snr": helpers.snr_to_bytes(1),
         }
         return self.construct(FR_TYPE.ARQ_SESSION_INFO, payload)
+
+    def build_arq_stop(self, session_id: int):
+        payload = {
+            "session_id": session_id.to_bytes(1, 'big'),
+        }
+        return self.construct(FR_TYPE.ARQ_STOP, payload)
+
+    def build_arq_stop_ack(self, session_id: int):
+        payload = {
+            "session_id": session_id.to_bytes(1, 'big'),
+        }
+        return self.construct(FR_TYPE.ARQ_STOP_ACK, payload)
+
 
     def build_arq_session_info_ack(self, session_id, total_crc, snr, speed_level, frames_per_burst, flag_final=False):
         flag = 0b00000000
@@ -363,7 +373,7 @@ class DataFrameFactory:
             "frame_length": self.LENGTH_SIG0_FRAME,
             "session_id": session_id.to_bytes(1, 'big'),
             "total_crc": bytes.fromhex(total_crc),
-            "snr": snr.to_bytes(1, 'big'),
+            "snr": helpers.snr_to_bytes(1),
             "speed_level": speed_level.to_bytes(1, 'big'),
             "frames_per_burst": frames_per_burst.to_bytes(1, 'big'),
             "flag": flag.to_bytes(1, 'big'),

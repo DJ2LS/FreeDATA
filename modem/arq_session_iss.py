@@ -34,8 +34,10 @@ class ARQSessionISS(arq_session.ARQSession):
         ISS_State.BURST_SENT: {
             FRAME_TYPE.ARQ_SESSION_INFO_ACK.value: 'send_data',
             FRAME_TYPE.ARQ_BURST_ACK.value: 'send_data',
-            FRAME_TYPE.ARQ_BURST_NACK.value: 'send_data',
         },
+        ISS_State.FAILED:{
+            FRAME_TYPE.ARQ_STOP_ACK.value: 'transmission_failed'
+        }
     }
 
     def __init__(self, config: dict, modem, dxcall: str, data: bytearray):
@@ -54,7 +56,7 @@ class ARQSessionISS(arq_session.ARQSession):
         return random.randint(1,255)
     
     def transmit_wait_and_retry(self, frame_or_burst, timeout, retries, mode):
-        while retries > 0:
+        while retries > 0 and not self.final:
             self.event_frame_received = threading.Event()
             if isinstance(frame_or_burst, list): burst = frame_or_burst
             else: burst = [frame_or_burst]
@@ -130,3 +132,9 @@ class ARQSessionISS(arq_session.ARQSession):
         self.set_state(ISS_State.FAILED)
         self.log("Transmission failed!")
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data),False)
+
+    def stop_transmission(self):
+        self.log(f"Stopping transmission...")
+        stop_frame = self.frame_factory.build_arq_stop(self.id)
+        self.launch_twr(stop_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
+        self.set_state(ISS_State.FAILED)

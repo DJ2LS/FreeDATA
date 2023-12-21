@@ -144,6 +144,12 @@ class StateManager:
             raise RuntimeError(f"ARQ ISS Session '{id}' not found!")
         del self.arq_irs_sessions[id]
 
+    def set_final_to_arq_transmissions(self):
+        for id in self.arq_irs_sessions:
+            self.arq_irs_sessions[id].stop_transmission()
+        for id in self.arq_iss_sessions:
+            self.arq_iss_sessions[id].stop_transmission()
+
     def add_activity(self, activity_data):
         # Generate a random 8-byte string as hex
         activity_id = np.random.bytes(8).hex()

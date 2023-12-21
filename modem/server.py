@@ -215,6 +215,19 @@ def post_modem_send_raw():
     # server_commands.modem_arq_send_raw(request.json)
     return "Not implemented yet"
 
+@app.route('/modem/stop_transmission', methods=['POST'])
+def post_modem_send_raw_stop():
+
+    if request.method not in ['POST']:
+        return api_response({"info": "endpoint for SENDING a STOP command via POST"})
+    if not app.state_manager.is_modem_running:
+        api_abort('Modem not running', 503)
+    print("stop")
+    app.state_manager.set_final_to_arq_transmissions()
+    # server_commands.modem_arq_send_raw(request.json)
+    return api_response(request.json)
+
+
 # @app.route('/modem/arq_connect', methods=['POST'])
 # @app.route('/modem/arq_disconnect', methods=['POST'])
 # @app.route('/modem/send_raw', methods=['POST'])

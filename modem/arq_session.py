@@ -45,6 +45,8 @@ class ARQSession():
 
         self.id = None
 
+        self.final = False # class wide final state for stopping transmissions on command
+
     def log(self, message, isWarning = False):
         msg = f"[{type(self).__name__}]: {message}"
         logger = self.logger.warn if isWarning else self.logger.info
@@ -88,3 +90,4 @@ class ARQSession():
                 return
         
         self.log(f"Ignoring unknow transition from state {self.state.name} with frame {frame['frame_type']}")
+
