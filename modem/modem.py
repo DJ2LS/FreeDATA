@@ -108,32 +108,23 @@ class RF:
         self.tci_module.push_audio(audio_48k)
 
     def start_modem(self):
-        # testmode: We need to call the modem without audio parts for running protocol tests
-
-        if self.radiocontrol not in ["tci"]:
-            result = self.init_audio() if not TESTMODE else True
-            if not result:
+        if TESTMODE:
+            return True
+        elif self.radiocontrol.lower() == "tci":
+            if not self.init_tci():
+                return False
+        else:
+            if not self.init_audio():
                 raise RuntimeError("Unable to init audio devices")
-            if not TESTMODE:
-                self.demodulator.start(self.sd_input_stream)
+            self.demodulator.start(self.sd_input_stream)
+            atexit.register(self.sd_input_stream.stop)
 
-        else:
-            result = self.init_tci()
+        # Initialize codec2, rig control, and data threads
+        self.init_codec2()
+        self.init_rig_control()
+        self.init_data_threads()
 
-        if result not in [False]:
-            # init codec2 instances
-            self.init_codec2()
-
-            # init rig control
-            self.init_rig_control()
-
-            # init data thread
-            self.init_data_threads()
-            if not TESTMODE:
-                atexit.register(self.sd_input_stream.stop)
-
-        else:
-            return False
+        return True
 
     def stop_modem(self):
         try:
