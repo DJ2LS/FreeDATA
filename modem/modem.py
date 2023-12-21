@@ -534,9 +534,9 @@ class RF:
                 rigctld_ip=self.rigctld_ip,
                 rigctld_port=self.rigctld_port,
             )
-            hamlib_thread = threading.Thread(
-                target=self.update_rig_data, name="HAMLIB_THREAD", daemon=True
-            )
+        hamlib_thread = threading.Thread(
+            target=self.update_rig_data, name="HAMLIB_THREAD", daemon=True
+        )
         hamlib_thread.start()
 
         hamlib_set_thread = threading.Thread(
