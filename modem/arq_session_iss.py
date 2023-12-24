@@ -156,7 +156,7 @@ class ARQSessionISS(arq_session.ARQSession):
         self.log(f"All data transfered! flag_final={irs_frame['flag']['FINAL']}, flag_checksum={irs_frame['flag']['CHECKSUM']}")
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data),True)
 
-    def transmission_failed(self, irs_frame):
+    def transmission_failed(self, irs_frame=None):
         self.set_state(ISS_State.FAILED)
         self.log(f"Transmission failed!")
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data),False)
