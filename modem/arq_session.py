@@ -48,7 +48,7 @@ class ARQSession():
         self.final = False # class wide final state for stopping transmissions on command
 
     def log(self, message, isWarning = False):
-        msg = f"[{type(self).__name__}]: {message}"
+        msg = f"[{type(self).__name__}][{self.state}]: {message}"
         logger = self.logger.warn if isWarning else self.logger.info
         logger(msg)
 

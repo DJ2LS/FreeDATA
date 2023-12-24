@@ -20,8 +20,11 @@ class ISS_State(Enum):
 class ARQSessionISS(arq_session.ARQSession):
 
     RETRIES_CONNECT = 10
-    TIMEOUT_CONNECT_ACK = 3
-    TIMEOUT_TRANSFER = 3
+
+    # DJ2LS: 3 seconds seems to be too small for radios with a too slow PTT toggle time
+    # DJ2LS: 3.5 seconds is working well WITHOUT a channel busy detection delay
+    TIMEOUT_CONNECT_ACK = 3.5
+    TIMEOUT_TRANSFER = 3.5
 
     STATE_TRANSITION = {
         ISS_State.OPEN_SENT: { 
@@ -108,10 +111,10 @@ class ARQSessionISS(arq_session.ARQSession):
 
         if irs_frame["flag"]["FINAL"]:
             if self.confirmed_bytes == len(self.data) and irs_frame["flag"]["CHECKSUM"]:
-                self.transmission_ended()
+                self.transmission_ended(irs_frame)
                 return
             else:
-                self.transmission_failed()
+                self.transmission_failed(irs_frame)
                 return
 
         payload_size = self.get_data_payload_size()
@@ -126,14 +129,14 @@ class ARQSessionISS(arq_session.ARQSession):
         self.launch_twr(burst, self.TIMEOUT_TRANSFER, self.RETRIES_CONNECT, mode='auto')
         self.set_state(ISS_State.BURST_SENT)
 
-    def transmission_ended(self):
+    def transmission_ended(self, irs_frame):
         self.set_state(ISS_State.ENDED)
-        self.log("All data transfered!")
+        self.log(f"All data transfered! flag_final={irs_frame['flag']['FINAL']}, flag_checksum={irs_frame['flag']['CHECKSUM']}")
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data),True)
 
-    def transmission_failed(self):
+    def transmission_failed(self, irs_frame):
         self.set_state(ISS_State.FAILED)
-        self.log("Transmission failed!")
+        self.log(f"Transmission failed! flag_final={irs_frame['flag']['FINAL']}, flag_checksum={irs_frame['flag']['CHECKSUM']}")
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data),False)
 
     def stop_transmission(self):
