@@ -15,7 +15,9 @@ class ISS_State(Enum):
     BURST_SENT = 3
     ENDED = 4
     FAILED = 5
-    ABORTED = 6
+    ABORT = 6
+    ABORTING = 7
+    ABORTED = 8
 
 class ARQSessionISS(arq_session.ARQSession):
 
@@ -41,6 +43,20 @@ class ARQSessionISS(arq_session.ARQSession):
         },
         ISS_State.FAILED:{
             FRAME_TYPE.ARQ_STOP_ACK.value: 'transmission_failed'
+        },
+        ISS_State.ABORT: {
+            FRAME_TYPE.ARQ_BURST_ACK.value: 'abort_transmission',
+            FRAME_TYPE.ARQ_SESSION_OPEN_ACK.value: 'abort_transmission',
+            FRAME_TYPE.ARQ_SESSION_INFO_ACK.value: 'abort_transmission',
+        },
+        ISS_State.ABORTING: {
+            FRAME_TYPE.ARQ_STOP_ACK.value: 'aborted',
+            FRAME_TYPE.ARQ_BURST_ACK.value: 'abort_transmission',
+            FRAME_TYPE.ARQ_SESSION_OPEN_ACK.value: 'abort_transmission',
+            FRAME_TYPE.ARQ_SESSION_INFO_ACK.value: 'abort_transmission',
+        },
+        ISS_State.ABORTED: {
+            FRAME_TYPE.ARQ_STOP_ACK.value: 'aborted',
         }
     }
 
@@ -54,13 +70,15 @@ class ARQSessionISS(arq_session.ARQSession):
         self.state = ISS_State.NEW
         self.id = self.generate_id()
 
+        self.retry = True
+
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
 
     def generate_id(self):
         return random.randint(1,255)
     
     def transmit_wait_and_retry(self, frame_or_burst, timeout, retries, mode):
-        while retries > 0 and not self.final:
+        while retries > 0 and self.state not in [ISS_State.ABORT, ISS_State.ABORTED]:
             self.event_frame_received = threading.Event()
             if isinstance(frame_or_burst, list): burst = frame_or_burst
             else: burst = [frame_or_burst]
@@ -72,10 +90,13 @@ class ARQSessionISS(arq_session.ARQSession):
                 return
             self.log("Timeout!")
             retries = retries - 1
+            
+        if self.state == ISS_State.ABORTED:
+            self.log("session aborted initiated...")
+            return
+        
         self.set_state(ISS_State.FAILED)
         self.transmission_failed()
-        if self.final:
-            self.send_stop()
 
     def launch_twr(self, frame_or_burst, timeout, retries, mode):
         twr = threading.Thread(target = self.transmit_wait_and_retry, args=[frame_or_burst, timeout, retries, mode])
@@ -101,6 +122,7 @@ class ARQSessionISS(arq_session.ARQSession):
         self.set_state(ISS_State.INFO_SENT)
 
     def send_data(self, irs_frame):
+
         self.set_speed_and_frames_per_burst(irs_frame)
 
         if 'offset' in irs_frame:
@@ -114,7 +136,7 @@ class ARQSessionISS(arq_session.ARQSession):
                 self.transmission_ended(irs_frame)
                 return
             else:
-                self.transmission_failed(irs_frame)
+                self.transmission_failed()
                 return
 
         payload_size = self.get_data_payload_size()
@@ -136,16 +158,21 @@ class ARQSessionISS(arq_session.ARQSession):
 
     def transmission_failed(self, irs_frame):
         self.set_state(ISS_State.FAILED)
-        self.log(f"Transmission failed! flag_final={irs_frame['flag']['FINAL']}, flag_checksum={irs_frame['flag']['CHECKSUM']}")
+        self.log(f"Transmission failed!")
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data),False)
 
-    def stop_transmission(self):
+    def abort_transmission(self, irs_frame=None):
         self.log(f"Stopping transmission...")
-        self.set_state(ISS_State.FAILED)
-        self.final = True
-
+        self.set_state(ISS_State.ABORTING)
+        # interrupt possible pending retries
+        self.retry = False
+        self.retry = True
+        self.send_stop()
 
     def send_stop(self):
-        self.final = False
         stop_frame = self.frame_factory.build_arq_stop(self.id)
-        self.launch_twr(stop_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
+        self.launch_twr(stop_frame, 15, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
+
+    def aborted(self, irs_frame):
+        self.log("session aborted")
+        self.set_state(ISS_State.ABORTED)

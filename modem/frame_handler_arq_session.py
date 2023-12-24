@@ -31,14 +31,14 @@ class ARQFrameHandler(frame_handler.FrameHandler):
         elif frame['frame_type_int'] in [
             FR.ARQ_SESSION_INFO.value,
             FR.ARQ_BURST_FRAME.value,
-            ]:
+            FR.ARQ_STOP.value,
+        ]:
             session = self.states.get_arq_irs_session(session_id)
 
         elif frame['frame_type_int'] in [
             FR.ARQ_SESSION_OPEN_ACK.value,
             FR.ARQ_SESSION_INFO_ACK.value,
             FR.ARQ_BURST_ACK.value,
-            FR.ARQ_STOP.value,
             FR.ARQ_STOP_ACK.value
         ]:
             session = self.states.get_arq_iss_session(session_id)

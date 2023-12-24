@@ -68,6 +68,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.received_crc = None
 
         self.transmitted_acks = 0
+        self.final = False
 
     def set_decode_mode(self):
         self.modem.demodulator.set_decode_mode(self.get_mode_by_speed_level(self.speed_level))
@@ -204,7 +205,7 @@ class ARQSessionIRS(arq_session.ARQSession):
                 self.speed_level = new_speed_level
 
     def stop_transmission(self):
-        self.log(f"Stopping transmission...., setting final flag")
+        self.log(f"Stopping transmission... setting final flag")
         self.final = True
 
     def send_stop_ack(self, stop_frame):
