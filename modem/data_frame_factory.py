@@ -7,14 +7,14 @@ class DataFrameFactory:
     LENGTH_SIG0_FRAME = 14
     LENGTH_SIG1_FRAME = 14
 
-
     """
         helpers.set_flag(byte, 'DATA-ACK-NACK', True, FLAG_POSITIONS)
         helpers.get_flag(byte, 'DATA-ACK-NACK', FLAG_POSITIONS)    
     """
     ARQ_FLAGS = {
-        'FINAL': 0,  # Bit position for indicating the FINAL state
-        'CHECKSUM': 1,  # Bit position for indicating the CHECKSUM is correct or not
+        'FINAL': 0,  # Bit-position for indicating the FINAL state
+        'CHECKSUM': 1,  # Bit-position for indicating the CHECKSUM is correct or not
+        'ENABLE_COMPRESSION': 2  # Bit-position for indicating compression is enabled
     }
 
     def __init__(self, config):
@@ -115,6 +115,7 @@ class DataFrameFactory:
             "total_length": 4,
             "total_crc": 4,
             "snr": 1,
+            "flag": 1,
         }
 
         self.template_list[FR_TYPE.ARQ_SESSION_INFO_ACK.value] = {
@@ -238,7 +239,6 @@ class DataFrameFactory:
 
         return extracted_data
 
-
     def get_bytes_per_frame(self, mode: codec2.FREEDV_MODE) -> int:
         freedv = codec2.open_instance(mode.value)
         bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv) / 8)
@@ -342,12 +342,18 @@ class DataFrameFactory:
         }
         return self.construct(FR_TYPE.ARQ_SESSION_OPEN_ACK, payload)
     
-    def build_arq_session_info(self, session_id: int, total_length: int, total_crc: bytes, snr):
+    def build_arq_session_info(self, session_id: int, total_length: int, total_crc: bytes, snr, flag_compression=False):
+        flag = 0b00000000
+        if flag_compression:
+            flag = helpers.set_flag(flag, 'ENABLE_COMPRESSION', True, self.ARQ_FLAGS)
+
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),
             "total_length": total_length.to_bytes(4, 'big'),
             "total_crc": total_crc,
             "snr": helpers.snr_to_bytes(1),
+            "flag": flag.to_bytes(1, 'big'),
+
         }
         return self.construct(FR_TYPE.ARQ_SESSION_INFO, payload)
 
