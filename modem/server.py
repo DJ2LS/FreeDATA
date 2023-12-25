@@ -218,9 +218,7 @@ def post_modem_send_raw():
     if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
     enqueue_tx_command(command_arq_raw.ARQRawCommand, request.json)
-
-    # server_commands.modem_arq_send_raw(request.json)
-    return "Not implemented yet"
+    return api_response(request.json)
 
 @app.route('/modem/stop_transmission', methods=['POST'])
 def post_modem_send_raw_stop():
