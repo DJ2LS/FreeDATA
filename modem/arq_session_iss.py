@@ -129,7 +129,7 @@ class ARQSessionISS(arq_session.ARQSession):
             self.confirmed_bytes = irs_frame['offset']
             self.log(f"IRS confirmed {self.confirmed_bytes}/{len(self.data)} bytes")
             self.event_manager.send_arq_session_progress(
-                True, self.id, self.dxcall, self.confirmed_bytes, len(self.data))
+                True, self.id, self.dxcall, self.confirmed_bytes, len(self.data), self.state.name)
 
         if irs_frame["flag"]["FINAL"]:
             if self.confirmed_bytes == len(self.data) and irs_frame["flag"]["CHECKSUM"]:
@@ -154,15 +154,17 @@ class ARQSessionISS(arq_session.ARQSession):
     def transmission_ended(self, irs_frame):
         self.set_state(ISS_State.ENDED)
         self.log(f"All data transfered! flag_final={irs_frame['flag']['FINAL']}, flag_checksum={irs_frame['flag']['CHECKSUM']}")
-        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data),True)
+        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data),True, self.state.name)
 
     def transmission_failed(self, irs_frame=None):
         self.set_state(ISS_State.FAILED)
         self.log(f"Transmission failed!")
-        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data),False)
+        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data),False, self.state.name)
 
     def abort_transmission(self, irs_frame=None):
-        self.log(f"Stopping transmission...")
+        self.log(f"aborting transmission...")
+        self.event_manager.send_arq_session_finished(
+            True, self.id, self.dxcall, self.total_length, False, self.state.name)
         self.set_state(ISS_State.ABORTING)
         # interrupt possible pending retries
         self.retry = False
@@ -176,3 +178,5 @@ class ARQSessionISS(arq_session.ARQSession):
     def aborted(self, irs_frame):
         self.log("session aborted")
         self.set_state(ISS_State.ABORTED)
+        self.event_manager.send_arq_session_finished(
+            True, self.id, self.dxcall, self.total_length, False, self.state.name)

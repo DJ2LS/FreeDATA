@@ -17,7 +17,7 @@ class IRS_State(Enum):
 class ARQSessionIRS(arq_session.ARQSession):
 
     TIMEOUT_CONNECT = 10
-    TIMEOUT_DATA = 12
+    TIMEOUT_DATA = 60
 
     STATE_TRANSITION = {
         IRS_State.NEW: { 
@@ -87,7 +87,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         if not self.event_frame_received.wait(timeout):
             self.log("Timeout waiting for ISS. Session failed.")
             self.set_state(IRS_State.FAILED)
-            self.event_manager.send_arq_session_finished(False, self.id, self.dxcall, self.total_length, False)
+            self.event_manager.send_arq_session_finished(False, self.id, self.dxcall, self.total_length, False, self.state.name)
 
     def launch_transmit_and_wait(self, frame, timeout, mode):
         thread_wait = threading.Thread(target = self.transmit_and_wait, 
@@ -111,7 +111,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.dx_snr.append(info_frame['snr'])
 
         self.log(f"New transfer of {self.total_length} bytes")
-        self.event_manager.send_arq_session_new(False, self.id, self.dxcall, self.total_length)
+        self.event_manager.send_arq_session_new(False, self.id, self.dxcall, self.total_length, self.state)
 
         self.calibrate_speed_settings()
         self.set_decode_mode()
@@ -142,7 +142,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.received_bytes += len(data_part)
         self.log(f"Received {self.received_bytes}/{self.total_length} bytes")
         self.event_manager.send_arq_session_progress(
-            False, self.id, self.dxcall, self.received_bytes, self.total_length)
+            False, self.id, self.dxcall, self.received_bytes, self.total_length, self.state.name)
 
         return True
 
@@ -174,7 +174,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.log("ACK sent")
             self.set_state(IRS_State.ENDED)
             self.event_manager.send_arq_session_finished(
-                False, self.id, self.dxcall, self.total_length, True)
+                False, self.id, self.dxcall, self.total_length, True, self.state.name)
 
         else:
 
@@ -189,7 +189,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.log("CRC fail at the end of transmission!")
             self.set_state(IRS_State.FAILED)
             self.event_manager.send_arq_session_finished(
-                False, self.id, self.dxcall, self.total_length, False)
+                False, self.id, self.dxcall, self.total_length, False, self.state.name)
 
 
     def calibrate_speed_settings(self):
@@ -211,4 +211,6 @@ class ARQSessionIRS(arq_session.ARQSession):
     def send_stop_ack(self, stop_frame):
         stop_ack = self.frame_factory.build_arq_stop_ack(self.id)
         self.launch_transmit_and_wait(stop_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
-        self.set_state(IRS_State.FAILED)
+        self.set_state(IRS_State.ABORTED)
+        self.event_manager.send_arq_session_finished(
+                False, self.id, self.dxcall, self.total_length, False, self.status)
