@@ -15,9 +15,9 @@ class ISS_State(Enum):
     BURST_SENT = 3
     ENDED = 4
     FAILED = 5
-    ABORT = 6
-    ABORTING = 7
-    ABORTED = 8
+    BREAK = 6 # state for interrupting actual retries
+    ABORTING = 7 # state while running abort sequence and waiting for stop ack
+    ABORTED = 8 # stop ack received
 
 class ARQSessionISS(arq_session.ARQSession):
 
@@ -44,7 +44,7 @@ class ARQSessionISS(arq_session.ARQSession):
         ISS_State.FAILED:{
             FRAME_TYPE.ARQ_STOP_ACK.value: 'transmission_failed'
         },
-        ISS_State.ABORT: {
+        ISS_State.BREAK: {
             FRAME_TYPE.ARQ_BURST_ACK.value: 'abort_transmission',
             FRAME_TYPE.ARQ_SESSION_OPEN_ACK.value: 'abort_transmission',
             FRAME_TYPE.ARQ_SESSION_INFO_ACK.value: 'abort_transmission',
@@ -69,16 +69,13 @@ class ARQSessionISS(arq_session.ARQSession):
 
         self.state = ISS_State.NEW
         self.id = self.generate_id()
-
-        self.retry = True
-
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
 
     def generate_id(self):
         return random.randint(1,255)
     
     def transmit_wait_and_retry(self, frame_or_burst, timeout, retries, mode):
-        while retries > 0 and self.state not in [ISS_State.ABORT, ISS_State.ABORTED]:
+        while retries > 0 and self.state not in [ISS_State.BREAK, ISS_State.ABORTED]:
             self.event_frame_received = threading.Event()
             if isinstance(frame_or_burst, list): burst = frame_or_burst
             else: burst = [frame_or_burst]
@@ -131,6 +128,10 @@ class ARQSessionISS(arq_session.ARQSession):
             self.event_manager.send_arq_session_progress(
                 True, self.id, self.dxcall, self.confirmed_bytes, len(self.data), self.state.name)
 
+        if irs_frame["flag"]["ABORT"]:
+            self.transmission_aborted()
+            return
+
         if irs_frame["flag"]["FINAL"]:
             if self.confirmed_bytes == len(self.data) and irs_frame["flag"]["CHECKSUM"]:
                 self.transmission_ended(irs_frame)
@@ -152,31 +153,39 @@ class ARQSessionISS(arq_session.ARQSession):
         self.set_state(ISS_State.BURST_SENT)
 
     def transmission_ended(self, irs_frame):
+        # final function for sucessfully ended transmissions
         self.set_state(ISS_State.ENDED)
         self.log(f"All data transfered! flag_final={irs_frame['flag']['FINAL']}, flag_checksum={irs_frame['flag']['CHECKSUM']}")
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data),True, self.state.name)
 
     def transmission_failed(self, irs_frame=None):
+        # final function for failed transmissions
         self.set_state(ISS_State.FAILED)
         self.log(f"Transmission failed!")
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data),False, self.state.name)
 
     def abort_transmission(self, irs_frame=None):
+        # function for starting the abort sequence
         self.log(f"aborting transmission...")
         self.event_manager.send_arq_session_finished(
-            True, self.id, self.dxcall, self.total_length, False, self.state.name)
+            True, self.id, self.dxcall, len(self.data), False, self.state.name)
+
+        # break actual retries
+        self.set_state(ISS_State.BREAK)
+
+        # start with abort sequence
+        # TODO: We have to wait some time here for avoiding collisions with actual transmissions...
+        # This could be done by the channel busy detection, for example, if part of def transmit() in modem.py
         self.set_state(ISS_State.ABORTING)
-        # interrupt possible pending retries
-        self.retry = False
-        self.retry = True
+
         self.send_stop()
 
     def send_stop(self):
         stop_frame = self.frame_factory.build_arq_stop(self.id)
         self.launch_twr(stop_frame, 15, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
 
-    def aborted(self, irs_frame):
+    def transmission_aborted(self, irs_frame):
         self.log("session aborted")
         self.set_state(ISS_State.ABORTED)
         self.event_manager.send_arq_session_finished(
-            True, self.id, self.dxcall, self.total_length, False, self.state.name)
+            True, self.id, self.dxcall, len(self.data), False, self.state.name)

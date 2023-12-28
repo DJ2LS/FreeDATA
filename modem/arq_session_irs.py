@@ -68,7 +68,8 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.received_crc = None
 
         self.transmitted_acks = 0
-        self.final = False
+
+        self.abort = False
 
     def set_decode_mode(self):
         self.modem.demodulator.set_decode_mode(self.get_mode_by_speed_level(self.speed_level))
@@ -119,7 +120,7 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         info_ack = self.frame_factory.build_arq_session_info_ack(
             self.id, self.total_crc, self.snr[0],
-            self.speed_level, self.frames_per_burst, flag_final=self.final)
+            self.speed_level, self.frames_per_burst, flag_abort=self.abort)
         self.launch_transmit_and_wait(info_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(IRS_State.INFO_ACK_SENT)
 
@@ -154,10 +155,10 @@ class ARQSessionIRS(arq_session.ARQSession):
         if not self.all_data_received():
             ack = self.frame_factory.build_arq_burst_ack(
                                                          self.id, self.received_bytes,
-                                                         self.speed_level, self.frames_per_burst, self.snr[0], flag_final=self.final)
+                                                         self.speed_level, self.frames_per_burst, self.snr[0], flag_abort=self.abort)
 
             # increase ack counter
-            self.transmitted_acks += 1
+            # self.transmitted_acks += 1
             self.set_state(IRS_State.BURST_REPLY_SENT)
             self.launch_transmit_and_wait(ack, self.TIMEOUT_DATA, mode=FREEDV_MODE.signalling)
             return
@@ -205,9 +206,9 @@ class ARQSessionIRS(arq_session.ARQSession):
             if self.snr[0] >= self.SPEED_LEVEL_DICT[new_speed_level]["min_snr"]:
                 self.speed_level = new_speed_level
 
-    def stop_transmission(self):
-        self.log(f"Stopping transmission... setting final flag")
-        self.final = True
+    def abort_transmission(self):
+        self.log(f"Aborting transmission... setting abort flag")
+        self.abort = True
 
     def send_stop_ack(self, stop_frame):
         stop_ack = self.frame_factory.build_arq_stop_ack(self.id)

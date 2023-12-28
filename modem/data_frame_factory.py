@@ -13,8 +13,9 @@ class DataFrameFactory:
     """
     ARQ_FLAGS = {
         'FINAL': 0,  # Bit-position for indicating the FINAL state
-        'CHECKSUM': 1,  # Bit-position for indicating the CHECKSUM is correct or not
-        'ENABLE_COMPRESSION': 2  # Bit-position for indicating compression is enabled
+        'ABORT': 1, # Bit-position for indicating the ABORT request
+        'CHECKSUM': 2,  # Bit-position for indicating the CHECKSUM is correct or not
+        'ENABLE_COMPRESSION': 3  # Bit-position for indicating compression is enabled
     }
 
     def __init__(self, config):
@@ -370,10 +371,12 @@ class DataFrameFactory:
         return self.construct(FR_TYPE.ARQ_STOP_ACK, payload)
 
 
-    def build_arq_session_info_ack(self, session_id, total_crc, snr, speed_level, frames_per_burst, flag_final=False):
+    def build_arq_session_info_ack(self, session_id, total_crc, snr, speed_level, frames_per_burst, flag_final=False, flag_abort=False):
         flag = 0b00000000
         if flag_final:
             flag = helpers.set_flag(flag, 'FINAL', True, self.ARQ_FLAGS)
+        if flag_abort:
+            flag = helpers.set_flag(flag, 'ABORT', True, self.ARQ_FLAGS)
 
         payload = {
             "frame_length": self.LENGTH_SIG0_FRAME,

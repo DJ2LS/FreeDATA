@@ -227,9 +227,12 @@ def post_modem_send_raw_stop():
         return api_response({"info": "endpoint for SENDING a STOP command via POST"})
     if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
-    print("stop")
-    app.state_manager.set_final_to_arq_transmissions()
-    # server_commands.modem_arq_send_raw(request.json)
+
+    for id in app.state_manager.arq_irs_sessions:
+        app.state_manager.arq_irs_sessions[id].abort_transmission()
+    for id in app.state_manager.arq_iss_sessions:
+        app.state_manager.arq_iss_sessions[id].abort_transmission()
+
     return api_response(request.json)
 
 
