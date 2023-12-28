@@ -399,13 +399,17 @@ class DataFrameFactory:
         return frame
 
     def build_arq_burst_ack(self, session_id: bytes, offset, speed_level: int, 
-                            frames_per_burst: int, snr: int, flag_final=False, flag_checksum=False):
+                            frames_per_burst: int, snr: int, flag_final=False, flag_checksum=False, flag_abort=False):
         flag = 0b00000000
         if flag_final:
             flag = helpers.set_flag(flag, 'FINAL', True, self.ARQ_FLAGS)
 
         if flag_checksum:
             flag = helpers.set_flag(flag, 'CHECKSUM', True, self.ARQ_FLAGS)
+
+        if flag_abort:
+            flag = helpers.set_flag(flag, 'ABORT', True, self.ARQ_FLAGS)
+
 
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),

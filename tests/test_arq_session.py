@@ -148,5 +148,41 @@ class TestARQSession(unittest.TestCase):
 
         self.waitAndCloseChannels()
 
+    def testARQSessionAbortTransmissionISS(self):
+        # set Packet Error Rate (PER) / frame loss probability
+        self.loss_probability = 0
+
+        self.establishChannels()
+        params = {
+            'dxcall': "DJ2LS-3",
+            'data': base64.b64encode(np.random.bytes(100)),
+        }
+        cmd = ARQRawCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)
+        cmd.run(self.iss_event_queue, self.iss_modem)
+
+        threading.Event().wait(np.random.randint(1,10))
+        for id in self.iss_state_manager.arq_iss_sessions:
+            self.iss_state_manager.arq_iss_sessions[id].abort_transmission()
+
+        self.waitAndCloseChannels()
+
+    def testARQSessionAbortTransmissionIRS(self):
+        # set Packet Error Rate (PER) / frame loss probability
+        self.loss_probability = 0
+
+        self.establishChannels()
+        params = {
+            'dxcall': "DJ2LS-3",
+            'data': base64.b64encode(np.random.bytes(100)),
+        }
+        cmd = ARQRawCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)
+        cmd.run(self.iss_event_queue, self.iss_modem)
+
+        threading.Event().wait(np.random.randint(1,10))
+        for id in self.irs_state_manager.arq_irs_sessions:
+            self.irs_state_manager.arq_irs_sessions[id].abort_transmission()
+
+        self.waitAndCloseChannels()
+
 if __name__ == '__main__':
     unittest.main()

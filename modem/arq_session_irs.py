@@ -215,4 +215,4 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.launch_transmit_and_wait(stop_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(IRS_State.ABORTED)
         self.event_manager.send_arq_session_finished(
-                False, self.id, self.dxcall, self.total_length, False, self.status)
+                False, self.id, self.dxcall, self.total_length, False, self.state)

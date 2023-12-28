@@ -50,13 +50,13 @@ class ARQSessionISS(arq_session.ARQSession):
             FRAME_TYPE.ARQ_SESSION_INFO_ACK.value: 'abort_transmission',
         },
         ISS_State.ABORTING: {
-            FRAME_TYPE.ARQ_STOP_ACK.value: 'aborted',
+            FRAME_TYPE.ARQ_STOP_ACK.value: 'transmission_aborted',
             FRAME_TYPE.ARQ_BURST_ACK.value: 'abort_transmission',
             FRAME_TYPE.ARQ_SESSION_OPEN_ACK.value: 'abort_transmission',
             FRAME_TYPE.ARQ_SESSION_INFO_ACK.value: 'abort_transmission',
         },
         ISS_State.ABORTED: {
-            FRAME_TYPE.ARQ_STOP_ACK.value: 'aborted',
+            FRAME_TYPE.ARQ_STOP_ACK.value: 'transmission_aborted',
         }
     }
 
@@ -129,7 +129,7 @@ class ARQSessionISS(arq_session.ARQSession):
                 True, self.id, self.dxcall, self.confirmed_bytes, len(self.data), self.state.name)
 
         if irs_frame["flag"]["ABORT"]:
-            self.transmission_aborted()
+            self.transmission_aborted(irs_frame)
             return
 
         if irs_frame["flag"]["FINAL"]:
