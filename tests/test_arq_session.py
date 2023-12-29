@@ -98,10 +98,10 @@ class TestARQSession(unittest.TestCase):
             key = 'arq-transfer-outbound' if outbound else 'arq-transfer-inbound'
             while True:
                 ev = q.get()
-                if key in ev and 'success' in ev[key]:
+                if key in ev and ('success' in ev[key] or 'ABORTED' in ev[key]):
                     self.logger.info(f"[{threading.current_thread().name}] {key} session ended.")
                     break
-    
+
     def establishChannels(self):
         self.channels_running = True
         self.iss_to_irs_channel = threading.Thread(target=self.channelWorker, 

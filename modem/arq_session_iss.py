@@ -15,9 +15,8 @@ class ISS_State(Enum):
     BURST_SENT = 3
     ENDED = 4
     FAILED = 5
-    BREAK = 6 # state for interrupting actual retries
-    ABORTING = 7 # state while running abort sequence and waiting for stop ack
-    ABORTED = 8 # stop ack received
+    ABORTING = 6 # state while running abort sequence and waiting for stop ack
+    ABORTED = 7 # stop ack received
 
 class ARQSessionISS(arq_session.ARQSession):
 
@@ -27,6 +26,7 @@ class ARQSessionISS(arq_session.ARQSession):
     # DJ2LS: 3.5 seconds is working well WITHOUT a channel busy detection delay
     TIMEOUT_CONNECT_ACK = 3.5
     TIMEOUT_TRANSFER = 3.5
+    TIMEOUT_STOP_ACK = 3.5
 
     STATE_TRANSITION = {
         ISS_State.OPEN_SENT: { 
@@ -42,12 +42,7 @@ class ARQSessionISS(arq_session.ARQSession):
             FRAME_TYPE.ARQ_BURST_ACK.value: 'send_data',
         },
         ISS_State.FAILED:{
-            FRAME_TYPE.ARQ_STOP_ACK.value: 'transmission_failed'
-        },
-        ISS_State.BREAK: {
-            FRAME_TYPE.ARQ_BURST_ACK.value: 'abort_transmission',
-            FRAME_TYPE.ARQ_SESSION_OPEN_ACK.value: 'abort_transmission',
-            FRAME_TYPE.ARQ_SESSION_INFO_ACK.value: 'abort_transmission',
+            FRAME_TYPE.ARQ_STOP_ACK.value: 'transmission_aborted'
         },
         ISS_State.ABORTING: {
             FRAME_TYPE.ARQ_STOP_ACK.value: 'transmission_aborted',
@@ -75,7 +70,7 @@ class ARQSessionISS(arq_session.ARQSession):
         return random.randint(1,255)
     
     def transmit_wait_and_retry(self, frame_or_burst, timeout, retries, mode):
-        while retries > 0 and self.state not in [ISS_State.BREAK, ISS_State.ABORTED]:
+        while retries > 0:
             self.event_frame_received = threading.Event()
             if isinstance(frame_or_burst, list): burst = frame_or_burst
             else: burst = [frame_or_burst]
@@ -87,10 +82,6 @@ class ARQSessionISS(arq_session.ARQSession):
                 return
             self.log("Timeout!")
             retries = retries - 1
-            
-        if self.state == ISS_State.ABORTED:
-            self.log("session aborted initiated...")
-            return
         
         self.set_state(ISS_State.FAILED)
         self.transmission_failed()
@@ -167,22 +158,22 @@ class ARQSessionISS(arq_session.ARQSession):
     def abort_transmission(self, irs_frame=None):
         # function for starting the abort sequence
         self.log(f"aborting transmission...")
+        self.set_state(ISS_State.ABORTING)
+
         self.event_manager.send_arq_session_finished(
             True, self.id, self.dxcall, len(self.data), False, self.state.name)
 
         # break actual retries
-        self.set_state(ISS_State.BREAK)
+        self.event_frame_received.set()
 
         # start with abort sequence
         # TODO: We have to wait some time here for avoiding collisions with actual transmissions...
         # This could be done by the channel busy detection, for example, if part of def transmit() in modem.py
-        self.set_state(ISS_State.ABORTING)
-
         self.send_stop()
 
     def send_stop(self):
         stop_frame = self.frame_factory.build_arq_stop(self.id)
-        self.launch_twr(stop_frame, 15, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
+        self.launch_twr(stop_frame, self.TIMEOUT_STOP_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
 
     def transmission_aborted(self, irs_frame):
         self.log("session aborted")
