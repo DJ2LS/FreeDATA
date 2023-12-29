@@ -113,7 +113,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.dx_snr.append(info_frame['snr'])
 
         self.log(f"New transfer of {self.total_length} bytes")
-        self.event_manager.send_arq_session_new(False, self.id, self.dxcall, self.total_length, self.state)
+        self.event_manager.send_arq_session_new(False, self.id, self.dxcall, self.total_length, self.state.name)
 
         self.calibrate_speed_settings()
         self.set_decode_mode()
@@ -215,4 +215,4 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.launch_transmit_and_wait(stop_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(IRS_State.ABORTED)
         self.event_manager.send_arq_session_finished(
-                False, self.id, self.dxcall, self.total_length, False, self.state)
+                False, self.id, self.dxcall, self.total_length, False, self.state.name)
