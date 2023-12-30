@@ -80,7 +80,6 @@ class StateManager:
 
         return {
             "freedata-message": msgtype,
-            "channel_busy": self.channel_busy,
             "is_modem_running": self.is_modem_running,
             "is_beacon_running": self.is_beacon_running,
             "radio_status": self.radio_status,
