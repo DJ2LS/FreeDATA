@@ -1,3 +1,4 @@
+import base64
 import json
 import structlog
 
@@ -53,7 +54,9 @@ class EventManager:
         }
         self.broadcast(event)
 
-    def send_arq_session_finished(self, outbound: bool, session_id, dxcall, total_bytes, success: bool, state):
+    def send_arq_session_finished(self, outbound: bool, session_id, dxcall, total_bytes, success: bool, state, data=False):
+        if data:
+            data = base64.b64encode(data).decode("UTF-8")
         direction = 'outbound' if outbound else 'inbound'
         event = {
             f"arq-transfer-{direction}": {
@@ -62,6 +65,7 @@ class EventManager:
                 'total_bytes': total_bytes,
                 'success': success,
                 'state': state,
+                'data': data
             }
         }
         self.broadcast(event)

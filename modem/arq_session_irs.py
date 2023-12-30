@@ -179,7 +179,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.log("ACK sent")
             self.set_state(IRS_State.ENDED)
             self.event_manager.send_arq_session_finished(
-                False, self.id, self.dxcall, self.total_length, True, self.state.name)
+                False, self.id, self.dxcall, self.total_length, True, self.state.name, data=self.received_data)
 
         else:
 
