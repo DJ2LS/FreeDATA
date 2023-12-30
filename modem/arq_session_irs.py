@@ -50,6 +50,9 @@ class ARQSessionIRS(arq_session.ARQSession):
             FRAME_TYPE.ARQ_BURST_FRAME.value: 'receive_data',
             FRAME_TYPE.ARQ_STOP.value: 'send_stop_ack'
         },
+        IRS_State.ABORTED: {
+            FRAME_TYPE.ARQ_STOP.value: 'send_stop_ack'
+        },
     }
 
     def __init__(self, config: dict, modem, dxcall: str, session_id: int):

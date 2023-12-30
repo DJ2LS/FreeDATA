@@ -221,7 +221,7 @@ class RF:
                                alc_level=str(self.radio_alc))
 
     def transmit(
-            self, mode, repeats: int, repeat_delay: int, frames: bytearray
+            self, mode, repeats: int, repeat_delay: int, frames: bytearray, timeout_channel_busy=5
     ) -> bool:
         """
 
@@ -256,8 +256,7 @@ class RF:
         # Wait for some other thread that might be transmitting
         self.states.waitForTransmission()
         self.states.setTransmitting(True)
-        # if we're transmitting FreeDATA signals, reset channel busy state
-        self.states.set("channel_busy", False)
+        self.states.channel_busy_event.wait(timeout_channel_busy)
 
         start_of_transmission = time.time()
         # TODO Moved ptt toggle some steps before audio is ready for testing
@@ -307,7 +306,6 @@ class RF:
         # transmit audio
         self.transmit_audio(txbuffer_out)
 
-        self.states.set("channel_busy", False)
         self.radio.set_ptt(False)
         self.event_manager.send_ptt_change(False)
         self.states.setTransmitting(False)

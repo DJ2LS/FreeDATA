@@ -8,6 +8,7 @@ import sounddevice as sd
 import structlog
 import numpy as np
 import queue
+import threading
 
 atexit.register(sd._terminate)
 
@@ -313,19 +314,17 @@ def calculate_fft(data, fft_queue, states) -> None:
         if addDelay:
             # Limit delay counter to a maximum of 200. The higher this value,
             # the longer we will wait until releasing state
-            states.set("channel_busy", True)
+            states.set_channel_busy_condition_traffic(True)
             CHANNEL_BUSY_DELAY = min(CHANNEL_BUSY_DELAY + 10, 200)
         else:
             # Decrement channel busy counter if no signal has been detected.
             CHANNEL_BUSY_DELAY = max(CHANNEL_BUSY_DELAY - 1, 0)
             # When our channel busy counter reaches 0, toggle state to False
             if CHANNEL_BUSY_DELAY == 0:
-                states.set("channel_busy", False)
-            # erase queue if greater than 10
-        if fft_queue.qsize() >= 10:
+                states.set_channel_busy_condition_traffic(False)
+            # erase queue if greater than 3
+        if fft_queue.qsize() >= 1:
             fft_queue = queue.Queue()
         fft_queue.put(dfftlist[:315]) # 315 --> bandwidth 3200
     except Exception as err:
         print(f"[MDM] calculate_fft: Exception: {err}")
-        print("[MDM] Setting fft=0")
-        fft_queue.put([0])
