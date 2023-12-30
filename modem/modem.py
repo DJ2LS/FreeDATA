@@ -221,7 +221,7 @@ class RF:
                                alc_level=str(self.radio_alc))
 
     def transmit(
-            self, mode, repeats: int, repeat_delay: int, frames: bytearray, timeout_channel_busy=5
+            self, mode, repeats: int, repeat_delay: int, frames: bytearray
     ) -> bool:
         """
 
@@ -256,7 +256,8 @@ class RF:
         # Wait for some other thread that might be transmitting
         self.states.waitForTransmission()
         self.states.setTransmitting(True)
-        self.states.channel_busy_event.wait(timeout_channel_busy)
+        #self.states.waitForChannelBusy()
+
 
         start_of_transmission = time.time()
         # TODO Moved ptt toggle some steps before audio is ready for testing
@@ -276,7 +277,7 @@ class RF:
             self.transmit_add_silence(txbuffer, self.tx_delay)
 
         self.log.debug(
-            "[MDM] TRANSMIT", mode=self.MODE, delay=self.tx_delay
+            "[MDM] TRANSMIT", mode=self.MODE.name, delay=self.tx_delay
         )
 
         if not isinstance(frames, list): frames = [frames]

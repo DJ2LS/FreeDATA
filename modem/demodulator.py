@@ -37,7 +37,7 @@ class Demodulator():
         self.AUDIO_FRAMES_PER_BUFFER_RX = 4800
         self.buffer_overflow_counter = [0, 0, 0, 0, 0, 0, 0, 0]
         self.is_codec2_traffic_counter = 0
-        self.is_codec2_traffic_cooldown = 10
+        self.is_codec2_traffic_cooldown = 5
 
         self.audio_received_queue = audio_rx_q
         self.modem_received_queue = modem_rx_q
@@ -223,7 +223,6 @@ class Demodulator():
                 rx_status = codec2.api.freedv_get_rx_status(freedv)
 
                 if rx_status not in [0]:
-                    # we need to disable this if in testmode as its causing problems with FIFO it seems
                     self.is_codec2_traffic_counter = self.is_codec2_traffic_cooldown
                     self.log.debug(
                         "[MDM] [demod_audio] modem state", mode=mode_name, rx_status=rx_status,
@@ -236,7 +235,6 @@ class Demodulator():
                     self.states.set_channel_busy_condition_codec2(True)
                 else:
                     self.states.set_channel_busy_condition_codec2(False)
-
                 if rx_status == 10:
                     state_buffer.append(rx_status)
 

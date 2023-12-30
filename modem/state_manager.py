@@ -104,6 +104,9 @@ class StateManager:
     def waitForTransmission(self):
         self.transmitting_event.wait()
 
+    def waitForChannelBusy(self):
+        self.channel_busy_event.wait(2)
+
     def register_arq_iss_session(self, session):
         if session.id in self.arq_iss_sessions:
             raise RuntimeError(f"ARQ ISS Session '{session.id}' already exists!")

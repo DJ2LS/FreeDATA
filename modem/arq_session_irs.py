@@ -16,7 +16,7 @@ class IRS_State(Enum):
 
 class ARQSessionIRS(arq_session.ARQSession):
 
-    TIMEOUT_CONNECT = 14.2
+    TIMEOUT_CONNECT = 55 #14.2
     TIMEOUT_DATA = 60
 
     STATE_TRANSITION = {
