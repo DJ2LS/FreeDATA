@@ -46,9 +46,6 @@ class ARQSessionISS(arq_session.ARQSession):
         },
         ISS_State.ABORTING: {
             FRAME_TYPE.ARQ_STOP_ACK.value: 'transmission_aborted',
-            FRAME_TYPE.ARQ_BURST_ACK.value: 'abort_transmission',
-            FRAME_TYPE.ARQ_SESSION_OPEN_ACK.value: 'abort_transmission',
-            FRAME_TYPE.ARQ_SESSION_INFO_ACK.value: 'abort_transmission',
         },
         ISS_State.ABORTED: {
             FRAME_TYPE.ARQ_STOP_ACK.value: 'transmission_aborted',
