@@ -387,7 +387,6 @@ class RF:
         self.states.waitForTransmission()
         self.states.setTransmitting(True)
         # if we're transmitting FreeDATA signals, reset channel busy state
-        self.states.set("channel_busy", False)
         self.log.debug(
             "[MDM] TRANSMIT", mode="MORSE"
         )
@@ -396,7 +395,6 @@ class RF:
         txbuffer_out = cw.MorseCodePlayer().text_to_signal("DJ2LS-1")
 
         self.transmit_audio(txbuffer_out)
-        self.states.set("channel_busy", False)
         self.radio.set_ptt(False)
         self.event_manager.send_ptt_change(False)
 
