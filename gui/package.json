@@ -33,7 +33,7 @@
   "homepage": "https://freedata.app",
   "dependencies": {
     "@electron/asar": "3.2.7",
-    "@electron/notarize": "2.1.0",
+    "@electron/notarize": "2.2.0",
     "@electron/universal": "2.0.0",
     "@popperjs/core": "2.11.8",
     "@vueuse/electron": "10.4.1",
