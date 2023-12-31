@@ -143,7 +143,14 @@ def post_beacon():
         api_abort(f"Incorrect value for 'enabled'. Shoud be bool.")
     if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
-    app.state_manager.set('is_beacon_running', request.json['enabled'])
+
+    if not app.state_manager.is_beacon_running:
+        app.state_manager.set('is_beacon_running', request.json['enabled'])
+        app.modem_service.put("start_beacon")
+    else:
+        app.state_manager.set('is_beacon_running', request.json['enabled'])
+        app.modem_service.put("stop_beacon")
+
     return api_response(request.json)
 
 @app.route('/modem/ping_ping', methods=['POST'])
@@ -211,9 +218,23 @@ def post_modem_send_raw():
     if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
     enqueue_tx_command(command_arq_raw.ARQRawCommand, request.json)
+    return api_response(request.json)
 
-    # server_commands.modem_arq_send_raw(request.json)
-    return "Not implemented yet"
+@app.route('/modem/stop_transmission', methods=['POST'])
+def post_modem_send_raw_stop():
+
+    if request.method not in ['POST']:
+        return api_response({"info": "endpoint for SENDING a STOP command via POST"})
+    if not app.state_manager.is_modem_running:
+        api_abort('Modem not running', 503)
+
+    for id in app.state_manager.arq_irs_sessions:
+        app.state_manager.arq_irs_sessions[id].abort_transmission()
+    for id in app.state_manager.arq_iss_sessions:
+        app.state_manager.arq_iss_sessions[id].abort_transmission()
+
+    return api_response(request.json)
+
 
 # @app.route('/modem/arq_connect', methods=['POST'])
 # @app.route('/modem/arq_disconnect', methods=['POST'])

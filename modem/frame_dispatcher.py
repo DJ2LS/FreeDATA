@@ -24,12 +24,11 @@ class DISPATCHER():
         FR_TYPE.ARQ_CONNECTION_CLOSE.value: {"class": ARQFrameHandler, "name": "ARQ CLOSE SESSION"},
         FR_TYPE.ARQ_CONNECTION_HB.value: {"class": ARQFrameHandler, "name": "ARQ HEARTBEAT"},
         FR_TYPE.ARQ_CONNECTION_OPEN.value: {"class": ARQFrameHandler, "name": "ARQ OPEN SESSION"},
-        FR_TYPE.ARQ_STOP.value: {"class": ARQFrameHandler, "name": "ARQ STOP TX"},
+        FR_TYPE.ARQ_STOP.value: {"class": ARQFrameHandler, "name": "ARQ STOP"},
+        FR_TYPE.ARQ_STOP_ACK.value: {"class": ARQFrameHandler, "name": "ARQ STOP ACK"},
         FR_TYPE.BEACON.value: {"class": FrameHandler, "name": "BEACON"},
         FR_TYPE.ARQ_BURST_FRAME.value:{"class": ARQFrameHandler, "name": "BURST FRAME"},
         FR_TYPE.ARQ_BURST_ACK.value: {"class": ARQFrameHandler, "name":  "BURST ACK"},
-        FR_TYPE.ARQ_BURST_NACK.value: {"class": ARQFrameHandler, "name":  "BURST NACK"},
-        FR_TYPE.ARQ_DATA_ACK_NACK.value: {"class": ARQFrameHandler, "name": "DATA ACK NACK"},
         FR_TYPE.CQ.value: {"class": CQFrameHandler, "name":  "CQ"},
         FR_TYPE.PING_ACK.value: {"class": FrameHandler, "name":  "PING ACK"},
         FR_TYPE.PING.value: {"class": PingFrameHandler, "name":  "PING"},
@@ -88,7 +87,7 @@ class DISPATCHER():
         
         # instantiate handler
         handler_class = self.FRAME_HANDLER[frametype]['class']
-        handler = handler_class(self.FRAME_HANDLER[frametype]['name'],
+        handler: FrameHandler = handler_class(self.FRAME_HANDLER[frametype]['name'],
                                 self.config,
                                 self.states,
                                 self.event_manager,
