@@ -15,13 +15,19 @@ class ISS_State(Enum):
     BURST_SENT = 3
     ENDED = 4
     FAILED = 5
-    ABORTED = 6
+    ABORTING = 6 # state while running abort sequence and waiting for stop ack
+    ABORTED = 7 # stop ack received
 
 class ARQSessionISS(arq_session.ARQSession):
 
     RETRIES_CONNECT = 10
-    TIMEOUT_CONNECT_ACK = 3
-    TIMEOUT_TRANSFER = 3
+
+    # DJ2LS: 3 seconds seems to be too small for radios with a too slow PTT toggle time
+    # DJ2LS: 3.5 seconds is working well WITHOUT a channel busy detection delay
+    TIMEOUT_CHANNEL_BUSY = 2
+    TIMEOUT_CONNECT_ACK = 3.5 + TIMEOUT_CHANNEL_BUSY
+    TIMEOUT_TRANSFER = 3.5 + TIMEOUT_CHANNEL_BUSY
+    TIMEOUT_STOP_ACK = 3.5 + TIMEOUT_CHANNEL_BUSY
 
     STATE_TRANSITION = {
         ISS_State.OPEN_SENT: { 
@@ -34,8 +40,16 @@ class ARQSessionISS(arq_session.ARQSession):
         ISS_State.BURST_SENT: {
             FRAME_TYPE.ARQ_SESSION_INFO_ACK.value: 'send_data',
             FRAME_TYPE.ARQ_BURST_ACK.value: 'send_data',
-            FRAME_TYPE.ARQ_BURST_NACK.value: 'send_data',
         },
+        ISS_State.FAILED:{
+            FRAME_TYPE.ARQ_STOP_ACK.value: 'transmission_aborted'
+        },
+        ISS_State.ABORTING: {
+            FRAME_TYPE.ARQ_STOP_ACK.value: 'transmission_aborted',
+        },
+        ISS_State.ABORTED: {
+            FRAME_TYPE.ARQ_STOP_ACK.value: 'transmission_aborted',
+        }
     }
 
     def __init__(self, config: dict, modem, dxcall: str, data: bytearray):
@@ -47,7 +61,6 @@ class ARQSessionISS(arq_session.ARQSession):
 
         self.state = ISS_State.NEW
         self.id = self.generate_id()
-
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
 
     def generate_id(self):
@@ -66,9 +79,9 @@ class ARQSessionISS(arq_session.ARQSession):
                 return
             self.log("Timeout!")
             retries = retries - 1
+        
         self.set_state(ISS_State.FAILED)
-        self.log("Session failed")
-        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data), False)
+        self.transmission_failed()
 
     def launch_twr(self, frame_or_burst, timeout, retries, mode):
         twr = threading.Thread(target = self.transmit_wait_and_retry, args=[frame_or_burst, timeout, retries, mode])
@@ -94,19 +107,26 @@ class ARQSessionISS(arq_session.ARQSession):
         self.set_state(ISS_State.INFO_SENT)
 
     def send_data(self, irs_frame):
+
         self.set_speed_and_frames_per_burst(irs_frame)
 
         if 'offset' in irs_frame:
             self.confirmed_bytes = irs_frame['offset']
             self.log(f"IRS confirmed {self.confirmed_bytes}/{len(self.data)} bytes")
             self.event_manager.send_arq_session_progress(
-                True, self.id, self.dxcall, self.confirmed_bytes, len(self.data))
+                True, self.id, self.dxcall, self.confirmed_bytes, len(self.data), self.state.name)
 
-        if self.confirmed_bytes == len(self.data) and irs_frame["flag"]["FINAL"]:
-            self.set_state(ISS_State.ENDED)
-            self.log("All data transfered!")
-            self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data), irs_frame["flag"]["CHECKSUM"])
+        if irs_frame["flag"]["ABORT"]:
+            self.transmission_aborted(irs_frame)
             return
+
+        if irs_frame["flag"]["FINAL"]:
+            if self.confirmed_bytes == len(self.data) and irs_frame["flag"]["CHECKSUM"]:
+                self.transmission_ended(irs_frame)
+                return
+            else:
+                self.transmission_failed()
+                return
 
         payload_size = self.get_data_payload_size()
         burst = []
@@ -119,3 +139,39 @@ class ARQSessionISS(arq_session.ARQSession):
             burst.append(data_frame)
         self.launch_twr(burst, self.TIMEOUT_TRANSFER, self.RETRIES_CONNECT, mode='auto')
         self.set_state(ISS_State.BURST_SENT)
+
+    def transmission_ended(self, irs_frame):
+        # final function for sucessfully ended transmissions
+        self.set_state(ISS_State.ENDED)
+        self.log(f"All data transfered! flag_final={irs_frame['flag']['FINAL']}, flag_checksum={irs_frame['flag']['CHECKSUM']}")
+        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data),True, self.state.name)
+
+    def transmission_failed(self, irs_frame=None):
+        # final function for failed transmissions
+        self.set_state(ISS_State.FAILED)
+        self.log(f"Transmission failed!")
+        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall, len(self.data),False, self.state.name)
+
+    def abort_transmission(self, irs_frame=None):
+        # function for starting the abort sequence
+        self.log(f"aborting transmission...")
+        self.set_state(ISS_State.ABORTING)
+
+        self.event_manager.send_arq_session_finished(
+            True, self.id, self.dxcall, len(self.data), False, self.state.name)
+
+        # break actual retries
+        self.event_frame_received.set()
+
+        # start with abort sequence
+        self.send_stop()
+
+    def send_stop(self):
+        stop_frame = self.frame_factory.build_arq_stop(self.id)
+        self.launch_twr(stop_frame, self.TIMEOUT_STOP_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
+
+    def transmission_aborted(self, irs_frame):
+        self.log("session aborted")
+        self.set_state(ISS_State.ABORTED)
+        self.event_manager.send_arq_session_finished(
+            True, self.id, self.dxcall, len(self.data), False, self.state.name)
