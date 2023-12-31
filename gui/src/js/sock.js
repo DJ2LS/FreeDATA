@@ -719,11 +719,6 @@ function sendResponseSharedFile(dxcallsign, sharedFile, sharedFileData) {
   sendResponse(dxcallsign, 255, 1, sharedFile + "/" + sharedFileData, "res-2");
 }
 */
-//STOP TRANSMISSION
-export function stopTransmission() {
-  var command = '{"type" : "arq", "command": "stop_transmission"}';
-  writeTncCommand(command);
-}
 
 // Get RX BUffer
 export function getRxBuffer() {

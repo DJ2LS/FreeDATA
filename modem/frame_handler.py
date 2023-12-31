@@ -89,7 +89,7 @@ class FrameHandler():
         self.event_manager.broadcast(event_data)
 
     def get_tx_mode(self):
-        return FREEDV_MODE.signalling.value
+        return FREEDV_MODE.signalling
 
     def transmit(self, frame):
         if not TESTMODE:

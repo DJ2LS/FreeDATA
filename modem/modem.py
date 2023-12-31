@@ -23,7 +23,6 @@ import cw
 from queues import RIGCTLD_COMMAND_QUEUE
 import audio
 import event_manager
-import beacon
 import demodulator
 
 TESTMODE = False
@@ -71,25 +70,15 @@ class RF:
         # 8 * (self.AUDIO_SAMPLE_RATE/self.MODEM_SAMPLE_RATE) == 48
         self.AUDIO_CHANNELS = 1
         self.MODE = 0
-
-        # Locking state for mod out so buffer will be filled before we can use it
-        # https://github.com/DJ2LS/FreeDATA/issues/127
-        # https://github.com/DJ2LS/FreeDATA/issues/99
-        self.mod_out_locked = True
         self.rms_counter = 0
 
         # Make sure our resampler will work
         assert (self.AUDIO_SAMPLE_RATE / self.MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48  # type: ignore
 
-        self.modem_transmit_queue = queue.Queue()
         self.modem_received_queue = queue.Queue()
-
         self.audio_received_queue = queue.Queue()
-
         self.data_queue_received = queue.Queue()
-
         self.event_manager = event_manager.EventManager([event_queue])
-
         self.fft_queue = fft_queue
 
         self.demodulator = demodulator.Demodulator(self.config, 
@@ -101,8 +90,7 @@ class RF:
                                             self.fft_queue
                                                    )
 
-        self.beacon = beacon.Beacon(self.config, self.states, event_queue, 
-                                    self.log, self.modem_transmit_queue)
+
 
     def tci_tx_callback(self, audio_48k) -> None:
         self.radio.set_ptt(True)
@@ -110,34 +98,23 @@ class RF:
         self.tci_module.push_audio(audio_48k)
 
     def start_modem(self):
-        # testmode: We need to call the modem without audio parts for running protocol tests
-
-        if self.radiocontrol not in ["tci"]:
-            result = self.init_audio() if not TESTMODE else True
-            if not result:
+        if TESTMODE:
+            return True
+        elif self.radiocontrol.lower() == "tci":
+            if not self.init_tci():
+                return False
+        else:
+            if not self.init_audio():
                 raise RuntimeError("Unable to init audio devices")
-            if not TESTMODE:
-                self.demodulator.start(self.sd_input_stream)
+            self.demodulator.start(self.sd_input_stream)
+            atexit.register(self.sd_input_stream.stop)
 
-        else:
-            result = self.init_tci()
+        # Initialize codec2, rig control, and data threads
+        self.init_codec2()
+        self.init_rig_control()
+        self.init_data_threads()
 
-        if result not in [False]:
-            # init codec2 instances
-            self.init_codec2()
-
-            # init rig control
-            self.init_rig_control()
-
-            # init data thread
-            self.init_data_threads()
-            if not TESTMODE:
-                atexit.register(self.sd_input_stream.stop)
-
-            # init beacon
-            self.beacon.start()
-        else:
-            return False
+        return True
 
     def stop_modem(self):
         try:
@@ -147,8 +124,6 @@ class RF:
             # self.stream = lambda: None
             # self.stream.active = False
             # self.stream.stop
-
-            self.beacon.stop()
 
         except Exception:
             self.log.error("[MDM] Error stopping modem")
@@ -214,21 +189,6 @@ class RF:
         # lets init TCI module
         self.tci_module = tci.TCICtrl(self.audio_received_queue)
 
-        tci_rx_callback_thread = threading.Thread(
-            target=self.tci_rx_callback,
-            name="TCI RX CALLBACK THREAD",
-            daemon=True,
-        )
-        tci_rx_callback_thread.start()
-
-        # let's start the audio tx callback
-        self.log.debug("[MDM] Starting tci tx callback thread")
-        tci_tx_callback_thread = threading.Thread(
-            target=self.tci_tx_callback,
-            name="TCI TX CALLBACK THREAD",
-            daemon=True,
-        )
-        tci_tx_callback_thread.start()
         return True
 
     def audio_auto_tune(self):
@@ -296,8 +256,8 @@ class RF:
         # Wait for some other thread that might be transmitting
         self.states.waitForTransmission()
         self.states.setTransmitting(True)
-        # if we're transmitting FreeDATA signals, reset channel busy state
-        self.states.set("channel_busy", False)
+        #self.states.waitForChannelBusy()
+
 
         start_of_transmission = time.time()
         # TODO Moved ptt toggle some steps before audio is ready for testing
@@ -310,38 +270,14 @@ class RF:
         # Open codec2 instance
         self.MODE = mode
 
-        # Get number of bytes per frame for mode
-        bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv) / 8)
-        payload_bytes_per_frame = bytes_per_frame - 2
-
-        # Init buffer for data
-        n_tx_modem_samples = codec2.api.freedv_get_n_tx_modem_samples(freedv)
-        mod_out = ctypes.create_string_buffer(n_tx_modem_samples * 2)
-
-        # Init buffer for preample
-        n_tx_preamble_modem_samples = codec2.api.freedv_get_n_tx_preamble_modem_samples(
-            freedv
-        )
-        mod_out_preamble = ctypes.create_string_buffer(n_tx_preamble_modem_samples * 2)
-
-        # Init buffer for postamble
-        n_tx_postamble_modem_samples = (
-            codec2.api.freedv_get_n_tx_postamble_modem_samples(freedv)
-        )
-        mod_out_postamble = ctypes.create_string_buffer(
-            n_tx_postamble_modem_samples * 2
-        )
+        txbuffer = bytes()
 
         # Add empty data to handle ptt toggle time
         if self.tx_delay > 0:
-            data_delay = int(self.MODEM_SAMPLE_RATE * (self.tx_delay / 1000))  # type: ignore
-            mod_out_silence = ctypes.create_string_buffer(data_delay * 2)
-            txbuffer = bytes(mod_out_silence)
-        else:
-            txbuffer = bytes()
+            self.transmit_add_silence(txbuffer, self.tx_delay)
 
         self.log.debug(
-            "[MDM] TRANSMIT", mode=self.MODE, payload=payload_bytes_per_frame, delay=self.tx_delay
+            "[MDM] TRANSMIT", mode=self.MODE.name, delay=self.tx_delay
         )
 
         if not isinstance(frames, list): frames = [frames]
@@ -350,43 +286,12 @@ class RF:
             # Create modulation for all frames in the list
             for frame in frames:
 
-                # Write preamble to txbuffer
-                codec2.api.freedv_rawdatapreambletx(freedv, mod_out_preamble)
-                txbuffer += bytes(mod_out_preamble)
-
-                # Create buffer for data
-                # Use this if CRC16 checksum is required (DATAc1-3)
-                buffer = bytearray(payload_bytes_per_frame)
-                # Set buffersize to length of data which will be send
-                buffer[: len(frame)] = frame  # type: ignore
-
-                # Create crc for data frame -
-                #   Use the crc function shipped with codec2
-                #   to avoid CRC algorithm incompatibilities
-                # Generate CRC16
-                crc = ctypes.c_ushort(
-                    codec2.api.freedv_gen_crc16(bytes(buffer), payload_bytes_per_frame)
-                )
-                # Convert crc to 2-byte (16-bit) hex string
-                crc = crc.value.to_bytes(2, byteorder="big")
-                # Append CRC to data buffer
-                buffer += crc
-
-                assert(bytes_per_frame == len(buffer))
-                data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
-                # modulate DATA and save it into mod_out pointer
-                codec2.api.freedv_rawdatatx(freedv, mod_out, data)
-                txbuffer += bytes(mod_out)
-
-                # Write postamble to txbuffer
-                codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
-                # Append postamble to txbuffer
-                txbuffer += bytes(mod_out_postamble)
+                txbuffer = self.transmit_add_preamble(txbuffer, freedv)
+                txbuffer = self.transmit_create_frame(txbuffer, freedv, frame)
+                txbuffer = self.transmit_add_postamble(txbuffer, freedv)
 
             # Add delay to end of frames
-            samples_delay = int(self.MODEM_SAMPLE_RATE * (repeat_delay / 1000))  # type: ignore
-            mod_out_silence = ctypes.create_string_buffer(samples_delay * 2)
-            txbuffer += bytes(mod_out_silence)
+            self.transmit_add_silence(txbuffer, repeat_delay)
 
         # Re-sample back up to 48k (resampler works on np.int16)
         x = np.frombuffer(txbuffer, dtype=np.int16)
@@ -394,55 +299,16 @@ class RF:
         self.audio_auto_tune()
         x = audio.set_audio_volume(x, self.tx_audio_level)
 
-        if not self.radiocontrol in ["tci"]:
+        if self.radiocontrol not in ["tci"]:
             txbuffer_out = self.resampler.resample8_to_48(x)
         else:
             txbuffer_out = x
 
-        # Explicitly lock our usage of mod_out_queue if needed
-        # This could avoid audio problems on slower CPU
-        # we will fill our modout list with all data, then start
-        # processing it in audio callback
-        self.mod_out_locked = True
-
-        # -------------------------------
-        # add modulation to modout_queue
+        # transmit audio
         self.transmit_audio(txbuffer_out)
 
-        # Release our mod_out_lock, so we can use the queue
-        self.mod_out_locked = False
-
-        # we need to wait manually for tci processing
-        if self.radiocontrol in ["tci"]:
-            duration = len(txbuffer_out) / 8000
-            timestamp_to_sleep = time.time() + duration
-            self.log.debug("[MDM] TCI calculated duration", duration=duration)
-            tci_timeout_reached = False
-            #while time.time() < timestamp_to_sleep:
-            #    threading.Event().wait(0.01)
-        else:
-            timestamp_to_sleep = time.time()
-            # set tci timeout reached to True for overriding if not used
-            tci_timeout_reached = True
-
-        while not tci_timeout_reached:
-            if self.radiocontrol in ["tci"]:
-                if time.time() < timestamp_to_sleep:
-                    tci_timeout_reached = False
-                else:
-                    tci_timeout_reached = True
-            threading.Event().wait(0.01)
-            # if we're transmitting FreeDATA signals, reset channel busy state
-            self.states.set("channel_busy", False)
-
         self.radio.set_ptt(False)
-
-        # Push ptt state to socket stream
         self.event_manager.send_ptt_change(False)
-
-        # After processing, set the locking state back to true to be prepared for next transmission
-        self.mod_out_locked = True
-
         self.states.setTransmitting(False)
 
         end_of_transmission = time.time()
@@ -450,11 +316,77 @@ class RF:
         self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
         return True
 
+    def transmit_add_preamble(self, buffer, freedv):
+        
+        # Init buffer for preample
+        n_tx_preamble_modem_samples = codec2.api.freedv_get_n_tx_preamble_modem_samples(
+            freedv
+        )
+        mod_out_preamble =  ctypes.create_string_buffer(n_tx_preamble_modem_samples * 2)
+
+        # Write preamble to txbuffer
+        codec2.api.freedv_rawdatapreambletx(freedv, mod_out_preamble)
+        buffer += bytes(mod_out_preamble)
+        return buffer
+
+    def transmit_add_postamble(self, buffer, freedv):
+        # Init buffer for postamble
+        n_tx_postamble_modem_samples = (
+            codec2.api.freedv_get_n_tx_postamble_modem_samples(freedv)
+        )
+        mod_out_postamble =  ctypes.create_string_buffer(
+            n_tx_postamble_modem_samples * 2
+        )
+        # Write postamble to txbuffer
+        codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
+        # Append postamble to txbuffer
+        buffer += bytes(mod_out_postamble)
+        return buffer
+
+    def transmit_add_silence(self, buffer, duration):
+        data_delay = int(self.MODEM_SAMPLE_RATE * (duration / 1000))  # type: ignore
+        mod_out_silence = ctypes.create_string_buffer(data_delay * 2)
+        buffer += bytes(mod_out_silence)
+        return buffer
+
+    def transmit_create_frame(self, txbuffer, freedv, frame):
+        # Get number of bytes per frame for mode
+        bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv) / 8)
+        payload_bytes_per_frame = bytes_per_frame - 2
+
+        # Init buffer for data
+        n_tx_modem_samples = codec2.api.freedv_get_n_tx_modem_samples(freedv)
+        mod_out = ctypes.create_string_buffer(n_tx_modem_samples * 2)
+
+        # Create buffer for data
+        # Use this if CRC16 checksum is required (DATAc1-3)
+        buffer = bytearray(payload_bytes_per_frame)
+        # Set buffersize to length of data which will be send
+        buffer[: len(frame)] = frame  # type: ignore
+
+        # Create crc for data frame -
+        #   Use the crc function shipped with codec2
+        #   to avoid CRC algorithm incompatibilities
+        # Generate CRC16
+        crc = ctypes.c_ushort(
+            codec2.api.freedv_gen_crc16(bytes(buffer), payload_bytes_per_frame)
+        )
+        # Convert crc to 2-byte (16-bit) hex string
+        crc = crc.value.to_bytes(2, byteorder="big")
+        # Append CRC to data buffer
+        buffer += crc
+
+        assert (bytes_per_frame == len(buffer))
+        data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
+        # modulate DATA and save it into mod_out pointer
+        codec2.api.freedv_rawdatatx(freedv, mod_out, data)
+        txbuffer += bytes(mod_out)
+        return txbuffer
+
     def transmit_morse(self, repeats, repeat_delay, frames):
         self.states.waitForTransmission()
         self.states.setTransmitting(True)
         # if we're transmitting FreeDATA signals, reset channel busy state
-        self.states.set("channel_busy", False)
         self.log.debug(
             "[MDM] TRANSMIT", mode="MORSE"
         )
@@ -462,43 +394,10 @@ class RF:
 
         txbuffer_out = cw.MorseCodePlayer().text_to_signal("DJ2LS-1")
 
-        self.mod_out_locked = True
         self.transmit_audio(txbuffer_out)
-        self.mod_out_locked = False
-
-        # we need to wait manually for tci processing
-        if self.radiocontrol in ["tci"]:
-            duration = len(txbuffer_out) / 8000
-            timestamp_to_sleep = time.time() + duration
-            self.log.debug("[MDM] TCI calculated duration", duration=duration)
-            tci_timeout_reached = False
-            #while time.time() < timestamp_to_sleep:
-            #    threading.Event().wait(0.01)
-        else:
-            timestamp_to_sleep = time.time()
-            # set tci timeout reached to True for overriding if not used
-            tci_timeout_reached = True
-
-        while not tci_timeout_reached:
-            if self.radiocontrol in ["tci"]:
-                if time.time() < timestamp_to_sleep:
-                    tci_timeout_reached = False
-                else:
-                    tci_timeout_reached = True
-
-            threading.Event().wait(0.01)
-            # if we're transmitting FreeDATA signals, reset channel busy state
-            self.states.set("channel_busy", False)
-
         self.radio.set_ptt(False)
-
-        # Push ptt state to socket stream
         self.event_manager.send_ptt_change(False)
 
-        # After processing, set the locking state back to true to be prepared for next transmission
-        self.mod_out_locked = True
-
-        self.modem_transmit_queue.task_done()
         self.states.setTransmitting(False)
 
         end_of_transmission = time.time()
@@ -528,6 +427,8 @@ class RF:
 
         if self.radiocontrol in ["tci"]:
             self.tci_tx_callback(audio_48k)
+            # we need to wait manually for tci processing
+            self.tci_module.wait_until_transmitted(audio_48k)
         else:
             sd.play(audio_48k, blocking=True)
         return
@@ -547,9 +448,9 @@ class RF:
                 rigctld_ip=self.rigctld_ip,
                 rigctld_port=self.rigctld_port,
             )
-            hamlib_thread = threading.Thread(
-                target=self.update_rig_data, name="HAMLIB_THREAD", daemon=True
-            )
+        hamlib_thread = threading.Thread(
+            target=self.update_rig_data, name="HAMLIB_THREAD", daemon=True
+        )
         hamlib_thread.start()
 
         hamlib_set_thread = threading.Thread(

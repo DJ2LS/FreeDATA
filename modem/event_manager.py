@@ -1,3 +1,4 @@
+import base64
 import json
 import structlog
 
@@ -28,18 +29,19 @@ class EventManager:
     def send_custom_event(self, **event_data):
         self.broadcast(event_data)
 
-    def send_arq_session_new(self, outbound: bool, session_id, dxcall, total_bytes):
+    def send_arq_session_new(self, outbound: bool, session_id, dxcall, total_bytes, state):
         direction = 'outbound' if outbound else 'inbound'
         event = {
             f"arq-transfer-{direction}": {
                 'session_id': session_id,
                 'dxcall': dxcall,
                 'total_bytes': total_bytes,
+                'state': state,
             }
         }
         self.broadcast(event)
 
-    def send_arq_session_progress(self, outbound: bool, session_id, dxcall, received_bytes, total_bytes):
+    def send_arq_session_progress(self, outbound: bool, session_id, dxcall, received_bytes, total_bytes, state):
         direction = 'outbound' if outbound else 'inbound'
         event = {
             f"arq-transfer-{direction}": {
@@ -47,11 +49,14 @@ class EventManager:
                 'dxcall': dxcall,
                 'received_bytes': received_bytes,
                 'total_bytes': total_bytes,
+                'state': state,
             }
         }
         self.broadcast(event)
 
-    def send_arq_session_finished(self, outbound: bool, session_id, dxcall, total_bytes, success: bool):
+    def send_arq_session_finished(self, outbound: bool, session_id, dxcall, total_bytes, success: bool, state, data=False):
+        if data:
+            data = base64.b64encode(data).decode("UTF-8")
         direction = 'outbound' if outbound else 'inbound'
         event = {
             f"arq-transfer-{direction}": {
@@ -59,6 +64,8 @@ class EventManager:
                 'dxcall': dxcall,
                 'total_bytes': total_bytes,
                 'success': success,
+                'state': state,
+                'data': data
             }
         }
         self.broadcast(event)
