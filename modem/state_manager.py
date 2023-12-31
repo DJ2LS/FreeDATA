@@ -13,9 +13,11 @@ class StateManager:
         # modem related states
         # not every state is needed to publish, yet
         # TODO can we reduce them?
-        self.channel_busy = False
         self.channel_busy_slot = [False, False, False, False, False]
-        self.is_codec2_traffic = False
+        self.channel_busy_event = threading.Event()
+        self.channel_busy_condition_traffic = threading.Event()
+        self.channel_busy_condition_codec2 = threading.Event()
+
         self.is_modem_running = False
         self.is_modem_busy = False
         self.is_beacon_running = False
@@ -35,16 +37,6 @@ class StateManager:
 
         self.arq_iss_sessions = {}
         self.arq_irs_sessions = {}
-        
-        self.arq_session_state = 'disconnected'
-        self.arq_speed_level = 0
-        self.arq_total_bytes = 0
-        self.arq_bits_per_second = 0
-        self.arq_bytes_per_minute = 0
-        self.arq_transmission_percent = 0
-        self.arq_compression_factor = 0
-        self.arq_speed_list = []
-        self.arq_seconds_until_timeout = 0
 
         self.mesh_routing_table = []
 
@@ -88,8 +80,6 @@ class StateManager:
 
         return {
             "freedata-message": msgtype,
-            "channel_busy": self.channel_busy,
-            "is_codec2_traffic": self.is_codec2_traffic,
             "is_modem_running": self.is_modem_running,
             "is_beacon_running": self.is_beacon_running,
             "radio_status": self.radio_status,
@@ -114,6 +104,9 @@ class StateManager:
     def waitForTransmission(self):
         self.transmitting_event.wait()
 
+    def waitForChannelBusy(self):
+        self.channel_busy_event.wait(2)
+
     def register_arq_iss_session(self, session):
         if session.id in self.arq_iss_sessions:
             raise RuntimeError(f"ARQ ISS Session '{session.id}' already exists!")
@@ -126,12 +119,16 @@ class StateManager:
 
     def get_arq_iss_session(self, id):
         if id not in self.arq_iss_sessions:
-            raise RuntimeError(f"ARQ ISS Session '{id}' not found!")
+            #raise RuntimeError(f"ARQ ISS Session '{id}' not found!")
+            # DJ2LS: WIP We need to find a better way of handling this
+            pass
         return self.arq_iss_sessions[id]
 
     def get_arq_irs_session(self, id):
         if id not in self.arq_irs_sessions:
-            raise RuntimeError(f"ARQ IRS Session '{id}' not found!")
+            #raise RuntimeError(f"ARQ IRS Session '{id}' not found!")
+            # DJ2LS: WIP We need to find a better way of handling this
+            pass
         return self.arq_irs_sessions[id]
 
     def remove_arq_iss_session(self, id):
@@ -158,3 +155,23 @@ class StateManager:
 
         self.activities_list[activity_id] = activity_data
         self.sendStateUpdate()
+
+    def calculate_channel_busy_state(self):
+        if self.channel_busy_condition_traffic.is_set() and self.channel_busy_condition_codec2.is_set():
+            self.channel_busy_event.set()
+        else:
+            self.channel_busy_event = threading.Event()
+
+    def set_channel_busy_condition_traffic(self, busy):
+        if not busy:
+            self.channel_busy_condition_traffic.set()
+        else:
+            self.channel_busy_condition_traffic = threading.Event()
+        self.calculate_channel_busy_state()
+
+    def set_channel_busy_condition_codec2(self, traffic):
+        if not traffic:
+            self.channel_busy_condition_codec2.set()
+        else:
+            self.channel_busy_condition_codec2 = threading.Event()
+        self.calculate_channel_busy_state()

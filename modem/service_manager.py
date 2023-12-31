@@ -5,6 +5,7 @@ import structlog
 import audio
 import ujson as json
 import explorer
+import beacon
 
 
 class SM:
@@ -12,6 +13,7 @@ class SM:
         self.log = structlog.get_logger("service")
 
         self.modem = False
+        self.beacon = False
         self.data_handler = False
         self.app = app
         self.config = self.app.config_manager.read()
@@ -48,6 +50,14 @@ class SM:
                 threading.Event().wait(0.5)
                 if self.start_modem():
                     self.modem_events.put(json.dumps({"freedata": "modem-event", "event": "restart"}))
+            elif cmd in ['start_beacon']:
+                self.start_beacon()
+
+            elif cmd in ['stop_beacon']:
+                self.stop_beacon()
+
+
+
             else:
                 self.log.warning("[SVC] modem command processing failed", cmd=cmd, state=self.states.is_modem_running)
 
@@ -97,4 +107,11 @@ class SM:
         self.log.info("tested audio devices", result=audio_test)
 
         return audio_test
-    
+
+
+    def start_beacon(self):
+        self.beacon = beacon.Beacon(self.config, self.states, self.modem_events, self.log, self.modem)
+        self.beacon.start()
+
+    def stop_beacon(self):
+        del self.beacon

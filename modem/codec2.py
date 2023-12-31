@@ -101,7 +101,7 @@ for file in files:
         #log.info("[C2 ] Libcodec2 loaded", path=file)
         break
     except OSError as err:
-        log.warning("[C2 ] Error:  Libcodec2 found but not loaded", path=file, e=err)
+        log.info("[C2 ] Error:  Libcodec2 found but not loaded", path=file, e=err)
 
 # Quit module if codec2 cant be loaded
 if api is None or "api" not in locals():

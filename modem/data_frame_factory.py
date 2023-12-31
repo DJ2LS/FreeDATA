@@ -7,14 +7,15 @@ class DataFrameFactory:
     LENGTH_SIG0_FRAME = 14
     LENGTH_SIG1_FRAME = 14
 
-
     """
         helpers.set_flag(byte, 'DATA-ACK-NACK', True, FLAG_POSITIONS)
         helpers.get_flag(byte, 'DATA-ACK-NACK', FLAG_POSITIONS)    
     """
     ARQ_FLAGS = {
-        'FINAL': 0,  # Bit position for indicating the FINAL state
-        'CHECKSUM': 1,  # Bit position for indicating the CHECKSUM is correct or not
+        'FINAL': 0,  # Bit-position for indicating the FINAL state
+        'ABORT': 1, # Bit-position for indicating the ABORT request
+        'CHECKSUM': 2,  # Bit-position for indicating the CHECKSUM is correct or not
+        'ENABLE_COMPRESSION': 3  # Bit-position for indicating compression is enabled
     }
 
     def __init__(self, config):
@@ -115,6 +116,7 @@ class DataFrameFactory:
             "total_length": 4,
             "total_crc": 4,
             "snr": 1,
+            "flag": 1,
         }
 
         self.template_list[FR_TYPE.ARQ_SESSION_INFO_ACK.value] = {
@@ -124,6 +126,17 @@ class DataFrameFactory:
             "snr": 1,
             "speed_level": 1,
             "frames_per_burst": 1,
+            "flag": 1,
+        }
+
+        self.template_list[FR_TYPE.ARQ_STOP.value] = {
+            "frame_length": self.LENGTH_SIG0_FRAME,
+            "session_id": 1,
+        }
+
+        self.template_list[FR_TYPE.ARQ_STOP_ACK.value] = {
+            "frame_length": self.LENGTH_SIG0_FRAME,
+            "session_id": 1,
         }
 
         # arq burst frame
@@ -145,23 +158,6 @@ class DataFrameFactory:
             "flag": 1,
         }
 
-        # arq burst nack
-        self.template_list[FR_TYPE.ARQ_BURST_NACK.value] = {
-            "frame_length": self.LENGTH_SIG1_FRAME,
-            "session_id": 1,
-            "offset":4,
-            "speed_level": 1,
-            "frames_per_burst": 1,
-            "snr": 1,
-        }
-
-    # arq data ack nack
-        self.template_list[FR_TYPE.ARQ_DATA_ACK_NACK.value] = {
-            "frame_length": self.LENGTH_SIG1_FRAME,
-            "session_id": 1,
-            "state": 1,
-            "snr": 1,
-        }
 
     def construct(self, frametype, content, frame_length = LENGTH_SIG1_FRAME):
         frame_template = self.template_list[frametype.value]
@@ -221,26 +217,28 @@ class DataFrameFactory:
 
             elif key in ["session_id", "speed_level", 
                             "frames_per_burst", "version",
-                            "snr", "offset", "total_length", "state"]:
+                            "offset", "total_length", "state"]:
                 extracted_data[key] = int.from_bytes(data, 'big')
+
+            elif key in ["snr"]:
+                extracted_data[key] = helpers.snr_from_bytes(data)
 
             elif key == "flag":
 
                 data = int.from_bytes(data, "big")
                 extracted_data[key] = {}
-                if frametype == FR_TYPE.ARQ_BURST_ACK.value:
+                if frametype in [FR_TYPE.ARQ_BURST_ACK.value, FR_TYPE.ARQ_SESSION_INFO_ACK.value]:
                     flag_dict = self.ARQ_FLAGS
-                for flag in flag_dict:
-                    # Update extracted_data with the status of each flag
-                    # get_flag returns True or False based on the bit value at the flag's position
-                    extracted_data[key][flag] = helpers.get_flag(data, flag, flag_dict)
+                    for flag in flag_dict:
+                        # Update extracted_data with the status of each flag
+                        # get_flag returns True or False based on the bit value at the flag's position
+                        extracted_data[key][flag] = helpers.get_flag(data, flag, flag_dict)
             else:
                 extracted_data[key] = data
 
             buffer_position += item_length
 
         return extracted_data
-
 
     def get_bytes_per_frame(self, mode: codec2.FREEDV_MODE) -> int:
         freedv = codec2.open_instance(mode.value)
@@ -341,26 +339,53 @@ class DataFrameFactory:
             "origin": helpers.callsign_to_bytes(self.myfullcall),
             "destination_crc": helpers.get_crc_24(destination),
             "version": bytes([version]),
-            "snr": snr.to_bytes(1, 'big'),        }
+            "snr": helpers.snr_to_bytes(1),
+        }
         return self.construct(FR_TYPE.ARQ_SESSION_OPEN_ACK, payload)
     
-    def build_arq_session_info(self, session_id: int, total_length: int, total_crc: bytes, snr):
+    def build_arq_session_info(self, session_id: int, total_length: int, total_crc: bytes, snr, flag_compression=False):
+        flag = 0b00000000
+        if flag_compression:
+            flag = helpers.set_flag(flag, 'ENABLE_COMPRESSION', True, self.ARQ_FLAGS)
+
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),
             "total_length": total_length.to_bytes(4, 'big'),
             "total_crc": total_crc,
-            "snr": snr.to_bytes(1, 'big'),
+            "snr": helpers.snr_to_bytes(1),
+            "flag": flag.to_bytes(1, 'big'),
+
         }
         return self.construct(FR_TYPE.ARQ_SESSION_INFO, payload)
 
-    def build_arq_session_info_ack(self, session_id, total_crc, snr, speed_level, frames_per_burst):
+    def build_arq_stop(self, session_id: int):
+        payload = {
+            "session_id": session_id.to_bytes(1, 'big'),
+        }
+        return self.construct(FR_TYPE.ARQ_STOP, payload)
+
+    def build_arq_stop_ack(self, session_id: int):
+        payload = {
+            "session_id": session_id.to_bytes(1, 'big'),
+        }
+        return self.construct(FR_TYPE.ARQ_STOP_ACK, payload)
+
+
+    def build_arq_session_info_ack(self, session_id, total_crc, snr, speed_level, frames_per_burst, flag_final=False, flag_abort=False):
+        flag = 0b00000000
+        if flag_final:
+            flag = helpers.set_flag(flag, 'FINAL', True, self.ARQ_FLAGS)
+        if flag_abort:
+            flag = helpers.set_flag(flag, 'ABORT', True, self.ARQ_FLAGS)
+
         payload = {
             "frame_length": self.LENGTH_SIG0_FRAME,
             "session_id": session_id.to_bytes(1, 'big'),
             "total_crc": bytes.fromhex(total_crc),
-            "snr": snr.to_bytes(1, 'big'),
+            "snr": helpers.snr_to_bytes(1),
             "speed_level": speed_level.to_bytes(1, 'big'),
             "frames_per_burst": frames_per_burst.to_bytes(1, 'big'),
+            "flag": flag.to_bytes(1, 'big'),
         }        
         return self.construct(FR_TYPE.ARQ_SESSION_INFO_ACK, payload)
 
@@ -374,13 +399,17 @@ class DataFrameFactory:
         return frame
 
     def build_arq_burst_ack(self, session_id: bytes, offset, speed_level: int, 
-                            frames_per_burst: int, snr: int, flag_final=False, flag_checksum=False):
+                            frames_per_burst: int, snr: int, flag_final=False, flag_checksum=False, flag_abort=False):
         flag = 0b00000000
         if flag_final:
             flag = helpers.set_flag(flag, 'FINAL', True, self.ARQ_FLAGS)
 
         if flag_checksum:
             flag = helpers.set_flag(flag, 'CHECKSUM', True, self.ARQ_FLAGS)
+
+        if flag_abort:
+            flag = helpers.set_flag(flag, 'ABORT', True, self.ARQ_FLAGS)
+
 
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),

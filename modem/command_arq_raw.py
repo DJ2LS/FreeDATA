@@ -4,6 +4,8 @@ import api_validations
 import base64
 from queue import Queue
 from arq_session_iss import ARQSessionISS
+
+
 class ARQRawCommand(TxCommand):
 
     def set_params_from_api(self, apiParams):

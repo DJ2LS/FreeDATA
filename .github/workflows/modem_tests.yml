@@ -43,14 +43,6 @@ jobs:
         run: |
           pip3 install -r requirements.txt
 
-      - name: Build codec2
-        shell: bash
-        working-directory: modem/lib/
-        run: |
-          git clone https://github.com/drowe67/codec2.git
-          cd codec2
-          mkdir -p build_linux && cd build_linux && cmake .. && make
-
       - name: run config tests
         shell: bash
         run: |
