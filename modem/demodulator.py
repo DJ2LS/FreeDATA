@@ -37,7 +37,7 @@ class Demodulator():
         self.AUDIO_FRAMES_PER_BUFFER_RX = 4800
         self.buffer_overflow_counter = [0, 0, 0, 0, 0, 0, 0, 0]
         self.is_codec2_traffic_counter = 0
-        self.is_codec2_traffic_cooldown = 20
+        self.is_codec2_traffic_cooldown = 5
 
         self.audio_received_queue = audio_rx_q
         self.modem_received_queue = modem_rx_q
@@ -56,6 +56,12 @@ class Demodulator():
         # enable decoding of signalling modes
         self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
 
+        tci_rx_callback_thread = threading.Thread(
+            target=self.tci_rx_callback,
+            name="TCI RX CALLBACK THREAD",
+            daemon=True,
+        )
+        tci_rx_callback_thread.start()
 
     def init_codec2(self):
         # Open codec2 instances
@@ -217,27 +223,18 @@ class Demodulator():
                 rx_status = codec2.api.freedv_get_rx_status(freedv)
 
                 if rx_status not in [0]:
-                    # we need to disable this if in testmode as its causing problems with FIFO it seems
-                    self.states.set("is_codec2_traffic", True)
                     self.is_codec2_traffic_counter = self.is_codec2_traffic_cooldown
-                    if not self.states.channel_busy:
-                        self.log.debug("[MDM] Setting channel_busy since codec2 data detected")
-                        self.states.set("channel_busy", True)
-                        #self.channel_busy_delay += 10
                     self.log.debug(
                         "[MDM] [demod_audio] modem state", mode=mode_name, rx_status=rx_status,
                         sync_flag=codec2.api.rx_sync_flags_to_text[rx_status]
                     )
-                else:
-                    self.states.set("is_codec2_traffic", False)
 
                 # decrement codec traffic counter for making state smoother
                 if self.is_codec2_traffic_counter > 0:
                     self.is_codec2_traffic_counter -= 1
-                    self.states.set("is_codec2_traffic", True)
+                    self.states.set_channel_busy_condition_codec2(True)
                 else:
-                    self.states.set("is_codec2_traffic", False)
-
+                    self.states.set_channel_busy_condition_codec2(False)
                 if rx_status == 10:
                     state_buffer.append(rx_status)
 

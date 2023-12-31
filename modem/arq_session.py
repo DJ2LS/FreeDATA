@@ -46,7 +46,7 @@ class ARQSession():
         self.id = None
 
     def log(self, message, isWarning = False):
-        msg = f"[{type(self).__name__}]: {message}"
+        msg = f"[{type(self).__name__}][state={self.state}]: {message}"
         logger = self.logger.warn if isWarning else self.logger.info
         logger(msg)
 
@@ -87,4 +87,5 @@ class ARQSession():
                 getattr(self, action_name)(frame)
                 return
         
-        self.log(f"Ignoring unknow transition from state {self.state} with frame {frame['frame_type']}")
+        self.log(f"Ignoring unknow transition from state {self.state.name} with frame {frame['frame_type']}")
+

@@ -315,3 +315,17 @@ class TCICtrl:
     def close_rig(self):
         """ """
         return
+
+    def wait_until_transmitted(self, txbuffer_out):
+        duration = len(txbuffer_out) / 8000
+        timestamp_to_sleep = time.time() + duration
+        self.log.debug("[MDM] TCI calculated duration", duration=duration)
+        tci_timeout_reached = False
+        while not tci_timeout_reached:
+            if self.radiocontrol in ["tci"]:
+                if time.time() < timestamp_to_sleep:
+                    tci_timeout_reached = False
+                else:
+                    tci_timeout_reached = True
+            threading.Event().wait(0.01)
+            # if we're transmitting FreeDATA signals, reset channel busy state

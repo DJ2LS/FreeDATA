@@ -16,29 +16,42 @@ class IRS_State(Enum):
 
 class ARQSessionIRS(arq_session.ARQSession):
 
-    RETRIES_CONNECT = 3
-    RETRIES_TRANSFER = 3 # we need to increase this
-
-    TIMEOUT_CONNECT = 3
-    TIMEOUT_DATA = 12
+    TIMEOUT_CONNECT = 55 #14.2
+    TIMEOUT_DATA = 60
 
     STATE_TRANSITION = {
         IRS_State.NEW: { 
             FRAME_TYPE.ARQ_SESSION_OPEN.value : 'send_open_ack',
+            FRAME_TYPE.ARQ_STOP.value: 'send_stop_ack'
         },
         IRS_State.OPEN_ACK_SENT: { 
             FRAME_TYPE.ARQ_SESSION_OPEN.value: 'send_open_ack',
             FRAME_TYPE.ARQ_SESSION_INFO.value: 'send_info_ack',
+            FRAME_TYPE.ARQ_STOP.value: 'send_stop_ack'
+
         },
         IRS_State.INFO_ACK_SENT: {
             FRAME_TYPE.ARQ_SESSION_INFO.value: 'send_info_ack',
             FRAME_TYPE.ARQ_BURST_FRAME.value: 'receive_data',
+            FRAME_TYPE.ARQ_STOP.value: 'send_stop_ack'
+
         },
         IRS_State.BURST_REPLY_SENT: {
             FRAME_TYPE.ARQ_BURST_FRAME.value: 'receive_data',
+            FRAME_TYPE.ARQ_STOP.value: 'send_stop_ack'
+
         },
         IRS_State.ENDED: {
             FRAME_TYPE.ARQ_BURST_FRAME.value: 'receive_data',
+            FRAME_TYPE.ARQ_STOP.value: 'send_stop_ack'
+
+        },
+        IRS_State.FAILED: {
+            FRAME_TYPE.ARQ_BURST_FRAME.value: 'receive_data',
+            FRAME_TYPE.ARQ_STOP.value: 'send_stop_ack'
+        },
+        IRS_State.ABORTED: {
+            FRAME_TYPE.ARQ_STOP.value: 'send_stop_ack'
         },
     }
 
@@ -59,6 +72,8 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         self.transmitted_acks = 0
 
+        self.abort = False
+
     def set_decode_mode(self):
         self.modem.demodulator.set_decode_mode(self.get_mode_by_speed_level(self.speed_level))
 
@@ -76,7 +91,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         if not self.event_frame_received.wait(timeout):
             self.log("Timeout waiting for ISS. Session failed.")
             self.set_state(IRS_State.FAILED)
-            self.event_manager.send_arq_session_finished(False, self.id, self.dxcall, self.total_length, False)
+            self.event_manager.send_arq_session_finished(False, self.id, self.dxcall, self.total_length, False, self.state.name)
 
     def launch_transmit_and_wait(self, frame, timeout, mode):
         thread_wait = threading.Thread(target = self.transmit_and_wait, 
@@ -84,6 +99,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         thread_wait.start()
     
     def send_open_ack(self, open_frame):
+
         ack_frame = self.frame_factory.build_arq_session_open_ack(
             self.id,
             self.dxcall, 
@@ -100,23 +116,17 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.dx_snr.append(info_frame['snr'])
 
         self.log(f"New transfer of {self.total_length} bytes")
-        self.event_manager.send_arq_session_new(False, self.id, self.dxcall, self.total_length)
+        self.event_manager.send_arq_session_new(False, self.id, self.dxcall, self.total_length, self.state.name)
 
         self.calibrate_speed_settings()
         self.set_decode_mode()
 
         info_ack = self.frame_factory.build_arq_session_info_ack(
             self.id, self.total_crc, self.snr[0],
-            self.speed_level, self.frames_per_burst)
+            self.speed_level, self.frames_per_burst, flag_abort=self.abort)
         self.launch_transmit_and_wait(info_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(IRS_State.INFO_ACK_SENT)
 
-    def send_burst_nack(self):
-        self.calibrate_speed_settings()
-        self.set_decode_mode()
-        nack = self.frame_factory.build_arq_burst_ack(self.id, self.received_bytes, self.speed_level, self.frames_per_burst, self.snr[0])
-        self.launch_transmit_and_wait(nack, self.TIMEOUT_DATA, mode=FREEDV_MODE.signalling)
-        self.log("NACK sent")
 
     def process_incoming_data(self, frame):
         if frame['offset'] != self.received_bytes:
@@ -137,7 +147,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.received_bytes += len(data_part)
         self.log(f"Received {self.received_bytes}/{self.total_length} bytes")
         self.event_manager.send_arq_session_progress(
-            False, self.id, self.dxcall, self.received_bytes, self.total_length)
+            False, self.id, self.dxcall, self.received_bytes, self.total_length, self.state.name)
 
         return True
 
@@ -148,10 +158,10 @@ class ARQSessionIRS(arq_session.ARQSession):
         if not self.all_data_received():
             ack = self.frame_factory.build_arq_burst_ack(
                                                          self.id, self.received_bytes,
-                                                         self.speed_level, self.frames_per_burst, self.snr[0])
+                                                         self.speed_level, self.frames_per_burst, self.snr[0], flag_abort=self.abort)
 
             # increase ack counter
-            self.transmitted_acks += 1
+            # self.transmitted_acks += 1
             self.set_state(IRS_State.BURST_REPLY_SENT)
             self.launch_transmit_and_wait(ack, self.TIMEOUT_DATA, mode=FREEDV_MODE.signalling)
             return
@@ -169,7 +179,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.log("ACK sent")
             self.set_state(IRS_State.ENDED)
             self.event_manager.send_arq_session_finished(
-                False, self.id, self.dxcall, self.total_length, True)
+                False, self.id, self.dxcall, self.total_length, True, self.state.name, data=self.received_data)
 
         else:
 
@@ -184,7 +194,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.log("CRC fail at the end of transmission!")
             self.set_state(IRS_State.FAILED)
             self.event_manager.send_arq_session_finished(
-                False, self.id, self.dxcall, self.total_length, False)
+                False, self.id, self.dxcall, self.total_length, False, self.state.name)
 
 
     def calibrate_speed_settings(self):
@@ -199,3 +209,13 @@ class ARQSessionIRS(arq_session.ARQSession):
             if self.snr[0] >= self.SPEED_LEVEL_DICT[new_speed_level]["min_snr"]:
                 self.speed_level = new_speed_level
 
+    def abort_transmission(self):
+        self.log(f"Aborting transmission... setting abort flag")
+        self.abort = True
+
+    def send_stop_ack(self, stop_frame):
+        stop_ack = self.frame_factory.build_arq_stop_ack(self.id)
+        self.launch_transmit_and_wait(stop_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
+        self.set_state(IRS_State.ABORTED)
+        self.event_manager.send_arq_session_finished(
+                False, self.id, self.dxcall, self.total_length, False, self.state.name)
