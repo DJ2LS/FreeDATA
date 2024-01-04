@@ -86,8 +86,9 @@ def validate(req, param, validator, isRequired = True):
 def enqueue_tx_command(cmd_class, params = {}):
     command = cmd_class(app.config_manager.read(), app.state_manager, app.event_manager,  params)
     app.logger.info(f"Command {command.get_name()} running...")
-    command.run(app.modem_events, app.service_manager.modem) # TODO remove the app.modem_event custom queue
-
+    if command.run(app.modem_events, app.service_manager.modem): # TODO remove the app.modem_event custom queue
+        return True
+    return False
 ## REST API
 @app.route('/', methods=['GET'])
 def index():
@@ -220,9 +221,10 @@ def post_modem_send_raw():
         return api_response({"info": "endpoint for SENDING RAW DATA via POST"})
     if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
-    enqueue_tx_command(command_arq_raw.ARQRawCommand, request.json)
-    return api_response(request.json)
-
+    if enqueue_tx_command(command_arq_raw.ARQRawCommand, request.json):
+        return api_response(request.json)
+    else:
+        api_abort('Error executing command...', 500)
 @app.route('/modem/stop_transmission', methods=['POST'])
 def post_modem_send_raw_stop():
 

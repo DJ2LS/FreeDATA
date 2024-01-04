@@ -52,8 +52,9 @@ class ARQSessionISS(arq_session.ARQSession):
         }
     }
 
-    def __init__(self, config: dict, modem, dxcall: str, data: bytearray):
+    def __init__(self, config: dict, modem, dxcall: str, data: bytearray, state_manager):
         super().__init__(config, modem, dxcall)
+        self.state_manager = state_manager
         self.data = data
         self.data_crc = ''
 
@@ -61,11 +62,18 @@ class ARQSessionISS(arq_session.ARQSession):
 
         self.state = ISS_State.NEW
         self.id = self.generate_id()
+
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
 
     def generate_id(self):
-        return random.randint(1,255)
-    
+        while True:
+            random_int = random.randint(1,255)
+            if random_int not in self.state_manager.arq_iss_sessions:
+                return random_int
+            if len(self.state_manager.arq_iss_sessions) >= 255:
+                return False
+
+
     def transmit_wait_and_retry(self, frame_or_burst, timeout, retries, mode):
         while retries > 0:
             self.event_frame_received = threading.Event()
