@@ -88,6 +88,8 @@ class ARQSessionISS(arq_session.ARQSession):
         twr.start()
 
     def start(self):
+        self.event_manager.send_arq_session_new(
+            True, self.id, self.dxcall, len(self.data), self.state.name)
         session_open_frame = self.frame_factory.build_arq_session_open(self.dxcall, self.id)
         self.launch_twr(session_open_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(ISS_State.OPEN_SENT)

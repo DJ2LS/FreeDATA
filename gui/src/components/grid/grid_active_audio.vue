@@ -6,11 +6,6 @@ setActivePinia(pinia);
 import { useStateStore } from "../../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { record_audio } from "../../js/sock";
-
-function startStopRecordAudio() {
-  record_audio();
-}
 </script>
 <template>
   <div class="card w-100 h-100">
@@ -34,11 +29,7 @@ function startStopRecordAudio() {
               >Tune</a
             >
           </li>
-          <li>
-            <a class="dropdown-item" @click="startStopRecordAudio" href="#"
-              >Record</a
-            >
-          </li>
+
         </ul>
       </div>
     </div>

@@ -32,7 +32,8 @@ class EventManager:
     def send_arq_session_new(self, outbound: bool, session_id, dxcall, total_bytes, state):
         direction = 'outbound' if outbound else 'inbound'
         event = {
-            f"arq-transfer-{direction}": {
+                "type": "arq",
+                f"arq-transfer-{direction}": {
                 'session_id': session_id,
                 'dxcall': dxcall,
                 'total_bytes': total_bytes,
@@ -44,7 +45,8 @@ class EventManager:
     def send_arq_session_progress(self, outbound: bool, session_id, dxcall, received_bytes, total_bytes, state):
         direction = 'outbound' if outbound else 'inbound'
         event = {
-            f"arq-transfer-{direction}": {
+                "type": "arq",
+                f"arq-transfer-{direction}": {
                 'session_id': session_id,
                 'dxcall': dxcall,
                 'received_bytes': received_bytes,
@@ -59,7 +61,8 @@ class EventManager:
             data = base64.b64encode(data).decode("UTF-8")
         direction = 'outbound' if outbound else 'inbound'
         event = {
-            f"arq-transfer-{direction}": {
+                "type" : "arq",
+                f"arq-transfer-{direction}": {
                 'session_id': session_id,
                 'dxcall': dxcall,
                 'total_bytes': total_bytes,

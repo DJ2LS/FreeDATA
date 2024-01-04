@@ -102,7 +102,8 @@ class ARQSessionIRS(arq_session.ARQSession):
         thread_wait.start()
     
     def send_open_ack(self, open_frame):
-
+        self.event_manager.send_arq_session_new(
+            False, self.id, self.dxcall, 0, self.state.name)
         ack_frame = self.frame_factory.build_arq_session_open_ack(
             self.id,
             self.dxcall, 
