@@ -6,11 +6,11 @@ class Beacon:
 
     BEACON_LOOP_INTERVAL = 1
 
-    def __init__(self, config, states, event_queue, logger, modem):
+    def __init__(self, config, states, event_manager, logger, modem):
 
         self.modem_config = config
         self.states = states
-        self.event_queue = event_queue
+        self.event_manager = event_manager
         self.log = logger
         self.modem = modem
 
@@ -39,8 +39,8 @@ class Beacon:
                 True):
                 #not self.states.channel_busy):
 
-                cmd = command_beacon.BeaconCommand(self.modem_config, self.states, self.event_queue)
-                cmd.run(self.event_queue, self.modem)
+                cmd = command_beacon.BeaconCommand(self.modem_config, self.states, self.event_manager)
+                cmd.run(self.event_manager, self.modem)
                 self.event.wait(self.modem_config['MODEM']['beacon_interval'])
 
             self.event.wait(self.BEACON_LOOP_INTERVAL)

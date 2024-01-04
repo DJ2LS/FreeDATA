@@ -28,8 +28,8 @@ export function stateDispatcher(data) {
   stateStore.modem_connection = "connected";
 
   if (
-    data["freedata-message"] == "state-change" ||
-    data["freedata-message"] == "state"
+    data["type"] == "state-change" ||
+    data["type"] == "state"
   ) {
     stateStore.channel_busy = data["channel_busy"];
     stateStore.is_codec2_traffic = data["is_codec2_traffic"];
@@ -138,41 +138,7 @@ export function stateDispatcher(data) {
     */
   }
 }
-function build_HSL() {
-  //Use data from activities to build HSL list
-  for (let i = 0; i < stateStore.activities.length; i++) {
-    if (
-      stateStore.activities[i][1].direction != "received" ||
-      stateStore.activities[i][1].origin == undefined
-    ) {
-      //Ignore stations without origin and not received type
-      //console.warn("HSL: Ignoring " + stateStore.activities[i][0]);
-      continue;
-    }
-    let found = false;
-    for (let ii = 0; ii < stateStore.heard_stations.length; ii++) {
-      if (
-        stateStore.heard_stations[ii].origin ==
-        stateStore.activities[i][1].origin
-      ) {
-        //Station already in HSL, check if newer than one in HSL
-        found = true;
-        if (
-          stateStore.heard_stations[ii].timestamp <
-          stateStore.activities[i][1].timestamp
-        ) {
-          //Update existing entry in HSL
-          stateStore.heard_stations[ii] = stateStore.activities[i][1];
-        }
-      }
-    }
-    if (found == false) {
-      //Station not in HSL, let us add it
-      stateStore.heard_stations.push(stateStore.activities[i][1]);
-    }
-  }
-  stateStore.heard_stations.sort((a, b) => b.timestamp - a.timestamp); // b - a for reverse sort
-}
+
 
 export function eventDispatcher(data) {
   data = JSON.parse(data);
@@ -185,10 +151,10 @@ export function eventDispatcher(data) {
 
   console.info(data);
   if (data["scatter"] !== undefined) {
-    //console.warn("Got scatter data!!!!");
     stateStore.scatter = JSON.parse(data["scatter"]);
     return;
   }
+
 
   switch (data["ptt"]) {
     case true:
@@ -198,6 +164,13 @@ export function eventDispatcher(data) {
       stateStore.ptt_state = data.ptt;
       return;
   }
+
+  switch (data["type"]) {
+    case "hello-client":
+    console.log("hello client received")
+    return
+  }
+
 
   switch (data["freedata"]) {
     case "modem-message":
@@ -276,6 +249,70 @@ export function eventDispatcher(data) {
           break;
       }
   }
+
+    if (data['arq-transfer-outbound']) {
+         switch (data["arq-transfer-outbound"].state) {
+
+            case "OPEN_SENT":
+                console.log("state OPEN_ACK_SENT needs to be implemented")
+                return
+
+            case "INFO_SENT":
+                console.log("state INFO_ACK_SENT needs to be implemented")
+                return
+
+            case "BURST_SENT":
+                console.log("state BURST_REPLY_SENT needs to be implemented")
+                return
+
+            case "ABORTING":
+                console.log("state ABORTING needs to be implemented")
+                return
+
+            case "ABORTED":
+                console.log("state ABORTED needs to be implemented")
+                return
+
+            case "FAILED":
+                let message = "Transmission failed";
+                displayToast("danger", "bi-x-octagon", message, 5000);
+                return
+         }
+    }
+
+    if (data['arq-transfer-inbound']) {
+         switch (data["arq-transfer-inbound"].state) {
+
+            case "NEW":
+                console.log("state NEW needs to be implemented")
+                return
+
+            case "OPEN_ACK_SENT":
+                console.log("state OPEN_ACK_SENT needs to be implemented")
+                return
+
+            case "INFO_ACK_SENT":
+                console.log("state INFO_ACK_SENT needs to be implemented")
+                return
+
+            case "BURST_REPLY_SENT":
+                console.log("state BURST_REPLY_SENT needs to be implemented")
+                return
+
+            case "ENDED":
+                console.log("state ENDED needs to be implemented")
+                return
+
+            case "ABORTED":
+                console.log("state ABORTED needs to be implemented")
+                return
+
+            case "FAILED":
+                let message = "Transmission failed";
+                displayToast("danger", "bi-x-octagon", message, 5000);
+                return
+         }
+    }
 
   /*
 
@@ -492,4 +529,41 @@ export function eventDispatcher(data) {
     }
   }
   */
+}
+
+
+function build_HSL() {
+  //Use data from activities to build HSL list
+  for (let i = 0; i < stateStore.activities.length; i++) {
+    if (
+      stateStore.activities[i][1].direction != "received" ||
+      stateStore.activities[i][1].origin == undefined
+    ) {
+      //Ignore stations without origin and not received type
+      //console.warn("HSL: Ignoring " + stateStore.activities[i][0]);
+      continue;
+    }
+    let found = false;
+    for (let ii = 0; ii < stateStore.heard_stations.length; ii++) {
+      if (
+        stateStore.heard_stations[ii].origin ==
+        stateStore.activities[i][1].origin
+      ) {
+        //Station already in HSL, check if newer than one in HSL
+        found = true;
+        if (
+          stateStore.heard_stations[ii].timestamp <
+          stateStore.activities[i][1].timestamp
+        ) {
+          //Update existing entry in HSL
+          stateStore.heard_stations[ii] = stateStore.activities[i][1];
+        }
+      }
+    }
+    if (found == false) {
+      //Station not in HSL, let us add it
+      stateStore.heard_stations.push(stateStore.activities[i][1]);
+    }
+  }
+  stateStore.heard_stations.sort((a, b) => b.timestamp - a.timestamp); // b - a for reverse sort
 }

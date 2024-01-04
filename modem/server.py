@@ -17,6 +17,7 @@ import command_ping
 import command_feq
 import command_test
 import command_arq_raw
+import event_manager
 
 app = Flask(__name__)
 CORS(app)
@@ -49,6 +50,7 @@ app.state_queue = queue.Queue() # queue which holds latest states
 app.modem_events = queue.Queue() # queue which holds latest events
 app.modem_fft = queue.Queue() # queue which holds latest fft data
 app.modem_service = queue.Queue() # start / stop modem service
+app.event_manager = event_manager.EventManager([queue.Queue()])
 
 # init state manager
 app.state_manager = state_manager.StateManager(app.state_queue)

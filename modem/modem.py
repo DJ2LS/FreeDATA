@@ -22,7 +22,6 @@ import tci
 import cw
 from queues import RIGCTLD_COMMAND_QUEUE
 import audio
-import event_manager
 import demodulator
 
 TESTMODE = False
@@ -32,12 +31,11 @@ class RF:
 
     log = structlog.get_logger("RF")
 
-    def __init__(self, config, event_queue, fft_queue, service_queue, states) -> None:
+    def __init__(self, config, event_manager, fft_queue, service_queue, states) -> None:
         self.config = config
-        print(config)
         self.service_queue = service_queue
         self.states = states
-
+        self.event_manager = event_manager
         self.sampler_avg = 0
         self.buffer_avg = 0
 
@@ -78,7 +76,6 @@ class RF:
         self.modem_received_queue = queue.Queue()
         self.audio_received_queue = queue.Queue()
         self.data_queue_received = queue.Queue()
-        self.event_manager = event_manager.EventManager([event_queue])
         self.fft_queue = fft_queue
 
         self.demodulator = demodulator.Demodulator(self.config, 

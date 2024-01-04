@@ -79,7 +79,7 @@ class StateManager:
             msgtype = "state"
 
         return {
-            "freedata-message": msgtype,
+            "type": msgtype,
             "is_modem_running": self.is_modem_running,
             "is_beacon_running": self.is_beacon_running,
             "radio_status": self.radio_status,
