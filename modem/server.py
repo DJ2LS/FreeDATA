@@ -139,6 +139,7 @@ def post_cqcqcq():
 def post_beacon():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for controlling BEACON STATE via POST"})
+
     if not isinstance(request.json['enabled'], bool):
         api_abort(f"Incorrect value for 'enabled'. Shoud be bool.")
     if not app.state_manager.is_modem_running:

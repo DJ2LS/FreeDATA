@@ -98,7 +98,12 @@ class ARQSessionISS(arq_session.ARQSession):
         self.frames_per_burst = frame['frames_per_burst']
         self.log(f"Frames per burst set to {self.frames_per_burst}")
 
-    def send_info(self, frame):
+    def send_info(self, irs_frame):
+        # check if we received an abort flag
+        if irs_frame["flag"]["ABORT"]:
+            self.transmission_aborted(irs_frame)
+            return
+
         info_frame = self.frame_factory.build_arq_session_info(self.id, len(self.data), 
                                                                helpers.get_crc_32(self.data), 
                                                                self.snr[0])
@@ -116,6 +121,7 @@ class ARQSessionISS(arq_session.ARQSession):
             self.event_manager.send_arq_session_progress(
                 True, self.id, self.dxcall, self.confirmed_bytes, len(self.data), self.state.name)
 
+        # check if we received an abort flag
         if irs_frame["flag"]["ABORT"]:
             self.transmission_aborted(irs_frame)
             return
@@ -173,5 +179,8 @@ class ARQSessionISS(arq_session.ARQSession):
     def transmission_aborted(self, irs_frame):
         self.log("session aborted")
         self.set_state(ISS_State.ABORTED)
+        # break actual retries
+        self.event_frame_received.set()
+
         self.event_manager.send_arq_session_finished(
             True, self.id, self.dxcall, len(self.data), False, self.state.name)

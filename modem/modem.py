@@ -256,16 +256,10 @@ class RF:
         # Wait for some other thread that might be transmitting
         self.states.waitForTransmission()
         self.states.setTransmitting(True)
-        #self.states.waitForChannelBusy()
+        #self.states.channel_busy_event.wait()
 
 
         start_of_transmission = time.time()
-        # TODO Moved ptt toggle some steps before audio is ready for testing
-        # Toggle ptt early to save some time and send ptt state via socket
-        # self.radio.set_ptt(True)
-        # jsondata = {"ptt": "True"}
-        # data_out = json.dumps(jsondata)
-        # sock.SOCKET_QUEUE.put(data_out)
 
         # Open codec2 instance
         self.MODE = mode
