@@ -27,10 +27,7 @@ export function stateDispatcher(data) {
 
   stateStore.modem_connection = "connected";
 
-  if (
-    data["type"] == "state-change" ||
-    data["type"] == "state"
-  ) {
+  if (data["type"] == "state-change" || data["type"] == "state") {
     stateStore.channel_busy = data["channel_busy"];
     stateStore.is_codec2_traffic = data["is_codec2_traffic"];
     stateStore.is_modem_running = data["is_modem_running"];
@@ -139,7 +136,6 @@ export function stateDispatcher(data) {
   }
 }
 
-
 export function eventDispatcher(data) {
   data = JSON.parse(data);
 
@@ -155,7 +151,6 @@ export function eventDispatcher(data) {
     return;
   }
 
-
   switch (data["ptt"]) {
     case true:
     case false:
@@ -167,10 +162,9 @@ export function eventDispatcher(data) {
 
   switch (data["type"]) {
     case "hello-client":
-    console.log("hello client received")
-    return
+      console.log("hello client received");
+      return;
   }
-
 
   switch (data["freedata"]) {
     case "modem-message":
@@ -250,69 +244,67 @@ export function eventDispatcher(data) {
       }
   }
 
-    if (data['arq-transfer-outbound']) {
-         switch (data["arq-transfer-outbound"].state) {
+  if (data["arq-transfer-outbound"]) {
+    switch (data["arq-transfer-outbound"].state) {
+      case "OPEN_SENT":
+        console.log("state OPEN_ACK_SENT needs to be implemented");
+        return;
 
-            case "OPEN_SENT":
-                console.log("state OPEN_ACK_SENT needs to be implemented")
-                return
+      case "INFO_SENT":
+        console.log("state INFO_ACK_SENT needs to be implemented");
+        return;
 
-            case "INFO_SENT":
-                console.log("state INFO_ACK_SENT needs to be implemented")
-                return
+      case "BURST_SENT":
+        console.log("state BURST_REPLY_SENT needs to be implemented");
+        return;
 
-            case "BURST_SENT":
-                console.log("state BURST_REPLY_SENT needs to be implemented")
-                return
+      case "ABORTING":
+        console.log("state ABORTING needs to be implemented");
+        return;
 
-            case "ABORTING":
-                console.log("state ABORTING needs to be implemented")
-                return
+      case "ABORTED":
+        console.log("state ABORTED needs to be implemented");
+        return;
 
-            case "ABORTED":
-                console.log("state ABORTED needs to be implemented")
-                return
-
-            case "FAILED":
-                let message = "Transmission failed";
-                displayToast("danger", "bi-x-octagon", message, 5000);
-                return
-         }
+      case "FAILED":
+        let message = "Transmission failed";
+        displayToast("danger", "bi-x-octagon", message, 5000);
+        return;
     }
+  }
 
-    if (data['arq-transfer-inbound']) {
-         switch (data["arq-transfer-inbound"].state) {
+  if (data["arq-transfer-inbound"]) {
+    switch (data["arq-transfer-inbound"].state) {
+      case "NEW":
+        console.log("state NEW needs to be implemented");
+        return;
 
-            case "NEW":
-                console.log("state NEW needs to be implemented")
-                return
+      case "OPEN_ACK_SENT":
+        console.log("state OPEN_ACK_SENT needs to be implemented");
+        return;
 
-            case "OPEN_ACK_SENT":
-                console.log("state OPEN_ACK_SENT needs to be implemented")
-                return
+      case "INFO_ACK_SENT":
+        console.log("state INFO_ACK_SENT needs to be implemented");
+        return;
 
-            case "INFO_ACK_SENT":
-                console.log("state INFO_ACK_SENT needs to be implemented")
-                return
+      case "BURST_REPLY_SENT":
+        console.log("state BURST_REPLY_SENT needs to be implemented");
+        return;
 
-            case "BURST_REPLY_SENT":
-                console.log("state BURST_REPLY_SENT needs to be implemented")
-                return
+      case "ENDED":
+        console.log("state ENDED needs to be implemented");
+        return;
 
-            case "ENDED":
-                console.log("state ENDED needs to be implemented")
-                return
+      case "ABORTED":
+        console.log("state ABORTED needs to be implemented");
+        return;
 
-            case "ABORTED":
-                console.log("state ABORTED needs to be implemented")
-                return
-
-            case "FAILED":
-                let message = "Transmission failed";
-                displayToast("danger", "bi-x-octagon", message, 5000);
-                return
-         }
+      case "FAILED":
+        let message = "Transmission failed";
+        displayToast("danger", "bi-x-octagon", message, 5000);
+        return;
     }
+  }
 
   /*
 
@@ -530,7 +522,6 @@ export function eventDispatcher(data) {
   }
   */
 }
-
 
 function build_HSL() {
   //Use data from activities to build HSL list
