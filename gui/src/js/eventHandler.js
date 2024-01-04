@@ -24,10 +24,7 @@ export function connectionFailed(endpoint, event) {
 export function stateDispatcher(data) {
   data = JSON.parse(data);
   console.log(data);
-  if (
-    data["type"] == "state-change" ||
-    data["type"] == "state"
-  ) {
+  if (data["type"] == "state-change" || data["type"] == "state") {
     stateStore.channel_busy = data["channel_busy"];
     stateStore.is_codec2_traffic = data["is_codec2_traffic"];
     stateStore.is_modem_running = data["is_modem_running"];
@@ -43,10 +40,8 @@ export function stateDispatcher(data) {
     //Reverse entries so most recent is first
     stateStore.activities = Object.entries(data["activities"]).reverse();
     build_HSL();
-
   }
 }
-
 
 export function eventDispatcher(data) {
   data = JSON.parse(data);
@@ -66,91 +61,105 @@ export function eventDispatcher(data) {
       return;
   }
 
-  var message = ''
+  var message = "";
 
   switch (data["type"]) {
     case "hello-client":
-        message = "Connected to server";
-        displayToast("success", "bi-ethernet", message, 5000);
-        stateStore.modem_connection = "connected";
-        return;
+      message = "Connected to server";
+      displayToast("success", "bi-ethernet", message, 5000);
+      stateStore.modem_connection = "connected";
+      return;
 
     case "arq":
-        if (data['arq-transfer-outbound']) {
-             switch (data["arq-transfer-outbound"].state) {
-                case "NEW":
-                    message = `Type: ${ev.type}, Session ID: ${ev['arq-transfer-outbound'].session_id}, DXCall: ${ev['arq-transfer-outbound'].dxcall}, Total Bytes: ${ev['arq-transfer-outbound'].total_bytes}, State: ${ev['arq-transfer-outbound'].state}`;
-                    displayToast("success", "bi-check-circle", message, 5000);
-                    return
-                case "OPEN_SENT":
-                    console.log("state OPEN_SENT needs to be implemented")
-                    return
+      if (data["arq-transfer-outbound"]) {
+        switch (data["arq-transfer-outbound"].state) {
+          case "NEW":
+            message = `Type: ${ev.type}, Session ID: ${ev["arq-transfer-outbound"].session_id}, DXCall: ${ev["arq-transfer-outbound"].dxcall}, Total Bytes: ${ev["arq-transfer-outbound"].total_bytes}, State: ${ev["arq-transfer-outbound"].state}`;
+            displayToast("success", "bi-check-circle", message, 5000);
+            return;
+          case "OPEN_SENT":
+            console.log("state OPEN_SENT needs to be implemented");
+            return;
 
-                case "INFO_SENT":
-                    console.log("state INFO_SENT needs to be implemented")
-                    return
+          case "INFO_SENT":
+            console.log("state INFO_SENT needs to be implemented");
+            return;
 
-                case "BURST_SENT":
-                    message = `Type: ${ev.type}, Session ID: ${data['arq-transfer-outbound'].session_id}, DXCall: ${data['arq-transfer-outbound'].dxcall}, Received Bytes: ${data['arq-transfer-outbound'].received_bytes}/${data['arq-transfer-outbound'].total_bytes}, State: ${data['arq-transfer-outbound'].state}`;
-                    displayToast("info", "bi-info-circle", message, 5000);
-                    return
+          case "BURST_SENT":
+            message = `Type: ${ev.type}, Session ID: ${data["arq-transfer-outbound"].session_id}, DXCall: ${data["arq-transfer-outbound"].dxcall}, Received Bytes: ${data["arq-transfer-outbound"].received_bytes}/${data["arq-transfer-outbound"].total_bytes}, State: ${data["arq-transfer-outbound"].state}`;
+            displayToast("info", "bi-info-circle", message, 5000);
+            return;
 
-                case "ABORTING":
-                    console.log("state ABORTING needs to be implemented")
-                    return
+          case "ABORTING":
+            console.log("state ABORTING needs to be implemented");
+            return;
 
-                case "ABORTED":
-                    message = `Type: ${ev.type}, Session ID: ${data['arq-transfer-outbound'].session_id}, DXCall: ${data['arq-transfer-outbound'].dxcall}, Total Bytes: ${data['arq-transfer-outbound'].total_bytes}, Success: ${data['arq-transfer-outbound'].success ? 'Yes' : 'No'}, State: ${data['arq-transfer-outbound'].state}, Data: ${data['arq-transfer-outbound'].data ? 'Available' : 'Not Available'}`;
-                    displayToast("warning", "bi-exclamation-triangle", message, 5000);
-                    return
+          case "ABORTED":
+            message = `Type: ${ev.type}, Session ID: ${
+              data["arq-transfer-outbound"].session_id
+            }, DXCall: ${data["arq-transfer-outbound"].dxcall}, Total Bytes: ${
+              data["arq-transfer-outbound"].total_bytes
+            }, Success: ${
+              data["arq-transfer-outbound"].success ? "Yes" : "No"
+            }, State: ${data["arq-transfer-outbound"].state}, Data: ${
+              data["arq-transfer-outbound"].data ? "Available" : "Not Available"
+            }`;
+            displayToast("warning", "bi-exclamation-triangle", message, 5000);
+            return;
 
-                case "FAILED":
-                    message = `Type: ${ev.type}, Session ID: ${ev['arq-transfer-outbound'].session_id}, DXCall: ${ev['arq-transfer-outbound'].dxcall}, Total Bytes: ${ev['arq-transfer-outbound'].total_bytes}, Success: ${ev['arq-transfer-outbound'].success ? 'Yes' : 'No'}, State: ${ev['arq-transfer-outbound'].state}, Data: ${ev['arq-transfer-outbound'].data ? 'Available' : 'Not Available'}`;
-                    displayToast("danger", "bi-x-octagon", message, 5000);
-                    return
-             }
+          case "FAILED":
+            message = `Type: ${ev.type}, Session ID: ${
+              ev["arq-transfer-outbound"].session_id
+            }, DXCall: ${ev["arq-transfer-outbound"].dxcall}, Total Bytes: ${
+              ev["arq-transfer-outbound"].total_bytes
+            }, Success: ${
+              ev["arq-transfer-outbound"].success ? "Yes" : "No"
+            }, State: ${ev["arq-transfer-outbound"].state}, Data: ${
+              ev["arq-transfer-outbound"].data ? "Available" : "Not Available"
+            }`;
+            displayToast("danger", "bi-x-octagon", message, 5000);
+            return;
         }
+      }
 
-        if (data['arq-transfer-inbound']) {
-             switch (data["arq-transfer-inbound"].state) {
-                case "NEW":
-                    message = `Type: ${ev.type}, Session ID: ${ev['arq-transfer-outbound'].session_id}, DXCall: ${ev['arq-transfer-outbound'].dxcall}, State: ${ev['arq-transfer-outbound'].state}`;
-                    displayToast("info", "bi-info-circle", message, 5000);
-                    return
+      if (data["arq-transfer-inbound"]) {
+        switch (data["arq-transfer-inbound"].state) {
+          case "NEW":
+            message = `Type: ${ev.type}, Session ID: ${ev["arq-transfer-outbound"].session_id}, DXCall: ${ev["arq-transfer-outbound"].dxcall}, State: ${ev["arq-transfer-outbound"].state}`;
+            displayToast("info", "bi-info-circle", message, 5000);
+            return;
 
-                case "OPEN_ACK_SENT":
-                    message = `Session ID: ${data['arq-transfer-inbound'].session_id}, DXCall: ${data['arq-transfer-inbound'].dxcall}, Total Bytes: ${data['arq-transfer-inbound'].total_bytes}, State: ${data['arq-transfer-inbound'].state}`;
-                    displayToast("info", "bi-arrow-left-right", message, 5000);
-                    return
+          case "OPEN_ACK_SENT":
+            message = `Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, Total Bytes: ${data["arq-transfer-inbound"].total_bytes}, State: ${data["arq-transfer-inbound"].state}`;
+            displayToast("info", "bi-arrow-left-right", message, 5000);
+            return;
 
-                case "INFO_ACK_SENT":
-                    message = `Type: ${ev.type}, Session ID: ${data['arq-transfer-inbound'].session_id}, DXCall: ${data['arq-transfer-inbound'].dxcall}, Received Bytes: ${data['arq-transfer-inbound'].received_bytes}/${data['arq-transfer-inbound'].total_bytes}, State: ${data['arq-transfer-inbound'].state}`;
-                    displayToast("info", "bi-info-circle", message, 5000);
-                    return
+          case "INFO_ACK_SENT":
+            message = `Type: ${ev.type}, Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, Received Bytes: ${data["arq-transfer-inbound"].received_bytes}/${data["arq-transfer-inbound"].total_bytes}, State: ${data["arq-transfer-inbound"].state}`;
+            displayToast("info", "bi-info-circle", message, 5000);
+            return;
 
-                case "BURST_REPLY_SENT":
-                    console.log("state BURST_REPLY_SENT needs to be implemented")
-                    return
+          case "BURST_REPLY_SENT":
+            console.log("state BURST_REPLY_SENT needs to be implemented");
+            return;
 
-                case "ENDED":
-                    console.log("state ENDED needs to be implemented")
-                    return
+          case "ENDED":
+            console.log("state ENDED needs to be implemented");
+            return;
 
-                case "ABORTED":
-                    console.log("state ABORTED needs to be implemented")
-                    return
+          case "ABORTED":
+            console.log("state ABORTED needs to be implemented");
+            return;
 
-                case "FAILED":
-                    message = `Type: ${ev.type}, Session ID: ${data['arq-transfer-outbound'].session_id}, DXCall: ${data['arq-transfer-outbound'].dxcall}, Received Bytes: ${data['arq-transfer-outbound'].received_bytes}/${data['arq-transfer-outbound'].total_bytes}, State: ${data['arq-transfer-outbound'].state}`;
-                    displayToast("info", "bi-info-circle", message, 5000);
-                    return
-             }
+          case "FAILED":
+            message = `Type: ${ev.type}, Session ID: ${data["arq-transfer-outbound"].session_id}, DXCall: ${data["arq-transfer-outbound"].dxcall}, Received Bytes: ${data["arq-transfer-outbound"].received_bytes}/${data["arq-transfer-outbound"].total_bytes}, State: ${data["arq-transfer-outbound"].state}`;
+            displayToast("info", "bi-info-circle", message, 5000);
+            return;
         }
-        return
-
+      }
+      return;
   }
 }
-
 
 function build_HSL() {
   //Use data from activities to build HSL list

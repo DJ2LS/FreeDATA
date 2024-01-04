@@ -5,7 +5,6 @@ setActivePinia(pinia);
 
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
-
 </script>
 <template>
   <div class="card mb-1">
@@ -28,7 +27,6 @@ const state = useStateStore(pinia);
             >
               Tune
             </button>
-
           </div>
           <div class="col-1 text-end">
             <button
