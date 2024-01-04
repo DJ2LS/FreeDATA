@@ -16,7 +16,6 @@ class SM:
         self.beacon = False
         self.app = app
         self.config = self.app.config_manager.read()
-        self.modem_events = app.modem_events
         self.modem_fft = app.modem_fft
         self.modem_service = app.modem_service
         self.states = app.state_manager

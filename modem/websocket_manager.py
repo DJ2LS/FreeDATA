@@ -26,7 +26,6 @@ def handle_connection(sock, client_list, event_queue):
 def transmit_sock_data_worker(client_list, event_queue):
     while True:
         event = event_queue.get()
-
         if isinstance(event, str):
             print(f"WARNING: Queue event:\n'{event}'\n still in string format")
             json_event = event

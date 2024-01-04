@@ -79,7 +79,7 @@ export function eventDispatcher(data) {
         if (data['arq-transfer-outbound']) {
              switch (data["arq-transfer-outbound"].state) {
                 case "NEW":
-                    message = `Type: ${ev.type}, Session ID: ${ev['arq-transfer-outbound'].session_id}, DXCall: ${ev['arq-transfer-outbound'].dxcall}, Total Bytes: ${ev['arq-transfer-outbound'].total_bytes}, State: ${ev['arq-transfer-outbound'].state}`;
+                    message = `Type: ${data.type}, Session ID: ${data['arq-transfer-outbound'].session_id}, DXCall: ${data['arq-transfer-outbound'].dxcall}, Total Bytes: ${data['arq-transfer-outbound'].total_bytes}, State: ${data['arq-transfer-outbound'].state}`;
                     displayToast("success", "bi-check-circle", message, 5000);
                     return
                 case "OPEN_SENT":
@@ -91,7 +91,7 @@ export function eventDispatcher(data) {
                     return
 
                 case "BURST_SENT":
-                    message = `Type: ${ev.type}, Session ID: ${data['arq-transfer-outbound'].session_id}, DXCall: ${data['arq-transfer-outbound'].dxcall}, Received Bytes: ${data['arq-transfer-outbound'].received_bytes}/${data['arq-transfer-outbound'].total_bytes}, State: ${data['arq-transfer-outbound'].state}`;
+                    message = `Type: ${data.type}, Session ID: ${data['arq-transfer-outbound'].session_id}, DXCall: ${data['arq-transfer-outbound'].dxcall}, Received Bytes: ${data['arq-transfer-outbound'].received_bytes}/${data['arq-transfer-outbound'].total_bytes}, State: ${data['arq-transfer-outbound'].state}`;
                     displayToast("info", "bi-info-circle", message, 5000);
                     return
 
@@ -100,12 +100,12 @@ export function eventDispatcher(data) {
                     return
 
                 case "ABORTED":
-                    message = `Type: ${ev.type}, Session ID: ${data['arq-transfer-outbound'].session_id}, DXCall: ${data['arq-transfer-outbound'].dxcall}, Total Bytes: ${data['arq-transfer-outbound'].total_bytes}, Success: ${data['arq-transfer-outbound'].success ? 'Yes' : 'No'}, State: ${data['arq-transfer-outbound'].state}, Data: ${data['arq-transfer-outbound'].data ? 'Available' : 'Not Available'}`;
+                    message = `Type: ${data.type}, Session ID: ${data['arq-transfer-outbound'].session_id}, DXCall: ${data['arq-transfer-outbound'].dxcall}, Total Bytes: ${data['arq-transfer-outbound'].total_bytes}, Success: ${data['arq-transfer-outbound'].success ? 'Yes' : 'No'}, State: ${data['arq-transfer-outbound'].state}, Data: ${data['arq-transfer-outbound'].data ? 'Available' : 'Not Available'}`;
                     displayToast("warning", "bi-exclamation-triangle", message, 5000);
                     return
 
                 case "FAILED":
-                    message = `Type: ${ev.type}, Session ID: ${ev['arq-transfer-outbound'].session_id}, DXCall: ${ev['arq-transfer-outbound'].dxcall}, Total Bytes: ${ev['arq-transfer-outbound'].total_bytes}, Success: ${ev['arq-transfer-outbound'].success ? 'Yes' : 'No'}, State: ${ev['arq-transfer-outbound'].state}, Data: ${ev['arq-transfer-outbound'].data ? 'Available' : 'Not Available'}`;
+                    message = `Type: ${data.type}, Session ID: ${data['arq-transfer-outbound'].session_id}, DXCall: ${data['arq-transfer-outbound'].dxcall}, Total Bytes: ${data['arq-transfer-outbound'].total_bytes}, Success: ${data['arq-transfer-outbound'].success ? 'Yes' : 'No'}, State: ${data['arq-transfer-outbound'].state}, Data: ${data['arq-transfer-outbound'].data ? 'Available' : 'Not Available'}`;
                     displayToast("danger", "bi-x-octagon", message, 5000);
                     return
              }
@@ -114,7 +114,7 @@ export function eventDispatcher(data) {
         if (data['arq-transfer-inbound']) {
              switch (data["arq-transfer-inbound"].state) {
                 case "NEW":
-                    message = `Type: ${ev.type}, Session ID: ${ev['arq-transfer-outbound'].session_id}, DXCall: ${ev['arq-transfer-outbound'].dxcall}, State: ${ev['arq-transfer-outbound'].state}`;
+                    message = `Type: ${data.type}, Session ID: ${data['arq-transfer-outbound'].session_id}, DXCall: ${data['arq-transfer-outbound'].dxcall}, State: ${data['arq-transfer-outbound'].state}`;
                     displayToast("info", "bi-info-circle", message, 5000);
                     return
 
@@ -124,7 +124,7 @@ export function eventDispatcher(data) {
                     return
 
                 case "INFO_ACK_SENT":
-                    message = `Type: ${ev.type}, Session ID: ${data['arq-transfer-inbound'].session_id}, DXCall: ${data['arq-transfer-inbound'].dxcall}, Received Bytes: ${data['arq-transfer-inbound'].received_bytes}/${data['arq-transfer-inbound'].total_bytes}, State: ${data['arq-transfer-inbound'].state}`;
+                    message = `Type: ${data.type}, Session ID: ${data['arq-transfer-inbound'].session_id}, DXCall: ${data['arq-transfer-inbound'].dxcall}, Received Bytes: ${data['arq-transfer-inbound'].received_bytes}/${data['arq-transfer-inbound'].total_bytes}, State: ${data['arq-transfer-inbound'].state}`;
                     displayToast("info", "bi-info-circle", message, 5000);
                     return
 
@@ -141,7 +141,7 @@ export function eventDispatcher(data) {
                     return
 
                 case "FAILED":
-                    message = `Type: ${ev.type}, Session ID: ${data['arq-transfer-outbound'].session_id}, DXCall: ${data['arq-transfer-outbound'].dxcall}, Received Bytes: ${data['arq-transfer-outbound'].received_bytes}/${data['arq-transfer-outbound'].total_bytes}, State: ${data['arq-transfer-outbound'].state}`;
+                    message = `Type: ${data.type}, Session ID: ${data['arq-transfer-outbound'].session_id}, DXCall: ${data['arq-transfer-outbound'].dxcall}, Received Bytes: ${data['arq-transfer-outbound'].received_bytes}/${data['arq-transfer-outbound'].total_bytes}, State: ${data['arq-transfer-outbound'].state}`;
                     displayToast("info", "bi-info-circle", message, 5000);
                     return
              }
