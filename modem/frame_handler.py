@@ -73,13 +73,13 @@ class FrameHandler():
 
     def make_event(self):
         event = {
-            "freedata": "modem-message",
+            "type": "frame-handler",
             "received": self.details['frame']['frame_type'],
-            "uuid": str(uuid.uuid4()),
             "timestamp": int(time.time()),
             "mycallsign": self.config['STATION']['mycall'],
+            "myssid": self.config['STATION']['myssid'],
             "snr": str(self.details['snr']),
-        }        
+        }
         if 'origin' in self.details['frame']:
             event['dxcallsign'] = self.details['frame']['origin']
         return event
@@ -101,7 +101,6 @@ class FrameHandler():
         pass
 
     def log(self):
-        return
         self.logger.info(f"[Frame Handler] Handling frame {self.details['frame']['frame_type']}")
 
     def handle(self, frame, snr, frequency_offset, freedv_inst, bytes_per_frame):
@@ -114,5 +113,5 @@ class FrameHandler():
         self.log()
         self.add_to_heard_stations()
         self.add_to_activity_list()
-        self.emit_event()
+        #self.emit_event()
         self.follow_protocol()

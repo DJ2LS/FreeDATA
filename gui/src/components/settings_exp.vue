@@ -10,24 +10,6 @@ import { settingsStore as settings } from "../store/settingsStore.js";
 
 <template>
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Enable FSK mode</label>
-    <label class="input-group-text w-50">
-      <div class="form-check form-switch form-check-inline ms-2">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          id="fskModeSwitch"
-          @change="setConfig"
-          v-model="settings.remote.MODEM.enable_fsk"
-          disabled
-        />
-        <label class="form-check-label" for="fskModeSwitch"
-          >not available, yet</label
-        >
-      </div>
-    </label>
-  </div>
-  <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50">Enable MESH protocol</label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline ms-2">

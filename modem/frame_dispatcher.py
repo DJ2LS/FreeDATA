@@ -38,26 +38,25 @@ class DISPATCHER():
         FR_TYPE.FEC_WAKEUP.value: {"class": FrameHandler, "name":  "FEC WAKEUP"},
     }
 
-    def __init__(self, config, event_queue, states, modem):
+    def __init__(self, config, event_manager, states, modem):
         self.log = structlog.get_logger("frame_dispatcher")
 
         self.log.info("loading frame dispatcher.....\n")
         self.config = config
-        self.event_queue = event_queue
         self.states = states
+        self.event_manager = event_manager
 
-        self._initialize_handlers(config, event_queue, states)
+        self._initialize_handlers(config, states)
 
         self.modem = modem
         self.data_queue_received = modem.data_queue_received
 
         self.arq_sessions = []
 
-    def _initialize_handlers(self, config, event_queue, states):
+    def _initialize_handlers(self, config, states):
         """Initializes various data handlers."""
 
         self.frame_factory = DataFrameFactory(config)
-        self.event_manager = event_manager.EventManager([event_queue])
 
     def start(self):
         """Starts worker threads for transmit and receive operations."""

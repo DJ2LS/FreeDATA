@@ -25,6 +25,7 @@ function connect(endpoint, dispatcher) {
   // handle data
   socket.addEventListener("message", function (event) {
     dispatcher(event.data);
+    return;
   });
 
   // handle errors
