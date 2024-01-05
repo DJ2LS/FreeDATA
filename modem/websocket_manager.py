@@ -8,7 +8,7 @@ fft_client_list = set()
 states_client_list = set()
 
 def handle_connection(sock, client_list, event_queue):
-    event_queue.put({"freedata-message": "hello-client"})
+    event_queue.put({"type": "hello-client"})
     
     client_list.add(sock)
     while True:
@@ -26,13 +26,11 @@ def handle_connection(sock, client_list, event_queue):
 def transmit_sock_data_worker(client_list, event_queue):
     while True:
         event = event_queue.get()
-
         if isinstance(event, str):
             print(f"WARNING: Queue event:\n'{event}'\n still in string format")
             json_event = event
         else:
             json_event = json.dumps(event)
-
         clients = client_list.copy()
         for client in clients:
             try:

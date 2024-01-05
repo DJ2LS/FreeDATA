@@ -5,12 +5,6 @@ setActivePinia(pinia);
 
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
-
-import { record_audio } from "../js/sock";
-
-function startStopRecordAudio() {
-  record_audio();
-}
 </script>
 <template>
   <div class="card mb-1">
@@ -32,18 +26,6 @@ function startStopRecordAudio() {
               class="btn btn-sm btn-outline-secondary me-1"
             >
               Tune
-            </button>
-            <button
-              type="button"
-              id="startStopRecording"
-              class="btn btn-sm"
-              @click="startStopRecordAudio()"
-              v-bind:class="{
-                'btn-outline-secondary': state.audio_recording == false,
-                'btn-secondary': state.audio_recording == true,
-              }"
-            >
-              Record
             </button>
           </div>
           <div class="col-1 text-end">

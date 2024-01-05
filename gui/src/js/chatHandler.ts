@@ -18,7 +18,12 @@ import { settingsStore as settings } from "../store/settingsStore.js";
 import { displayToast } from "./popupHandler.js";
 
 //const FD = require("./src/js/freedata.js");
-import { btoa_FD, sortByProperty } from "./freedata.js";
+import {
+  atob_FD,
+  btoa_FD,
+  sortByProperty,
+  sortByPropertyDesc,
+} from "./freedata.js";
 
 import { sendModemARQRaw } from "../js/api.js";
 
@@ -859,27 +864,39 @@ export function newMessageReceived(message, protocol) {
 
 
     */
+
   console.log(protocol);
+
+  var encoded_data = atob_FD(message);
+  var splitted_data = encoded_data.split(split_char);
+
+  // new message received
+  if (splitted_data[0] == "m") {
+    console.log(splitted_data);
+    message = splitted_data;
+  } else {
+    return;
+  }
 
   let newChatObj: messageDefaultObject = {
     command: "msg",
-    hmac_signed: protocol["hmac_signed"],
+    hmac_signed: false,
     percent: 100,
-    bytesperminute: protocol["bytesperminute"],
+    bytesperminute: 0,
     is_new: true,
     _id: message[3],
     timestamp: message[4],
-    dxcallsign: protocol["dxcallsign"],
-    dxgrid: protocol["dxgrid"],
+    dxcallsign: protocol["dxcall"],
+    dxgrid: "",
     msg: message[5],
     checksum: message[2],
-    type: protocol["status"],
-    status: protocol["status"],
+    type: "received",
+    status: "received",
     attempt: 1,
     uuid: message[3],
-    duration: protocol["duration"],
-    nacks: protocol["nacks"],
-    speed_list: protocol["speed_list"],
+    duration: 0,
+    nacks: 0,
+    speed_list: "[]",
     _attachments: {
       [message[6]]: {
         content_type: message[7],
