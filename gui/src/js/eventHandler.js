@@ -61,42 +61,32 @@ export function eventDispatcher(data) {
       return;
   }
 
-      switch (data["modem"]) {
-        case "started":
-          displayToast("success", "bi-arrow-left-right", "Modem started", 5000);
-          return;
+  switch (data["modem"]) {
+    case "started":
+      displayToast("success", "bi-arrow-left-right", "Modem started", 5000);
+      return;
 
-        case "stopped":
-          displayToast("success", "bi-arrow-left-right", "Modem stopped", 5000);
-          return;
+    case "stopped":
+      displayToast("success", "bi-arrow-left-right", "Modem stopped", 5000);
+      return;
 
-        case "restarted":
-          displayToast(
-            "secondary",
-            "bi-bootstrap-reboot",
-            "Modem restarted",
-            5000,
-          );
-          return;
+    case "restarted":
+      displayToast("secondary", "bi-bootstrap-reboot", "Modem restarted", 5000);
+      return;
 
-        case "failed":
-          displayToast(
-            "danger",
-            "bi-bootstrap-reboot",
-            "Modem startup failed | bad config?",
-            5000,
-          );
-          return;
-        default:
-          console.warn("Unknown event message received:");
-          console.warn(data);
-          break;
-      }
-
-
-
-
-
+    case "failed":
+      displayToast(
+        "danger",
+        "bi-bootstrap-reboot",
+        "Modem startup failed | bad config?",
+        5000,
+      );
+      return;
+    default:
+      console.warn("Unknown event message received:");
+      console.warn(data);
+      break;
+  }
 
   var message = "";
 
