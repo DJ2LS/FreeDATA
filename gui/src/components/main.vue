@@ -56,16 +56,17 @@ function stopAllTransmissions() {
           >
             <main_modem_healthcheck />
 
-            <a
+       <a
               class="list-group-item list-group-item-dark list-group-item-action border-0 rounded-3 mb-2 active"
-              id="list-modem-list"
+              id="list-grid-list"
               data-bs-toggle="list"
               href="#list-grid"
               role="tab"
-              aria-controls="list-modem"
-              title="Home"
-              ><i class="bi bi-house-door-fill h3"></i
+              aria-controls="list-grid"
+              title="Grid"
+              ><i class="bi bi-grid h3"></i
             ></a>
+
             <a
               class="list-group-item list-group-item-dark list-group-item-action border-0 rounded-3 mb-2"
               id="list-chat-list"
@@ -109,17 +110,6 @@ function stopAllTransmissions() {
             ></a>
             <a
               class="list-group-item list-group-item-dark list-group-item-action border-0 rounded-3 mb-2"
-              id="list-grid-list"
-              data-bs-toggle="list"
-              href="#list-modem"
-              role="tab"
-              aria-controls="list-grid"
-              title="Grid test"
-              ><i class="bi bi-grid h3"></i
-            ></a>
-
-            <a
-              class="list-group-item list-group-item-dark list-group-item-action border-0 rounded-3 mb-2"
               id="list-settings-list"
               data-bs-toggle="list"
               href="#list-settings"
@@ -152,9 +142,9 @@ function stopAllTransmissions() {
         <div class="tab-content" id="nav-tabContent-settings">
           <div
             class="tab-pane fade"
-            id="list-modem"
+            id="list-home"
             role="tabpanel"
-            aria-labelledby="list-modem-list"
+            aria-labelledby="list-home-list"
           >
             <!-- TOP NAVBAR -->
             <div
