@@ -50,7 +50,7 @@
     "emoji-picker-element-data": "1.6.0",
     "file-saver": "2.0.5",
     "gridstack": "10.0.1",
-    "mime": "4.0.0",
+    "mime": "4.0.1",
     "nconf": "^0.12.1",
     "pinia": "2.1.7",
     "pouchdb": "8.0.1",
