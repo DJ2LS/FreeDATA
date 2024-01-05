@@ -421,7 +421,7 @@ class RF:
             # we need to wait manually for tci processing
             self.tci_module.wait_until_transmitted(audio_48k)
         else:
-            sd.play(audio_48k, blocking=True)
+            sd.play(audio_48k, blocksize=1024, blocking=True)
         return
 
     def init_rig_control(self):
