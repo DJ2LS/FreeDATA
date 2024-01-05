@@ -82,10 +82,6 @@ export function eventDispatcher(data) {
         5000,
       );
       return;
-    default:
-      console.warn("Unknown event message received:");
-      console.warn(data);
-      break;
   }
 
   var message = "";
@@ -152,7 +148,7 @@ export function eventDispatcher(data) {
       if (data["arq-transfer-inbound"]) {
         switch (data["arq-transfer-inbound"].state) {
           case "NEW":
-            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-outbound"].session_id}, DXCall: ${data["arq-transfer-outbound"].dxcall}, State: ${data["arq-transfer-outbound"].state}`;
+            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, State: ${data["arq-transfer-inbound"].state}`;
             displayToast("info", "bi-info-circle", message, 5000);
             return;
 
@@ -167,11 +163,15 @@ export function eventDispatcher(data) {
             return;
 
           case "BURST_REPLY_SENT":
-            console.log("state BURST_REPLY_SENT needs to be implemented");
+            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, Received Bytes: ${data["arq-transfer-inbound"].received_bytes}/${data["arq-transfer-inbound"].total_bytes}, State: ${data["arq-transfer-inbound"].state}`;
+            displayToast("info", "bi-info-circle", message, 5000);
             return;
 
           case "ENDED":
-            console.log("state ENDED needs to be implemented");
+            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, Received Bytes: ${data["arq-transfer-inbound"].received_bytes}/${data["arq-transfer-inbound"].total_bytes}, State: ${data["arq-transfer-inbound"].state}`;
+            displayToast("info", "bi-info-circle", message, 5000);
+            // Forward data to chat module
+            newMessageReceived(data["arq-transfer-inbound"].data, data["arq-transfer-inbound"]);
             return;
 
           case "ABORTED":
