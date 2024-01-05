@@ -79,7 +79,7 @@ class StateManager:
             msgtype = "state"
 
         return {
-            "freedata-message": msgtype,
+            "type": msgtype,
             "is_modem_running": self.is_modem_running,
             "is_beacon_running": self.is_beacon_running,
             "radio_status": self.radio_status,
@@ -109,13 +109,15 @@ class StateManager:
 
     def register_arq_iss_session(self, session):
         if session.id in self.arq_iss_sessions:
-            raise RuntimeError(f"ARQ ISS Session '{session.id}' already exists!")
+            return False
         self.arq_iss_sessions[session.id] = session
+        return True
 
     def register_arq_irs_session(self, session):
         if session.id in self.arq_irs_sessions:
-            raise RuntimeError(f"ARQ IRS Session '{session.id}' already exists!")
+            return False
         self.arq_irs_sessions[session.id] = session
+        return True
 
     def get_arq_iss_session(self, id):
         if id not in self.arq_iss_sessions:

@@ -32,7 +32,8 @@ class EventManager:
     def send_arq_session_new(self, outbound: bool, session_id, dxcall, total_bytes, state):
         direction = 'outbound' if outbound else 'inbound'
         event = {
-            f"arq-transfer-{direction}": {
+                "type": "arq",
+                f"arq-transfer-{direction}": {
                 'session_id': session_id,
                 'dxcall': dxcall,
                 'total_bytes': total_bytes,
@@ -44,7 +45,8 @@ class EventManager:
     def send_arq_session_progress(self, outbound: bool, session_id, dxcall, received_bytes, total_bytes, state):
         direction = 'outbound' if outbound else 'inbound'
         event = {
-            f"arq-transfer-{direction}": {
+                "type": "arq",
+                f"arq-transfer-{direction}": {
                 'session_id': session_id,
                 'dxcall': dxcall,
                 'received_bytes': received_bytes,
@@ -54,18 +56,35 @@ class EventManager:
         }
         self.broadcast(event)
 
-    def send_arq_session_finished(self, outbound: bool, session_id, dxcall, total_bytes, success: bool, state, data=False):
+    def send_arq_session_finished(self, outbound: bool, session_id, dxcall, total_bytes, success: bool, state: bool, data=False):
         if data:
             data = base64.b64encode(data).decode("UTF-8")
         direction = 'outbound' if outbound else 'inbound'
         event = {
-            f"arq-transfer-{direction}": {
+                "type" : "arq",
+                f"arq-transfer-{direction}": {
                 'session_id': session_id,
                 'dxcall': dxcall,
                 'total_bytes': total_bytes,
-                'success': success,
+                'success': bool(success),
                 'state': state,
                 'data': data
             }
         }
+        self.broadcast(event)
+
+    def modem_started(self):
+        event = {"modem": "started"}
+        self.broadcast(event)
+
+    def modem_restarted(self):
+        event = {"modem": "restarted"}
+        self.broadcast(event)
+
+    def modem_stopped(self):
+        event = {"modem": "stopped"}
+        self.broadcast(event)
+
+    def modem_failed(self):
+        event = {"modem": "failed"}
         self.broadcast(event)

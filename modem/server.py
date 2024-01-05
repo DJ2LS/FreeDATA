@@ -17,6 +17,7 @@ import command_ping
 import command_feq
 import command_test
 import command_arq_raw
+import event_manager
 
 app = Flask(__name__)
 CORS(app)
@@ -49,6 +50,7 @@ app.state_queue = queue.Queue() # queue which holds latest states
 app.modem_events = queue.Queue() # queue which holds latest events
 app.modem_fft = queue.Queue() # queue which holds latest fft data
 app.modem_service = queue.Queue() # start / stop modem service
+app.event_manager = event_manager.EventManager([app.modem_events]) # TODO remove the app.modem_event custom queue
 
 # init state manager
 app.state_manager = state_manager.StateManager(app.state_queue)
@@ -82,10 +84,11 @@ def validate(req, param, validator, isRequired = True):
 
 # Takes a transmit command and puts it in the transmit command queue
 def enqueue_tx_command(cmd_class, params = {}):
-    command = cmd_class(app.config_manager.read(), app.state_manager, app.modem_events,  params)
+    command = cmd_class(app.config_manager.read(), app.state_manager, app.event_manager,  params)
     app.logger.info(f"Command {command.get_name()} running...")
-    command.run(app.modem_events, app.service_manager.modem)
-
+    if command.run(app.modem_events, app.service_manager.modem): # TODO remove the app.modem_event custom queue
+        return True
+    return False
 ## REST API
 @app.route('/', methods=['GET'])
 def index():
@@ -139,6 +142,7 @@ def post_cqcqcq():
 def post_beacon():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for controlling BEACON STATE via POST"})
+
     if not isinstance(request.json['enabled'], bool):
         api_abort(f"Incorrect value for 'enabled'. Shoud be bool.")
     if not app.state_manager.is_modem_running:
@@ -217,9 +221,10 @@ def post_modem_send_raw():
         return api_response({"info": "endpoint for SENDING RAW DATA via POST"})
     if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
-    enqueue_tx_command(command_arq_raw.ARQRawCommand, request.json)
-    return api_response(request.json)
-
+    if enqueue_tx_command(command_arq_raw.ARQRawCommand, request.json):
+        return api_response(request.json)
+    else:
+        api_abort('Error executing command...', 500)
 @app.route('/modem/stop_transmission', methods=['POST'])
 def post_modem_send_raw_stop():
 
@@ -257,7 +262,7 @@ def post_modem_send_raw_stop():
 # Event websocket
 @sock.route('/events')
 def sock_events(sock):
-    wsm.handle_connection(sock, wsm.events_client_list, app.modem_events)
+    wsm.handle_connection(sock, wsm.events_client_list, app.modem_events) # TODO remove the app.modem_event custom queue
 
 @sock.route('/fft')
 def sock_fft(sock):

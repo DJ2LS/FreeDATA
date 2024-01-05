@@ -42,7 +42,7 @@ var dxcallPing = ref("");
           v-model="dxcallPing"
         />
         <button
-          class="btn btn-sm btn-outline-secondary"
+          class="btn btn-sm btn-outline-secondary w-50"
           id="sendPing"
           type="button"
           data-bs-placement="bottom"
@@ -52,7 +52,7 @@ var dxcallPing = ref("");
           title="Send a ping request to a remote station"
           @click="transmitPing()"
         >
-          Ping
+          Send ping
         </button>
       </div>
       <button
@@ -76,7 +76,7 @@ var dxcallPing = ref("");
         title="Send a CQ to the world"
         @click="sendModemCQ()"
       >
-        Call CQ
+        <h3>CQ CQ CQ</h3>
       </button>
     </div>
   </div>

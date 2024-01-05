@@ -219,10 +219,11 @@ function testHamlib() {
                   </div>
                   <!-- Audio Input Device -->
                   <div class="input-group input-group-sm mb-1">
-                    <label class="input-group-text w-25">Input device</label>
+                    <label class="input-group-text w-50"
+                      >Audio Input device</label
+                    >
                     <select
                       class="form-select form-select-sm"
-                      id="rx_audio"
                       aria-label=".form-select-sm"
                       @change="onChange"
                       v-model="settings.remote.AUDIO.input_device"
@@ -238,12 +239,13 @@ function testHamlib() {
 
                   <!-- Audio Output Device -->
                   <div class="input-group input-group-sm mb-1">
-                    <label class="input-group-text w-25">Output device</label>
+                    <label class="input-group-text w-50"
+                      >Audio Output device</label
+                    >
                     <select
                       class="form-select form-select-sm"
-                      id="tx_audio"
                       aria-label=".form-select-sm"
-                      @change="setConfig"
+                      @change="onChange"
                       v-model="settings.remote.AUDIO.output_device"
                     >
                       <option

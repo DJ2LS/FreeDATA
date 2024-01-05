@@ -13,12 +13,12 @@ function updateMyCall() {
 </script>
 <template>
   <div
-    class="d-flex justify-content-center align-items-center object-fill border rounded text-bg-light w-100 h-100"
+    class="d-flex justify-content-center align-items-center object-fill border rounded w-100 h-100"
   >
-    <strong>
+    <h1>
       {{ settingsStore.remote.STATION.mycall }}-{{
         settingsStore.remote.STATION.myssid
       }}
-    </strong>
+    </h1>
   </div>
 </template>

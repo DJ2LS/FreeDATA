@@ -46,7 +46,7 @@ class ARQSession():
         self.id = None
 
     def log(self, message, isWarning = False):
-        msg = f"[{type(self).__name__}][state={self.state}]: {message}"
+        msg = f"[{type(self).__name__}][id={self.id}][state={self.state}]: {message}"
         logger = self.logger.warn if isWarning else self.logger.info
         logger(msg)
 

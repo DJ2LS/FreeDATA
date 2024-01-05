@@ -19,7 +19,9 @@ class ARQRawCommand(TxCommand):
         self.emit_event(event_queue)
         self.logger.info(self.log_message())
 
-        iss = ARQSessionISS(self.config, modem, self.dxcall, self.data)
-        self.state_manager.register_arq_iss_session(iss)
-        iss.start()
-        return iss
+        iss = ARQSessionISS(self.config, modem, self.dxcall, self.data, self.state_manager)
+        if iss.id:
+            self.state_manager.register_arq_iss_session(iss)
+            iss.start()
+            return iss
+        return False
