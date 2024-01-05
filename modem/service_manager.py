@@ -27,9 +27,7 @@ class SM:
         )
         runner_thread.start()
 
-        # optionally start explorer module
-        if self.config['STATION']['enable_explorer']:
-            explorer.explorer(self.app, self.config, self.states)
+        self.start_explorer_publishing()
 
     def runner(self):
         while True:
@@ -102,12 +100,15 @@ class SM:
         self.event_manager.modem_stopped()
 
     def test_audio(self):
-        audio_test = audio.test_audio_devices(self.config['AUDIO']['input_device'],
-                                              self.config['AUDIO']['output_device'])
-        self.log.info("tested audio devices", result=audio_test)
+        try:
+            audio_test = audio.test_audio_devices(self.config['AUDIO']['input_device'],
+                                                  self.config['AUDIO']['output_device'])
+            self.log.info("tested audio devices", result=audio_test)
 
-        return audio_test
-
+            return audio_test
+        except Exception as e:
+            self.log.error("Error testing audio devices", e=e)
+            return [False, False]
 
     def start_beacon(self):
         self.beacon = beacon.Beacon(self.config, self.states, self.event_manager, self.log, self.modem)
@@ -115,3 +116,11 @@ class SM:
 
     def stop_beacon(self):
         del self.beacon
+
+    def start_explorer_publishing(self):
+        try:
+            # optionally start explorer module
+            if self.config['STATION']['enable_explorer']:
+                explorer.explorer(self.app, self.config, self.states)
+        except Exception as e:
+            self.log.warning("[EXPLORER] Publishin not started because of error", e=e)

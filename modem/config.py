@@ -112,21 +112,23 @@ class CONFIG:
     # is_writing means data from a dict being writen to the config file
     # if False, it means the opposite direction
     def handle_setting(self, section, setting, value, is_writing = False):
+        try:
+            if self.config_types[section][setting] == list:
+                if (is_writing):
+                    return json.dumps(value)
+                else:
+                    return json.loads(value)
 
-        if self.config_types[section][setting] == list:
-            if (is_writing):
-                return json.dumps(value)
+            elif self.config_types[section][setting] == bool and not is_writing:
+                return self.parser.getboolean(section, setting)
+
+            elif self.config_types[section][setting] == int and not is_writing:
+                return self.parser.getint(section, setting)
+
             else:
-                return json.loads(value)
-            
-        elif self.config_types[section][setting] == bool and not is_writing:
-            return self.parser.getboolean(section, setting)
-
-        elif self.config_types[section][setting] == int and not is_writing:
-            return self.parser.getint(section, setting)
-        
-        else: 
-            return value
+                return value
+        except KeyError as key:
+            self.log.error("[CFG] key error in logfile, please check 'config.ini.example' for help", key=key)
 
     # Sets and writes config data from a dict containing data settings
     def write(self, data):
