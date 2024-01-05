@@ -5,9 +5,7 @@ setActivePinia(pinia);
 
 import { settingsStore as settings } from "../store/settingsStore.js";
 
-function saveSettings() {
-  saveSettingsToFile();
-}
+
 </script>
 
 <template>
@@ -60,14 +58,12 @@ function saveSettings() {
               aria-label="Input group"
               aria-describedby="btnGroupAddon"
               v-model="settings.remote.STATION.mycall"
-              @input="saveSettings"
             />
             <select
               class="form-select form-select-sm"
               aria-label=".form-select-sm"
               id="myCallSSID"
               v-model="settings.remote.STATION.myssid"
-              @change="saveSettings"
             >
               <option selected value="0">0</option>
               <option value="1">1</option>
@@ -110,7 +106,6 @@ function saveSettings() {
               aria-label="Input group"
               aria-describedby="btnGroupAddon"
               v-model="settings.remote.STATION.mygrid"
-              @input="saveSettings"
             />
           </div>
         </div>

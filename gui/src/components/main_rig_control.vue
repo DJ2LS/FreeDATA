@@ -1,7 +1,5 @@
 <script setup lang="ts">
 
-import { startRigctld, stopRigctld } from "../js/deprecated_daemon";
-
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -18,13 +16,13 @@ function startStopRigctld() {
 
       settings.remote.RADIO.serial_port = (<HTMLInputElement>document.getElementById("hamlib_deviceport")).value;
 
-      startRigctld();
+      //startRigctld();
 
       break;
     case "running":
       stopRigctld();
       // dirty hack for calling this command twice, otherwise modem won't stop rigctld from time to time
-      stopRigctld();
+      //stopRigctld();
       break;
     default:
   }
