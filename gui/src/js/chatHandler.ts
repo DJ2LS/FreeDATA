@@ -18,7 +18,12 @@ import { settingsStore as settings } from "../store/settingsStore.js";
 import { displayToast } from "./popupHandler.js";
 
 //const FD = require("./src/js/freedata.js");
-import { atob_FD, btoa_FD, sortByProperty, sortByPropertyDesc } from "./freedata.js";
+import {
+  atob_FD,
+  btoa_FD,
+  sortByProperty,
+  sortByPropertyDesc,
+} from "./freedata.js";
 
 import { sendModemARQRaw } from "../js/api.js";
 
@@ -860,20 +865,18 @@ export function newMessageReceived(message, protocol) {
 
     */
 
-
   console.log(protocol);
 
   var encoded_data = atob_FD(message);
   var splitted_data = encoded_data.split(split_char);
 
-    // new message received
-    if (splitted_data[0] == "m") {
+  // new message received
+  if (splitted_data[0] == "m") {
     console.log(splitted_data);
     message = splitted_data;
-    } else {
-        return;
-    }
-
+  } else {
+    return;
+  }
 
   let newChatObj: messageDefaultObject = {
     command: "msg",
@@ -884,11 +887,11 @@ export function newMessageReceived(message, protocol) {
     _id: message[3],
     timestamp: message[4],
     dxcallsign: protocol["dxcall"],
-    dxgrid: '',
+    dxgrid: "",
     msg: message[5],
     checksum: message[2],
-    type: 'received',
-    status: 'received',
+    type: "received",
+    status: "received",
     attempt: 1,
     uuid: message[3],
     duration: 0,

@@ -171,7 +171,10 @@ export function eventDispatcher(data) {
             message = `Type: ${data.type}, Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, Received Bytes: ${data["arq-transfer-inbound"].received_bytes}/${data["arq-transfer-inbound"].total_bytes}, State: ${data["arq-transfer-inbound"].state}`;
             displayToast("info", "bi-info-circle", message, 5000);
             // Forward data to chat module
-            newMessageReceived(data["arq-transfer-inbound"].data, data["arq-transfer-inbound"]);
+            newMessageReceived(
+              data["arq-transfer-inbound"].data,
+              data["arq-transfer-inbound"],
+            );
             return;
 
           case "ABORTED":
