@@ -16,7 +16,7 @@ function startStopRigctld() {
   switch (state.rigctld_started) {
     case "stopped":
 
-      settings.hamlib_deviceport = (<HTMLInputElement>document.getElementById("hamlib_deviceport")).value;
+      settings.remote.RADIO.serial_port = (<HTMLInputElement>document.getElementById("hamlib_deviceport")).value;
 
       startRigctld();
 
@@ -34,17 +34,17 @@ function selectRadioControl() {
 // @ts-expect-error
   switch (event.target.id) {
     case "list-rig-control-none-list":
-      settings.radiocontrol = "disabled";
+      settings.remote.RADIO.control = "disabled";
       break;
     case "list-rig-control-rigctld-list":
-      settings.radiocontrol = "rigctld";
+      settings.remote.RADIO.control = "rigctld";
       break;
     case "list-rig-control-tci-list":
-      settings.radiocontrol = "tci";
+      settings.remote.RADIO.control = "tci";
       break;
     default:
       console.log("default=!==");
-      settings.radiocontrol = "disabled";
+      settings.remote.RADIO.control = "disabled";
   }
   saveSettingsToFile();
 }
@@ -84,7 +84,7 @@ alert("not yet implemented")
                 href="#list-rig-control-none"
                 role="tab"
                 aria-controls="list-rig-control-none"
-                v-bind:class="{ active: settings.radiocontrol === 'disabled' }"
+                v-bind:class="{ active: settings.remote.RADIO.control === 'disabled' }"
                 @click="selectRadioControl()"
                 >None</a
               >
@@ -95,7 +95,7 @@ alert("not yet implemented")
                 href="#list-rig-control-rigctld"
                 role="tab"
                 aria-controls="list-rig-control-rigctld"
-                v-bind:class="{ active: settings.radiocontrol === 'rigctld' }"
+                v-bind:class="{ active: settings.remote.RADIO.control === 'rigctld' }"
                 @click="selectRadioControl()"
                 >Rigctld</a
               >
@@ -106,7 +106,7 @@ alert("not yet implemented")
                 href="#list-rig-control-tci"
                 role="tab"
                 aria-controls="list-rig-control-tci"
-                v-bind:class="{ active: settings.radiocontrol === 'tci' }"
+                v-bind:class="{ active: settings.remote.RADIO.control === 'tci' }"
                 @click="selectRadioControl()"
                 >TCI</a
               >
@@ -131,7 +131,7 @@ alert("not yet implemented")
       <div class="tab-content" id="rig-control-nav-tabContent">
         <div
           class="tab-pane fade"
-          v-bind:class="{ 'show active': settings.radiocontrol === 'disabled' }"
+          v-bind:class="{ 'show active': settings.remote.RADIO.control === 'disabled' }"
           id="list-rig-control-none"
           role="tabpanel"
           aria-labelledby="list-rig-control-none-list"
@@ -145,7 +145,7 @@ alert("not yet implemented")
         <div
           class="tab-pane fade"
           id="list-rig-control-rigctld"
-          v-bind:class="{ 'show active': settings.radiocontrol === 'rigctld' }"
+          v-bind:class="{ 'show active': settings.remote.RADIO.control === 'rigctld' }"
           role="tabpanel"
           aria-labelledby="list-rig-control-rigctld-list"
         >
@@ -200,7 +200,7 @@ alert("not yet implemented")
         <div
           class="tab-pane fade"
           id="list-rig-control-tci"
-          v-bind:class="{ 'show active': settings.radiocontrol === 'tci' }"
+          v-bind:class="{ 'show active': settings.remote.RADIO.control === 'tci' }"
           role="tabpanel"
           aria-labelledby="list-rig-control-tci-list"
         >
@@ -214,7 +214,7 @@ alert("not yet implemented")
                 placeholder="tci IP"
                 id="tci_ip"
                 aria-label="Device IP"
-                v-model="settings.tci_ip"
+                v-model="settings.remote.TCI.tci_ip"
               />
             </div>
 
@@ -226,7 +226,7 @@ alert("not yet implemented")
                 placeholder="tci port"
                 id="tci_port"
                 aria-label="Device Port"
-                v-model="settings.tci_port"
+                v-model="settings.remote.TCI.tci_port"
               />
             </div>
           </div>

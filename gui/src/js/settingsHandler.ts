@@ -8,9 +8,6 @@ setActivePinia(pinia);
 
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 
-import { useAudioStore } from "../store/audioStore.js";
-const audioStore = useAudioStore(pinia);
-
 import { useStateStore } from "../store/stateStore";
 const stateStore = useStateStore(pinia);
 
@@ -89,11 +86,11 @@ export function loadSettings() {
     }
     try {
       if (key == "wftheme") {
-        setColormap(config[key]);
+        setColormap();
       }
       if (key == "mycall") {
-        settings.mycall = config[key].split("-")[0];
-        settings.myssid = config[key].split("-")[1];
+        settings.remote.STATION.mycall = config[key].split("-")[0];
+        settings.remote.STATION.myssid = config[key].split("-")[1];
       } else {
         settings[key] = config[key];
       }
@@ -127,11 +124,11 @@ export function processModemConfig(data) {
             let mycall = data[category][setting];
             if (mycall.includes("-")) {
               const splittedCallsign = mycall.split("-");
-              settings.mycall = splittedCallsign[0]; // The part before the hyphen
-              settings.myssid = parseInt(splittedCallsign[1], 10); // The part after the hyphen, converted to a number
+              settings.remote.STATION.mycall = splittedCallsign[0]; // The part before the hyphen
+              settings.remote.STATION.myssid = parseInt(splittedCallsign[1], 10); // The part after the hyphen, converted to a number
             } else {
-              settings.mycall = mycall; // Use the original mycall if no SSID is present
-              settings.myssid = 0; // Default SSID if not provided
+              settings.remote.STATION.mycall = mycall; // Use the original mycall if no SSID is present
+              settings.remote.STATION.myssid = 0; // Default SSID if not provided
             }
           } else {
             settings[variableName] = data[category][setting];

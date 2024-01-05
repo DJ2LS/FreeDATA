@@ -59,14 +59,14 @@ function saveSettings() {
               maxlength="8"
               aria-label="Input group"
               aria-describedby="btnGroupAddon"
-              v-model="settings.mycall"
+              v-model="settings.remote.STATION.mycall"
               @input="saveSettings"
             />
             <select
               class="form-select form-select-sm"
               aria-label=".form-select-sm"
               id="myCallSSID"
-              v-model="settings.myssid"
+              v-model="settings.remote.STATION.myssid"
               @change="saveSettings"
             >
               <option selected value="0">0</option>
@@ -109,7 +109,7 @@ function saveSettings() {
               maxlength="6"
               aria-label="Input group"
               aria-describedby="btnGroupAddon"
-              v-model="settings.mygrid"
+              v-model="settings.remote.STATION.mygrid"
               @input="saveSettings"
             />
           </div>

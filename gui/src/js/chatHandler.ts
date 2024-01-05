@@ -896,7 +896,7 @@ export function newMessageReceived(message, protocol) {
     uuid: message[3],
     duration: 0,
     nacks: 0,
-    speed_list: [],
+    speed_list: "[]",
     _attachments: {
       [message[6]]: {
         content_type: message[7],

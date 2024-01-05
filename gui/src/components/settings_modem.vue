@@ -176,20 +176,7 @@ import { audioInputOptions, audioOutputOptions } from "../js/deviceFormHelper";
       <option value="3600">60 mins</option>
     </select>
   </div>
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Enable waterfall data</label>
-    <label class="input-group-text w-50">
-      <div class="form-check form-switch form-check-inline">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          id="fftSwitch"
-          v-model="settings.local.enable_fft"
-        />
-        <label class="form-check-label" for="fftSwitch">Waterfall</label>
-      </div>
-    </label>
-  </div>
+
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50">Enable 250Hz bandwidth mode</label>
     <label class="input-group-text w-50">
