@@ -9,8 +9,5 @@ import { settingsStore as settings } from "../store/settingsStore.js";
 </script>
 
 <template>
-
-<h5>...soon...</h5>
-
-
+  <h5>...soon...</h5>
 </template>

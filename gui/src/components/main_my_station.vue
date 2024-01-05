@@ -4,8 +4,6 @@ import pinia from "../store/index";
 setActivePinia(pinia);
 
 import { settingsStore as settings } from "../store/settingsStore.js";
-
-
 </script>
 
 <template>
