@@ -68,7 +68,7 @@ class EventManager:
                 'total_bytes': total_bytes,
                 'success': bool(success),
                 'state': state,
-                'data': bool(data)
+                'data': data
             }
         }
         self.broadcast(event)
