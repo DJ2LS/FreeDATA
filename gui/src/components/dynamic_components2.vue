@@ -138,7 +138,7 @@ const gridWidgets = [
   ),
   new gridWidget(
     grid_ptt,
-    { x: 17, y: 8, w: 2, h: 8 },
+    { x: 17, y: 8, w: 5, h: 12 },
     "Tx/PTT indicator",
     true,
     true,
@@ -146,7 +146,7 @@ const gridWidgets = [
   ),
   new gridWidget(
     grid_mycall,
-    { x: 8, y: 40, w: 5, h: 8 },
+    { x: 8, y: 40, w: 5, h: 15 },
     "My callsign widget",
     true,
     true,

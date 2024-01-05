@@ -9,8 +9,10 @@ const state = useStateStore(pinia);
 <template>
   <div
     class="d-flex justify-content-center align-items-center object-fill border rounded w-100 h-100"
-    :class="state.ptt_state === true ? 'text-bg-warning' : 'text-bg-light'"
+    :class="state.ptt_state === true ? 'text-bg-warning' : 'text-bg-white'"
   >
-    TX
+  <h2>
+    ON AIR
+  </h2>
   </div>
 </template>
