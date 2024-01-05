@@ -52,7 +52,6 @@ var dxcallPing = ref("");
           title="Send a ping request to a remote station"
           @click="transmitPing()"
         >
-
           Send ping
         </button>
       </div>
@@ -76,7 +75,8 @@ var dxcallPing = ref("");
         type="button"
         title="Send a CQ to the world"
         @click="sendModemCQ()"
-      >        <h3>CQ CQ CQ</h3>
+      >
+        <h3>CQ CQ CQ</h3>
       </button>
     </div>
   </div>
