@@ -23,14 +23,8 @@ export function connectionFailed(endpoint, event) {
 }
 export function stateDispatcher(data) {
   data = JSON.parse(data);
-  console.log(data);
-
-  stateStore.modem_connection = "connected";
-
-  if (
-    data["freedata-message"] == "state-change" ||
-    data["freedata-message"] == "state"
-  ) {
+  //console.log(data);
+  if (data["type"] == "state-change" || data["type"] == "state") {
     stateStore.channel_busy = data["channel_busy"];
     stateStore.is_codec2_traffic = data["is_codec2_traffic"];
     stateStore.is_modem_running = data["is_modem_running"];
@@ -46,98 +40,157 @@ export function stateDispatcher(data) {
     //Reverse entries so most recent is first
     stateStore.activities = Object.entries(data["activities"]).reverse();
     build_HSL();
-    /*
-    self.is_arq_state = False
-    self.is_arq_session = False
-    self.arq_session_state = 'disconnected'
-*/
-
-    /*
-
-    stateStore.rx_buffer_length = data["rx_buffer_length"];
-    stateStore.frequency = data["frequency"];
-    stateStore.busy_state = data["modem_state"];
-    stateStore.arq_state = data["arq_state"];
-    stateStore.mode = data["mode"];
-    stateStore.bandwidth = data["bandwidth"];
-    stateStore.tx_audio_level = data["tx_audio_level"];
-    stateStore.rx_audio_level = data["rx_audio_level"];
-    // if audio level is different from config one, send new audio level to modem
-    //console.log(parseInt(stateStore.tx_audio_level))
-    //console.log(parseInt(settings.tx_audio_level))
-    if (
-      parseInt(stateStore.tx_audio_level) !==
-        parseInt(settings.tx_audio_level) &&
-      setTxAudioLevelOnce === true
-    ) {
-      setTxAudioLevelOnce = false;
-      console.log(setTxAudioLevelOnce);
-      setTxAudioLevel(settings.tx_audio_level);
-    }
-
-    if (
-      parseInt(stateStore.rx_audio_level) !==
-        parseInt(settings.rx_audio_level) &&
-      setRxAudioLevelOnce === true
-    ) {
-      setRxAudioLevelOnce = false;
-      console.log(setRxAudioLevelOnce);
-      setRxAudioLevel(settings.rx_audio_level);
-    }
-
-    stateStore.ptt_state = data["ptt_state"];
-    stateStore.speed_level = data["speed_level"];
-    stateStore.fft = JSON.parse(data["fft"]);
-
-    addDataToWaterfall(JSON.parse(data["fft"]));
-
-    if (data["scatter"].length > 0) {
-      stateStore.scatter = data["scatter"];
-    }
-    // s meter strength
-    stateStore.s_meter_strength_raw = data["strength"];
-    if (stateStore.s_meter_strength_raw == "") {
-      stateStore.s_meter_strength_raw = "Unsupported";
-      stateStore.s_meter_strength_percent = 0;
-    } else {
-      // https://www.moellerstudios.org/converting-amplitude-representations/
-      stateStore.s_meter_strength_percent = Math.round(
-        Math.pow(10, stateStore.s_meter_strength_raw / 20) * 100,
-      );
-    }
-
-    stateStore.dbfs_level_percent = Math.round(
-      Math.pow(10, stateStore.dbfs_level / 20) * 100,
-    );
-    stateStore.dbfs_level = Math.round(stateStore.dbfs_level);
-
-    stateStore.arq_total_bytes = data["total_bytes"];
-    stateStore.heard_stations = data["stations"].sort(
-      sortByPropertyDesc("timestamp"),
-    );
-    stateStore.dxcallsign = data["dxcallsign"];
-
-    stateStore.audio_recording = data["audio_recording"];
-
-    stateStore.hamlib_status = data["hamlib_status"];
-    stateStore.alc = data["alc"];
-    stateStore.rf_level = data["rf_level"];
-
-
-    stateStore.arq_session_state = data["arq_session"];
-    stateStore.arq_state = data["arq_state"];
-    stateStore.arq_transmission_percent = data["arq_transmission_percent"];
-    stateStore.arq_seconds_until_finish = data["arq_seconds_until_finish"];
-    stateStore.arq_seconds_until_timeout = data["arq_seconds_until_timeout"];
-    stateStore.arq_seconds_until_timeout_percent =
-      (stateStore.arq_seconds_until_timeout / 180) * 100;
-
-    if (data["speed_list"].length > 0) {
-      prepareStatsDataForStore(data["speed_list"]);
-    }
-    */
   }
 }
+
+export function eventDispatcher(data) {
+  data = JSON.parse(data);
+  //console.info(data);
+
+  if (data["scatter"] !== undefined) {
+    stateStore.scatter = JSON.parse(data["scatter"]);
+    return;
+  }
+
+  switch (data["ptt"]) {
+    case true:
+    case false:
+      // get ptt state as a first test
+      //console.warn("PTT state true")
+      stateStore.ptt_state = data.ptt;
+      return;
+  }
+
+  switch (data["modem"]) {
+    case "started":
+      displayToast("success", "bi-arrow-left-right", "Modem started", 5000);
+      return;
+
+    case "stopped":
+      displayToast("success", "bi-arrow-left-right", "Modem stopped", 5000);
+      return;
+
+    case "restarted":
+      displayToast("secondary", "bi-bootstrap-reboot", "Modem restarted", 5000);
+      return;
+
+    case "failed":
+      displayToast(
+        "danger",
+        "bi-bootstrap-reboot",
+        "Modem startup failed | bad config?",
+        5000,
+      );
+      return;
+  }
+
+  var message = "";
+
+  switch (data["type"]) {
+    case "hello-client":
+      message = "Connected to server";
+      displayToast("success", "bi-ethernet", message, 5000);
+      stateStore.modem_connection = "connected";
+      return;
+
+    case "arq":
+      if (data["arq-transfer-outbound"]) {
+        switch (data["arq-transfer-outbound"].state) {
+          case "NEW":
+            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-outbound"].session_id}, DXCall: ${data["arq-transfer-outbound"].dxcall}, Total Bytes: ${data["arq-transfer-outbound"].total_bytes}, State: ${data["arq-transfer-outbound"].state}`;
+            displayToast("success", "bi-check-circle", message, 5000);
+            return;
+          case "OPEN_SENT":
+            console.log("state OPEN_SENT needs to be implemented");
+            return;
+
+          case "INFO_SENT":
+            console.log("state INFO_SENT needs to be implemented");
+            return;
+
+          case "BURST_SENT":
+            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-outbound"].session_id}, DXCall: ${data["arq-transfer-outbound"].dxcall}, Received Bytes: ${data["arq-transfer-outbound"].received_bytes}/${data["arq-transfer-outbound"].total_bytes}, State: ${data["arq-transfer-outbound"].state}`;
+            displayToast("info", "bi-info-circle", message, 5000);
+            return;
+
+          case "ABORTING":
+            console.log("state ABORTING needs to be implemented");
+            return;
+
+          case "ABORTED":
+            message = `Type: ${data.type}, Session ID: ${
+              data["arq-transfer-outbound"].session_id
+            }, DXCall: ${data["arq-transfer-outbound"].dxcall}, Total Bytes: ${
+              data["arq-transfer-outbound"].total_bytes
+            }, Success: ${
+              data["arq-transfer-outbound"].success ? "Yes" : "No"
+            }, State: ${data["arq-transfer-outbound"].state}, Data: ${
+              data["arq-transfer-outbound"].data ? "Available" : "Not Available"
+            }`;
+            displayToast("warning", "bi-exclamation-triangle", message, 5000);
+            return;
+
+          case "FAILED":
+            message = `Type: ${data.type}, Session ID: ${
+              data["arq-transfer-outbound"].session_id
+            }, DXCall: ${data["arq-transfer-outbound"].dxcall}, Total Bytes: ${
+              data["arq-transfer-outbound"].total_bytes
+            }, Success: ${
+              data["arq-transfer-outbound"].success ? "Yes" : "No"
+            }, State: ${data["arq-transfer-outbound"].state}, Data: ${
+              data["arq-transfer-outbound"].data ? "Available" : "Not Available"
+            }`;
+            displayToast("danger", "bi-x-octagon", message, 5000);
+            return;
+        }
+      }
+
+      if (data["arq-transfer-inbound"]) {
+        switch (data["arq-transfer-inbound"].state) {
+          case "NEW":
+            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, State: ${data["arq-transfer-inbound"].state}`;
+            displayToast("info", "bi-info-circle", message, 5000);
+            return;
+
+          case "OPEN_ACK_SENT":
+            message = `Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, Total Bytes: ${data["arq-transfer-inbound"].total_bytes}, State: ${data["arq-transfer-inbound"].state}`;
+            displayToast("info", "bi-arrow-left-right", message, 5000);
+            return;
+
+          case "INFO_ACK_SENT":
+            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, Received Bytes: ${data["arq-transfer-inbound"].received_bytes}/${data["arq-transfer-inbound"].total_bytes}, State: ${data["arq-transfer-inbound"].state}`;
+            displayToast("info", "bi-info-circle", message, 5000);
+            return;
+
+          case "BURST_REPLY_SENT":
+            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, Received Bytes: ${data["arq-transfer-inbound"].received_bytes}/${data["arq-transfer-inbound"].total_bytes}, State: ${data["arq-transfer-inbound"].state}`;
+            displayToast("info", "bi-info-circle", message, 5000);
+            return;
+
+          case "ENDED":
+            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, Received Bytes: ${data["arq-transfer-inbound"].received_bytes}/${data["arq-transfer-inbound"].total_bytes}, State: ${data["arq-transfer-inbound"].state}`;
+            displayToast("info", "bi-info-circle", message, 5000);
+            // Forward data to chat module
+            newMessageReceived(
+              data["arq-transfer-inbound"].data,
+              data["arq-transfer-inbound"],
+            );
+            return;
+
+          case "ABORTED":
+            console.log("state ABORTED needs to be implemented");
+            return;
+
+          case "FAILED":
+            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-outbound"].session_id}, DXCall: ${data["arq-transfer-outbound"].dxcall}, Received Bytes: ${data["arq-transfer-outbound"].received_bytes}/${data["arq-transfer-outbound"].total_bytes}, State: ${data["arq-transfer-outbound"].state}`;
+            displayToast("info", "bi-info-circle", message, 5000);
+            return;
+        }
+      }
+      return;
+  }
+}
+
 function build_HSL() {
   //Use data from activities to build HSL list
   for (let i = 0; i < stateStore.activities.length; i++) {
@@ -172,324 +225,4 @@ function build_HSL() {
     }
   }
   stateStore.heard_stations.sort((a, b) => b.timestamp - a.timestamp); // b - a for reverse sort
-}
-
-export function eventDispatcher(data) {
-  data = JSON.parse(data);
-
-  // break early if we received a dummy callsign
-  // thats a kind of hotfix, as long as the modem isnt handling this better
-  if (data["dxcallsign"] == "AA0AA-0" || data["dxcallsign"] == "ZZ9YY-0") {
-    return;
-  }
-
-  console.info(data);
-  if (data["scatter"] !== undefined) {
-    //console.warn("Got scatter data!!!!");
-    stateStore.scatter = JSON.parse(data["scatter"]);
-    return;
-  }
-
-  switch (data["ptt"]) {
-    case true:
-    case false:
-      // get ptt state as a first test
-      //console.warn("PTT state true")
-      stateStore.ptt_state = data.ptt;
-      return;
-  }
-
-  switch (data["freedata"]) {
-    case "modem-message":
-      switch (data["received"]) {
-        case "BEACON":
-          //Beacon received
-          displayToast(
-            "info",
-            "bi-broadcast",
-            "Beacon from " + data["dxcallsign"],
-            5000,
-          );
-          return;
-        case "QRV":
-          //Qrv received
-          displayToast(
-            "success",
-            "bi-person-raised-hand",
-            "QRV from " + data["dxcallsign"],
-            5000,
-          );
-          return;
-        case "PING":
-          //Qrv received
-          displayToast(
-            "success",
-            "bi-arrow-right-short",
-            "Ping request from " + data["dxcallsign"],
-            5000,
-          );
-          return;
-        case "PING_ACK":
-          //Qrv received
-          displayToast(
-            "success",
-            "bi-arrow-left-right",
-            "Received ping-ack from " +
-              "callsignisbroken" +
-              " | " +
-              data["dxgrid"],
-            5000,
-          );
-          return;
-      }
-
-    case "modem-event":
-      switch (data["event"]) {
-        case "start":
-          displayToast("success", "bi-arrow-left-right", "Modem started", 5000);
-          return;
-
-        case "stop":
-          displayToast("success", "bi-arrow-left-right", "Modem stopped", 5000);
-          return;
-
-        case "restart":
-          displayToast(
-            "secondary",
-            "bi-bootstrap-reboot",
-            "Modem restarted",
-            5000,
-          );
-          return;
-
-        case "failed":
-          displayToast(
-            "danger",
-            "bi-bootstrap-reboot",
-            "Modem startup failed | bad config?",
-            5000,
-          );
-          return;
-        default:
-          console.warn("Unknown event message received:");
-          console.warn(data);
-          break;
-      }
-  }
-
-  /*
-
-  var message = "";
-  if (data["freedata"] == "modem-message") {
-
-    console.log(data);
-
-    switch (data["fec"]) {
-      case "is_writing":
-        // RX'd FECiswriting
-        break;
-
-      case "broadcast":
-        // RX'd FEC BROADCAST
-        var encoded_data = atob_FD(data["data"]);
-        var splitted_data = encoded_data.split(split_char);
-        var messageArray = [];
-        if (splitted_data[0] == "m") {
-          messageArray.push(data);
-          console.log(data);
-        }
-        break;
-    }
-
-    switch (data["cq"]) {
-      case "transmitting":
-        // CQ TRANSMITTING
-        displayToast("success", "bi-arrow-left-right", "Transmitting CQ", 5000);
-        break;
-
-      case "received":
-        // CQ RECEIVED
-        message = "CQ from " + data["dxcallsign"];
-        displayToast("success", "bi-person-arms-up", message, 5000);
-        break;
-    }
-
-    switch (data["qrv"]) {
-      case "transmitting":
-        // QRV TRANSMITTING
-        displayToast(
-          "info",
-          "bi-person-raised-hand",
-          "Transmitting QRV ",
-          5000,
-        );
-        break;
-
-      case "received":
-        // QRV RECEIVED
-        message = "QRV from " + data["dxcallsign"] + " | " + data["dxgrid"];
-        displayToast("success", "bi-person-raised-hand", message, 5000);
-        break;
-    }
-
-    switch (data["beacon"]) {
-      case "transmitting":
-        // BEACON TRANSMITTING
-        displayToast(
-          "success",
-          "bi-broadcast-pin",
-          "Transmitting beacon",
-          5000,
-        );
-        break;
-
-      case "received":
-        // BEACON RECEIVED
-        newBeaconReceived(data);
-
-        message = "Beacon from " + data["dxcallsign"] + " | " + data["dxgrid"];
-        displayToast("info", "bi-broadcast", message, 5000);
-        break;
-    }
-
-    switch (data["ping"]) {
-      case "transmitting":
-        // PING TRANSMITTING
-        message = "Sending ping to " + data["dxcallsign"];
-        displayToast("success", "bi-arrow-right", message, 5000);
-        break;
-
-      case "received":
-        // PING RECEIVED
-        message =
-          "Ping request from " + data["dxcallsign"] + " | " + data["dxgrid"];
-        displayToast("success", "bi-arrow-right-short", message, 5000);
-        break;
-
-      case "acknowledge":
-        // PING ACKNOWLEDGE
-        message =
-          "Received ping-ack from " +
-          data["dxcallsign"] +
-          " | " +
-          data["dxgrid"];
-        displayToast("success", "bi-arrow-left-right", message, 5000);
-        break;
-    }
-
-    // ARQ SESSION && freedata == modem-message
-    if (data["arq"] == "session") {
-      switch (data["status"]) {
-        case "connecting":
-          // ARQ Open
-          break;
-
-        case "connected":
-          // ARQ Opening
-          break;
-
-        case "waiting":
-          // ARQ Opening
-          break;
-
-        case "close":
-          // ARQ Closing
-          break;
-
-        case "failed":
-          // ARQ Failed
-          break;
-      }
-    }
-    // ARQ TRANSMISSION && freedata == modem-message
-    if (data["arq"] == "transmission") {
-      switch (data["status"]) {
-        case "opened":
-          // ARQ Open
-          message = "ARQ session opened: " + data["dxcallsign"];
-          displayToast("success", "bi-arrow-left-right", message, 5000);
-          break;
-
-        case "opening":
-          // ARQ Opening IRS/ISS
-          if (data["irs"] == "False") {
-            message = "ARQ session opening: " + data["dxcallsign"];
-            displayToast("info", "bi-arrow-left-right", message, 5000);
-            break;
-          } else {
-            message = "ARQ sesson request from: " + data["dxcallsign"];
-            displayToast("success", "bi-arrow-left-right", message, 5000);
-            break;
-          }
-
-        case "waiting":
-          // ARQ waiting
-          message = "Channel busy | ARQ protocol is waiting";
-          displayToast("warning", "bi-hourglass-split", message, 5000);
-          break;
-
-        case "receiving":
-          // ARQ RX
-          break;
-
-        case "failed":
-          // ARQ TX Failed
-          if (data["reason"] == "protocol version missmatch") {
-            message = "Protocol version mismatch!";
-            displayToast("danger", "bi-chevron-bar-expand", message, 5000);
-            setStateFailed();
-
-            break;
-          } else {
-            message = "Transmission failed";
-            displayToast("danger", "bi-x-octagon", message, 5000);
-            updateTransmissionStatus(data);
-            setStateFailed();
-            break;
-          }
-          switch (data["irs"]) {
-            case "True":
-              updateTransmissionStatus(data);
-
-              break;
-            default:
-              updateTransmissionStatus(data);
-              break;
-          }
-          break;
-
-        case "received":
-          // ARQ data received
-
-          console.log(data);
-          // we need to encode here to do a deep check for checking if file or message
-          //var encoded_data = atob(data['data'])
-          var encoded_data = atob_FD(data["data"]);
-          var splitted_data = encoded_data.split(split_char);
-
-          // new message received
-          if (splitted_data[0] == "m") {
-            console.log(splitted_data);
-            newMessageReceived(splitted_data, data);
-          }
-
-          break;
-
-        case "transmitting":
-          // ARQ transmitting
-          updateTransmissionStatus(data);
-          break;
-
-        case "transmitted":
-          // ARQ transmitted
-          message = "Data transmitted";
-          displayToast("success", "bi-check-sqaure", message, 5000);
-          updateTransmissionStatus(data);
-          setStateSuccess();
-
-          break;
-      }
-    }
-  }
-  */
 }

@@ -6,11 +6,11 @@ from state_manager import StateManager
 
 class TxCommand():
 
-    def __init__(self, config: dict, state_manager: StateManager, modem_events: queue.Queue, apiParams:dict = {}):
+    def __init__(self, config: dict, state_manager: StateManager, event_manager, apiParams:dict = {}):
         self.config = config
         self.logger = structlog.get_logger("Command")
         self.state_manager = state_manager
-        self.modem_events = modem_events
+        self.event_manager = event_manager
         self.set_params_from_api(apiParams)
         self.frame_factory = DataFrameFactory(config)
 

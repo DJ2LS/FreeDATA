@@ -4,10 +4,6 @@ import pinia from "../store/index";
 setActivePinia(pinia);
 
 import { settingsStore as settings } from "../store/settingsStore.js";
-
-function saveSettings() {
-  saveSettingsToFile();
-}
 </script>
 
 <template>
@@ -59,15 +55,13 @@ function saveSettings() {
               maxlength="8"
               aria-label="Input group"
               aria-describedby="btnGroupAddon"
-              v-model="settings.mycall"
-              @input="saveSettings"
+              v-model="settings.remote.STATION.mycall"
             />
             <select
               class="form-select form-select-sm"
               aria-label=".form-select-sm"
               id="myCallSSID"
-              v-model="settings.myssid"
-              @change="saveSettings"
+              v-model="settings.remote.STATION.myssid"
             >
               <option selected value="0">0</option>
               <option value="1">1</option>
@@ -109,8 +103,7 @@ function saveSettings() {
               maxlength="6"
               aria-label="Input group"
               aria-describedby="btnGroupAddon"
-              v-model="settings.mygrid"
-              @input="saveSettings"
+              v-model="settings.remote.STATION.mygrid"
             />
           </div>
         </div>

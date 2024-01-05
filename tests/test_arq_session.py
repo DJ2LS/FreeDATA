@@ -58,19 +58,21 @@ class TestARQSession(unittest.TestCase):
 
         # ISS
         cls.iss_state_manager = StateManager(queue.Queue())
+        cls.iss_event_manager = EventManager([queue.Queue()])
         cls.iss_event_queue = queue.Queue()
         cls.iss_modem = TestModem(cls.iss_event_queue)
         cls.iss_frame_dispatcher = DISPATCHER(cls.config, 
-                                          cls.iss_event_queue, 
+                                          cls.iss_event_manager,
                                           cls.iss_state_manager, 
                                           cls.iss_modem)
 
         # IRS
         cls.irs_state_manager = StateManager(queue.Queue())
+        cls.irs_event_manager = EventManager([queue.Queue()])
         cls.irs_event_queue = queue.Queue()
         cls.irs_modem = TestModem(cls.irs_event_queue)
         cls.irs_frame_dispatcher = DISPATCHER(cls.config, 
-                                          cls.irs_event_queue, 
+                                          cls.irs_event_manager,
                                           cls.irs_state_manager, 
                                           cls.irs_modem)
         
