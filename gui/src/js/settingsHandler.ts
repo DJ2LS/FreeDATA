@@ -125,7 +125,10 @@ export function processModemConfig(data) {
             if (mycall.includes("-")) {
               const splittedCallsign = mycall.split("-");
               settings.remote.STATION.mycall = splittedCallsign[0]; // The part before the hyphen
-              settings.remote.STATION.myssid = parseInt(splittedCallsign[1], 10); // The part after the hyphen, converted to a number
+              settings.remote.STATION.myssid = parseInt(
+                splittedCallsign[1],
+                10,
+              ); // The part after the hyphen, converted to a number
             } else {
               settings.remote.STATION.mycall = mycall; // Use the original mycall if no SSID is present
               settings.remote.STATION.myssid = 0; // Default SSID if not provided
