@@ -23,7 +23,7 @@ export function connectionFailed(endpoint, event) {
 }
 export function stateDispatcher(data) {
   data = JSON.parse(data);
-  console.log(data);
+  //console.log(data);
   if (data["type"] == "state-change" || data["type"] == "state") {
     stateStore.channel_busy = data["channel_busy"];
     stateStore.is_codec2_traffic = data["is_codec2_traffic"];
@@ -45,7 +45,7 @@ export function stateDispatcher(data) {
 
 export function eventDispatcher(data) {
   data = JSON.parse(data);
-  console.info(data);
+  //console.info(data);
 
   if (data["scatter"] !== undefined) {
     stateStore.scatter = JSON.parse(data["scatter"]);
@@ -60,6 +60,43 @@ export function eventDispatcher(data) {
       stateStore.ptt_state = data.ptt;
       return;
   }
+
+      switch (data["modem"]) {
+        case "started":
+          displayToast("success", "bi-arrow-left-right", "Modem started", 5000);
+          return;
+
+        case "stopped":
+          displayToast("success", "bi-arrow-left-right", "Modem stopped", 5000);
+          return;
+
+        case "restarted":
+          displayToast(
+            "secondary",
+            "bi-bootstrap-reboot",
+            "Modem restarted",
+            5000,
+          );
+          return;
+
+        case "failed":
+          displayToast(
+            "danger",
+            "bi-bootstrap-reboot",
+            "Modem startup failed | bad config?",
+            5000,
+          );
+          return;
+        default:
+          console.warn("Unknown event message received:");
+          console.warn(data);
+          break;
+      }
+
+
+
+
+
 
   var message = "";
 
