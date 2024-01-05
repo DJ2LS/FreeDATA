@@ -391,6 +391,6 @@ class Demodulator():
 
         # Enable mode based on speed_level
         self.MODE_DICT[mode.value]["decode"] = True
-        self.log.info(f"Demodulator data mode {mode.name}")
+        self.log.info(f"[MDM] [demod_audio] set data mode: {mode.name}")
 
         return

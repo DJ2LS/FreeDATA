@@ -124,6 +124,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.event_manager.send_arq_session_new(False, self.id, self.dxcall, self.total_length, self.state.name)
 
         self.calibrate_speed_settings()
+        self.set_decode_mode()
 
         info_ack = self.frame_factory.build_arq_session_info_ack(
             self.id, self.total_crc, self.snr[0],
@@ -164,6 +165,8 @@ class ARQSessionIRS(arq_session.ARQSession):
             ack = self.frame_factory.build_arq_burst_ack(
                                                          self.id, self.received_bytes,
                                                          self.speed_level, self.frames_per_burst, self.snr[0], flag_abort=self.abort)
+
+            self.set_decode_mode()
 
             # increase ack counter
             # self.transmitted_acks += 1
