@@ -217,37 +217,45 @@ function testHamlib() {
                       </button>
                     </label>
                   </div>
-                 <!-- Audio Input Device -->
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Audio Input device</label>
-    <select
-      class="form-select form-select-sm"
-      aria-label=".form-select-sm"
-      @change="onChange"
-      v-model="settings.remote.AUDIO.input_device"
-    >
-      <option v-for="option in audioInputOptions()" v-bind:value="option.id">
-        {{ option.name }} [{{ option.api }}]
-      </option>
-    </select>
-  </div>
+                  <!-- Audio Input Device -->
+                  <div class="input-group input-group-sm mb-1">
+                    <label class="input-group-text w-50"
+                      >Audio Input device</label
+                    >
+                    <select
+                      class="form-select form-select-sm"
+                      aria-label=".form-select-sm"
+                      @change="onChange"
+                      v-model="settings.remote.AUDIO.input_device"
+                    >
+                      <option
+                        v-for="option in audioInputOptions()"
+                        v-bind:value="option.id"
+                      >
+                        {{ option.name }} [{{ option.api }}]
+                      </option>
+                    </select>
+                  </div>
 
                   <!-- Audio Output Device -->
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Audio Output device</label>
-    <select
-      class="form-select form-select-sm"
-      aria-label=".form-select-sm"
-      @change="onChange"
-      v-model="settings.remote.AUDIO.output_device"
-    >
-      <option v-for="option in audioOutputOptions()" v-bind:value="option.id">
-        {{ option.name }} [{{ option.api }}]
-      </option>
-    </select>
-  </div>
-
-
+                  <div class="input-group input-group-sm mb-1">
+                    <label class="input-group-text w-50"
+                      >Audio Output device</label
+                    >
+                    <select
+                      class="form-select form-select-sm"
+                      aria-label=".form-select-sm"
+                      @change="onChange"
+                      v-model="settings.remote.AUDIO.output_device"
+                    >
+                      <option
+                        v-for="option in audioOutputOptions()"
+                        v-bind:value="option.id"
+                      >
+                        {{ option.name }} [{{ option.api }}]
+                      </option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
