@@ -22,7 +22,6 @@ import tci
 import cw
 from queues import RIGCTLD_COMMAND_QUEUE
 import audio
-import event_manager
 import demodulator
 
 TESTMODE = False
@@ -32,12 +31,11 @@ class RF:
 
     log = structlog.get_logger("RF")
 
-    def __init__(self, config, event_queue, fft_queue, service_queue, states) -> None:
+    def __init__(self, config, event_manager, fft_queue, service_queue, states) -> None:
         self.config = config
-        print(config)
         self.service_queue = service_queue
         self.states = states
-
+        self.event_manager = event_manager
         self.sampler_avg = 0
         self.buffer_avg = 0
 
@@ -78,7 +76,6 @@ class RF:
         self.modem_received_queue = queue.Queue()
         self.audio_received_queue = queue.Queue()
         self.data_queue_received = queue.Queue()
-        self.event_manager = event_manager.EventManager([event_queue])
         self.fft_queue = fft_queue
 
         self.demodulator = demodulator.Demodulator(self.config, 
@@ -256,16 +253,10 @@ class RF:
         # Wait for some other thread that might be transmitting
         self.states.waitForTransmission()
         self.states.setTransmitting(True)
-        #self.states.waitForChannelBusy()
+        #self.states.channel_busy_event.wait()
 
 
         start_of_transmission = time.time()
-        # TODO Moved ptt toggle some steps before audio is ready for testing
-        # Toggle ptt early to save some time and send ptt state via socket
-        # self.radio.set_ptt(True)
-        # jsondata = {"ptt": "True"}
-        # data_out = json.dumps(jsondata)
-        # sock.SOCKET_QUEUE.put(data_out)
 
         # Open codec2 instance
         self.MODE = mode
@@ -430,7 +421,7 @@ class RF:
             # we need to wait manually for tci processing
             self.tci_module.wait_until_transmitted(audio_48k)
         else:
-            sd.play(audio_48k, blocking=True)
+            sd.play(audio_48k, blocksize=4096, blocking=True)
         return
 
     def init_rig_control(self):

@@ -5,9 +5,9 @@ import data_frame_factory
 class PingFrameHandler(frame_handler.FrameHandler):
 
     def is_frame_for_me(self):
-        # check if callsign ssid override
+        call_with_ssid = self.config['STATION']['mycall'] + "-" + str(self.config['STATION']['myssid'])
         valid, mycallsign = helpers.check_callsign(
-            self.config['STATION']['mycall'], 
+            call_with_ssid,
             self.details["frame"]["destination_crc"],
             self.config['STATION']['ssid_list'])
 

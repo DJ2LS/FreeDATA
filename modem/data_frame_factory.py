@@ -108,6 +108,7 @@ class DataFrameFactory:
             "destination_crc": 3,
             "version": 1,
             "snr": 1,
+            "flag": 1,
         }
 
         self.template_list[FR_TYPE.ARQ_SESSION_INFO.value] = {
@@ -227,7 +228,9 @@ class DataFrameFactory:
 
                 data = int.from_bytes(data, "big")
                 extracted_data[key] = {}
-                if frametype in [FR_TYPE.ARQ_BURST_ACK.value, FR_TYPE.ARQ_SESSION_INFO_ACK.value]:
+
+                # check for frametype for selecting the correspinding flag dictionary
+                if frametype in [FR_TYPE.ARQ_SESSION_OPEN_ACK.value, FR_TYPE.ARQ_SESSION_INFO_ACK.value, FR_TYPE.ARQ_BURST_ACK.value]:
                     flag_dict = self.ARQ_FLAGS
                     for flag in flag_dict:
                         # Update extracted_data with the status of each flag
@@ -332,7 +335,10 @@ class DataFrameFactory:
         }
         return self.construct(FR_TYPE.ARQ_SESSION_OPEN, payload)
 
-    def build_arq_session_open_ack(self, session_id, destination, version, snr):
+    def build_arq_session_open_ack(self, session_id, destination, version, snr, flag_abort=False):
+        flag = 0b00000000
+        if flag_abort:
+            flag = helpers.set_flag(flag, 'ABORT', True, self.ARQ_FLAGS)
 
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),
@@ -340,6 +346,7 @@ class DataFrameFactory:
             "destination_crc": helpers.get_crc_24(destination),
             "version": bytes([version]),
             "snr": helpers.snr_to_bytes(1),
+            "flag": flag.to_bytes(1, 'big'),
         }
         return self.construct(FR_TYPE.ARQ_SESSION_OPEN_ACK, payload)
     
@@ -420,22 +427,3 @@ class DataFrameFactory:
             "flag": flag.to_bytes(1, 'big'),
         }
         return self.construct(FR_TYPE.ARQ_BURST_ACK, payload)
-
-    def build_arq_burst_nack(self, session_id: bytes, offset, speed_level: int, 
-                            frames_per_burst: int, snr: int):
-        payload = {
-            "session_id": session_id.to_bytes(1, 'big'),
-            "offset": offset.to_bytes(4, 'big'),
-            "speed_level": speed_level.to_bytes(1, 'big'),
-            "frames_per_burst": frames_per_burst.to_bytes(1, 'big'),
-            "snr": helpers.snr_to_bytes(snr),
-        }
-        return self.construct(FR_TYPE.ARQ_BURST_NACK, payload)
-
-    def build_arq_data_ack_nack(self, session_id: bytes, state: int, snr: int):
-        payload = {
-            "session_id": session_id.to_bytes(1, 'big'),
-            "state": state.to_bytes(1, 'big'),
-            "snr": helpers.snr_to_bytes(snr),
-        }
-        return self.construct(FR_TYPE. ARQ_DATA_ACK_NACK, payload)

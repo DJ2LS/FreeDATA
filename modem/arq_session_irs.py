@@ -51,7 +51,10 @@ class ARQSessionIRS(arq_session.ARQSession):
             FRAME_TYPE.ARQ_STOP.value: 'send_stop_ack'
         },
         IRS_State.ABORTED: {
-            FRAME_TYPE.ARQ_STOP.value: 'send_stop_ack'
+            FRAME_TYPE.ARQ_STOP.value: 'send_stop_ack',
+            FRAME_TYPE.ARQ_SESSION_OPEN.value: 'send_open_ack',
+            FRAME_TYPE.ARQ_SESSION_INFO.value: 'send_info_ack',
+            FRAME_TYPE.ARQ_BURST_FRAME.value: 'receive_data',
         },
     }
 
@@ -99,14 +102,16 @@ class ARQSessionIRS(arq_session.ARQSession):
         thread_wait.start()
     
     def send_open_ack(self, open_frame):
-
+        self.event_manager.send_arq_session_new(
+            False, self.id, self.dxcall, 0, self.state.name)
         ack_frame = self.frame_factory.build_arq_session_open_ack(
             self.id,
             self.dxcall, 
             self.version,
-            self.snr[0])
+            self.snr[0], flag_abort=self.abort)
         self.launch_transmit_and_wait(ack_frame, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
-        self.set_state(IRS_State.OPEN_ACK_SENT)
+        if not self.abort:
+            self.set_state(IRS_State.OPEN_ACK_SENT)
 
     def send_info_ack(self, info_frame):
         # Get session info from ISS
@@ -125,7 +130,8 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.id, self.total_crc, self.snr[0],
             self.speed_level, self.frames_per_burst, flag_abort=self.abort)
         self.launch_transmit_and_wait(info_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
-        self.set_state(IRS_State.INFO_ACK_SENT)
+        if not self.abort:
+            self.set_state(IRS_State.INFO_ACK_SENT)
 
 
     def process_incoming_data(self, frame):
@@ -159,6 +165,8 @@ class ARQSessionIRS(arq_session.ARQSession):
             ack = self.frame_factory.build_arq_burst_ack(
                                                          self.id, self.received_bytes,
                                                          self.speed_level, self.frames_per_burst, self.snr[0], flag_abort=self.abort)
+
+            self.set_decode_mode()
 
             # increase ack counter
             # self.transmitted_acks += 1
