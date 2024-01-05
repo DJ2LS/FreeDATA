@@ -70,7 +70,6 @@ import { audioInputOptions, audioOutputOptions } from "../js/deviceFormHelper";
     <label class="input-group-text w-50">Audio Input device</label>
     <select
       class="form-select form-select-sm"
-      id="rx_audio"
       aria-label=".form-select-sm"
       @change="onChange"
       v-model="settings.remote.AUDIO.input_device"
@@ -86,7 +85,6 @@ import { audioInputOptions, audioOutputOptions } from "../js/deviceFormHelper";
     <label class="input-group-text w-50">Audio Output device</label>
     <select
       class="form-select form-select-sm"
-      id="tx_audio"
       aria-label=".form-select-sm"
       @change="onChange"
       v-model="settings.remote.AUDIO.output_device"
