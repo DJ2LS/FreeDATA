@@ -56,7 +56,7 @@ function stopAllTransmissions() {
           >
             <main_modem_healthcheck />
 
-       <a
+            <a
               class="list-group-item list-group-item-dark list-group-item-action border-0 rounded-3 mb-2 active"
               id="list-grid-list"
               data-bs-toggle="list"
