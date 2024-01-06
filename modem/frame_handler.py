@@ -113,5 +113,5 @@ class FrameHandler():
         self.log()
         self.add_to_heard_stations()
         self.add_to_activity_list()
-        #self.emit_event()
+        self.emit_event()
         self.follow_protocol()

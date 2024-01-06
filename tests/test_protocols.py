@@ -7,6 +7,7 @@ from frame_dispatcher import DISPATCHER
 import helpers
 import queue
 from state_manager import StateManager
+from event_manager import EventManager
 from command_ping import PingCommand
 from command_cq import CQCommand
 import modem
@@ -24,6 +25,7 @@ class TestProtocols(unittest.TestCase):
         cls.state_manager = StateManager(cls.state_manager_queue)
 
         cls.event_queue = queue.Queue()
+        cls.event_manager = EventManager([cls.event_queue])
 
         cls.modem_transmit_queue = queue.Queue()
 
@@ -33,7 +35,7 @@ class TestProtocols(unittest.TestCase):
 
         #cls.modem.start_modem()
         cls.frame_dispatcher = DISPATCHER(cls.config, 
-                                          cls.event_queue, 
+                                          cls.event_manager,
                                           cls.state_manager,
                                           cls.modem)
 
@@ -42,14 +44,14 @@ class TestProtocols(unittest.TestCase):
 
     def assertEventReceivedType(self, event_type):
         ev = self.event_queue.get()
-        self.assertIn('freedata', ev)
+        self.assertIn('type', ev)
         self.assertIn('received', ev)
         self.assertEqual(ev['received'], event_type)
 
     def testPingWithAck(self):
         # Run ping command
         api_params = { "dxcall": "XX1XXX-7"}
-        ping_cmd = PingCommand(self.config, self.state_manager, self.event_queue, api_params)
+        ping_cmd = PingCommand(self.config, self.state_manager, self.event_manager, api_params)
         #ping_cmd.run(self.event_queue, self.modem)
         frame = ping_cmd.test(self.event_queue)
         # Shortcut the transmit queue directly to the frame dispatcher
@@ -66,7 +68,7 @@ class TestProtocols(unittest.TestCase):
         self.config['MODEM']['respond_to_cq'] = True
 
         api_params = {}
-        cmd = CQCommand(self.config, self.state_manager, self.event_queue, api_params)
+        cmd = CQCommand(self.config, self.state_manager, self.event_manager, api_params)
         #cmd.run(self.event_queue, self.modem)
         frame = cmd.test(self.event_queue)
 
