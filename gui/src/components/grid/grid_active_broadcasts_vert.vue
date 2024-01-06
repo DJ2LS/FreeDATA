@@ -29,20 +29,22 @@ var dxcallPing = ref("");
       <strong>Broadcasts</strong>
     </div>
     <div class="card-body overflow-auto p-0">
-      <div class="input-group w-100">
-        <input
-          type="text"
-          class="form-control"
-          style="min-width: 3rem; text-transform: uppercase; height: 31px"
-          placeholder="DXcall"
-          pattern="[A-Z]*"
-          maxlength="11"
-          aria-label="Input group"
-          aria-describedby="btnGroupAddon"
-          v-model="dxcallPing"
-        />
-        <button
-          class="btn btn-sm btn-outline-secondary w-50"
+
+
+<div class="container text-center">
+  <div class="row mb-2 mt-2">
+    <div class="col-sm-8">
+       <div class="input-group w-100">
+
+        <div class="form-floating">
+  <input type="text" class="form-control" style="text-transform: uppercase;" id="floatingInput" placeholder="dx-callsign" v-model="dxcallPing" maxlength="11" pattern="[A-Z]*">
+  <label for="floatingInput">DX-Callsign</label>
+
+
+
+</div>
+   <button
+          class="btn btn-sm btn-outline-secondary"
           id="sendPing"
           type="button"
           data-bs-placement="bottom"
@@ -52,24 +54,25 @@ var dxcallPing = ref("");
           title="Send a ping request to a remote station"
           @click="transmitPing()"
         >
-          Send ping
+
+          <strong>Ping</strong>
         </button>
       </div>
-      <button
-        type="button"
-        id="startBeacon"
-        class="btn btn-sm w-100"
-        @click="startStopBeacon()"
-        v-bind:class="{
-          'btn-success': state.beacon_state === true,
-          'btn-outline-secondary': state.beacon_state === false,
-        }"
-        title="Toggle beacon mode. The interval can be set in settings. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses."
-      >
-        Toggle beacon
-      </button>
 
-      <button
+    </div>
+    <div class="col">
+        <div class="form-check form-switch">
+  <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchBeacon" v-model="state.beacon_state" @change="onChange" @click="startStopBeacon()"
+>
+  <label class="form-check-label" for="flexSwitchBeacon">Beacon</label>
+</div>
+
+    </div>
+  </div>
+
+  <div class="row ">
+  <div class="col">
+  <button
         class="btn btn-sm btn-outline-secondary w-100"
         id="sendCQ"
         type="button"
@@ -77,7 +80,17 @@ var dxcallPing = ref("");
         @click="sendModemCQ()"
       >
         <h3>CQ CQ CQ</h3>
-      </button>
+      </button></div>
+</div>
+
+</div>
+
+
+
+
+
+
+
     </div>
   </div>
 </template>

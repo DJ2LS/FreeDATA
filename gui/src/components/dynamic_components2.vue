@@ -130,7 +130,7 @@ const gridWidgets = [
   ),
   new gridWidget(
     active_broadcasts_vert,
-    { x: 9, y: 55, w: 3, h: 27 },
+    { x: 9, y: 55, w: 10, h: 40 },
     "Broadcasts main (vertical)",
     true,
     true,
