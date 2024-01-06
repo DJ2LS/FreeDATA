@@ -119,16 +119,7 @@ function stopAllTransmissions() {
               ><i class="bi bi-gear-wide-connected h3"></i
             ></a>
 
-            <a
-              class="btn border btn-outline-danger list-group-item mt-5"
-              id="stop_transmission_connection"
-              data-bs-toggle="tooltip"
-              data-bs-trigger="hover"
-              data-bs-html="false"
-              @click="stopAllTransmissions()"
-              title="Abort session and stop transmissions"
-              ><i class="bi bi-sign-stop-fill h3"></i
-            ></a>
+
           </div>
         </div>
       </div>

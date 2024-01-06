@@ -24,6 +24,7 @@ import grid_activities from "./grid/grid_activities.vue";
 import grid_button from "./grid/button.vue";
 import grid_ptt from "./grid/grid_ptt.vue";
 import grid_mycall from "./grid/grid_mycall.vue";
+import grid_stop from "./grid/grid_stop.vue";
 import grid_CQ_btn from "./grid/grid_CQ.vue";
 import grid_ping from "./grid/grid_ping.vue";
 import grid_freq from "./grid/grid_frequency.vue";
@@ -175,6 +176,14 @@ const gridWidgets = [
     true,
     true,
     "Rig",
+  ),
+ new gridWidget(
+    grid_stop,
+    { x: 8, y: 40, w: 5, h: 15 },
+    "Stop Widget",
+    true,
+    true,
+    "Other",
   ),
 ];
 
