@@ -118,8 +118,6 @@ function stopAllTransmissions() {
               title="Settings"
               ><i class="bi bi-gear-wide-connected h3"></i
             ></a>
-
-
           </div>
         </div>
       </div>
