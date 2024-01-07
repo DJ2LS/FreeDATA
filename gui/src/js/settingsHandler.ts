@@ -100,12 +100,13 @@ export function loadSettings() {
   }
 }
 
-export function saveSettingsToFile() {
-  console.log("save settings to file...");
-  let config = settings.getJSON();
-  console.log(config);
-  fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-}
+//No longer used...
+//export function saveSettingsToFile() {
+//  console.log("save settings to file...");
+//  let config = settings.getJSON();
+//  console.log(config);
+//  fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+//}
 
 export function processModemConfig(data) {
   // update our settings from get request
