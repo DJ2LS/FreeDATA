@@ -69,7 +69,6 @@ var dxcallPing = ref("");
                 role="switch"
                 id="flexSwitchBeacon"
                 v-model="state.beacon_state"
-                @change="onChange"
                 @click="startStopBeacon()"
               />
               <label class="form-check-label" for="flexSwitchBeacon"

@@ -20,7 +20,7 @@ function startStopRigctld() {
 
       break;
     case "running":
-      stopRigctld();
+      //stopRigctld();
       // dirty hack for calling this command twice, otherwise modem won't stop rigctld from time to time
       //stopRigctld();
       break;
@@ -44,7 +44,7 @@ function selectRadioControl() {
       console.log("default=!==");
       settings.remote.RADIO.control = "disabled";
   }
-  saveSettingsToFile();
+  //saveSettingsToFile();
 }
 
 

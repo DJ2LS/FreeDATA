@@ -6,21 +6,23 @@ setActivePinia(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
+import { setModemRigMode, setModemRigPowerLvl } from "../js/api";
+
 function updateFrequencyAndApply(frequency) {
-  state.new_frequency = frequency;
-  set_frequency(state.new_frequency);
+  //state.new_frequency = frequency;
+  //set_frequency(state.new_frequency);
 }
 
 function set_hamlib_frequency_manually() {
-  set_frequency(state.new_frequency);
+  //set_frequency(state.new_frequency);
 }
 
 function set_hamlib_mode() {
-  set_mode(state.mode);
+  setModemRigMode(state.mode);
 }
 
 function set_hamlib_rf_level() {
-  set_rf_level(state.rf_level);
+  setModemRigPowerLvl(state.rf_level);
 }
 </script>
 
