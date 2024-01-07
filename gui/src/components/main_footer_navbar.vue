@@ -130,7 +130,7 @@ const state = useStateStore(pinia);
             data-bs-title="What's the frequency, Kenneth?"
             style="pointer-events: auto"
           >
-            {{ parseInt(state.frequency) / 1000 }} kHz
+            {{ state.frequency / 1000 }} kHz
           </button>
         </div>
 
