@@ -17,11 +17,11 @@ export default defineConfig(({ command }) => {
   return {
     optimizeDeps: {
       esbuildOptions: {
-        target: 'esnext'
-      }
+        target: "esnext",
+      },
     },
     build: {
-      target: 'esnext'
+      target: "esnext",
     },
     plugins: [
       vue(),
