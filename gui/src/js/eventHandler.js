@@ -1,4 +1,3 @@
-
 import {
   newMessageReceived,
   newBeaconReceived,
