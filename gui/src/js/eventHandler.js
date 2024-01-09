@@ -1,4 +1,3 @@
-import { addDataToWaterfall } from "../js/waterfallHandler.js";
 
 import {
   newMessageReceived,
@@ -23,8 +22,10 @@ export function connectionFailed(endpoint, event) {
 }
 export function stateDispatcher(data) {
   data = JSON.parse(data);
-  //console.log(data);
+  console.log(data);
   if (data["type"] == "state-change" || data["type"] == "state") {
+    stateStore.modem_connection = "connected";
+
     stateStore.channel_busy = data["channel_busy"];
     stateStore.is_codec2_traffic = data["is_codec2_traffic"];
     stateStore.is_modem_running = data["is_modem_running"];
