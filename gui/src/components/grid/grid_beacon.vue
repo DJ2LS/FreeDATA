@@ -14,7 +14,6 @@ function startStopBeacon() {
     setModemBeacon(true);
   }
 }
-
 </script>
 <template>
   <div class="fill h-100" style="width: calc(100% - 24px)">
@@ -23,16 +22,15 @@ function startStopBeacon() {
       @click="startStopBeacon"
       title="Enable/disable periodic beacons"
       >Beacon&nbsp;
-      <span class="" role="status"
-      v-bind:class="{
-            'spinner-grow spinner-grow-sm': state.beacon_state === true,
-            'disabled': state.beacon_state === false,
-          }"
+      <span
+        class=""
+        role="status"
+        v-bind:class="{
+          'spinner-grow spinner-grow-sm': state.beacon_state === true,
+          disabled: state.beacon_state === false,
+        }"
       >
       </span>
-      </a
-    >
-
+    </a>
   </div>
-
 </template>
