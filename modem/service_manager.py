@@ -14,6 +14,7 @@ class SM:
 
         self.modem = False
         self.beacon = False
+        self.explorer = False
         self.app = app
         self.config = self.app.config_manager.read()
         self.modem_fft = app.modem_fft
@@ -27,8 +28,6 @@ class SM:
         )
         runner_thread.start()
 
-        self.start_explorer_publishing()
-
     def runner(self):
         while True:
             cmd = self.modem_service.get()
@@ -36,14 +35,17 @@ class SM:
                 self.log.info("------------------ FreeDATA ------------------")
                 self.log.info("------------------  MODEM   ------------------")
                 self.start_modem()
+                self.start_explorer_publishing()
 
             elif cmd in ['stop'] and self.modem:
                 self.stop_modem()
+                self.stop_explorer_publishing()
                 # we need to wait a bit for avoiding a portaudio crash
                 threading.Event().wait(0.5)
 
             elif cmd in ['restart']:
                 self.stop_modem()
+                self.stop_explorer_publishing()
                 # we need to wait a bit for avoiding a portaudio crash
                 threading.Event().wait(0.5)
                 if self.start_modem():
@@ -121,6 +123,9 @@ class SM:
         try:
             # optionally start explorer module
             if self.config['STATION']['enable_explorer']:
-                explorer.explorer(self.app, self.config, self.states)
+                self.explorer = explorer.explorer(self.app, self.config, self.states)
         except Exception as e:
-            self.log.warning("[EXPLORER] Publishin not started because of error", e=e)
+            self.log.warning("[EXPLORER] Publishing not started because of error", e=e)
+
+    def stop_explorer_publishing(self):
+        del self.explorer
