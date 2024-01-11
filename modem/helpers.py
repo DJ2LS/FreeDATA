@@ -302,25 +302,28 @@ def check_callsign(callsign: str, crc_to_check: bytes, ssid_list):
         [True, Callsign + SSID]
         False
     """
+    print(callsign)
     if not isinstance(callsign, (bytes)):
         callsign = bytes(callsign,'utf-8')
-    
-    log.debug("[HLP] check_callsign: Checking:", callsign=callsign)
+
     try:
         # We want the callsign without SSID
-        callsign = callsign.split(b"-")[0]
+        splitted_callsign = callsign.split(b"-")
+        callsign = splitted_callsign[0]
+        ssid = splitted_callsign[1].decode()
 
     except IndexError:
         # This is expected when `callsign` doesn't have a dash.
-        pass
+        ssid = 0
     except Exception as err:
         log.debug("[HLP] check_callsign: Error converting to bytes:", e=err)
 
+    # ensure, we are always have the own ssid in ssid_list even if it is empty
+    if ssid not in ssid_list:
+        ssid_list.append(str(ssid))
+
     for ssid in ssid_list:
         call_with_ssid = callsign + b'-' + (str(ssid)).encode('utf-8')
-        #call_with_ssid.extend("-".encode("utf-8"))
-        #call_with_ssid.extend(str(ssid).encode("utf-8"))
-
         callsign_crc = get_crc_24(call_with_ssid)
         callsign_crc = callsign_crc.hex()
 
@@ -328,6 +331,7 @@ def check_callsign(callsign: str, crc_to_check: bytes, ssid_list):
             log.debug("[HLP] check_callsign matched:", call_with_ssid=call_with_ssid, checksum=crc_to_check)
             return [True, call_with_ssid.decode()]
 
+    log.debug("[HLP] check_callsign: Checking:", callsign=callsign, crc_to_check=crc_to_check, own_crc=callsign_crc)
     return [False, b'']
 
 
