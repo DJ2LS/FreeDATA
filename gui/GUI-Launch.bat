@@ -1,5 +1,5 @@
 REM Place this batch file in FreeData/tnc and then run it
-REM ie. c:\FD-Src\tnc
+REM ie. c:\FD-Src\gui
 
-python daemon.py
+call npm start
 pause
