@@ -117,7 +117,7 @@ class SM:
         self.beacon.start()
 
     def stop_beacon(self):
-        del self.beacon
+        self.beacon.stop()
 
     def start_explorer_publishing(self):
         try:
