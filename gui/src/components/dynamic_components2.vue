@@ -356,7 +356,7 @@ function restoreGridLayoutFromConfig(){
 
         //Refs are passed, so grab original settings for restoration
         //let tempGW = gridWidgets[parseInt(savedGrid[i][4])];
-        let tempGW = gridWidgets[parseInt(widgetIndex)];
+        let tempGW = gridWidgets[widgetIndex];
         let backupGWsize = tempGW.size;
         tempGW.autoPlace=false;
         tempGW.size={x:savedGrid[i][0], y:savedGrid[i][1], w:savedGrid[i][2], h:savedGrid[i][3]}
