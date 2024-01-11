@@ -22,6 +22,7 @@ nconf.defaults({
     update_channel: "alpha",
     enable_sys_notification: false,
     grid_layout: "[]",
+    grid_preset: "[]",
   },
 });
 
@@ -38,6 +39,7 @@ export const settingsStore = reactive({
     update_channel: "alpha",
     enable_sys_notification: false,
     grid_layout: "[]",
+    grid_preset: "[]",
   },
   remote: {
     AUDIO: {
