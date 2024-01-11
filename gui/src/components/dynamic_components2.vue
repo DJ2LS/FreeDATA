@@ -48,24 +48,37 @@ class gridWidget {
   autoPlace;
   //Category to place widget in widget picker
   category;
-  constructor(component, size, text, quickfill, autoPlace, category) {
+  //Unique ID for widget
+  id;
+  constructor(component, size, text, quickfill, autoPlace, category, id) {
     this.component2 = component;
     this.size = size;
     this.text = text;
     this.quickFill = quickfill;
     this.autoPlace = autoPlace;
     this.category = category;
+    this.id = id;
   }
 }
 //Array of grid widgets, do not change array order as it'll affect saved configs
 const gridWidgets = [
-  new gridWidget(
-    active_heard_stations,
-    { x: 0, y: 13, w: 16, h: 40 },
-    "Detailed heard stations list",
+new gridWidget(
+    grid_activities,
+    { x: 0, y: 53, w: 6, h: 55 },
+    "Activities list",
     true,
     true,
     "Activity",
+    8,
+  ),
+  new gridWidget(
+    active_heard_stations,
+    { x: 0, y: 13, w: 16, h: 40 },
+    "Heard stations list (detailed)",
+    true,
+    true,
+    "Activity",
+    0,
   ),
   new gridWidget(
     active_stats,
@@ -74,6 +87,7 @@ const gridWidgets = [
     true,
     true,
     "Stats",
+    1,
   ),
   new gridWidget(
     active_audio_level,
@@ -82,94 +96,7 @@ const gridWidgets = [
     false,
     true,
     "Audio",
-  ),
-  new gridWidget(
-    active_rig_control,
-    { x: 6, y: 40, w: 9, h: 15 },
-    "Rig control main",
-    false,
-    true,
-    "Rig",
-  ),
-  new gridWidget(
-    active_broadcasts,
-    { x: 6, y: 70, w: 6, h: 15 },
-    "Broadcasts main (horizontal)",
-    false,
-    true,
-    "Broadcasts",
-  ),
-  new gridWidget(
-    mini_heard_stations,
-    { x: 1, y: 1, w: 6, h: 54 },
-    "Mini heard stations list",
-    false,
-    true,
-    "Activity",
-  ),
-  new gridWidget(
-    s_meter,
-    { x: 16, y: 0, w: 4, h: 8 },
-    "S-Meter",
-    true,
-    true,
-    "Rig",
-  ),
-  new gridWidget(
-    dbfs_meter,
-    { x: 20, y: 0, w: 4, h: 8 },
-    "Dbfs meter",
-    true,
-    true,
-    "Audio",
-  ),
-  new gridWidget(
-    grid_activities,
-    { x: 0, y: 53, w: 6, h: 55 },
-    "Activities list",
-    true,
-    true,
-    "Activity",
-  ),
-  new gridWidget(
-    active_broadcasts_vert,
-    { x: 6, y: 53, w: 10, h: 35 },
-    "Broadcasts main (vertical)",
-    true,
-    true,
-    "Broadcasts",
-  ),
-  new gridWidget(
-    grid_ptt,
-    { x: 2, y: 0, w: 5, h: 13 },
-    "Tx/PTT indicator",
-    true,
-    true,
-    "Rig",
-  ),
-  new gridWidget(
-    grid_mycall,
-    { x: 7, y: 0, w: 9, h: 13 },
-    "My callsign widget",
-    true,
-    true,
-    "Other",
-  ),
-  new gridWidget(
-    grid_CQ_btn,
-    { x: 3, y: 27, w: 2, h: 8 },
-    "CQ button",
-    false,
-    true,
-    "Broadcasts",
-  ),
-  new gridWidget(
-    grid_ping,
-    { x: 3, y: 27, w: 4, h: 9 },
-    "Ping widget",
-    false,
-    true,
-    "Broadcasts",
+    2,
   ),
   new gridWidget(
     grid_freq,
@@ -178,14 +105,16 @@ const gridWidgets = [
     true,
     true,
     "Rig",
+    14,
   ),
- new gridWidget(
-    grid_stop,
-    { x: 0, y: 0, w: 2, h: 13 },
-    "Stop widget",
+  new gridWidget(
+    active_rig_control,
+    { x: 6, y: 40, w: 9, h: 15 },
+    "Rig control main",
+    false,
     true,
-    true,
-    "Other",
+    "Rig",
+    3,
   ),
   new gridWidget(
     grid_beacon,
@@ -194,6 +123,71 @@ const gridWidgets = [
     false,
     true,
     "Broadcasts",
+    16,
+  ),
+  new gridWidget(
+    active_broadcasts,
+    { x: 6, y: 70, w: 6, h: 15 },
+    "Broadcasts main (horizontal)",
+    false,
+    true,
+    "Broadcasts",
+    4,
+  ),
+  new gridWidget(
+    mini_heard_stations,
+    { x: 1, y: 1, w: 6, h: 54 },
+    "Heard stations list (small)",
+    false,
+    true,
+    "Activity",
+    5,
+  ),
+  new gridWidget(
+    s_meter,
+    { x: 16, y: 0, w: 4, h: 8 },
+    "S-Meter",
+    true,
+    true,
+    "Rig",
+    6,
+  ),
+  new gridWidget(
+    dbfs_meter,
+    { x: 20, y: 0, w: 4, h: 8 },
+    "Dbfs meter",
+    true,
+    true,
+    "Audio",
+    7,
+  ),
+
+  new gridWidget(
+    active_broadcasts_vert,
+    { x: 6, y: 53, w: 10, h: 35 },
+    "Broadcasts main (vertical)",
+    true,
+    true,
+    "Broadcasts",
+    9,
+  ),
+  new gridWidget(
+    grid_ptt,
+    { x: 2, y: 0, w: 5, h: 13 },
+    "Tx/PTT indicator",
+    true,
+    true,
+    "Rig",
+    10,
+  ),
+  new gridWidget(
+    grid_mycall,
+    { x: 7, y: 0, w: 9, h: 13 },
+    "My callsign widget",
+    true,
+    true,
+    "Other",
+    11,
   ),
   new gridWidget(
     grid_mycall_small,
@@ -202,7 +196,39 @@ const gridWidgets = [
     false,
     true,
     "Other",
+    17,
   ),
+  new gridWidget(
+    grid_CQ_btn,
+    { x: 3, y: 27, w: 2, h: 8 },
+    "CQ button",
+    false,
+    true,
+    "Broadcasts",
+    12,
+  ),
+  new gridWidget(
+    grid_ping,
+    { x: 3, y: 27, w: 4, h: 9 },
+    "Ping widget",
+    false,
+    true,
+    "Broadcasts",
+    13,
+  ),
+
+ new gridWidget(
+    grid_stop,
+    { x: 0, y: 0, w: 2, h: 13 },
+    "Stop widget",
+    true,
+    true,
+    "Other",
+    15,
+  ),
+
+
+  //New new widget ID should be 18
 ];
 
 function updateFrequencyAndApply(frequency) {
@@ -213,7 +239,19 @@ function updateFrequencyAndApply(frequency) {
 function set_hamlib_frequency_manually() {
   setModemFrequency(state.new_frequency);
 }
-
+function savePreset()
+{
+  settingsStore.local.grid_preset=settingsStore.local.grid_layout;
+  console.log("Saved grid preset")
+}
+function loadPreset()
+{
+  
+  clearAllItems();
+  settingsStore.local.grid_layout=settingsStore.local.grid_preset;
+  restoreGridLayoutFromConfig();
+  console.log("Restored grid preset")
+}
 onMounted(() => {
   grid = GridStack.init({
     // DO NOT use grid.value = GridStack.init(), see above
@@ -308,13 +346,17 @@ function onChange(event, changeItems) {
 function restoreGridLayoutFromConfig(){
     //Try to load grid from saved config
     //On mounted seems to be called multiple times; so check to make sure items is empty first
-    //array format: 0 = x, 1 = y, 2 = w, 3 = h, 4 = gridwidget index
+    //array format: 0 = x, 1 = y, 2 = w, 3 = h, 4 = gridwidget ID
     if (items.value.length == 0){
       let savedGrid = JSON.parse(settingsStore.local.grid_layout);
       if (savedGrid.length > 0 ) console.info("Restoring " + savedGrid.length + " widget(s) from config");
       for (let i=0; i < savedGrid.length;i++ ){
+        //Find widget by ID
+        var widgetIndex = gridWidgets.findIndex((gw) => gw.id == savedGrid[i][4])
+
         //Refs are passed, so grab original settings for restoration
-        let tempGW = gridWidgets[parseInt(savedGrid[i][4])];
+        //let tempGW = gridWidgets[parseInt(savedGrid[i][4])];
+        let tempGW = gridWidgets[parseInt(widgetIndex)];
         let backupGWsize = tempGW.size;
         tempGW.autoPlace=false;
         tempGW.size={x:savedGrid[i][0], y:savedGrid[i][1], w:savedGrid[i][2], h:savedGrid[i][3]}
@@ -330,7 +372,10 @@ function saveGridLayout()
   let cfg = [];
   for (let i=0; items.value.length > i; i++) {
     var widget = gridWidgets.findIndex((gw) => gw.component2.__name == items.value[i].component2.__name)
-    cfg[i] = [items.value[i].x, items.value[i].y, items.value[i].w,items.value[i].h, widget ];
+    //Get the widget's id to store in config
+    var widgetid = gridWidgets[widget].id;
+    console.log(widgetid + "-" + widget);
+    cfg[i] = [items.value[i].x, items.value[i].y, items.value[i].w,items.value[i].h, widgetid ];
   }
   settingsStore.local.grid_layout=JSON.stringify(cfg);
   saveLocalSettingsToConfig();
@@ -600,6 +645,23 @@ function quickfill() {
         @click="clearAllItems"
       >
         Clear grid
+      </button>
+      <hr />
+      <button
+        class="btn btn-sm btn-outline-dark"
+        type="button"
+        @click="savePreset"
+        title="Save current grid layout as a preset that can be restored using restore preset button"
+      >
+        Save Preset
+      </button>&nbsp;
+      <button
+        class="btn btn-sm btn-outline-dark"
+        type="button"
+        @click="loadPreset"
+        title="Restore your saved grid preset (clears current grid)"
+      >
+        Restore Preset
       </button>
     </div>
   </div>
