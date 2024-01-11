@@ -7,18 +7,16 @@ setActivePinia(pinia);
 
 import { settingsStore } from "../../store/settingsStore.js";
 
-function updateMyCall() {
-  setConfig();
-}
+
 </script>
 <template>
   <div
     class="d-flex justify-content-center align-items-center object-fill border rounded w-100 h-100"
   >
-    <h1>
+    <h2>
       {{ settingsStore.remote.STATION.mycall }}-{{
         settingsStore.remote.STATION.myssid
       }}
-    </h1>
+    </h2>
   </div>
 </template>

@@ -28,6 +28,8 @@ import grid_stop from "./grid/grid_stop.vue";
 import grid_CQ_btn from "./grid/grid_CQ.vue";
 import grid_ping from "./grid/grid_ping.vue";
 import grid_freq from "./grid/grid_frequency.vue";
+import grid_beacon from "./grid/grid_beacon.vue";
+import grid_mycall_small from "./grid/grid_mycall small.vue";
 import { stateDispatcher } from "../js/eventHandler";
 
 let count = ref(0);
@@ -59,7 +61,7 @@ class gridWidget {
 const gridWidgets = [
   new gridWidget(
     active_heard_stations,
-    { x: 0, y: 0, w: 16, h: 40 },
+    { x: 0, y: 13, w: 16, h: 40 },
     "Detailed heard stations list",
     true,
     true,
@@ -67,7 +69,7 @@ const gridWidgets = [
   ),
   new gridWidget(
     active_stats,
-    { x: 16, y: 16, w: 8, h: 80 },
+    { x: 16, y: 16, w: 8, h: 72 },
     "Stats (waterfall, etc)",
     true,
     true,
@@ -116,14 +118,14 @@ const gridWidgets = [
   new gridWidget(
     dbfs_meter,
     { x: 20, y: 0, w: 4, h: 8 },
-    "Dbfs Meter",
+    "Dbfs meter",
     true,
     true,
     "Audio",
   ),
   new gridWidget(
     grid_activities,
-    { x: 0, y: 40, w: 6, h: 55 },
+    { x: 0, y: 53, w: 6, h: 55 },
     "Activities list",
     true,
     true,
@@ -131,7 +133,7 @@ const gridWidgets = [
   ),
   new gridWidget(
     active_broadcasts_vert,
-    { x: 9, y: 55, w: 10, h: 40 },
+    { x: 6, y: 53, w: 10, h: 35 },
     "Broadcasts main (vertical)",
     true,
     true,
@@ -139,7 +141,7 @@ const gridWidgets = [
   ),
   new gridWidget(
     grid_ptt,
-    { x: 17, y: 8, w: 5, h: 12 },
+    { x: 2, y: 0, w: 5, h: 13 },
     "Tx/PTT indicator",
     true,
     true,
@@ -147,7 +149,7 @@ const gridWidgets = [
   ),
   new gridWidget(
     grid_mycall,
-    { x: 8, y: 40, w: 5, h: 15 },
+    { x: 7, y: 0, w: 9, h: 13 },
     "My callsign widget",
     true,
     true,
@@ -156,7 +158,7 @@ const gridWidgets = [
   new gridWidget(
     grid_CQ_btn,
     { x: 3, y: 27, w: 2, h: 8 },
-    "CQ Button",
+    "CQ button",
     false,
     true,
     "Broadcasts",
@@ -164,7 +166,7 @@ const gridWidgets = [
   new gridWidget(
     grid_ping,
     { x: 3, y: 27, w: 4, h: 9 },
-    "Ping Widget",
+    "Ping widget",
     false,
     true,
     "Broadcasts",
@@ -179,9 +181,25 @@ const gridWidgets = [
   ),
  new gridWidget(
     grid_stop,
-    { x: 8, y: 40, w: 5, h: 15 },
-    "Stop Widget",
+    { x: 0, y: 0, w: 2, h: 13 },
+    "Stop widget",
     true,
+    true,
+    "Other",
+  ),
+  new gridWidget(
+    grid_beacon,
+    { x: 3, y: 27, w: 3, h: 8 },
+    "Beacon button",
+    false,
+    true,
+    "Broadcasts",
+  ),
+  new gridWidget(
+    grid_mycall_small,
+    { x: 8, y: 40, w: 4, h: 8 },
+    "My callsign widget (small)",
+    false,
     true,
     "Other",
   ),
