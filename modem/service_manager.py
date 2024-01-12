@@ -128,4 +128,5 @@ class SM:
             self.log.warning("[EXPLORER] Publishing not started because of error", e=e)
 
     def stop_explorer_publishing(self):
-        del self.explorer
+        if self.config['STATION']['enable_explorer']:
+            del self.explorer
