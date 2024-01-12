@@ -12,12 +12,11 @@ import radio_manager
 class SM:
     def __init__(self, app):
         self.log = structlog.get_logger("service")
-
+        self.app = app
         self.modem = False
         self.beacon = False
         self.explorer = False
-        self.radio = False
-        self.app = app
+        self.app.radio_manager = False
         self.config = self.app.config_manager.read()
         self.modem_fft = app.modem_fft
         self.modem_service = app.modem_service
@@ -88,7 +87,7 @@ class SM:
             return False
 
         self.log.info("starting modem....")
-        self.modem = modem.RF(self.config, self.event_manager, self.modem_fft, self.modem_service, self.state_manager, self.radio)
+        self.modem = modem.RF(self.config, self.event_manager, self.modem_fft, self.modem_service, self.state_manager, self.app.radio_manager)
 
         self.frame_dispatcher = frame_dispatcher.DISPATCHER(self.config, 
                                                             self.event_manager,
@@ -140,8 +139,8 @@ class SM:
             del self.explorer
 
     def start_radio_manager(self):
-        self.radio = radio_manager.RadioManager(self.config, self.state_manager, self.event_manager)
+        self.app.radio_manager = radio_manager.RadioManager(self.config, self.state_manager, self.event_manager)
 
     def stop_radio_manager(self):
-        self.radio.stop()
-        del self.radio
+        self.app.radio_manager.stop()
+        del self.app.radio_manager

@@ -8,7 +8,7 @@ import "../../node_modules/gridstack/dist/gridstack.min.css";
 import { GridStack } from "gridstack";
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
-import { setModemFrequency } from "../js/api";
+import { setRadioParameters } from "../js/api";
 import { saveLocalSettingsToConfig, settingsStore } from "../store/settingsStore";
 
 import active_heard_stations from "./grid/grid_active_heard_stations.vue";
@@ -233,12 +233,20 @@ new gridWidget(
 
 function updateFrequencyAndApply(frequency) {
   state.new_frequency = frequency;
-  setModemFrequency(state.new_frequency);
+  set_radio_parameters();
 }
 
-function set_hamlib_frequency_manually() {
-  setModemFrequency(state.new_frequency);
+function set_radio_parameters(){
+    setRadioParameters(state.new_frequency, state.mode, state.rf_level);
+
 }
+
+
+
+
+
+
+
 function savePreset()
 {
   settingsStore.local.grid_preset=settingsStore.local.grid_layout;
@@ -246,7 +254,7 @@ function savePreset()
 }
 function loadPreset()
 {
-  
+
   clearAllItems();
   settingsStore.local.grid_layout=settingsStore.local.grid_preset;
   restoreGridLayoutFromConfig();
@@ -392,7 +400,7 @@ function addNewWidget2(componentToAdd :gridWidget,saveToConfig :boolean) {
     if (saveToConfig)
       saveGridLayout();
   });
-  
+
 }
 
 function remove(widget) {
@@ -677,7 +685,7 @@ function quickfill() {
         aria-label="Close"
       ></button>
 
-    
+
 
   </div>
   <div class="offcanvas-body">
@@ -707,7 +715,6 @@ function quickfill() {
                   <button
                     class="btn btn-sm btn-outline-success"
                     type="button"
-                    @click="set_hamlib_frequency_manually"
                     v-bind:class="{
                       disabled: state.hamlib_status === 'disconnected',
                     }"

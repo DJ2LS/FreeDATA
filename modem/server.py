@@ -242,15 +242,20 @@ def post_modem_send_raw_stop():
 
     return api_response(request.json)
 
+@app.route('/radio', methods=['GET', 'POST'])
+def get_post_radio():
+    if request.method in ['POST']:
+        app.radio_manager.set_frequency(request.json['radio_frequency'])
+        app.radio_manager.set_mode(request.json['radio_mode'])
+
+        return api_response(request.json)
+    elif request.method == 'GET':
+        return api_response(app.state_manager.get_radio_status())
 
 # @app.route('/modem/arq_connect', methods=['POST'])
 # @app.route('/modem/arq_disconnect', methods=['POST'])
 # @app.route('/modem/send_raw', methods=['POST'])
-# @app.route('/modem/stop_transmission', methods=['POST'])
-# @app.route('/modem/listen', methods=['POST']) # not needed if we are restarting modem on changing settings
 # @app.route('/modem/record_audio', methods=['POST'])
-# @app.route('/modem/responde_to_call', methods=['POST']) # not needed if we are restarting modem on changing settings
-# @app.route('/modem/responde_to_cq', methods=['POST']) # not needed if we are restarting modem on changing settings
 # @app.route('/modem/audio_levels', methods=['POST']) # tx and rx # not needed if we are restarting modem on changing settings
 # @app.route('/modem/mesh_ping', methods=['POST'])
 # @app.route('/mesh/routing_table', methods=['GET'])

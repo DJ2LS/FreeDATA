@@ -177,3 +177,10 @@ class StateManager:
         else:
             self.channel_busy_condition_codec2 = threading.Event()
         self.calculate_channel_busy_state()
+
+    def get_radio_status(self):
+        return {
+            "radio_status": self.radio_status,
+            "radio_frequency": self.radio_frequency,
+            "radio_mode": self.radio_mode,
+        }

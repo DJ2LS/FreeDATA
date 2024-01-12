@@ -1,18 +1,15 @@
 <script setup lang="ts">
 import { setActivePinia } from "pinia";
 import pinia from "../../store/index";
-import { setModemRigMode, setModemRigPowerLvl } from "../../js/api";
+import { setRadioParameters} from "../../js/api";
 setActivePinia(pinia);
 
 import { useStateStore } from "../../store/stateStore.js";
 const state = useStateStore(pinia);
 
-function set_hamlib_mode() {
-  setModemRigMode(state.mode);
-}
+function set_radio_parameters(){
+    setRadioParameters(state.frequency, state.mode, state.rf_level);
 
-function set_hamlib_rf_level() {
-  setModemRigPowerLvl(state.rf_level);
 }
 </script>
 
