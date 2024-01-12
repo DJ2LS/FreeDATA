@@ -94,7 +94,7 @@ function set_radio_parameters() {
                     <button
                       class="btn btn-sm btn-outline-success"
                       type="button"
-                      @click="set_radio_parameters"
+                      @click="updateFrequencyAndApply(state.new_frequency)"
                       v-bind:class="{
                         disabled: state.hamlib_status === 'disconnected',
                       }"

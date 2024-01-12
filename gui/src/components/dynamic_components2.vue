@@ -715,6 +715,7 @@ function quickfill() {
                   <button
                     class="btn btn-sm btn-outline-success"
                     type="button"
+                    @click="updateFrequencyAndApply(state.new_frequency)"
                     v-bind:class="{
                       disabled: state.hamlib_status === 'disconnected',
                     }"
