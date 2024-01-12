@@ -117,7 +117,7 @@ export function getModemState() {
   return apiGet("/modem/state");
 }
 
-export function setRadioParameters(frequency, mode, rf_level){
+export function setRadioParameters(frequency, mode, rf_level) {
   return apiPost("/radio", {
     radio_frequency: frequency,
     radio_mode: mode,
