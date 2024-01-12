@@ -18,6 +18,7 @@ import command_feq
 import command_test
 import command_arq_raw
 import event_manager
+import radio_manager
 
 app = Flask(__name__)
 CORS(app)
@@ -57,6 +58,7 @@ app.state_manager = state_manager.StateManager(app.state_queue)
 
 # start service manager
 app.service_manager = service_manager.SM(app)
+
 
 # start modem service
 app.modem_service.put("start")
