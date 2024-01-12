@@ -32,6 +32,12 @@ export function stateDispatcher(data) {
     stateStore.dbfs_level_percent = Math.round(
       Math.pow(10, data["audio_dbfs"] / 20) * 100,
     );
+
+    stateStore.s_meter_strength_raw = Math.round(data["s_meter_strength"]);
+    stateStore.s_meter_strength_percent = Math.round(
+      Math.pow(10, data["s_meter_strength"] / 20) * 100,
+    );
+
     stateStore.channel_busy_slot = data["channel_busy_slot"];
     stateStore.beacon_state = data["is_beacon_running"];
     stateStore.radio_status = data["radio_status"];

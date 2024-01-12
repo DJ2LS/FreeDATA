@@ -52,7 +52,7 @@ class RadioManager:
 
             if self.state_manager.isTransmitting():
                 self.radio_alc = parameters['alc']
-            self.state_manager.set("radio_strength", parameters['strength'])
+            self.state_manager.set("s_meter_strength", parameters['strength'])
             time.sleep(self.refresh_rate)
     def stop(self):
         self.radio.disconnect()
