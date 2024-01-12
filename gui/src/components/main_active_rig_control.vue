@@ -6,19 +6,16 @@ setActivePinia(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { setRadioParameters} from "../js/api";
+import { setRadioParameters } from "../js/api";
 
 function updateFrequencyAndApply(frequency) {
   state.new_frequency = frequency;
-    set_radio_parameters();
+  set_radio_parameters();
 }
 
-
-function set_radio_parameters(){
-    setRadioParameters(state.new_frequency, state.mode, state.rf_level);
-
+function set_radio_parameters() {
+  setRadioParameters(state.new_frequency, state.mode, state.rf_level);
 }
-
 </script>
 
 <template>
