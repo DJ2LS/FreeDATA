@@ -1176,12 +1176,9 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
           ></button>
         </div>
         <div class="modal-body">
-
-        <div class="alert alert-info" role="alert">
-          Adjust audio levels. Value in dB. Default is <strong>0</strong>
-        </div>
-
-
+          <div class="alert alert-info" role="alert">
+            Adjust audio levels. Value in dB. Default is <strong>0</strong>
+          </div>
 
           <div class="input-group input-group-sm mb-1">
             <span class="input-group-text">Test-Frame</span>
