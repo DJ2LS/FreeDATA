@@ -166,7 +166,6 @@ import settings_exp from "./settings_exp.vue";
               <settings_rigcontrol />
             </div>
 
-
             <div
               class="tab-pane"
               id="modem"
