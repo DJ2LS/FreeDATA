@@ -2,7 +2,6 @@
 import { setActivePinia } from "pinia";
 import pinia from "../../store/index";
 setActivePinia(pinia);
-
 </script>
 <template>
   <a

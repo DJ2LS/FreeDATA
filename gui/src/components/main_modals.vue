@@ -1176,12 +1176,7 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
           ></button>
         </div>
         <div class="modal-body">
-
-        <div class="alert alert-warning" role="alert">
-          Not working yet...
-        </div>
-
-
+          <div class="alert alert-warning" role="alert">Not working yet...</div>
 
           <div class="input-group input-group-sm mb-1">
             <span class="input-group-text">Test-Frame</span>
