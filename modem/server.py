@@ -18,6 +18,7 @@ import command_feq
 import command_test
 import command_arq_raw
 import event_manager
+import radio_manager
 
 app = Flask(__name__)
 CORS(app)
@@ -57,6 +58,7 @@ app.state_manager = state_manager.StateManager(app.state_queue)
 
 # start service manager
 app.service_manager = service_manager.SM(app)
+
 
 # start modem service
 app.modem_service.put("start")
@@ -240,15 +242,21 @@ def post_modem_send_raw_stop():
 
     return api_response(request.json)
 
+@app.route('/radio', methods=['GET', 'POST'])
+def get_post_radio():
+    if request.method in ['POST']:
+        app.radio_manager.set_frequency(request.json['radio_frequency'])
+        app.radio_manager.set_mode(request.json['radio_mode'])
+        app.radio_manager.set_rf_level(int(request.json['radio_rf_level']))
+
+        return api_response(request.json)
+    elif request.method == 'GET':
+        return api_response(app.state_manager.get_radio_status())
 
 # @app.route('/modem/arq_connect', methods=['POST'])
 # @app.route('/modem/arq_disconnect', methods=['POST'])
 # @app.route('/modem/send_raw', methods=['POST'])
-# @app.route('/modem/stop_transmission', methods=['POST'])
-# @app.route('/modem/listen', methods=['POST']) # not needed if we are restarting modem on changing settings
 # @app.route('/modem/record_audio', methods=['POST'])
-# @app.route('/modem/responde_to_call', methods=['POST']) # not needed if we are restarting modem on changing settings
-# @app.route('/modem/responde_to_cq', methods=['POST']) # not needed if we are restarting modem on changing settings
 # @app.route('/modem/audio_levels', methods=['POST']) # tx and rx # not needed if we are restarting modem on changing settings
 # @app.route('/modem/mesh_ping', methods=['POST'])
 # @app.route('/mesh/routing_table', methods=['GET'])

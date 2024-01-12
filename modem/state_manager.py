@@ -43,8 +43,8 @@ class StateManager:
         self.radio_frequency = 0
         self.radio_mode = None
         self.radio_bandwidth = 0
-        self.radio_rf_power = 0
-        self.radio_strength = 0
+        self.radio_rf_level = 0
+        self.s_meter_strength = 0
         # Set rig control status regardless or rig control method
         self.radio_status = False
 
@@ -85,6 +85,7 @@ class StateManager:
             "radio_status": self.radio_status,
             "radio_frequency": self.radio_frequency,
             "radio_mode": self.radio_mode,
+            "s_meter_strength": self.s_meter_strength,
             "channel_busy_slot": self.channel_busy_slot,
             "audio_dbfs": self.audio_dbfs,
             "activities": self.activities_list,
@@ -177,3 +178,12 @@ class StateManager:
         else:
             self.channel_busy_condition_codec2 = threading.Event()
         self.calculate_channel_busy_state()
+
+    def get_radio_status(self):
+        return {
+            "radio_status": self.radio_status,
+            "radio_frequency": self.radio_frequency,
+            "radio_mode": self.radio_mode,
+            "radio_rf_level": self.radio_rf_level,
+            "s_meter_strength": self.s_meter_strength,
+        }

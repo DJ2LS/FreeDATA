@@ -43,7 +43,7 @@ class explorer():
         version = str(self.app.MODEM_VERSION)
         bandwidth = str(self.config['MODEM']['enable_low_bandwidth_mode'])
         beacon = str(self.states.is_beacon_running)
-        strength = str(self.states.radio_strength)
+        strength = str(self.states.s_meter_strength)
 
         log.info("[EXPLORER] publish", frequency=frequency, band=band, callsign=callsign, gridsquare=gridsquare, version=version, bandwidth=bandwidth)
 
