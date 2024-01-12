@@ -1,5 +1,7 @@
 import socket
 import structlog
+import time
+import threading
 
 class radio:
     """rigctld (hamlib) communication class"""
@@ -14,6 +16,8 @@ class radio:
 
         self.connection = None
         self.connected = False
+        self.await_response = threading.Event()
+        self.await_response.set()
 
         self.parameters = {
             'frequency': '---',
@@ -57,13 +61,20 @@ class radio:
 
     def send_command(self, command) -> str:
         if self.connected:
+            # wait if we have another command awaiting its response...
+            self.await_response.wait()
+
             try:
+                self.await_response = threading.Event()
                 self.connection.sendall(command.encode('utf-8') + b"\n")
                 response = self.connection.recv(1024)
+                self.await_response.set()
                 return response.decode('utf-8').strip()
             except Exception as err:
-                self.log.warning(f"[RIGCTLD] Error sending command to rigctld: {err}")
+                self.log.warning(f"[RIGCTLD] Error sending command [{command}] to rigctld: {err}")
                 self.connected = False
+
+
         return ""
 
     def set_ptt(self, state):
@@ -176,7 +187,12 @@ class radio:
             self.parameters['frequency'] = self.send_command('f')
             response = self.send_command(
                 'm').strip()  # Get the mode/bandwidth response and remove leading/trailing spaces
-            mode, bandwidth = response.split('\n', 1)  # Split the response into mode and bandwidth
+            try:
+                mode, bandwidth = response.split('\n', 1)  # Split the response into mode and bandwidth
+            except ValueError:
+                print(response)
+                mode = 'err'
+                bandwidth = 'err'
 
             self.parameters['mode'] = mode
             self.parameters['bandwidth'] = bandwidth
