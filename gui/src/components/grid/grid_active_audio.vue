@@ -10,8 +10,7 @@ const state = useStateStore(pinia);
   <div class="card w-100 h-100">
     <div class="card-header p-0 mb-1">
       <i class="bi bi-volume-up" style="font-size: 1rem"></i>&nbsp;
-        <strong>Audio</strong>
-
+      <strong>Audio</strong>
     </div>
     <div class="card-body pt-0 pb-0">
       <div class="container-wide">
