@@ -47,7 +47,7 @@ function set_radio_parameters() {
             <select
               class="form-control"
               v-model="state.mode"
-              @click="set_hamlib_mode()"
+              @click="set_radio_parameters()"
               v-bind:class="{
                 disabled: state.hamlib_status === 'disconnected',
               }"
@@ -69,7 +69,7 @@ function set_radio_parameters() {
             <select
               class="form-control"
               v-model="state.rf_level"
-              @click="set_hamlib_rf_level()"
+              @click="set_radio_parameters()"
               v-bind:class="{
                 disabled: state.hamlib_status === 'disconnected',
               }"

@@ -39,13 +39,16 @@ class RadioManager:
     def set_mode(self, mode):
         self.radio.set_mode(mode)
 
+    def set_rf_level(self, level):
+        self.radio.set_rf_level(level)
+
     def update_parameters(self):
         while not self.stop_event.is_set():
             parameters = self.radio.get_parameters()
             self.state_manager.set("radio_frequency", parameters['frequency'])
             self.state_manager.set("radio_mode", parameters['mode'])
             self.state_manager.set("radio_bandwidth", parameters['bandwidth'])
-            self.state_manager.set("radio_rf_power", parameters['rf'])
+            self.state_manager.set("radio_rf_level", parameters['rf'])
 
             if self.state_manager.isTransmitting():
                 self.radio_alc = parameters['alc']

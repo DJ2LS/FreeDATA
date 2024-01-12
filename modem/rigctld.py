@@ -110,7 +110,7 @@ class radio:
         """
         if self.connected:
             try:
-                command = f"M {mode}"
+                command = f"M {mode} 0"
                 self.send_command(command)
                 self.parameters['mode'] = mode
                 return True
@@ -159,7 +159,7 @@ class radio:
                 self.connected = False
         return False
 
-    def set_rf(self, rf):
+    def set_rf_level(self, rf):
         """Set the RF.
 
         Args:
@@ -170,7 +170,7 @@ class radio:
         """
         if self.connected:
             try:
-                command = f"l RF {rf}"
+                command = f"L RFPOWER {rf/100}" #RF RFPOWER --> RFPOWER == IC705
                 self.send_command(command)
                 self.parameters['rf'] = rf
                 return True
@@ -199,7 +199,7 @@ class radio:
 
             self.parameters['alc'] = self.send_command('l ALC')
             self.parameters['strength'] = self.send_command('l STRENGTH')
-            self.parameters['rf'] = self.send_command('l RF')
+            self.parameters['rf'] = self.send_command('l RFPOWER') # RF, RFPOWER
 
         """Return the latest fetched parameters."""
         return self.parameters

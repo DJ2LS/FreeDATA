@@ -43,7 +43,7 @@ class StateManager:
         self.radio_frequency = 0
         self.radio_mode = None
         self.radio_bandwidth = 0
-        self.radio_rf_power = 0
+        self.radio_rf_level = 0
         self.radio_strength = 0
         # Set rig control status regardless or rig control method
         self.radio_status = False
@@ -183,4 +183,5 @@ class StateManager:
             "radio_status": self.radio_status,
             "radio_frequency": self.radio_frequency,
             "radio_mode": self.radio_mode,
+            "radio_rf_level": self.radio_rf_level
         }

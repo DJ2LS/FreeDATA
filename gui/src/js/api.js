@@ -121,6 +121,7 @@ export function setRadioParameters(frequency, mode, rf_level) {
   return apiPost("/radio", {
     radio_frequency: frequency,
     radio_mode: mode,
+    radio_rf_level: rf_level,
   });
 }
 export function getRadioStatus() {
