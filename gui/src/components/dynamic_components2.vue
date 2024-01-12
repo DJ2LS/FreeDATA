@@ -25,6 +25,7 @@ import grid_button from "./grid/button.vue";
 import grid_ptt from "./grid/grid_ptt.vue";
 import grid_mycall from "./grid/grid_mycall.vue";
 import grid_stop from "./grid/grid_stop.vue";
+import grid_tune from "./grid/grid_tune.vue";
 import grid_CQ_btn from "./grid/grid_CQ.vue";
 import grid_ping from "./grid/grid_ping.vue";
 import grid_freq from "./grid/grid_frequency.vue";
@@ -225,6 +226,15 @@ new gridWidget(
     true,
     "Other",
     15,
+  ),
+   new gridWidget(
+    grid_tune,
+    { x: 0, y: 0, w: 2, h: 13 },
+    "Tune widget",
+    true,
+    true,
+    "Audio",
+    18,
   ),
 
 

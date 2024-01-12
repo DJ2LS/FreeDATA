@@ -1176,6 +1176,13 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
           ></button>
         </div>
         <div class="modal-body">
+
+        <div class="alert alert-warning" role="alert">
+          Not working yet...
+        </div>
+
+
+
           <div class="input-group input-group-sm mb-1">
             <span class="input-group-text">Test-Frame</span>
             <button
@@ -1201,7 +1208,7 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
                 step="1"
                 id="audioLevelRX"
                 @change="onChange"
-                v-model="settings.remote.AUDIO.tx_audio_level"
+                v-model.number="settings.remote.AUDIO.rx_audio_level"
             /></span>
           </div>
           <div class="input-group input-group-sm mb-1">
@@ -1218,7 +1225,7 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
                 step="1"
                 id="audioLevelTX"
                 @change="onChange"
-                v-model="settings.remote.AUDIO.tx_audio_level"
+                v-model.number="settings.remote.AUDIO.tx_audio_level"
             /></span>
           </div>
         </div>
