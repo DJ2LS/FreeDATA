@@ -1177,8 +1177,8 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
         </div>
         <div class="modal-body">
 
-        <div class="alert alert-warning" role="alert">
-          Not working yet...
+        <div class="alert alert-info" role="alert">
+          Adjust audio levels. Value in dB. Default is <strong>0</strong>
         </div>
 
 
