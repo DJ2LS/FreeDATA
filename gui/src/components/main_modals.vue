@@ -19,7 +19,6 @@ import {
 
 import main_startup_check from "./main_startup_check.vue";
 
-
 function deleteChat() {
   //console.log(chat.selectedCallsign)
   deleteChatByCallsign(chat.selectedCallsign);
@@ -1190,7 +1189,9 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
           </div>
           <div class="input-group input-group-sm mb-1">
             <span class="input-group-text">RX Level</span>
-            <span class="input-group-text">{{ settings.remote.AUDIO.rx_audio_level }}</span>
+            <span class="input-group-text">{{
+              settings.remote.AUDIO.rx_audio_level
+            }}</span>
             <span class="input-group-text w-75">
               <input
                 type="range"
@@ -1205,7 +1206,9 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
           </div>
           <div class="input-group input-group-sm mb-1">
             <span class="input-group-text">TX Level</span>
-            <span class="input-group-text">{{ settings.remote.AUDIO.tx_audio_level }}</span>
+            <span class="input-group-text">{{
+              settings.remote.AUDIO.tx_audio_level
+            }}</span>
             <span class="input-group-text w-75">
               <input
                 type="range"
