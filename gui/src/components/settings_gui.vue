@@ -13,7 +13,6 @@ function saveSettings() {
 }
 </script>
 <template>
-  
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-50">Waterfall theme</span>
     <select
