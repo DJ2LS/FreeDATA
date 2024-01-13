@@ -4,15 +4,18 @@ import pinia from "../../store/index";
 setActivePinia(pinia);
 </script>
 <template>
-  <a
-    class="btn btn-outline-primary d-flex border justify-content-center align-items-center object-fill rounded w-100 h-100"
-    id="stop_transmission_connection"
-    data-bs-trigger="hover"
-    data-bs-html="false"
-    data-bs-toggle="modal"
-    data-bs-target="#audioModal"
-    title="Tune"
-  >
-    <h5>Tune</h5>
-  </a>
+
+
+  <div class="fill h-100" style="width: calc(100% - 24px)">
+    <a
+      class="btn btn-sm btn-secondary d-flex justify-content-center align-items-center object-fill border rounded w-100 h-100"
+      data-bs-trigger="hover"
+      data-bs-html="false"
+      data-bs-toggle="modal"
+      data-bs-target="#audioModal"
+      title="Tune"
+      >Tune</a
+    >
+  </div>
+
 </template>
