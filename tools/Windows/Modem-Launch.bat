@@ -5,6 +5,6 @@ REM Set environment variable to let modem know where to find config, change if y
 set FREEDATA_CONFIG=.\config.ini 
 
 REM launch modem
-flask --app server run
+python server.py
 
 pause
