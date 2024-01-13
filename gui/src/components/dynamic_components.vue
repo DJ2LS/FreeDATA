@@ -229,7 +229,7 @@ new gridWidget(
   ),
    new gridWidget(
     grid_tune,
-    { x: 0, y: 0, w: 2, h: 13 },
+    { x: 16, y: 8, w: 2, h: 8 },
     "Tune widget",
     true,
     true,
@@ -238,7 +238,7 @@ new gridWidget(
   ),
 
 
-  //New new widget ID should be 18
+  //New new widget ID should be 19
 ];
 
 function updateFrequencyAndApply(frequency) {
