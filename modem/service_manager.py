@@ -136,7 +136,10 @@ class SM:
 
     def stop_explorer_publishing(self):
         if self.config['STATION']['enable_explorer']:
-            del self.explorer
+            try:
+                del self.explorer
+            except Exception as e:
+                self.log.info("[EXPLORER] Error while stopping...", e=e)
 
     def start_radio_manager(self):
         self.app.radio_manager = radio_manager.RadioManager(self.config, self.state_manager, self.event_manager)
