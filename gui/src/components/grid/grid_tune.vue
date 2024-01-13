@@ -4,8 +4,6 @@ import pinia from "../../store/index";
 setActivePinia(pinia);
 </script>
 <template>
-
-
   <div class="fill h-100" style="width: calc(100% - 24px)">
     <a
       class="btn btn-sm btn-secondary d-flex justify-content-center align-items-center object-fill border rounded w-100 h-100"
@@ -17,5 +15,4 @@ setActivePinia(pinia);
       >Tune</a
     >
   </div>
-
 </template>
