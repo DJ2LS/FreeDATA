@@ -69,23 +69,6 @@ function saveSettings() {
     </select>
   </div>
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Enable fancy GUI</label>
-    <label class="input-group-text w-50">
-      <div class="form-check form-switch form-check-inline">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          id="GraphicsSwitch"
-          @change="saveSettings"
-          v-model="settings.local.high_graphics"
-        />
-        <label class="form-check-label" for="GraphicsSwitch"
-          >Higher CPU Usage</label
-        >
-      </div>
-    </label>
-  </div>
-  <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-50">Update channel</span>
     <select
       class="form-select form-select-sm w-50"

@@ -334,7 +334,7 @@ onMounted(() => {
         >
           <canvas
             v-bind:id="localSpectrumID"
-            :class="settings.local.high_graphics == true ? 'force-gpu' : ''"
+            class="force-gpu"
           ></canvas>
         </div>
         <div
