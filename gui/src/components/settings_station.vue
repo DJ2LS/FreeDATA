@@ -1,17 +1,20 @@
 <script setup lang="ts">
-import { settingsStore as settings, onChange, getRemote } from "../store/settingsStore.js";
-import {validateCallsignWithSSID, validateCallsignWithoutSSID} from "../js/freedata";
-function validateCall()
-{
+import {
+  settingsStore as settings,
+  onChange,
+  getRemote,
+} from "../store/settingsStore.js";
+import {
+  validateCallsignWithSSID,
+  validateCallsignWithoutSSID,
+} from "../js/freedata";
+function validateCall() {
   if (validateCallsignWithoutSSID(settings.remote.STATION.mycall))
     //Send new callsign to modem if valid
     onChange();
-  else
-    //Reload settings from modem as invalid callsign was passed in
-    getRemote();
-
+  //Reload settings from modem as invalid callsign was passed in
+  else getRemote();
 }
-
 </script>
 <template>
   <!-- station callsign -->
@@ -28,7 +31,6 @@ function validateCall()
       aria-describedby="basic-addon1"
       v-model="settings.remote.STATION.mycall"
       @change="validateCall"
-  
     />
   </div>
 
