@@ -96,39 +96,39 @@ import { audioInputOptions, audioOutputOptions } from "../js/deviceFormHelper";
   </div>
   <!-- Audio rx level-->
   <div class="input-group input-group-sm mb-1">
-            <span class="input-group-text w-25">RX Audio Level</span>
-            <span class="input-group-text w-25">{{
-              settings.remote.AUDIO.rx_audio_level
-            }}</span>
-            <span class="input-group-text w-50">
-              <input
-                type="range"
-                class="form-range"
-                min="-30"
-                max="20"
-                step="1"
-                id="audioLevelRX"
-                @change="onChange"
-                v-model.number="settings.remote.AUDIO.rx_audio_level"
-            /></span>
-          </div>
-          <div class="input-group input-group-sm mb-1">
-            <span class="input-group-text w-25">TX Audio Level</span>
-            <span class="input-group-text w-25">{{
-              settings.remote.AUDIO.tx_audio_level
-            }}</span>
-            <span class="input-group-text w-50">
-              <input
-                type="range"
-                class="form-range"
-                min="-30"
-                max="20"
-                step="1"
-                id="audioLevelTX"
-                @change="onChange"
-                v-model.number="settings.remote.AUDIO.tx_audio_level"
-            /></span>
-          </div>
+    <span class="input-group-text w-25">RX Audio Level</span>
+    <span class="input-group-text w-25">{{
+      settings.remote.AUDIO.rx_audio_level
+    }}</span>
+    <span class="input-group-text w-50">
+      <input
+        type="range"
+        class="form-range"
+        min="-30"
+        max="20"
+        step="1"
+        id="audioLevelRX"
+        @change="onChange"
+        v-model.number="settings.remote.AUDIO.rx_audio_level"
+    /></span>
+  </div>
+  <div class="input-group input-group-sm mb-1">
+    <span class="input-group-text w-25">TX Audio Level</span>
+    <span class="input-group-text w-25">{{
+      settings.remote.AUDIO.tx_audio_level
+    }}</span>
+    <span class="input-group-text w-50">
+      <input
+        type="range"
+        class="form-range"
+        min="-30"
+        max="20"
+        step="1"
+        id="audioLevelTX"
+        @change="onChange"
+        v-model.number="settings.remote.AUDIO.tx_audio_level"
+    /></span>
+  </div>
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50">TX delay in ms</label>
     <select
