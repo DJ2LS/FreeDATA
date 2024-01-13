@@ -25,7 +25,6 @@ CORS(app)
 CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
 app.config['SOCK_SERVER_OPTIONS'] = {'ping_interval': 10}
-
 # define global MODEM_VERSION
 app.MODEM_VERSION = "0.12.0-alpha"
 
@@ -281,3 +280,6 @@ def sock_states(sock):
     wsm.handle_connection(sock, wsm.states_client_list, app.state_queue)
 
 wsm.startThreads(app)
+
+if __name__ == "__main__":
+    app.run()
