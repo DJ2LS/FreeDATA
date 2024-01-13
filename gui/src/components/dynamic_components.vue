@@ -392,7 +392,8 @@ function saveGridLayout()
     var widget = gridWidgets.findIndex((gw) => gw.component2.__name == items.value[i].component2.__name)
     //Get the widget's id to store in config
     var widgetid = gridWidgets[widget].id;
-    console.log(widgetid + "-" + widget);
+    //Debug code to return index of widget based on id
+    //console.log(widgetid + "-" + widget);
     cfg[i] = [items.value[i].x, items.value[i].y, items.value[i].w,items.value[i].h, widgetid ];
   }
   settingsStore.local.grid_layout=JSON.stringify(cfg);
