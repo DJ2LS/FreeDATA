@@ -120,7 +120,7 @@ import settings_exp from "./settings_exp.vue";
             </li>
           </ul>
         </div>
-        <div class="card-body">
+        <div class="card-body overflow-auto" style="height: calc(100vh - 105px);">
           <!-- SETTINGS Nav Tab panes -->
 
           <!-- Station tab contents-->
