@@ -42,9 +42,9 @@ export const useChatStore = defineStore("chatStore", () => {
   });
   var inputText = ref("");
   var inputFile = ref();
-  var inputFileName = ref();
-  var inputFileType = ref();
-  var inputFileSize = ref();
+  var inputFileName = ref("-");
+  var inputFileType = ref("-");
+  var inputFileSize = ref("-");
 
   var callsign_list = ref();
   var sorted_chat_list = ref();
