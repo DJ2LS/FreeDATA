@@ -21,7 +21,7 @@ export function connectionFailed(endpoint, event) {
 }
 export function stateDispatcher(data) {
   data = JSON.parse(data);
-  console.debug(data);
+  //console.debug(data);
   if (data["type"] == "state-change" || data["type"] == "state") {
     stateStore.modem_connection = "connected";
 
@@ -51,7 +51,7 @@ export function stateDispatcher(data) {
 
 export function eventDispatcher(data) {
   data = JSON.parse(data);
-  //console.info(data);
+  console.debug(data);
 
   if (data["scatter"] !== undefined) {
     stateStore.scatter = JSON.parse(data["scatter"]);
@@ -105,22 +105,27 @@ export function eventDispatcher(data) {
           case "NEW":
             message = `Type: ${data.type}, Session ID: ${data["arq-transfer-outbound"].session_id}, DXCall: ${data["arq-transfer-outbound"].dxcall}, Total Bytes: ${data["arq-transfer-outbound"].total_bytes}, State: ${data["arq-transfer-outbound"].state}`;
             displayToast("success", "bi-check-circle", message, 5000);
+            stateStore.dxcallsign = data["arq-transfer-outbound"].dxcall
+            stateStore.arq_transmission_percent = 0;
+            stateStore.arq_total_bytes =0;
             return;
           case "OPEN_SENT":
-            console.log("state OPEN_SENT needs to be implemented");
+            console.info("state OPEN_SENT needs to be implemented");
             return;
 
           case "INFO_SENT":
-            console.log("state INFO_SENT needs to be implemented");
+            console.info("state INFO_SENT needs to be implemented");
             return;
 
           case "BURST_SENT":
             message = `Type: ${data.type}, Session ID: ${data["arq-transfer-outbound"].session_id}, DXCall: ${data["arq-transfer-outbound"].dxcall}, Received Bytes: ${data["arq-transfer-outbound"].received_bytes}/${data["arq-transfer-outbound"].total_bytes}, State: ${data["arq-transfer-outbound"].state}`;
             displayToast("info", "bi-info-circle", message, 5000);
+            stateStore.arq_transmission_percent = data["arq-transfer-outbound"].received_bytes / data["arq-transfer-outbound"].total_bytes * 100;
+            stateStore.arq_total_bytes =  data["arq-transfer-outbound"].received_bytes;
             return;
 
           case "ABORTING":
-            console.log("state ABORTING needs to be implemented");
+            console.info("state ABORTING needs to be implemented");
             return;
 
           case "ABORTED":
@@ -156,21 +161,30 @@ export function eventDispatcher(data) {
           case "NEW":
             message = `Type: ${data.type}, Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, State: ${data["arq-transfer-inbound"].state}`;
             displayToast("info", "bi-info-circle", message, 5000);
+            stateStore.dxcallsign = data["arq-transfer-inbound"].dxcall;
+            stateStore.arq_transmission_percent=0;
+            stateStore.arq_total_bytes = 0;
             return;
 
           case "OPEN_ACK_SENT":
             message = `Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, Total Bytes: ${data["arq-transfer-inbound"].total_bytes}, State: ${data["arq-transfer-inbound"].state}`;
             displayToast("info", "bi-arrow-left-right", message, 5000);
+            stateStore.arq_transmission_percent = data["arq-transfer-inbound"].received_bytes / data["arq-transfer-inbound"].total_bytes * 100;
+            stateStore.arq_total_bytes = data["arq-transfer-inbound"].received_bytes;
             return;
 
           case "INFO_ACK_SENT":
             message = `Type: ${data.type}, Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, Received Bytes: ${data["arq-transfer-inbound"].received_bytes}/${data["arq-transfer-inbound"].total_bytes}, State: ${data["arq-transfer-inbound"].state}`;
             displayToast("info", "bi-info-circle", message, 5000);
+            stateStore.arq_transmission_percent = data["arq-transfer-inbound"].received_bytes / data["arq-transfer-inbound"].total_bytes * 100;
+            stateStore.arq_total_bytes = data["arq-transfer-inbound"].received_bytes;
             return;
 
           case "BURST_REPLY_SENT":
             message = `Type: ${data.type}, Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, Received Bytes: ${data["arq-transfer-inbound"].received_bytes}/${data["arq-transfer-inbound"].total_bytes}, State: ${data["arq-transfer-inbound"].state}`;
             displayToast("info", "bi-info-circle", message, 5000);
+            stateStore.arq_transmission_percent = data["arq-transfer-inbound"].received_bytes / data["arq-transfer-inbound"].total_bytes * 100;
+            stateStore.arq_total_bytes = data["arq-transfer-inbound"].received_bytes;
             return;
 
           case "ENDED":
@@ -181,10 +195,12 @@ export function eventDispatcher(data) {
               data["arq-transfer-inbound"].data,
               data["arq-transfer-inbound"],
             );
+            stateStore.arq_transmission_percent = data["arq-transfer-inbound"].received_bytes / data["arq-transfer-inbound"].total_bytes * 100;
+            stateStore.arq_total_bytes = data["arq-transfer-inbound"].received_bytes;
             return;
 
           case "ABORTED":
-            console.log("state ABORTED needs to be implemented");
+            console.info("state ABORTED needs to be implemented");
             return;
 
           case "FAILED":

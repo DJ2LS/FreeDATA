@@ -216,7 +216,7 @@ const state = useStateStore(pinia);
     <div class="col-lg-4">
       <div style="margin-right: 2px">
         <div
-          class="progress w-100 rounded-0 rounded-top"
+          class="progress w-100 "
           style="height: 20px; min-width: 200px"
         >
           <div
@@ -231,11 +231,11 @@ const state = useStateStore(pinia);
           <p
             class="justify-content-center m-0 d-flex position-absolute w-100 text-dark"
           >
-            {{ state.arq_seconds_until_finish }}s left
+            Message Progress
           </p>
         </div>
 
-        <div
+        <div hidden
           class="progress mb-0 rounded-0 rounded-bottom"
           style="height: 10px"
         >
