@@ -56,7 +56,8 @@
           v-if="message.percent < 100 || message.status === 'failed'"
         >
           <div
-            class="progress rounded-0 rounded-bottom" hidden
+            class="progress rounded-0 rounded-bottom"
+            hidden
             :style="{ height: '10px' }"
             v-bind:class="{
               'bg-danger': message.status == 'failed',

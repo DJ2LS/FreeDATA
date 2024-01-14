@@ -215,10 +215,7 @@ const state = useStateStore(pinia);
     </div>
     <div class="col-lg-4">
       <div style="margin-right: 2px">
-        <div
-          class="progress w-100 "
-          style="height: 20px; min-width: 200px"
-        >
+        <div class="progress w-100" style="height: 20px; min-width: 200px">
           <div
             class="progress-bar progress-bar-striped bg-primary force-gpu"
             id="transmission_progress"
@@ -235,7 +232,8 @@ const state = useStateStore(pinia);
           </p>
         </div>
 
-        <div hidden
+        <div
+          hidden
           class="progress mb-0 rounded-0 rounded-bottom"
           style="height: 10px"
         >
