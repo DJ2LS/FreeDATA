@@ -9,6 +9,10 @@ from arq_session_iss import ARQSessionISS
 class ARQFrameHandler(frame_handler.FrameHandler):
 
     def follow_protocol(self):
+
+        if not self.should_respond():
+            return
+
         frame = self.details['frame']
         session_id = frame['session_id']
         snr = self.details["snr"]

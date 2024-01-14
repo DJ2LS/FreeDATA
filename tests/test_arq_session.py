@@ -129,7 +129,7 @@ class TestARQSession(unittest.TestCase):
 
         self.establishChannels()
         params = {
-            'dxcall': "DJ2LS-3",
+            'dxcall': "XX1XXX-1",
             'data': base64.b64encode(bytes("Hello world!", encoding="utf-8")),
         }
         cmd = ARQRawCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)
@@ -142,7 +142,7 @@ class TestARQSession(unittest.TestCase):
 
         self.establishChannels()
         params = {
-            'dxcall': "DJ2LS-3",
+            'dxcall': "XX1XXX-1",
             'data': base64.b64encode(np.random.bytes(1000)),
         }
         cmd = ARQRawCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)
@@ -156,7 +156,7 @@ class TestARQSession(unittest.TestCase):
 
         self.establishChannels()
         params = {
-            'dxcall': "DJ2LS-3",
+            'dxcall': "XX1XXX-1",
             'data': base64.b64encode(np.random.bytes(100)),
         }
         cmd = ARQRawCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)
@@ -174,7 +174,7 @@ class TestARQSession(unittest.TestCase):
 
         self.establishChannels()
         params = {
-            'dxcall': "DJ2LS-3",
+            'dxcall': "XX1XXX-1",
             'data': base64.b64encode(np.random.bytes(100)),
         }
         cmd = ARQRawCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)

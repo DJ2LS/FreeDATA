@@ -191,6 +191,5 @@ class ARQSessionISS(arq_session.ARQSession):
         self.set_state(ISS_State.ABORTED)
         # break actual retries
         self.event_frame_received.set()
-
         self.event_manager.send_arq_session_finished(
             True, self.id, self.dxcall, len(self.data), False, self.state.name)
