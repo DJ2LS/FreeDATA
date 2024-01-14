@@ -31,7 +31,9 @@ import grid_ping from "./grid/grid_ping.vue";
 import grid_freq from "./grid/grid_frequency.vue";
 import grid_beacon from "./grid/grid_beacon.vue";
 import grid_mycall_small from "./grid/grid_mycall small.vue";
+import grid_scatter from "./grid/grid_scatter.vue";
 import { stateDispatcher } from "../js/eventHandler";
+import { Scatter } from "vue-chartjs";
 
 let count = ref(0);
 let grid = null; // DO NOT use ref(null) as proxies GS will break all logic when comparing structures... see https://github.com/gridstack/gridstack.js/issues/2115
@@ -236,9 +238,17 @@ new gridWidget(
     "Audio",
     18,
   ),
+  new gridWidget(
+    grid_scatter,
+    { x: 0, y: 114, w: 6, h: 30 },
+    "Scatter graph",
+    false,
+    true,
+    "Stats",
+    19,
+  ),
 
-
-  //New new widget ID should be 19
+  //New new widget ID should be 20
 ];
 
 function updateFrequencyAndApply(frequency) {
