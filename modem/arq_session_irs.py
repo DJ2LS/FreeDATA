@@ -4,7 +4,7 @@ import helpers
 from modem_frametypes import FRAME_TYPE
 from codec2 import FREEDV_MODE
 from enum import Enum
-
+import time
 class IRS_State(Enum):
     NEW = 0
     OPEN_ACK_SENT = 1
@@ -66,6 +66,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.version = 1
 
         self.state = IRS_State.NEW
+        self.state_enum = IRS_State  # needed for access State enum from outside
 
         self.total_length = 0
         self.total_crc = ''
@@ -93,12 +94,13 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.log(f"Waiting {timeout} seconds...")
         if not self.event_frame_received.wait(timeout):
             self.log("Timeout waiting for ISS. Session failed.")
+            self.session_ended = time.time()
             self.set_state(IRS_State.FAILED)
-            self.event_manager.send_arq_session_finished(False, self.id, self.dxcall, self.total_length, False, self.state.name)
+            self.event_manager.send_arq_session_finished(False, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics())
 
     def launch_transmit_and_wait(self, frame, timeout, mode):
         thread_wait = threading.Thread(target = self.transmit_and_wait, 
-                                       args = [frame, timeout, mode])
+                                       args = [frame, timeout, mode], daemon=True)
         thread_wait.start()
     
     def send_open_ack(self, open_frame):
@@ -185,9 +187,10 @@ class ARQSessionIRS(arq_session.ARQSession):
                                                          flag_checksum=True)
             self.transmit_frame(ack, mode=FREEDV_MODE.signalling)
             self.log("ACK sent")
+            self.session_ended = time.time()
             self.set_state(IRS_State.ENDED)
             self.event_manager.send_arq_session_finished(
-                False, self.id, self.dxcall, self.total_length, True, self.state.name, data=self.received_data)
+                False, self.id, self.dxcall, True, self.state.name, data=self.received_data, statistics=self.calculate_session_statistics())
 
         else:
 
@@ -200,9 +203,10 @@ class ARQSessionIRS(arq_session.ARQSession):
                                                          flag_checksum=False)
             self.transmit_frame(ack, mode=FREEDV_MODE.signalling)
             self.log("CRC fail at the end of transmission!")
+            self.session_ended = time.time()
             self.set_state(IRS_State.FAILED)
             self.event_manager.send_arq_session_finished(
-                False, self.id, self.dxcall, self.total_length, False, self.state.name)
+                False, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics())
 
 
     def calibrate_speed_settings(self):
@@ -226,4 +230,4 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.launch_transmit_and_wait(stop_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(IRS_State.ABORTED)
         self.event_manager.send_arq_session_finished(
-                False, self.id, self.dxcall, self.total_length, False, self.state.name)
+                False, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics())

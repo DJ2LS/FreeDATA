@@ -26,24 +26,6 @@ import { settingsStore as settings } from "../store/settingsStore.js";
       </div>
     </label>
   </div>
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Database maintenance</label>
-    <label class="input-group-text w-50">
-      <button
-        class="btn btn-outline-secondary btn-sm w-50"
-        id="btnCleanDB"
-        type="button"
-        disabled
-      >
-        Clean</button
-      >&nbsp;
-      <div
-        class="spinner-border text-warning invisible"
-        role="status"
-        id="divCleanDBSpinner"
-      ></div>
-    </label>
-  </div>
   <div class="center">
     <div class="badge text-bg-danger">
       <i class="bi bi-shield-exclamation"></i> These options may not work and

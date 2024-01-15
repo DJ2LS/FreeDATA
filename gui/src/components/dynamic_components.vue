@@ -8,7 +8,7 @@ import "../../node_modules/gridstack/dist/gridstack.min.css";
 import { GridStack } from "gridstack";
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
-import { setModemFrequency } from "../js/api";
+import { setRadioParameters } from "../js/api";
 import { saveLocalSettingsToConfig, settingsStore } from "../store/settingsStore";
 
 import active_heard_stations from "./grid/grid_active_heard_stations.vue";
@@ -25,14 +25,20 @@ import grid_button from "./grid/button.vue";
 import grid_ptt from "./grid/grid_ptt.vue";
 import grid_mycall from "./grid/grid_mycall.vue";
 import grid_stop from "./grid/grid_stop.vue";
+import grid_tune from "./grid/grid_tune.vue";
 import grid_CQ_btn from "./grid/grid_CQ.vue";
 import grid_ping from "./grid/grid_ping.vue";
 import grid_freq from "./grid/grid_frequency.vue";
+import grid_beacon from "./grid/grid_beacon.vue";
+import grid_mycall_small from "./grid/grid_mycall small.vue";
+import grid_scatter from "./grid/grid_scatter.vue";
 import { stateDispatcher } from "../js/eventHandler";
+import { Scatter } from "vue-chartjs";
 
 let count = ref(0);
 let grid = null; // DO NOT use ref(null) as proxies GS will break all logic when comparing structures... see https://github.com/gridstack/gridstack.js/issues/2115
 let items = ref([]);
+let gridEnabledLocal = ref(true);
 class gridWidget {
   //Contains the vue component
   component2;
@@ -46,32 +52,46 @@ class gridWidget {
   autoPlace;
   //Category to place widget in widget picker
   category;
-  constructor(component, size, text, quickfill, autoPlace, category) {
+  //Unique ID for widget
+  id;
+  constructor(component, size, text, quickfill, autoPlace, category, id) {
     this.component2 = component;
     this.size = size;
     this.text = text;
     this.quickFill = quickfill;
     this.autoPlace = autoPlace;
     this.category = category;
+    this.id = id;
   }
 }
 //Array of grid widgets, do not change array order as it'll affect saved configs
 const gridWidgets = [
-  new gridWidget(
-    active_heard_stations,
-    { x: 0, y: 0, w: 16, h: 40 },
-    "Detailed heard stations list",
+new gridWidget(
+    grid_activities,
+    { x: 0, y: 53, w: 6, h: 55 },
+    "Activities list",
     true,
     true,
     "Activity",
+    8,
+  ),
+  new gridWidget(
+    active_heard_stations,
+    { x: 0, y: 13, w: 16, h: 40 },
+    "Heard stations list (detailed)",
+    true,
+    true,
+    "Activity",
+    0,
   ),
   new gridWidget(
     active_stats,
-    { x: 16, y: 16, w: 8, h: 80 },
+    { x: 16, y: 16, w: 8, h: 72 },
     "Stats (waterfall, etc)",
     true,
     true,
     "Stats",
+    1,
   ),
   new gridWidget(
     active_audio_level,
@@ -80,94 +100,7 @@ const gridWidgets = [
     false,
     true,
     "Audio",
-  ),
-  new gridWidget(
-    active_rig_control,
-    { x: 6, y: 40, w: 9, h: 15 },
-    "Rig control main",
-    false,
-    true,
-    "Rig",
-  ),
-  new gridWidget(
-    active_broadcasts,
-    { x: 6, y: 70, w: 6, h: 15 },
-    "Broadcasts main (horizontal)",
-    false,
-    true,
-    "Broadcasts",
-  ),
-  new gridWidget(
-    mini_heard_stations,
-    { x: 1, y: 1, w: 6, h: 54 },
-    "Mini heard stations list",
-    false,
-    true,
-    "Activity",
-  ),
-  new gridWidget(
-    s_meter,
-    { x: 16, y: 0, w: 4, h: 8 },
-    "S-Meter",
-    true,
-    true,
-    "Rig",
-  ),
-  new gridWidget(
-    dbfs_meter,
-    { x: 20, y: 0, w: 4, h: 8 },
-    "Dbfs Meter",
-    true,
-    true,
-    "Audio",
-  ),
-  new gridWidget(
-    grid_activities,
-    { x: 0, y: 40, w: 6, h: 55 },
-    "Activities list",
-    true,
-    true,
-    "Activity",
-  ),
-  new gridWidget(
-    active_broadcasts_vert,
-    { x: 9, y: 55, w: 10, h: 40 },
-    "Broadcasts main (vertical)",
-    true,
-    true,
-    "Broadcasts",
-  ),
-  new gridWidget(
-    grid_ptt,
-    { x: 17, y: 8, w: 5, h: 12 },
-    "Tx/PTT indicator",
-    true,
-    true,
-    "Rig",
-  ),
-  new gridWidget(
-    grid_mycall,
-    { x: 8, y: 40, w: 5, h: 15 },
-    "My callsign widget",
-    true,
-    true,
-    "Other",
-  ),
-  new gridWidget(
-    grid_CQ_btn,
-    { x: 3, y: 27, w: 2, h: 8 },
-    "CQ Button",
-    false,
-    true,
-    "Broadcasts",
-  ),
-  new gridWidget(
-    grid_ping,
-    { x: 3, y: 27, w: 4, h: 9 },
-    "Ping Widget",
-    false,
-    true,
-    "Broadcasts",
+    2,
   ),
   new gridWidget(
     grid_freq,
@@ -176,26 +109,178 @@ const gridWidgets = [
     true,
     true,
     "Rig",
+    14,
   ),
- new gridWidget(
-    grid_stop,
-    { x: 8, y: 40, w: 5, h: 15 },
-    "Stop Widget",
+  new gridWidget(
+    active_rig_control,
+    { x: 6, y: 40, w: 9, h: 15 },
+    "Rig control main",
+    false,
+    true,
+    "Rig",
+    3,
+  ),
+  new gridWidget(
+    grid_beacon,
+    { x: 3, y: 27, w: 3, h: 8 },
+    "Beacon button",
+    false,
+    true,
+    "Broadcasts",
+    16,
+  ),
+  new gridWidget(
+    active_broadcasts,
+    { x: 6, y: 70, w: 6, h: 15 },
+    "Broadcasts main (horizontal)",
+    false,
+    true,
+    "Broadcasts",
+    4,
+  ),
+  new gridWidget(
+    mini_heard_stations,
+    { x: 1, y: 1, w: 6, h: 54 },
+    "Heard stations list (small)",
+    false,
+    true,
+    "Activity",
+    5,
+  ),
+  new gridWidget(
+    s_meter,
+    { x: 16, y: 0, w: 4, h: 8 },
+    "S-Meter",
+    true,
+    true,
+    "Rig",
+    6,
+  ),
+  new gridWidget(
+    dbfs_meter,
+    { x: 20, y: 0, w: 4, h: 8 },
+    "Dbfs meter",
+    true,
+    true,
+    "Audio",
+    7,
+  ),
+
+  new gridWidget(
+    active_broadcasts_vert,
+    { x: 6, y: 53, w: 10, h: 35 },
+    "Broadcasts main (vertical)",
+    true,
+    true,
+    "Broadcasts",
+    9,
+  ),
+  new gridWidget(
+    grid_ptt,
+    { x: 2, y: 0, w: 5, h: 13 },
+    "Tx/PTT indicator",
+    true,
+    true,
+    "Rig",
+    10,
+  ),
+  new gridWidget(
+    grid_mycall,
+    { x: 7, y: 0, w: 9, h: 13 },
+    "My callsign widget",
     true,
     true,
     "Other",
+    11,
   ),
+  new gridWidget(
+    grid_mycall_small,
+    { x: 8, y: 40, w: 4, h: 8 },
+    "My callsign widget (small)",
+    false,
+    true,
+    "Other",
+    17,
+  ),
+  new gridWidget(
+    grid_CQ_btn,
+    { x: 3, y: 27, w: 2, h: 8 },
+    "CQ button",
+    false,
+    true,
+    "Broadcasts",
+    12,
+  ),
+  new gridWidget(
+    grid_ping,
+    { x: 3, y: 27, w: 4, h: 9 },
+    "Ping widget",
+    false,
+    true,
+    "Broadcasts",
+    13,
+  ),
+
+ new gridWidget(
+    grid_stop,
+    { x: 0, y: 0, w: 2, h: 13 },
+    "Stop widget",
+    true,
+    true,
+    "Other",
+    15,
+  ),
+   new gridWidget(
+    grid_tune,
+    { x: 16, y: 8, w: 2, h: 8 },
+    "Tune widget",
+    true,
+    true,
+    "Audio",
+    18,
+  ),
+  new gridWidget(
+    grid_scatter,
+    { x: 0, y: 114, w: 6, h: 30 },
+    "Scatter graph",
+    false,
+    true,
+    "Stats",
+    19,
+  ),
+
+  //New new widget ID should be 20
 ];
 
 function updateFrequencyAndApply(frequency) {
   state.new_frequency = frequency;
-  setModemFrequency(state.new_frequency);
+  set_radio_parameters();
 }
 
-function set_hamlib_frequency_manually() {
-  setModemFrequency(state.new_frequency);
+function set_radio_parameters(){
+    setRadioParameters(state.new_frequency, state.mode, state.rf_level);
+
 }
 
+
+
+
+
+
+
+function savePreset()
+{
+  settingsStore.local.grid_preset=settingsStore.local.grid_layout;
+  console.log("Saved grid preset")
+}
+function loadPreset()
+{
+
+  clearAllItems();
+  settingsStore.local.grid_layout=settingsStore.local.grid_preset;
+  restoreGridLayoutFromConfig();
+  console.log("Restored grid preset")
+}
 onMounted(() => {
   grid = GridStack.init({
     // DO NOT use grid.value = GridStack.init(), see above
@@ -290,13 +375,17 @@ function onChange(event, changeItems) {
 function restoreGridLayoutFromConfig(){
     //Try to load grid from saved config
     //On mounted seems to be called multiple times; so check to make sure items is empty first
-    //array format: 0 = x, 1 = y, 2 = w, 3 = h, 4 = gridwidget index
+    //array format: 0 = x, 1 = y, 2 = w, 3 = h, 4 = gridwidget ID
     if (items.value.length == 0){
       let savedGrid = JSON.parse(settingsStore.local.grid_layout);
       if (savedGrid.length > 0 ) console.info("Restoring " + savedGrid.length + " widget(s) from config");
       for (let i=0; i < savedGrid.length;i++ ){
+        //Find widget by ID
+        var widgetIndex = gridWidgets.findIndex((gw) => gw.id == savedGrid[i][4])
+
         //Refs are passed, so grab original settings for restoration
-        let tempGW = gridWidgets[parseInt(savedGrid[i][4])];
+        //let tempGW = gridWidgets[parseInt(savedGrid[i][4])];
+        let tempGW = gridWidgets[widgetIndex];
         let backupGWsize = tempGW.size;
         tempGW.autoPlace=false;
         tempGW.size={x:savedGrid[i][0], y:savedGrid[i][1], w:savedGrid[i][2], h:savedGrid[i][3]}
@@ -312,7 +401,11 @@ function saveGridLayout()
   let cfg = [];
   for (let i=0; items.value.length > i; i++) {
     var widget = gridWidgets.findIndex((gw) => gw.component2.__name == items.value[i].component2.__name)
-    cfg[i] = [items.value[i].x, items.value[i].y, items.value[i].w,items.value[i].h, widget ];
+    //Get the widget's id to store in config
+    var widgetid = gridWidgets[widget].id;
+    //Debug code to return index of widget based on id
+    //console.log(widgetid + "-" + widget);
+    cfg[i] = [items.value[i].x, items.value[i].y, items.value[i].w,items.value[i].h, widgetid ];
   }
   settingsStore.local.grid_layout=JSON.stringify(cfg);
   saveLocalSettingsToConfig();
@@ -329,7 +422,7 @@ function addNewWidget2(componentToAdd :gridWidget,saveToConfig :boolean) {
     if (saveToConfig)
       saveGridLayout();
   });
-  
+
 }
 
 function remove(widget) {
@@ -339,7 +432,13 @@ function remove(widget) {
   grid.removeWidget(selector, false);
   saveGridLayout();
 }
-
+function disableGrid() {
+  gridEnabledLocal.value = !gridEnabledLocal.value
+  if (gridEnabledLocal.value)
+    grid.enable();
+  else
+    grid.disable();
+}
 function clearAllItems() {
   grid.removeAll(false);
   count.value = 0;
@@ -388,6 +487,7 @@ function quickfill() {
           <button
             @click="remove(w)"
             class="btn-close grid-stack-floaty-btn"
+            :class="gridEnabledLocal === true ? 'visible':'invisible'"
           ></button>
           <component :is="w.component2" />
         </div>
@@ -405,7 +505,14 @@ function quickfill() {
   >
     <div class="offcanvas-header">
       <h5 class="offcanvas-title" id="offcanvasGridItemsLabel">
-        Manage grid widgets
+        Manage grid widgets &nbsp;<button
+        class="btn btn-sm btn-outline-info"
+        type="button"
+        @click="disableGrid"
+        title="Lock/unloack changes to grid"
+      >
+        <i class="bi" :class="gridEnabledLocal == true ? 'bi-unlock-fill' : 'bi-lock-fill'"></i>
+      </button>&nbsp;
       </h5>
 
       <button
@@ -580,8 +687,27 @@ function quickfill() {
         class="btn btn-sm btn-outline-warning"
         type="button"
         @click="clearAllItems"
+        title="Clear all items from the grid"
       >
         Clear grid
+      </button>
+      <hr/>
+      <button
+        class="btn btn-sm btn-outline-dark"
+        type="button"
+        @click="loadPreset"
+        title="Restore your saved grid preset (clears current grid)"
+      >
+      
+        Restore preset
+      </button>&nbsp;
+      <button
+        class="btn btn-sm btn-outline-dark"
+        type="button"
+        @click="savePreset"
+        title="Save current grid layout as a preset that can be restored using restore preset button"
+      >
+        Save preset
       </button>
     </div>
   </div>
@@ -597,7 +723,7 @@ function quickfill() {
         aria-label="Close"
       ></button>
 
-    
+
 
   </div>
   <div class="offcanvas-body">
@@ -627,7 +753,7 @@ function quickfill() {
                   <button
                     class="btn btn-sm btn-outline-success"
                     type="button"
-                    @click="set_hamlib_frequency_manually"
+                    @click="updateFrequencyAndApply(state.new_frequency)"
                     v-bind:class="{
                       disabled: state.hamlib_status === 'disconnected',
                     }"

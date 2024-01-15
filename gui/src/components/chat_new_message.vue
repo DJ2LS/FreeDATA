@@ -50,7 +50,7 @@ const chatModuleMessage=ref(null);
 function transmitNewMessage(){
 
     chat.inputText = chat.inputText.trim();
-    if (chat.inputText.length==0)
+    if (chat.inputText.length==0 && chat.inputFileName == "-")
       return;
     if (chat.selectedCallsign.startsWith("BC-")) {
 

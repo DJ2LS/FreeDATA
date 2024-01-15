@@ -18,7 +18,7 @@ import main_active_audio_level from "./main_active_audio_level.vue";
 import chat from "./chat.vue";
 import infoScreen from "./infoScreen.vue";
 import main_modem_healthcheck from "./main_modem_healthcheck.vue";
-import Dynamic_components2 from "./dynamic_components2.vue";
+import Dynamic_components from "./dynamic_components.vue";
 
 import { stopTransmission } from "../js/api";
 
@@ -321,7 +321,7 @@ function stopAllTransmissions() {
             role="tabpanel"
             aria-labelledby="list-grid-list"
           >
-            <Dynamic_components2 />
+            <Dynamic_components />
           </div>
 
           <div
