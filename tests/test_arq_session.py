@@ -1,4 +1,5 @@
 import sys
+import time
 sys.path.append('modem')
 
 import unittest
@@ -17,7 +18,7 @@ import numpy as np
 from event_manager import EventManager
 from data_frame_factory import DataFrameFactory
 import codec2
-
+import arq_session_irs
 class TestModem:
     def __init__(self, event_q):
         self.data_queue_received = queue.Queue()
@@ -135,6 +136,7 @@ class TestARQSession(unittest.TestCase):
         cmd = ARQRawCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)
         cmd.run(self.iss_event_queue, self.iss_modem)
         self.waitAndCloseChannels()
+        del cmd
 
     def DisabledtestARQSessionLargePayload(self):
         # set Packet Error Rate (PER) / frame loss probability
@@ -149,6 +151,7 @@ class TestARQSession(unittest.TestCase):
         cmd.run(self.iss_event_queue, self.iss_modem)
 
         self.waitAndCloseChannels()
+        del cmd
 
     def testARQSessionAbortTransmissionISS(self):
         # set Packet Error Rate (PER) / frame loss probability
@@ -167,6 +170,7 @@ class TestARQSession(unittest.TestCase):
             self.iss_state_manager.arq_iss_sessions[id].abort_transmission()
 
         self.waitAndCloseChannels()
+        del cmd
 
     def testARQSessionAbortTransmissionIRS(self):
         # set Packet Error Rate (PER) / frame loss probability
@@ -185,6 +189,42 @@ class TestARQSession(unittest.TestCase):
             self.irs_state_manager.arq_irs_sessions[id].abort_transmission()
 
         self.waitAndCloseChannels()
+        del cmd
+
+    def testSessionCleanupISS(self):
+
+        params = {
+            'dxcall': "XX1XXX-1",
+            'data': base64.b64encode(np.random.bytes(100)),
+        }
+        cmd = ARQRawCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)
+        cmd.run(self.iss_event_queue, self.iss_modem)
+        for session_id in self.iss_state_manager.arq_iss_sessions:
+            session = self.iss_state_manager.arq_iss_sessions[session_id]
+            ISS_States = session.state_enum
+            session.state = ISS_States.FAILED
+            session.session_ended = time.time() - 1000
+            if session.is_session_outdated():
+                self.logger.info(f"session [{session_id}] outdated - deleting it")
+                self.iss_state_manager.remove_arq_iss_session(session_id)
+                break
+        del cmd
+
+    def testSessionCleanupIRS(self):
+        session = arq_session_irs.ARQSessionIRS(self.config,
+                            self.irs_modem,
+                            'AA1AAA-1',
+                            random.randint(0, 255))
+        self.irs_state_manager.register_arq_irs_session(session)
+        for session_id in self.irs_state_manager.arq_irs_sessions:
+            session = self.irs_state_manager.arq_irs_sessions[session_id]
+            irs_States = session.state_enum
+            session.state = irs_States.FAILED
+            session.session_ended = time.time() - 1000
+            if session.is_session_outdated():
+                self.logger.info(f"session [{session_id}] outdated - deleting it")
+                self.irs_state_manager.remove_arq_irs_session(session_id)
+                break
 
 if __name__ == '__main__':
     unittest.main()

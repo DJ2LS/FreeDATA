@@ -118,11 +118,22 @@ class StateManager:
         self.arq_irs_sessions[session.id] = session
         return True
 
+
     def check_if_running_arq_session(self, irs=False):
         sessions = self.arq_irs_sessions if irs else self.arq_iss_sessions
-        for session in sessions:
-            if sessions[session].state.name not in ['ENDED', 'ABORTED', 'FAILED']:
-                print(f"[State Manager] running session...[{session}]")
+
+        for session_id in sessions:
+            # do a session cleanup of outdated sessions before
+            if sessions[session_id].is_session_outdated():
+                print(f"session cleanup.....{session_id}")
+                if irs:
+                    self.remove_arq_irs_session(session_id)
+                else:
+                    self.remove_arq_iss_session(session_id)
+
+            # check if ongoing sessions available
+            if sessions[session_id].state.name not in ['ENDED', 'ABORTED', 'FAILED']:
+                print(f"[State Manager] running session...[{session_id}]")
                 return True
         return False
 
@@ -141,14 +152,12 @@ class StateManager:
         return self.arq_irs_sessions[id]
 
     def remove_arq_iss_session(self, id):
-        if id not in self.arq_iss_sessions:
-            raise RuntimeError(f"ARQ ISS Session '{id}' not found!")
-        del self.arq_iss_sessions[id]
+        if id in self.arq_iss_sessions:
+            del self.arq_iss_sessions[id]
 
     def remove_arq_irs_session(self, id):
-        if id not in self.arq_irs_sessions:
-            raise RuntimeError(f"ARQ ISS Session '{id}' not found!")
-        del self.arq_irs_sessions[id]
+        if id in self.arq_irs_sessions:
+            del self.arq_irs_sessions[id]
 
     def add_activity(self, activity_data):
         # Generate a random 8-byte string as hex
