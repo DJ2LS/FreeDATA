@@ -113,6 +113,14 @@ jobs:
             path: .
             # exclusions: '*.git* /*node_modules/* .editorconfig'
 
+      - name: LIST ALL FILES
+        run: ls -R
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: '${{ matrix.zip_name }}.zip'
+          path: ./modem/server.dist/${{ matrix.zip_name }}.zip
 
       - name: Release Modem
         uses: softprops/action-gh-release@v1
