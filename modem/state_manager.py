@@ -21,8 +21,6 @@ class StateManager:
         self.is_modem_running = False
         self.is_modem_busy = False
         self.is_beacon_running = False
-        self.is_arq_state = False
-        self.is_arq_session = False
 
         # If true, any wait() call is blocking
         self.transmitting_event = threading.Event()
@@ -119,6 +117,14 @@ class StateManager:
             return False
         self.arq_irs_sessions[session.id] = session
         return True
+
+    def check_if_running_arq_session(self, irs=False):
+        sessions = self.arq_irs_sessions if irs else self.arq_iss_sessions
+        for session in sessions:
+            if sessions[session].state.name not in ['ENDED', 'ABORTED', 'FAILED']:
+                print(f"[State Manager] running session...[{session}]")
+                return True
+        return False
 
     def get_arq_iss_session(self, id):
         if id not in self.arq_iss_sessions:

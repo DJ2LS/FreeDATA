@@ -26,6 +26,9 @@ class ARQFrameHandler(frame_handler.FrameHandler):
 
             # Normal case when receiving a SESSION_OPEN for the first time
             else:
+                if self.states.check_if_running_arq_session():
+                    self.logger.warning("DISCARDING SESSION OPEN because of ongoing ARQ session ", frame=frame)
+                    return
                 session = ARQSessionIRS(self.config,
                                         self.modem,
                                         frame['origin'], 

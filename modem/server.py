@@ -202,6 +202,8 @@ def post_modem_send_raw():
         return api_response({"info": "endpoint for SENDING RAW DATA via POST"})
     if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
+    if app.state_manager.check_if_running_arq_session():
+        api_abort('Modem busy', 503)
     if enqueue_tx_command(command_arq_raw.ARQRawCommand, request.json):
         return api_response(request.json)
     else:
