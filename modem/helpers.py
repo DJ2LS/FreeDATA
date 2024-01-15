@@ -93,15 +93,9 @@ def get_crc_24(data: str) -> bytes:
     """
     if not isinstance(data, (bytes)) or isinstance(data, (bytearray)):
         data = bytes(data,'utf-8')
-    crc_algorithm = crcengine.create(
-        0x864CFB,
-        24,
-        0xB704CE,
-        ref_in=False,
-        ref_out=False,
-        xor_out=0,
-        name="crc-24-openpgp",
-    )
+
+    params = crcengine.CrcParams(0x864cfb, 24, 0xb704ce, reflect_in=False, reflect_out=False, xor_out=0)
+    crc_algorithm = crcengine.create(params=params)
     return crc_algorithm(data).to_bytes(3,byteorder="big")
 
 
