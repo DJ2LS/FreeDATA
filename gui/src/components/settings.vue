@@ -3,7 +3,6 @@ import settings_station from "./settings_station.vue";
 import settings_gui from "./settings_gui.vue";
 import settings_chat from "./settings_chat.vue";
 import settings_rigcontrol from "./settings_rigcontrol.vue";
-import settings_hamlib from "./settings_hamlib.vue";
 import settings_modem from "./settings_modem.vue";
 import settings_web from "./settings_web.vue";
 import settings_exp from "./settings_exp.vue";
@@ -76,20 +75,7 @@ import settings_exp from "./settings_exp.vue";
                 Rig Control
               </button>
             </li>
-            <li class="nav-item" role="presentation">
-              <button
-                class="nav-link"
-                id="hamlib-tab"
-                data-bs-toggle="tab"
-                data-bs-target="#hamlib"
-                type="button"
-                role="tab"
-                aria-controls="profile"
-                aria-selected="false"
-              >
-                Hamlib
-              </button>
-            </li>
+
             <li class="nav-item" role="presentation">
               <button
                 class="nav-link"
@@ -134,7 +120,10 @@ import settings_exp from "./settings_exp.vue";
             </li>
           </ul>
         </div>
-        <div class="card-body">
+        <div
+          class="card-body overflow-auto"
+          style="height: calc(100vh - 105px)"
+        >
           <!-- SETTINGS Nav Tab panes -->
 
           <!-- Station tab contents-->
@@ -180,15 +169,6 @@ import settings_exp from "./settings_exp.vue";
               <settings_rigcontrol />
             </div>
 
-            <div
-              class="tab-pane"
-              id="hamlib"
-              role="tabpanel"
-              aria-labelledby="hamlib-tab"
-              tabindex="0"
-            >
-              <settings_hamlib />
-            </div>
             <div
               class="tab-pane"
               id="modem"

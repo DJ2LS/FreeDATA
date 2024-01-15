@@ -61,7 +61,7 @@ export function sortByPropertyDesc(property) {
  * @returns true or false if callsign appears to be valid with an SSID
  */
 export function validateCallsignWithSSID(callsign: string) {
-  var patt = new RegExp("^[A-Z,a-z]+[0-9][A-Z,a-z]*-(1[0-5]|[0-9])$");
+  var patt = new RegExp("^[A-Z]+[0-9][A-Z]*-(1[0-5]|[0-9])$");
 
   if (
     callsign === undefined ||
@@ -82,7 +82,7 @@ export function validateCallsignWithSSID(callsign: string) {
  * @returns true or false if callsign appears to be valid without an SSID
  */
 export function validateCallsignWithoutSSID(callsign: string) {
-  var patt = new RegExp("^[A-Za-z]+[0-9][A-Za-z]+$");
+  var patt = new RegExp("^[A-Z]+[0-9][A-Z]+$");
 
   if (
     callsign === undefined ||

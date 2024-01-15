@@ -31,11 +31,12 @@ class RF:
 
     log = structlog.get_logger("RF")
 
-    def __init__(self, config, event_manager, fft_queue, service_queue, states) -> None:
+    def __init__(self, config, event_manager, fft_queue, service_queue, states, radio_manager) -> None:
         self.config = config
         self.service_queue = service_queue
         self.states = states
         self.event_manager = event_manager
+        self.radio = radio_manager
         self.sampler_avg = 0
         self.buffer_avg = 0
 
@@ -108,7 +109,6 @@ class RF:
 
         # Initialize codec2, rig control, and data threads
         self.init_codec2()
-        self.init_rig_control()
         self.init_data_threads()
 
         return True
@@ -423,73 +423,3 @@ class RF:
         else:
             sd.play(audio_48k, blocksize=4096, blocking=True)
         return
-
-    def init_rig_control(self):
-        # Check how we want to control the radio
-        if self.radiocontrol == "rigctld":
-            import rigctld as rig
-        elif self.radiocontrol == "tci":
-            self.radio = self.tci_module
-        else:
-            import rigdummy as rig
-
-        if not self.radiocontrol in ["tci"]:
-            self.radio = rig.radio()
-            self.radio.open_rig(
-                rigctld_ip=self.rigctld_ip,
-                rigctld_port=self.rigctld_port,
-            )
-        hamlib_thread = threading.Thread(
-            target=self.update_rig_data, name="HAMLIB_THREAD", daemon=True
-        )
-        hamlib_thread.start()
-
-        hamlib_set_thread = threading.Thread(
-            target=self.set_rig_data, name="HAMLIB_SET_THREAD", daemon=True
-        )
-        hamlib_set_thread.start()
-
-    def set_rig_data(self) -> None:
-        """
-            Set rigctld parameters like frequency, mode
-            THis needs to be processed in a queue
-        """
-        while True:
-            cmd = RIGCTLD_COMMAND_QUEUE.get()
-            if cmd[0] == "set_frequency":
-                # [1] = Frequency
-                self.radio.set_frequency(cmd[1])
-            if cmd[0] == "set_mode":
-                # [1] = Mode
-                self.radio.set_mode(cmd[1])
-
-    def update_rig_data(self) -> None:
-        """
-        Request information about the current state of the radio via hamlib
-        """
-        while True:
-            try:
-                # this looks weird, but is necessary for avoiding rigctld packet colission sock
-                #threading.Event().wait(0.1)
-                self.states.set("radio_status", self.radio.get_status())
-                #threading.Event().wait(0.25)
-                self.states.set("radio_frequency", self.radio.get_frequency())
-                threading.Event().wait(0.1)
-                self.states.set("radio_mode", self.radio.get_mode())
-                threading.Event().wait(0.1)
-                self.states.set("radio_bandwidth", self.radio.get_bandwidth())
-                threading.Event().wait(0.1)
-                if self.states.isTransmitting():
-                    self.radio_alc = self.radio.get_alc()
-                    threading.Event().wait(0.1)
-                self.states.set("radio_rf_power", self.radio.get_level())
-                threading.Event().wait(0.1)
-                self.states.set("radio_strength", self.radio.get_strength())
-
-            except Exception as e:
-                self.log.warning(
-                    "[MDM] error getting radio data",
-                    e=e,
-                )
-                threading.Event().wait(1)
-

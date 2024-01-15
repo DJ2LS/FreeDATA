@@ -28,6 +28,42 @@ class FrameHandler():
             'bytes_per_frame': 0
         }
 
+    def is_frame_for_me(self):
+        call_with_ssid = self.config['STATION']['mycall'] + "-" + str(self.config['STATION']['myssid'])
+        ft = self.details['frame']['frame_type']
+        print(self.details)
+
+        # Check for callsign checksum
+        if ft in ['ARQ_SESSION_OPEN', 'ARQ_SESSION_OPEN_ACK', 'PING', 'PING_ACK']:
+            valid, mycallsign = helpers.check_callsign(
+                call_with_ssid,
+                self.details["frame"]["destination_crc"],
+                self.config['STATION']['ssid_list'])
+
+        # Check for session id on IRS side
+        elif ft in ['ARQ_SESSION_INFO', 'ARQ_BURST_FRAME', 'ARQ_STOP']:
+            session_id = self.details['frame']['session_id']
+            if session_id in self.states.arq_irs_sessions:
+                valid = True
+
+        # Check for session id on ISS side
+        elif ft in ['ARQ_SESSION_INFO_ACK', 'ARQ_BURST_ACK', 'ARQ_STOP_ACK']:
+            session_id = self.details['frame']['session_id']
+            if session_id in self.states.arq_iss_sessions:
+                valid = True
+        else:
+            valid = False
+
+        if not valid:
+            self.logger.info(f"[Frame handler] {ft} received but not for us.")
+
+        return valid
+
+
+
+    def should_respond(self):
+        return self.is_frame_for_me()
+
 
 
     def add_to_activity_list(self):

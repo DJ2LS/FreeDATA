@@ -368,7 +368,7 @@ export default {
               width: 100%;
               height: 200px;
             "
-            :class="settings.local.high_graphics == true ? 'force-gpu' : ''"
+            class="force-gpu'"
           ></canvas>
         </div>
         <div

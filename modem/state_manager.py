@@ -21,8 +21,6 @@ class StateManager:
         self.is_modem_running = False
         self.is_modem_busy = False
         self.is_beacon_running = False
-        self.is_arq_state = False
-        self.is_arq_session = False
 
         # If true, any wait() call is blocking
         self.transmitting_event = threading.Event()
@@ -43,8 +41,8 @@ class StateManager:
         self.radio_frequency = 0
         self.radio_mode = None
         self.radio_bandwidth = 0
-        self.radio_rf_power = 0
-        self.radio_strength = 0
+        self.radio_rf_level = 0
+        self.s_meter_strength = 0
         # Set rig control status regardless or rig control method
         self.radio_status = False
 
@@ -85,6 +83,7 @@ class StateManager:
             "radio_status": self.radio_status,
             "radio_frequency": self.radio_frequency,
             "radio_mode": self.radio_mode,
+            "s_meter_strength": self.s_meter_strength,
             "channel_busy_slot": self.channel_busy_slot,
             "audio_dbfs": self.audio_dbfs,
             "activities": self.activities_list,
@@ -119,6 +118,25 @@ class StateManager:
         self.arq_irs_sessions[session.id] = session
         return True
 
+
+    def check_if_running_arq_session(self, irs=False):
+        sessions = self.arq_irs_sessions if irs else self.arq_iss_sessions
+
+        for session_id in sessions:
+            # do a session cleanup of outdated sessions before
+            if sessions[session_id].is_session_outdated():
+                print(f"session cleanup.....{session_id}")
+                if irs:
+                    self.remove_arq_irs_session(session_id)
+                else:
+                    self.remove_arq_iss_session(session_id)
+
+            # check if ongoing sessions available
+            if sessions[session_id].state.name not in ['ENDED', 'ABORTED', 'FAILED']:
+                print(f"[State Manager] running session...[{session_id}]")
+                return True
+        return False
+
     def get_arq_iss_session(self, id):
         if id not in self.arq_iss_sessions:
             #raise RuntimeError(f"ARQ ISS Session '{id}' not found!")
@@ -134,14 +152,12 @@ class StateManager:
         return self.arq_irs_sessions[id]
 
     def remove_arq_iss_session(self, id):
-        if id not in self.arq_iss_sessions:
-            raise RuntimeError(f"ARQ ISS Session '{id}' not found!")
-        del self.arq_iss_sessions[id]
+        if id in self.arq_iss_sessions:
+            del self.arq_iss_sessions[id]
 
     def remove_arq_irs_session(self, id):
-        if id not in self.arq_irs_sessions:
-            raise RuntimeError(f"ARQ ISS Session '{id}' not found!")
-        del self.arq_irs_sessions[id]
+        if id in self.arq_irs_sessions:
+            del self.arq_irs_sessions[id]
 
     def add_activity(self, activity_data):
         # Generate a random 8-byte string as hex
@@ -177,3 +193,12 @@ class StateManager:
         else:
             self.channel_busy_condition_codec2 = threading.Event()
         self.calculate_channel_busy_state()
+
+    def get_radio_status(self):
+        return {
+            "radio_status": self.radio_status,
+            "radio_frequency": self.radio_frequency,
+            "radio_mode": self.radio_mode,
+            "radio_rf_level": self.radio_rf_level,
+            "s_meter_strength": self.s_meter_strength,
+        }

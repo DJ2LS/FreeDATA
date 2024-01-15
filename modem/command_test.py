@@ -7,4 +7,4 @@ class TestCommand(TxCommand):
         return self.frame_factory.build_test()
 
     def get_tx_mode(self):
-        return codec2.FREEDV_MODE.datac13.value
+        return codec2.FREEDV_MODE.datac3
