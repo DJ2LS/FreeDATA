@@ -38,6 +38,7 @@ import { Scatter } from "vue-chartjs";
 let count = ref(0);
 let grid = null; // DO NOT use ref(null) as proxies GS will break all logic when comparing structures... see https://github.com/gridstack/gridstack.js/issues/2115
 let items = ref([]);
+let gridEnabledLocal = ref(true);
 class gridWidget {
   //Contains the vue component
   component2;
@@ -431,7 +432,13 @@ function remove(widget) {
   grid.removeWidget(selector, false);
   saveGridLayout();
 }
-
+function disableGrid() {
+  gridEnabledLocal.value = !gridEnabledLocal.value
+  if (gridEnabledLocal.value)
+    grid.enable();
+  else
+    grid.disable();
+}
 function clearAllItems() {
   grid.removeAll(false);
   count.value = 0;
@@ -480,6 +487,7 @@ function quickfill() {
           <button
             @click="remove(w)"
             class="btn-close grid-stack-floaty-btn"
+            :class="gridEnabledLocal === true ? 'visible':'invisible'"
           ></button>
           <component :is="w.component2" />
         </div>
@@ -497,7 +505,14 @@ function quickfill() {
   >
     <div class="offcanvas-header">
       <h5 class="offcanvas-title" id="offcanvasGridItemsLabel">
-        Manage grid widgets
+        Manage grid widgets &nbsp;<button
+        class="btn btn-sm btn-outline-info"
+        type="button"
+        @click="disableGrid"
+        title="Lock/unloack changes to grid"
+      >
+        <i class="bi" :class="gridEnabledLocal == true ? 'bi-unlock-fill' : 'bi-lock-fill'"></i>
+      </button>&nbsp;
       </h5>
 
       <button
@@ -672,25 +687,27 @@ function quickfill() {
         class="btn btn-sm btn-outline-warning"
         type="button"
         @click="clearAllItems"
+        title="Clear all items from the grid"
       >
         Clear grid
       </button>
-      <hr />
-      <button
-        class="btn btn-sm btn-outline-dark"
-        type="button"
-        @click="savePreset"
-        title="Save current grid layout as a preset that can be restored using restore preset button"
-      >
-        Save Preset
-      </button>&nbsp;
+      <hr/>
       <button
         class="btn btn-sm btn-outline-dark"
         type="button"
         @click="loadPreset"
         title="Restore your saved grid preset (clears current grid)"
       >
-        Restore Preset
+      
+        Restore preset
+      </button>&nbsp;
+      <button
+        class="btn btn-sm btn-outline-dark"
+        type="button"
+        @click="savePreset"
+        title="Save current grid layout as a preset that can be restored using restore preset button"
+      >
+        Save preset
       </button>
     </div>
   </div>
