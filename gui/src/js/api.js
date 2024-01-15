@@ -117,12 +117,13 @@ export function getModemState() {
   return apiGet("/modem/state");
 }
 
-export function setModemFrequency(newFrequency) {
-  console.error("setModemFrequency needs implemented");
+export function setRadioParameters(frequency, mode, rf_level) {
+  return apiPost("/radio", {
+    radio_frequency: frequency,
+    radio_mode: mode,
+    radio_rf_level: rf_level,
+  });
 }
-export function setModemRigMode(mode) {
-  console.error("setModemRigMode needs implemented");
-}
-export function setModemRigPowerLvl(power) {
-  console.error("setModemRigPowerLvl needs implemented");
+export function getRadioStatus() {
+  return apiGet("/radio");
 }

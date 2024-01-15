@@ -1,12 +1,6 @@
-#!/usr/bin/env python3
-# class taken from darksidelemm
-# rigctl - https://github.com/darksidelemm/rotctld-web-gui/blob/master/rotatorgui.py#L35
-#
-# modified and adjusted to FreeDATA needs by DJ2LS
-
-import contextlib
 import socket
 import structlog
+import time
 import threading
 
 class radio:
@@ -14,332 +8,198 @@ class radio:
 
     log = structlog.get_logger("radio (rigctld)")
 
-    def __init__(self, hostname="localhost", port=4532, poll_rate=5, timeout=5):
-        """Open a connection to rigctld, and test it for validity"""
-        self.ptt_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.data_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        self.ptt_connected = False
-        self.data_connected = False
+    def __init__(self, states, hostname="localhost", port=4532, timeout=5):
         self.hostname = hostname
         self.port = port
-        self.connection_attempts = 5
+        self.timeout = timeout
+        self.states = states
 
-        # class wide variable for some parameters
-        self.bandwidth = ''
-        self.frequency = ''
-        self.mode = ''
-        self.alc = ''
-        self.strength = ''
-        self.rf = ''
+        self.connection = None
+        self.connected = False
+        self.await_response = threading.Event()
+        self.await_response.set()
 
-    def open_rig(
-            self,
-            rigctld_ip,
-            rigctld_port
-    ):
-        """
+        self.parameters = {
+            'frequency': '---',
+            'mode': '---',
+            'alc': '---',
+            'strength': '---',
+            'bandwidth': '---',
+            'rf': '---',
+            'ptt': False  # Initial PTT state is set to False
+        }
 
-        Args:
-          rigctld_ip:
-          rigctld_port:
+        # connect to radio
+        self.connect()
 
-        Returns:
+    def connect(self):
+        try:
+            self.connection = socket.create_connection((self.hostname, self.port), timeout=self.timeout)
+            self.connected = True
+            self.states.set("radio_status", True)
+            self.log.info(f"[RIGCTLD] Connected to rigctld at {self.hostname}:{self.port}")
+        except Exception as err:
+            self.log.warning(f"[RIGCTLD] Failed to connect to rigctld: {err}")
+            self.connected = False
+            self.states.set("radio_status", False)
 
-        """
-        self.hostname = rigctld_ip
-        self.port = int(rigctld_port)
+    def disconnect(self):
+        self.connected = False
+        self.connection.close()
+        del self.connection
+        self.connection = None
+        self.states.set("radio_status", False)
+        self.parameters = {
+            'frequency': '---',
+            'mode': '---',
+            'alc': '---',
+            'strength': '---',
+            'bandwidth': '---',
+            'rf': '---',
+            'ptt': False  # Initial PTT state is set to False
+        }
 
-        # _ptt_connect = self.ptt_connect()
-        # _data_connect = self.data_connect()
-
-        ptt_thread = threading.Thread(target=self.ptt_connect, args=[], daemon=True)
-        ptt_thread.start()
-
-        data_thread = threading.Thread(target=self.data_connect, args=[], daemon=True)
-        data_thread.start()
-
-        # wait some time
-        threading.Event().wait(0.5)
-
-        if self.ptt_connected and self.data_connected:
-            self.log.debug("Rigctl DATA/PTT initialized")
-            return True
-
-        self.log.error(
-            "[RIGCTLD] Can't connect!", ip=self.hostname, port=self.port
-        )
-        return False
-
-    def ptt_connect(self):
-        """Connect to rigctld instance"""
-        while True:
-
-            if not self.ptt_connected:
-                try:
-                    self.ptt_connection = socket.create_connection((self.hostname, self.port))
-                    self.ptt_connected = True
-                    self.log.info(
-                        "[RIGCTLD] Connected PTT instance to rigctld!", ip=self.hostname, port=self.port
-                    )
-                except Exception as err:
-                    # ConnectionRefusedError: [Errno 111] Connection refused
-                    self.close_rig()
-                    self.log.warning(
-                        "[RIGCTLD] PTT Reconnect...",
-                        ip=self.hostname,
-                        port=self.port,
-                        e=err,
-                    )
-
-            threading.Event().wait(0.5)
-
-    def data_connect(self):
-        """Connect to rigctld instance"""
-        while True:
-            if not self.data_connected:
-                try:
-                    self.data_connection = socket.create_connection((self.hostname, self.port))
-                    self.data_connected = True
-                    self.log.info(
-                        "[RIGCTLD] Connected DATA instance to rigctld!", ip=self.hostname, port=self.port
-                    )
-                except Exception as err:
-                    # ConnectionRefusedError: [Errno 111] Connection refused
-                    self.close_rig()
-                    self.log.warning(
-                        "[RIGCTLD] DATA Reconnect...",
-                        ip=self.hostname,
-                        port=self.port,
-                        e=err,
-                    )
-            threading.Event().wait(0.5)
-
-    def close_rig(self):
-        """ """
-        self.ptt_sock.close()
-        self.data_sock.close()
-        self.ptt_connected = False
-        self.data_connected = False
-
-    def send_ptt_command(self, command, expect_answer) -> bytes:
-        """Send a command to the connected rotctld instance,
-            and return the return value.
-
-        Args:
-          command:
-
-        """
-        if self.ptt_connected:
-            try:
-                self.ptt_connection.sendall(command + b"\n")
-            except Exception:
-                self.log.warning(
-                    "[RIGCTLD] Command not executed!",
-                    command=command,
-                    ip=self.hostname,
-                    port=self.port,
-                )
-                self.ptt_connected = False
-        return b""
-
-    def send_data_command(self, command, expect_answer) -> bytes:
-        """Send a command to the connected rotctld instance,
-            and return the return value.
-
-        Args:
-          command:
-
-        """
-        if self.data_connected:
-            self.data_connection.setblocking(False)
-            #Allow a little more time for a response from rigctld before generating a timeout, seems to have no ill effects on a well behaving setup and fixes Issue #373
-            self.data_connection.settimeout(0.30)
-            try:
-                self.data_connection.sendall(command + b"\n")
-
-
-            except Exception:
-                self.log.warning(
-                    "[RIGCTLD] Command not executed!",
-                    command=command,
-                    ip=self.hostname,
-                    port=self.port,
-                )
-                self.data_connected = False
+    def send_command(self, command) -> str:
+        if self.connected:
+            # wait if we have another command awaiting its response...
+            self.await_response.wait()
 
             try:
-                # recv seems to be blocking so in case of ptt we don't need the response
-                # maybe this speeds things up and avoids blocking states
-                recv = True
-                data = b''
+                self.await_response = threading.Event()
+                self.connection.sendall(command.encode('utf-8') + b"\n")
+                response = self.connection.recv(1024)
+                self.await_response.set()
+                return response.decode('utf-8').strip()
+            except Exception as err:
+                self.log.warning(f"[RIGCTLD] Error sending command [{command}] to rigctld: {err}")
+                self.connected = False
 
-                while recv:
-                    try:
 
-                        data = self.data_connection.recv(4800)
-
-                    except socket.timeout:
-                        recv = False
-
-                return data
-
-                # return self.data_connection.recv(64) if expect_answer else True
-            except Exception:
-                self.log.warning(
-                    "[RIGCTLD] No command response!",
-                    command=command,
-                    ip=self.hostname,
-                    port=self.port,
-                )
-                self.data_connected = False
-        return b""
-
-    def get_status(self):
-        """ """
-        return True if self.data_connected and self.ptt_connected else False
-
-    def get_level(self):
-        try:
-            data = self.send_data_command(b"l RF", True)
-            data = data.split(b"\n")
-            rf = data[0].decode("utf-8")
-            if 'RPRT' not in rf:
-                try:
-                    self.rf = str(rf)
-                except ValueError:
-                    self.rf = str(rf)
-
-            return self.rf
-        except Exception:
-            return self.rf
-
-    def get_strength(self):
-        try:
-            data = self.send_data_command(b"l STRENGTH", True)
-            data = data.split(b"\n")
-            strength = data[0].decode("utf-8")
-            if 'RPRT' not in strength:
-                try:
-                    self.strength = str(strength)
-                except ValueError:
-                    self.strength = str(strength)
-
-            return self.strength
-        except Exception:
-            return self.strength
-
-    def get_alc(self):
-        try:
-            data = self.send_data_command(b"l ALC", True)
-            data = data.split(b"\n")
-            alc = data[0].decode("utf-8")
-            if 'RPRT' not in alc:
-                try:
-                    alc = float(alc)
-                except ValueError:
-                    self.alc = 0.0
-
-            return self.alc
-        except Exception:
-            return self.alc
-
-    def get_mode(self):
-        """ """
-        try:
-            data = self.send_data_command(b"m", True)
-            data = data.split(b"\n")
-            data = data[0].decode("utf-8")
-            if 'RPRT' not in data:
-                try:
-                    data = int(data)
-                except ValueError:
-                    self.mode = str(data)
-
-            return self.mode
-        except Exception:
-            return self.mode
-
-    def get_bandwidth(self):
-        """ """
-        try:
-            data = self.send_data_command(b"m", True)
-            data = data.split(b"\n")
-            data = data[1].decode("utf-8")
-
-            if 'RPRT' not in data and data not in ['']:
-                with contextlib.suppress(ValueError):
-                    self.bandwidth = int(data)
-            return self.bandwidth
-        except Exception:
-            return self.bandwidth
-
-    def get_frequency(self):
-        """ """
-        try:
-            data = self.send_data_command(b"f", True)
-            data = data.decode("utf-8")
-            if 'RPRT' not in data and data not in [0, '0', '']:
-                with contextlib.suppress(ValueError):
-                    data = int(data)
-                    # make sure we have a frequency and not bandwidth
-                    if data >= 10000:
-                        self.frequency = data
-            return self.frequency
-        except Exception:
-            return self.frequency
-
-    def get_ptt(self):
-        """ """
-        try:
-            return self.send_data_command(b"t", True)
-        except Exception:
-            return False
+        return ""
 
     def set_ptt(self, state):
-        """
+        """Set the PTT (Push-to-Talk) state.
 
         Args:
-          state:
+            state (bool): True to enable PTT, False to disable.
 
         Returns:
-
+            bool: True if the PTT state was set successfully, False otherwise.
         """
-        try:
-            if state:
-                self.send_ptt_command(b"T 1", False)
-            else:
-                self.send_ptt_command(b"T 0", False)
-            return state
-        except Exception:
-            return False
-
-    def set_frequency(self, frequency):
-        """
-
-        Args:
-          frequency:
-
-        Returns:
-
-        """
-        try:
-            command = bytes(f"F {frequency}", "utf-8")
-            self.send_data_command(command, False)
-        except Exception:
-            return False
+        if self.connected:
+            try:
+                if state:
+                    self.send_command('T 1')  # Enable PTT
+                else:
+                    self.send_command('T 0')  # Disable PTT
+                self.parameters['ptt'] = state  # Update PTT state in parameters
+                return True
+            except Exception as err:
+                self.log.warning(f"[RIGCTLD] Error setting PTT state: {err}")
+                self.connected = False
+        return False
 
     def set_mode(self, mode):
-        """
+        """Set the mode.
 
         Args:
-          mode:
+            mode (str): The mode to set.
 
         Returns:
-
+            bool: True if the mode was set successfully, False otherwise.
         """
-        try:
-            command = bytes(f"M {mode} {self.bandwidth}", "utf-8")
-            self.send_data_command(command, False)
-        except Exception:
-            return False
+        if self.connected:
+            try:
+                command = f"M {mode} 0"
+                self.send_command(command)
+                self.parameters['mode'] = mode
+                return True
+            except Exception as err:
+                self.log.warning(f"[RIGCTLD] Error setting mode: {err}")
+                self.connected = False
+        return False
+
+    def set_frequency(self, frequency):
+        """Set the frequency.
+
+        Args:
+            frequency (str): The frequency to set.
+
+        Returns:
+            bool: True if the frequency was set successfully, False otherwise.
+        """
+        if self.connected:
+            try:
+                command = f"F {frequency}"
+                self.send_command(command)
+                self.parameters['frequency'] = frequency
+                return True
+            except Exception as err:
+                self.log.warning(f"[RIGCTLD] Error setting frequency: {err}")
+                self.connected = False
+        return False
+
+    def set_bandwidth(self, bandwidth):
+        """Set the bandwidth.
+
+        Args:
+            bandwidth (str): The bandwidth to set.
+
+        Returns:
+            bool: True if the bandwidth was set successfully, False otherwise.
+        """
+        if self.connected:
+            try:
+                command = f"M {self.parameters['mode']} {bandwidth}"
+                self.send_command(command)
+                self.parameters['bandwidth'] = bandwidth
+                return True
+            except Exception as err:
+                self.log.warning(f"[RIGCTLD] Error setting bandwidth: {err}")
+                self.connected = False
+        return False
+
+    def set_rf_level(self, rf):
+        """Set the RF.
+
+        Args:
+            rf (str): The RF to set.
+
+        Returns:
+            bool: True if the RF was set successfully, False otherwise.
+        """
+        if self.connected:
+            try:
+                command = f"L RFPOWER {rf/100}" #RF RFPOWER --> RFPOWER == IC705
+                self.send_command(command)
+                self.parameters['rf'] = rf
+                return True
+            except Exception as err:
+                self.log.warning(f"[RIGCTLD] Error setting RF: {err}")
+                self.connected = False
+        return False
+
+    def get_parameters(self):
+        if not self.connected:
+            self.connect()
+
+        if self.connected:
+            self.parameters['frequency'] = self.send_command('f')
+            response = self.send_command(
+                'm').strip()  # Get the mode/bandwidth response and remove leading/trailing spaces
+            try:
+                mode, bandwidth = response.split('\n', 1)  # Split the response into mode and bandwidth
+            except ValueError:
+                print(response)
+                mode = 'err'
+                bandwidth = 'err'
+
+            self.parameters['mode'] = mode
+            self.parameters['bandwidth'] = bandwidth
+
+            self.parameters['alc'] = self.send_command('l ALC')
+            self.parameters['strength'] = self.send_command('l STRENGTH')
+            self.parameters['rf'] = self.send_command('l RFPOWER') # RF, RFPOWER
+
+        """Return the latest fetched parameters."""
+        return self.parameters

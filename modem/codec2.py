@@ -101,13 +101,14 @@ for file in files:
         #log.info("[C2 ] Libcodec2 loaded", path=file)
         break
     except OSError as err:
-        log.info("[C2 ] Error:  Libcodec2 found but not loaded", path=file, e=err)
+        pass
+        #log.info("[C2 ] Error:  Libcodec2 found but not loaded", path=file, e=err)
 
 # Quit module if codec2 cant be loaded
 if api is None or "api" not in locals():
     log.critical("[C2 ] Error:  Libcodec2 not loaded - Exiting")
     sys.exit(1)
-
+log.info("[C2 ] Libcodec2 loaded...")
 # ctypes function init
 
 # api.freedv_set_tuning_range.restype = ctypes.c_int

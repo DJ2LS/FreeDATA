@@ -8,7 +8,7 @@ setActivePinia(pinia);
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
 
-import { settingsStore as settings } from "../store/settingsStore.js";
+import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 
 import { sendModemTestFrame } from "../js/api";
 
@@ -18,16 +18,6 @@ import {
 } from "../js/chatHandler";
 
 import main_startup_check from "./main_startup_check.vue";
-
-function set_tx_audio_level() {
-  saveSettingsToFile();
-  setTxAudioLevel(settings.tx_audio_level);
-}
-
-function set_rx_audio_level() {
-  saveSettingsToFile();
-  setRxAudioLevel(settings.rx_audio_level);
-}
 
 function deleteChat() {
   //console.log(chat.selectedCallsign)
@@ -1186,6 +1176,10 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
           ></button>
         </div>
         <div class="modal-body">
+          <div class="alert alert-info" role="alert">
+            Adjust audio levels. Value in dB. Default is <strong>0</strong>
+          </div>
+
           <div class="input-group input-group-sm mb-1">
             <span class="input-group-text">Test-Frame</span>
             <button
@@ -1199,7 +1193,9 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
           </div>
           <div class="input-group input-group-sm mb-1">
             <span class="input-group-text">RX Level</span>
-            <span class="input-group-text">{{ settings.rx_audio_level }}</span>
+            <span class="input-group-text">{{
+              settings.remote.AUDIO.rx_audio_level
+            }}</span>
             <span class="input-group-text w-75">
               <input
                 type="range"
@@ -1208,13 +1204,15 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
                 max="20"
                 step="1"
                 id="audioLevelRX"
-                @click="set_rx_audio_level()"
-                v-model="settings.rx_audio_level"
+                @change="onChange"
+                v-model.number="settings.remote.AUDIO.rx_audio_level"
             /></span>
           </div>
           <div class="input-group input-group-sm mb-1">
             <span class="input-group-text">TX Level</span>
-            <span class="input-group-text">{{ settings.tx_audio_level }}</span>
+            <span class="input-group-text">{{
+              settings.remote.AUDIO.tx_audio_level
+            }}</span>
             <span class="input-group-text w-75">
               <input
                 type="range"
@@ -1223,8 +1221,8 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
                 max="20"
                 step="1"
                 id="audioLevelTX"
-                @click="set_tx_audio_level()"
-                v-model="settings.tx_audio_level"
+                @change="onChange"
+                v-model.number="settings.remote.AUDIO.tx_audio_level"
             /></span>
           </div>
         </div>
