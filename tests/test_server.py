@@ -13,7 +13,8 @@ class TestIntegration(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cmd = "flask --app modem/server run"
+        #cmd = "flask --app modem/server run"
+        cmd = "python3 modem/server.py"
         my_env = os.environ.copy()
         my_env["FREEDATA_CONFIG"] = "modem/config.ini.example"
         cls.process = Popen(shlex.split(cmd), stdin=PIPE, env=my_env)

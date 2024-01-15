@@ -4,21 +4,20 @@ import data_frame_factory
 
 class PingFrameHandler(frame_handler.FrameHandler):
 
-    def is_frame_for_me(self):
-        call_with_ssid = self.config['STATION']['mycall'] + "-" + str(self.config['STATION']['myssid'])
-        valid, mycallsign = helpers.check_callsign(
-            call_with_ssid,
-            self.details["frame"]["destination_crc"],
-            self.config['STATION']['ssid_list'])
+    #def is_frame_for_me(self):
+    #    call_with_ssid = self.config['STATION']['mycall'] + "-" + str(self.config['STATION']['myssid'])
+    #    valid, mycallsign = helpers.check_callsign(
+    #        call_with_ssid,
+    #        self.details["frame"]["destination_crc"],
+    #        self.config['STATION']['ssid_list'])
 
-        if not valid:
-            ft = self.details['frame']['frame_type']
-            self.logger.info(f"[Modem] {ft} received but not for us.")
-
-        return valid
+    #    if not valid:
+    #        ft = self.details['frame']['frame_type']
+    #        self.logger.info(f"[Modem] {ft} received but not for us.")
+    #    return valid
     
-    def should_respond(self):
-        return self.is_frame_for_me()
+    #def should_respond(self):
+    #    return self.is_frame_for_me()
 
     def follow_protocol(self):
 

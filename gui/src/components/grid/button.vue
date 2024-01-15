@@ -6,7 +6,10 @@ function emitClick() {
 }
 </script>
 <template>
-  <button class="btn btn-small btn-outline-secondary" v-on:click="emitClick">
+  <button
+    class="btn btn-small btn-outline-secondary mb-1"
+    v-on:click="emitClick"
+  >
     {{ btnText }}
   </button>
 </template>

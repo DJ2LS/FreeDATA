@@ -56,7 +56,9 @@ class EventManager:
         }
         self.broadcast(event)
 
-    def send_arq_session_finished(self, outbound: bool, session_id, dxcall, total_bytes, success: bool, state: bool, data=False):
+    def send_arq_session_finished(self, outbound: bool, session_id, dxcall, success: bool, state: bool, data=False, statistics=None):
+        if statistics is None:
+            statistics = {}
         if data:
             data = base64.b64encode(data).decode("UTF-8")
         direction = 'outbound' if outbound else 'inbound'
@@ -65,7 +67,7 @@ class EventManager:
                 f"arq-transfer-{direction}": {
                 'session_id': session_id,
                 'dxcall': dxcall,
-                'total_bytes': total_bytes,
+                'statistics': statistics,
                 'success': bool(success),
                 'state': state,
                 'data': data

@@ -15,6 +15,14 @@ export default defineConfig(({ command }) => {
   const sourcemap = isServe || !!process.env.VSCODE_DEBUG;
 
   return {
+    optimizeDeps: {
+      esbuildOptions: {
+        target: "esnext",
+      },
+    },
+    build: {
+      target: "esnext",
+    },
     plugins: [
       vue(),
       electron([

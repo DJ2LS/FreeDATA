@@ -1,47 +1,41 @@
-import threading
-import data_frame_factory
 import command_beacon
+import sched
+import time
+import threading
 
 class Beacon:
-
-    BEACON_LOOP_INTERVAL = 1
-
     def __init__(self, config, states, event_manager, logger, modem):
-
-        self.modem_config = config
+        self.config = config
         self.states = states
         self.event_manager = event_manager
         self.log = logger
         self.modem = modem
 
-        self.loop_running = True
-        self.paused = False
-        self.thread = None
+        self.scheduler = sched.scheduler(time.time, time.sleep)
+        self.beacon_interval = self.config['MODEM']['beacon_interval']
+        self.beacon_enabled = False
         self.event = threading.Event()
 
-        self.frame_factory = data_frame_factory.DataFrameFactory(config)
-
     def start(self):
-        beacon_thread = threading.Thread(target=self.run_beacon, name="beacon", daemon=True)
-        beacon_thread.start()
+        self.beacon_enabled = True
+        self.schedule_beacon()
 
     def stop(self):
-        self.loop_running = False
+        self.beacon_enabled = False
+
+    def schedule_beacon(self):
+        if self.beacon_enabled:
+            self.scheduler.enter(self.beacon_interval, 1, self.run_beacon)
+            threading.Thread(target=self.scheduler.run, daemon=True).start()
+
+    def run_beacon(self):
+        if self.beacon_enabled:
+            # Your beacon logic here
+            cmd = command_beacon.BeaconCommand(self.config, self.states, self.event_manager)
+            cmd.run(self.event_manager, self.modem)
+            self.schedule_beacon()  # Reschedule the next beacon
 
     def refresh(self):
-        self.event.set()
-        self.event.clear()
-
-    def run_beacon(self) -> None:
-        while self.loop_running:
-            while (self.states.is_beacon_running and 
-                not self.paused and 
-                True):
-                #not self.states.channel_busy):
-
-                cmd = command_beacon.BeaconCommand(self.modem_config, self.states, self.event_manager)
-                cmd.run(self.event_manager, self.modem)
-                self.event.wait(self.modem_config['MODEM']['beacon_interval'])
-
-            self.event.wait(self.BEACON_LOOP_INTERVAL)
-        
+        # Interrupt and reschedule the beacon
+        self.scheduler = sched.scheduler(time.time, time.sleep)
+        self.schedule_beacon()

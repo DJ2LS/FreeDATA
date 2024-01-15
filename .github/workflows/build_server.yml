@@ -11,17 +11,17 @@ jobs:
         os: [ubuntu-20.04, macos-latest, windows-latest]
         include:
           - os: ubuntu-20.04
-            zip_name: ubuntu_modem
+            zip_name: freedata-server_ubuntu
             generator: Unix Makefiles
             modem_binary_name: freedata-server
 
           - os: macos-latest
-            zip_name: macos_modem
+            zip_name: freedata-server_macos
             generator: Unix Makefiles
             modem_binary_name: freedata-server
 
           - os: windows-latest
-            zip_name: windows_modem
+            zip_name: freedata-server_windows
             generator: Visual Studio 16 2019
             modem_binary_name: freedata-server.exe
 
@@ -74,25 +74,25 @@ jobs:
       - name: Build binaries
         working-directory: modem
         run: |
-          python3 -m nuitka --enable-plugin=numpy --remove-output --assume-yes-for-downloads --standalone server.py
+          python3 -m nuitka  --remove-output --assume-yes-for-downloads --follow-imports --include-data-dir=lib=lib --include-data-files=lib/codec2/*=lib/codec2/ --include-data-files=config.ini.example=config.ini --standalone server.py --output-filename=freedata-server
 
-      - name: Download Portaudio binaries Linux macOS
-        if: ${{!startsWith(matrix.os, 'windows')}}
-        working-directory: modem
-        run: |
-          if ! test -d "server.dist/modem/_sounddevice_data"; then
-          git clone https://github.com/spatialaudio/portaudio-binaries dist/modem/_sounddevice_data/portaudio-binaries
-          fi
+      #- name: Download Portaudio binaries Linux macOS
+      #  if: ${{!startsWith(matrix.os, 'windows')}}
+      #  working-directory: modem
+      #  run: |
+      #    if ! test -d "server.dist/modem/_sounddevice_data"; then
+      #    git clone https://github.com/spatialaudio/portaudio-binaries dist/modem/_sounddevice_data/portaudio-binaries
+      #    fi
 
-      - name: Download Portaudio binaries Windows
-        if: ${{startsWith(matrix.os, 'windows')}}
-        working-directory: modem
-        run: |
-          if(Test-Path -Path "server.dist/modem/_sounddevice_data"){
-          echo "sounddevice folder already exists"
-          } else {
-          git clone https://github.com/spatialaudio/portaudio-binaries dist/modem/_sounddevice_data/portaudio-binaries
-          }
+      #- name: Download Portaudio binaries Windows
+      #  if: ${{startsWith(matrix.os, 'windows')}}
+      #  working-directory: modem
+      #  run: |
+      #    if(Test-Path -Path "server.dist/modem/_sounddevice_data"){
+      #    echo "sounddevice folder already exists"
+      #    } else {
+      #    git clone https://github.com/spatialaudio/portaudio-binaries dist/modem/_sounddevice_data/portaudio-binaries
+      #    }
 
       - name: LIST ALL FILES
         run: ls -R
@@ -112,6 +112,15 @@ jobs:
             directory: ./modem/server.dist
             path: .
             # exclusions: '*.git* /*node_modules/* .editorconfig'
+
+      - name: LIST ALL FILES
+        run: ls -R
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: '${{ matrix.zip_name }}'
+          path: ./modem/server.dist/${{ matrix.zip_name }}.zip
 
       - name: Release Modem
         uses: softprops/action-gh-release@v1
