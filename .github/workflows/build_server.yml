@@ -108,7 +108,7 @@ jobs:
         uses: thedoctor0/zip-release@master
         with:
             type: 'zip'
-            filename: ${{ matrix.zip_name }}
+            filename: '${{ matrix.zip_name }}.zip'
             directory: ./modem/server.dist
             path: .
             # exclusions: '*.git* /*node_modules/* .editorconfig'
@@ -119,7 +119,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: {{ matrix.zip_name }}
+          name: '${{ matrix.zip_name }}'
           path: ./modem/server.dist/${{ matrix.zip_name }}.zip
 
       - name: Release Modem
