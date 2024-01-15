@@ -1,13 +1,30 @@
-hamlib_version = 0
-
 
 class radio:
     """ """
 
     def __init__(self):
-        pass
+        self.parameters = {
+            'frequency': '---',
+            'mode': '---',
+            'alc': '---',
+            'strength': '---',
+            'bandwidth': '---',
+            'rf': '---',
+            'ptt': False  # Initial PTT state is set to False
+        }
 
-    def open_rig(self, **kwargs):
+    def connect(self, **kwargs):
+        """
+
+        Args:
+          **kwargs:
+
+        Returns:
+
+        """
+        return True
+
+    def disconnect(self, **kwargs):
         """
 
         Args:
@@ -98,3 +115,7 @@ class radio:
     def close_rig(self):
         """ """
         return
+
+
+    def get_parameters(self):
+        return self.parameters

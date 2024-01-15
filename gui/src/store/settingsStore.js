@@ -17,11 +17,10 @@ nconf.defaults({
     port: "5000",
     spectrum: "waterfall",
     wf_theme: 2,
-    theme: "default_light",
-    high_graphics: true,
     update_channel: "alpha",
     enable_sys_notification: false,
     grid_layout: "[]",
+    grid_preset: "[]",
   },
 });
 
@@ -33,11 +32,10 @@ export const settingsStore = reactive({
     port: "5000",
     spectrum: "waterfall",
     wf_theme: 2,
-    theme: "default_light",
-    high_graphics: true,
     update_channel: "alpha",
     enable_sys_notification: false,
     grid_layout: "[]",
+    grid_preset: "[]",
   },
   remote: {
     AUDIO: {

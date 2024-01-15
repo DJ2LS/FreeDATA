@@ -12,7 +12,7 @@ from command_ping import PingCommand
 from command_cq import CQCommand
 import modem
 import frame_handler
-
+from radio_manager import RadioManager
 
 class TestProtocols(unittest.TestCase):
 
@@ -27,9 +27,10 @@ class TestProtocols(unittest.TestCase):
         cls.event_queue = queue.Queue()
         cls.event_manager = EventManager([cls.event_queue])
 
+        cls.radio_manager = RadioManager(cls.config, cls.state_manager, cls.event_manager)
         cls.modem_transmit_queue = queue.Queue()
 
-        cls.modem = modem.RF(cls.config, cls.event_queue, queue.Queue(), queue.Queue(), cls.state_manager)
+        cls.modem = modem.RF(cls.config, cls.event_queue, queue.Queue(), queue.Queue(), cls.state_manager, cls.radio_manager)
         modem.TESTMODE = True
         frame_handler.TESTMODE = True
 

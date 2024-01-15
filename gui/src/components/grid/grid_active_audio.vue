@@ -8,28 +8,9 @@ const state = useStateStore(pinia);
 </script>
 <template>
   <div class="card w-100 h-100">
-    <div class="card-header p-0">
-      <div class="dropdown">
-        <button
-          class="btn btn-sm btn-outline-secondary dropdown-toggle"
-          type="button"
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
-        ></button>
-        <i class="bi bi-volume-up" style="font-size: 1rem"></i>&nbsp;
-        <strong>Audio</strong>
-        <ul class="dropdown-menu">
-          <li>
-            <a
-              class="dropdown-item"
-              data-bs-toggle="modal"
-              data-bs-target="#audioModal"
-              href="#"
-              >Tune</a
-            >
-          </li>
-        </ul>
-      </div>
+    <div class="card-header p-0 mb-1">
+      <i class="bi bi-volume-up" style="font-size: 1rem"></i>&nbsp;
+      <strong>Audio</strong>
     </div>
     <div class="card-body pt-0 pb-0">
       <div class="container-wide">

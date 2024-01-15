@@ -11,6 +11,8 @@ import requests
 import threading
 import ujson as json
 import structlog
+import sched
+import time
 
 log = structlog.get_logger("explorer")
 
@@ -21,18 +23,16 @@ class explorer():
         self.states = states
         self.explorer_url = "https://api.freedata.app/explorer.php"
         self.publish_interval = 120
-        self.enable_explorer = config["STATION"]["enable_explorer"]
 
-        if self.enable_explorer:
-            self.interval_thread = threading.Thread(target=self.interval, name="interval", daemon=True)
-            self.interval_thread.start()
+        self.scheduler = sched.scheduler(time.time, time.sleep)
+        self.schedule_thread = threading.Thread(target=self.run_scheduler)
+        self.schedule_thread.start()
 
-    def interval(self):
-        # Wait for just a little bit incase modem is contionously restarting due to a bug or user configuration issue
-        threading.Event().wait(30)
-        while True:
-            self.push()
-            threading.Event().wait(self.publish_interval)
+    def run_scheduler(self):
+        # Schedule the first execution of push
+        self.scheduler.enter(self.publish_interval, 1, self.push)
+        # Run the scheduler in a loop
+        self.scheduler.run()
 
     def push(self):
 
@@ -43,7 +43,7 @@ class explorer():
         version = str(self.app.MODEM_VERSION)
         bandwidth = str(self.config['MODEM']['enable_low_bandwidth_mode'])
         beacon = str(self.states.is_beacon_running)
-        strength = str(self.states.radio_strength)
+        strength = str(self.states.s_meter_strength)
 
         log.info("[EXPLORER] publish", frequency=frequency, band=band, callsign=callsign, gridsquare=gridsquare, version=version, bandwidth=bandwidth)
 
@@ -67,8 +67,14 @@ class explorer():
         station_data = json.dumps(station_data)
         try:
             response = requests.post(self.explorer_url, json=station_data, headers=headers)
-            # print(response.status_code)
-            # print(response.content)
 
         except Exception as e:
             log.warning("[EXPLORER] connection lost")
+
+        # Reschedule the push method
+        self.scheduler.enter(self.publish_interval, 1, self.push)
+
+        def shutdown(self):
+            # If there are other cleanup tasks, include them here
+            if self.schedule_thread:
+                self.schedule_thread.join()

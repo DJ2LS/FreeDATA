@@ -138,9 +138,9 @@ class Demodulator():
     def sd_input_audio_callback(self, indata: np.ndarray, frames: int, time, status) -> None:
             audio_48k = np.frombuffer(indata, dtype=np.int16)
             audio_8k = self.resampler.resample48_to_8(audio_48k)
-            audio.calculate_fft(audio_8k, self.fft_queue, self.states)
 
             audio_8k_level_adjusted = audio.set_audio_volume(audio_8k, self.rx_audio_level)
+            audio.calculate_fft(audio_8k_level_adjusted, self.fft_queue, self.states)
 
             length_audio_8k_level_adjusted = len(audio_8k_level_adjusted)
             # Avoid buffer overflow by filling only if buffer for

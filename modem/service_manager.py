@@ -6,19 +6,21 @@ import audio
 import ujson as json
 import explorer
 import beacon
+import radio_manager
 
 
 class SM:
     def __init__(self, app):
         self.log = structlog.get_logger("service")
-
+        self.app = app
         self.modem = False
         self.beacon = False
-        self.app = app
+        self.explorer = False
+        self.app.radio_manager = False
         self.config = self.app.config_manager.read()
         self.modem_fft = app.modem_fft
         self.modem_service = app.modem_service
-        self.states = app.state_manager
+        self.state_manager = app.state_manager
         self.event_manager = app.event_manager
 
 
@@ -27,27 +29,37 @@ class SM:
         )
         runner_thread.start()
 
-        self.start_explorer_publishing()
-
     def runner(self):
         while True:
             cmd = self.modem_service.get()
             if cmd in ['start'] and not self.modem:
                 self.log.info("------------------ FreeDATA ------------------")
                 self.log.info("------------------  MODEM   ------------------")
+                self.config = self.app.config_manager.read()
+                self.start_radio_manager()
                 self.start_modem()
+                self.start_explorer_publishing()
 
             elif cmd in ['stop'] and self.modem:
                 self.stop_modem()
+                self.stop_explorer_publishing()
+                self.stop_radio_manager()
                 # we need to wait a bit for avoiding a portaudio crash
                 threading.Event().wait(0.5)
 
             elif cmd in ['restart']:
                 self.stop_modem()
+                self.stop_explorer_publishing()
+                self.stop_radio_manager()
                 # we need to wait a bit for avoiding a portaudio crash
                 threading.Event().wait(0.5)
+
+                self.config = self.app.config_manager.read()
+                self.start_radio_manager()
+
                 if self.start_modem():
                     self.event_manager.modem_restarted()
+                    self.start_explorer_publishing()
             elif cmd in ['start_beacon']:
                 self.start_beacon()
 
@@ -57,37 +69,34 @@ class SM:
 
 
             else:
-                self.log.warning("[SVC] modem command processing failed", cmd=cmd, state=self.states.is_modem_running)
+                self.log.warning("[SVC] modem command processing failed", cmd=cmd, state=self.state_manager.is_modem_running)
 
 
     def start_modem(self):
-        # read config
-        self.config = self.app.config_manager.read()
-
-        if self.states.is_modem_running:
+        if self.state_manager.is_modem_running:
             self.log.warning("modem already running")
             return False
 
         # test audio devices
         audio_test = self.test_audio()
 
-        if False in audio_test or None in audio_test or self.states.is_modem_running:
+        if False in audio_test or None in audio_test or self.state_manager.is_modem_running:
             self.log.warning("starting modem failed", input_test=audio_test[0], output_test=audio_test[1])
-            self.states.set("is_modem_running", False)
+            self.state_manager.set("is_modem_running", False)
             self.event_manager.modem_failed()
             return False
 
         self.log.info("starting modem....")
-        self.modem = modem.RF(self.config, self.event_manager, self.modem_fft, self.modem_service, self.states)
+        self.modem = modem.RF(self.config, self.event_manager, self.modem_fft, self.modem_service, self.state_manager, self.app.radio_manager)
 
         self.frame_dispatcher = frame_dispatcher.DISPATCHER(self.config, 
                                                             self.event_manager,
-                                                            self.states,
+                                                            self.state_manager,
                                                             self.modem)
         self.frame_dispatcher.start()
 
         self.event_manager.modem_started()
-        self.states.set("is_modem_running", True)
+        self.state_manager.set("is_modem_running", True)
         self.modem.start_modem()
 
         return True
@@ -96,7 +105,7 @@ class SM:
         self.log.info("stopping modem....")
         del self.modem
         self.modem = False
-        self.states.set("is_modem_running", False)
+        self.state_manager.set("is_modem_running", False)
         self.event_manager.modem_stopped()
 
     def test_audio(self):
@@ -111,16 +120,30 @@ class SM:
             return [False, False]
 
     def start_beacon(self):
-        self.beacon = beacon.Beacon(self.config, self.states, self.event_manager, self.log, self.modem)
+        self.beacon = beacon.Beacon(self.config, self.state_manager, self.event_manager, self.log, self.modem)
         self.beacon.start()
 
     def stop_beacon(self):
-        del self.beacon
+        self.beacon.stop()
 
     def start_explorer_publishing(self):
         try:
             # optionally start explorer module
             if self.config['STATION']['enable_explorer']:
-                explorer.explorer(self.app, self.config, self.states)
+                self.explorer = explorer.explorer(self.app, self.config, self.state_manager)
         except Exception as e:
-            self.log.warning("[EXPLORER] Publishin not started because of error", e=e)
+            self.log.warning("[EXPLORER] Publishing not started because of error", e=e)
+
+    def stop_explorer_publishing(self):
+        if self.config['STATION']['enable_explorer']:
+            try:
+                del self.explorer
+            except Exception as e:
+                self.log.info("[EXPLORER] Error while stopping...", e=e)
+
+    def start_radio_manager(self):
+        self.app.radio_manager = radio_manager.RadioManager(self.config, self.state_manager, self.event_manager)
+
+    def stop_radio_manager(self):
+        self.app.radio_manager.stop()
+        del self.app.radio_manager

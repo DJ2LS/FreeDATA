@@ -11,7 +11,6 @@ import state_manager
 import ujson as json
 import websocket_manager as wsm
 import api_validations as validations
-import command_ping
 import command_cq
 import command_ping
 import command_feq
@@ -23,10 +22,7 @@ app = Flask(__name__)
 CORS(app)
 CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
-app.config['SOCK_SERVER_OPTIONS'] = {'ping_interval': 10}
-
-# define global MODEM_VERSION
-app.MODEM_VERSION = "0.12.0-alpha"
+MODEM_VERSION = "0.12.0-alpha"
 
 # set config file to use
 def set_config():
@@ -41,25 +37,10 @@ def set_config():
         print(f"Config file '{config_file}' not found. Exiting.")
         exit(1)
 
-    app.config_manager = CONFIG(config_file)
+    return config_file
 
-set_config()
 
-# start modem
-app.state_queue = queue.Queue() # queue which holds latest states
-app.modem_events = queue.Queue() # queue which holds latest events
-app.modem_fft = queue.Queue() # queue which holds latest fft data
-app.modem_service = queue.Queue() # start / stop modem service
-app.event_manager = event_manager.EventManager([app.modem_events]) # TODO remove the app.modem_event custom queue
 
-# init state manager
-app.state_manager = state_manager.StateManager(app.state_queue)
-
-# start service manager
-app.service_manager = service_manager.SM(app)
-
-# start modem service
-app.modem_service.put("start")
 
 # returns a standard API response
 def api_response(data, status = 200):
@@ -95,7 +76,7 @@ def index():
     return api_response({'name': 'FreeDATA API',
                     'description': '',
                     'api_version': 1,
-                    'modem_version': app.MODEM_VERSION,
+                    'modem_version': MODEM_VERSION,
                     'license': 'GPL3.0',
                     'documentation': 'https://wiki.freedata.app',
                     })
@@ -221,6 +202,8 @@ def post_modem_send_raw():
         return api_response({"info": "endpoint for SENDING RAW DATA via POST"})
     if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
+    if app.state_manager.check_if_running_arq_session():
+        api_abort('Modem busy', 503)
     if enqueue_tx_command(command_arq_raw.ARQRawCommand, request.json):
         return api_response(request.json)
     else:
@@ -240,15 +223,21 @@ def post_modem_send_raw_stop():
 
     return api_response(request.json)
 
+@app.route('/radio', methods=['GET', 'POST'])
+def get_post_radio():
+    if request.method in ['POST']:
+        app.radio_manager.set_frequency(request.json['radio_frequency'])
+        app.radio_manager.set_mode(request.json['radio_mode'])
+        app.radio_manager.set_rf_level(int(request.json['radio_rf_level']))
+
+        return api_response(request.json)
+    elif request.method == 'GET':
+        return api_response(app.state_manager.get_radio_status())
 
 # @app.route('/modem/arq_connect', methods=['POST'])
 # @app.route('/modem/arq_disconnect', methods=['POST'])
 # @app.route('/modem/send_raw', methods=['POST'])
-# @app.route('/modem/stop_transmission', methods=['POST'])
-# @app.route('/modem/listen', methods=['POST']) # not needed if we are restarting modem on changing settings
 # @app.route('/modem/record_audio', methods=['POST'])
-# @app.route('/modem/responde_to_call', methods=['POST']) # not needed if we are restarting modem on changing settings
-# @app.route('/modem/responde_to_cq', methods=['POST']) # not needed if we are restarting modem on changing settings
 # @app.route('/modem/audio_levels', methods=['POST']) # tx and rx # not needed if we are restarting modem on changing settings
 # @app.route('/modem/mesh_ping', methods=['POST'])
 # @app.route('/mesh/routing_table', methods=['GET'])
@@ -272,4 +261,28 @@ def sock_fft(sock):
 def sock_states(sock):
     wsm.handle_connection(sock, wsm.states_client_list, app.state_queue)
 
-wsm.startThreads(app)
+
+
+if __name__ == "__main__":
+    app.config['SOCK_SERVER_OPTIONS'] = {'ping_interval': 10}
+    # define global MODEM_VERSION
+    app.MODEM_VERSION = MODEM_VERSION
+
+    config_file = set_config()
+    app.config_manager = CONFIG(config_file)
+
+    # start modem
+    app.state_queue = queue.Queue()  # queue which holds latest states
+    app.modem_events = queue.Queue()  # queue which holds latest events
+    app.modem_fft = queue.Queue()  # queue which holds latest fft data
+    app.modem_service = queue.Queue()  # start / stop modem service
+    app.event_manager = event_manager.EventManager([app.modem_events])  # TODO remove the app.modem_event custom queue
+    # init state manager
+    app.state_manager = state_manager.StateManager(app.state_queue)
+    # start service manager
+    app.service_manager = service_manager.SM(app)
+    # start modem service
+    app.modem_service.put("start")
+
+    wsm.startThreads(app)
+    app.run()

@@ -4,6 +4,7 @@ import data_frame_factory
 import structlog
 from event_manager import EventManager
 from modem_frametypes import FRAME_TYPE
+import time
 
 class ARQSession():
 
@@ -44,6 +45,9 @@ class ARQSession():
         self.event_frame_received = threading.Event()
 
         self.id = None
+        self.session_started = time.time()
+        self.session_ended = 0
+        self.session_max_age = 500
 
     def log(self, message, isWarning = False):
         msg = f"[{type(self).__name__}][id={self.id}][state={self.state}]: {message}"
@@ -89,3 +93,29 @@ class ARQSession():
         
         self.log(f"Ignoring unknow transition from state {self.state.name} with frame {frame['frame_type']}")
 
+    def is_session_outdated(self):
+        session_alivetime = time.time() - self.session_max_age
+        if self.session_ended < session_alivetime and self.state.name in ['FAILED', 'ENDED', 'ABORTED']:
+            return True
+        return False
+
+    def calculate_session_duration(self):
+        return self.session_ended - self.session_started
+
+    def calculate_session_statistics(self):
+        duration = self.calculate_session_duration()
+        total_bytes = self.total_length
+        # self.total_length
+        duration_in_minutes = duration / 60  # Convert duration from seconds to minutes
+
+        # Calculate bytes per minute
+        if duration_in_minutes > 0:
+            bytes_per_minute = int(total_bytes / duration_in_minutes)
+        else:
+            bytes_per_minute = 0
+
+        return {
+                'total_bytes': total_bytes,
+                'duration': duration,
+                'bytes_per_minute': bytes_per_minute
+            }
