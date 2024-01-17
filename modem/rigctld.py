@@ -190,7 +190,6 @@ class radio:
             try:
                 mode, bandwidth = response.split('\n', 1)  # Split the response into mode and bandwidth
             except ValueError:
-                print(response)
                 mode = 'err'
                 bandwidth = 'err'
 
