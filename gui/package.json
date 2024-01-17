@@ -58,7 +58,7 @@
     "pouchdb-find": "8.0.1",
     "pouchdb-upsert": "2.2.0",
     "qth-locator": "2.1.0",
-    "sass": "1.66.1",
+    "sass": "1.69.7",
     "socket.io": "4.7.2",
     "uuid": "9.0.1",
     "vue": "3.3.12",
