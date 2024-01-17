@@ -118,7 +118,6 @@ class StateManager:
         self.arq_irs_sessions[session.id] = session
         return True
 
-
     def check_if_running_arq_session(self, irs=False):
         sessions = self.arq_irs_sessions if irs else self.arq_iss_sessions
 
@@ -130,11 +129,12 @@ class StateManager:
                     self.remove_arq_irs_session(session_id)
                 else:
                     self.remove_arq_iss_session(session_id)
-
-            # check if ongoing sessions available
-            if sessions[session_id].state.name not in ['ENDED', 'ABORTED', 'FAILED']:
+            
+            # check again if session id exists in session because of cleanup
+            if session_id in sessions and sessions[session_id].state.name not in ['ENDED', 'ABORTED', 'FAILED']:
                 print(f"[State Manager] running session...[{session_id}]")
                 return True
+            return False
         return False
 
     def get_arq_iss_session(self, id):
