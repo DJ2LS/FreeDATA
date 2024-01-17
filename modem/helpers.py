@@ -7,12 +7,9 @@ Created on Fri Dec 25 21:25:14 2020
 import time
 from datetime import datetime,timezone
 import crcengine
-import static
-from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem, MeshParam
 import structlog
 import numpy as np
 import threading
-import mesh
 import hashlib
 import hmac
 import os
@@ -39,7 +36,7 @@ def wait(seconds: float) -> bool:
     return True
 
 
-def get_crc_8(data) -> bytes:
+def get_crc_8(data: str) -> bytes:
     """Author: DJ2LS
 
     Get the CRC8 of a byte string
@@ -52,13 +49,16 @@ def get_crc_8(data) -> bytes:
     Returns:
         CRC-8 (CCITT) of the provided data as bytes
     """
+    if not isinstance(data, (bytes)) or isinstance(data, (bytearray)):
+        data = bytes(data,"utf-8")
+
     crc_algorithm = crcengine.new("crc8-ccitt")  # load crc8 library
     crc_data = crc_algorithm(data)
     crc_data = crc_data.to_bytes(1, byteorder="big")
     return crc_data
 
 
-def get_crc_16(data) -> bytes:
+def get_crc_16(data: str) -> bytes:
     """Author: DJ2LS
 
     Get the CRC16 of a byte string
@@ -71,13 +71,13 @@ def get_crc_16(data) -> bytes:
     Returns:
         CRC-16 (CCITT) of the provided data as bytes
     """
+    if not isinstance(data, (bytes)) or isinstance(data, (bytearray)):
+        data = bytes(data,"utf-8")
+    
     crc_algorithm = crcengine.new("crc16-ccitt-false")  # load crc16 library
-    crc_data = crc_algorithm(data)
-    crc_data = crc_data.to_bytes(2, byteorder="big")
-    return crc_data
+    return crc_algorithm(data).to_bytes(2, byteorder="big")
 
-
-def get_crc_24(data) -> bytes:
+def get_crc_24(data: str) -> bytes:
     """Author: DJ2LS
 
     Get the CRC24-OPENPGP of a byte string
@@ -91,21 +91,15 @@ def get_crc_24(data) -> bytes:
     Returns:
         CRC-24 (OpenPGP) of the provided data as bytes
     """
-    crc_algorithm = crcengine.create(
-        0x864CFB,
-        24,
-        0xB704CE,
-        ref_in=False,
-        ref_out=False,
-        xor_out=0,
-        name="crc-24-openpgp",
-    )
-    crc_data = crc_algorithm(data)
-    crc_data = crc_data.to_bytes(3, byteorder="big")
-    return crc_data
+    if not isinstance(data, (bytes)) or isinstance(data, (bytearray)):
+        data = bytes(data,'utf-8')
+
+    params = crcengine.CrcParams(0x864cfb, 24, 0xb704ce, reflect_in=False, reflect_out=False, xor_out=0)
+    crc_algorithm = crcengine.create(params=params)
+    return crc_algorithm(data).to_bytes(3,byteorder="big")
 
 
-def get_crc_32(data: bytes) -> bytes:
+def get_crc_32(data: str) -> bytes:
     """Author: DJ2LS
 
     Get the CRC32 of a byte string
@@ -118,13 +112,13 @@ def get_crc_32(data: bytes) -> bytes:
     Returns:
         CRC-32 of the provided data as bytes
     """
+    if not isinstance(data, (bytes)) or isinstance(data, (bytearray)):
+        data = bytes(data, "utf-8")
     crc_algorithm = crcengine.new("crc32")  # load crc32 library
-    crc_data = crc_algorithm(data)
-    crc_data = crc_data.to_bytes(4, byteorder="big")
-    return crc_data
+    return crc_algorithm(data).to_bytes(4, byteorder="big")
 
 
-def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
+def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency, heard_stations_list):
     """
 
     Args:
@@ -139,16 +133,16 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
         Nothing
     """
     # check if buffer empty
-    if len(Modem.heard_stations) == 0:
-        Modem.heard_stations.append(
+    if len(heard_stations_list) == 0:
+        heard_stations_list.append(
             [dxcallsign, dxgrid, int(datetime.now(timezone.utc).timestamp()), datatype, snr, offset, frequency]
         )
     # if not, we search and update
     else:
-        for i in range(len(Modem.heard_stations)):
+        for i in range(len(heard_stations_list)):
             # Update callsign with new timestamp
-            if Modem.heard_stations[i].count(dxcallsign) > 0:
-                Modem.heard_stations[i] = [
+            if heard_stations_list[i].count(dxcallsign) > 0:
+                heard_stations_list[i] = [
                     dxcallsign,
                     dxgrid,
                     int(time.time()),
@@ -159,8 +153,8 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
                 ]
                 break
             # Insert if nothing found
-            if i == len(Modem.heard_stations) - 1:
-                Modem.heard_stations.append(
+            if i == len(heard_stations_list) - 1:
+                heard_stations_list.append(
                     [
                         dxcallsign,
                         dxgrid,
@@ -174,13 +168,13 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
                 break
 
 
-#    for idx, item in enumerate(Modem.heard_stations):
+#    for idx, item in enumerate(heard_stations_list):
 #        if dxcallsign in item:
 #            item = [dxcallsign, int(time.time())]
-#            Modem.heard_stations[idx] = item
+#            heard_stations_list[idx] = item
 
 
-def callsign_to_bytes(callsign) -> bytes:
+def callsign_to_bytes(callsign: str) -> bytes:
     """
 
     Args:
@@ -209,13 +203,13 @@ def callsign_to_bytes(callsign) -> bytes:
 
     # Try converting to bytestring if possible type string
     try:
-        callsign = bytes(callsign, "utf-8")
+        callsign = callsign.encode("utf-8")
     except TypeError:
         # This is expected depending on the type of the `callsign` argument.
         # log.debug("[HLP] callsign_to_bytes: Error converting callsign to bytes:", e=err)
         pass
     except Exception as err:
-        log.debug("[HLP] callsign_to_bytes: Error callsign SSID to integer:", e=err)
+        log.debug("[HLP] callsign_to_bytes: Error converting callsign to bytes:", e=err, data=callsign)
 
     # Need this step to reduce the needed payload by the callsign
     # (stripping "-" out of the callsign)
@@ -228,7 +222,7 @@ def callsign_to_bytes(callsign) -> bytes:
         # log.debug("[HLP] callsign_to_bytes: Error callsign SSID to integer:", e=err)
         pass
     except Exception as err:
-        log.debug("[HLP] callsign_to_bytes: Error callsign SSID to integer:", e=err)
+        log.debug("[HLP] callsign_to_bytes: Error splitting callsign/ssid:", e=err)
 
     # callsign = callsign[0]
     # bytestring = bytearray(8)
@@ -289,7 +283,7 @@ def bytes_to_callsign(bytestring: bytes) -> bytes:
     return bytes(f"{callsign}-{ssid}", "utf-8")
 
 
-def check_callsign(callsign: bytes, crc_to_check: bytes):
+def check_callsign(callsign: str, crc_to_check: bytes, ssid_list):
     """
     Function to check a crc against a callsign to calculate the
     ssid by generating crc until we find the correct SSID
@@ -302,29 +296,36 @@ def check_callsign(callsign: bytes, crc_to_check: bytes):
         [True, Callsign + SSID]
         False
     """
+    print(callsign)
+    if not isinstance(callsign, (bytes)):
+        callsign = bytes(callsign,'utf-8')
 
-    log.debug("[HLP] check_callsign: Checking:", callsign=callsign)
     try:
         # We want the callsign without SSID
-        callsign = callsign.split(b"-")[0]
+        splitted_callsign = callsign.split(b"-")
+        callsign = splitted_callsign[0]
+        ssid = splitted_callsign[1].decode()
 
     except IndexError:
         # This is expected when `callsign` doesn't have a dash.
-        pass
+        ssid = 0
     except Exception as err:
-        log.debug("[HLP] check_callsign: Error callsign SSID to integer:", e=err)
+        log.debug("[HLP] check_callsign: Error converting to bytes:", e=err)
 
-    for ssid in Station.ssid_list:
-        call_with_ssid = bytearray(callsign)
-        call_with_ssid.extend("-".encode("utf-8"))
-        call_with_ssid.extend(str(ssid).encode("utf-8"))
+    # ensure, we are always have the own ssid in ssid_list even if it is empty
+    if ssid not in ssid_list:
+        ssid_list.append(str(ssid))
 
+    for ssid in ssid_list:
+        call_with_ssid = callsign + b'-' + (str(ssid)).encode('utf-8')
         callsign_crc = get_crc_24(call_with_ssid)
+        callsign_crc = callsign_crc.hex()
 
         if callsign_crc == crc_to_check:
-            log.debug("[HLP] check_callsign matched:", call_with_ssid=call_with_ssid)
-            return [True, bytes(call_with_ssid)]
+            log.debug("[HLP] check_callsign matched:", call_with_ssid=call_with_ssid, checksum=crc_to_check)
+            return [True, call_with_ssid.decode()]
 
+    log.debug("[HLP] check_callsign: Checking:", callsign=callsign, crc_to_check=crc_to_check, own_crc=callsign_crc)
     return [False, b'']
 
 
@@ -665,3 +666,44 @@ def check_if_file_exists(path):
             "[Modem] [FILE] Lookup failed", e=e, path=path,
         )
         return False
+
+
+def set_bit(byte, position, value):
+    """Set the bit at 'position' to 'value' in the given byte."""
+    if not 0 <= position <= 7:
+        raise ValueError("Position must be between 0 and 7")
+
+    if value:
+        return byte | (1 << position)
+    else:
+        return byte & ~(1 << position)
+
+def get_bit(byte, position):
+    """Get the boolean value of the bit at 'position' in the given byte."""
+    if not 0 <= position <= 7:
+        raise ValueError("Position must be between 0 and 7")
+
+    return (byte & (1 << position)) != 0
+
+def set_flag(byte, flag_name, value, flag_dict):
+    """Set the flag in the byte according to the flag dictionary.
+
+    # Define a dictionary mapping flag names to their bit positions
+        flag_dict = {
+            'FLAG1': 0,  # Bit position for FLAG1
+            'FLAG2': 1,  # Bit position for FLAG2, etc.
+            'FLAG3': 2
+        }
+
+    """
+    if flag_name not in flag_dict:
+        raise ValueError(f"Unknown flag name: {flag_name}")
+    position = flag_dict[flag_name]
+    return set_bit(byte, position, value)
+
+def get_flag(byte, flag_name, flag_dict):
+    """Get the value of the flag from the byte according to the flag dictionary."""
+    if flag_name not in flag_dict:
+        raise ValueError(f"Unknown flag name: {flag_name}")
+    position = flag_dict[flag_name]
+    return get_bit(byte, position)

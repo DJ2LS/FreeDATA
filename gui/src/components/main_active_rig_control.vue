@@ -6,23 +6,15 @@ setActivePinia(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { set_frequency, set_mode, set_rf_level } from "../js/sock.js";
+import { setRadioParameters } from "../js/api";
 
 function updateFrequencyAndApply(frequency) {
   state.new_frequency = frequency;
-  set_frequency(state.new_frequency);
+  set_radio_parameters();
 }
 
-function set_hamlib_frequency_manually() {
-  set_frequency(state.new_frequency);
-}
-
-function set_hamlib_mode() {
-  set_mode(state.mode);
-}
-
-function set_hamlib_rf_level() {
-  set_rf_level(state.rf_level);
+function set_radio_parameters() {
+  setRadioParameters(state.new_frequency, state.mode, state.rf_level);
 }
 </script>
 
@@ -79,9 +71,7 @@ function set_hamlib_rf_level() {
                 id="dropdownMenuButton"
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
-              >
-                Select Frequency
-              </button>
+              ></button>
 
               <!-- Dropdown Menu -->
               <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -104,7 +94,7 @@ function set_hamlib_rf_level() {
                     <button
                       class="btn btn-sm btn-outline-success"
                       type="button"
-                      @click="set_hamlib_frequency_manually"
+                      @click="updateFrequencyAndApply(state.new_frequency)"
                       v-bind:class="{
                         disabled: state.hamlib_status === 'disconnected',
                       }"
@@ -217,7 +207,7 @@ function set_hamlib_rf_level() {
               <select
                 class="form-control"
                 v-model="state.mode"
-                @click="set_hamlib_mode()"
+                @click="set_radio_parameters()"
                 v-bind:class="{
                   disabled: state.hamlib_status === 'disconnected',
                 }"
@@ -239,7 +229,7 @@ function set_hamlib_rf_level() {
               <select
                 class="form-control"
                 v-model="state.rf_level"
-                @click="set_hamlib_rf_level()"
+                @click="set_radio_parameters()"
                 v-bind:class="{
                   disabled: state.hamlib_status === 'disconnected',
                 }"

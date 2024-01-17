@@ -4,18 +4,14 @@
 import structlog
 import threading
 import websocket
-import numpy as np
 import time
-from queues import AUDIO_TRANSMIT_QUEUE, AUDIO_RECEIVED_QUEUE
-from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, TCIParam, Modem
 
 class TCICtrl:
-    def __init__(self, hostname='127.0.0.1', port=50001):
+    def __init__(self, audio_rx_q, hostname='127.0.0.1', port=50001):
         # websocket.enableTrace(True)
         self.log = structlog.get_logger("TCI")
 
-        self.audio_received_queue = AUDIO_RECEIVED_QUEUE
-        self.audio_transmit_queue = AUDIO_TRANSMIT_QUEUE
+        self.audio_received_queue = audio_rx_q
 
         self.hostname = str(hostname)
         self.port = str(port)
@@ -309,7 +305,7 @@ class TCICtrl:
         Returns:
 
         """
-        return "connected"
+        return True
 
     def get_ptt(self):
         """ """
@@ -319,3 +315,17 @@ class TCICtrl:
     def close_rig(self):
         """ """
         return
+
+    def wait_until_transmitted(self, txbuffer_out):
+        duration = len(txbuffer_out) / 8000
+        timestamp_to_sleep = time.time() + duration
+        self.log.debug("[MDM] TCI calculated duration", duration=duration)
+        tci_timeout_reached = False
+        while not tci_timeout_reached:
+            if self.radiocontrol in ["tci"]:
+                if time.time() < timestamp_to_sleep:
+                    tci_timeout_reached = False
+                else:
+                    tci_timeout_reached = True
+            threading.Event().wait(0.01)
+            # if we're transmitting FreeDATA signals, reset channel busy state

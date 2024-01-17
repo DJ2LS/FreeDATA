@@ -1,15 +1,10 @@
 <script setup lang="ts">
 // @ts-nocheck
 
-
-import {saveSettingsToFile} from '../js/settingsHandler';
-
 import { setActivePinia } from 'pinia';
 import pinia from '../store/index';
 setActivePinia(pinia);
 
-import { useSettingsStore } from '../store/settingsStore.js';
-const settings = useSettingsStore(pinia);
 
 import { useStateStore } from '../store/stateStore.js';
 const state = useStateStore(pinia);
@@ -55,7 +50,7 @@ const chatModuleMessage=ref(null);
 function transmitNewMessage(){
 
     chat.inputText = chat.inputText.trim();
-    if (chat.inputText.length==0)
+    if (chat.inputText.length==0 && chat.inputFileName == "-")
       return;
     if (chat.selectedCallsign.startsWith("BC-")) {
 

@@ -20,6 +20,7 @@ process.env.DIST = join(process.env.DIST_ELECTRON, "../dist");
 process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL
   ? join(process.env.DIST_ELECTRON, "../public")
   : process.env.DIST;
+process.env.FDUpdateAvail = "0";
 
 // Disable GPU Acceleration for Windows 7
 if (release().startsWith("6.1")) app.disableHardwareAcceleration();
@@ -55,8 +56,7 @@ async function createWindow() {
     autoHideMenuBar: true,
     webPreferences: {
       preload,
-      backgroundThrottle: false,
-
+      backgroundThrottling: false,
       // Warning: Enable nodeIntegration and disable contextIsolation is not secure in production
       // Consider using contextBridge.exposeInMainWorld
       // Read more on https://www.electronjs.org/docs/latest/tutorial/context-isolation
@@ -100,20 +100,20 @@ async function createWindow() {
 app.whenReady().then(() => {
   createWindow();
 
-console.log(platform())
+  console.log(platform());
   //Generate daemon binary path
   var daemonPath = "";
   switch (platform().toLowerCase()) {
     case "darwin":
-       daemonPath = join(process.resourcesPath, "modem", "freedata-daemon");
+      daemonPath = join(process.resourcesPath, "modem", "freedata-server");
     case "linux":
-       daemonPath = join(process.resourcesPath, "modem", "freedata-daemon");
+      daemonPath = join(process.resourcesPath, "modem", "freedata-server");
       break;
     case "win32":
-       daemonPath = join(process.resourcesPath, "modem", "freedata-daemon.exe");
-       break;
+      daemonPath = join(process.resourcesPath, "modem", "freedata-server.exe");
+      break;
     case "win64":
-       daemonPath = join(process.resourcesPath, "modem", "freedata-daemon.exe");
+      daemonPath = join(process.resourcesPath, "modem", "freedata-server.exe");
       break;
     default:
       console.log("Unhandled OS Platform: ", platform());
@@ -122,24 +122,22 @@ console.log(platform())
 
   //Start daemon binary if it exists
   if (existsSync(daemonPath)) {
-    console.log("Starting freedata-daemon binary");
+    console.log("Starting freedata-server binary");
     console.log("daemonPath:", daemonPath);
     console.log("CWD:", join(daemonPath, ".."));
-/*
-    var daemonProcess = spawn("freedata-daemon", [], {
+    /*
+    var daemonProcess = spawn("freedata-server", [], {
       cwd: join(process.env.DIST, "modem"),
       shell: true
     });
 */
-/*
+    /*
 daemonProcess = spawn(daemonPath, [], {
       shell: true
     });
     console.log(daemonProcess)
 */
-    daemonProcess = spawn(daemonPath, [], {
-    });
-
+    daemonProcess = spawn(daemonPath, [], {});
 
     // return process messages
     daemonProcess.on("error", (err) => {
@@ -154,7 +152,7 @@ daemonProcess = spawn(daemonPath, [], {
     });
     daemonProcess.stderr.on("data", (data) => {
       // daemonProcessLog.info(`${data}`);
-      console.log(data)
+      console.log(data);
     });
     daemonProcess.on("close", (code) => {
       // daemonProcessLog.warn(`daemonProcess exited with code ${code}`);
@@ -170,7 +168,7 @@ daemonProcess = spawn(daemonPath, [], {
 
 app.on("window-all-closed", () => {
   win = null;
-  if (process.platform !== "darwin") app.quit(close_sub_processes());
+  if (process.platform !== "darwin") app.quit();
 });
 
 app.on("second-instance", () => {
@@ -215,6 +213,7 @@ ipcMain.on("request-restart-and-install-update", (event, data) => {
 
 // LISTENER FOR UPDATER EVENTS
 autoUpdater.on("update-available", (info) => {
+  process.env.FDUpdateAvail = "1";
   console.log("update available");
 
   let arg = {
@@ -234,6 +233,7 @@ autoUpdater.on("update-not-available", (info) => {
 });
 
 autoUpdater.on("update-downloaded", (info) => {
+  process.env.FDUpdateAvail = "1";
   console.log("update downloaded");
   let arg = {
     status: "update-downloaded",
@@ -288,19 +288,19 @@ function close_sub_processes() {
 
   console.log("closing modem and daemon");
   try {
-    if (platform() == "win32" || platform() == "win64") {
+    if (platform() == "win32") {
       spawn("Taskkill", ["/IM", "freedata-modem.exe", "/F"]);
-      spawn("Taskkill", ["/IM", "freedata-daemon.exe", "/F"]);
+      spawn("Taskkill", ["/IM", "freedata-server.exe", "/F"]);
     }
 
     if (platform() == "linux") {
       spawn("pkill", ["-9", "freedata-modem"]);
-      spawn("pkill", ["-9", "freedata-daemon"]);
+      spawn("pkill", ["-9", "freedata-server"]);
     }
 
     if (platform() == "darwin") {
       spawn("pkill", ["-9", "freedata-modem"]);
-      spawn("pkill", ["-9", "freedata-daemon"]);
+      spawn("pkill", ["-9", "freedata-server"]);
     }
   } catch (e) {
     console.log(e);

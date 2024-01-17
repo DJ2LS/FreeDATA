@@ -24,16 +24,12 @@ class FREEDV_MODE(Enum):
     """
     Enumeration for codec2 modes and names
     """
-    sig0 = 19
-    sig1 = 19
+    signalling = 19
     datac0 = 14
     datac1 = 10
     datac3 = 12
     datac4 = 18
     datac13 = 19
-    fsk_ldpc = 9
-    fsk_ldpc_0 = 200
-    fsk_ldpc_1 = 201
 
 
 class FREEDV_MODE_USED_SLOTS(Enum):
@@ -105,13 +101,14 @@ for file in files:
         #log.info("[C2 ] Libcodec2 loaded", path=file)
         break
     except OSError as err:
-        log.warning("[C2 ] Error:  Libcodec2 found but not loaded", path=file, e=err)
+        pass
+        #log.info("[C2 ] Error:  Libcodec2 found but not loaded", path=file, e=err)
 
 # Quit module if codec2 cant be loaded
 if api is None or "api" not in locals():
     log.critical("[C2 ] Error:  Libcodec2 not loaded - Exiting")
     sys.exit(1)
-
+log.info("[C2 ] Libcodec2 loaded...")
 # ctypes function init
 
 # api.freedv_set_tuning_range.restype = ctypes.c_int
@@ -425,3 +422,46 @@ class resampler:
         self.filter_mem8 = in8_mem[: self.MEM8]
 
         return out48
+
+def open_instance(mode: int) -> ctypes.c_void_p:
+    """
+    Return a codec2 instance of the type `mode`
+
+    :param mode: Type of codec2 instance to return
+    :type mode: Union[int, str]
+    :return: C-function of the requested codec2 instance
+    :rtype: ctypes.c_void_p
+    """
+    #    if mode in [FREEDV_MODE.fsk_ldpc_0.value]:
+    #        return ctypes.cast(
+    #            api.freedv_open_advanced(
+    #                FREEDV_MODE.fsk_ldpc.value,
+    #                ctypes.byref(api.FREEDV_MODE_FSK_LDPC_0_ADV),
+    #            ),
+    #            ctypes.c_void_p,
+    #        )
+    #
+    #    if mode in [FREEDV_MODE.fsk_ldpc_1.value]:
+    #        return ctypes.cast(
+    #            api.freedv_open_advanced(
+    #                FREEDV_MODE.fsk_ldpc.value,
+    #                ctypes.byref(api.FREEDV_MODE_FSK_LDPC_1_ADV),
+    #            ),
+    #            ctypes.c_void_p,
+    #        )
+    #
+    return ctypes.cast(api.freedv_open(mode), ctypes.c_void_p)
+
+def get_bytes_per_frame(mode: int) -> int:
+    """
+    Provide bytes per frame information for accessing from data handler
+
+    :param mode: Codec2 mode to query
+    :type mode: int or str
+    :return: Bytes per frame of the supplied codec2 data mode
+    :rtype: int
+    """
+    freedv = open_instance(mode)
+    # TODO add close session
+    # get number of bytes per frame for mode
+    return int(api.freedv_get_bits_per_modem_frame(freedv) / 8)

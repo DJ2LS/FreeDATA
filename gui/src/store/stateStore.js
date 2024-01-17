@@ -5,42 +5,46 @@ import * as bootstrap from "bootstrap";
 export const useStateStore = defineStore("stateStore", () => {
   var busy_state = ref("-");
   var arq_state = ref("-");
-  var frequency = ref("-");
-  var new_frequency = ref(0);
+  var frequency = ref(0);
+  var new_frequency = ref(14093000);
   var mode = ref("-");
   var rf_level = ref("10");
   var bandwidth = ref("-");
   var dbfs_level_percent = ref(0);
   var dbfs_level = ref(0);
+  var radio_status = ref(false);
 
-  var ptt_state = ref("False");
+  var ptt_state = ref(false);
 
   var speed_level = ref(0);
   var fft = ref();
-  var channel_busy = ref("");
-  var channel_busy_slot = ref();
-  var scatter = ref();
+  var channel_busy = ref(false);
+  var channel_busy_slot = ref([false, false, false, false, false]);
+  var scatter = ref([]);
   var s_meter_strength_percent = ref(0);
   var s_meter_strength_raw = ref(0);
 
   var modem_connection = ref("disconnected");
   var modemStartCount = ref(0);
-  var modem_running_state = ref("--------");
+  var is_modem_running = ref();
 
   var arq_total_bytes = ref(0);
   var arq_transmission_percent = ref(0);
 
-  var heard_stations = ref("");
+  var activities = ref([]);
+  var heard_stations = ref([]);
   var dxcallsign = ref("");
 
   var arq_session_state = ref("");
   var arq_state = ref("");
-  var beacon_state = ref("False");
+  var beacon_state = ref(false);
 
-  var audio_recording = ref("");
+  var audio_recording = ref(false);
 
   var hamlib_status = ref("");
   var tx_audio_level = ref("");
+  var rx_audio_level = ref("");
+
   var alc = ref("");
 
   var is_codec2_traffic = ref("");
@@ -61,78 +65,12 @@ export const useStateStore = defineStore("stateStore", () => {
 
   var rx_buffer_length = ref();
 
-  function getChannelBusySlotState(slot) {
-    const slot_state = channel_busy_slot.value;
-
-    if (typeof slot_state !== "undefined") {
-      // Replace 'False' with 'false' to match JavaScript's boolean representation
-      const string = slot_state
-        .replace(/False/g, "false")
-        .replace(/True/g, "true");
-
-      // Parse the string to get an array
-      const arr = JSON.parse(string);
-
-      return arr[slot];
-    } else {
-      // Handle the undefined case
-      return false;
-    }
-  }
-
   function updateTncState(state) {
     modem_connection.value = state;
 
     if (modem_connection.value == "open") {
-      // collapse settings screen
-      var collapseFirstRow = new bootstrap.Collapse(
-        document.getElementById("collapseFirstRow"),
-        { toggle: false },
-      );
-      collapseFirstRow.hide();
-      var collapseSecondRow = new bootstrap.Collapse(
-        document.getElementById("collapseSecondRow"),
-        { toggle: false },
-      );
-      collapseSecondRow.hide();
-      var collapseThirdRow = new bootstrap.Collapse(
-        document.getElementById("collapseThirdRow"),
-        { toggle: false },
-      );
-      collapseThirdRow.show();
-      var collapseFourthRow = new bootstrap.Collapse(
-        document.getElementById("collapseFourthRow"),
-        { toggle: false },
-      );
-      collapseFourthRow.show();
-
-      //Set tuning for fancy graphics mode (high/low CPU)
-      //set_CPU_mode();
-
       //GUI will auto connect to TNC if already running, if that is the case increment start count if 0
       if (modemStartCount.value == 0) modemStartCount.value++;
-    } else {
-      // collapse settings screen
-      var collapseFirstRow = new bootstrap.Collapse(
-        document.getElementById("collapseFirstRow"),
-        { toggle: false },
-      );
-      collapseFirstRow.show();
-      var collapseSecondRow = new bootstrap.Collapse(
-        document.getElementById("collapseSecondRow"),
-        { toggle: false },
-      );
-      collapseSecondRow.show();
-      var collapseThirdRow = new bootstrap.Collapse(
-        document.getElementById("collapseThirdRow"),
-        { toggle: false },
-      );
-      collapseThirdRow.hide();
-      var collapseFourthRow = new bootstrap.Collapse(
-        document.getElementById("collapseFourthRow"),
-        { toggle: false },
-      );
-      collapseFourthRow.hide();
     }
   }
 
@@ -150,7 +88,6 @@ export const useStateStore = defineStore("stateStore", () => {
     fft,
     channel_busy,
     channel_busy_slot,
-    getChannelBusySlotState,
     scatter,
     ptt_state,
     s_meter_strength_percent,
@@ -159,6 +96,7 @@ export const useStateStore = defineStore("stateStore", () => {
     audio_recording,
     hamlib_status,
     tx_audio_level,
+    rx_audio_level,
     alc,
     updateTncState,
     arq_transmission_percent,
@@ -168,10 +106,12 @@ export const useStateStore = defineStore("stateStore", () => {
     arq_seconds_until_finish,
     arq_seconds_until_timeout,
     arq_seconds_until_timeout_percent,
-    modem_running_state,
+    modem_connection,
+    is_modem_running,
     arq_session_state,
     is_codec2_traffic,
     rf_level,
+    activities,
     heard_stations,
     beacon_state,
     rigctld_started,
@@ -179,5 +119,6 @@ export const useStateStore = defineStore("stateStore", () => {
     python_version,
     modem_version,
     rx_buffer_length,
+    radio_status,
   };
 });

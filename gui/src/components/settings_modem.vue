@@ -1,53 +1,141 @@
 <script setup lang="ts">
-import { saveSettingsToFile } from "../js/settingsHandler";
-
-import { setActivePinia } from "pinia";
+import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 import pinia from "../store/index";
-setActivePinia(pinia);
 
-import { useSettingsStore } from "../store/settingsStore.js";
-const settings = useSettingsStore(pinia);
+import { useStateStore } from "../store/stateStore.js";
+const state = useStateStore(pinia);
 
-function saveSettings() {
-  saveSettingsToFile();
-}
+import { startModem, stopModem } from "../js/api.js";
+import { audioInputOptions, audioOutputOptions } from "../js/deviceFormHelper";
 </script>
 
 <template>
+  <div>
+    <button
+      type="button"
+      id="startModem"
+      class="btn btn-sm btn-outline-success"
+      data-bs-toggle="tooltip"
+      data-bs-trigger="hover"
+      data-bs-html="false"
+      title="Start the Modem. Please set your audio and radio settings first!"
+      @click="startModem"
+      v-bind:class="{ disabled: state.is_modem_running === true }"
+    >
+      <i class="bi bi-play-fill"></i>
+      <span class="ms-2">start modem</span>
+    </button>
+    <button
+      type="button"
+      id="stopModem"
+      class="btn btn-sm btn-outline-danger"
+      data-bs-toggle="tooltip"
+      data-bs-trigger="hover"
+      data-bs-html="false"
+      title="Stop the Modem."
+      @click="stopModem"
+      v-bind:class="{ disabled: state.is_modem_running === false }"
+    >
+      <i class="bi bi-stop-fill"></i>
+      <span class="ms-2">stop modem</span>
+    </button>
+  </div>
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">modem port</span>
+    <span class="input-group-text" style="width: 180px">Modem port</span>
     <input
-      type="text"
+      type="number"
       class="form-control"
       placeholder="modem port"
       id="modem_port"
       maxlength="5"
       max="65534"
       min="1025"
-      @change="saveSettings"
-      v-model="settings.modem_port"
+      v-model.number="settings.local.port"
     />
   </div>
 
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">modem host</span>
+    <span class="input-group-text" style="width: 180px">Modem host</span>
     <input
       type="text"
       class="form-control"
       placeholder="modem host"
       id="modem_port"
-      @change="saveSettings"
-      v-model="settings.modem_host"
+      v-model="settings.local.host"
     />
   </div>
 
+  <!-- Audio Input Device -->
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50">Audio Input device</label>
+    <select
+      class="form-select form-select-sm"
+      aria-label=".form-select-sm"
+      @change="onChange"
+      v-model="settings.remote.AUDIO.input_device"
+    >
+      <option v-for="option in audioInputOptions()" v-bind:value="option.id">
+        {{ option.name }} [{{ option.api }}]
+      </option>
+    </select>
+  </div>
+
+  <!-- Audio Output Device -->
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50">Audio Output device</label>
+    <select
+      class="form-select form-select-sm"
+      aria-label=".form-select-sm"
+      @change="onChange"
+      v-model="settings.remote.AUDIO.output_device"
+    >
+      <option v-for="option in audioOutputOptions()" v-bind:value="option.id">
+        {{ option.name }} [{{ option.api }}]
+      </option>
+    </select>
+  </div>
+  <!-- Audio rx level-->
+  <div class="input-group input-group-sm mb-1">
+    <span class="input-group-text w-25">RX Audio Level</span>
+    <span class="input-group-text w-25">{{
+      settings.remote.AUDIO.rx_audio_level
+    }}</span>
+    <span class="input-group-text w-50">
+      <input
+        type="range"
+        class="form-range"
+        min="-30"
+        max="20"
+        step="1"
+        id="audioLevelRX"
+        @change="onChange"
+        v-model.number="settings.remote.AUDIO.rx_audio_level"
+    /></span>
+  </div>
+  <div class="input-group input-group-sm mb-1">
+    <span class="input-group-text w-25">TX Audio Level</span>
+    <span class="input-group-text w-25">{{
+      settings.remote.AUDIO.tx_audio_level
+    }}</span>
+    <span class="input-group-text w-50">
+      <input
+        type="range"
+        class="form-range"
+        min="-30"
+        max="20"
+        step="1"
+        id="audioLevelTX"
+        @change="onChange"
+        v-model.number="settings.remote.AUDIO.tx_audio_level"
+    /></span>
+  </div>
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50">TX delay in ms</label>
     <select
       class="form-select form-select-sm"
       id="tx_delay"
-      @change="saveSettings"
-      v-model="settings.tx_delay"
+      @change="onChange"
+      v-model.number="settings.remote.MODEM.tx_delay"
     >
       <option value="0">0</option>
       <option value="50">50</option>
@@ -79,27 +167,27 @@ function saveSettings() {
     <select
       class="form-select form-select-sm"
       id="tuning_range_fmin"
-      @change="saveSettings"
-      v-model="settings.tuning_range_fmin"
+      @change="onChange"
+      v-model.number="settings.remote.MODEM.tuning_range_fmin"
     >
-      <option value="-50.0">-50.0</option>
-      <option value="-100.0">-100.0</option>
-      <option value="-150.0">-150.0</option>
-      <option value="-200.0">-200.0</option>
-      <option value="-250.0">-250.0</option>
+      <option value="-50">-50</option>
+      <option value="-100">-100</option>
+      <option value="-150">-150</option>
+      <option value="-200">-200</option>
+      <option value="-250">-250</option>
     </select>
     <label class="input-group-text">fmax</label>
     <select
       class="form-select form-select-sm"
       id="tuning_range_fmax"
-      @change="saveSettings"
-      v-model="settings.tuning_range_fmax"
+      @change="onChange"
+      v-model.number="settings.remote.MODEM.tuning_range_fmax"
     >
-      <option value="50.0">50.0</option>
-      <option value="100.0">100.0</option>
-      <option value="150.0">150.0</option>
-      <option value="200.0">200.0</option>
-      <option value="250.0">250.0</option>
+      <option value="50">50</option>
+      <option value="100">100</option>
+      <option value="150">150</option>
+      <option value="200">200</option>
+      <option value="250">250</option>
     </select>
   </div>
   <div class="input-group input-group-sm mb-1">
@@ -109,8 +197,8 @@ function saveSettings() {
       aria-label=".form-select-sm"
       id="beaconInterval"
       style="width: 6rem"
-      @change="saveSettings"
-      v-model="settings.beacon_interval"
+      @change="onChange"
+      v-model.number="settings.remote.MODEM.beacon_interval"
     >
       <option value="60">60 secs</option>
       <option value="90">90 secs</option>
@@ -122,40 +210,7 @@ function saveSettings() {
       <option value="3600">60 mins</option>
     </select>
   </div>
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Enable waterfall data</label>
-    <label class="input-group-text w-50">
-      <div class="form-check form-switch form-check-inline">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          id="fftSwitch"
-          @change="saveSettings"
-          v-model="settings.enable_fft"
-          true-value="True"
-          false-value="False"
-        />
-        <label class="form-check-label" for="fftSwitch">Waterfall</label>
-      </div>
-    </label>
-  </div>
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Enable scatter diagram data</label>
-    <label class="input-group-text w-50">
-      <div class="form-check form-switch form-check-inline">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          id="scatterSwitch"
-          @change="saveSettings"
-          v-model="settings.enable_scatter"
-          true-value="True"
-          false-value="False"
-        />
-        <label class="form-check-label" for="scatterSwitch">Scatter</label>
-      </div>
-    </label>
-  </div>
+
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50">Enable 250Hz bandwidth mode</label>
     <label class="input-group-text w-50">
@@ -164,10 +219,8 @@ function saveSettings() {
           class="form-check-input"
           type="checkbox"
           id="250HzModeSwitch"
-          v-model="settings.low_bandwidth_mode"
-          true-value="True"
-          false-value="False"
-          @change="saveSettings"
+          v-model="settings.remote.MODEM.enable_low_bandwidth_mode"
+          @change="onChange"
         />
         <label class="form-check-label" for="250HzModeSwitch">250Hz</label>
       </div>
@@ -181,10 +234,8 @@ function saveSettings() {
           class="form-check-input"
           type="checkbox"
           id="respondCQSwitch"
-          v-model="settings.respond_to_cq"
-          true-value="True"
-          false-value="False"
-          @change="saveSettings"
+          v-model="settings.remote.MODEM.respond_to_cq"
+          @change="onChange"
         />
         <label class="form-check-label" for="respondCQSwitch">QRV</label>
       </div>
@@ -196,8 +247,8 @@ function saveSettings() {
       <select
         class="form-select form-select-sm"
         id="rx_buffer_size"
-        @change="saveSettings"
-        v-model="settings.rx_buffer_size"
+        @change="onChange"
+        v-model.number="settings.remote.MODEM.rx_buffer_size"
       >
         <option value="1">1</option>
         <option value="2">2</option>

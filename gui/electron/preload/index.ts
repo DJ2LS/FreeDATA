@@ -113,17 +113,6 @@ window.onmessage = (ev) => {
 
 setTimeout(removeLoading, 4999);
 
-window.addEventListener("DOMContentLoaded", () => {
-  // we are using this area for implementing the electron runUpdater
-  // we need access to DOM for displaying updater results in GUI
-  // close app, update and restart
-  document
-    .getElementById("update_and_install")
-    .addEventListener("click", () => {
-      ipcRenderer.send("request-restart-and-install-update");
-    });
-});
-
 // IPC ACTION FOR AUTO UPDATER
 ipcRenderer.on("action-updater", (event, arg) => {
   if (arg.status == "download-progress") {

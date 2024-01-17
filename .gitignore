@@ -30,3 +30,6 @@ coverage.xml
 /gui/dist
 /gui/release
 /gui/dist-electron
+
+#Ignore GUI config
+/gui/config/config.json

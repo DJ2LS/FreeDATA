@@ -1,13 +1,16 @@
 import path from "node:path";
 import fs from "fs";
-
+import { setColormap } from "./waterfallHandler";
 // pinia store setup
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { useSettingsStore } from "../store/settingsStore.js";
-const settings = useSettingsStore(pinia);
+import { settingsStore as settings, onChange } from "../store/settingsStore.js";
+
+import { useStateStore } from "../store/stateStore";
+const stateStore = useStateStore(pinia);
+
 // ---------------------------------
 
 console.log(process.env);
@@ -47,68 +50,18 @@ if (!fs.existsSync(configFolder)) {
 }
 
 // create config file if not exists with defaults
-const configDefaultSettings =
-  '{\
-                  "modem_host": "127.0.0.1",\
-                  "modem_port": 3000,\
-                  "daemon_host": "127.0.0.1",\
-                  "daemon_port": 3001,\
-                  "rx_audio" : "",\
-                  "tx_audio" : "",\
-                  "tx_audio_level" : 100,\
-                  "mycall": "AA0AA-0",\
-                  "myssid": "0",\
-                  "mygrid": "JN40aa",\
-                  "radiocontrol" : "disabled",\
-                  "hamlib_deviceid": 6,\
-                  "hamlib_deviceport": "ignore",\
-                  "hamlib_stop_bits": "ignore",\
-                  "hamlib_data_bits": "ignore",\
-                  "hamlib_handshake": "ignore",\
-                  "hamlib_serialspeed": "ignore",\
-                  "hamlib_dtrstate": "ignore",\
-                  "hamlib_pttprotocol": "ignore",\
-                  "hamlib_ptt_port": "ignore",\
-                  "hamlib_dcd": "ignore",\
-                  "hamlbib_serialspeed_ptt": 9600,\
-                  "hamlib_rigctld_port" : 4532,\
-                  "hamlib_rigctld_ip" : "127.0.0.1",\
-                  "hamlib_rigctld_path" : "",\
-                  "hamlib_rigctld_server_port" : 4532,\
-                  "hamlib_rigctld_custom_args": "",\
-                  "tci_port" : 50001,\
-                  "tci_ip" : "127.0.0.1",\
-                  "spectrum": "waterfall",\
-                  "enable_scatter" : "False",\
-                  "enable_fft" : "False",\
-                  "enable_fsk" : "False",\
-                  "low_bandwidth_mode" : "False",\
-                  "theme" : "default",\
-                  "screen_height" : 430,\
-                  "screen_width" : 1050,\
-                  "update_channel" : "latest",\
-                  "beacon_interval" : 300,\
-                  "received_files_folder" : "None",\
-                  "tuning_range_fmin" : "-50.0",\
-                  "tuning_range_fmax" : "50.0",\
-                  "respond_to_cq" : "True",\
-                  "rx_buffer_size" : 16, \
-                  "enable_explorer" : "False", \
-                  "wftheme": 2, \
-                  "high_graphics" : "True",\
-                  "explorer_stats" : "False", \
-                  "auto_tune" : "False", \
-                  "enable_is_writing" : "True", \
-                  "shared_folder_path" : ".", \
-                  "enable_request_profile" : "True", \
-                  "enable_request_shared_folder" : "False", \
-                  "max_retry_attempts" : 5, \
-                  "enable_auto_retry" : "False", \
-                  "tx_delay" : 0, \
-                  "auto_start": 0, \
-                  "enable_sys_notification": 1, \
-                  "enable_mesh_features": "False" \
-                  }';
+const configDefaultSettings = `{
+    "modem_host": "127.0.0.1",
+    "modem_port": 5000,
+    "spectrum": "waterfall",
+    "theme": "default",
+    "screen_height": 430,
+    "screen_width": 1050,
+    "update_channel": "latest",
+    "wftheme": 2,
+    "enable_sys_notification": 1
+}`;
+var parsedConfig = JSON.parse(configDefaultSettings);
 
 if (!fs.existsSync(configPath)) {
   fs.writeFileSync(configPath, configDefaultSettings);
@@ -123,7 +76,6 @@ export function loadSettings() {
   // if parameter not exists, add it to running config to prevent errors
   console.log("CONFIG VALIDATION  -----------------------------  ");
 
-  var parsedConfig = JSON.parse(configDefaultSettings);
   for (var key in parsedConfig) {
     if (config.hasOwnProperty(key)) {
       console.log("FOUND SETTTING [" + key + "]: " + config[key]);
@@ -133,9 +85,12 @@ export function loadSettings() {
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     }
     try {
+      if (key == "wftheme") {
+        setColormap();
+      }
       if (key == "mycall") {
-        settings.mycall = config[key].split("-")[0];
-        settings.myssid = config[key].split("-")[1];
+        settings.remote.STATION.mycall = config[key].split("-")[0];
+        settings.remote.STATION.myssid = config[key].split("-")[1];
       } else {
         settings[key] = config[key];
       }
@@ -145,9 +100,46 @@ export function loadSettings() {
   }
 }
 
-export function saveSettingsToFile() {
-  console.log("save settings to file...");
-  let config = settings.getJSON();
-  console.log(config);
-  fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+//No longer used...
+//export function saveSettingsToFile() {
+//  console.log("save settings to file...");
+//  let config = settings.getJSON();
+//  console.log(config);
+//  fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+//}
+
+export function processModemConfig(data) {
+  // update our settings from get request
+  // TODO Can we make this more dynamic? Maybe using a settings object?
+  // For now its a hardcoded structure until we found a better way
+
+  console.log(data);
+  for (const category in data) {
+    if (data.hasOwnProperty(category)) {
+      for (const setting in data[category]) {
+        if (data[category].hasOwnProperty(setting)) {
+          // Create a variable name combining the category and setting name
+          const variableName = setting;
+          // Assign the value to the variable
+          if (variableName == "mycall") {
+            let mycall = data[category][setting];
+            if (mycall.includes("-")) {
+              const splittedCallsign = mycall.split("-");
+              settings.remote.STATION.mycall = splittedCallsign[0]; // The part before the hyphen
+              settings.remote.STATION.myssid = parseInt(
+                splittedCallsign[1],
+                10,
+              ); // The part after the hyphen, converted to a number
+            } else {
+              settings.remote.STATION.mycall = mycall; // Use the original mycall if no SSID is present
+              settings.remote.STATION.myssid = 0; // Default SSID if not provided
+            }
+          } else {
+            settings[variableName] = data[category][setting];
+          }
+          console.log(variableName + ": " + settings[variableName]);
+        }
+      }
+    }
+  }
 }

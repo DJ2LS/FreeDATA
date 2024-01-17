@@ -9,49 +9,51 @@ Created on 05.11.23
 
 import requests
 import threading
-import time
 import ujson as json
 import structlog
-import static
-from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
-
+import sched
+import time
 
 log = structlog.get_logger("explorer")
 
-
 class explorer():
-    def __init__(self):
+    def __init__(self, app, config, states):
+        self.config = config
+        self.app = app
+        self.states = states
         self.explorer_url = "https://api.freedata.app/explorer.php"
         self.publish_interval = 120
 
-        self.interval_thread = threading.Thread(target=self.interval, name="interval", daemon=True)
-        self.interval_thread.start()
+        self.scheduler = sched.scheduler(time.time, time.sleep)
+        self.schedule_thread = threading.Thread(target=self.run_scheduler)
+        self.schedule_thread.start()
 
-    def interval(self):
-        while True:
-            self.push()
-            threading.Event().wait(self.publish_interval)
+    def run_scheduler(self):
+        # Schedule the first execution of push
+        self.scheduler.enter(self.publish_interval, 1, self.push)
+        # Run the scheduler in a loop
+        self.scheduler.run()
 
     def push(self):
 
-        frequency = 0 if HamlibParam.hamlib_frequency is None else HamlibParam.hamlib_frequency
+        frequency = 0 if self.states.radio_frequency is None else self.states.radio_frequency
         band = "USB"
-        callsign = str(Station.mycallsign, "utf-8")
-        gridsquare = str(Station.mygrid, "utf-8")
-        version = str(Modem.version)
-        bandwidth = str(Modem.low_bandwidth_mode)
-        beacon = str(Beacon.beacon_state)
-        strength = str(HamlibParam.hamlib_strength)
+        callsign = str(self.config['STATION']['mycall']) + "-" + str(self.config["STATION"]['myssid'])
+        gridsquare = str(self.config['STATION']['mygrid'])
+        version = str(self.app.MODEM_VERSION)
+        bandwidth = str(self.config['MODEM']['enable_low_bandwidth_mode'])
+        beacon = str(self.states.is_beacon_running)
+        strength = str(self.states.s_meter_strength)
 
         log.info("[EXPLORER] publish", frequency=frequency, band=band, callsign=callsign, gridsquare=gridsquare, version=version, bandwidth=bandwidth)
 
         headers = {"Content-Type": "application/json"}
         station_data = {'callsign': callsign, 'gridsquare': gridsquare, 'frequency': frequency, 'strength': strength, 'band': band, 'version': version, 'bandwidth': bandwidth, 'beacon': beacon, "lastheard": []}
 
-        for i in Modem.heard_stations:
+        for i in self.states.heard_stations:
             try:
-                callsign = str(i[0], "UTF-8")
-                grid = str(i[1], "UTF-8")
+                callsign = i[0]
+                grid = i[1]
                 timestamp = i[2]
                 frequency = i[6]
                 try:
@@ -65,8 +67,14 @@ class explorer():
         station_data = json.dumps(station_data)
         try:
             response = requests.post(self.explorer_url, json=station_data, headers=headers)
-            # print(response.status_code)
-            # print(response.content)
 
         except Exception as e:
             log.warning("[EXPLORER] connection lost")
+
+        # Reschedule the push method
+        self.scheduler.enter(self.publish_interval, 1, self.push)
+
+        def shutdown(self):
+            # If there are other cleanup tasks, include them here
+            if self.schedule_thread:
+                self.schedule_thread.join()

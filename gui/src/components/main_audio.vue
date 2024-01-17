@@ -5,6 +5,8 @@ setActivePinia(pinia);
 
 import { useAudioStore } from "../store/audioStore.js";
 const audio = useAudioStore(pinia);
+
+import { setConfig } from "../js/api";
 </script>
 
 <template>
@@ -21,7 +23,6 @@ const audio = useAudioStore(pinia);
           <div class="col-1 text-end">
             <button
               type="button"
-              id="openHelpModalAudio"
               data-bs-toggle="modal"
               data-bs-target="#audioHelpModal"
               class="btn m-0 p-0 border-0"
@@ -40,9 +41,9 @@ const audio = useAudioStore(pinia);
         </span>
         <select
           class="form-select form-select-sm"
-          id="audio_input_selectbox"
           aria-label=".form-select-sm"
           v-html="audio.getInputDevices()"
+          @change="setConfig"
         ></select>
       </div>
       <div class="input-group input-group-sm">
@@ -51,9 +52,9 @@ const audio = useAudioStore(pinia);
         </span>
         <select
           class="form-select form-select-sm"
-          id="audio_output_selectbox"
           aria-label=".form-select-sm"
           v-html="audio.getOutputDevices()"
+          @change="setConfig"
         ></select>
       </div>
     </div>

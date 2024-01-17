@@ -4,29 +4,20 @@
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
-import { saveSettingsToFile } from "../js/settingsHandler";
 
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
 
-import { useSettingsStore } from "../store/settingsStore.js";
-const settings = useSettingsStore(pinia);
+import { settingsStore as settings, onChange } from "../store/settingsStore.js";
+
+import { sendModemTestFrame } from "../js/api";
 
 import {
   deleteChatByCallsign,
   getNewMessagesByDXCallsign,
 } from "../js/chatHandler";
 
-import { sendTestFrame, setTxAudioLevel } from "../js/sock.js";
-
-function tuneAudio() {
-  sendTestFrame();
-}
-
-function set_audio_level() {
-  saveSettingsToFile();
-  setTxAudioLevel(settings.tx_audio_level);
-}
+import main_startup_check from "./main_startup_check.vue";
 
 function deleteChat() {
   //console.log(chat.selectedCallsign)
@@ -121,6 +112,8 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
 </script>
 
 <template>
+  <main_startup_check />
+
   <!-- updater release notes-->
   <div
     class="modal fade"
@@ -927,7 +920,7 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
                 <button
                   type="button"
                   class="btn btn-sm btn-outline-secondary"
-                  @click="tuneAudio"
+                  @click="sendModemTestFrame()"
                 >
                   Tune
                 </button>
@@ -1183,30 +1176,53 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
           ></button>
         </div>
         <div class="modal-body">
+          <div class="alert alert-info" role="alert">
+            Adjust audio levels. Value in dB. Default is <strong>0</strong>
+          </div>
+
           <div class="input-group input-group-sm mb-1">
             <span class="input-group-text">Test-Frame</span>
             <button
               type="button"
               id="sendTestFrame"
-              @click="sendTestFrame()"
+              @click="sendModemTestFrame()"
               class="btn btn-danger"
             >
               Transmit
             </button>
           </div>
           <div class="input-group input-group-sm mb-1">
-            <span class="input-group-text">TX Level</span>
-            <span class="input-group-text">{{ settings.tx_audio_level }}</span>
+            <span class="input-group-text">RX Level</span>
+            <span class="input-group-text">{{
+              settings.remote.AUDIO.rx_audio_level
+            }}</span>
             <span class="input-group-text w-75">
               <input
                 type="range"
                 class="form-range"
-                min="0"
-                max="250"
+                min="-30"
+                max="20"
+                step="1"
+                id="audioLevelRX"
+                @change="onChange"
+                v-model.number="settings.remote.AUDIO.rx_audio_level"
+            /></span>
+          </div>
+          <div class="input-group input-group-sm mb-1">
+            <span class="input-group-text">TX Level</span>
+            <span class="input-group-text">{{
+              settings.remote.AUDIO.tx_audio_level
+            }}</span>
+            <span class="input-group-text w-75">
+              <input
+                type="range"
+                class="form-range"
+                min="-30"
+                max="20"
                 step="1"
                 id="audioLevelTX"
-                @click="set_audio_level()"
-                v-model="settings.tx_audio_level"
+                @change="onChange"
+                v-model.number="settings.remote.AUDIO.tx_audio_level"
             /></span>
           </div>
         </div>

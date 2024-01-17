@@ -13,14 +13,21 @@ const chat = useChatStore(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { useSettingsStore } from "../store/settingsStore.js";
-const settings = useSettingsStore(pinia);
+import { settingsStore as settings } from "../store/settingsStore.js";
 
-import { sendMessage, sendBroadcastChannel } from "./sock.js";
 import { displayToast } from "./popupHandler.js";
 
 //const FD = require("./src/js/freedata.js");
-import { btoa_FD } from "./freedata.js";
+import {
+  atob_FD,
+  btoa_FD,
+  sortByProperty,
+  sortByPropertyDesc,
+} from "./freedata.js";
+
+import { sendModemARQRaw } from "../js/api.js";
+
+const split_char = "0;1;";
 
 // define default message object
 interface Attachment {
@@ -65,6 +72,13 @@ interface beaconDefaultObject {
   status: string;
   uuid: string;
   snr: string;
+}
+
+interface newChatDefaultObject {
+  command: string;
+  is_new: boolean;
+  timestamp: number;
+  dxcallsign: string;
 }
 
 // ---- MessageDB
@@ -179,7 +193,7 @@ export function newBroadcast(broadcastChannel, chatmessage) {
   };
 
   //sendMessage(newChatObj)
-  sendBroadcastChannel(newChatObj);
+  //sendBroadcastChannel(newChatObj);
 
   addObjToDatabase(newChatObj);
 }
@@ -277,16 +291,6 @@ function sortChatList() {
   });
   //console.log(reorderedData["2LS-0"])
   return reorderedData;
-}
-
-//https://medium.com/@asadise/sorting-a-json-array-according-one-property-in-javascript-18b1d22cd9e9
-function sortByProperty(property) {
-  return function (a, b) {
-    if (a[property] > b[property]) return 1;
-    else if (a[property] < b[property]) return -1;
-
-    return 0;
-  };
 }
 
 export function getMessageAttachment(id) {
@@ -395,11 +399,11 @@ async function dbClean() {
   //Too slow on older/slower machines
   //await db.compact();
 
-  let message = "Database maintenance is complete";
-  displayToast("info", "bi bi-info-circle", message, 5000);
+  let message = "Database maintenance is complete, ";
+  //displayToast("info", "bi bi-info-circle", message, 5000);
 
-  message = "Removed " + itemCount + " items from database";
-  displayToast("info", "bi bi-info-circle", message, 5000);
+  message += "removed " + itemCount + " items from database";
+  console.log(message);
 }
 
 // function to update transmission status
@@ -419,7 +423,7 @@ export function updateUnsortedChatListEntry(uuid, object, value) {
   var data = getFromUnsortedChatListByUUID(uuid);
   if (data) {
     data[object] = value;
-    console.log("Entry updated:", data[object]);
+    //console.log("Entry updated:", data[object]);
     chat.sorted_chat_list = sortChatList();
     return data;
   }
@@ -435,7 +439,7 @@ export function updateUnsortedChatListEntry(uuid, object, value) {
   }
   */
 
-  console.log("Entry not updated:", object);
+  //console.log("Entry not updated:", object);
   return null; // Return null if not found
 }
 
@@ -452,22 +456,27 @@ export function getNewMessagesByDXCallsign(dxcallsign): [number, number, any] {
   let new_counter = 0;
   let total_counter = 0;
   let item_array = [];
-  if (
-    typeof dxcallsign !== "undefined" &&
-    typeof chat.sorted_chat_list[dxcallsign] !== "undefined"
-  ) {
-    for (const key in chat.sorted_chat_list[dxcallsign]) {
-      //console.log(chat.sorted_chat_list[dxcallsign][key])
-      //item_array.push(chat.sorted_chat_list[dxcallsign][key])
-      if (chat.sorted_chat_list[dxcallsign][key].is_new) {
-        item_array.push(chat.sorted_chat_list[dxcallsign][key]);
-        new_counter += 1;
+  try {
+    if (
+      typeof dxcallsign !== "undefined" &&
+      typeof chat.sorted_chat_list[dxcallsign] !== "undefined"
+    ) {
+      for (const key in chat.sorted_chat_list[dxcallsign]) {
+        //console.log(chat.sorted_chat_list[dxcallsign][key])
+        //item_array.push(chat.sorted_chat_list[dxcallsign][key])
+        if (chat.sorted_chat_list[dxcallsign][key].is_new) {
+          item_array.push(chat.sorted_chat_list[dxcallsign][key]);
+          new_counter += 1;
+        }
+        total_counter += 1;
       }
-      total_counter += 1;
     }
-  }
 
-  return [total_counter, new_counter, item_array];
+    return [total_counter, new_counter, item_array];
+  } catch (e) {
+    console.log(e);
+    return [0, 0, item_array];
+  }
 }
 
 export function resetIsNewMessage(uuid, value) {
@@ -485,7 +494,7 @@ export function databaseUpsert(id, object, value) {
   })
     .then(function (res) {
       // success, res is {rev: '1-xxx', updated: true, id: 'myDocId'}
-      console.log(res);
+      //console.log(res);
     })
     .catch(function (err) {
       // error
@@ -592,7 +601,7 @@ function addObjToDatabase(newobj) {
       console.log("new database entry");
       console.log(response);
 
-      if (newobj.command === "msg") {
+      if (newobj.command === "msg" || newobj.command === "newchat") {
         chat.unsorted_chat_list.push(newobj);
         chat.sorted_chat_list = sortChatList();
       }
@@ -692,6 +701,31 @@ function deleteFromDatabaseByCallsign(callsign) {
       console.log(err);
     });
 }
+//Function creates a new 'newchat' database entry when user initates a new chat, otherwise cannot send messages unless receiving a message/beacon from user first
+/**
+ * Add a newuser to the database, for when newuser button is clicked
+ * @param {string} call callsign of new user
+ */
+export function startChatWithNewStation(call) {
+  let newchat: newChatDefaultObject = {
+    command: "newchat",
+    is_new: false,
+    timestamp: Math.floor(new Date().getTime() / 1000),
+    dxcallsign: call,
+  };
+  addObjToDatabase(newchat);
+  if (!chat.sorted_beacon_list[call]) {
+    // If not, initialize it with an empty array for snr values
+    chat.sorted_beacon_list[call] = {
+      call,
+      snr: [],
+      timestamp: [],
+    };
+    chat.callsign_list.add(call);
+  }
+  //chat.unsorted_chat_list.push(newchat);
+  //chat.sorted_chat_list = sortChatList();
+}
 
 // function for handling a received beacon
 export function newBeaconReceived(obj) {
@@ -746,11 +780,11 @@ export function newBeaconReceived(obj) {
   });
 
   // check if auto retry enabled
-  console.log("-----------------------------------------");
-  console.log(settings.enable_auto_retry.toUpperCase());
-  if (settings.enable_auto_retry.toUpperCase() == "TRUE") {
-    checkForWaitingMessages(dxcallsign);
-  }
+  //console.log("-----------------------------------------");
+  //console.log(settings.enable_auto_retry.toUpperCase());
+  //if (settings.enable_auto_retry.toUpperCase() == "TRUE") {
+  //  checkForWaitingMessages(dxcallsign);
+  //}
 }
 
 // function for handling a received message
@@ -830,27 +864,39 @@ export function newMessageReceived(message, protocol) {
 
 
     */
+
   console.log(protocol);
+
+  var encoded_data = atob_FD(message);
+  var splitted_data = encoded_data.split(split_char);
+
+  // new message received
+  if (splitted_data[0] == "m") {
+    console.log(splitted_data);
+    message = splitted_data;
+  } else {
+    return;
+  }
 
   let newChatObj: messageDefaultObject = {
     command: "msg",
-    hmac_signed: protocol["hmac_signed"],
+    hmac_signed: false,
     percent: 100,
-    bytesperminute: protocol["bytesperminute"],
+    bytesperminute: 0,
     is_new: true,
     _id: message[3],
     timestamp: message[4],
-    dxcallsign: protocol["dxcallsign"],
-    dxgrid: protocol["dxgrid"],
+    dxcallsign: protocol["dxcall"],
+    dxgrid: "",
     msg: message[5],
     checksum: message[2],
-    type: protocol["status"],
-    status: protocol["status"],
+    type: "received",
+    status: "received",
     attempt: 1,
     uuid: message[3],
-    duration: protocol["duration"],
-    nacks: protocol["nacks"],
-    speed_list: protocol["speed_list"],
+    duration: 0,
+    nacks: 0,
+    speed_list: "[]",
     _attachments: {
       [message[6]]: {
         content_type: message[7],
@@ -1029,13 +1075,12 @@ async function checkForWaitingMessages(dxcall) {
         // this ensures, we are only sending one message at once
         // @ts-expect-error
         console.log(result.docs[0]);
-        console.log(
-          "attempt: " +
-            // @ts-expect-error
-            result.docs[0].attempt +
-            "/" +
-            settings.max_retry_attempts,
-        );
+        //console.log(
+        //  "attempt: " +
+        //    result.docs[0].attempt +
+        //    "/" +
+        //    settings.max_retry_attempts,
+        //);
         // @ts-expect-error
         if (result.docs[0].attempt < settings.max_retry_attempts) {
           console.log("repeating message...");
@@ -1048,4 +1093,43 @@ async function checkForWaitingMessages(dxcall) {
     .catch((err) => {
       console.log(err);
     });
+}
+
+export function sendMessage(obj) {
+  let dxcallsign = obj.dxcallsign;
+  let checksum = obj.checksum;
+  let uuid = obj.uuid;
+  let command = obj.command;
+
+  let filename = Object.keys(obj._attachments)[0];
+  //let filetype = filename.split(".")[1]
+  let filetype = obj._attachments[filename].content_type;
+  let file = obj._attachments[filename].data;
+
+  let data_with_attachment =
+    obj.timestamp +
+    split_char +
+    obj.msg +
+    split_char +
+    filename +
+    split_char +
+    filetype +
+    split_char +
+    file;
+
+  let data = btoa_FD(
+    "m" +
+      split_char +
+      command +
+      split_char +
+      checksum +
+      split_char +
+      uuid +
+      split_char +
+      data_with_attachment,
+  );
+
+  let mycallsign =
+    settings.remote.STATION.mycall + "-" + settings.remote.STATION.myssid;
+  sendModemARQRaw(mycallsign, dxcallsign, data, uuid);
 }

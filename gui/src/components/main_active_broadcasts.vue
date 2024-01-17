@@ -1,37 +1,26 @@
 <script setup lang="ts">
-import { saveSettingsToFile } from "../js/settingsHandler";
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { useSettingsStore } from "../store/settingsStore.js";
-const settings = useSettingsStore(pinia);
+import { settingsStore as settings} from "../store/settingsStore.js";
 
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { sendCQ, sendPing, startBeacon, stopBeacon } from "../js/sock.js";
-
-function transmitCQ() {
-  sendCQ();
-}
+import { sendModemCQ, sendModemPing, setModemBeacon } from "../js/api.js";
 
 function transmitPing() {
-  sendPing((<HTMLInputElement>document.getElementById("dxCall")).value);
+  sendModemPing((<HTMLInputElement>document.getElementById("dxCall")).value);
 }
 
 function startStopBeacon() {
-  switch (state.beacon_state) {
-    case "False":
-      startBeacon(settings.beacon_interval);
-
-      break;
-    case "True":
-      stopBeacon();
-
-      break;
-    default:
+  if (state.beacon_state === true) {
+    setModemBeacon(false);
+  }
+  else {
+    setModemBeacon(true);
   }
 }
 </script>
@@ -94,7 +83,7 @@ function startStopBeacon() {
               id="sendCQ"
               type="button"
               title="Send a CQ to the world"
-              @click="transmitCQ()"
+              @click="sendModemCQ()"
             >
               Call CQ
             </button>
@@ -105,8 +94,8 @@ function startStopBeacon() {
               class="btn btn-sm ms-1"
               @click="startStopBeacon()"
               v-bind:class="{
-                'btn-success': state.beacon_state === 'True',
-                'btn-outline-secondary': state.beacon_state === 'False',
+                'btn-success': state.beacon_state === true,
+                'btn-outline-secondary': state.beacon_state === false,
               }"
               title="Toggle beacon mode. The interval can be set in settings. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses."
             >

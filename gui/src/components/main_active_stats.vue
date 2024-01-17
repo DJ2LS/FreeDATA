@@ -2,14 +2,11 @@
 // @ts-nocheck
 // reason for no check is, that we have some mixing of typescript and chart js which seems to be not to be fixed that easy
 
-import { saveSettingsToFile } from "../js/settingsHandler";
-
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { useSettingsStore } from "../store/settingsStore.js";
-const settings = useSettingsStore(pinia);
+import { settingsStore as settings } from "../store/settingsStore.js";
 
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
@@ -30,18 +27,18 @@ import { computed } from "vue";
 function selectStatsControl(obj) {
   switch (obj.delegateTarget.id) {
     case "list-waterfall-list":
-      settings.spectrum = "waterfall";
+      settings.local.spectrum = "waterfall";
       break;
     case "list-scatter-list":
-      settings.spectrum = "scatter";
+      settings.local.spectrum = "scatter";
       break;
     case "list-chart-list":
-      settings.spectrum = "chart";
+      settings.local.spectrum = "chart";
       break;
     default:
-      settings.spectrum = "waterfall";
+      settings.local.spectrum = "waterfall";
   }
-  saveSettingsToFile();
+  //saveSettingsToFile();
 }
 
 ChartJS.register(
@@ -172,8 +169,8 @@ const scatterChartData = computed(() => ({
 </script>
 
 <script lang="ts">
-import { initWaterfall } from "../js/waterfallHandler.js";
-
+import { initWaterfall, setColormap } from "../js/waterfallHandler.js";
+var localSpectrum;
 export default {
   mounted() {
     // This code will be executed after the component is mounted to the DOM
@@ -181,7 +178,7 @@ export default {
     //const myElement = this.$refs.waterfall; // Access the DOM element with ref
 
     // init waterfall
-    initWaterfall();
+    localSpectrum = initWaterfall("waterfall-main");
   },
 };
 </script>
@@ -205,7 +202,9 @@ export default {
                   href="#list-waterfall"
                   role="tab"
                   aria-controls="list-waterfall"
-                  v-bind:class="{ active: settings.spectrum === 'waterfall' }"
+                  v-bind:class="{
+                    active: settings.local.spectrum === 'waterfall',
+                  }"
                   @click="selectStatsControl($event)"
                   ><strong><i class="bi bi-water"></i></strong
                 ></a>
@@ -216,7 +215,9 @@ export default {
                   href="#list-scatter"
                   role="tab"
                   aria-controls="list-scatter"
-                  v-bind:class="{ active: settings.spectrum === 'scatter' }"
+                  v-bind:class="{
+                    active: settings.local.spectrum === 'scatter',
+                  }"
                   @click="selectStatsControl($event)"
                   ><strong><i class="bi bi-border-outer"></i></strong
                 ></a>
@@ -227,7 +228,7 @@ export default {
                   href="#list-chart"
                   role="tab"
                   aria-controls="list-chart"
-                  v-bind:class="{ active: settings.spectrum === 'chart' }"
+                  v-bind:class="{ active: settings.local.spectrum === 'chart' }"
                   @click="selectStatsControl($event)"
                   ><strong><i class="bi bi-graph-up-arrow"></i></strong
                 ></a>
@@ -242,9 +243,8 @@ export default {
                 data-bs-trigger="hover"
                 data-bs-html="true"
                 v-bind:class="{
-                  'btn-warning': state.getChannelBusySlotState(0) === true,
-                  'btn-outline-secondary':
-                    state.getChannelBusySlotState(0) === false,
+                  'btn-warning': state.channel_busy_slot[0] === true,
+                  'btn-outline-secondary': state.channel_busy_slot[0] === false,
                 }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
@@ -259,9 +259,8 @@ export default {
                 data-bs-trigger="hover"
                 data-bs-html="true"
                 v-bind:class="{
-                  'btn-warning': state.getChannelBusySlotState(1) === true,
-                  'btn-outline-secondary':
-                    state.getChannelBusySlotState(1) === false,
+                  'btn-warning': state.channel_busy_slot[1] === true,
+                  'btn-outline-secondary': state.channel_busy_slot[1] === false,
                 }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
@@ -276,9 +275,8 @@ export default {
                 data-bs-trigger="hover"
                 data-bs-html="true"
                 v-bind:class="{
-                  'btn-warning': state.getChannelBusySlotState(2) === true,
-                  'btn-outline-secondary':
-                    state.getChannelBusySlotState(2) === false,
+                  'btn-warning': state.channel_busy_slot[2] === true,
+                  'btn-outline-secondary': state.channel_busy_slot[2] === false,
                 }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
@@ -293,9 +291,8 @@ export default {
                 data-bs-trigger="hover"
                 data-bs-html="true"
                 v-bind:class="{
-                  'btn-warning': state.getChannelBusySlotState(3) === true,
-                  'btn-outline-secondary':
-                    state.getChannelBusySlotState(3) === false,
+                  'btn-warning': state.channel_busy_slot[3] === true,
+                  'btn-outline-secondary': state.channel_busy_slot[3] === false,
                 }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
@@ -310,9 +307,8 @@ export default {
                 data-bs-trigger="hover"
                 data-bs-html="true"
                 v-bind:class="{
-                  'btn-warning': state.getChannelBusySlotState(4) === true,
-                  'btn-outline-secondary':
-                    state.getChannelBusySlotState(4) === false,
+                  'btn-warning': state.channel_busy_slot[4] === true,
+                  'btn-outline-secondary': state.channel_busy_slot[4] === false,
                 }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
@@ -328,8 +324,8 @@ export default {
                 data-bs-html="true"
                 title="Recieving data: illuminates <strong class='text-success'>green</strong> if receiving codec2 data"
                 v-bind:class="{
-                  'btn-success': state.is_codec2_traffic === 'True',
-                  'btn-outline-secondary': state.is_codec2_traffic === 'False',
+                  'btn-success': state.is_codec2_traffic === true,
+                  'btn-outline-secondary': state.is_codec2_traffic === false,
                 }"
               >
                 data
@@ -355,21 +351,31 @@ export default {
       <div class="tab-content" id="nav-stats-tabContent">
         <div
           class="tab-pane fade"
-          v-bind:class="{ 'show active': settings.spectrum === 'waterfall' }"
+          v-bind:class="{
+            'show active': settings.local.spectrum === 'waterfall',
+          }"
           id="list-waterfall"
           role="stats_tabpanel"
           aria-labelledby="list-waterfall-list"
         >
           <canvas
-            ref="waterfall"
-            id="waterfall"
-            style="position: relative; z-index: 2"
-            class="force-gpu h-100 w-100"
+            ref="waterfall-main"
+            id="waterfall-main"
+            style="
+              position: relative;
+              z-index: 2;
+              aspect-ratio: unset;
+              width: 100%;
+              height: 200px;
+            "
+            class="force-gpu'"
           ></canvas>
         </div>
         <div
           class="tab-pane fade"
-          v-bind:class="{ 'show active': settings.spectrum === 'scatter' }"
+          v-bind:class="{
+            'show active': settings.local.spectrum === 'scatter',
+          }"
           id="list-scatter"
           role="tabpanel"
           aria-labelledby="list-scatter-list"
@@ -378,7 +384,7 @@ export default {
         </div>
         <div
           class="tab-pane fade"
-          v-bind:class="{ 'show active': settings.spectrum === 'chart' }"
+          v-bind:class="{ 'show active': settings.local.spectrum === 'chart' }"
           id="list-chart"
           role="tabpanel"
           aria-labelledby="list-chart-list"

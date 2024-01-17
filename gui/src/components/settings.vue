@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import settings_station from "./settings_station.vue";
 import settings_gui from "./settings_gui.vue";
 import settings_chat from "./settings_chat.vue";
-import settings_hamlib from "./settings_hamlib.vue";
+import settings_rigcontrol from "./settings_rigcontrol.vue";
 import settings_modem from "./settings_modem.vue";
 import settings_web from "./settings_web.vue";
 import settings_exp from "./settings_exp.vue";
@@ -14,13 +15,6 @@ import settings_exp from "./settings_exp.vue";
     aria-labelledby="list-settings-list"
   >
     <div class="container">
-      <div class="badge text-bg-warning m-1">
-        <h5>
-          <i class="bi bi-exclamation-triangle"></i> Please restart the modem
-          after changing settings <i class="bi bi-exclamation-triangle"></i>
-        </h5>
-      </div>
-
       <div class="card text-center">
         <div class="card-header">
           <!-- SETTINGS Nav tabs -->
@@ -28,6 +22,20 @@ import settings_exp from "./settings_exp.vue";
             <li class="nav-item" role="presentation">
               <button
                 class="nav-link active"
+                id="station-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#station"
+                type="button"
+                role="tab"
+                aria-controls="home"
+                aria-selected="true"
+              >
+                Station
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
                 id="gui-tab"
                 data-bs-toggle="tab"
                 data-bs-target="#gui"
@@ -56,17 +64,18 @@ import settings_exp from "./settings_exp.vue";
             <li class="nav-item" role="presentation">
               <button
                 class="nav-link"
-                id="hamlib-tab"
+                id="rigcontrol-tab"
                 data-bs-toggle="tab"
-                data-bs-target="#hamlib"
+                data-bs-target="#rigcontrol"
                 type="button"
                 role="tab"
                 aria-controls="profile"
                 aria-selected="false"
               >
-                Hamlib
+                Rig Control
               </button>
             </li>
+
             <li class="nav-item" role="presentation">
               <button
                 class="nav-link"
@@ -111,12 +120,27 @@ import settings_exp from "./settings_exp.vue";
             </li>
           </ul>
         </div>
-        <div class="card-body">
+        <div
+          class="card-body overflow-auto"
+          style="height: calc(100vh - 105px)"
+        >
           <!-- SETTINGS Nav Tab panes -->
+
+          <!-- Station tab contents-->
           <div class="tab-content">
-            <!-- GUI tab contents-->
             <div
               class="tab-pane active"
+              id="station"
+              role="tabpanel"
+              aria-labelledby="station-tab"
+              tabindex="0"
+            >
+              <settings_station />
+            </div>
+
+            <!-- GUI tab contents-->
+            <div
+              class="tab-pane"
               id="gui"
               role="tabpanel"
               aria-labelledby="gui-tab"
@@ -137,13 +161,14 @@ import settings_exp from "./settings_exp.vue";
 
             <div
               class="tab-pane"
-              id="hamlib"
+              id="rigcontrol"
               role="tabpanel"
-              aria-labelledby="hamlib-tab"
+              aria-labelledby="rigcontrol-tab"
               tabindex="0"
             >
-              <settings_hamlib />
+              <settings_rigcontrol />
             </div>
+
             <div
               class="tab-pane"
               id="modem"

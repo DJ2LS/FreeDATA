@@ -1,0 +1,38 @@
+name: GUI tests
+
+on: [push]
+
+jobs:
+  build:
+    # The CMake configure and build commands are platform-agnostic and should work equally
+    # well on Windows or Mac.  You can convert this to a matrix build if you need
+    # cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      # By default, GitHub will maximize the number of jobs run in parallel
+      # depending on the available runners on GitHub-hosted virtual machines.
+      # max-parallel: 8
+      fail-fast: false
+      matrix:
+        include:
+          - node-version: "16"
+          - node-version: "18"
+          - node-version: "20"
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        working-directory: gui
+        run: |
+          npm i
+
+      - name: GUI Test
+        working-directory: gui
+        run: |
+          npm run test

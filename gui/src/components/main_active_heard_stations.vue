@@ -6,8 +6,7 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { useSettingsStore } from "../store/settingsStore.js";
-const settings = useSettingsStore(pinia);
+import { settingsStore as settings } from "../store/settingsStore.js";
 
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
@@ -30,9 +29,9 @@ function getDateTime(timestampRaw) {
 
 function getMaidenheadDistance(dxGrid) {
   try {
-    return parseInt(distance(settings.mygrid, dxGrid));
+    return parseInt(distance(settings.remote.STATION.mygrid, dxGrid));
   } catch (e) {
-    //
+    console.warn(e);
   }
 }
 </script>
@@ -82,7 +81,7 @@ function getMaidenheadDistance(dxGrid) {
           </thead>
           <tbody id="heardstations">
             <!--https://vuejs.org/guide/essentials/list.html-->
-            <tr v-for="item in state.heard_stations" :key="item.timestamp">
+            <tr v-for="item in state.heard_stations" :key="item.origin">
               <td>
                 <span class="badge bg-secondary">{{
                   getDateTime(item.timestamp)
@@ -94,18 +93,18 @@ function getMaidenheadDistance(dxGrid) {
                 >
               </td>
               <td>
-                <span class="badge bg-secondary">{{ item.dxcallsign }}</span>
+                <span class="badge bg-secondary">{{ item.origin }}</span>
               </td>
               <td>
-                <span class="badge bg-secondary">{{ item.dxgrid }}</span>
+                <span class="badge bg-secondary">{{ item.gridsquare }}</span>
               </td>
               <td>
                 <span class="badge bg-secondary"
-                  >{{ getMaidenheadDistance(item.dxgrid) }} km</span
+                  >{{ getMaidenheadDistance(item.gridsquare) }} km</span
                 >
               </td>
               <td>
-                <span class="badge bg-secondary">{{ item.datatype }}</span>
+                <span class="badge bg-secondary">{{ item.activity_type }}</span>
               </td>
               <td>
                 <span class="badge bg-secondary">{{ item.snr }}</span>

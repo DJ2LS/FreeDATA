@@ -1,0 +1,57 @@
+[NETWORK]
+modemport = 3050
+
+[STATION]
+mycall = XX1XXX
+mygrid = JN18cv
+myssid = 6
+ssid_list = [1, 7]
+enable_explorer = True
+enable_stats = True
+
+[AUDIO]
+input_device = 5a1c
+output_device = bd6c
+rx_audio_level = 0
+tx_audio_level = 0
+enable_auto_tune = False
+
+[RIGCTLD]
+ip = 127.0.0.1
+port = 4532
+path = 
+command = 
+arguments = --cenas
+
+[RADIO]
+control = disabled
+model_id = 1001
+serial_port = /dev/cu.Bluetooth-Incoming-Port
+serial_speed = 38400
+data_bits = 8
+stop_bits = 1
+serial_handshake = ignore
+ptt_port = ignore
+ptt_type = USB
+serial_dcd = NONE
+serial_dtr = OFF
+
+[TCI]
+tci_ip = 127.0.0.1
+tci_port = 50001
+
+[MESH]
+enable_protocol = False
+
+[MODEM]
+enable_hmac = False
+tuning_range_fmax = 50
+tuning_range_fmin = -50
+enable_fsk = False
+enable_low_bandwidth_mode = False
+enable_morse_identifier = False
+respond_to_cq = False
+rx_buffer_size = 64
+tx_delay = 200
+beacon_interval = 90
+

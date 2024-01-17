@@ -1,16 +1,11 @@
 <script setup lang="ts">
-import { saveSettingsToFile } from "../js/settingsHandler";
+import { setConfig } from "../js/api";
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { useSettingsStore } from "../store/settingsStore.js";
-const settings = useSettingsStore(pinia);
-
-function saveSettings() {
-  saveSettingsToFile();
-}
+import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 </script>
 
 <template>
@@ -22,10 +17,8 @@ function saveSettings() {
           class="form-check-input"
           type="checkbox"
           id="ExplorerSwitch"
-          @change="saveSettings"
-          v-model="settings.enable_explorer"
-          true-value="True"
-          false-value="False"
+          @change="onChange"
+          v-model="settings.remote.STATION.enable_explorer"
         />
         <label class="form-check-label" for="ExplorerSwitch">Publish</label>
       </div>
@@ -39,10 +32,8 @@ function saveSettings() {
           class="form-check-input"
           type="checkbox"
           id="ExplorerStatsSwitch"
-          @change="saveSettings"
-          v-model="settings.explorer_stats"
-          true-value="True"
-          false-value="False"
+          @change="onChange"
+          v-model="settings.remote.STATION.enable_stats"
         />
         <label class="form-check-label" for="ExplorerStatsSwitch"
           >Publish stats</label

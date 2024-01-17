@@ -18,8 +18,8 @@ const state = useStateStore(pinia);
           <button
             class="btn btn-sm btn-secondary me-1"
             v-bind:class="{
-              'btn-danger': state.ptt_state === 'True',
-              'btn-secondary': state.ptt_state === 'False',
+              'btn-danger': state.ptt_state == true,
+              'btn-secondary': state.ptt_state == false,
             }"
             id="ptt_state"
             type="button"
@@ -110,8 +110,8 @@ const state = useStateStore(pinia);
             data-bs-trigger="hover"
             data-bs-html="true"
             v-bind:class="{
-              'btn-warning': state.channel_busy === 'True',
-              'btn-secondary': state.channel_busy === 'False',
+              'btn-warning': state.channel_busy === true,
+              'btn-secondary': state.channel_busy === false,
             }"
             style="pointer-events: auto"
             data-bs-title="Channel busy"
@@ -130,7 +130,7 @@ const state = useStateStore(pinia);
             data-bs-title="What's the frequency, Kenneth?"
             style="pointer-events: auto"
           >
-            {{ parseInt(state.frequency) / 1000 }} KHz
+            {{ state.frequency / 1000 }} kHz
           </button>
         </div>
 
@@ -215,10 +215,7 @@ const state = useStateStore(pinia);
     </div>
     <div class="col-lg-4">
       <div style="margin-right: 2px">
-        <div
-          class="progress w-100 rounded-0 rounded-top"
-          style="height: 20px; min-width: 200px"
-        >
+        <div class="progress w-100" style="height: 20px; min-width: 200px">
           <div
             class="progress-bar progress-bar-striped bg-primary force-gpu"
             id="transmission_progress"
@@ -231,11 +228,12 @@ const state = useStateStore(pinia);
           <p
             class="justify-content-center m-0 d-flex position-absolute w-100 text-dark"
           >
-            {{ state.arq_seconds_until_finish }}s left
+            Message Progress
           </p>
         </div>
 
         <div
+          hidden
           class="progress mb-0 rounded-0 rounded-bottom"
           style="height: 10px"
         >

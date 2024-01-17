@@ -1,0 +1,10 @@
+{
+  "local": {
+    "host": "127.0.0.1",
+    "port": "5000",
+    "spectrum": "waterfall",
+    "wf_theme": 2,
+    "update_channel": "alpha",
+    "enable_sys_notification": false
+  }
+}

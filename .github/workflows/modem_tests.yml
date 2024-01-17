@@ -1,0 +1,49 @@
+name: Modem tests
+
+on: [push]
+
+jobs:
+  build:
+    # The CMake configure and build commands are platform-agnostic and should work equally
+    # well on Windows or Mac.  You can convert this to a matrix build if you need
+    # cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      # By default, GitHub will maximize the number of jobs run in parallel
+      # depending on the available runners on GitHub-hosted virtual machines.
+      # max-parallel: 8
+      fail-fast: false
+      matrix:
+        include:
+          #- python-version: "3.7" EOL
+          - python-version: "3.8"
+          - python-version: "3.9"
+          - python-version: "3.10"
+          - python-version: "3.11"
+          #- python-version: "3.12" NOT YET SUPPORTED BY NUITKA!
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+
+      - name: Install system packages
+        shell: bash
+        run: |
+          sudo apt-get update || true
+          sudo apt-get install octave octave-common octave-signal sox portaudio19-dev
+
+      - name: Install python packages
+        shell: bash
+        run: |
+          pip3 install -r requirements.txt
+
+      - name: run config tests
+        shell: bash
+        run: |
+          python -m unittest discover tests

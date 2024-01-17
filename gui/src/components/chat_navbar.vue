@@ -11,7 +11,7 @@ const state = useStateStore(pinia);
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
 
-import { getRxBuffer } from "../js/sock.js";
+import { startChatWithNewStation } from "../js/chatHandler";
 
 import {
   Chart as ChartJS,
@@ -88,21 +88,6 @@ var beaconHistogramOptions = {
   },
 };
 
-//let dataArray = new Array(25).fill(0)
-//dataArray = dataArray.add([-3, 10, 8, 5, 3, 0, -5])
-//let dataArray1 = dataArray.shift(2)
-//console.log(dataArray1)
-//[-3, 10, 8, 5, 3, 0, -5]
-
-try {
-  chat.beaconLabelArray = Object.values(
-    chat.sorted_beacon_list["DJ2LS-0"].timestamp,
-  );
-  chat.beaconDataArray = Object.values(chat.sorted_beacon_list["DJ2LS-0"].snr);
-} catch (e) {
-  console.log(e);
-}
-
 const beaconHistogramData = computed(() => ({
   labels: chat.beaconLabelArray,
   datasets: [
@@ -121,8 +106,10 @@ const beaconHistogramData = computed(() => ({
 
 function newChat() {
   let callsign = this.newChatCall.value;
-  callsign = callsign.toUpperCase();
-  chat.callsign_list.add(callsign);
+  callsign = callsign.toUpperCase().trim();
+  if (callsign === "") return;
+  startChatWithNewStation(callsign);
+  //updateAllChat(false);
   this.newChatCall.value = "";
 }
 

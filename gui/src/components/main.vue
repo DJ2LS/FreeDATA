@@ -5,10 +5,7 @@ setActivePinia(pinia);
 
 import main_modals from "./main_modals.vue";
 import main_top_navbar from "./main_top_navbar.vue";
-import main_audio from "./main_audio.vue";
 import main_rig_control from "./main_rig_control.vue";
-import main_my_station from "./main_my_station.vue";
-import main_updater from "./main_updater.vue";
 import settings_view from "./settings.vue";
 import main_active_rig_control from "./main_active_rig_control.vue";
 import main_footer_navbar from "./main_footer_navbar.vue";
@@ -20,8 +17,10 @@ import main_active_audio_level from "./main_active_audio_level.vue";
 
 import chat from "./chat.vue";
 import infoScreen from "./infoScreen.vue";
+import main_modem_healthcheck from "./main_modem_healthcheck.vue";
+import Dynamic_components from "./dynamic_components.vue";
 
-import { stopTransmission } from "../js/sock.js";
+import { stopTransmission } from "../js/api";
 
 function stopAllTransmissions() {
   console.log("stopping transmissions");
@@ -55,16 +54,19 @@ function stopAllTransmissions() {
             role="tablist"
             style="margin-top: 100px"
           >
+            <main_modem_healthcheck />
+
             <a
               class="list-group-item list-group-item-dark list-group-item-action border-0 rounded-3 mb-2 active"
-              id="list-modem-list"
+              id="list-grid-list"
               data-bs-toggle="list"
-              href="#list-modem"
+              href="#list-grid"
               role="tab"
-              aria-controls="list-modem"
-              title="Home"
-              ><i class="bi bi-house-door-fill h3"></i
+              aria-controls="list-grid"
+              title="Grid"
+              ><i class="bi bi-grid h3"></i
             ></a>
+
             <a
               class="list-group-item list-group-item-dark list-group-item-action border-0 rounded-3 mb-2"
               id="list-chat-list"
@@ -106,7 +108,6 @@ function stopAllTransmissions() {
               aria-controls="list-logger"
               ><i class="bi bi-activity h3"></i
             ></a>
-
             <a
               class="list-group-item list-group-item-dark list-group-item-action border-0 rounded-3 mb-2"
               id="list-settings-list"
@@ -117,33 +118,24 @@ function stopAllTransmissions() {
               title="Settings"
               ><i class="bi bi-gear-wide-connected h3"></i
             ></a>
-
-            <a
-              class="btn border btn-outline-danger list-group-item mt-5"
-              id="stop_transmission_connection"
-              data-bs-toggle="tooltip"
-              data-bs-trigger="hover"
-              data-bs-html="false"
-              @click="stopAllTransmissions()"
-              title="Abort session and stop transmissions"
-              ><i class="bi bi-sign-stop-fill h3"></i
-            ></a>
           </div>
         </div>
       </div>
       <div class="col-sm min-vh-100 m-0 p-0">
         <!-- content -->
 
+        <!-- TODO: Remove the top navbar entirely if not needed
+        <main_top_navbar />
+      -->
+
         <div class="tab-content" id="nav-tabContent-settings">
           <div
-            class="tab-pane fade show active"
-            id="list-modem"
+            class="tab-pane fade"
+            id="list-home"
             role="tabpanel"
-            aria-labelledby="list-modem-list"
+            aria-labelledby="list-home-list"
           >
             <!-- TOP NAVBAR -->
-            <main_top_navbar />
-
             <div
               id="blurdiv"
               style="
@@ -156,50 +148,24 @@ function stopAllTransmissions() {
               <!-------------------------------- MAIN AREA ---------------->
 
               <!------------------------------------------------------------------------------------------>
-              <div class="container p-3">
-                <div
-                  class="row collapse multi-collapse show mt-4"
-                  id="collapseFirstRow"
-                >
-                  <div class="col">
-                    <main_audio />
-                  </div>
-                  <div class="col">
-                    <main_rig_control />
-                  </div>
-                </div>
-                <div
-                  class="row collapse multi-collapse show mt-4"
-                  id="collapseSecondRow"
-                >
-                  <div class="col">
-                    <main_my_station />
-                  </div>
-                  <div class="col">
-                    <main_updater />
-                  </div>
-                </div>
-              </div>
               <div class="container">
-                <div class="row collapse multi-collapse" id="collapseThirdRow">
-                  <main_active_rig_control />
-
+                <div class="row">
                   <div class="col-5">
-                    <main_active_audio_level />
+                    <main_active_rig_control />
                   </div>
-                  <div class="col">
+                  <div class="col-4">
                     <main_active_broadcasts />
                   </div>
+                  <div class="col-3">
+                    <main_active_audio_level />
+                  </div>
                 </div>
-                <div
-                  class="row collapse multi-collapse mt-3"
-                  id="collapseFourthRow"
-                >
+                <div class="row">
+                  <div class="col-7">
+                    <main_active_heard_stations />
+                  </div>
                   <div class="col-5">
                     <main_active_stats />
-                  </div>
-                  <div class="col">
-                    <main_active_heard_stations />
                   </div>
                 </div>
               </div>
@@ -349,6 +315,15 @@ function stopAllTransmissions() {
           >
             <infoScreen />
           </div>
+          <div
+            class="tab-pane fade show active"
+            id="list-grid"
+            role="tabpanel"
+            aria-labelledby="list-grid-list"
+          >
+            <Dynamic_components />
+          </div>
+
           <div
             class="tab-pane fade"
             id="list-chat"
