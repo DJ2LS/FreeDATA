@@ -21,6 +21,7 @@ nconf.defaults({
     enable_sys_notification: false,
     grid_layout: "[]",
     grid_preset: "[]",
+    grid_enabled: true,
   },
 });
 
@@ -36,6 +37,7 @@ export const settingsStore = reactive({
     enable_sys_notification: false,
     grid_layout: "[]",
     grid_preset: "[]",
+    grid_enabled: true,
   },
   remote: {
     AUDIO: {
