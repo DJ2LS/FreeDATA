@@ -14,6 +14,7 @@ import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
 import { settingsStore as settings } from "../store/settingsStore.js";
+import { getAppDataPath } from "../js/freedata";
 
 import { displayToast } from "./popupHandler.js";
 
@@ -99,34 +100,8 @@ PouchDB.plugin(require("pouchdb-find"));
 //PouchDB.plugin(require('pouchdb-replication'));
 PouchDB.plugin(require("pouchdb-upsert"));
 
-// https://stackoverflow.com/a/26227660
-if (typeof process.env["APPDATA"] !== "undefined") {
-  var appDataFolder = process.env["APPDATA"];
-  console.log(appDataFolder);
-} else {
-  var appDataFolder: string;
-
-  switch (process.platform) {
-    case "darwin":
-      appDataFolder = process.env["HOME"] + "/Library/Application Support";
-      console.log(appDataFolder);
-      break;
-    case "linux":
-      appDataFolder = process.env["HOME"] + "/.config";
-      console.log(appDataFolder);
-      break;
-    case "win32":
-      appDataFolder = "undefined";
-      break;
-    default:
-      appDataFolder = "undefined";
-      break;
-  }
-}
-console.log("loading chat database...");
-console.log("appdata folder:" + appDataFolder);
-var configFolder = path.join(appDataFolder, "FreeDATA");
-console.log("config folder:" + configFolder);
+var appDataPath = getAppDataPath();
+var configFolder = path.join(appDataPath, "FreeDATA");
 
 var chatDB = path.join(configFolder, "chatDB");
 console.log("database path:" + chatDB);
