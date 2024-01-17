@@ -38,7 +38,6 @@ import { Scatter } from "vue-chartjs";
 let count = ref(0);
 let grid = null; // DO NOT use ref(null) as proxies GS will break all logic when comparing structures... see https://github.com/gridstack/gridstack.js/issues/2115
 let items = ref([]);
-let gridEnabledLocal = ref(true);
 class gridWidget {
   //Contains the vue component
   component2;
@@ -356,6 +355,7 @@ onMounted(() => {
       },
       false,
     );
+    setGridEditState();
 });
 function onChange(event, changeItems) {
   // update item position
@@ -432,9 +432,15 @@ function remove(widget) {
   grid.removeWidget(selector, false);
   saveGridLayout();
 }
-function disableGrid() {
-  gridEnabledLocal.value = !gridEnabledLocal.value
-  if (gridEnabledLocal.value)
+function toggleGridEdit() {
+  //Toggle setting
+  settingsStore.local.grid_enabled = !settingsStore.local.grid_enabled
+  setGridEditState();
+}
+function setGridEditState()
+{
+  //Apply grid state setting (allows/disallows moving, resizing, showing remove icon)
+  if (settingsStore.local.grid_enabled)
     grid.enable();
   else
     grid.disable();
@@ -487,7 +493,7 @@ function quickfill() {
           <button
             @click="remove(w)"
             class="btn-close grid-stack-floaty-btn"
-            :class="gridEnabledLocal === true ? 'visible':'invisible'"
+            :class="settingsStore.local.grid_enabled === true ? 'visible':'invisible'"
           ></button>
           <component :is="w.component2" />
         </div>
@@ -506,12 +512,13 @@ function quickfill() {
     <div class="offcanvas-header">
       <h5 class="offcanvas-title" id="offcanvasGridItemsLabel">
         Manage grid widgets &nbsp;<button
-        class="btn btn-sm btn-outline-info"
+        class="btn btn-sm"
+        :class="settingsStore.local.grid_enabled == true ? 'btn-outline-success' : 'btn-outline-danger'"
         type="button"
-        @click="disableGrid"
+        @click="toggleGridEdit"
         title="Lock/unloack changes to grid"
       >
-        <i class="bi" :class="gridEnabledLocal == true ? 'bi-unlock-fill' : 'bi-lock-fill'"></i>
+        <i class="bi" :class="settingsStore.local.grid_enabled == true ? 'bi-unlock-fill' : 'bi-lock-fill'"></i>
       </button>&nbsp;
       </h5>
 
