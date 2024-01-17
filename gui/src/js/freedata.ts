@@ -1,5 +1,5 @@
-const os = require('os');
-const path = require('path');
+const os = require("os");
+const path = require("path");
 
 /**
  * Binary to ASCII replacement
@@ -101,24 +101,24 @@ export function validateCallsignWithoutSSID(callsign: string) {
   return true;
 }
 
-export function getAppDataPath(){
-    const platform = os.platform();
-    let appDataPath;
+export function getAppDataPath() {
+  const platform = os.platform();
+  let appDataPath;
 
-    switch (platform) {
-        case 'darwin': // macOS
-            appDataPath = path.join(os.homedir(), 'Library', 'Application Support');
-            break;
-        case 'win32': // Windows
-            appDataPath = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-            break;
-        case 'linux': // Linux
-            appDataPath = path.join(os.homedir(), '.config');
-            break;
-        default:
-            throw new Error('Unsupported platform');
-    }
+  switch (platform) {
+    case "darwin": // macOS
+      appDataPath = path.join(os.homedir(), "Library", "Application Support");
+      break;
+    case "win32": // Windows
+      appDataPath =
+        process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming");
+      break;
+    case "linux": // Linux
+      appDataPath = path.join(os.homedir(), ".config");
+      break;
+    default:
+      throw new Error("Unsupported platform");
+  }
 
-    return appDataPath;
-
+  return appDataPath;
 }

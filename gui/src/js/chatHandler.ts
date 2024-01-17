@@ -14,7 +14,7 @@ import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
 import { settingsStore as settings } from "../store/settingsStore.js";
-import {getAppDataPath} from "../js/freedata";
+import { getAppDataPath } from "../js/freedata";
 
 import { displayToast } from "./popupHandler.js";
 
@@ -100,7 +100,7 @@ PouchDB.plugin(require("pouchdb-find"));
 //PouchDB.plugin(require('pouchdb-replication'));
 PouchDB.plugin(require("pouchdb-upsert"));
 
-var appDataPath = getAppDataPath()
+var appDataPath = getAppDataPath();
 var configFolder = path.join(appDataPath, "FreeDATA");
 
 var chatDB = path.join(configFolder, "chatDB");
