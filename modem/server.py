@@ -16,6 +16,7 @@ import command_ping
 import command_feq
 import command_test
 import command_arq_raw
+import command_message_send
 import event_manager
 
 app = Flask(__name__)
@@ -233,6 +234,13 @@ def get_post_radio():
         return api_response(request.json)
     elif request.method == 'GET':
         return api_response(app.state_manager.get_radio_status())
+
+@app.route('/freedata/messages', methods=['POST'])
+def post_freedata_message():
+    if enqueue_tx_command(command_message_send.SendMessageCommand, request.json):
+        return api_response(request.json)
+    else:
+        api_abort('Error executing command...', 500)
 
 # @app.route('/modem/arq_connect', methods=['POST'])
 # @app.route('/modem/arq_disconnect', methods=['POST'])
