@@ -5,7 +5,6 @@ from modem_frametypes import FRAME_TYPE
 from codec2 import FREEDV_MODE
 from enum import Enum
 import time
-from data_dispatcher import DataDispatcher
 
 class IRS_State(Enum):
     NEW = 0
@@ -193,7 +192,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.set_state(IRS_State.ENDED)
             self.event_manager.send_arq_session_finished(
                 False, self.id, self.dxcall, True, self.state.name, data=self.received_data, statistics=self.calculate_session_statistics())
-            DataDispatcher().dispatch(self.received_data)
+            return self.received_data
         else:
 
             ack = self.frame_factory.build_arq_burst_ack(self.id,
@@ -209,7 +208,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.set_state(IRS_State.FAILED)
             self.event_manager.send_arq_session_finished(
                 False, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics())
-
+            return False
 
     def calibrate_speed_settings(self):
         self.speed_level = 0 # for now stay at lowest speed level
