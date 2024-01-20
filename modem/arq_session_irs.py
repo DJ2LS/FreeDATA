@@ -5,6 +5,8 @@ from modem_frametypes import FRAME_TYPE
 from codec2 import FREEDV_MODE
 from enum import Enum
 import time
+from data_dispatcher import DataDispatcher
+
 class IRS_State(Enum):
     NEW = 0
     OPEN_ACK_SENT = 1
@@ -191,7 +193,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.set_state(IRS_State.ENDED)
             self.event_manager.send_arq_session_finished(
                 False, self.id, self.dxcall, True, self.state.name, data=self.received_data, statistics=self.calculate_session_statistics())
-
+            DataDispatcher().dispatch(self.received_data)
         else:
 
             ack = self.frame_factory.build_arq_burst_ack(self.id,
