@@ -4,12 +4,11 @@ class DataDispatcher:
     def __init__(self):
         self.logger = structlog.get_logger(type(self).__name__)
 
-        # Hardcoded endpoints
+        # endpoints
         self.endpoints = {
             "p2pmsg": self.handle_p2pmsg,
             "test": self.handle_test,
         }
-        self.default_handler = self.handle_raw  # Default handler for unrecognized types
 
     def log(self, message, isWarning = False):
         msg = f"[{type(self).__name__}]: {message}"
@@ -40,7 +39,7 @@ class DataDispatcher:
             self.endpoints[type_key](data)
         else:
             # Use the default handler for unrecognized types
-            self.default_handler(data)
+            self.handle_raw(data)
 
     def handle_p2pmsg(self, data):
         self.log(f"Handling p2pmsg: {data}")
