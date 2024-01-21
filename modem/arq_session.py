@@ -5,7 +5,7 @@ import structlog
 from event_manager import EventManager
 from modem_frametypes import FRAME_TYPE
 import time
-from arq_received_data_dispatcher import ARQReceivedDataDispatcher
+from arq_data_type_handler import ARQDataTypeHandler
 
 
 class ARQSession():
@@ -46,7 +46,7 @@ class ARQSession():
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
         self.event_frame_received = threading.Event()
 
-        self.arq_received_data_dispatcher = ARQReceivedDataDispatcher()
+        self.arq_data_type_handler = ARQDataTypeHandler()
         self.id = None
         self.session_started = time.time()
         self.session_ended = 0
@@ -91,9 +91,9 @@ class ARQSession():
         if self.state in self.STATE_TRANSITION:
             if frame_type in self.STATE_TRANSITION[self.state]:
                 action_name = self.STATE_TRANSITION[self.state][frame_type]
-                received_data = getattr(self, action_name)(frame)
-                if received_data:
-                    self.arq_received_data_dispatcher.dispatch(received_data)
+                received_data, type_byte = getattr(self, action_name)(frame)
+                if isinstance(received_data, bytearray) and isinstance(type_byte, int):
+                    self.arq_data_type_handler.dispatch(type_byte, received_data)
 
                 return
         
