@@ -2,7 +2,6 @@ import datetime
 import api_validations
 import base64
 import json
-import lzma
 
 
 class MessageP2P:
@@ -37,8 +36,7 @@ class MessageP2P:
         
     @classmethod
     def from_payload(cls, payload):
-        json_string = str(lzma.decompress(payload), 'utf-8')
-        payload_message = json.loads(json_string)
+        payload_message = json.loads(payload)
         attachments = list(map(cls.__decode_attachment__, payload_message['attachments']))
         return cls(payload_message['origin'], payload_message['destination'], 
                    payload_message['body'], attachments)
@@ -70,6 +68,4 @@ class MessageP2P:
     def to_payload(self):
         """Make a byte array ready to be sent out of the message data"""
         json_string = json.dumps(self.to_dict())
-        json_bytes = bytes(json_string, 'utf-8')
-        final_payload = lzma.compress(json_bytes)
-        return final_payload
+        return json_string
