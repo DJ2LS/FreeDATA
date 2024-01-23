@@ -3,6 +3,8 @@ import queue
 from codec2 import FREEDV_MODE
 import structlog
 from state_manager import StateManager
+from arq_data_type_handler import ARQDataTypeHandler
+
 
 class TxCommand():
 
@@ -13,6 +15,7 @@ class TxCommand():
         self.event_manager = event_manager
         self.set_params_from_api(apiParams)
         self.frame_factory = DataFrameFactory(config)
+        self.arq_data_type_handler = ARQDataTypeHandler()
 
     def set_params_from_api(self, apiParams):
         pass
