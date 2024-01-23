@@ -105,6 +105,12 @@ export function getAppDataPath() {
   const platform = os.platform();
   let appDataPath;
 
+    // Check if running in GitHub Actions
+  const isGitHubActions = process.env.GITHUB_ACTIONS === 'true';
+  if (isGitHubActions) {
+    return "/home/runner/work/FreeDATA/FreeDATA/gui/config";
+  }
+
   switch (platform) {
     case "darwin": // macOS
       appDataPath = path.join(os.homedir(), "Library", "Application Support");
