@@ -7,12 +7,14 @@ const nconf = require("nconf");
 
 var appDataPath = getAppDataPath();
 var configFolder = path.join(appDataPath, "FreeDATA");
-
 let configFile = "config.json"
+
 const isGitHubActions = process.env.GITHUB_ACTIONS === 'true';
 if (isGitHubActions) {
     configFile = "example.json";
+    configFolder = appDataPath;
 }
+
 var configPath = path.join(configFolder, configFile);
 
 console.log("AppData Path:", appDataPath);
