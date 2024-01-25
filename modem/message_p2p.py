@@ -42,7 +42,7 @@ class MessageP2P:
                    payload_message['body'], attachments)
 
     def get_id(self) -> str:
-        return f"{self.origin}.{self.destination}.{self.timestamp}"
+        return f"{self.origin}_{self.destination}_{self.timestamp}"
 
     def __encode_attachment__(self, binary_attachment: dict):
         encoded_attachment = binary_attachment.copy()
@@ -54,14 +54,21 @@ class MessageP2P:
         decoded_attachment['data'] = base64.b64decode(encoded_attachment['data'])
         return decoded_attachment
 
-    def to_dict(self):
+    def to_dict(self, received=False):
         """Make a dictionary out of the message data
         """
+
+        if received:
+            direction = 'receive'
+        else:
+            direction = 'transmit'
+
         return {
             'id': self.get_id(),
             'origin': self.origin,
             'destination': self.destination,
             'body': self.body,
+            'direction': direction,
             'attachments': list(map(self.__encode_attachment__, self.attachments)),
         }
     

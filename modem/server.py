@@ -18,6 +18,8 @@ import command_test
 import command_arq_raw
 import command_message_send
 import event_manager
+from message_system_db_manager import DatabaseManager
+
 
 app = Flask(__name__)
 CORS(app)
@@ -235,8 +237,11 @@ def get_post_radio():
     elif request.method == 'GET':
         return api_response(app.state_manager.get_radio_status())
 
-@app.route('/freedata/messages', methods=['POST'])
+@app.route('/freedata/messages', methods=['POST', 'GET'])
 def post_freedata_message():
+    if request.method in ['GET']:
+        result = DatabaseManager(uri='sqlite:///:memory:').get_all_messages_json()
+        return api_response(result)
     if enqueue_tx_command(command_message_send.SendMessageCommand, request.json):
         return api_response(request.json)
     else:

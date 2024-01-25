@@ -3,6 +3,8 @@
 import structlog
 import lzma
 import gzip
+from message_p2p import MessageP2P
+from message_system_db_manager import DatabaseManager
 
 class ARQDataTypeHandler:
     def __init__(self):
@@ -80,4 +82,8 @@ class ARQDataTypeHandler:
     def handle_p2pmsg_lzma(self, data):
         decompressed_data = lzma.decompress(data)
         self.log(f"Handling LZMA compressed P2PMSG data: {len(decompressed_data)} Bytes from {len(data)} Bytes")
+        received_message_obj = MessageP2P.from_payload(decompressed_data)
+        received_message_dict = MessageP2P.to_dict(received_message_obj, received=True)
+        DatabaseManager(uri='sqlite:///:memory:').add_message(received_message_dict)
+
         return decompressed_data
