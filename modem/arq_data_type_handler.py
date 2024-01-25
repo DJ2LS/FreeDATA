@@ -85,6 +85,6 @@ class ARQDataTypeHandler:
         decompressed_json_string = decompressed_data.decode('utf-8')
         received_message_obj = MessageP2P.from_payload(decompressed_json_string)
         received_message_dict = MessageP2P.to_dict(received_message_obj, received=True)
-        result = DatabaseManager(uri='sqlite:///:memory:').add_message(received_message_dict)
+        result = DatabaseManager().add_message(received_message_dict)
 
         return decompressed_data
