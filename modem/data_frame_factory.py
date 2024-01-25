@@ -15,7 +15,6 @@ class DataFrameFactory:
         'FINAL': 0,  # Bit-position for indicating the FINAL state
         'ABORT': 1, # Bit-position for indicating the ABORT request
         'CHECKSUM': 2,  # Bit-position for indicating the CHECKSUM is correct or not
-        'ENABLE_COMPRESSION': 3  # Bit-position for indicating compression is enabled
     }
 
     def __init__(self, config):
@@ -118,6 +117,7 @@ class DataFrameFactory:
             "total_crc": 4,
             "snr": 1,
             "flag": 1,
+            "type": 1,
         }
 
         self.template_list[FR_TYPE.ARQ_SESSION_INFO_ACK.value] = {
@@ -218,7 +218,7 @@ class DataFrameFactory:
 
             elif key in ["session_id", "speed_level", 
                             "frames_per_burst", "version",
-                            "offset", "total_length", "state"]:
+                            "offset", "total_length", "state", "type"]:
                 extracted_data[key] = int.from_bytes(data, 'big')
 
             elif key in ["snr"]:
@@ -350,10 +350,8 @@ class DataFrameFactory:
         }
         return self.construct(FR_TYPE.ARQ_SESSION_OPEN_ACK, payload)
     
-    def build_arq_session_info(self, session_id: int, total_length: int, total_crc: bytes, snr, flag_compression=False):
+    def build_arq_session_info(self, session_id: int, total_length: int, total_crc: bytes, snr, type):
         flag = 0b00000000
-        if flag_compression:
-            flag = helpers.set_flag(flag, 'ENABLE_COMPRESSION', True, self.ARQ_FLAGS)
 
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),
@@ -361,6 +359,7 @@ class DataFrameFactory:
             "total_crc": total_crc,
             "snr": helpers.snr_to_bytes(1),
             "flag": flag.to_bytes(1, 'big'),
+            "type": type.to_bytes(1, 'big'),
 
         }
         return self.construct(FR_TYPE.ARQ_SESSION_INFO, payload)
@@ -376,7 +375,6 @@ class DataFrameFactory:
             "session_id": session_id.to_bytes(1, 'big'),
         }
         return self.construct(FR_TYPE.ARQ_STOP_ACK, payload)
-
 
     def build_arq_session_info_ack(self, session_id, total_crc, snr, speed_level, frames_per_burst, flag_final=False, flag_abort=False):
         flag = 0b00000000

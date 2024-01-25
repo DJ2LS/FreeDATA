@@ -31,7 +31,6 @@ class FrameHandler():
     def is_frame_for_me(self):
         call_with_ssid = self.config['STATION']['mycall'] + "-" + str(self.config['STATION']['myssid'])
         ft = self.details['frame']['frame_type']
-        print(self.details)
         valid = False
         # Check for callsign checksum
         if ft in ['ARQ_SESSION_OPEN', 'ARQ_SESSION_OPEN_ACK', 'PING', 'PING_ACK']:
