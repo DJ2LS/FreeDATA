@@ -16,6 +16,9 @@ class DatabaseManager:
         self.session_factory = sessionmaker(bind=self.engine)
         Base.metadata.create_all(self.engine)
 
+        self.logger = structlog.get_logger(type(self).__name__)
+
+
     def log(self, message, isWarning=False):
         msg = f"[{type(self).__name__}]: {message}"
         logger = self.logger.warn if isWarning else self.logger.info
