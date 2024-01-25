@@ -15,12 +15,17 @@ class SendMessageCommand(TxCommand):
         self.message = MessageP2P.from_api_params(origin, apiParams)
 
     def transmit(self, modem):
-        data, data_type = self.arq_data_type_handler.prepare(self.message.to_payload, 'p2pmsg_lzma')
-        iss = ARQSessionISS(self.config, modem, 
-                            self.message.destination, 
-                            data,
+        # Convert JSON string to bytes (using UTF-8 encoding)
+        payload = self.message.to_payload().encode('utf-8')
+        json_bytearray = bytearray(payload)
+        data, data_type = self.arq_data_type_handler.prepare(json_bytearray, 'p2pmsg_lzma')
+        iss = ARQSessionISS(self.config,
+                            modem,
+                            self.message.destination,
                             self.state_manager,
-                            data_type)
+                            data,
+                            data_type
+                            )
         
         self.state_manager.register_arq_iss_session(iss)
         iss.start()

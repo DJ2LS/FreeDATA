@@ -34,7 +34,7 @@ class TestDataFrameFactory(unittest.TestCase):
         }
         message = MessageP2P(self.mycall, 'DJ2LS-3', 'Hello World!', [attachment])
         payload = message.to_payload()
-
+        print(payload)
         received_message = MessageP2P.from_payload(payload)
         received_message_dict = MessageP2P.to_dict(received_message, received=True)
         self.database_manager.add_message(received_message_dict)

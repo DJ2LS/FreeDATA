@@ -6,6 +6,8 @@ from threading import local
 from message_system_db_model import Base, Station, Status, Attachment, P2PMessage
 from datetime import datetime
 import json
+import structlog
+
 
 class DatabaseManager:
     def __init__(self, uri='sqlite:///freedata-messages.db'):
@@ -13,6 +15,11 @@ class DatabaseManager:
         self.thread_local = local()
         self.session_factory = sessionmaker(bind=self.engine)
         Base.metadata.create_all(self.engine)
+
+    def log(self, message, isWarning=False):
+        msg = f"[{type(self).__name__}]: {message}"
+        logger = self.logger.warn if isWarning else self.logger.info
+        logger(msg)
 
     def get_thread_scoped_session(self):
         if not hasattr(self.thread_local, "session"):
@@ -71,6 +78,8 @@ class DatabaseManager:
 
             session.add(new_message)
             session.commit()
+
+            self.log(f"Added data to database: {new_message.id}")
             return new_message.id
         except Exception as e:
             session.rollback()

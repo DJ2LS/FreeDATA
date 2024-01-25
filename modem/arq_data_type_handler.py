@@ -82,8 +82,9 @@ class ARQDataTypeHandler:
     def handle_p2pmsg_lzma(self, data):
         decompressed_data = lzma.decompress(data)
         self.log(f"Handling LZMA compressed P2PMSG data: {len(decompressed_data)} Bytes from {len(data)} Bytes")
-        received_message_obj = MessageP2P.from_payload(decompressed_data)
+        decompressed_json_string = decompressed_data.decode('utf-8')
+        received_message_obj = MessageP2P.from_payload(decompressed_json_string)
         received_message_dict = MessageP2P.to_dict(received_message_obj, received=True)
-        DatabaseManager(uri='sqlite:///:memory:').add_message(received_message_dict)
+        result = DatabaseManager(uri='sqlite:///:memory:').add_message(received_message_dict)
 
         return decompressed_data

@@ -238,7 +238,7 @@ def get_post_radio():
         return api_response(app.state_manager.get_radio_status())
 
 @app.route('/freedata/messages', methods=['POST', 'GET'])
-def post_freedata_message():
+def get_post_freedata_message():
     if request.method in ['GET']:
         result = DatabaseManager(uri='sqlite:///:memory:').get_all_messages_json()
         return api_response(result)
