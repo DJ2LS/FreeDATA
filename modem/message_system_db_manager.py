@@ -115,7 +115,8 @@ class DatabaseManager:
             return new_message.id
         except Exception as e:
             session.rollback()
-            raise e
+            self.log(f"error adding new message to databse with error: {e}", isWarning=True)
+            self.log(f"---> please delete or update existing database", isWarning=True)
         finally:
             session.remove()
 
