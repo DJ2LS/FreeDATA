@@ -18,7 +18,7 @@ class SendMessageCommand(TxCommand):
     def transmit(self, modem):
         # Convert JSON string to bytes (using UTF-8 encoding)
 
-        DatabaseManager().add_message(self.message.to_dict())
+        DatabaseManager(self.event_manager).add_message(self.message.to_dict())
 
         payload = self.message.to_payload().encode('utf-8')
         json_bytearray = bytearray(payload)
