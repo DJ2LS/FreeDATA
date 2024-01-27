@@ -129,14 +129,12 @@ class DatabaseManager:
             self.log(f"error fetching database messages with error: {e}", isWarning=True)
             self.log(f"---> please delete or update existing database", isWarning=True)
 
-            return False
+            return []
 
         finally:
             session.remove()
 
     def get_all_messages_json(self):
         messages_dict = self.get_all_messages()
-        if messages_dict:
-            messages_with_header = {'total_messages' : len(messages_dict), 'messages' : messages_dict}
-            return json.dumps(messages_with_header)  # Convert to JSON string
-        return json.dumps({'error': 'fetching messages from database'})
+        messages_with_header = {'total_messages' : len(messages_dict), 'messages' : messages_dict}
+        return json.dumps(messages_with_header)  # Convert to JSON string
