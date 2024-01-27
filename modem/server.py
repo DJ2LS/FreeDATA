@@ -25,7 +25,7 @@ app = Flask(__name__)
 CORS(app)
 CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
-MODEM_VERSION = "0.12.1-alpha"
+MODEM_VERSION = "0.13.0-alpha"
 
 # set config file to use
 def set_config():
