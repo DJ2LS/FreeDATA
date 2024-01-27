@@ -5,6 +5,7 @@ from queue import Queue
 from arq_session_iss import ARQSessionISS
 from message_p2p import MessageP2P
 from arq_data_type_handler import ARQDataTypeHandler
+from message_system_db_manager import DatabaseManager
 
 class SendMessageCommand(TxCommand):
     """Command to send a P2P message using an ARQ transfer session
@@ -16,9 +17,15 @@ class SendMessageCommand(TxCommand):
 
     def transmit(self, modem):
         # Convert JSON string to bytes (using UTF-8 encoding)
+
+        DatabaseManager().add_message(self.message.to_dict())
+
         payload = self.message.to_payload().encode('utf-8')
         json_bytearray = bytearray(payload)
         data, data_type = self.arq_data_type_handler.prepare(json_bytearray, 'p2pmsg_lzma')
+
+
+
         iss = ARQSessionISS(self.config,
                             modem,
                             self.message.destination,

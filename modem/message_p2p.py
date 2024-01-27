@@ -2,6 +2,14 @@ import datetime
 import api_validations
 import base64
 import json
+from message_system_db_manager import DatabaseManager
+
+
+def message_received(event_manager, data):
+    decompressed_json_string = data.decode('utf-8')
+    received_message_obj = MessageP2P.from_payload(decompressed_json_string)
+    received_message_dict = MessageP2P.to_dict(received_message_obj, received=True)
+    DatabaseManager(event_manager).add_message(received_message_dict)
 
 
 class MessageP2P:
@@ -58,17 +66,12 @@ class MessageP2P:
         """Make a dictionary out of the message data
         """
 
-        if received:
-            direction = 'receive'
-        else:
-            direction = 'transmit'
-
         return {
             'id': self.get_id(),
             'origin': self.origin,
             'destination': self.destination,
             'body': self.body,
-            'direction': direction,
+            'direction': 'receive' if received else 'transmit',
             'attachments': list(map(self.__encode_attachment__, self.attachments)),
         }
     
@@ -76,3 +79,4 @@ class MessageP2P:
         """Make a byte array ready to be sent out of the message data"""
         json_string = json.dumps(self.to_dict())
         return json_string
+

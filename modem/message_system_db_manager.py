@@ -1,4 +1,5 @@
 # database_manager.py
+import sqlite3
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -8,9 +9,10 @@ from datetime import datetime
 import json
 import structlog
 
-
 class DatabaseManager:
-    def __init__(self, uri='sqlite:///freedata-messages.db'):
+    def __init__(self, event_manger, uri='sqlite:///freedata-messages.db'):
+        self.event_manager = event_manger
+
         self.engine = create_engine(uri, echo=False)
         self.thread_local = local()
         self.session_factory = sessionmaker(bind=self.engine)
@@ -18,6 +20,32 @@ class DatabaseManager:
 
         self.logger = structlog.get_logger(type(self).__name__)
 
+    def initialize_default_values(self):
+        session = self.get_thread_scoped_session()
+        try:
+            statuses = [
+                "transmitting",
+                "transmitted",
+                "received",
+                "failed",
+                "failed_checksum",
+                "aborted"
+            ]
+
+            # Add default statuses if they don't exist
+            for status_name in statuses:
+                existing_status = session.query(Status).filter_by(name=status_name).first()
+                if not existing_status:
+                    new_status = Status(name=status_name)
+                    session.add(new_status)
+
+            session.commit()
+            self.log("Initialized database")
+        except Exception as e:
+            session.rollback()
+            self.log(f"An error occurred while initializing default values: {e}", isWarning=True)
+        finally:
+            session.remove()
 
     def log(self, message, isWarning=False):
         msg = f"[{type(self).__name__}]: {message}"
@@ -59,7 +87,6 @@ class DatabaseManager:
 
             # Parse the timestamp from the message ID
             timestamp = datetime.fromisoformat(message_data['id'].split('_')[2])
-
             # Create the P2PMessage instance
             new_message = P2PMessage(
                 id=message_data['id'],
@@ -67,6 +94,7 @@ class DatabaseManager:
                 destination_callsign=destination.callsign,
                 body=message_data['body'],
                 timestamp=timestamp,
+                direction=message_data['direction'],
                 status_id=status.id if status else None
             )
 
@@ -83,6 +111,7 @@ class DatabaseManager:
             session.commit()
 
             self.log(f"Added data to database: {new_message.id}")
+            self.event_manager.freedata_message_db_change()
             return new_message.id
         except Exception as e:
             session.rollback()
@@ -95,12 +124,19 @@ class DatabaseManager:
         try:
             messages = session.query(P2PMessage).all()
             return [message.to_dict() for message in messages]
+
         except Exception as e:
-            raise e
+            self.log(f"error fetching database messages with error: {e}", isWarning=True)
+            self.log(f"---> please delete or update existing database", isWarning=True)
+
+            return False
+
         finally:
             session.remove()
 
     def get_all_messages_json(self):
         messages_dict = self.get_all_messages()
-        messages_with_header = {'total_messages' : len(messages_dict), 'messages' : messages_dict}
-        return json.dumps(messages_with_header)  # Convert to JSON string
+        if messages_dict:
+            messages_with_header = {'total_messages' : len(messages_dict), 'messages' : messages_dict}
+            return json.dumps(messages_with_header)  # Convert to JSON string
+        return json.dumps({'error': 'fetching messages from database'})

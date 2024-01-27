@@ -6,7 +6,8 @@ import unittest
 from config import CONFIG
 from message_p2p import MessageP2P
 from message_system_db_manager import DatabaseManager
-
+from event_manager import EventManager
+import queue
 
 class TestDataFrameFactory(unittest.TestCase):
 
@@ -14,8 +15,11 @@ class TestDataFrameFactory(unittest.TestCase):
     def setUpClass(cls):
         config_manager = CONFIG('modem/config.ini.example')
         cls.config = config_manager.read()
+
+        cls.event_queue = queue.Queue()
+        cls.event_manager = EventManager([cls.event_queue])
         cls.mycall = f"{cls.config['STATION']['mycall']}-{cls.config['STATION']['myssid']}"
-        cls.database_manager = DatabaseManager(uri='sqlite:///:memory:')
+        cls.database_manager = DatabaseManager(cls.event_manager, uri='sqlite:///:memory:')
 
     def testFromApiParams(self):
         api_params = {
@@ -34,7 +38,20 @@ class TestDataFrameFactory(unittest.TestCase):
         }
         message = MessageP2P(self.mycall, 'DJ2LS-3', 'Hello World!', [attachment])
         payload = message.to_payload()
-        print(payload)
+        received_message = MessageP2P.from_payload(payload)
+        self.assertEqual(message.origin, received_message.origin)
+        self.assertEqual(message.destination, received_message.destination)
+        self.assertCountEqual(message.attachments, received_message.attachments)
+        self.assertEqual(attachment['data'], received_message.attachments[0]['data'])
+
+    def testToPayloadWithAttachmentAndDatabase(self):
+        attachment = {
+            'name': 'test.gif',
+            'type': 'image/gif',
+            'data': np.random.bytes(1024)
+        }
+        message = MessageP2P(self.mycall, 'DJ2LS-3', 'Hello World!', [attachment])
+        payload = message.to_payload()
         received_message = MessageP2P.from_payload(payload)
         received_message_dict = MessageP2P.to_dict(received_message, received=True)
         self.database_manager.add_message(received_message_dict)
@@ -46,6 +63,7 @@ class TestDataFrameFactory(unittest.TestCase):
 
         result = self.database_manager.get_all_messages()
         self.assertEqual(result[0]["destination"], message.destination)
+
 
 if __name__ == '__main__':
     unittest.main()

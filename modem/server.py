@@ -240,7 +240,7 @@ def get_post_radio():
 @app.route('/freedata/messages', methods=['POST', 'GET'])
 def get_post_freedata_message():
     if request.method in ['GET']:
-        result = DatabaseManager().get_all_messages_json()
+        result = DatabaseManager(app.event_manager).get_all_messages_json()
         return api_response(result)
     if enqueue_tx_command(command_message_send.SendMessageCommand, request.json):
         return api_response(request.json)
@@ -296,6 +296,8 @@ if __name__ == "__main__":
     app.service_manager = service_manager.SM(app)
     # start modem service
     app.modem_service.put("start")
+    # initialize databse default values
+    DatabaseManager(app.event_manager).initialize_default_values()
 
     wsm.startThreads(app)
     app.run()

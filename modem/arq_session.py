@@ -46,7 +46,7 @@ class ARQSession():
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
         self.event_frame_received = threading.Event()
 
-        self.arq_data_type_handler = ARQDataTypeHandler()
+        self.arq_data_type_handler = ARQDataTypeHandler(self.event_manager)
         self.id = None
         self.session_started = time.time()
         self.session_ended = 0

@@ -8,8 +8,8 @@ Base = declarative_base()
 class Station(Base):
     __tablename__ = 'station'
     callsign = Column(String, primary_key=True)
-    location = Column(String, nullable=True)
-    info = Column(String, nullable=True)
+    location = Column(JSON, nullable=True)
+    info = Column(JSON, nullable=True)
 
 class Status(Base):
     __tablename__ = 'status'
@@ -20,15 +20,14 @@ class P2PMessage(Base):
     __tablename__ = 'p2p_message'
     id = Column(String, primary_key=True)
     origin_callsign = Column(String, ForeignKey('station.callsign'))
-    via = Column(String, nullable=True)
+    via_callsign = Column(String, ForeignKey('station.callsign'), nullable=True)
     destination_callsign = Column(String, ForeignKey('station.callsign'))
-    body = Column(String)
+    body = Column(String, nullable=True)
     attachments = relationship('Attachment', backref='p2p_message')
     timestamp = Column(DateTime)
-    timestamp_sent = Column(DateTime, nullable=True)
     status_id = Column(Integer, ForeignKey('status.id'), nullable=True)
     status = relationship('Status', backref='p2p_messages')
-    direction = Column(String, nullable=True)
+    direction = Column(String)
     statistics = Column(JSON, nullable=True)
 
     def to_dict(self):
@@ -36,12 +35,11 @@ class P2PMessage(Base):
             'id': self.id,
             'timestamp': self.timestamp.isoformat() if self.timestamp else None,
             'origin': self.origin_callsign,
-            'via': self.via,
+            'via': self.via_callsign,
             'destination': self.destination_callsign,
             'direction': self.direction,
             'body': self.body,
             'attachments': [attachment.to_dict() for attachment in self.attachments],
-            'timestamp_sent': self.timestamp_sent.isoformat() if self.timestamp_sent else None,
             'status': self.status.name if self.status else None,
             'statistics': self.statistics
         }

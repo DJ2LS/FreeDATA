@@ -15,7 +15,7 @@ class TxCommand():
         self.event_manager = event_manager
         self.set_params_from_api(apiParams)
         self.frame_factory = DataFrameFactory(config)
-        self.arq_data_type_handler = ARQDataTypeHandler()
+        self.arq_data_type_handler = ARQDataTypeHandler(event_manager)
 
     def set_params_from_api(self, apiParams):
         pass
