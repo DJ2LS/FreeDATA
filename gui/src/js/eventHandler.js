@@ -1,3 +1,4 @@
+/*
 import {
   newMessageReceived,
   newBeaconReceived,
@@ -5,7 +6,10 @@ import {
   setStateSuccess,
   setStateFailed,
 } from "./chatHandler";
+*/
 import { displayToast } from "./popupHandler";
+import { getFreedataMessages } from "./api"
+import { processFreedataMessages } from "./messagesHandler.ts"
 
 // ----------------- init pinia stores -------------
 import { setActivePinia } from "pinia";
@@ -58,6 +62,14 @@ export function eventDispatcher(data) {
     return;
   }
 
+switch (data["message-db"]) {
+    case "changed":
+      console.log("fetching new messages...")
+      var messages = getFreedataMessages()
+      processFreedataMessages(messages)
+      return;
+  }
+
   switch (data["ptt"]) {
     case true:
     case false:
@@ -97,6 +109,9 @@ export function eventDispatcher(data) {
       message = "Connected to server";
       displayToast("success", "bi-ethernet", message, 5000);
       stateStore.modem_connection = "connected";
+
+      getFreedataMessages()
+
       return;
 
     case "arq":
