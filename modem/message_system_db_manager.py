@@ -139,3 +139,83 @@ class DatabaseManager:
         messages_dict = self.get_all_messages()
         messages_with_header = {'total_messages' : len(messages_dict), 'messages' : messages_dict}
         return json.dumps(messages_with_header)  # Convert to JSON string
+
+    def get_message_by_id(self, message_id):
+        session = self.get_thread_scoped_session()
+        try:
+            message = session.query(P2PMessage).filter_by(id=message_id).first()
+            if message:
+                return message.to_dict()
+            else:
+                return None
+        except Exception as e:
+            self.log(f"Error fetching message with ID {message_id}: {e}", isWarning=True)
+            return None
+        finally:
+            session.remove()
+
+    def get_message_by_id_json(self, message_id):
+        message_dict = self.get_message_by_id(message_id)
+        return json.dumps(message_dict)  # Convert to JSON string
+
+    def delete_message(self, message_id):
+        session = self.get_thread_scoped_session()
+        try:
+            message = session.query(P2PMessage).filter_by(id=message_id).first()
+            if message:
+                session.delete(message)
+                session.commit()
+                self.log(f"Deleted: {message_id}")
+                return {'status': 'success', 'message': f'Message {message_id} deleted'}
+            else:
+                return {'status': 'failure', 'message': 'Message not found'}
+
+        except Exception as e:
+            session.rollback()
+            self.log(f"Error deleting message with ID {message_id}: {e}", isWarning=True)
+            return {'status': 'failure', 'message': str(e)}
+
+        finally:
+            session.remove()
+
+    def update_message(self, message_id, update_data):
+        session = self.get_thread_scoped_session()
+        try:
+            message = session.query(P2PMessage).filter_by(id=message_id).first()
+            if message:
+                # Update fields of the message as per update_data
+                if 'body' in update_data:
+                    message.body = update_data['body']
+                session.commit()
+                self.log(f"Updated: {message_id}")
+                return {'status': 'success', 'message': f'Message {message_id} updated'}
+            else:
+                return {'status': 'failure', 'message': 'Message not found'}
+
+        except Exception as e:
+            session.rollback()
+            self.log(f"Error updating message with ID {message_id}: {e}", isWarning=True)
+            return {'status': 'failure', 'message': str(e)}
+
+        finally:
+            session.remove()
+
+    def get_attachments_by_message_id(self, message_id):
+        session = self.get_thread_scoped_session()
+        try:
+            # Query for the message with the given ID
+            message = session.query(P2PMessage).filter_by(id=message_id).first()
+            if message:
+                attachments = [attachment.to_dict() for attachment in message.attachments]
+                return attachments
+            else:
+                return []
+        except Exception as e:
+            self.log(f"Error fetching attachments for message ID {message_id}: {e}", isWarning=True)
+            return []
+        finally:
+            session.remove()
+
+    def get_attachments_by_message_id_json(self, message_id):
+        attachments = self.get_attachments_by_message_id(message_id)
+        return json.dumps(attachments)

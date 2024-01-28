@@ -247,6 +247,23 @@ def get_post_freedata_message():
     else:
         api_abort('Error executing command...', 500)
 
+@app.route('/freedata/messages/<string:message_id>', methods=['GET', 'DELETE'])
+def handle_freedata_message(message_id):
+    if request.method == 'GET':
+        message = DatabaseManager(app.event_manager).get_message_by_id_json(message_id)
+        return message
+
+    elif request.method == 'DELETE':
+        result = DatabaseManager(app.event_manager).delete_message(message_id)
+        return api_response(result)
+    else:
+        api_abort('Error executing command...', 500)
+
+@app.route('/freedata/messages/<string:message_id>/attachments', methods=['GET'])
+def get_message_attachments(message_id):
+    attachments = DatabaseManager(app.event_manager).get_attachments_by_message_id_json(message_id)
+    return api_response(attachments)
+    
 # @app.route('/modem/arq_connect', methods=['POST'])
 # @app.route('/modem/arq_disconnect', methods=['POST'])
 # @app.route('/modem/send_raw', methods=['POST'])
