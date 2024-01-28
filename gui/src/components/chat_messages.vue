@@ -15,16 +15,11 @@ import SentBroadcastMessage from "./chat_messages_broadcast_sent.vue"; // Import
 var prevChatMessageDay = "";
 
 function getDateTime(timestampRaw) {
-  var datetime = new Date(timestampRaw * 1000).toLocaleString(
-    navigator.language,
-    {
-      hourCycle: "h23",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    },
-  );
-  return datetime;
+  let date = new Date(timestampRaw);
+    let year = date.getFullYear();
+    let month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-indexed
+    let day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 </script>
 
@@ -43,13 +38,13 @@ function getDateTime(timestampRaw) {
         <template
           v-for="item in chat.sorted_chat_list[callsign]"
         >
-        <!--
+
           <div v-if="prevChatMessageDay !== getDateTime(item.timestamp)">
             <div class="separator my-2">
               {{ (prevChatMessageDay = getDateTime(item.timestamp)) }}
             </div>
           </div>
-        -->
+
 
           <div v-if="item.direction === 'transmit'">
             <sent-message :message="item" />
