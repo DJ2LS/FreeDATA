@@ -25,6 +25,7 @@
     <!-- Delete button outside of the card -->
     <div class="col-auto">
       <button
+      disabled
         class="btn btn-outline-secondary border-0 me-1"
         @click="showMessageInfo"
         data-bs-target="#messageInfoModal"
@@ -34,6 +35,7 @@
       </button>
 
       <button
+      disabled
         v-if="getFileContent['filesize'] !== 0"
         class="btn btn-outline-secondary border-0 me-1"
         @click="downloadAttachment"
@@ -41,7 +43,7 @@
         <i class="bi bi-download"></i>
       </button>
 
-      <button class="btn btn-outline-secondary border-0" @click="deleteMessage">
+      <button disabled class="btn btn-outline-secondary border-0" @click="deleteMessage">
         <i class="bi bi-trash"></i>
       </button>
     </div>

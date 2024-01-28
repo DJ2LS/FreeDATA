@@ -3,6 +3,7 @@
     <!-- control area -->
     <div class="col-auto p-0 m-0">
       <button
+        disabled
         v-if="getFileContent['filesize'] !== 0"
         class="btn btn-outline-secondary border-0 me-1"
         @click="downloadAttachment"
@@ -11,6 +12,7 @@
       </button>
 
       <button
+      disabled
         class="btn btn-outline-secondary border-0 me-1"
         @click="repeatMessage"
       >
@@ -18,6 +20,7 @@
       </button>
 
       <button
+      disabled
         class="btn btn-outline-secondary border-0 me-1"
         @click="showMessageInfo"
         data-bs-target="#messageInfoModal"
@@ -26,7 +29,7 @@
         <i class="bi bi-info-circle"></i>
       </button>
 
-      <button class="btn btn-outline-secondary border-0" @click="deleteMessage">
+      <button disabled class="btn btn-outline-secondary border-0" @click="deleteMessage">
         <i class="bi bi-trash"></i>
       </button>
     </div>
