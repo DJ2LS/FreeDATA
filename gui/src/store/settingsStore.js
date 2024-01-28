@@ -1,9 +1,27 @@
 import { reactive, ref, watch } from "vue";
-
 import { getConfig, setConfig } from "../js/api";
+import { getAppDataPath } from "../js/freedata";
+import fs from "fs";
+const path = require("path");
+const nconf = require("nconf");
 
-var nconf = require("nconf");
-nconf.file({ file: "config/config.json" });
+var appDataPath = getAppDataPath();
+var configFolder = path.join(appDataPath, "FreeDATA");
+let configFile = "config.json";
+
+const isGitHubActions = process.env.GITHUB_ACTIONS === "true";
+if (isGitHubActions) {
+  configFile = "example.json";
+  configFolder = appDataPath;
+}
+
+var configPath = path.join(configFolder, configFile);
+
+console.log("AppData Path:", appDataPath);
+console.log(configFolder);
+console.log(configPath);
+
+nconf.file({ file: configPath });
 
 // +++
 //GUI DEFAULT SETTINGS........

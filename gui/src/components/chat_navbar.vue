@@ -108,14 +108,11 @@ function newChat() {
   let callsign = this.newChatCall.value;
   callsign = callsign.toUpperCase().trim();
   if (callsign === "") return;
-  startChatWithNewStation(callsign);
+  //startChatWithNewStation(callsign);
   //updateAllChat(false);
   this.newChatCall.value = "";
 }
 
-function syncWithModem() {
-  getRxBuffer();
-}
 </script>
 
 <template>
@@ -123,26 +120,15 @@ function syncWithModem() {
     <div class="container">
       <div class="row w-100">
         <div class="col-3 p-0 me-2">
-          <div class="input-group bottom-0 m-0 ms-1">
-            <input
-              class="form-control"
-              maxlength="9"
-              style="text-transform: uppercase"
-              placeholder="callsign"
-              @keypress.enter="newChat()"
-              ref="newChatCall"
-            />
-            <button
-              class="btn btn-sm btn-outline-success"
-              id="createNewChatButton"
-              type="button"
-              title="Start a new chat (enter dx call sign first)"
-              @click="newChat()"
+          <button
+              class="btn btn-outline-primary"
+              data-bs-target="#newChatModal"
+              data-bs-toggle="modal"
             >
-              new chat
-              <i class="bi bi-pencil-square" style="font-size: 1.2rem"></i>
+              <i class="bi bi-pencil-square"> Start a new chat</i>
             </button>
-          </div>
+
+
         </div>
         <div class="col-5 ms-2 p-0">
           <!-- right side of chat nav bar-->
@@ -162,18 +148,6 @@ function syncWithModem() {
                 height="50"
               />
             </div>
-          </div>
-        </div>
-
-        <div class="col-2 ms-2 p-0">
-          <div class="input-group mb-0 p-0">
-            <button
-              type="button"
-              class="btn btn-outline-secondary"
-              @click="syncWithModem()"
-            >
-              Modem Sync {{ state.rx_buffer_length }}
-            </button>
           </div>
         </div>
       </div>
