@@ -16,13 +16,16 @@ import command_ping
 import command_feq
 import command_test
 import command_arq_raw
+import command_message_send
 import event_manager
+from message_system_db_manager import DatabaseManager
+
 
 app = Flask(__name__)
 CORS(app)
 CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
-MODEM_VERSION = "0.12.0-alpha"
+MODEM_VERSION = "0.13.0-alpha"
 
 # set config file to use
 def set_config():
@@ -234,6 +237,16 @@ def get_post_radio():
     elif request.method == 'GET':
         return api_response(app.state_manager.get_radio_status())
 
+@app.route('/freedata/messages', methods=['POST', 'GET'])
+def get_post_freedata_message():
+    if request.method in ['GET']:
+        result = DatabaseManager(app.event_manager).get_all_messages_json()
+        return api_response(result)
+    if enqueue_tx_command(command_message_send.SendMessageCommand, request.json):
+        return api_response(request.json)
+    else:
+        api_abort('Error executing command...', 500)
+
 # @app.route('/modem/arq_connect', methods=['POST'])
 # @app.route('/modem/arq_disconnect', methods=['POST'])
 # @app.route('/modem/send_raw', methods=['POST'])
@@ -283,6 +296,8 @@ if __name__ == "__main__":
     app.service_manager = service_manager.SM(app)
     # start modem service
     app.modem_service.put("start")
+    # initialize databse default values
+    DatabaseManager(app.event_manager).initialize_default_values()
 
     wsm.startThreads(app)
     app.run()

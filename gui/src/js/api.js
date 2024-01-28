@@ -4,6 +4,10 @@ import {
   validateCallsignWithoutSSID,
 } from "./freedata";
 
+import {
+processFreedataMessages
+} from "./messagesHandler"
+
 function buildURL(params, endpoint) {
   const url = "http://" + params.host + ":" + params.port + endpoint;
   return url;
@@ -15,8 +19,7 @@ async function apiGet(endpoint) {
     if (!response.ok) {
       throw new Error(`REST response not ok: ${response.statusText}`);
     }
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error("Error getting from REST:", error);
   }
@@ -126,4 +129,16 @@ export function setRadioParameters(frequency, mode, rf_level) {
 }
 export function getRadioStatus() {
   return apiGet("/radio");
+}
+
+export async function getFreedataMessages(){
+    let res = await apiGet("/freedata/messages")
+    processFreedataMessages(res)
+}
+
+export async function sendFreedataMessage(dxcall, body) {
+  return await apiPost("/freedata/messages", {
+    dxcall: dxcall,
+    body: body,
+  });
 }

@@ -28,3 +28,4 @@ pytest-cover
 pytest-coverage
 pytest-rerunfailures
 pick
+sqlalchemy
