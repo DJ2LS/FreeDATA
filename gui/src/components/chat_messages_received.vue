@@ -53,7 +53,7 @@ import {
   deleteMessageFromDB,
   requestMessageInfo,
   getMessageAttachment,
-} from "../js/chatHandler";
+} from "../js/messagesHandler";
 import { atob_FD } from "../js/freedata";
 
 // pinia store setup
@@ -97,6 +97,11 @@ export default {
   },
   computed: {
     getFileContent() {
+    
+      if(this.message.attachments.length <= 0){
+        return { filename: '', filesize: 0, filetype: '' };
+      }
+      
       try {
         var filename = Object.keys(this.message._attachments)[0];
         var filesize = this.message._attachments[filename]["length"];
@@ -112,9 +117,9 @@ export default {
     messageWidthClass() {
       // Calculate a Bootstrap grid class based on message length
       // Adjust the logic as needed to fit your requirements
-      if (this.message.msg.length <= 50) {
+      if (this.message.body.length <= 50) {
         return "col-4";
-      } else if (this.message.msg.length <= 100) {
+      } else if (this.message.body.length <= 100) {
         return "col-6";
       } else {
         return "col-9";
@@ -123,15 +128,11 @@ export default {
 
     getDateTime() {
 
-    console.log(this.message.timestamp)
-      var datetime = new Date(this.message.timestamp * 1000).toLocaleString(
-        navigator.language,
-        {
-          hour: "2-digit",
-          minute: "2-digit",
-        },
-      );
-      return datetime;
+        let date = new Date(this.message.timestamp);
+        let hours = date.getHours().toString().padStart(2, '0');
+        let minutes = date.getMinutes().toString().padStart(2, '0');
+        let seconds = date.getSeconds().toString().padStart(2, '0');
+        return `${hours}:${minutes}:${seconds}`;
     },
   },
 };

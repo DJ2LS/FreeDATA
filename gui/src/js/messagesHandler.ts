@@ -64,3 +64,21 @@ function createSortedMessagesList(data: { total_messages: number, messages: Mess
 export function newMessage(dxcall, body){
     sendFreedataMessage(dxcall, body)
 }
+
+
+/* ------ TEMPORARY DUMMY FUNCTIONS --- */
+export function repeatMessageTransmission(id){
+    return
+}
+
+export function deleteMessageFromDB(id){
+    return
+}
+
+export function requestMessageInfo(id){
+    return
+}
+
+export function getMessageAttachment(id){
+    return
+}

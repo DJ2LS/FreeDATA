@@ -43,7 +43,7 @@
         </div>
 
         <div class="card-body">
-          <p class="card-text">{{ message.msg }}</p>
+          <p class="card-text">{{ message.body }}</p>
         </div>
 
         <div class="card-footer p-0 bg-secondary border-top-0">
@@ -91,7 +91,7 @@ import {
   deleteMessageFromDB,
   requestMessageInfo,
   getMessageAttachment,
-} from "../js/chatHandler";
+} from "../js/messagesHandler";
 
 // pinia store setup
 import { setActivePinia } from "pinia";
@@ -109,15 +109,15 @@ export default {
 
   methods: {
     repeatMessage() {
-      repeatMessageTransmission(this.message._id);
+      repeatMessageTransmission(this.message.id);
     },
 
     deleteMessage() {
-      deleteMessageFromDB(this.message._id);
+      deleteMessageFromDB(this.message.id);
     },
     showMessageInfo() {
       console.log("requesting message info.....");
-      requestMessageInfo(this.message._id);
+      requestMessageInfo(this.message.id);
       //let infoModal = Modal.getOrCreateInstance(document.getElementById('messageInfoModal'))
       //console.log(this.infoModal)
       //this.infoModal.show()
@@ -127,7 +127,7 @@ export default {
         // reset file store
         chat.downloadFileFromDB = [];
 
-        const attachment = await getMessageAttachment(this.message._id);
+        const attachment = await getMessageAttachment(this.message.id);
         const blob = new Blob([atob_FD(attachment[2])], {
           type: `${attachment[1]};charset=utf-8`,
         });
@@ -139,6 +139,11 @@ export default {
   },
   computed: {
     getFileContent() {
+
+      if(this.message.attachments.length <= 0){
+        return { filename: '', filesize: 0, filetype: '' };
+      }
+
       var filename = Object.keys(this.message._attachments)[0];
       var filesize = this.message._attachments[filename]["length"];
       var filetype = filename.split(".")[1];
@@ -157,9 +162,9 @@ export default {
     messageWidthClass() {
       // Calculate a Bootstrap grid class based on message length
       // Adjust the logic as needed to fit your requirements
-      if (this.message.msg.length <= 50) {
+      if (this.message.body.length <= 50) {
         return "col-4";
-      } else if (this.message.msg.length <= 100) {
+      } else if (this.message.body.length <= 100) {
         return "col-6";
       } else {
         return "col-9";
@@ -167,14 +172,12 @@ export default {
     },
 
     getDateTime() {
-      var datetime = new Date(this.message.timestamp * 1000).toLocaleString(
-        navigator.language,
-        {
-          hour: "2-digit",
-          minute: "2-digit",
-        },
-      );
-      return datetime;
+
+        let date = new Date(this.message.timestamp);
+        let hours = date.getHours().toString().padStart(2, '0');
+        let minutes = date.getMinutes().toString().padStart(2, '0');
+        let seconds = date.getSeconds().toString().padStart(2, '0');
+        return `${hours}:${minutes}:${seconds}`;
     },
   },
 };

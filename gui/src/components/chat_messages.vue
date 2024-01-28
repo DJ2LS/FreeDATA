@@ -51,22 +51,14 @@ function getDateTime(timestampRaw) {
           </div>
         -->
 
-
-
-            {{item}}
-            <hr>
           <div v-if="item.direction === 'transmit'">
-            {{ console.log('Item direction:', item.direction) }}
-            <!--<sent-message :message="item" />-->
+            <sent-message :message="item" />
           </div>
 
 
 
           <div v-else-if="item.direction === 'receive'">
-          {{ console.log('Item direction:', item.direction) }}
-
-
-            <!--<received-message :message="item" />-->
+            <received-message :message="item" />
           </div>
           <!--
           <div v-if="item.type === 'broadcast_transmit'">
