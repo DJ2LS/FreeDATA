@@ -192,7 +192,7 @@ onMounted(shuffleCards);
       <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 row-cols-lg-6">
         <div class="d-inline-block" v-for="card in cards" :key="card.titleName">
           <div class="col">
-            <div class="card border-dark m-2" style="max-width: 15rem">
+            <div class="card border-dark m-1" style="max-width: 10rem">
               <img :src="card.imgSrc" class="card-img-top grayscale" />
               <div class="card-body">
                 <p class="card-text text-center">{{ card.role }}</p>

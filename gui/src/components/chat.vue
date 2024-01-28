@@ -16,7 +16,7 @@ import chat_new_message from "./chat_new_message.vue";
     <div class="row h-100 ms-0 mt-0 me-1">
       <div class="col-3 m-0 p-0 h-100 bg-light">
         <!------Chats area ---------------------------------------------------------------------->
-        <div class="container-fluid vh-100 overflow-scroll m-0 p-0">
+        <div class="container-fluid vh-100 overflow-auto m-0 p-0">
           <chat_conversations />
         </div>
         <div class="h-100">

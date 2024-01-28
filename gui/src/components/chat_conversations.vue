@@ -17,6 +17,17 @@ function chatSelected(callsign) {
   }
 
 }
+
+function getDateTime(timestamp) {
+
+        let date = new Date(timestamp);
+        let hours = date.getHours().toString().padStart(2, '0');
+        let minutes = date.getMinutes().toString().padStart(2, '0');
+        let seconds = date.getSeconds().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+}
+
+
 </script>
 <template>
   <div
@@ -27,7 +38,7 @@ function chatSelected(callsign) {
 
     <template v-for="(details, callsign, key) in chat.callsign_list" :key="callsign">
       <a
-        class="list-group-item list-group-item-action list-group-item-dark rounded-2 border-0 mb-2"
+        class="list-group-item list-group-item-action list-group-item-secondary rounded-2 border-0 mb-2"
         :class="{ active: key == 0 }"
         :id="`list-chat-list-${callsign}`"
         data-bs-toggle="list"
@@ -37,12 +48,14 @@ function chatSelected(callsign) {
         @click="chatSelected(callsign)"
       >
         <div class="row">
-          <div class="col-9">
+          <div class="col-9 text-truncate">
             <strong>{{ callsign }}</strong>
-            <!--<small> {{details.timestamp}} </small>-->
+            <br>
+            <small> {{details.body}} </small>
 
           </div>
           <div class="col-3">
+          <small> {{getDateTime(details.timestamp)}} </small>
             <button
               class="btn btn-sm btn-outline-secondary ms-2 border-0"
               data-bs-target="#deleteChatModal"

@@ -116,12 +116,12 @@ function newChat() {
 </script>
 
 <template>
-  <nav class="navbar bg-body-tertiary border-bottom">
+  <nav class="navbar bg-body-tertiary p-2 border-bottom">
     <div class="container">
       <div class="row w-100">
-        <div class="col-3 p-0 me-2">
+        <div class="col-3 p-0">
           <button
-              class="btn btn-outline-primary"
+              class="btn btn-outline-primary w-100"
               data-bs-target="#newChatModal"
               data-bs-toggle="modal"
             >
