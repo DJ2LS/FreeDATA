@@ -169,6 +169,7 @@ class ARQSessionISS(arq_session.ARQSession):
         self.log(f"All data transfered! flag_final={irs_frame['flag']['FINAL']}, flag_checksum={irs_frame['flag']['CHECKSUM']}")
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,True, self.state.name, statistics=self.calculate_session_statistics())
         self.state_manager.remove_arq_iss_session(self.id)
+        self.states.set("is_modem_busy", False)
         return None, None
 
     def transmission_failed(self, irs_frame=None):
@@ -177,6 +178,7 @@ class ARQSessionISS(arq_session.ARQSession):
         self.set_state(ISS_State.FAILED)
         self.log(f"Transmission failed!")
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=self.calculate_session_statistics())
+        self.states.set("is_modem_busy", False)
         return None, None
 
     def abort_transmission(self, irs_frame=None):
@@ -207,5 +209,6 @@ class ARQSessionISS(arq_session.ARQSession):
         self.event_manager.send_arq_session_finished(
             True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics())
         self.state_manager.remove_arq_iss_session(self.id)
+        self.states.set("is_modem_busy", False)
         return None, None
 

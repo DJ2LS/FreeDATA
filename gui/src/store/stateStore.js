@@ -3,7 +3,7 @@ import { ref } from "vue";
 import * as bootstrap from "bootstrap";
 
 export const useStateStore = defineStore("stateStore", () => {
-  var busy_state = ref("-");
+  var busy_state = ref();
   var arq_state = ref("-");
   var frequency = ref(0);
   var new_frequency = ref(14093000);

@@ -315,6 +315,5 @@ if __name__ == "__main__":
     app.modem_service.put("start")
     # initialize databse default values
     DatabaseManager(app.event_manager).initialize_default_values()
-
     wsm.startThreads(app)
     app.run()

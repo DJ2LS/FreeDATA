@@ -87,6 +87,7 @@ class StateManager:
             "channel_busy_slot": self.channel_busy_slot,
             "audio_dbfs": self.audio_dbfs,
             "activities": self.activities_list,
+            "is_modem_busy" : self.is_modem_busy
         }
     
     # .wait() blocks until the event is set

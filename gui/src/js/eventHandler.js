@@ -25,9 +25,11 @@ export function connectionFailed(endpoint, event) {
 }
 export function stateDispatcher(data) {
   data = JSON.parse(data);
-  //console.debug(data);
+  console.debug(data);
   if (data["type"] == "state-change" || data["type"] == "state") {
     stateStore.modem_connection = "connected";
+
+    stateStore.busy_state = data["is_modem_busy"];
 
     stateStore.channel_busy = data["channel_busy"];
     stateStore.is_codec2_traffic = data["is_codec2_traffic"];

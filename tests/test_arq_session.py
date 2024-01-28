@@ -16,15 +16,17 @@ import random
 import structlog
 import numpy as np
 from event_manager import EventManager
+from state_manager import StateManager
 from data_frame_factory import DataFrameFactory
 import codec2
 import arq_session_irs
 class TestModem:
-    def __init__(self, event_q):
+    def __init__(self, event_q, state_q):
         self.data_queue_received = queue.Queue()
         self.demodulator = unittest.mock.Mock()
         self.event_manager = EventManager([event_q])
         self.logger = structlog.get_logger('Modem')
+        self.states = StateManager(state_q)
 
     def getFrameTransmissionTime(self, mode):
         samples = 0
@@ -61,7 +63,8 @@ class TestARQSession(unittest.TestCase):
         cls.iss_state_manager = StateManager(queue.Queue())
         cls.iss_event_manager = EventManager([queue.Queue()])
         cls.iss_event_queue = queue.Queue()
-        cls.iss_modem = TestModem(cls.iss_event_queue)
+        cls.iss_state_queue = queue.Queue()
+        cls.iss_modem = TestModem(cls.iss_event_queue, cls.iss_state_queue)
         cls.iss_frame_dispatcher = DISPATCHER(cls.config, 
                                           cls.iss_event_manager,
                                           cls.iss_state_manager, 
@@ -71,7 +74,8 @@ class TestARQSession(unittest.TestCase):
         cls.irs_state_manager = StateManager(queue.Queue())
         cls.irs_event_manager = EventManager([queue.Queue()])
         cls.irs_event_queue = queue.Queue()
-        cls.irs_modem = TestModem(cls.irs_event_queue)
+        cls.irs_state_queue = queue.Queue()
+        cls.irs_modem = TestModem(cls.irs_event_queue, cls.irs_state_queue)
         cls.irs_frame_dispatcher = DISPATCHER(cls.config, 
                                           cls.irs_event_manager,
                                           cls.irs_state_manager, 

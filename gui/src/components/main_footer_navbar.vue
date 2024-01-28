@@ -41,8 +41,8 @@ const state = useStateStore(pinia);
             data-bs-trigger="hover"
             data-bs-html="true"
             v-bind:class="{
-              'btn-danger': state.busy_state === 'BUSY',
-              'btn-secondary': state.busy_state === 'IDLE',
+              'btn-danger': state.busy_state === true,
+              'btn-secondary': state.busy_state === false,
             }"
             data-bs-title="Modem state"
             disabled
@@ -50,7 +50,7 @@ const state = useStateStore(pinia);
           >
             <i class="bi bi-cpu" style="font-size: 0.8rem"></i>
           </button>
-
+<!--
           <button
             class="btn btn-sm btn-secondary me-1"
             id="arq_session"
@@ -69,7 +69,8 @@ const state = useStateStore(pinia);
           >
             <i class="bi bi-arrow-left-right" style="font-size: 0.8rem"></i>
           </button>
-
+          -->
+<!--
           <button
             class="btn btn-sm btn-secondary me-1"
             id="arq_state"
@@ -87,6 +88,7 @@ const state = useStateStore(pinia);
           >
             <i class="bi bi-file-earmark-binary" style="font-size: 0.8rem"></i>
           </button>
+          -->
           <!--
               <button
                 class="btn btn-sm btn-secondary me-1"
@@ -101,7 +103,7 @@ const state = useStateStore(pinia);
                 <i class="bi bi-usb-symbol" style="font-size: 0.8rem"></i>
               </button>
 -->
-
+<!--
           <button
             class="btn btn-sm btn-secondary disabled me-3"
             type="button"
@@ -118,6 +120,7 @@ const state = useStateStore(pinia);
           >
             <i class="bi bi-hourglass"></i>
           </button>
+            -->
         </div>
 
         <div class="btn-group btn-group-sm me-1" role="group">
