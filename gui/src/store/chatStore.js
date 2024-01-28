@@ -2,6 +2,16 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 
 export const useChatStore = defineStore("chatStore", () => {
+
+  var callsign_list = ref();
+  var sorted_chat_list = ref();
+  var newChatCallsign = ref();
+  var newChatMessage = ref();
+
+
+
+/* ------------------------------------------------ */
+
   var chat_filter = ref([
     { type: "newchat" },
     { type: "received" },
@@ -46,9 +56,6 @@ export const useChatStore = defineStore("chatStore", () => {
   var inputFileType = ref("-");
   var inputFileSize = ref("-");
 
-  var callsign_list = ref();
-  var sorted_chat_list = ref();
-  var unsorted_chat_list = ref([]);
 
   var sorted_beacon_list = ref({});
   var unsorted_beacon_list = ref({});
@@ -68,12 +75,13 @@ export const useChatStore = defineStore("chatStore", () => {
 
   return {
     selectedCallsign,
+    newChatCallsign,
+    newChatMessage,
     selectedMessageObject,
     inputText,
     chat_filter,
     callsign_list,
     sorted_chat_list,
-    unsorted_chat_list,
     inputFileName,
     inputFileSize,
     inputFileType,

@@ -6,14 +6,9 @@ setActivePinia(pinia);
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
 
-import {
-  getNewMessagesByDXCallsign,
-  resetIsNewMessage,
-} from "../js/chatHandler";
 
 function chatSelected(callsign) {
   chat.selectedCallsign = callsign.toUpperCase();
-
   // scroll message container to bottom
   var messageBody = document.getElementById("message-container");
   if (messageBody != null) {
@@ -21,27 +16,6 @@ function chatSelected(callsign) {
     messageBody.scrollTop = messageBody.scrollHeight - messageBody.clientHeight;
   }
 
-  if (getNewMessagesByDXCallsign(callsign)[1] > 0) {
-    let messageArray = getNewMessagesByDXCallsign(callsign)[2];
-    console.log(messageArray);
-
-    for (const key in messageArray) {
-      resetIsNewMessage(messageArray[key].uuid, false);
-    }
-  }
-
-  try {
-    chat.beaconLabelArray = Object.values(
-      chat.sorted_beacon_list[chat.selectedCallsign].timestamp,
-    );
-    chat.beaconDataArray = Object.values(
-      chat.sorted_beacon_list[chat.selectedCallsign].snr,
-    );
-  } catch (e) {
-    console.log("beacon data not fetched: " + e);
-    chat.beaconLabelArray = [];
-    chat.beaconDataArray = [];
-  }
 }
 </script>
 <template>
@@ -50,33 +24,30 @@ function chatSelected(callsign) {
     id="chat-list-tab"
     role="chat-tablist"
   >
-    <template v-for="(item, key) in chat.callsign_list" :key="item.dxcallsign">
+
+    <template v-for="(details, callsign, key) in chat.callsign_list" :key="callsign">
       <a
         class="list-group-item list-group-item-action list-group-item-dark rounded-2 border-0 mb-2"
         :class="{ active: key == 0 }"
-        :id="`list-chat-list-${item}`"
+        :id="`list-chat-list-${callsign}`"
         data-bs-toggle="list"
-        :href="`#list-${item}-messages`"
+        :href="`#list-${callsign}-messages`"
         role="tab"
-        aria-controls="list-{{item}}-messages"
-        @click="chatSelected(item)"
+        aria-controls="list-{{callsign}}-messages"
+        @click="chatSelected(callsign)"
       >
         <div class="row">
           <div class="col-9">
-            <strong>{{ item }}</strong>
-            <span
-              class="badge rounded-pill bg-danger"
-              v-if="getNewMessagesByDXCallsign(item)[1] > 0"
-            >
-              {{ getNewMessagesByDXCallsign(item)[1] }} new messages
-            </span>
+            <strong>{{ callsign }}</strong>
+            <!--<small> {{details.timestamp}} </small>-->
+
           </div>
           <div class="col-3">
             <button
               class="btn btn-sm btn-outline-secondary ms-2 border-0"
               data-bs-target="#deleteChatModal"
               data-bs-toggle="modal"
-              @click="chatSelected(item)"
+              @click="chatSelected(callsign)"
             >
               <i class="bi bi-three-dots-vertical"></i>
             </button>

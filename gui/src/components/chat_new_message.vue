@@ -17,8 +17,7 @@ import chat_navbar from './chat_navbar.vue'
 import chat_conversations from './chat_conversations.vue'
 import chat_messages from './chat_messages.vue'
 
-import {updateAllChat, newMessage, newBroadcast} from '../js/chatHandler'
-
+import { newMessage } from '../js/messagesHandler.ts'
 
 import {
   Chart as ChartJS,
@@ -54,10 +53,11 @@ function transmitNewMessage(){
       return;
     if (chat.selectedCallsign.startsWith("BC-")) {
 
-        newBroadcast(chat.selectedCallsign, chat.inputText)
+        return "new broadcast"
 
     } else {
-        newMessage(chat.selectedCallsign, chat.inputText, chat.inputFile, chat.inputFileName, chat.inputFileSize, chat.inputFileType)
+        //newMessage(chat.selectedCallsign, chat.inputText, chat.inputFile, chat.inputFileName, chat.inputFileSize, chat.inputFileType)
+        newMessage(chat.selectedCallsign, chat.inputText)
     }
     // finally do a cleanup
     //chatModuleMessage.reset();
@@ -195,9 +195,11 @@ const speedChartData = computed(() => ({
 
 
                                         <!-- trigger file selection modal -->
+                            <!--
                             <button type="button" class="btn btn-outline-secondary border-0 rounded-pill me-1" data-bs-toggle="modal" data-bs-target="#fileSelectionModal">
                               <i class="bi bi-paperclip" style="font-size: 1.2rem"></i>
                             </button>
+                            -->
 
 
                           <textarea

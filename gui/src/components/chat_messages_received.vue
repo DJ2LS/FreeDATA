@@ -1,4 +1,5 @@
 <template>
+
   <div class="row justify-content-start mb-2">
     <div :class="messageWidthClass">
       <div class="card bg-light border-0 text-dark">
@@ -11,7 +12,7 @@
         </div>
 
         <div class="card-body">
-          <p class="card-text">{{ message.msg }}</p>
+          <p class="card-text">{{ message.body }}</p>
         </div>
 
         <div class="card-footer p-0 bg-light border-top-0">
@@ -70,20 +71,20 @@ export default {
   },
   methods: {
     showMessageInfo() {
-      requestMessageInfo(this.message._id);
+      requestMessageInfo(this.message.id);
       //let infoModal = Modal.getOrCreateInstance(document.getElementById('messageInfoModal'))
       //console.log(this.infoModal)
       //this.infoModal.show()
     },
     deleteMessage() {
-      deleteMessageFromDB(this.message._id);
+      deleteMessageFromDB(this.message.id);
     },
     async downloadAttachment() {
       try {
         // reset file store
         chat.downloadFileFromDB = [];
 
-        const attachment = await getMessageAttachment(this.message._id);
+        const attachment = await getMessageAttachment(this.message.id);
         const blob = new Blob([atob_FD(attachment[2])], {
           type: `${attachment[1]};charset=utf-8`,
         });
@@ -121,6 +122,8 @@ export default {
     },
 
     getDateTime() {
+
+    console.log(this.message.timestamp)
       var datetime = new Date(this.message.timestamp * 1000).toLocaleString(
         navigator.language,
         {
