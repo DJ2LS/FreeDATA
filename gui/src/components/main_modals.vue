@@ -14,7 +14,8 @@ import main_startup_check from "./main_startup_check.vue";
 import { newMessage, deleteCallsignFromDB } from '../js/messagesHandler.ts'
 
 function newChat(){
-    newMessage(chat.newChatCallsign, chat.newChatMessage)
+    let newCallsign = chat.newChatCallsign.toUpperCase()
+    newMessage(newCallsign, chat.newChatMessage)
 }
 
 function deleteChat() {
