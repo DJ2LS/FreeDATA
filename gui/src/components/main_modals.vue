@@ -11,14 +11,14 @@ const chat = useChatStore(pinia);
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 import { sendModemTestFrame } from "../js/api";
 import main_startup_check from "./main_startup_check.vue";
-import { newMessage } from '../js/messagesHandler.ts'
+import { newMessage, deleteCallsignFromDB } from '../js/messagesHandler.ts'
 
 function newChat(){
     newMessage(chat.newChatCallsign, chat.newChatMessage)
 }
 
 function deleteChat() {
-    return
+    deleteCallsignFromDB(chat.selectedCallsign);
 }
 
 import {

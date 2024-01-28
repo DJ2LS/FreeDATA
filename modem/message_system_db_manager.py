@@ -166,6 +166,7 @@ class DatabaseManager:
                 session.delete(message)
                 session.commit()
                 self.log(f"Deleted: {message_id}")
+                self.event_manager.freedata_message_db_change()
                 return {'status': 'success', 'message': f'Message {message_id} deleted'}
             else:
                 return {'status': 'failure', 'message': 'Message not found'}
@@ -188,6 +189,7 @@ class DatabaseManager:
                     message.body = update_data['body']
                 session.commit()
                 self.log(f"Updated: {message_id}")
+                self.event_manager.freedata_message_db_change()
                 return {'status': 'success', 'message': f'Message {message_id} updated'}
             else:
                 return {'status': 'failure', 'message': 'Message not found'}

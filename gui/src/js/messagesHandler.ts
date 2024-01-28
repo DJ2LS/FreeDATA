@@ -6,7 +6,7 @@ setActivePinia(pinia);
 import { useChatStore } from "../store/chatStore.js";
 const chatStore = useChatStore(pinia);
 
-import { sendFreedataMessage } from "./api"
+import { sendFreedataMessage, deleteFreedataMessage } from "./api"
 
 interface Message {
   id: string;
@@ -71,8 +71,15 @@ export function repeatMessageTransmission(id){
     return
 }
 
+export function deleteCallsignFromDB(callsign){
+    for (var message of chatStore.sorted_chat_list[callsign]) {
+          deleteFreedataMessage(message["id"]);
+    }
+
+}
+
 export function deleteMessageFromDB(id){
-    return
+    deleteFreedataMessage(id);
 }
 
 export function requestMessageInfo(id){

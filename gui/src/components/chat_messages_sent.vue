@@ -29,7 +29,7 @@
         <i class="bi bi-info-circle"></i>
       </button>
 
-      <button disabled class="btn btn-outline-secondary border-0" @click="deleteMessage">
+      <button class="btn btn-outline-secondary border-0" @click="deleteMessage">
         <i class="bi bi-trash"></i>
       </button>
     </div>
