@@ -4,7 +4,7 @@ import chat_conversations from "./chat_conversations.vue";
 import chat_messages from "./chat_messages.vue";
 import chat_new_message from "./chat_new_message.vue";
 
-//updateAllChat();
+
 </script>
 
 <template>
