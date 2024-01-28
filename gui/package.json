@@ -32,7 +32,6 @@
   },
   "homepage": "https://freedata.app",
   "dependencies": {
-    "@electron/asar": "3.2.7",
     "@electron/notarize": "2.2.0",
     "@electron/universal": "2.0.0",
     "@popperjs/core": "2.11.8",
@@ -53,14 +52,9 @@
     "mime": "4.0.1",
     "nconf": "^0.12.1",
     "pinia": "2.1.7",
-    "pouchdb": "8.0.1",
-    "pouchdb-browser": "8.0.1",
-    "pouchdb-find": "8.0.1",
-    "pouchdb-upsert": "2.2.0",
     "qth-locator": "2.1.0",
-    "sass": "1.66.1",
     "socket.io": "4.7.2",
-    "uuid": "9.0.1",
+    "uuid": "^9.0.1",
     "vue": "3.3.12",
     "vue-chartjs": "5.3.0",
     "vuemoji-picker": "0.2.0"
