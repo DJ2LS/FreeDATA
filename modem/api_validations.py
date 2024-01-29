@@ -2,7 +2,7 @@ import re
 
 def validate_freedata_callsign(callsign):
     #regexp = "^[a-zA-Z]+\d+\w+-\d{1,2}$"
-    regexp = "^[A-Za-z0-9]{1,7}-[0-255]$"
+    regexp = "^[A-Za-z0-9]{1,7}-[0-9]$"
     return re.compile(regexp).match(callsign) is not None
 
 def validate_message_attachment(attachment):
