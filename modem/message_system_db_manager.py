@@ -73,7 +73,7 @@ class DatabaseManager:
             session.flush()  # To get the ID immediately
         return status
 
-    def add_message(self, message_data):
+    def add_message(self, message_data, direction='receive', status=None):
         session = self.get_thread_scoped_session()
         try:
             # Create and add the origin and destination Stations
@@ -81,9 +81,8 @@ class DatabaseManager:
             destination = self.get_or_create_station(session, message_data['destination'])
 
             # Create and add Status if provided
-            status = None
-            if 'status' in message_data:
-                status = self.get_or_create_status(session, message_data['status'])
+            if status:
+                status = self.get_or_create_status(session, status)
 
             # Parse the timestamp from the message ID
             timestamp = datetime.fromisoformat(message_data['id'].split('_')[2])
@@ -94,7 +93,7 @@ class DatabaseManager:
                 destination_callsign=destination.callsign,
                 body=message_data['body'],
                 timestamp=timestamp,
-                direction=message_data['direction'],
+                direction=direction,
                 status_id=status.id if status else None
             )
 
@@ -187,6 +186,9 @@ class DatabaseManager:
                 # Update fields of the message as per update_data
                 if 'body' in update_data:
                     message.body = update_data['body']
+                if 'status' in update_data:
+                    message.status = self.get_or_create_status(session, update_data['status'])
+
                 session.commit()
                 self.log(f"Updated: {message_id}")
                 self.event_manager.freedata_message_db_change()

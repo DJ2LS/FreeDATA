@@ -8,12 +8,18 @@ from message_system_db_manager import DatabaseManager
 def message_received(event_manager, data):
     decompressed_json_string = data.decode('utf-8')
     received_message_obj = MessageP2P.from_payload(decompressed_json_string)
-    received_message_dict = MessageP2P.to_dict(received_message_obj, received=True)
-    DatabaseManager(event_manager).add_message(received_message_dict)
+    received_message_dict = MessageP2P.to_dict(received_message_obj)
+    DatabaseManager(event_manager).add_message(received_message_dict, direction='receive', status='received')
+
+def message_failed(event_manager, data):
+    decompressed_json_string = data.decode('utf-8')
+    payload_message = json.loads(decompressed_json_string)
+    DatabaseManager(event_manager).update_message(payload_message["id"], update_data={'status' : 'failed'})
 
 
 class MessageP2P:
-    def __init__(self, origin: str, destination: str, body: str, attachments: list) -> None:
+    def __init__(self, id: str, origin: str, destination: str, body: str, attachments: list) -> None:
+        self.id = id
         self.timestamp = datetime.datetime.now().isoformat()
         self.origin = origin
         self.destination = destination
@@ -40,13 +46,16 @@ class MessageP2P:
                 api_validations.validate_message_attachment(a)
                 attachments.append(cls.__decode_attachment__(a))
 
-        return cls(origin, dxcall, body, attachments)
+        timestamp = datetime.datetime.now().isoformat()
+        msg_id = f"{origin}_{dxcall}_{timestamp}"
+
+        return cls(msg_id, origin, dxcall, body, attachments)
         
     @classmethod
     def from_payload(cls, payload):
         payload_message = json.loads(payload)
         attachments = list(map(cls.__decode_attachment__, payload_message['attachments']))
-        return cls(payload_message['origin'], payload_message['destination'], 
+        return cls(payload_message['id'], payload_message['origin'], payload_message['destination'],
                    payload_message['body'], attachments)
 
     def get_id(self) -> str:
@@ -62,16 +71,15 @@ class MessageP2P:
         decoded_attachment['data'] = base64.b64decode(encoded_attachment['data'])
         return decoded_attachment
 
-    def to_dict(self, received=False):
+    def to_dict(self):
         """Make a dictionary out of the message data
         """
 
         return {
-            'id': self.get_id(),
+            'id': self.id,
             'origin': self.origin,
             'destination': self.destination,
             'body': self.body,
-            'direction': 'receive' if received else 'transmit',
             'attachments': list(map(self.__encode_attachment__, self.attachments)),
         }
     

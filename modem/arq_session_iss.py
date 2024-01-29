@@ -21,7 +21,7 @@ class ISS_State(Enum):
 
 class ARQSessionISS(arq_session.ARQSession):
 
-    RETRIES_CONNECT = 10
+    RETRIES_CONNECT = 1
 
     # DJ2LS: 3 seconds seems to be too small for radios with a too slow PTT toggle time
     # DJ2LS: 3.5 seconds is working well WITHOUT a channel busy detection delay
@@ -179,6 +179,9 @@ class ARQSessionISS(arq_session.ARQSession):
         self.log(f"Transmission failed!")
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=self.calculate_session_statistics())
         self.states.set("is_modem_busy", False)
+
+        self.arq_data_type_handler.failed(self.type_byte, self.data)
+
         return None, None
 
     def abort_transmission(self, irs_frame=None):

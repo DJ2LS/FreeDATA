@@ -8,6 +8,7 @@ from message_p2p import MessageP2P
 from message_system_db_manager import DatabaseManager
 from event_manager import EventManager
 import queue
+import base64
 
 class TestDataFrameFactory(unittest.TestCase):
 
@@ -25,12 +26,13 @@ class TestDataFrameFactory(unittest.TestCase):
         attachment = {
             'name': 'test.gif',
             'type': 'image/gif',
-            'data': np.random.bytes(1024)
+            'data': str(base64.b64encode(np.random.bytes(1024)), 'utf-8')
         }
-        message = MessageP2P(self.mycall, 'DJ2LS-3', 'Hello World!', [attachment])
+        apiParams = {'dxcall': 'DJ2LS-3', 'body': 'Hello World!', 'attachments': [attachment]}
+        message = MessageP2P.from_api_params(self.mycall, apiParams)
         payload = message.to_payload()
         received_message = MessageP2P.from_payload(payload)
-        received_message_dict = MessageP2P.to_dict(received_message, received=True)
+        received_message_dict = MessageP2P.to_dict(received_message)
         self.database_manager.add_message(received_message_dict)
 
         result = self.database_manager.get_all_messages()
@@ -40,12 +42,13 @@ class TestDataFrameFactory(unittest.TestCase):
         attachment = {
             'name': 'test.gif',
             'type': 'image/gif',
-            'data': np.random.bytes(1024)
+            'data': str(base64.b64encode(np.random.bytes(1024)), 'utf-8')
         }
-        message = MessageP2P(self.mycall, 'DJ2LS-3', 'Hello World!', [attachment])
+        apiParams = {'dxcall': 'DJ2LS-3', 'body': 'Hello World!', 'attachments': [attachment]}
+        message = MessageP2P.from_api_params(self.mycall, apiParams)
         payload = message.to_payload()
         received_message = MessageP2P.from_payload(payload)
-        received_message_dict = MessageP2P.to_dict(received_message, received=True)
+        received_message_dict = MessageP2P.to_dict(received_message)
         self.database_manager.add_message(received_message_dict)
 
         result = self.database_manager.get_all_messages()
@@ -59,14 +62,15 @@ class TestDataFrameFactory(unittest.TestCase):
         attachment = {
             'name': 'test.gif',
             'type': 'image/gif',
-            'data': np.random.bytes(1024)
+            'data': str(base64.b64encode(np.random.bytes(1024)), 'utf-8')
         }
-        message = MessageP2P(self.mycall, 'DJ2LS-3', 'Hello World!', [attachment])
+
+        apiParams = {'dxcall': 'DJ2LS-3', 'body': 'Hello World!', 'attachments': [attachment]}
+        message = MessageP2P.from_api_params(self.mycall, apiParams)
         payload = message.to_payload()
         received_message = MessageP2P.from_payload(payload)
-        received_message_dict = MessageP2P.to_dict(received_message, received=True)
-        message_id = self.database_manager.add_message(received_message_dict)
-
+        received_message_dict = MessageP2P.to_dict(received_message)
+        message_id = self.database_manager.add_message(received_message_dict, direction='receive')
         self.database_manager.update_message(message_id, {'body' : 'hello123'})
 
         result = self.database_manager.get_message_by_id(message_id)
@@ -76,22 +80,23 @@ class TestDataFrameFactory(unittest.TestCase):
         attachment1 = {
             'name': 'test1.gif',
             'type': 'image/gif',
-            'data': np.random.bytes(1024)
+            'data': str(base64.b64encode(np.random.bytes(1024)), 'utf-8')
         }
         attachment2 = {
             'name': 'test2.gif',
             'type': 'image/gif',
-            'data': np.random.bytes(1024)
+            'data': str(base64.b64encode(np.random.bytes(1024)), 'utf-8')
         }
         attachment3 = {
             'name': 'test3.gif',
             'type': 'image/gif',
-            'data': np.random.bytes(1024)
+            'data': str(base64.b64encode(np.random.bytes(1024)), 'utf-8')
         }
-        message = MessageP2P(self.mycall, 'DJ2LS-3', 'Hello World!', [attachment1, attachment2, attachment3])
+        apiParams = {'dxcall': 'DJ2LS-3', 'body': 'Hello World!', 'attachments': [attachment1, attachment2, attachment3]}
+        message = MessageP2P.from_api_params(self.mycall, apiParams)
         payload = message.to_payload()
         received_message = MessageP2P.from_payload(payload)
-        received_message_dict = MessageP2P.to_dict(received_message, received=True)
+        received_message_dict = MessageP2P.to_dict(received_message)
         message_id = self.database_manager.add_message(received_message_dict)
         result = self.database_manager.get_attachments_by_message_id(message_id)
         attachment_names = [attachment['name'] for attachment in result]

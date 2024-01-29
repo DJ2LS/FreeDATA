@@ -3,7 +3,7 @@
 import structlog
 import lzma
 import gzip
-from message_p2p import message_received
+from message_p2p import message_received, message_failed
 
 class ARQDataTypeHandler:
     def __init__(self, event_manager):
@@ -12,19 +12,23 @@ class ARQDataTypeHandler:
         self.handlers = {
             "raw": {
                 'prepare': self.prepare_raw,
-                'handle': self.handle_raw
+                'handle': self.handle_raw,
+                'failed': self.failed_raw,
             },
             "raw_lzma": {
                 'prepare': self.prepare_raw_lzma,
-                'handle': self.handle_raw_lzma
+                'handle': self.handle_raw_lzma,
+                'failed': self.failed_raw_lzma,
             },
             "raw_gzip": {
                 'prepare': self.prepare_raw_gzip,
-                'handle': self.handle_raw_gzip
+                'handle': self.handle_raw_gzip,
+                'failed': self.failed_raw_gzip,
             },
             "p2pmsg_lzma": {
                 'prepare': self.prepare_p2pmsg_lzma,
-                'handle': self.handle_p2pmsg_lzma
+                'handle': self.handle_p2pmsg_lzma,
+                'failed' : self.failed_p2pmsg_lzma,
             },
         }
 
@@ -32,6 +36,13 @@ class ARQDataTypeHandler:
         endpoint_name = list(self.handlers.keys())[type_byte]
         if endpoint_name in self.handlers and 'handle' in self.handlers[endpoint_name]:
             return self.handlers[endpoint_name]['handle'](data)
+        else:
+            self.log(f"Unknown handling endpoint: {endpoint_name}", isWarning=True)
+
+    def failed(self, type_byte: int, data: bytearray):
+        endpoint_name = list(self.handlers.keys())[type_byte]
+        if endpoint_name in self.handlers and 'failed' in self.handlers[endpoint_name]:
+            return self.handlers[endpoint_name]['failed'](data)
         else:
             self.log(f"Unknown handling endpoint: {endpoint_name}", isWarning=True)
 
@@ -54,6 +65,9 @@ class ARQDataTypeHandler:
         self.log(f"Handling uncompressed data: {len(data)} Bytes")
         return data
 
+    def failed_raw(self, data):
+        return
+
     def prepare_raw_lzma(self, data):
         compressed_data = lzma.compress(data)
         self.log(f"Preparing LZMA compressed data: {len(data)} Bytes >>> {len(compressed_data)} Bytes")
@@ -63,6 +77,9 @@ class ARQDataTypeHandler:
         decompressed_data = lzma.decompress(data)
         self.log(f"Handling LZMA compressed data: {len(decompressed_data)} Bytes from {len(data)} Bytes")
         return decompressed_data
+
+    def failed_raw_lzma(self, data):
+        return
 
     def prepare_raw_gzip(self, data):
         compressed_data = gzip.compress(data)
@@ -74,6 +91,9 @@ class ARQDataTypeHandler:
         self.log(f"Handling GZIP compressed data: {len(decompressed_data)} Bytes from {len(data)} Bytes")
         return decompressed_data
 
+    def failed_raw_gzip(self, data):
+        return
+
     def prepare_p2pmsg_lzma(self, data):
         compressed_data = lzma.compress(data)
         self.log(f"Preparing LZMA compressed P2PMSG data: {len(data)} Bytes >>> {len(compressed_data)} Bytes")
@@ -83,4 +103,10 @@ class ARQDataTypeHandler:
         decompressed_data = lzma.decompress(data)
         self.log(f"Handling LZMA compressed P2PMSG data: {len(decompressed_data)} Bytes from {len(data)} Bytes")
         message_received(self.event_manager, decompressed_data)
+        return decompressed_data
+
+    def failed_p2pmsg_lzma(self, data):
+        decompressed_data = lzma.decompress(data)
+        self.log(f"Handling failed LZMA compressed P2PMSG data: {len(decompressed_data)} Bytes from {len(data)} Bytes", isWarning=True)
+        message_failed(self.event_manager, decompressed_data)
         return decompressed_data
