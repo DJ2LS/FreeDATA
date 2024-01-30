@@ -21,7 +21,7 @@ class ISS_State(Enum):
 
 class ARQSessionISS(arq_session.ARQSession):
 
-    RETRIES_CONNECT = 1
+    RETRIES_CONNECT = 10
 
     # DJ2LS: 3 seconds seems to be too small for radios with a too slow PTT toggle time
     # DJ2LS: 3.5 seconds is working well WITHOUT a channel busy detection delay
