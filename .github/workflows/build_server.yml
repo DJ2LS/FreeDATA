@@ -36,16 +36,6 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Create modem/dist
-        working-directory: modem
-        run: |
-          mkdir -p dist
-
-      - name: Create modem/dist/modem
-        working-directory: modem
-        run: |
-          mkdir -p dist/modem
-
       - name: Install Linux dependencies
         # if: matrix.os == 'ubuntu-20.04'
         if: ${{startsWith(matrix.os, 'ubuntu')}}

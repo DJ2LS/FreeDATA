@@ -1,1 +1,0 @@
-{"DJ2LS-0": "22864b", "IW2DHW-0": "fcef94", "BEACON": "5492c7", "EI7IG-0": "0975c8", "G0HWW-0": "2cb363", "LA3QMA-0": "2b9fac", "EA7KOH-0": "9e1c3e", "OK6MS-0": "5f75ed", "N1QM-0": "e045a0"}
