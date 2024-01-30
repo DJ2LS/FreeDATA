@@ -4,53 +4,66 @@ import structlog
 import lzma
 import gzip
 from message_p2p import message_received, message_failed
+from enum import Enum
+
+class ARQ_SESSION_TYPES(Enum):
+    raw = 0
+    raw_lzma = 10
+    raw_gzip = 11
+    p2pmsg_lzma = 20
 
 class ARQDataTypeHandler:
     def __init__(self, event_manager):
         self.logger = structlog.get_logger(type(self).__name__)
         self.event_manager = event_manager
         self.handlers = {
-            "raw": {
+            ARQ_SESSION_TYPES.raw: {
                 'prepare': self.prepare_raw,
                 'handle': self.handle_raw,
                 'failed': self.failed_raw,
             },
-            "raw_lzma": {
+            ARQ_SESSION_TYPES.raw_lzma: {
                 'prepare': self.prepare_raw_lzma,
                 'handle': self.handle_raw_lzma,
                 'failed': self.failed_raw_lzma,
             },
-            "raw_gzip": {
+            ARQ_SESSION_TYPES.raw_gzip: {
                 'prepare': self.prepare_raw_gzip,
                 'handle': self.handle_raw_gzip,
                 'failed': self.failed_raw_gzip,
             },
-            "p2pmsg_lzma": {
+            ARQ_SESSION_TYPES.p2pmsg_lzma: {
                 'prepare': self.prepare_p2pmsg_lzma,
                 'handle': self.handle_p2pmsg_lzma,
                 'failed' : self.failed_p2pmsg_lzma,
             },
         }
 
+    @staticmethod
+    def get_session_type_from_value(value):
+        for session_type in ARQ_SESSION_TYPES:
+            if session_type.value == value:
+                return session_type
+        return None
+
     def dispatch(self, type_byte: int, data: bytearray):
-        endpoint_name = list(self.handlers.keys())[type_byte]
-        if endpoint_name in self.handlers and 'handle' in self.handlers[endpoint_name]:
-            return self.handlers[endpoint_name]['handle'](data)
+        session_type = self.get_session_type_from_value(type_byte)
+        if session_type and session_type in self.handlers and 'handle' in self.handlers[session_type]:
+            return self.handlers[session_type]['handle'](data)
         else:
-            self.log(f"Unknown handling endpoint: {endpoint_name}", isWarning=True)
+            self.log(f"Unknown handling endpoint for type: {type_byte}", isWarning=True)
 
-    def failed(self, type_byte: int, data: bytearray):
-        endpoint_name = list(self.handlers.keys())[type_byte]
-        if endpoint_name in self.handlers and 'failed' in self.handlers[endpoint_name]:
-            return self.handlers[endpoint_name]['failed'](data)
+    def failed(self, session_type: ARQ_SESSION_TYPES, data: bytearray):
+        if session_type in self.handlers and 'failed' in self.handlers[session_type]:
+            return self.handlers[session_type]['failed'](data)
         else:
-            self.log(f"Unknown handling endpoint: {endpoint_name}", isWarning=True)
+            self.log(f"Unknown handling endpoint: {session_type.name}", isWarning=True)
 
-    def prepare(self, data: bytearray, endpoint_name="raw" ):
-        if endpoint_name in self.handlers and 'prepare' in self.handlers[endpoint_name]:
-            return self.handlers[endpoint_name]['prepare'](data), list(self.handlers.keys()).index(endpoint_name)
+    def prepare(self, data: bytearray, session_type=ARQ_SESSION_TYPES.raw):
+        if session_type in self.handlers and 'prepare' in self.handlers[session_type]:
+            return self.handlers[session_type]['prepare'](data), session_type.value
         else:
-            self.log(f"Unknown preparation endpoint: {endpoint_name}", isWarning=True)
+            self.log(f"Unknown preparation endpoint: {session_type.name}", isWarning=True)
 
     def log(self, message, isWarning=False):
         msg = f"[{type(self).__name__}]: {message}"

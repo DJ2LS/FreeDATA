@@ -4,7 +4,7 @@ import base64
 from queue import Queue
 from arq_session_iss import ARQSessionISS
 from message_p2p import MessageP2P
-from arq_data_type_handler import ARQDataTypeHandler
+from arq_data_type_handler import ARQ_SESSION_TYPES
 from message_system_db_manager import DatabaseManager
 
 class SendMessageCommand(TxCommand):
@@ -22,7 +22,7 @@ class SendMessageCommand(TxCommand):
 
         payload = self.message.to_payload().encode('utf-8')
         json_bytearray = bytearray(payload)
-        data, data_type = self.arq_data_type_handler.prepare(json_bytearray, 'p2pmsg_lzma')
+        data, data_type = self.arq_data_type_handler.prepare(json_bytearray, ARQ_SESSION_TYPES.p2pmsg_lzma)
 
 
 
