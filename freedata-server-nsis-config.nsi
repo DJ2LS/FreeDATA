@@ -21,7 +21,7 @@ Section "MainSection" SEC01
   SetOutPath $INSTDIR
 
   ; Add the entire FreeData Server directory
-  File /r "modem/server.dist/*.*"
+  File /r "server.dist/*.*"
 
   ; Write the installation path to the registry
   WriteRegStr HKCU "Software\FreeDataServer" "Install_Dir" "$INSTDIR"
