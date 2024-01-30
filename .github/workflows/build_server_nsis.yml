@@ -1,9 +1,5 @@
-name: Build and Release Installer
-
-on:
-  push:
-    branches:
-      - main  # or any branch you prefer
+name: Build and Release NSIS Installer
+on: [push]
 
 jobs:
   build-and-release:
