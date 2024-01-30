@@ -8,6 +8,7 @@ from message_system_db_model import Base, Station, Status, Attachment, P2PMessag
 from datetime import datetime
 import json
 import structlog
+import helpers
 
 class DatabaseManager:
     def __init__(self, event_manger, uri='sqlite:///freedata-messages.db'):
@@ -57,13 +58,49 @@ class DatabaseManager:
             self.thread_local.session = scoped_session(self.session_factory)
         return self.thread_local.session
 
-    def get_or_create_station(self, session, callsign):
-        station = session.query(Station).filter_by(callsign=callsign).first()
-        if not station:
-            station = Station(callsign=callsign)
-            session.add(station)
-            session.flush()  # To get the callsign immediately
-        return station
+    def get_or_create_station(self, callsign, session=None):
+        own_session = False
+        if not session:
+            session = self.get_thread_scoped_session()
+            own_session = True
+
+        try:
+            station = session.query(Station).filter_by(callsign=callsign).first()
+            if not station:
+                self.log(f"Updating station list with {callsign}")
+                station = Station(callsign=callsign, checksum=helpers.get_crc_24(callsign).hex())
+                session.add(station)
+                session.flush()
+
+            if own_session:
+                session.commit()  # Only commit if we created the session
+
+            return station
+
+        except Exception as e:
+
+            if own_session:
+                session.rollback()
+
+        finally:
+            if own_session:
+                session.remove()
+
+    def get_callsign_by_checksum(self, checksum):
+        session = self.get_thread_scoped_session()
+        try:
+            station = session.query(Station).filter_by(checksum=checksum).first()
+            if station:
+                self.log(f"Found callsign [{station.callsign}] for checksum [{station.checksum}]")
+                return station.callsign
+            else:
+                self.log(f"No callsign found for [{checksum}]")
+                return None
+        except Exception as e:
+            self.log(f"Error fetching callsign for checksum {checksum}: {e}", isWarning=True)
+            return {'status': 'failure', 'message': str(e)}
+        finally:
+            session.remove()
 
     def get_or_create_status(self, session, status_name):
         status = session.query(Status).filter_by(name=status_name).first()
@@ -77,8 +114,8 @@ class DatabaseManager:
         session = self.get_thread_scoped_session()
         try:
             # Create and add the origin and destination Stations
-            origin = self.get_or_create_station(session, message_data['origin'])
-            destination = self.get_or_create_station(session, message_data['destination'])
+            origin = self.get_or_create_station(message_data['origin'], session)
+            destination = self.get_or_create_station(message_data['destination'], session)
 
             # Create and add Status if provided
             if status:

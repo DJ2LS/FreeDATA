@@ -5,6 +5,7 @@ from queue import Queue
 import structlog
 import time, uuid
 from codec2 import FREEDV_MODE
+from message_system_db_manager import DatabaseManager
 
 TESTMODE = False
 
@@ -105,6 +106,7 @@ class FrameHandler():
         )
 
     def make_event(self):
+
         event = {
             "type": "frame-handler",
             "received": self.details['frame']['frame_type'],
@@ -115,6 +117,10 @@ class FrameHandler():
         }
         if 'origin' in self.details['frame']:
             event['dxcallsign'] = self.details['frame']['origin']
+
+        if 'origin_crc' in self.details['frame']:
+            event['dxcallsign'] = DatabaseManager(self.event_manager).get_callsign_by_checksum(self.details['frame']['origin_crc'])
+
         return event
 
     def emit_event(self):

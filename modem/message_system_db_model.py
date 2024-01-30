@@ -8,9 +8,17 @@ Base = declarative_base()
 class Station(Base):
     __tablename__ = 'station'
     callsign = Column(String, primary_key=True)
+    checksum = Column(String, nullable=True)
     location = Column(JSON, nullable=True)
     info = Column(JSON, nullable=True)
+    def to_dict(self):
+        return {
+            'callsign': self.callsign,
+            'checksum': self.checksum,
+            'location': self.location,
+            'info': self.info,
 
+        }
 class Status(Base):
     __tablename__ = 'status'
     id = Column(Integer, primary_key=True)
