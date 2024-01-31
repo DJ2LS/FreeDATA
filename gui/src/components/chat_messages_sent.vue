@@ -48,9 +48,9 @@
         <div class="card-body">
           <p class="card-text">{{ message.body }}</p>
         </div>
-        <small>>>> Status: {{message.status}}</small>
+
         <div class="card-footer p-0 bg-secondary border-top-0">
-          <p class="text p-0 m-0 me-1 text-end">{{ getDateTime }}</p>
+          <p class="text p-0 m-0 me-1 text-end">{{message.status}} | {{ getDateTime }}</p>
           <!-- Display formatted timestamp in card-footer -->
         </div>
 
