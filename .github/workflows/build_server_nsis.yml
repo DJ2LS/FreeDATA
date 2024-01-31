@@ -31,7 +31,7 @@ jobs:
         uses: joncloud/makensis-action@v4
         with:
           script-file: "freedata-server-nsis-config.nsi"
-          arguments: '/DGITHUB_WORKSPACE="${{ $GITHUB_WORKSPACE }}" /V3'
+          arguments: '/V3'
 
       - name: LIST ALL FILES
         run: ls -R
