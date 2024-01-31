@@ -53,17 +53,18 @@ class ARQDataTypeHandler:
         else:
             self.log(f"Unknown handling endpoint for type: {type_byte}", isWarning=True)
 
-    def failed(self, session_type: ARQ_SESSION_TYPES, data: bytearray):
+    def failed(self, type_byte: int, data: bytearray):
+        session_type = self.get_session_type_from_value(type_byte)
         if session_type in self.handlers and 'failed' in self.handlers[session_type]:
             return self.handlers[session_type]['failed'](data)
         else:
-            self.log(f"Unknown handling endpoint: {session_type.name}", isWarning=True)
+            self.log(f"Unknown handling endpoint: {session_type}", isWarning=True)
 
     def prepare(self, data: bytearray, session_type=ARQ_SESSION_TYPES.raw):
         if session_type in self.handlers and 'prepare' in self.handlers[session_type]:
             return self.handlers[session_type]['prepare'](data), session_type.value
         else:
-            self.log(f"Unknown preparation endpoint: {session_type.name}", isWarning=True)
+            self.log(f"Unknown preparation endpoint: {session_type}", isWarning=True)
 
     def log(self, message, isWarning=False):
         msg = f"[{type(self).__name__}]: {message}"
