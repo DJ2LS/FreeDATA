@@ -1,50 +1,68 @@
-; NSIS Script for FreeData Server
+!include "MUI2.nsh"
 
-; Name of the installer
-OutFile "FreeData-Server-Installer.exe"
+; The name and file name of the installer
+Name "FreeData Server"
+OutFile "FreeData_Server_Installer.exe"
 
 ; Default installation directory
-InstallDir "$PROGRAMFILES\FreeData Server"
+InstallDir "$PROGRAMFILES\FreeData\freedata-server"
 
 ; Registry key to store the installation directory
-InstallDirRegKey HKCU "Software\FreeDataServer" "Install_Dir"
+InstallDirRegKey HKCU "Software\FreeData\freedata-server" "Install_Dir"
 
-; Show installation details
-ShowInstDetails show
+; Modern UI settings
+!define MUI_ABORTWARNING
 
-; Show uninstallation details
-ShowUninstDetails show
+; Define the welcome page text
+!define MUI_WELCOMEPAGE_TEXT "Welcome to the FreeData Server Setup Wizard. This wizard will guide you through the installation process."
 
-; Define GITHUB location
-!define GITHUB_WORKSPACE
+; Pages
+!insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_LICENSE "LICENSE"
+!insertmacro MUI_PAGE_COMPONENTS
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
 
+; Uninstaller
+!insertmacro MUI_UNPAGE_WELCOME
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+!insertmacro MUI_UNPAGE_FINISH
 
+; Language (you can choose and configure the language(s) you want)
+!insertmacro MUI_LANGUAGE "English"
 
-Section "MainSection" SEC01
+; Installer Sections
+Section "Install FreeData Server" SEC01
 
-  ; Set the output path to the installation directory
+  ; Set output path to the installation directory
   SetOutPath $INSTDIR
 
-  ; Add the entire FreeData Server directory
+  ; Add your application files here
   File /r "modem\server.dist\*.*"
 
-  ; Write the installation path to the registry
-  WriteRegStr HKCU "Software\FreeDataServer" "Install_Dir" "$INSTDIR"
+  ; Additional installation commands here
 
-  ; Create a desktop shortcut for easy access
+  ; Create a shortcut in the user's desktop
   CreateShortCut "$DESKTOP\FreeData Server.lnk" "$INSTDIR\freedata-server.exe"
 
+  ; Create Uninstaller
+  WriteUninstaller "$INSTDIR\Uninstall.exe"
 SectionEnd
 
+; Uninstaller Section
 Section "Uninstall"
 
-  ; Delete the entire FreeData Server directory
+  ; Delete files and directories
+  Delete $INSTDIR\freedata-server.exe
   RMDir /r $INSTDIR
 
-  ; Remove the registry entry
-  DeleteRegKey HKCU "Software\FreeDataServer"
-
-  ; Delete the desktop shortcut
+  ; Remove the shortcut
   Delete "$DESKTOP\FreeData Server.lnk"
 
+  ; Additional uninstallation commands here
+
 SectionEnd
+
+
