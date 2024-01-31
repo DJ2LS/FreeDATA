@@ -2,7 +2,7 @@
 
 ; The name and file name of the installer
 Name "FreeData Server"
-OutFile "FreeData_Server_Installer.exe"
+OutFile "FreeData-Server-Installer.exe"
 
 ; Default installation directory
 InstallDir "$PROGRAMFILES\FreeData\freedata-server"
