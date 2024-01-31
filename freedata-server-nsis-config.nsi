@@ -15,13 +15,18 @@ ShowInstDetails show
 ; Show uninstallation details
 ShowUninstDetails show
 
+; Define GITHUB location
+!define GITHUB_WORKSPACE
+
+
+
 Section "MainSection" SEC01
 
   ; Set the output path to the installation directory
   SetOutPath $INSTDIR
 
   ; Add the entire FreeData Server directory
-  File /r "server.dist/*.*"
+  File /r ""${GITHUB_WORKSPACE}\modem\server.dist\*.*"
 
   ; Write the installation path to the registry
   WriteRegStr HKCU "Software\FreeDataServer" "Install_Dir" "$INSTDIR"
