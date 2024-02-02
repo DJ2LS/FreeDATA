@@ -40,7 +40,7 @@ class ScheduleManager:
         # wait some time
         threading.Event().wait(timeout=10)
 
-        # get actual modem istamce
+        # get actual modem instance
         self.modem = modem
 
         self.running = True  # Set the running flag to True
@@ -59,11 +59,11 @@ class ScheduleManager:
         for event in list(self.scheduler.queue):
             self.scheduler.cancel(event)
         # Wait for the scheduler thread to finish
-        self.scheduler_thread.join()
+        if self.scheduler_thread:
+            self.scheduler_thread.join()
 
     def transmit_beacon(self):
         if not self.state_manager.getARQ() and self.state_manager.is_beacon_running:
-
                 cmd = command_beacon.BeaconCommand(self.config, self.state_manager, self.event_manager)
                 cmd.run(self.event_manager, self.modem)
 
@@ -73,7 +73,6 @@ class ScheduleManager:
             explorer.explorer(self.modem_version, self.config_manager, self.state_manager).push()
 
     def check_for_queued_messages(self):
-
         if not self.state_manager.getARQ():
             if DatabaseManager(self.event_manager).get_first_queued_message():
                 params = DatabaseManager(self.event_manager).get_first_queued_message()

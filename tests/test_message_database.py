@@ -28,7 +28,7 @@ class TestDataFrameFactory(unittest.TestCase):
             'type': 'image/gif',
             'data': str(base64.b64encode(np.random.bytes(1024)), 'utf-8')
         }
-        apiParams = {'dxcall': 'DJ2LS-3', 'body': 'Hello World!', 'attachments': [attachment]}
+        apiParams = {'destination': 'DJ2LS-3', 'body': 'Hello World!', 'attachments': [attachment]}
         message = MessageP2P.from_api_params(self.mycall, apiParams)
         payload = message.to_payload()
         received_message = MessageP2P.from_payload(payload)
@@ -44,7 +44,7 @@ class TestDataFrameFactory(unittest.TestCase):
             'type': 'image/gif',
             'data': str(base64.b64encode(np.random.bytes(1024)), 'utf-8')
         }
-        apiParams = {'dxcall': 'DJ2LS-3', 'body': 'Hello World!', 'attachments': [attachment]}
+        apiParams = {'destination': 'DJ2LS-3', 'body': 'Hello World!', 'attachments': [attachment]}
         message = MessageP2P.from_api_params(self.mycall, apiParams)
         payload = message.to_payload()
         received_message = MessageP2P.from_payload(payload)
@@ -65,7 +65,7 @@ class TestDataFrameFactory(unittest.TestCase):
             'data': str(base64.b64encode(np.random.bytes(1024)), 'utf-8')
         }
 
-        apiParams = {'dxcall': 'DJ2LS-3', 'body': 'Hello World!', 'attachments': [attachment]}
+        apiParams = {'destination': 'DJ2LS-3', 'body': 'Hello World!', 'attachments': [attachment]}
         message = MessageP2P.from_api_params(self.mycall, apiParams)
         payload = message.to_payload()
         received_message = MessageP2P.from_payload(payload)
@@ -92,7 +92,7 @@ class TestDataFrameFactory(unittest.TestCase):
             'type': 'image/gif',
             'data': str(base64.b64encode(np.random.bytes(1024)), 'utf-8')
         }
-        apiParams = {'dxcall': 'DJ2LS-3', 'body': 'Hello World!', 'attachments': [attachment1, attachment2, attachment3]}
+        apiParams = {'destination': 'DJ2LS-3', 'body': 'Hello World!', 'attachments': [attachment1, attachment2, attachment3]}
         message = MessageP2P.from_api_params(self.mycall, apiParams)
         payload = message.to_payload()
         received_message = MessageP2P.from_payload(payload)

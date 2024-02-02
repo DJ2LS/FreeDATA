@@ -5,15 +5,17 @@ import unittest
 import queue
 from arq_data_type_handler import ARQDataTypeHandler, ARQ_SESSION_TYPES
 from event_manager import EventManager
-
+from state_manager import StateManager
 
 class TestDispatcher(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         cls.event_queue = queue.Queue()
+        cls.state_queue = queue.Queue()
         cls.event_manager = EventManager([cls.event_queue])
-        cls.arq_data_type_handler = ARQDataTypeHandler(cls.event_manager)
+        cls.state_manager = StateManager([cls.state_queue])
+        cls.arq_data_type_handler = ARQDataTypeHandler(cls.event_manager, cls.state_manager)
 
 
     def testDataTypeHevent_managerandlerRaw(self):
