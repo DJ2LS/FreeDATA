@@ -45,6 +45,12 @@ class explorer():
         beacon = str(self.states.is_beacon_running)
         strength = str(self.states.s_meter_strength)
 
+        # stop pushing if default callsign
+        if callsign in ['XX1XXX-6']:
+            # Reschedule the push method
+            self.scheduler.enter(self.publish_interval, 1, self.push)
+            return
+
         log.info("[EXPLORER] publish", frequency=frequency, band=band, callsign=callsign, gridsquare=gridsquare, version=version, bandwidth=bandwidth)
 
         headers = {"Content-Type": "application/json"}
