@@ -19,7 +19,7 @@ import command_arq_raw
 import command_message_send
 import event_manager
 from message_system_db_manager import DatabaseManager
-
+from schedule_manager import ScheduleManager
 
 app = Flask(__name__)
 CORS(app)
@@ -73,6 +73,7 @@ def enqueue_tx_command(cmd_class, params = {}):
     if command.run(app.modem_events, app.service_manager.modem): # TODO remove the app.modem_event custom queue
         return True
     return False
+
 ## REST API
 @app.route('/', methods=['GET'])
 def index():
@@ -134,10 +135,8 @@ def post_beacon():
 
     if not app.state_manager.is_beacon_running:
         app.state_manager.set('is_beacon_running', request.json['enabled'])
-        app.modem_service.put("start_beacon")
     else:
         app.state_manager.set('is_beacon_running', request.json['enabled'])
-        app.modem_service.put("stop_beacon")
 
     return api_response(request.json)
 
@@ -263,7 +262,7 @@ def handle_freedata_message(message_id):
 def get_message_attachments(message_id):
     attachments = DatabaseManager(app.event_manager).get_attachments_by_message_id_json(message_id)
     return api_response(attachments)
-    
+
 # @app.route('/modem/arq_connect', methods=['POST'])
 # @app.route('/modem/arq_disconnect', methods=['POST'])
 # @app.route('/modem/send_raw', methods=['POST'])
@@ -309,11 +308,13 @@ if __name__ == "__main__":
     app.event_manager = event_manager.EventManager([app.modem_events])  # TODO remove the app.modem_event custom queue
     # init state manager
     app.state_manager = state_manager.StateManager(app.state_queue)
+    # initialize message system schedule manager
+    app.schedule_manager = ScheduleManager(app.MODEM_VERSION, app.config_manager, app.state_manager, app.event_manager)
     # start service manager
     app.service_manager = service_manager.SM(app)
     # start modem service
     app.modem_service.put("start")
-    # initialize databse default values
+    # initialize database default values
     DatabaseManager(app.event_manager).initialize_default_values()
     wsm.startThreads(app)
     app.run()

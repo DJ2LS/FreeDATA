@@ -157,9 +157,9 @@ export async function getFreedataMessages(){
     processFreedataMessages(res)
 }
 
-export async function sendFreedataMessage(dxcall, body) {
+export async function sendFreedataMessage(destination, body) {
   return await apiPost("/freedata/messages", {
-    dxcall: dxcall,
+    destination: destination,
     body: body,
   });
 }

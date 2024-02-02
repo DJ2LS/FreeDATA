@@ -30,7 +30,8 @@ class DatabaseManager:
                 "received",
                 "failed",
                 "failed_checksum",
-                "aborted"
+                "aborted",
+                "queued"
             ]
 
             # Add default statuses if they don't exist
@@ -260,3 +261,28 @@ class DatabaseManager:
     def get_attachments_by_message_id_json(self, message_id):
         attachments = self.get_attachments_by_message_id(message_id)
         return json.dumps(attachments)
+
+    def get_first_queued_message(self):
+        session = self.get_thread_scoped_session()
+        try:
+            # Find the status object for "queued"
+            queued_status = session.query(Status).filter_by(name='queued').first()
+            if queued_status:
+                # Query for the first (oldest) message with status "queued"
+                message = session.query(P2PMessage)\
+                    .filter_by(status=queued_status)\
+                    .order_by(P2PMessage.timestamp)\
+                    .first()
+                if message:
+                    self.log(f"Found queued message with ID {message.id}")
+                    return message.to_dict()
+                else:
+                    return None
+            else:
+                self.log("Queued status not found", isWarning=True)
+                return None
+        except Exception as e:
+            self.log(f"Error fetching the first queued message: {e}", isWarning=True)
+            return None
+        finally:
+            session.remove()

@@ -3,19 +3,23 @@ import api_validations
 import base64
 import json
 from message_system_db_manager import DatabaseManager
+#import command_message_send
 
 
-def message_received(event_manager, data):
+def message_received(event_manager, state_manager, data):
     decompressed_json_string = data.decode('utf-8')
     received_message_obj = MessageP2P.from_payload(decompressed_json_string)
     received_message_dict = MessageP2P.to_dict(received_message_obj)
     DatabaseManager(event_manager).add_message(received_message_dict, direction='receive', status='received')
 
-def message_failed(event_manager, data):
+def message_failed(event_manager, state_manager, data):
     decompressed_json_string = data.decode('utf-8')
-    payload_message = json.loads(decompressed_json_string)
-    DatabaseManager(event_manager).update_message(payload_message["id"], update_data={'status' : 'failed'})
-
+    #payload_message = json.loads(decompressed_json_string)
+    #print(payload_message)
+    payload_message_obj = MessageP2P.from_payload(decompressed_json_string)
+    payload_message = MessageP2P.to_dict(payload_message_obj)
+    print(payload_message)
+    DatabaseManager(event_manager).update_message(payload_message["id"], update_data={'status': 'failed'})
 
 class MessageP2P:
     def __init__(self, id: str, origin: str, destination: str, body: str, attachments: list) -> None:
@@ -29,12 +33,12 @@ class MessageP2P:
     @classmethod
     def from_api_params(cls, origin: str, params: dict):
 
-        dxcall = params['dxcall']
-        if not api_validations.validate_freedata_callsign(dxcall):
-            dxcall = f"{dxcall}-0"
+        destination = params['destination']
+        if not api_validations.validate_freedata_callsign(destination):
+            destination = f"{destination}-0"
 
-        if not api_validations.validate_freedata_callsign(dxcall):
-            raise ValueError(f"Invalid dxcall given ({params['dxcall']})")
+        if not api_validations.validate_freedata_callsign(destination):
+            raise ValueError(f"Invalid destination given ({params['destination']})")
 
         body = params['body']
         if len(body) < 1:
@@ -47,9 +51,12 @@ class MessageP2P:
                 attachments.append(cls.__decode_attachment__(a))
 
         timestamp = datetime.datetime.now().isoformat()
-        msg_id = f"{origin}_{dxcall}_{timestamp}"
+        if 'id' not in params:
+            msg_id = f"{origin}_{destination}_{timestamp}"
+        else:
+            msg_id = params["id"]
 
-        return cls(msg_id, origin, dxcall, body, attachments)
+        return cls(msg_id, origin, destination, body, attachments)
         
     @classmethod
     def from_payload(cls, payload):

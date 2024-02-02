@@ -13,9 +13,11 @@ class ARQ_SESSION_TYPES(Enum):
     p2pmsg_lzma = 20
 
 class ARQDataTypeHandler:
-    def __init__(self, event_manager):
+    def __init__(self, event_manager, state_manager):
         self.logger = structlog.get_logger(type(self).__name__)
         self.event_manager = event_manager
+        self.state_manager = state_manager
+
         self.handlers = {
             ARQ_SESSION_TYPES.raw: {
                 'prepare': self.prepare_raw,
@@ -116,11 +118,11 @@ class ARQDataTypeHandler:
     def handle_p2pmsg_lzma(self, data):
         decompressed_data = lzma.decompress(data)
         self.log(f"Handling LZMA compressed P2PMSG data: {len(decompressed_data)} Bytes from {len(data)} Bytes")
-        message_received(self.event_manager, decompressed_data)
+        message_received(self.event_manager, self.state_manager, decompressed_data)
         return decompressed_data
 
     def failed_p2pmsg_lzma(self, data):
         decompressed_data = lzma.decompress(data)
         self.log(f"Handling failed LZMA compressed P2PMSG data: {len(decompressed_data)} Bytes from {len(data)} Bytes", isWarning=True)
-        message_failed(self.event_manager, decompressed_data)
+        message_failed(self.event_manager, self.state_manager, decompressed_data)
         return decompressed_data
