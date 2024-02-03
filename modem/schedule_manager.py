@@ -3,7 +3,7 @@ import time
 import threading
 import command_message_send
 from message_system_db_manager import DatabaseManager
-
+from message_system_db_beacon import DatabaseManagerBeacon
 import explorer
 import command_beacon
 
@@ -22,6 +22,7 @@ class ScheduleManager:
             'check_for_queued_messages': {'function': self.check_for_queued_messages, 'interval': 10},
             'explorer_publishing': {'function': self.push_to_explorer, 'interval': 120},
             'transmitting_beacon': {'function': self.transmit_beacon, 'interval': self.beacon_interval},
+            'beacon_cleanup': {'function': self.delete_beacons, 'interval': 600},
         }
         self.running = False  # Flag to control the running state
         self.scheduler_thread = None  # Reference to the scheduler thread
@@ -67,6 +68,9 @@ class ScheduleManager:
                 cmd = command_beacon.BeaconCommand(self.config, self.state_manager, self.event_manager)
                 cmd.run(self.event_manager, self.modem)
 
+    def delete_beacons(self):
+        DatabaseManagerBeacon(self.event_manager).beacon_cleanup_older_than_days(14)
+
     def push_to_explorer(self):
         self.config = self.config_manager.read()
         if self.config['STATION']['enable_explorer']:
@@ -80,3 +84,4 @@ class ScheduleManager:
                 command.transmit(self.modem)
 
         return
+

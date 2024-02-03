@@ -1,9 +1,19 @@
 # models.py
 
-from sqlalchemy import Column, String, Integer, JSON, ForeignKey, DateTime
+from sqlalchemy import Index, Column, String, Integer, JSON, ForeignKey, DateTime
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
+
+class Beacon(Base):
+    __tablename__ = 'beacon'
+    id = Column(Integer, primary_key=True)
+    timestamp = Column(DateTime)
+    snr = Column(Integer)
+    callsign = Column(String, ForeignKey('station.callsign'))
+    station = relationship("Station", back_populates="beacons")
+
+    Index('idx_beacon_callsign', 'callsign')
 
 class Station(Base):
     __tablename__ = 'station'
@@ -11,6 +21,10 @@ class Station(Base):
     checksum = Column(String, nullable=True)
     location = Column(JSON, nullable=True)
     info = Column(JSON, nullable=True)
+    beacons = relationship("Beacon", order_by="Beacon.id", back_populates="station")
+
+    Index('idx_station_callsign_checksum', 'callsign', 'checksum')
+
     def to_dict(self):
         return {
             'callsign': self.callsign,
@@ -38,6 +52,8 @@ class P2PMessage(Base):
     direction = Column(String)
     statistics = Column(JSON, nullable=True)
 
+    Index('idx_p2p_message_origin_timestamp', 'origin_callsign', 'via_callsign', 'destination_callsign', 'timestamp', 'attachments')
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -59,6 +75,8 @@ class Attachment(Base):
     data_type = Column(String)
     data = Column(String)
     message_id = Column(String, ForeignKey('p2p_message.id'))
+
+    Index('idx_attachments_id_message_id', 'id', 'message_id')
 
     def to_dict(self):
         return {

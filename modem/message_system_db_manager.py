@@ -286,3 +286,4 @@ class DatabaseManager:
             return None
         finally:
             session.remove()
+

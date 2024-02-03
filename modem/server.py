@@ -19,6 +19,7 @@ import command_arq_raw
 import command_message_send
 import event_manager
 from message_system_db_manager import DatabaseManager
+from message_system_db_beacon import DatabaseManagerBeacon
 from schedule_manager import ScheduleManager
 
 app = Flask(__name__)
@@ -263,19 +264,15 @@ def get_message_attachments(message_id):
     attachments = DatabaseManager(app.event_manager).get_attachments_by_message_id_json(message_id)
     return api_response(attachments)
 
-# @app.route('/modem/arq_connect', methods=['POST'])
-# @app.route('/modem/arq_disconnect', methods=['POST'])
-# @app.route('/modem/send_raw', methods=['POST'])
-# @app.route('/modem/record_audio', methods=['POST'])
-# @app.route('/modem/audio_levels', methods=['POST']) # tx and rx # not needed if we are restarting modem on changing settings
-# @app.route('/modem/mesh_ping', methods=['POST'])
-# @app.route('/mesh/routing_table', methods=['GET'])
-# @app.route('/modem/get_rx_buffer', methods=['GET'])
-# @app.route('/modem/del_rx_buffer', methods=['POST'])
-# @app.route('/rig/status', methods=['GET'])
-# @app.route('/rig/mode', methods=['POST'])
-# @app.route('/rig/frequency', methods=['POST'])
-# @app.route('/rig/test_hamlib', methods=['POST'])
+@app.route('/freedata/beacons', methods=['GET'])
+def get_all_beacons():
+    beacons = DatabaseManagerBeacon(app.event_manager).get_all_beacons()
+    return api_response(beacons)
+
+@app.route('/freedata/beacons/<string:callsign>', methods=['GET'])
+def get_beacons_by_callsign(callsign):
+    beacons = DatabaseManagerBeacon(app.event_manager).get_beacons_by_callsign(callsign)
+    return api_response(beacons)
 
 # Event websocket
 @sock.route('/events')
