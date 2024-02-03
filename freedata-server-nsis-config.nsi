@@ -1,5 +1,8 @@
 !include "MUI2.nsh"
 
+; Request administrative rights
+RequestExecutionLevel admin
+
 ; The name and file name of the installer
 Name "FreeData Server"
 OutFile "FreeData-Server-Installer.exe"
