@@ -8,8 +8,14 @@ import {
 } from "./chatHandler";
 */
 import { displayToast } from "./popupHandler";
-import { getFreedataMessages, getConfig, getAudioDevices, getSerialDevices, getModemState } from "./api"
-import { processFreedataMessages } from "./messagesHandler.ts"
+import {
+  getFreedataMessages,
+  getConfig,
+  getAudioDevices,
+  getSerialDevices,
+  getModemState,
+} from "./api";
+import { processFreedataMessages } from "./messagesHandler.ts";
 
 // ----------------- init pinia stores -------------
 import { setActivePinia } from "pinia";
@@ -64,11 +70,11 @@ export function eventDispatcher(data) {
     return;
   }
 
-switch (data["message-db"]) {
+  switch (data["message-db"]) {
     case "changed":
-      console.log("fetching new messages...")
-      var messages = getFreedataMessages()
-      processFreedataMessages(messages)
+      console.log("fetching new messages...");
+      var messages = getFreedataMessages();
+      processFreedataMessages(messages);
       return;
   }
 
@@ -299,4 +305,3 @@ function build_HSL() {
   }
   stateStore.heard_stations.sort((a, b) => b.timestamp - a.timestamp); // b - a for reverse sort
 }
-

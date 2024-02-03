@@ -50,7 +50,7 @@ const state = useStateStore(pinia);
           >
             <i class="bi bi-cpu" style="font-size: 0.8rem"></i>
           </button>
-<!--
+          <!--
           <button
             class="btn btn-sm btn-secondary me-1"
             id="arq_session"
@@ -70,7 +70,7 @@ const state = useStateStore(pinia);
             <i class="bi bi-arrow-left-right" style="font-size: 0.8rem"></i>
           </button>
           -->
-<!--
+          <!--
           <button
             class="btn btn-sm btn-secondary me-1"
             id="arq_state"
@@ -103,7 +103,7 @@ const state = useStateStore(pinia);
                 <i class="bi bi-usb-symbol" style="font-size: 0.8rem"></i>
               </button>
 -->
-<!--
+          <!--
           <button
             class="btn btn-sm btn-secondary disabled me-3"
             type="button"

@@ -28,12 +28,12 @@ function getDateTime(timestampRaw) {
 }
 
 function getMaidenheadDistance(dxGrid) {
-    if(typeof(dxGrid) != "undefined"){
-      try {
-        return parseInt(distance(settings.remote.STATION.mygrid, dxGrid));
-      } catch (e) {
-        console.warn(e);
-      }
+  if (typeof dxGrid != "undefined") {
+    try {
+      return parseInt(distance(settings.remote.STATION.mygrid, dxGrid));
+    } catch (e) {
+      console.warn(e);
+    }
   }
 }
 </script>

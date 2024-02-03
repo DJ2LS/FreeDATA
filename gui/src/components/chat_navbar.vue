@@ -112,7 +112,6 @@ function newChat() {
   //updateAllChat(false);
   this.newChatCall.value = "";
 }
-
 </script>
 
 <template>
@@ -121,14 +120,12 @@ function newChat() {
       <div class="row w-100">
         <div class="col-3 p-0">
           <button
-              class="btn btn-outline-primary w-100"
-              data-bs-target="#newChatModal"
-              data-bs-toggle="modal"
-            >
-              <i class="bi bi-pencil-square"> Start a new chat</i>
-            </button>
-
-
+            class="btn btn-outline-primary w-100"
+            data-bs-target="#newChatModal"
+            data-bs-toggle="modal"
+          >
+            <i class="bi bi-pencil-square"> Start a new chat</i>
+          </button>
         </div>
         <div class="col-5 ms-2 p-0">
           <!-- right side of chat nav bar-->

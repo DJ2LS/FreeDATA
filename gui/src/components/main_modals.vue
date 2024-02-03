@@ -11,19 +11,18 @@ const chat = useChatStore(pinia);
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 import { sendModemTestFrame } from "../js/api";
 import main_startup_check from "./main_startup_check.vue";
-import { newMessage, deleteCallsignFromDB } from '../js/messagesHandler.ts'
+import { newMessage, deleteCallsignFromDB } from "../js/messagesHandler.ts";
 
-function newChat(){
-    let newCallsign = chat.newChatCallsign.toUpperCase()
-    newMessage(newCallsign, chat.newChatMessage)
+function newChat() {
+  let newCallsign = chat.newChatCallsign.toUpperCase();
+  newMessage(newCallsign, chat.newChatMessage);
 
-   chat.newChatCallsign = '';
-   chat.newChatMessage = '';
-
+  chat.newChatCallsign = "";
+  chat.newChatMessage = "";
 }
 
 function deleteChat() {
-    deleteCallsignFromDB(chat.selectedCallsign);
+  deleteCallsignFromDB(chat.selectedCallsign);
 }
 
 import {
@@ -314,7 +313,7 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
     </div>
   </div>
 
-<div
+  <div
     class="modal fade"
     ref="modalEle"
     id="newChatModal"
@@ -335,28 +334,40 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
           ></button>
         </div>
         <div class="modal-body">
+          <div class="alert alert-info" role="alert">
+            1. Enter destination callsign
+            <br />
+            2. Enter a first message
+            <br />
+            3. Pressing "START NEW CHAT"
+          </div>
 
-<div class="alert alert-info" role="alert">
-  1. Enter destination callsign
-  <br>
-  2. Enter a first message
-  <br>
-  3. Pressing "START NEW CHAT"
-</div>
+          <div class="form-floating mb-3">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingInputDestination"
+              placeholder="dxcallsign / destination"
+              maxlength="9"
+              style="text-transform: uppercase"
+              @keypress.enter="newChat()"
+              v-model="chat.newChatCallsign"
+            />
+            <label for="floatingInputDestination"
+              >dxcallsign / destination</label
+            >
+          </div>
 
-<div class="form-floating mb-3">
-  <input type="text" class="form-control" id="floatingInputDestination" placeholder="dxcallsign / destination" maxlength="9"
-              style="text-transform: uppercase" @keypress.enter="newChat()" v-model="chat.newChatCallsign">
-  <label for="floatingInputDestination">dxcallsign / destination</label>
-</div>
-
-<div class="form-floating">
-  <textarea class="form-control" placeholder="Your first message" id="floatingTextareaNewChatMessage" style="height: 100px" v-model="chat.newChatMessage"></textarea>
-  <label for="floatingTextareaNewChatMessage">First message</label>
-</div>
-
-
-
+          <div class="form-floating">
+            <textarea
+              class="form-control"
+              placeholder="Your first message"
+              id="floatingTextareaNewChatMessage"
+              style="height: 100px"
+              v-model="chat.newChatMessage"
+            ></textarea>
+            <label for="floatingTextareaNewChatMessage">First message</label>
+          </div>
         </div>
         <div class="modal-footer">
           <button
@@ -367,21 +378,20 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
             Close
           </button>
           <button
-              class="btn btn-sm btn-outline-success"
-              id="createNewChatButton"
-              type="button"
-              data-bs-dismiss="modal"
-              title="Start a new chat (enter dx call sign first)"
-              @click="newChat()"
-            >
-              START NEW CHAT
-              <i class="bi bi-pencil-square" style="font-size: 1.2rem"></i>
-            </button>
+            class="btn btn-sm btn-outline-success"
+            id="createNewChatButton"
+            type="button"
+            data-bs-dismiss="modal"
+            title="Start a new chat (enter dx call sign first)"
+            @click="newChat()"
+          >
+            START NEW CHAT
+            <i class="bi bi-pencil-square" style="font-size: 1.2rem"></i>
+          </button>
         </div>
       </div>
     </div>
   </div>
-
 
   <!-- HELP MODALS AUDIO -->
   <div
