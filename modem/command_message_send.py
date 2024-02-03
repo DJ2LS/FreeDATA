@@ -29,7 +29,6 @@ class SendMessageCommand(TxCommand):
         first_queued_message = DatabaseManager(self.event_manager).get_first_queued_message()
         if not first_queued_message:
             self.log("No queued message in database.")
-            self.state_manager.set_state("pending_messages", False)
             return
 
         self.log(f"Queued message found: {first_queued_message['id']}")

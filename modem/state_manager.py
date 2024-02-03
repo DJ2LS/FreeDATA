@@ -49,11 +49,6 @@ class StateManager:
         # Set rig control status regardless or rig control method
         self.radio_status = False
 
-        # message system related states
-        self.pending_messages = False
-
-
-
     def sendState (self):
         currentState = self.get_state_event(False)
         self.statequeue.put(currentState)

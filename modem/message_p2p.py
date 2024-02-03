@@ -10,7 +10,7 @@ def message_received(event_manager, state_manager, data):
     decompressed_json_string = data.decode('utf-8')
     received_message_obj = MessageP2P.from_payload(decompressed_json_string)
     received_message_dict = MessageP2P.to_dict(received_message_obj)
-    DatabaseManager(event_manager).add_message(received_message_dict, direction='receive', status='received')
+    DatabaseManager(event_manager).add_message(received_message_dict, direction='receive', status='received', is_read=False)
 
 def message_failed(event_manager, state_manager, data):
     decompressed_json_string = data.decode('utf-8')

@@ -247,13 +247,18 @@ def get_post_freedata_message():
     else:
         api_abort('Error executing command...', 500)
 
-@app.route('/freedata/messages/<string:message_id>', methods=['GET', 'POST', 'DELETE'])
+@app.route('/freedata/messages/<string:message_id>', methods=['GET', 'POST', 'PATCH', 'DELETE'])
 def handle_freedata_message(message_id):
     if request.method == 'GET':
         message = DatabaseManager(app.event_manager).get_message_by_id_json(message_id)
         return message
     elif request.method == 'POST':
         result = DatabaseManager(app.event_manager).update_message(message_id, update_data={'status': 'queued'})
+        DatabaseManager(app.event_manager).increment_message_attempts(message_id)
+        return api_response(result)
+    elif request.method == 'PATCH':
+        # Fixme We need to adjust this
+        result = DatabaseManager(app.event_manager).mark_message_as_read(message_id)
         return api_response(result)
     elif request.method == 'DELETE':
         result = DatabaseManager(app.event_manager).delete_message(message_id)

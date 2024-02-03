@@ -111,7 +111,7 @@ class DatabaseManager:
             session.flush()  # To get the ID immediately
         return status
 
-    def add_message(self, message_data, direction='receive', status=None):
+    def add_message(self, message_data, direction='receive', status=None, is_read=True):
         session = self.get_thread_scoped_session()
         try:
             # Create and add the origin and destination Stations
@@ -132,7 +132,9 @@ class DatabaseManager:
                 body=message_data['body'],
                 timestamp=timestamp,
                 direction=direction,
-                status_id=status.id if status else None
+                status_id=status.id if status else None,
+                is_read=is_read,
+                attempt=0
             )
 
             # Process and add attachments
@@ -287,3 +289,34 @@ class DatabaseManager:
         finally:
             session.remove()
 
+    def increment_message_attempts(self, message_id):
+        session = self.get_thread_scoped_session()
+        try:
+            message = session.query(P2PMessage).filter_by(id=message_id).first()
+            if message:
+                message.attempts += 1
+                session.commit()
+                self.log(f"Incremented attempt count for message {message_id}")
+            else:
+                self.log(f"Message with ID {message_id} not found")
+        except Exception as e:
+            session.rollback()
+            self.log(f"An error occurred while incrementing attempts for message {message_id}: {e}")
+        finally:
+            session.remove()
+
+    def mark_message_as_read(self, message_id):
+        session = self.get_thread_scoped_session()
+        try:
+            message = session.query(P2PMessage).filter_by(id=message_id).first()
+            if message:
+                message.is_read = True
+                session.commit()
+                self.log(f"Marked message {message_id} as read")
+            else:
+                self.log(f"Message with ID {message_id} not found")
+        except Exception as e:
+            session.rollback()
+            self.log(f"An error occurred while marking message {message_id} as read: {e}")
+        finally:
+            session.remove()

@@ -1,6 +1,6 @@
 # models.py
 
-from sqlalchemy import Index, Column, String, Integer, JSON, ForeignKey, DateTime
+from sqlalchemy import Index, Boolean, Column, String, Integer, JSON, ForeignKey, DateTime
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
@@ -46,11 +46,13 @@ class P2PMessage(Base):
     destination_callsign = Column(String, ForeignKey('station.callsign'))
     body = Column(String, nullable=True)
     attachments = relationship('Attachment', backref='p2p_message')
+    attempt = Column(Integer, default=0)
     timestamp = Column(DateTime)
     status_id = Column(Integer, ForeignKey('status.id'), nullable=True)
     status = relationship('Status', backref='p2p_messages')
     direction = Column(String)
     statistics = Column(JSON, nullable=True)
+    is_read = Column(Boolean, default=True)
 
     Index('idx_p2p_message_origin_timestamp', 'origin_callsign', 'via_callsign', 'destination_callsign', 'timestamp', 'attachments')
 
@@ -58,6 +60,7 @@ class P2PMessage(Base):
         return {
             'id': self.id,
             'timestamp': self.timestamp.isoformat() if self.timestamp else None,
+            'attempt': self.attempt,
             'origin': self.origin_callsign,
             'via': self.via_callsign,
             'destination': self.destination_callsign,
@@ -65,6 +68,7 @@ class P2PMessage(Base):
             'body': self.body,
             'attachments': [attachment.to_dict() for attachment in self.attachments],
             'status': self.status.name if self.status else None,
+            'is_read': self.is_read,
             'statistics': self.statistics
         }
 
