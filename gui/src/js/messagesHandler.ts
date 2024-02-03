@@ -21,10 +21,12 @@ interface Message {
 }
 
 
-export function processFreedataMessages(data){
-    let jsondata = JSON.parse(data);
-    chatStore.callsign_list = createCallsignListFromAPI(jsondata)
-    chatStore.sorted_chat_list = createSortedMessagesList(jsondata)
+export async function processFreedataMessages(data){
+    if(typeof(data) != "undefined"){
+        let jsondata = await JSON.parse(data);
+        chatStore.callsign_list = createCallsignListFromAPI(jsondata)
+        chatStore.sorted_chat_list = createSortedMessagesList(jsondata)
+    }
 }
 
 function createCallsignListFromAPI(data: { total_messages: number, messages: Message[] }): {[key: string]: {timestamp: string, body: string}} {
@@ -89,3 +91,4 @@ export function requestMessageInfo(id){
 export function getMessageAttachment(id){
     return
 }
+

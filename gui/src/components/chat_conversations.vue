@@ -4,6 +4,12 @@ import pinia from "../store/index";
 setActivePinia(pinia);
 
 import { useChatStore } from "../store/chatStore.js";
+import { getBeaconDataByCallsign } from "../js/api.js";
+
+
+
+
+
 const chat = useChatStore(pinia);
 
 
@@ -15,9 +21,18 @@ function chatSelected(callsign) {
     // needs sensible defaults
     messageBody.scrollTop = messageBody.scrollHeight - messageBody.clientHeight;
   }
-  console.log(chat.selectedCallsign)
+
+   processBeaconData(callsign);
 
 }
+
+async function processBeaconData(callsign){
+  // fetch beacon data when selecting a callsign
+    let beacons = await getBeaconDataByCallsign(callsign);
+    chat.beaconLabelArray = beacons.map(entry => entry.timestamp);
+    chat.beaconDataArray = beacons.map(entry => entry.snr);
+}
+
 
 function getDateTime(timestamp) {
 

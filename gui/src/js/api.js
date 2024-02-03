@@ -167,3 +167,7 @@ export async function sendFreedataMessage(destination, body) {
 export async function deleteFreedataMessage(id) {
   return await apiDelete(`/freedata/messages/${id}`);
 }
+
+export async function getBeaconDataByCallsign(callsign){
+    return await apiGet(`/freedata/beacons/${callsign}`);
+}
