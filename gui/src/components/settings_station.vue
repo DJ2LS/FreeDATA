@@ -9,10 +9,9 @@ import {
   validateCallsignWithoutSSID,
 } from "../js/freedata";
 function validateCall() {
-
-//ensure callsign is uppercase:
-    let call = settings.remote.STATION.mycall
-    settings.remote.STATION.mycall = call.toUpperCase()
+  //ensure callsign is uppercase:
+  let call = settings.remote.STATION.mycall;
+  settings.remote.STATION.mycall = call.toUpperCase();
 
   if (validateCallsignWithoutSSID(settings.remote.STATION.mycall))
     //Send new callsign to modem if valid

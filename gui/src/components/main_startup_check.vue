@@ -34,7 +34,6 @@ onMounted(() => {
   new Modal("#modemCheck", {}).show();
 });
 
-
 function getModemStateLocal() {
   // Returns active/inactive if modem is running for modem status label
   if (state.is_modem_running == true) return "Active";
@@ -165,7 +164,9 @@ function testHamlib() {
               <div id="modemStatusCollapse" class="accordion-collapse collapse">
                 <div class="accordion-body">
                   <div class="input-group input-group-sm mb-1">
-                    <label class="input-group-text w-50">Manual modem restart</label>
+                    <label class="input-group-text w-50"
+                      >Manual modem restart</label
+                    >
                     <label class="input-group-text">
                       <button
                         type="button"
@@ -199,7 +200,6 @@ function testHamlib() {
                         <i class="bi bi-stop-fill"></i>
                       </button>
                     </label>
-
                   </div>
                   <!-- Audio Input Device -->
                   <div class="input-group input-group-sm mb-1">

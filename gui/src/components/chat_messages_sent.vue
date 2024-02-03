@@ -12,7 +12,7 @@
       </button>
 
       <button
-      disabled
+        disabled
         class="btn btn-outline-secondary border-0 me-1"
         @click="repeatMessage"
       >
@@ -20,7 +20,7 @@
       </button>
 
       <button
-      disabled
+        disabled
         class="btn btn-outline-secondary border-0 me-1"
         @click="showMessageInfo"
         data-bs-target="#messageInfoModal"
@@ -50,7 +50,9 @@
         </div>
 
         <div class="card-footer p-0 bg-secondary border-top-0">
-          <p class="text p-0 m-0 me-1 text-end">{{message.status}} | {{ getDateTime }}</p>
+          <p class="text p-0 m-0 me-1 text-end">
+            {{ message.status }} | {{ getDateTime }}
+          </p>
           <!-- Display formatted timestamp in card-footer -->
         </div>
 
@@ -142,9 +144,8 @@ export default {
   },
   computed: {
     getFileContent() {
-
-      if(this.message.attachments.length <= 0){
-        return { filename: '', filesize: 0, filetype: '' };
+      if (this.message.attachments.length <= 0) {
+        return { filename: "", filesize: 0, filetype: "" };
       }
 
       var filename = Object.keys(this.message._attachments)[0];
@@ -175,12 +176,11 @@ export default {
     },
 
     getDateTime() {
-
-        let date = new Date(this.message.timestamp);
-        let hours = date.getHours().toString().padStart(2, '0');
-        let minutes = date.getMinutes().toString().padStart(2, '0');
-        let seconds = date.getSeconds().toString().padStart(2, '0');
-        return `${hours}:${minutes}:${seconds}`;
+      let date = new Date(this.message.timestamp);
+      let hours = date.getHours().toString().padStart(2, "0");
+      let minutes = date.getMinutes().toString().padStart(2, "0");
+      let seconds = date.getSeconds().toString().padStart(2, "0");
+      return `${hours}:${minutes}:${seconds}`;
     },
   },
 };

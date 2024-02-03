@@ -6,12 +6,7 @@ setActivePinia(pinia);
 import { useChatStore } from "../store/chatStore.js";
 import { getBeaconDataByCallsign } from "../js/api.js";
 
-
-
-
-
 const chat = useChatStore(pinia);
-
 
 function chatSelected(callsign) {
   chat.selectedCallsign = callsign.toUpperCase();
@@ -22,28 +17,23 @@ function chatSelected(callsign) {
     messageBody.scrollTop = messageBody.scrollHeight - messageBody.clientHeight;
   }
 
-   processBeaconData(callsign);
-
+  processBeaconData(callsign);
 }
 
-async function processBeaconData(callsign){
+async function processBeaconData(callsign) {
   // fetch beacon data when selecting a callsign
-    let beacons = await getBeaconDataByCallsign(callsign);
-    chat.beaconLabelArray = beacons.map(entry => entry.timestamp);
-    chat.beaconDataArray = beacons.map(entry => entry.snr);
+  let beacons = await getBeaconDataByCallsign(callsign);
+  chat.beaconLabelArray = beacons.map((entry) => entry.timestamp);
+  chat.beaconDataArray = beacons.map((entry) => entry.snr);
 }
-
 
 function getDateTime(timestamp) {
-
-        let date = new Date(timestamp);
-        let hours = date.getHours().toString().padStart(2, '0');
-        let minutes = date.getMinutes().toString().padStart(2, '0');
-        let seconds = date.getSeconds().toString().padStart(2, '0');
-        return `${hours}:${minutes}`;
+  let date = new Date(timestamp);
+  let hours = date.getHours().toString().padStart(2, "0");
+  let minutes = date.getMinutes().toString().padStart(2, "0");
+  let seconds = date.getSeconds().toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
 }
-
-
 </script>
 <template>
   <div
@@ -51,8 +41,10 @@ function getDateTime(timestamp) {
     id="chat-list-tab"
     role="chat-tablist"
   >
-
-    <template v-for="(details, callsign, key) in chat.callsign_list" :key="callsign">
+    <template
+      v-for="(details, callsign, key) in chat.callsign_list"
+      :key="callsign"
+    >
       <a
         class="list-group-item list-group-item-action list-group-item-secondary rounded-2 border-0 mb-2"
         :class="{ active: key == 0 }"
@@ -63,16 +55,14 @@ function getDateTime(timestamp) {
         aria-controls="list-{{callsign}}-messages"
         @click="chatSelected(callsign)"
       >
-
         <div class="row">
           <div class="col-9 text-truncate">
             <strong>{{ callsign }}</strong>
-            <br>
-            <small> {{details.body}} </small>
-
+            <br />
+            <small> {{ details.body }} </small>
           </div>
           <div class="col-3">
-          <small> {{getDateTime(details.timestamp)}} </small>
+            <small> {{ getDateTime(details.timestamp) }} </small>
             <button
               class="btn btn-sm btn-outline-secondary ms-2 border-0"
               data-bs-target="#deleteChatModal"

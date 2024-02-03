@@ -4,9 +4,7 @@ import {
   validateCallsignWithoutSSID,
 } from "./freedata";
 
-import {
-processFreedataMessages
-} from "./messagesHandler"
+import { processFreedataMessages } from "./messagesHandler";
 
 function buildURL(params, endpoint) {
   const url = "http://" + params.host + ":" + params.port + endpoint;
@@ -152,9 +150,9 @@ export async function getRadioStatus() {
   return await apiGet("/radio");
 }
 
-export async function getFreedataMessages(){
-    let res = await apiGet("/freedata/messages")
-    processFreedataMessages(res)
+export async function getFreedataMessages() {
+  let res = await apiGet("/freedata/messages");
+  processFreedataMessages(res);
 }
 
 export async function sendFreedataMessage(destination, body) {
@@ -168,6 +166,6 @@ export async function deleteFreedataMessage(id) {
   return await apiDelete(`/freedata/messages/${id}`);
 }
 
-export async function getBeaconDataByCallsign(callsign){
-    return await apiGet(`/freedata/beacons/${callsign}`);
+export async function getBeaconDataByCallsign(callsign) {
+  return await apiGet(`/freedata/beacons/${callsign}`);
 }

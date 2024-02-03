@@ -16,16 +16,19 @@ var prevChatMessageDay = "";
 
 function getDateTime(timestampRaw) {
   let date = new Date(timestampRaw);
-    let year = date.getFullYear();
-    let month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-indexed
-    let day = date.getDate().toString().padStart(2, '0');
-    return `${year}-${month}-${day}`;
+  let year = date.getFullYear();
+  let month = (date.getMonth() + 1).toString().padStart(2, "0"); // Months are zero-indexed
+  let day = date.getDate().toString().padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 </script>
 
 <template>
   <div class="tab-content" id="nav-tabContent-chat-messages">
-    <template v-for="(details, callsign, key) in chat.callsign_list" :key="callsign">
+    <template
+      v-for="(details, callsign, key) in chat.callsign_list"
+      :key="callsign"
+    >
       <div
         class="tab-pane fade show"
         :class="{ active: key == 0 }"
@@ -33,24 +36,16 @@ function getDateTime(timestampRaw) {
         role="tabpanel"
         :aria-labelledby="`list-chat-list-${callsign}`"
       >
-
-
-        <template
-          v-for="item in chat.sorted_chat_list[callsign]"
-        >
-
+        <template v-for="item in chat.sorted_chat_list[callsign]">
           <div v-if="prevChatMessageDay !== getDateTime(item.timestamp)">
             <div class="separator my-2">
               {{ (prevChatMessageDay = getDateTime(item.timestamp)) }}
             </div>
           </div>
 
-
           <div v-if="item.direction === 'transmit'">
             <sent-message :message="item" />
           </div>
-
-
 
           <div v-else-if="item.direction === 'receive'">
             <received-message :message="item" />

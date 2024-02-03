@@ -1,5 +1,4 @@
 <template>
-
   <div class="row justify-content-start mb-2">
     <div :class="messageWidthClass">
       <div class="card bg-light border-0 text-dark">
@@ -25,7 +24,7 @@
     <!-- Delete button outside of the card -->
     <div class="col-auto">
       <button
-      disabled
+        disabled
         class="btn btn-outline-secondary border-0 me-1"
         @click="showMessageInfo"
         data-bs-target="#messageInfoModal"
@@ -35,7 +34,7 @@
       </button>
 
       <button
-      disabled
+        disabled
         v-if="getFileContent['filesize'] !== 0"
         class="btn btn-outline-secondary border-0 me-1"
         @click="downloadAttachment"
@@ -99,11 +98,10 @@ export default {
   },
   computed: {
     getFileContent() {
-    
-      if(this.message.attachments.length <= 0){
-        return { filename: '', filesize: 0, filetype: '' };
+      if (this.message.attachments.length <= 0) {
+        return { filename: "", filesize: 0, filetype: "" };
       }
-      
+
       try {
         var filename = Object.keys(this.message._attachments)[0];
         var filesize = this.message._attachments[filename]["length"];
@@ -129,12 +127,11 @@ export default {
     },
 
     getDateTime() {
-
-        let date = new Date(this.message.timestamp);
-        let hours = date.getHours().toString().padStart(2, '0');
-        let minutes = date.getMinutes().toString().padStart(2, '0');
-        let seconds = date.getSeconds().toString().padStart(2, '0');
-        return `${hours}:${minutes}:${seconds}`;
+      let date = new Date(this.message.timestamp);
+      let hours = date.getHours().toString().padStart(2, "0");
+      let minutes = date.getMinutes().toString().padStart(2, "0");
+      let seconds = date.getSeconds().toString().padStart(2, "0");
+      return `${hours}:${minutes}:${seconds}`;
     },
   },
 };
