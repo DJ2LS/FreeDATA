@@ -162,6 +162,12 @@ export async function sendFreedataMessage(destination, body) {
   });
 }
 
+
+export async function retransmitFreedataMessage(id) {
+  return await apiPost(`/freedata/messages/${id}`);
+}
+
+
 export async function deleteFreedataMessage(id) {
   return await apiDelete(`/freedata/messages/${id}`);
 }
