@@ -48,6 +48,13 @@ const chatModuleMessage=ref(null);
 
 function transmitNewMessage(){
 
+
+    // if no callsign is selected, assume we are using the first one..
+    if(typeof(chat.selectedCallsign) == 'undefined'){
+        chat.selectedCallsign = Object.keys(chat.callsign_list)[0];
+    }
+
+
     chat.inputText = chat.inputText.trim();
     if (chat.inputText.length==0 && chat.inputFileName == "-")
       return;

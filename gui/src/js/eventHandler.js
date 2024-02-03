@@ -127,7 +127,7 @@ switch (data["message-db"]) {
       getSerialDevices();
       getFreedataMessages();
       processFreedataMessages();
-      chat.selectedCallsign = chatStore.callsign_list[0]
+
       return;
 
     case "arq":
