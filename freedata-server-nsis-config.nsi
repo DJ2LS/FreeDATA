@@ -16,6 +16,11 @@ InstallDirRegKey HKCU "Software\FreeData\freedata-server" "Install_Dir"
 ; Modern UI settings
 !define MUI_ABORTWARNING
 
+; Installer interface settings
+!define MUI_ICON "documentation\icon.ico"
+!define MUI_UNICON "documentation\icon.ico" ; Icon for the uninstaller
+
+
 ; Define the welcome page text
 !define MUI_WELCOMEPAGE_TEXT "Welcome to the FreeData Server Setup Wizard. This wizard will guide you through the installation process."
 
@@ -37,7 +42,7 @@ InstallDirRegKey HKCU "Software\FreeData\freedata-server" "Install_Dir"
 !insertmacro MUI_LANGUAGE "English"
 
 ; Installer Sections
-Section "Install FreeData Server" SEC01
+Section "FreeData Server" SEC01
 
   ; Set output path to the installation directory
   SetOutPath $INSTDIR
