@@ -175,7 +175,7 @@ class DatabaseManager:
     def get_all_messages_json(self):
         messages_dict = self.get_all_messages()
         messages_with_header = {'total_messages' : len(messages_dict), 'messages' : messages_dict}
-        return json.dumps(messages_with_header)  # Convert to JSON string
+        return messages_with_header
 
     def get_message_by_id(self, message_id):
         session = self.get_thread_scoped_session()

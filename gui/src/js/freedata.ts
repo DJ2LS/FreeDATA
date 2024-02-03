@@ -65,7 +65,7 @@ export function sortByPropertyDesc(property) {
  */
 export function validateCallsignWithSSID(callsign: string) {
   var patt = new RegExp("^[A-Z]+[0-9][A-Z]*-(1[0-5]|[0-9])$");
-
+    callsign = callsign
   if (
     callsign === undefined ||
     callsign === "" ||
