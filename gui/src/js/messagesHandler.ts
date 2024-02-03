@@ -23,7 +23,6 @@ interface Message {
 
 export function processFreedataMessages(data){
     let jsondata = JSON.parse(data);
-    console.log(jsondata)
     chatStore.callsign_list = createCallsignListFromAPI(jsondata)
     chatStore.sorted_chat_list = createSortedMessagesList(jsondata)
 }

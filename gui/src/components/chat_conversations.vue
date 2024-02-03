@@ -15,6 +15,7 @@ function chatSelected(callsign) {
     // needs sensible defaults
     messageBody.scrollTop = messageBody.scrollHeight - messageBody.clientHeight;
   }
+  console.log(chat.selectedCallsign)
 
 }
 
@@ -47,10 +48,6 @@ function getDateTime(timestamp) {
         aria-controls="list-{{callsign}}-messages"
         @click="chatSelected(callsign)"
       >
-       <!-- Fixme Dirty hack for ensuring we have a value set for chatSelected... -->
-       <span style="display: none;">{{ key === 0 && void chatSelected(callsign) }}</span>
-       <!-- End of hack -->
-
 
         <div class="row">
           <div class="col-9 text-truncate">

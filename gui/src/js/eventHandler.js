@@ -8,7 +8,7 @@ import {
 } from "./chatHandler";
 */
 import { displayToast } from "./popupHandler";
-import { getFreedataMessages } from "./api"
+import { getFreedataMessages, getConfig, getAudioDevices, getSerialDevices, getModemState } from "./api"
 import { processFreedataMessages } from "./messagesHandler.ts"
 
 // ----------------- init pinia stores -------------
@@ -84,14 +84,24 @@ switch (data["message-db"]) {
   switch (data["modem"]) {
     case "started":
       displayToast("success", "bi-arrow-left-right", "Modem started", 5000);
+      getModemState();
+      getConfig();
+      getAudioDevices();
+      getSerialDevices();
+      getFreedataMessages();
       return;
 
     case "stopped":
-      displayToast("success", "bi-arrow-left-right", "Modem stopped", 5000);
+      displayToast("warning", "bi-arrow-left-right", "Modem stopped", 5000);
       return;
 
     case "restarted":
       displayToast("secondary", "bi-bootstrap-reboot", "Modem restarted", 5000);
+      getModemState();
+      getConfig();
+      getAudioDevices();
+      getSerialDevices();
+      getFreedataMessages();
       return;
 
     case "failed":
@@ -111,9 +121,13 @@ switch (data["message-db"]) {
       message = "Connected to server";
       displayToast("success", "bi-ethernet", message, 5000);
       stateStore.modem_connection = "connected";
-
-      getFreedataMessages()
-
+      getModemState();
+      getConfig();
+      getAudioDevices();
+      getSerialDevices();
+      getFreedataMessages();
+      processFreedataMessages();
+      chat.selectedCallsign = chatStore.callsign_list[0]
       return;
 
     case "arq":

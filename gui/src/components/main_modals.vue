@@ -16,6 +16,10 @@ import { newMessage, deleteCallsignFromDB } from '../js/messagesHandler.ts'
 function newChat(){
     let newCallsign = chat.newChatCallsign.toUpperCase()
     newMessage(newCallsign, chat.newChatMessage)
+
+   chat.newChatCallsign = '';
+   chat.newChatMessage = '';
+
 }
 
 function deleteChat() {
