@@ -6,7 +6,11 @@ setActivePinia(pinia);
 import { useChatStore } from "../store/chatStore.js";
 const chatStore = useChatStore(pinia);
 
-import { sendFreedataMessage, deleteFreedataMessage, retransmitFreedataMessage } from "./api"
+import {
+  sendFreedataMessage,
+  deleteFreedataMessage,
+  retransmitFreedataMessage,
+} from "./api";
 
 interface Message {
   id: string;
@@ -20,35 +24,47 @@ interface Message {
   statistics: any;
 }
 
-
-export async function processFreedataMessages(data){
-    if(typeof(data) != "undefined"){
-        chatStore.callsign_list = createCallsignListFromAPI(data)
-        chatStore.sorted_chat_list = createSortedMessagesList(data)
-    }
+export async function processFreedataMessages(data) {
+  if (typeof data != "undefined") {
+    chatStore.callsign_list = createCallsignListFromAPI(data);
+    chatStore.sorted_chat_list = createSortedMessagesList(data);
+  }
 }
 
-function createCallsignListFromAPI(data: { total_messages: number, messages: Message[] }): {[key: string]: {timestamp: string, body: string}} {
-  const callsignList: {[key: string]: {timestamp: string, body: string}} = {};
+function createCallsignListFromAPI(data: {
+  total_messages: number;
+  messages: Message[];
+}): { [key: string]: { timestamp: string; body: string } } {
+  const callsignList: { [key: string]: { timestamp: string; body: string } } =
+    {};
 
-  data.messages.forEach(message => {
-    let callsign = message.direction === 'receive' ? message.origin : message.destination;
+  data.messages.forEach((message) => {
+    let callsign =
+      message.direction === "receive" ? message.origin : message.destination;
 
-    if (!callsignList[callsign] || callsignList[callsign].timestamp < message.timestamp) {
-      callsignList[callsign] = { timestamp: message.timestamp, body: message.body };
+    if (
+      !callsignList[callsign] ||
+      callsignList[callsign].timestamp < message.timestamp
+    ) {
+      callsignList[callsign] = {
+        timestamp: message.timestamp,
+        body: message.body,
+      };
     }
   });
 
   return callsignList;
 }
 
+function createSortedMessagesList(data: {
+  total_messages: number;
+  messages: Message[];
+}): { [key: string]: Message[] } {
+  const callsignMessages: { [key: string]: Message[] } = {};
 
-
-function createSortedMessagesList(data: { total_messages: number, messages: Message[] }): {[key: string]: Message[]} {
-  const callsignMessages: {[key: string]: Message[]} = {};
-
-  data.messages.forEach(message => {
-    let callsign = message.direction === 'receive' ? message.origin : message.destination;
+  data.messages.forEach((message) => {
+    let callsign =
+      message.direction === "receive" ? message.origin : message.destination;
 
     if (!callsignMessages[callsign]) {
       callsignMessages[callsign] = [];
@@ -60,35 +76,29 @@ function createSortedMessagesList(data: { total_messages: number, messages: Mess
   return callsignMessages;
 }
 
-
-
-export function newMessage(dxcall, body){
-    sendFreedataMessage(dxcall, body)
+export function newMessage(dxcall, body) {
+  sendFreedataMessage(dxcall, body);
 }
-
 
 /* ------ TEMPORARY DUMMY FUNCTIONS --- */
-export function repeatMessageTransmission(id){
-    retransmitFreedataMessage(id);
-
+export function repeatMessageTransmission(id) {
+  retransmitFreedataMessage(id);
 }
 
-export function deleteCallsignFromDB(callsign){
-    for (var message of chatStore.sorted_chat_list[callsign]) {
-          deleteFreedataMessage(message["id"]);
-    }
-
+export function deleteCallsignFromDB(callsign) {
+  for (var message of chatStore.sorted_chat_list[callsign]) {
+    deleteFreedataMessage(message["id"]);
+  }
 }
 
-export function deleteMessageFromDB(id){
-    deleteFreedataMessage(id);
+export function deleteMessageFromDB(id) {
+  deleteFreedataMessage(id);
 }
 
-export function requestMessageInfo(id){
-    return
+export function requestMessageInfo(id) {
+  return;
 }
 
-export function getMessageAttachment(id){
-    return
+export function getMessageAttachment(id) {
+  return;
 }
-
