@@ -23,9 +23,8 @@ interface Message {
 
 export async function processFreedataMessages(data){
     if(typeof(data) != "undefined"){
-        let jsondata = await JSON.parse(data);
-        chatStore.callsign_list = createCallsignListFromAPI(jsondata)
-        chatStore.sorted_chat_list = createSortedMessagesList(jsondata)
+        chatStore.callsign_list = createCallsignListFromAPI(data)
+        chatStore.sorted_chat_list = createSortedMessagesList(data)
     }
 }
 
