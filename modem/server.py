@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, make_response, abort, Response
 from flask_sock import Sock
 from flask_cors import CORS
 import os
+import sys
 import serial_ports
 from config import CONFIG
 import audio
@@ -39,7 +40,7 @@ def set_config():
         print(f"Using config from {config_file}")
     else:
         print(f"Config file '{config_file}' not found. Exiting.")
-        exit(1)
+        sys.exit(1)
 
     return config_file
 

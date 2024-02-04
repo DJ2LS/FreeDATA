@@ -8,7 +8,9 @@ Name "FreeData Server"
 OutFile "FreeData-Server-Installer.exe"
 
 ; Default installation directory
-InstallDir "$PROGRAMFILES\FreeData\freedata-server"
+; InstallDir "$PROGRAMFILES\FreeData\freedata-server"
+
+InstallDir "$LOCALAPPDATA\FreeData\freedata-server"
 
 ; Registry key to store the installation directory
 InstallDirRegKey HKCU "Software\FreeData\freedata-server" "Install_Dir"
@@ -23,11 +25,16 @@ InstallDirRegKey HKCU "Software\FreeData\freedata-server" "Install_Dir"
 
 ; Define the welcome page text
 !define MUI_WELCOMEPAGE_TEXT "Welcome to the FreeData Server Setup Wizard. This wizard will guide you through the installation process."
+!define MUI_FINISHPAGE_TEXT "Folder: $INSTDIR"
+
+
+!define MUI_DIRECTORYPAGE_TEXT_TOP "Please select the installation folder. Its recommended using the suggested one for avoiding permission problems."
+
 
 ; Pages
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "LICENSE"
-!insertmacro MUI_PAGE_COMPONENTS
+;!insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
