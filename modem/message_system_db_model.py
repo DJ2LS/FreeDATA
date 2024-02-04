@@ -50,6 +50,7 @@ class P2PMessage(Base):
     timestamp = Column(DateTime)
     status_id = Column(Integer, ForeignKey('status.id'), nullable=True)
     status = relationship('Status', backref='p2p_messages')
+    priority = Column(Integer, default=10)
     direction = Column(String)
     statistics = Column(JSON, nullable=True)
     is_read = Column(Boolean, default=True)
@@ -68,6 +69,7 @@ class P2PMessage(Base):
             'body': self.body,
             'attachments': [attachment.to_dict() for attachment in self.attachments],
             'status': self.status.name if self.status else None,
+            'priority': self.priority,
             'is_read': self.is_read,
             'statistics': self.statistics
         }
