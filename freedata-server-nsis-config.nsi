@@ -54,16 +54,35 @@ Section "FreeData Server" SEC01
   ; Set output path to the installation directory
   SetOutPath $INSTDIR
 
+  ; Check if "config.ini" exists and back it up
+  IfFileExists $INSTDIR\config.ini backupConfig
+
+doneBackup:
   ; Add your application files here
   File /r "modem\server.dist\*.*"
 
-  ; Additional installation commands here
+  ; Restore the original "config.ini" if it was backed up
+  IfFileExists $INSTDIR\config.ini.bak restoreConfig
+
+
 
   ; Create a shortcut in the user's desktop
   CreateShortCut "$DESKTOP\FreeData Server.lnk" "$INSTDIR\freedata-server.exe"
 
   ; Create Uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"
+
+; Backup "config.ini" before overwriting files
+backupConfig:
+  Rename $INSTDIR\config.ini $INSTDIR\config.ini.bak
+  Goto doneBackup
+
+; Restore the original "config.ini"
+restoreConfig:
+  Delete $INSTDIR\config.ini
+  Rename $INSTDIR\config.ini.bak $INSTDIR\config.ini
+
+
 SectionEnd
 
 ; Uninstaller Section
