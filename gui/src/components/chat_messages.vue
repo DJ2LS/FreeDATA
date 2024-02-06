@@ -22,10 +22,6 @@ function getDateTime(timestampRaw) {
   return `${year}-${month}-${day}`;
 }
 
-
-
-
-
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -40,7 +36,6 @@ import {
 import { Bar } from "vue-chartjs";
 import { ref, computed } from "vue";
 import annotationPlugin from "chartjs-plugin-annotation";
-
 
 ChartJS.register(
   CategoryScale,
@@ -115,32 +110,27 @@ const beaconHistogramData = computed(() => ({
     },
   ],
 }));
-
-
-
-
 </script>
 
 <template>
+  <nav class="navbar sticky-top bg-body-tertiary shadow">
+    <div class="input-group mb-0 p-0 w-50">
+      <button type="button" class="btn btn-outline-secondary" disabled>
+        Beacons
+      </button>
 
-  <nav class="navbar sticky-top bg-body-tertiary shadow ">
-<div class="input-group mb-0 p-0 w-50">
-            <button type="button" class="btn btn-outline-secondary" disabled>
-              Beacons
-            </button>
-
-            <div
-              class="form-floating border border-secondary-subtle border-1 rounded-end"
-            >
-              <Bar
-                :data="beaconHistogramData"
-                :options="beaconHistogramOptions"
-                width="300"
-                height="50"
-              />
-            </div>
-          </div>
-</nav>
+      <div
+        class="form-floating border border-secondary-subtle border-1 rounded-end"
+      >
+        <Bar
+          :data="beaconHistogramData"
+          :options="beaconHistogramOptions"
+          width="300"
+          height="50"
+        />
+      </div>
+    </div>
+  </nav>
 
   <div class="tab-content p-3" id="nav-tabContent-chat-messages">
     <template
@@ -180,10 +170,6 @@ const beaconHistogramData = computed(() => ({
       </div>
     </template>
   </div>
-
-
-
-
 </template>
 
 <style>

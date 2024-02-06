@@ -6,7 +6,6 @@ import chat_new_message from "./chat_new_message.vue";
 
 <template>
   <div class="container-fluid m-0 p-0">
-
     <div class="row h-100 ms-0 mt-0 me-1">
       <div class="col-3 m-0 p-0 h-100 bg-light">
         <!------Chats area ---------------------------------------------------------------------->
@@ -34,11 +33,7 @@ import chat_new_message from "./chat_new_message.vue";
 
         <!------ new message area ---------------------------------------------------------------------->
 
-
-<chat_new_message />
-
-
-
+        <chat_new_message />
       </div>
     </div>
   </div>

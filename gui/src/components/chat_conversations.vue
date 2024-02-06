@@ -9,7 +9,6 @@ import { startChatWithNewStation } from "../js/chatHandler";
 
 import { ref, computed } from "vue";
 
-
 const chat = useChatStore(pinia);
 
 function chatSelected(callsign) {
@@ -49,24 +48,17 @@ function newChat() {
   //updateAllChat(false);
   this.newChatCall.value = "";
 }
-
-
 </script>
 <template>
-
-<nav class="navbar sticky-top bg-body-tertiary">
-
-<button
-            class="btn btn-outline-primary w-100"
-            data-bs-target="#newChatModal"
-            data-bs-toggle="modal"
-          >
-            <i class="bi bi-pencil-square"> Start a new chat</i>
-          </button>
-
-
-</nav>
-
+  <nav class="navbar sticky-top bg-body-tertiary">
+    <button
+      class="btn btn-outline-primary w-100"
+      data-bs-target="#newChatModal"
+      data-bs-toggle="modal"
+    >
+      <i class="bi bi-pencil-square"> Start a new chat</i>
+    </button>
+  </nav>
 
   <div
     class="list-group bg-body-tertiary m-0 p-1"
