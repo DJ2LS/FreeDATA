@@ -38,7 +38,9 @@ function createCallsignListFromAPI(data: {
 }): { [key: string]: { timestamp: string; body: string } } {
   const callsignList: { [key: string]: { timestamp: string; body: string } } =
     {};
-
+  if( typeof(data) == 'undefined'){
+    return false
+  }
   data.messages.forEach((message) => {
     let callsign =
       message.direction === "receive" ? message.origin : message.destination;

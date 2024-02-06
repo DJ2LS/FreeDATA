@@ -75,6 +75,10 @@ function handleFileSelection(event) {
     }
 }
 
+function removeFile(index) {
+    selectedFiles.value.splice(index, 1);
+}
+
 function transmitNewMessage() {
     // Check if a callsign is selected, default to the first one if not
     if (typeof(chat.selectedCallsign) === 'undefined') {
@@ -110,15 +114,12 @@ function transmitNewMessage() {
     // Cleanup after sending message
     chat.inputText = '';
     chatModuleMessage.value = "";
-    selectedFiles.value = []; // Clear selected files after sending
-    // Reset any other states or UI elements as necessary
+    resetFile()
 }
 
 function resetFile(event){
-    if (fileInput.value) {
-        fileInput.value = ''; // Attempt to clear by setting value to empty (may not work due to security restrictions in browsers)
-    }
-
+   //fileInput.reset()
+   fileInput.value = null
     // Clear the selected files array to reset the state of attachments
     selectedFiles.value = [];
 
@@ -296,6 +297,8 @@ const speedChartData = computed(() => ({
 
     <!-- Hidden file input -->
     <input type="file" multiple ref="fileInput" @change="handleFileSelection" style="display: none;" />
+
+
   </div>
 
   <div class="container-fluid px-0">
@@ -320,18 +323,6 @@ const speedChartData = computed(() => ({
       </div>
     </div>
   </div>
-
-
-
-
-
-<hr>
-
-
-<div class="btn-group me-2" role="group" aria-label="Basic outlined example">
-  <button type="button" class="btn btn-secondary">total size</button>
-  <button type="button" class="btn btn-secondary disabled">{{chat.inputFileSize}} {{totalSizeFormatted}}</button>
-</div>
 
 <!--
 <Line :data="speedChartData" />
