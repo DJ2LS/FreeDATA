@@ -39,7 +39,7 @@ function createCallsignListFromAPI(data: {
   const callsignList: { [key: string]: { timestamp: string; body: string } } =
     {};
   if( typeof(data) == 'undefined'){
-    return false
+    return callsignList
   }
   data.messages.forEach((message) => {
     let callsign =
