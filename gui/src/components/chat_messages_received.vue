@@ -2,13 +2,25 @@
   <div class="row justify-content-start mb-2">
     <div :class="messageWidthClass">
       <div class="card bg-light border-0 text-dark">
-
-            <div v-for="attachment in message.attachments" :key="attachment.id" class="card-header">
-        <div class="btn-group w-100" role="group">
-            <button class="btn btn-light text-truncate" disabled>{{ attachment.name }}</button>
-            <button @click="downloadAttachment(attachment.hash_sha512, attachment.name)" class="btn btn-light w-25"><i class="bi bi-download strong"></i></button>
+        <div
+          v-for="attachment in message.attachments"
+          :key="attachment.id"
+          class="card-header"
+        >
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-light text-truncate" disabled>
+              {{ attachment.name }}
+            </button>
+            <button
+              @click="
+                downloadAttachment(attachment.hash_sha512, attachment.name)
+              "
+              class="btn btn-light w-25"
+            >
+              <i class="bi bi-download strong"></i>
+            </button>
+          </div>
         </div>
-       </div>
 
         <div class="card-body">
           <p class="card-text">{{ message.body }}</p>
@@ -32,8 +44,6 @@
       >
         <i class="bi bi-info-circle"></i>
       </button>
-
-
 
       <button class="btn btn-outline-secondary border-0" @click="deleteMessage">
         <i class="bi bi-trash"></i>
@@ -92,7 +102,7 @@ export default {
         const url = URL.createObjectURL(blob);
 
         // Creating a temporary anchor element to download the file
-        const anchor = document.createElement('a');
+        const anchor = document.createElement("a");
         anchor.href = url;
         anchor.download = fileName;
         document.body.appendChild(anchor);
@@ -107,7 +117,6 @@ export default {
     },
   },
   computed: {
-
     messageWidthClass() {
       // Calculate a Bootstrap grid class based on message length
       // Adjust the logic as needed to fit your requirements

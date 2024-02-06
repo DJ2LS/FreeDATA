@@ -78,7 +78,7 @@ function createSortedMessagesList(data: {
 }
 
 export function newMessage(dxcall, body, attachments) {
-    console.log(attachments)
+  console.log(attachments);
   sendFreedataMessage(dxcall, body, attachments);
 }
 
@@ -102,5 +102,5 @@ export function requestMessageInfo(id) {
 }
 
 export async function getMessageAttachment(data_sha512) {
-  return await getFreedataAttachmentBySha512(data_sha512)
+  return await getFreedataAttachmentBySha512(data_sha512);
 }
