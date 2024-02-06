@@ -274,6 +274,11 @@ def get_message_attachments(message_id):
     attachments = DatabaseManagerAttachments(app.event_manager).get_attachments_by_message_id_json(message_id)
     return api_response(attachments)
 
+@app.route('/freedata/messages/attachment/<string:data_sha512>', methods=['GET'])
+def get_message_attachment(data_sha512):
+    attachment = DatabaseManagerAttachments(app.event_manager).get_attachment_by_sha512(data_sha512)
+    return api_response(attachment)
+
 @app.route('/freedata/beacons', methods=['GET'])
 def get_all_beacons():
     beacons = DatabaseManagerBeacon(app.event_manager).get_all_beacons()

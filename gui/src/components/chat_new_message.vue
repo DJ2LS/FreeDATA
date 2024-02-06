@@ -44,34 +44,72 @@ chat.inputText += detail.unicode
 const chatModuleMessage=ref(null);
 
 
+// Function to trigger the hidden file input
+function triggerFileInput() {
+  fileInput.value.click();
+}
 
 
-function transmitNewMessage(){
+// Use a ref for storing multiple files
+const selectedFiles = ref([]);
+const fileInput = ref(null);
 
+function handleFileSelection(event) {
+    // Reset previously selected files
+    selectedFiles.value = [];
 
-    // if no callsign is selected, assume we are using the first one..
-    if(typeof(chat.selectedCallsign) == 'undefined'){
+    // Process each file
+    for (let file of event.target.files) {
+        const reader = new FileReader();
+        reader.onload = () => {
+            // Convert file content to base64
+            const base64Content = btoa(reader.result); // Adjust this line if necessary
+            selectedFiles.value.push({
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                content: base64Content, // Store base64 encoded content
+            });
+        };
+        reader.readAsBinaryString(file); // Read the file content as binary string
+    }
+}function transmitNewMessage() {
+    // Check if a callsign is selected, default to the first one if not
+    if (typeof(chat.selectedCallsign) === 'undefined') {
         chat.selectedCallsign = Object.keys(chat.callsign_list)[0];
     }
 
-
     chat.inputText = chat.inputText.trim();
-    if (chat.inputText.length==0 && chat.inputFileName == "-")
-      return;
+
+    // Proceed only if there is text or files selected
+    if (chat.inputText.length === 0 && selectedFiles.value.length === 0) return;
+
+    const attachments = selectedFiles.value.map(file => {
+        return {
+            name: file.name,
+            type: file.type,
+            data: file.content
+        };
+    });
+
     if (chat.selectedCallsign.startsWith("BC-")) {
-
-        return "new broadcast"
-
+        // Handle broadcast message differently if needed
+        return "new broadcast";
     } else {
-        //newMessage(chat.selectedCallsign, chat.inputText, chat.inputFile, chat.inputFileName, chat.inputFileSize, chat.inputFileType)
-        newMessage(chat.selectedCallsign, chat.inputText)
+        // If there are attachments, send them along with the message
+        if (attachments.length > 0) {
+            newMessage(chat.selectedCallsign, chat.inputText, attachments);
+        } else {
+            // Send text only if no attachments are selected
+            newMessage(chat.selectedCallsign, chat.inputText);
+        }
     }
-    // finally do a cleanup
-    //chatModuleMessage.reset();
+
+    // Cleanup after sending message
     chat.inputText = '';
-    chatModuleMessage.value="";
-    // @ts-expect-error
-    resetFile()
+    chatModuleMessage.value = "";
+    selectedFiles.value = []; // Clear selected files after sending
+    // Reset any other states or UI elements as necessary
 }
 
 function resetFile(event){
@@ -140,9 +178,9 @@ function calculateTimeNeeded(){
             return obj.snr === snrList[i].snr
           })
 
-        calculatedSpeedPerMinutePER0.push(chat.inputFileSize / result.bpm)
-        calculatedSpeedPerMinutePER25.push(chat.inputFileSize / (result.bpm * 0.75))
-        calculatedSpeedPerMinutePER75.push(chat.inputFileSize / (result.bpm * 0.25))
+        calculatedSpeedPerMinutePER0.push(totalSize / result.bpm)
+        calculatedSpeedPerMinutePER25.push(totalSize / (result.bpm * 0.75))
+        calculatedSpeedPerMinutePER75.push(totalSize / (result.bpm * 0.25))
 
     }
 
@@ -202,11 +240,11 @@ const speedChartData = computed(() => ({
 
 
                                         <!-- trigger file selection modal -->
-                            <!--
+
                             <button type="button" class="btn btn-outline-secondary border-0 rounded-pill me-1" data-bs-toggle="modal" data-bs-target="#fileSelectionModal">
                               <i class="bi bi-paperclip" style="font-size: 1.2rem"></i>
                             </button>
-                            -->
+
 
 
                           <textarea
@@ -264,20 +302,54 @@ const speedChartData = computed(() => ({
   </div>
 </div>
 
+
+<!--
            <div class="input-group-text mb-3">
                 <input class="" type="file" ref="doc" @change="readFile" />
            </div>
+-->
 
+  <div class="container w-100 mb-3">
+    <!-- Button that user will click to open file dialog -->
+    <button class="btn btn-primary w-100" @click="triggerFileInput">Attach Files</button>
+
+    <!-- Hidden file input -->
+    <input type="file" multiple ref="fileInput" @change="handleFileSelection" style="display: none;" />
+  </div>
+
+  <div class="container-fluid px-0">
+    <div class="d-flex flex-row overflow-auto bg-light rounded-3 p-2 border border-1">
+      <div v-for="(file, index) in selectedFiles" :key="index" class="pe-2">
+        <div class="card" style=" min-width: 10rem; max-width: 10rem;">
+          <!-- Card Header with Remove Button -->
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="text-truncate">{{ file.name }}</span>
+            <button class="btn btn-close" @click="removeFile(index)"></button>
+          </div>
+          <div class="card-body">
+            <p class="card-text">...</p>
+          </div>
+          <div class="card-footer text-muted">
+            {{ file.type }}
+          </div>
+          <div class="card-footer text-muted">
+            {{ file.size }} bytes
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+<hr>
 
 
 <div class="btn-group me-2" role="group" aria-label="Basic outlined example">
-  <button type="button" class="btn btn-secondary">Type</button>
-  <button type="button" class="btn btn-secondary disabled">{{chat.inputFileType}}</button>
-</div>
-
-<div class="btn-group me-2" role="group" aria-label="Basic outlined example">
-  <button type="button" class="btn btn-secondary">Size</button>
-  <button type="button" class="btn btn-secondary disabled">{{chat.inputFileSize}}</button>
+  <button type="button" class="btn btn-secondary">total size</button>
+  <button type="button" class="btn btn-secondary disabled">{{chat.inputFileSize}} {{totalSizeFormatted}}</button>
 </div>
 
 <Line :data="speedChartData" />

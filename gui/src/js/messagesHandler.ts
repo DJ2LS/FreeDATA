@@ -10,6 +10,7 @@ import {
   sendFreedataMessage,
   deleteFreedataMessage,
   retransmitFreedataMessage,
+  getFreedataAttachmentBySha512,
 } from "./api";
 
 interface Message {
@@ -76,8 +77,9 @@ function createSortedMessagesList(data: {
   return callsignMessages;
 }
 
-export function newMessage(dxcall, body) {
-  sendFreedataMessage(dxcall, body);
+export function newMessage(dxcall, body, attachments) {
+    console.log(attachments)
+  sendFreedataMessage(dxcall, body, attachments);
 }
 
 /* ------ TEMPORARY DUMMY FUNCTIONS --- */
@@ -99,6 +101,6 @@ export function requestMessageInfo(id) {
   return;
 }
 
-export function getMessageAttachment(id) {
-  return;
+export async function getMessageAttachment(data_sha512) {
+  return await getFreedataAttachmentBySha512(data_sha512)
 }

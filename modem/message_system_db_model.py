@@ -114,7 +114,7 @@ class Attachment(Base):
         return {
             'id': self.id,
             'name': self.name,
-            'data_type': self.data_type,
+            'type': self.data_type,
             'data': self.data,
             'checksum_crc32': self.checksum_crc32,
             'hash_sha512' : self.hash_sha512

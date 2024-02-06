@@ -2,14 +2,6 @@
   <div class="row justify-content-end mb-2">
     <!-- control area -->
     <div class="col-auto p-0 m-0">
-      <button
-        disabled
-        v-if="getFileContent['filesize'] !== 0"
-        class="btn btn-outline-secondary border-0 me-1"
-        @click="downloadAttachment"
-      >
-        <i class="bi bi-download"></i>
-      </button>
 
       <button
         class="btn btn-outline-secondary border-0 me-1"
@@ -32,17 +24,17 @@
         <i class="bi bi-trash"></i>
       </button>
     </div>
-
     <!-- message area -->
     <div :class="messageWidthClass">
       <div class="card bg-secondary text-white">
-        <div class="card-header" v-if="getFileContent['filesize'] !== 0">
-          <p class="card-text">
-            {{ getFileContent["filename"] }} |
-            {{ getFileContent["filesize"] }} Bytes |
-            {{ getFileContent["filetype"] }}
-          </p>
+    <div v-for="attachment in message.attachments" :key="attachment.id" class="card-header">
+        <div class="btn-group w-100" role="group">
+            <button class="btn btn-light text-truncate" disabled>{{ attachment.name }}</button>
+            <button @click="downloadAttachment(attachment.hash_sha512, attachment.name)" class="btn btn-light w-25"><i class="bi bi-download strong"></i></button>
         </div>
+       </div>
+
+
 
         <div class="card-body">
           <p class="card-text">{{ message.body }}</p>
@@ -101,7 +93,6 @@ import {
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
-import { saveAs } from "file-saver";
 
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
@@ -126,42 +117,41 @@ export default {
       //console.log(this.infoModal)
       //this.infoModal.show()
     },
-    async downloadAttachment() {
+    async downloadAttachment(hash_sha512, fileName) {
       try {
-        // reset file store
-        chat.downloadFileFromDB = [];
+        const jsondata = await getMessageAttachment(hash_sha512);
+        const byteCharacters = atob(jsondata.data);
+        const byteArrays = [];
 
-        const attachment = await getMessageAttachment(this.message.id);
-        const blob = new Blob([atob_FD(attachment[2])], {
-          type: `${attachment[1]};charset=utf-8`,
-        });
-        saveAs(blob, attachment[0]);
+        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+          const slice = byteCharacters.slice(offset, offset + 512);
+          const byteNumbers = new Array(slice.length);
+          for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          byteArrays.push(byteArray);
+        }
+
+        const blob = new Blob(byteArrays, { type: jsondata.type });
+        const url = URL.createObjectURL(blob);
+
+        // Creating a temporary anchor element to download the file
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = fileName;
+        document.body.appendChild(anchor);
+        anchor.click();
+
+        // Cleanup
+        document.body.removeChild(anchor);
+        URL.revokeObjectURL(url);
       } catch (error) {
-        console.error("Failed to download attachment:", error);
+        console.error("Failed to download the attachment:", error);
       }
     },
   },
   computed: {
-    getFileContent() {
-      if (this.message.attachments.length <= 0) {
-        return { filename: "", filesize: 0, filetype: "" };
-      }
-
-      var filename = Object.keys(this.message._attachments)[0];
-      var filesize = this.message._attachments[filename]["length"];
-      var filetype = filename.split(".")[1];
-
-      // ensure filesize is 0 for hiding message header if no data is available
-      if (
-        typeof filename === "undefined" ||
-        filename === "" ||
-        filename === "-"
-      ) {
-        filesize = 0;
-      }
-
-      return { filename: filename, filesize: filesize, filetype: filetype };
-    },
     messageWidthClass() {
       // Calculate a Bootstrap grid class based on message length
       // Adjust the logic as needed to fit your requirements

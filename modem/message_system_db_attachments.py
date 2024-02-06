@@ -64,3 +64,18 @@ class DatabaseManagerAttachments(DatabaseManager):
     def get_attachments_by_message_id_json(self, message_id):
         attachments = self.get_attachments_by_message_id(message_id)
         return json.dumps(attachments)
+
+    def get_attachment_by_sha512(self, hash_sha512):
+        session = self.get_thread_scoped_session()
+        try:
+            attachment = session.query(Attachment).filter_by(hash_sha512=hash_sha512).first()
+            if attachment:
+                return attachment.to_dict()  # Assuming you have a to_dict method
+            else:
+                self.log(f"No attachment found with SHA-512 hash: {hash_sha512}")
+                return None
+        except Exception as e:
+            self.log(f"Error fetching attachment with SHA-512 hash {hash_sha512}: {e}", isWarning=True)
+            return None
+        finally:
+            session.remove()

@@ -155,10 +155,16 @@ export async function getFreedataMessages() {
   processFreedataMessages(res);
 }
 
-export async function sendFreedataMessage(destination, body) {
+export async function getFreedataAttachmentBySha512(data_sha512) {
+  let res = await apiGet(`/freedata/messages/attachment/${data_sha512}`);
+  return res;
+}
+
+export async function sendFreedataMessage(destination, body, attachments) {
   return await apiPost("/freedata/messages", {
     destination: destination,
     body: body,
+    attachments: attachments,
   });
 }
 
