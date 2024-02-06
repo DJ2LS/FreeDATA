@@ -1,9 +1,29 @@
 # models.py
 
-from sqlalchemy import Index, Boolean, Column, String, Integer, JSON, ForeignKey, DateTime
+from sqlalchemy import Index, Table, Boolean, Column, String, Integer, JSON, ForeignKey, DateTime
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
+
+class MessageAttachment(Base):
+    __tablename__ = 'message_attachment'
+    message_id = Column(String, ForeignKey('p2p_message.id', ondelete='CASCADE'), primary_key=True)
+    attachment_id = Column(Integer, ForeignKey('attachment.id', ondelete='CASCADE'), primary_key=True)
+
+    message = relationship('P2PMessage', back_populates='message_attachments')
+    attachment = relationship('Attachment', back_populates='message_attachments')
+
+class Config(Base):
+    __tablename__ = 'config'
+    db_variable = Column(String, primary_key=True)  # Unique identifier for the configuration setting
+    db_version = Column(String)
+
+    def to_dict(self):
+        return {
+            'db_variable': self.db_variable,
+            'db_settings': self.db_settings
+        }
+
 
 class Beacon(Base):
     __tablename__ = 'beacon'
@@ -45,7 +65,9 @@ class P2PMessage(Base):
     via_callsign = Column(String, ForeignKey('station.callsign'), nullable=True)
     destination_callsign = Column(String, ForeignKey('station.callsign'))
     body = Column(String, nullable=True)
-    attachments = relationship('Attachment', backref='p2p_message')
+    message_attachments = relationship('MessageAttachment',
+                                       back_populates='message',
+                                       cascade='all, delete-orphan')
     attempt = Column(Integer, default=0)
     timestamp = Column(DateTime)
     status_id = Column(Integer, ForeignKey('status.id'), nullable=True)
@@ -58,6 +80,8 @@ class P2PMessage(Base):
     Index('idx_p2p_message_origin_timestamp', 'origin_callsign', 'via_callsign', 'destination_callsign', 'timestamp', 'attachments')
 
     def to_dict(self):
+        attachments_list = [ma.attachment.to_dict() for ma in self.message_attachments]
+
         return {
             'id': self.id,
             'timestamp': self.timestamp.isoformat() if self.timestamp else None,
@@ -67,7 +91,7 @@ class P2PMessage(Base):
             'destination': self.destination_callsign,
             'direction': self.direction,
             'body': self.body,
-            'attachments': [attachment.to_dict() for attachment in self.attachments],
+            'attachments': attachments_list,
             'status': self.status.name if self.status else None,
             'priority': self.priority,
             'is_read': self.is_read,
@@ -80,14 +104,18 @@ class Attachment(Base):
     name = Column(String)
     data_type = Column(String)
     data = Column(String)
-    message_id = Column(String, ForeignKey('p2p_message.id'))
+    checksum_crc32 = Column(String)
+    hash_sha512 = Column(String)
+    message_attachments = relationship("MessageAttachment", back_populates="attachment")
 
-    Index('idx_attachments_id_message_id', 'id', 'message_id')
+    Index('idx_attachments_id_message_id', 'id', 'hash_sha512')
 
     def to_dict(self):
         return {
             'id': self.id,
             'name': self.name,
             'data_type': self.data_type,
-            'data': self.data  # Be cautious with large binary data
+            'data': self.data,
+            'checksum_crc32': self.checksum_crc32,
+            'hash_sha512' : self.hash_sha512
         }

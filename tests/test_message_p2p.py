@@ -5,7 +5,7 @@ import numpy as np
 import unittest
 from config import CONFIG
 from message_p2p import MessageP2P
-from message_system_db_manager import DatabaseManager
+from message_system_db_messages import DatabaseManagerMessages
 from event_manager import EventManager
 import queue
 import base64
@@ -20,7 +20,7 @@ class TestDataFrameFactory(unittest.TestCase):
         cls.event_queue = queue.Queue()
         cls.event_manager = EventManager([cls.event_queue])
         cls.mycall = f"{cls.config['STATION']['mycall']}-{cls.config['STATION']['myssid']}"
-        cls.database_manager = DatabaseManager(cls.event_manager, uri='sqlite:///:memory:')
+        cls.database_manager = DatabaseManagerMessages(cls.event_manager)
 
     def testFromApiParams(self):
         api_params = {

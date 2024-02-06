@@ -6,6 +6,7 @@ from arq_session_iss import ARQSessionISS
 from message_p2p import MessageP2P
 from arq_data_type_handler import ARQ_SESSION_TYPES
 from message_system_db_manager import DatabaseManager
+from message_system_db_messages import DatabaseManagerMessages
 
 class SendMessageCommand(TxCommand):
     """Command to send a P2P message using an ARQ transfer session
@@ -18,7 +19,7 @@ class SendMessageCommand(TxCommand):
         print(self.message.id)
         print(self.message.to_dict())
         print("--------------------------------------- set params from api")
-        DatabaseManager(self.event_manager).add_message(self.message.to_dict(), direction='transmit', status='queued')
+        DatabaseManagerMessages(self.event_manager).add_message(self.message.to_dict(), direction='transmit', status='queued')
 
     def transmit(self, modem):
 
@@ -26,14 +27,14 @@ class SendMessageCommand(TxCommand):
             self.log("Modem busy, waiting until ready...")
             return
 
-        first_queued_message = DatabaseManager(self.event_manager).get_first_queued_message()
+        first_queued_message = DatabaseManagerMessages(self.event_manager).get_first_queued_message()
         if not first_queued_message:
             self.log("No queued message in database.")
             return
 
         self.log(f"Queued message found: {first_queued_message['id']}")
-        DatabaseManager(self.event_manager).update_message(first_queued_message["id"], update_data={'status': 'transmitting'})
-        message_dict = DatabaseManager(self.event_manager).get_message_by_id(first_queued_message["id"])
+        DatabaseManagerMessages(self.event_manager).update_message(first_queued_message["id"], update_data={'status': 'transmitting'})
+        message_dict = DatabaseManagerMessages(self.event_manager).get_message_by_id(first_queued_message["id"])
         print(message_dict["id"])
         message = MessageP2P.from_api_params(message_dict['origin'], message_dict)
         print(message.id)

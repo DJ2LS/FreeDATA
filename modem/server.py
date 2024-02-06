@@ -20,6 +20,8 @@ import command_arq_raw
 import command_message_send
 import event_manager
 from message_system_db_manager import DatabaseManager
+from message_system_db_messages import DatabaseManagerMessages
+from message_system_db_attachments import DatabaseManagerAttachments
 from message_system_db_beacon import DatabaseManagerBeacon
 from schedule_manager import ScheduleManager
 
@@ -251,25 +253,25 @@ def get_post_freedata_message():
 @app.route('/freedata/messages/<string:message_id>', methods=['GET', 'POST', 'PATCH', 'DELETE'])
 def handle_freedata_message(message_id):
     if request.method == 'GET':
-        message = DatabaseManager(app.event_manager).get_message_by_id_json(message_id)
+        message = DatabaseManagerMessages(app.event_manager).get_message_by_id_json(message_id)
         return message
     elif request.method == 'POST':
-        result = DatabaseManager(app.event_manager).update_message(message_id, update_data={'status': 'queued'})
-        DatabaseManager(app.event_manager).increment_message_attempts(message_id)
+        result = DatabaseManagerMessages(app.event_manager).update_message(message_id, update_data={'status': 'queued'})
+        DatabaseManagerMessages(app.event_manager).increment_message_attempts(message_id)
         return api_response(result)
     elif request.method == 'PATCH':
         # Fixme We need to adjust this
-        result = DatabaseManager(app.event_manager).mark_message_as_read(message_id)
+        result = DatabaseManagerMessages(app.event_manager).mark_message_as_read(message_id)
         return api_response(result)
     elif request.method == 'DELETE':
-        result = DatabaseManager(app.event_manager).delete_message(message_id)
+        result = DatabaseManagerMessages(app.event_manager).delete_message(message_id)
         return api_response(result)
     else:
         api_abort('Error executing command...', 500)
 
 @app.route('/freedata/messages/<string:message_id>/attachments', methods=['GET'])
 def get_message_attachments(message_id):
-    attachments = DatabaseManager(app.event_manager).get_attachments_by_message_id_json(message_id)
+    attachments = DatabaseManagerAttachments(app.event_manager).get_attachments_by_message_id_json(message_id)
     return api_response(attachments)
 
 @app.route('/freedata/beacons', methods=['GET'])
