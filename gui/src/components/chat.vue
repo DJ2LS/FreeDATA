@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import chat_navbar from "./chat_navbar.vue";
 import chat_conversations from "./chat_conversations.vue";
 import chat_messages from "./chat_messages.vue";
 import chat_new_message from "./chat_new_message.vue";
@@ -7,9 +6,6 @@ import chat_new_message from "./chat_new_message.vue";
 
 <template>
   <div class="container-fluid m-0 p-0">
-    <!------ chat navbar ---------------------------------------------------------------------->
-
-    <chat_navbar />
 
     <div class="row h-100 ms-0 mt-0 me-1">
       <div class="col-3 m-0 p-0 h-100 bg-light">
@@ -29,16 +25,20 @@ import chat_new_message from "./chat_new_message.vue";
       <div class="col-9 border-start vh-100 p-0">
         <!------messages area ---------------------------------------------------------------------->
         <div
-          class="container overflow-auto"
+          class="container overflow-auto p-0"
           id="message-container"
-          style="height: calc(100% - 225px)"
+          style="height: calc(100% - 135px)"
         >
           <chat_messages />
         </div>
 
         <!------ new message area ---------------------------------------------------------------------->
 
-        <chat_new_message />
+
+<chat_new_message />
+
+
+
       </div>
     </div>
   </div>

@@ -21,10 +21,128 @@ function getDateTime(timestampRaw) {
   let day = date.getDate().toString().padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
+
+
+
+
+
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+} from "chart.js";
+
+import { Bar } from "vue-chartjs";
+import { ref, computed } from "vue";
+import annotationPlugin from "chartjs-plugin-annotation";
+
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  annotationPlugin,
+);
+
+var beaconHistogramOptions = {
+  type: "bar",
+  bezierCurve: false, //remove curves from your plot
+  scaleShowLabels: false, //remove labels
+  tooltipEvents: [], //remove trigger from tooltips so they will'nt be show
+  pointDot: false, //remove the points markers
+  scaleShowGridLines: true, //set to false to remove the grids background
+  maintainAspectRatio: true,
+  plugins: {
+    legend: {
+      display: false,
+    },
+    annotation: {
+      annotations: [
+        {
+          type: "line",
+          mode: "horizontal",
+          scaleID: "y",
+          value: 0,
+          borderColor: "darkgrey", // Set the color to dark grey for the zero line
+          borderWidth: 0.5, // Set the line width
+        },
+      ],
+    },
+  },
+
+  scales: {
+    x: {
+      position: "bottom",
+      display: false,
+      min: -10,
+      max: 15,
+      ticks: {
+        display: false,
+      },
+    },
+    y: {
+      display: false,
+      min: -5,
+      max: 10,
+      ticks: {
+        display: false,
+      },
+    },
+  },
+};
+
+const beaconHistogramData = computed(() => ({
+  labels: chat.beaconLabelArray,
+  datasets: [
+    {
+      data: chat.beaconDataArray,
+      tension: 0.1,
+      borderColor: "rgb(0, 255, 0)",
+
+      backgroundColor: function (context) {
+        var value = context.dataset.data[context.dataIndex];
+        return value >= 0 ? "green" : "red";
+      },
+    },
+  ],
+}));
+
+
+
+
 </script>
 
 <template>
-  <div class="tab-content" id="nav-tabContent-chat-messages">
+
+  <nav class="navbar sticky-top bg-body-tertiary shadow ">
+<div class="input-group mb-0 p-0 w-50">
+            <button type="button" class="btn btn-outline-secondary" disabled>
+              Beacons
+            </button>
+
+            <div
+              class="form-floating border border-secondary-subtle border-1 rounded-end"
+            >
+              <Bar
+                :data="beaconHistogramData"
+                :options="beaconHistogramOptions"
+                width="300"
+                height="50"
+              />
+            </div>
+          </div>
+</nav>
+
+  <div class="tab-content p-3" id="nav-tabContent-chat-messages">
     <template
       v-for="(details, callsign, key) in chat.callsign_list"
       :key="callsign"
@@ -62,6 +180,10 @@ function getDateTime(timestampRaw) {
       </div>
     </template>
   </div>
+
+
+
+
 </template>
 
 <style>

@@ -193,8 +193,8 @@ const speedChartData = computed(() => ({
 
 
 <template>
-
-<div class="container-fluid mt-2 p-0">
+  <nav class="navbar sticky-bottom bg-body-tertiary border-top">
+<div class="container-fluid p-0">
                         <input
                           type="checkbox"
                           id="expand_textarea"
@@ -349,7 +349,7 @@ const speedChartData = computed(() => ({
 
 
 
-
+</nav>
 
 </template>
 

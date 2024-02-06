@@ -5,6 +5,10 @@ setActivePinia(pinia);
 
 import { useChatStore } from "../store/chatStore.js";
 import { getBeaconDataByCallsign } from "../js/api.js";
+import { startChatWithNewStation } from "../js/chatHandler";
+
+import { ref, computed } from "vue";
+
 
 const chat = useChatStore(pinia);
 
@@ -34,8 +38,36 @@ function getDateTime(timestamp) {
   let seconds = date.getSeconds().toString().padStart(2, "0");
   return `${hours}:${minutes}`;
 }
+
+const newChatCall = ref(null);
+
+function newChat() {
+  let callsign = this.newChatCall.value;
+  callsign = callsign.toUpperCase().trim();
+  if (callsign === "") return;
+  //startChatWithNewStation(callsign);
+  //updateAllChat(false);
+  this.newChatCall.value = "";
+}
+
+
 </script>
 <template>
+
+<nav class="navbar sticky-top bg-body-tertiary">
+
+<button
+            class="btn btn-outline-primary w-100"
+            data-bs-target="#newChatModal"
+            data-bs-toggle="modal"
+          >
+            <i class="bi bi-pencil-square"> Start a new chat</i>
+          </button>
+
+
+</nav>
+
+
   <div
     class="list-group bg-body-tertiary m-0 p-1"
     id="chat-list-tab"
