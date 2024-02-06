@@ -42,8 +42,6 @@ class MessageP2P:
             raise ValueError(f"Invalid destination given ({params['destination']})")
 
         body = params['body']
-        if len(body) < 1:
-            raise ValueError(f"Body cannot be empty")
 
         attachments = []
         if 'attachments' in params: 

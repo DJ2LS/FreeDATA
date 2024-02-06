@@ -13,12 +13,8 @@ class SendMessageCommand(TxCommand):
     """
 
     def set_params_from_api(self, apiParams):
-        print(apiParams)
         origin = f"{self.config['STATION']['mycall']}-{self.config['STATION']['myssid']}"
         self.message = MessageP2P.from_api_params(origin, apiParams)
-        print(self.message.id)
-        print(self.message.to_dict())
-        print("--------------------------------------- set params from api")
         DatabaseManagerMessages(self.event_manager).add_message(self.message.to_dict(), direction='transmit', status='queued')
 
     def transmit(self, modem):
@@ -35,10 +31,7 @@ class SendMessageCommand(TxCommand):
         self.log(f"Queued message found: {first_queued_message['id']}")
         DatabaseManagerMessages(self.event_manager).update_message(first_queued_message["id"], update_data={'status': 'transmitting'})
         message_dict = DatabaseManagerMessages(self.event_manager).get_message_by_id(first_queued_message["id"])
-        print(message_dict["id"])
         message = MessageP2P.from_api_params(message_dict['origin'], message_dict)
-        print(message.id)
-        print("--------------------------------------- transmit")
 
         # Convert JSON string to bytes (using UTF-8 encoding)
         payload = message.to_payload().encode('utf-8')

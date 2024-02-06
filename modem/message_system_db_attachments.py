@@ -11,17 +11,6 @@ class DatabaseManagerAttachments(DatabaseManager):
 
 
     def add_attachment(self, session, message, attachment_data):
-        """
-        Adds an attachment to a message, either by creating a new attachment or reusing an existing one.
-
-        Args:
-        - session: The current database session.
-        - message: The P2PMessage instance to which the attachment should be linked.
-        - attachment_data: A dictionary containing the attachment's data.
-
-        Returns:
-        - The Attachment instance.
-        """
         hash_sha512 = hashlib.sha512(attachment_data['data'].encode()).hexdigest()
         existing_attachment = session.query(Attachment).filter_by(hash_sha512=hash_sha512).first()
 
@@ -70,7 +59,7 @@ class DatabaseManagerAttachments(DatabaseManager):
         try:
             attachment = session.query(Attachment).filter_by(hash_sha512=hash_sha512).first()
             if attachment:
-                return attachment.to_dict()  # Assuming you have a to_dict method
+                return attachment.to_dict()
             else:
                 self.log(f"No attachment found with SHA-512 hash: {hash_sha512}")
                 return None

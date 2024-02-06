@@ -4,12 +4,9 @@ import sqlite3
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from threading import local
-from message_system_db_model import Base, Station, Status, Attachment, P2PMessage, MessageAttachment
-from datetime import datetime
-import json
+from message_system_db_model import Base, Station, Status
 import structlog
 import helpers
-import hashlib
 
 class DatabaseManager:
     def __init__(self, event_manger, uri='sqlite:///freedata-messages.db'):

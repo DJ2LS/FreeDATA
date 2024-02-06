@@ -6,7 +6,6 @@ def validate_freedata_callsign(callsign):
     return re.compile(regexp).match(callsign) is not None
 
 def validate_message_attachment(attachment):
-    print(attachment)
     for field in ['name', 'type', 'data']:
         if field not in attachment:
             raise ValueError(f"Attachment missing '{field}'")

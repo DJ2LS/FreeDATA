@@ -1,6 +1,6 @@
 # models.py
 
-from sqlalchemy import Index, Table, Boolean, Column, String, Integer, JSON, ForeignKey, DateTime
+from sqlalchemy import Index, Boolean, Column, String, Integer, JSON, ForeignKey, DateTime
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
