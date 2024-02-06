@@ -3,6 +3,7 @@ import time
 import threading
 import command_message_send
 from message_system_db_manager import DatabaseManager
+from message_system_db_messages import DatabaseManagerMessages
 from message_system_db_beacon import DatabaseManagerBeacon
 import explorer
 import command_beacon
@@ -78,8 +79,8 @@ class ScheduleManager:
 
     def check_for_queued_messages(self):
         if not self.state_manager.getARQ():
-            if DatabaseManager(self.event_manager).get_first_queued_message():
-                params = DatabaseManager(self.event_manager).get_first_queued_message()
+            if DatabaseManagerMessages(self.event_manager).get_first_queued_message():
+                params = DatabaseManagerMessages(self.event_manager).get_first_queued_message()
                 command = command_message_send.SendMessageCommand(self.config_manager.read(), self.state_manager, self.event_manager, params)
                 command.transmit(self.modem)
 
