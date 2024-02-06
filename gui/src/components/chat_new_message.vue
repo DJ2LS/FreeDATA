@@ -73,7 +73,9 @@ function handleFileSelection(event) {
         };
         reader.readAsBinaryString(file); // Read the file content as binary string
     }
-}function transmitNewMessage() {
+}
+
+function transmitNewMessage() {
     // Check if a callsign is selected, default to the first one if not
     if (typeof(chat.selectedCallsign) === 'undefined') {
         chat.selectedCallsign = Object.keys(chat.callsign_list)[0];
@@ -113,33 +115,17 @@ function handleFileSelection(event) {
 }
 
 function resetFile(event){
-    chat.inputFileName = '-'
-    chat.inputFileSize = '-'
-    chat.inputFileType = '-'
+    if (fileInput.value) {
+        fileInput.value = ''; // Attempt to clear by setting value to empty (may not work due to security restrictions in browsers)
+    }
+
+    // Clear the selected files array to reset the state of attachments
+    selectedFiles.value = [];
 
 }
 
 
-function readFile(event) {
-    const reader = new FileReader();
 
-    reader.onload = () => {
-        console.log(reader.result);
-        chat.inputFileName = event.target.files[0].name
-        chat.inputFileSize = event.target.files[0].size
-        chat.inputFileType = event.target.files[0].type
-
-        chat.inputFile = reader.result
-        calculateTimeNeeded()
-
-//        String.fromCharCode.apply(null, Array.from(chatFile))
-
-
-      };
-
-    reader.readAsArrayBuffer(event.target.files[0]);
-
-}
 
 
 
@@ -241,11 +227,11 @@ const speedChartData = computed(() => ({
 
                                         <!-- trigger file selection modal -->
 
-                            <button type="button" class="btn btn-outline-secondary border-0 rounded-pill me-1" data-bs-toggle="modal" data-bs-target="#fileSelectionModal">
+                           <button type="button" class="btn btn-outline-secondary border-0 rounded-pill me-1" data-bs-toggle="modal" data-bs-target="#fileSelectionModal">
                               <i class="bi bi-paperclip" style="font-size: 1.2rem"></i>
+                              <!-- Badge showing the number of attached files -->
+                              <span class="badge bg-warning">{{ selectedFiles.length }}</span>
                             </button>
-
-
 
                           <textarea
                             class="form-control border rounded-pill"
@@ -303,11 +289,6 @@ const speedChartData = computed(() => ({
 </div>
 
 
-<!--
-           <div class="input-group-text mb-3">
-                <input class="" type="file" ref="doc" @change="readFile" />
-           </div>
--->
 
   <div class="container w-100 mb-3">
     <!-- Button that user will click to open file dialog -->
@@ -352,8 +333,9 @@ const speedChartData = computed(() => ({
   <button type="button" class="btn btn-secondary disabled">{{chat.inputFileSize}} {{totalSizeFormatted}}</button>
 </div>
 
+<!--
 <Line :data="speedChartData" />
-
+-->
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="resetFile">Reset</button>
