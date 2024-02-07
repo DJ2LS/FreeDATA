@@ -24,13 +24,16 @@ class DatabaseManagerAttachments(DatabaseManager):
             )
             session.add(attachment)
             session.flush()  # Ensure the attachment is persisted and has an ID
+            self.log(f"Added attachment to database: {attachment.name}")
         else:
             attachment = existing_attachment
+            self.log(f"Attachment {attachment.name} already exists in database")
 
         # Link the message and the attachment through MessageAttachment
         link = MessageAttachment(message=message, attachment=attachment)
-        self.log(f"Added attachment to database: {attachment.name}")
         session.add(link)
+        self.log(f"Linked message with attachment: {attachment.name}")
+
         return attachment
 
     def get_attachments_by_message_id(self, message_id):
