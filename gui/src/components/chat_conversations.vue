@@ -54,7 +54,7 @@ function newChat() {
 </script>
 <template>
 
-<nav class="navbar sticky-top bg-body-tertiary">
+<nav class="navbar sticky-top bg-body-tertiary shadow">
 
 <button
             class="btn btn-outline-primary w-100"

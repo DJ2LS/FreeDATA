@@ -193,23 +193,52 @@ const speedChartData = computed(() => ({
 
 
 <template>
-  <nav class="navbar sticky-bottom bg-body-tertiary border-top">
+
+
+  <nav class="navbar sticky-bottom bg-body-tertiary border-top mb-5">
 <div class="container-fluid p-0">
-                        <input
-                          type="checkbox"
-                          id="expand_textarea"
-                          class="btn-check"
-                          autocomplete="off"
-                        />
-                        <label
-                          class="btn d-flex justify-content-center"
-                          id="expand_textarea_label"
-                          for="expand_textarea"
-                          ><i
-                            id="expand_textarea_button"
-                            class="bi bi-chevron-compact-up"
-                          ></i
-                        ></label>
+
+
+
+    <!-- Hidden file input -->
+    <input type="file" multiple ref="fileInput" @change="handleFileSelection" style="display: none;" />
+
+
+
+  <div class="container-fluid px-0">
+    <div class="d-flex flex-row overflow-auto bg-light">
+      <div v-for="(file, index) in selectedFiles" :key="index" class="pe-2">
+        <div class="card" style=" min-width: 10rem; max-width: 10rem;">
+          <!-- Card Header with Remove Button -->
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="text-truncate">{{ file.name }}</span>
+            <button class="btn btn-close" @click="removeFile(index)"></button>
+          </div>
+          <div class="card-body">
+            <p class="card-text">...</p>
+          </div>
+          <div class="card-footer text-muted">
+            {{ file.type }}
+          </div>
+          <div class="card-footer text-muted">
+            {{ file.size }} bytes
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!--
+<Line :data="speedChartData" />
+-->
+
+
+
+
+
+
+
+
 
                         <div class="input-group bottom-0 ms-2">
 
@@ -228,10 +257,9 @@ const speedChartData = computed(() => ({
 
                                         <!-- trigger file selection modal -->
 
-                           <button type="button" class="btn btn-outline-secondary border-0 rounded-pill me-1" data-bs-toggle="modal" data-bs-target="#fileSelectionModal">
+                           <button type="button" class="btn btn-outline-secondary border-0 rounded-pill me-1" @click="triggerFileInput">
                               <i class="bi bi-paperclip" style="font-size: 1.2rem"></i>
-                              <!-- Badge showing the number of attached files -->
-                              <span class="badge bg-warning">{{ selectedFiles.length }}</span>
+
                             </button>
 
                           <textarea
@@ -262,79 +290,6 @@ const speedChartData = computed(() => ({
 
 
 
-
-                      <!-- select file modal -->
-
-                <div
-                  class="modal fade"
-                  id="fileSelectionModal"
-                  tabindex="-1"
-                  aria-labelledby="fileSelectionModalLabel"
-                  aria-hidden="true"
-                >
-
-                <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="staticBackdropLabel">File Attachment</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="resetFile"></button>
-      </div>
-      <div class="modal-body">
-
-
-     <div class="alert alert-warning d-flex align-items-center" role="alert">
- <i class="bi bi-exclamation-triangle-fill ms-2 me-2"></i>
-  <div>
-    Transmission speed over HF channels is very limited!
-  </div>
-</div>
-
-
-
-  <div class="container w-100 mb-3">
-    <!-- Button that user will click to open file dialog -->
-    <button class="btn btn-primary w-100" @click="triggerFileInput">Attach Files</button>
-
-    <!-- Hidden file input -->
-    <input type="file" multiple ref="fileInput" @change="handleFileSelection" style="display: none;" />
-
-
-  </div>
-
-  <div class="container-fluid px-0">
-    <div class="d-flex flex-row overflow-auto bg-light rounded-3 p-2 border border-1">
-      <div v-for="(file, index) in selectedFiles" :key="index" class="pe-2">
-        <div class="card" style=" min-width: 10rem; max-width: 10rem;">
-          <!-- Card Header with Remove Button -->
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <span class="text-truncate">{{ file.name }}</span>
-            <button class="btn btn-close" @click="removeFile(index)"></button>
-          </div>
-          <div class="card-body">
-            <p class="card-text">...</p>
-          </div>
-          <div class="card-footer text-muted">
-            {{ file.type }}
-          </div>
-          <div class="card-footer text-muted">
-            {{ file.size }} bytes
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-<!--
-<Line :data="speedChartData" />
--->
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="resetFile">Reset</button>
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Append</button>
-      </div>
-    </div>
-  </div>
-                </div>
 
 <!-- Emoji Picker Modal -->
 <div class="modal fade" id="emojiPickerModal" tabindex="-1" aria-hidden="true">
