@@ -3,25 +3,12 @@ import chat_conversations from "./chat_conversations.vue";
 import chat_messages from "./chat_messages.vue";
 import chat_new_message from "./chat_new_message.vue";
 
-
-
-
-
-
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
-
-
-
-
-
-
-
-
 
 import {
   Chart as ChartJS,
@@ -37,7 +24,6 @@ import {
 import { Bar } from "vue-chartjs";
 import { ref, computed } from "vue";
 import annotationPlugin from "chartjs-plugin-annotation";
-
 
 ChartJS.register(
   CategoryScale,
@@ -112,19 +98,10 @@ const beaconHistogramData = computed(() => ({
     },
   ],
 }));
-
-
-
-
-
-
-
-
 </script>
 
 <template>
   <div class="container-fluid m-0 p-0">
-
     <div class="row h-100 ms-0 mt-0 me-1">
       <div class="col-3 m-0 p-0 h-100 bg-light">
         <!------Chats area ---------------------------------------------------------------------->
@@ -141,54 +118,36 @@ const beaconHistogramData = computed(() => ({
         </div>
       </div>
       <div class="col-9 border-start vh-100 p-0">
+        <div class="d-flex flex-column vh-100">
+          <!-- Top Navbar -->
+          <nav class="navbar sticky-top bg-body-tertiary shadow">
+            <div class="input-group mb-0 p-0 w-25">
+              <button type="button" class="btn btn-outline-secondary" disabled>
+                Beacons
+              </button>
 
-
-
-
-
-
-<div class="d-flex flex-column vh-100">
-  <!-- Top Navbar -->
-    <nav class="navbar sticky-top bg-body-tertiary shadow ">
-<div class="input-group mb-0 p-0 w-25">
-            <button type="button" class="btn btn-outline-secondary" disabled>
-              Beacons
-            </button>
-
-            <div
-              class="form-floating border border-secondary-subtle border-1 rounded-end"
-            >
-              <Bar
-                :data="beaconHistogramData"
-                :options="beaconHistogramOptions"
-                width="300"
-                height="50"
-              />
+              <div
+                class="form-floating border border-secondary-subtle border-1 rounded-end"
+              >
+                <Bar
+                  :data="beaconHistogramData"
+                  :options="beaconHistogramOptions"
+                  width="300"
+                  height="50"
+                />
+              </div>
             </div>
+          </nav>
+
+          <!-- Chat Messages Area -->
+          <div class="flex-grow-1 overflow-auto">
+            <chat_messages />
           </div>
-</nav>
 
-
-  <!-- Chat Messages Area -->
-  <div class="flex-grow-1 overflow-auto">
-    <chat_messages />
-  </div>
-
-<chat_new_message />
-
-
-</div>
-
-
-
+          <chat_new_message />
+        </div>
 
         <!------ new message area ---------------------------------------------------------------------->
-
-
-
-
-
-
       </div>
     </div>
   </div>
