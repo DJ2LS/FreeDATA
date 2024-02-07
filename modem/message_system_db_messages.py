@@ -1,6 +1,7 @@
 from message_system_db_manager import DatabaseManager
 from message_system_db_attachments import DatabaseManagerAttachments
 from message_system_db_model import Status, P2PMessage
+from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 import json
 
@@ -47,6 +48,12 @@ class DatabaseManagerMessages(DatabaseManager):
             self.log(f"Added data to database: {new_message.id}")
             self.event_manager.freedata_message_db_change()
             return new_message.id
+        except IntegrityError as e:
+            session.rollback()  # Roll back the session to a clean state
+            self.log(f"Message with ID {message_data['id']} already exists in the database.", isWarning=True)
+            return None  # or you might return the existing message's ID or details
+
+
         except Exception as e:
             session.rollback()
             self.log(f"error adding new message to database with error: {e}", isWarning=True)
