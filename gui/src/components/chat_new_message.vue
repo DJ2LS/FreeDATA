@@ -293,23 +293,17 @@ const speedChartData = computed(() => ({
                         </div>
                       </div>
 
-
-
-
+</nav>
 <!-- Emoji Picker Modal -->
-<div class="modal fade" id="emojiPickerModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="emojiPickerModal" aria-hidden="true" >
   <div class="modal-dialog modal-dialog-centered modal-sm">
     <div class="modal-content">
       <div class="modal-body p-0">
-        <VuemojiPicker @emojiClick="handleEmojiClick" />
+        <VuemojiPicker @emojiClick="handleEmojiClick"/>
       </div>
     </div>
   </div>
 </div>
-
-
-
-</nav>
 
 </template>
 
