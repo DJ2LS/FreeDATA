@@ -122,6 +122,7 @@ def get_modem_state():
 def post_cqcqcq():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for triggering a CQ via POST"})
+    print(app.state_manager.is_modem_running)
     if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
     enqueue_tx_command(command_cq.CQCommand)
