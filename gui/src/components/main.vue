@@ -39,7 +39,7 @@ import { getFreedataMessages } from "../js/api";
 
   <div class="container-fluid">
     <div class="row">
-      <div class="col-sm-auto bg-body-secondary border-end">
+      <div class="col-1 p-0 bg-body-secondary border-end">
         <div
           class="d-flex flex-sm-column flex-row flex-nowrap align-items-center sticky-top"
         >
@@ -117,7 +117,7 @@ import { getFreedataMessages } from "../js/api";
           </div>
         </div>
       </div>
-      <div class="col-sm min-vh-100 m-0 p-0">
+      <div class="col-11 min-vh-100 m-0 p-0">
         <!-- content -->
 
         <!-- TODO: Remove the top navbar entirely if not needed

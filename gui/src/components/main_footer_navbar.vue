@@ -8,12 +8,20 @@ const state = useStateStore(pinia);
 </script>
 
 <template>
-  <nav
+
+<div class="container-fluid">
+<div class="row">
+    <div class="col-1">
+    123
+
+    </div>
+    <div class="col-11">
+
+     <nav
     class="navbar fixed-bottom navbar-expand-xl bg-body-tertiary border-top p-2"
-    style="margin-left: 87px"
   >
     <div class="col">
-      <div class="btn-toolbar" role="toolbar" style="margin-left: 2px">
+      <div class="btn-toolbar" role="toolbar">
         <div class="btn-group btn-group-sm me-1" role="group">
           <button
             class="btn btn-sm btn-secondary me-1"
@@ -259,5 +267,11 @@ const state = useStateStore(pinia);
       </div>
     </div>
   </nav>
+</div>
+    </div>
+</div>
+
+
+
 </template>
-ww
+
