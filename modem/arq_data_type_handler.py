@@ -96,8 +96,7 @@ class ARQDataTypeHandler:
         return
 
     def transmitted_raw(self, data):
-        decompressed_data = lzma.decompress(data)
-        return decompressed_data
+        return data
 
     def prepare_raw_lzma(self, data):
         compressed_data = lzma.compress(data)
@@ -130,7 +129,7 @@ class ARQDataTypeHandler:
         return
 
     def transmitted_raw_gzip(self, data):
-        decompressed_data = lzma.decompress(data)
+        decompressed_data = gzip.decompress(data)
         return decompressed_data
 
     def prepare_p2pmsg_lzma(self, data):

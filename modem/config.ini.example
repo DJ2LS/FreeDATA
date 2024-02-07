@@ -1,11 +1,11 @@
 [NETWORK]
-modemport = 5000
+modemport = 3050
 
 [STATION]
 mycall = XX1XXX
 mygrid = JN18cv
 myssid = 6
-ssid_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ]
+ssid_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 enable_explorer = True
 enable_stats = True
 

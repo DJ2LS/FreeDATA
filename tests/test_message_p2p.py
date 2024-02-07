@@ -65,11 +65,12 @@ class TestDataFrameFactory(unittest.TestCase):
         self.assertEqual(message.origin, received_message.origin)
         self.assertEqual(message.destination, received_message.destination)
         self.assertCountEqual(message.attachments, received_message.attachments)
-        # FIXME...
-        #self.assertEqual(attachment['data'], received_message.attachments[0]['data'])
+        result = self.database_manager.get_message_by_id(message.id)
+        self.assertEqual(result["is_read"], True)
+        self.assertEqual(result["destination"], message.destination)
 
-        result = self.database_manager.get_all_messages()
-        self.assertEqual(result[0]["destination"], message.destination)
+
+
 
 
 if __name__ == '__main__':
