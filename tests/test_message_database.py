@@ -38,9 +38,9 @@ class TestDataFrameFactory(unittest.TestCase):
         received_message = MessageP2P.from_payload(payload)
         received_message_dict = MessageP2P.to_dict(received_message)
         self.database_manager.add_message(received_message_dict)
+        result = self.database_manager.get_message_by_id(message.id)
 
-        result = self.database_manager.get_all_messages()
-        self.assertEqual(result[0]["destination"], message.destination)
+        self.assertEqual(result["destination"], message.destination)
 
     def testDeleteFromDatabase(self):
         attachment = {
