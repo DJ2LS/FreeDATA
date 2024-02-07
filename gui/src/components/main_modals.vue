@@ -155,9 +155,6 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
     </div>
   </div>
 
-
-
-
   <!-- delete chat modal -->
   <div
     class="modal fade"
