@@ -244,9 +244,9 @@ def get_post_radio():
 def get_post_freedata_message():
     if request.method in ['GET']:
         result = DatabaseManagerMessages(app.event_manager).get_all_messages_json()
-        return api_response(result)
+        return api_response(result, 200)
     if enqueue_tx_command(command_message_send.SendMessageCommand, request.json):
-        return api_response(request.json)
+        return api_response(request.json, 200)
     else:
         api_abort('Error executing command...', 500)
 

@@ -5,7 +5,6 @@ setActivePinia(pinia);
 
 import { useChatStore } from "../store/chatStore.js";
 import { getBeaconDataByCallsign } from "../js/api.js";
-import { startChatWithNewStation } from "../js/chatHandler";
 
 import { ref, computed } from "vue";
 
@@ -45,8 +44,6 @@ function newChat() {
   let callsign = this.newChatCall.value;
   callsign = callsign.toUpperCase().trim();
   if (callsign === "") return;
-  //startChatWithNewStation(callsign);
-  //updateAllChat(false);
   this.newChatCall.value = "";
 }
 
