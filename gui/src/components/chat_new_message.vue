@@ -77,6 +77,11 @@ function handleFileSelection(event) {
 
 function removeFile(index) {
     selectedFiles.value.splice(index, 1);
+     // Check if the selectedFiles array is empty
+    if (selectedFiles.value.length === 0) {
+        // Reset the file input if there are no files left
+        resetFile();
+    }
 }
 
 function transmitNewMessage() {
@@ -118,11 +123,11 @@ function transmitNewMessage() {
 }
 
 function resetFile(event){
-   //fileInput.reset()
-   fileInput.value = null
+    if (fileInput.value) {
+        fileInput.value.value = ''; // Reset the file input
+    }
     // Clear the selected files array to reset the state of attachments
     selectedFiles.value = [];
-
 }
 
 
