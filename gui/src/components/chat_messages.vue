@@ -21,13 +21,9 @@ function getDateTime(timestampRaw) {
   let day = date.getDate().toString().padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
-
-
-
 </script>
 
 <template>
-
   <div class="tab-content p-3" id="nav-tabContent-chat-messages">
     <template
       v-for="(details, callsign, key) in chat.callsign_list"
@@ -66,10 +62,6 @@ function getDateTime(timestampRaw) {
       </div>
     </template>
   </div>
-
-
-
-
 </template>
 
 <style>
