@@ -51,6 +51,7 @@
     "gridstack": "10.0.1",
     "mime": "4.0.1",
     "nconf": "^0.12.1",
+    "noto-color-emoji": "^1.0.1",
     "pinia": "2.1.7",
     "qth-locator": "2.1.0",
     "socket.io": "4.7.2",
