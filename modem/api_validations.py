@@ -9,5 +9,8 @@ def validate_message_attachment(attachment):
     for field in ['name', 'type', 'data']:
         if field not in attachment:
             raise ValueError(f"Attachment missing '{field}'")
-        if len(attachment[field]) < 1:
+
+        # check for content length, except type
+        # there are some files out there, don't having a mime type
+        if len(attachment[field]) < 1 and field not in ["type"]:
             raise ValueError(f"Attachment has empty '{field}'")
