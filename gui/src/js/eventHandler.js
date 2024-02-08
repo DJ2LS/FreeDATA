@@ -137,7 +137,7 @@ export function eventDispatcher(data) {
 
       return;
 
-   switch (data["received"].state) {
+   switch (data["received"]) {
           case "PING":
             message = `Ping request from: ${data.dxcallsign}, SNR: ${data.snr}`;
             displayToast("success", "bi-check-circle", message, 5000);
