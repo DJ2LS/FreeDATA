@@ -91,6 +91,7 @@ class FrameHandler():
     def add_to_heard_stations(self):
         frame = self.details['frame']
 
+        print(frame)
         if 'origin' not in frame:
             return
 
@@ -117,9 +118,6 @@ class FrameHandler():
         }
         if 'origin' in self.details['frame']:
             event['dxcallsign'] = self.details['frame']['origin']
-
-        if 'origin_crc' in self.details['frame']:
-            event['dxcallsign'] = DatabaseManager(self.event_manager).get_callsign_by_checksum(self.details['frame']['origin_crc'])
 
         return event
 
@@ -148,6 +146,10 @@ class FrameHandler():
         self.details['frequency_offset'] = frequency_offset
         self.details['freedv_inst'] = freedv_inst
         self.details['bytes_per_frame'] = bytes_per_frame
+
+        # look in database for a full callsign if only crc is present
+        if 'origin' not in frame and 'origin_crc' in frame:
+            self.details['frame']['origin'] = DatabaseManager(self.event_manager).get_callsign_by_checksum(frame['origin_crc'])
 
         self.log()
         self.add_to_heard_stations()

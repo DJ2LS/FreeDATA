@@ -64,7 +64,6 @@ class TestProtocols(unittest.TestCase):
         self.shortcutTransmission(event_frame)
         self.assertEventReceivedType('PING_ACK')
         print("PING/PING ACK CHECK SUCCESSFULLY")
-
     def testCQWithQRV(self):
         self.config['MODEM']['respond_to_cq'] = True
 
