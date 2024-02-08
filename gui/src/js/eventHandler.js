@@ -327,7 +327,6 @@ export function getOverallHealth() {
     health += 5;
     stateStore.is_modem_running = false;
     stateStore.radio_status = false;
-
   }
   if (!stateStore.is_modem_running) health += 3;
   if (stateStore.radio_status === false) health += 2;
