@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, make_response, abort, Response
 from flask_sock import Sock
 from flask_cors import CORS
 import os
+import sys
 import serial_ports
 from config import CONFIG
 import audio
@@ -16,13 +17,19 @@ import command_ping
 import command_feq
 import command_test
 import command_arq_raw
+import command_message_send
 import event_manager
+from message_system_db_manager import DatabaseManager
+from message_system_db_messages import DatabaseManagerMessages
+from message_system_db_attachments import DatabaseManagerAttachments
+from message_system_db_beacon import DatabaseManagerBeacon
+from schedule_manager import ScheduleManager
 
 app = Flask(__name__)
 CORS(app)
 CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
-MODEM_VERSION = "0.12.1-alpha"
+MODEM_VERSION = "0.13.2-alpha"
 
 # set config file to use
 def set_config():
@@ -35,7 +42,7 @@ def set_config():
         print(f"Using config from {config_file}")
     else:
         print(f"Config file '{config_file}' not found. Exiting.")
-        exit(1)
+        sys.exit(1)
 
     return config_file
 
@@ -70,6 +77,7 @@ def enqueue_tx_command(cmd_class, params = {}):
     if command.run(app.modem_events, app.service_manager.modem): # TODO remove the app.modem_event custom queue
         return True
     return False
+
 ## REST API
 @app.route('/', methods=['GET'])
 def index():
@@ -131,10 +139,8 @@ def post_beacon():
 
     if not app.state_manager.is_beacon_running:
         app.state_manager.set('is_beacon_running', request.json['enabled'])
-        app.modem_service.put("start_beacon")
     else:
         app.state_manager.set('is_beacon_running', request.json['enabled'])
-        app.modem_service.put("stop_beacon")
 
     return api_response(request.json)
 
@@ -234,19 +240,54 @@ def get_post_radio():
     elif request.method == 'GET':
         return api_response(app.state_manager.get_radio_status())
 
-# @app.route('/modem/arq_connect', methods=['POST'])
-# @app.route('/modem/arq_disconnect', methods=['POST'])
-# @app.route('/modem/send_raw', methods=['POST'])
-# @app.route('/modem/record_audio', methods=['POST'])
-# @app.route('/modem/audio_levels', methods=['POST']) # tx and rx # not needed if we are restarting modem on changing settings
-# @app.route('/modem/mesh_ping', methods=['POST'])
-# @app.route('/mesh/routing_table', methods=['GET'])
-# @app.route('/modem/get_rx_buffer', methods=['GET'])
-# @app.route('/modem/del_rx_buffer', methods=['POST'])
-# @app.route('/rig/status', methods=['GET'])
-# @app.route('/rig/mode', methods=['POST'])
-# @app.route('/rig/frequency', methods=['POST'])
-# @app.route('/rig/test_hamlib', methods=['POST'])
+@app.route('/freedata/messages', methods=['POST', 'GET'])
+def get_post_freedata_message():
+    if request.method in ['GET']:
+        result = DatabaseManagerMessages(app.event_manager).get_all_messages_json()
+        return api_response(result, 200)
+    if enqueue_tx_command(command_message_send.SendMessageCommand, request.json):
+        return api_response(request.json, 200)
+    else:
+        api_abort('Error executing command...', 500)
+
+@app.route('/freedata/messages/<string:message_id>', methods=['GET', 'POST', 'PATCH', 'DELETE'])
+def handle_freedata_message(message_id):
+    if request.method == 'GET':
+        message = DatabaseManagerMessages(app.event_manager).get_message_by_id_json(message_id)
+        return message
+    elif request.method == 'POST':
+        result = DatabaseManagerMessages(app.event_manager).update_message(message_id, update_data={'status': 'queued'})
+        DatabaseManagerMessages(app.event_manager).increment_message_attempts(message_id)
+        return api_response(result)
+    elif request.method == 'PATCH':
+        # Fixme We need to adjust this
+        result = DatabaseManagerMessages(app.event_manager).mark_message_as_read(message_id)
+        return api_response(result)
+    elif request.method == 'DELETE':
+        result = DatabaseManagerMessages(app.event_manager).delete_message(message_id)
+        return api_response(result)
+    else:
+        api_abort('Error executing command...', 500)
+
+@app.route('/freedata/messages/<string:message_id>/attachments', methods=['GET'])
+def get_message_attachments(message_id):
+    attachments = DatabaseManagerAttachments(app.event_manager).get_attachments_by_message_id_json(message_id)
+    return api_response(attachments)
+
+@app.route('/freedata/messages/attachment/<string:data_sha512>', methods=['GET'])
+def get_message_attachment(data_sha512):
+    attachment = DatabaseManagerAttachments(app.event_manager).get_attachment_by_sha512(data_sha512)
+    return api_response(attachment)
+
+@app.route('/freedata/beacons', methods=['GET'])
+def get_all_beacons():
+    beacons = DatabaseManagerBeacon(app.event_manager).get_all_beacons()
+    return api_response(beacons)
+
+@app.route('/freedata/beacons/<string:callsign>', methods=['GET'])
+def get_beacons_by_callsign(callsign):
+    beacons = DatabaseManagerBeacon(app.event_manager).get_beacons_by_callsign(callsign)
+    return api_response(beacons)
 
 # Event websocket
 @sock.route('/events')
@@ -279,10 +320,13 @@ if __name__ == "__main__":
     app.event_manager = event_manager.EventManager([app.modem_events])  # TODO remove the app.modem_event custom queue
     # init state manager
     app.state_manager = state_manager.StateManager(app.state_queue)
+    # initialize message system schedule manager
+    app.schedule_manager = ScheduleManager(app.MODEM_VERSION, app.config_manager, app.state_manager, app.event_manager)
     # start service manager
     app.service_manager = service_manager.SM(app)
     # start modem service
     app.modem_service.put("start")
-
+    # initialize database default values
+    DatabaseManager(app.event_manager).initialize_default_values()
     wsm.startThreads(app)
     app.run()

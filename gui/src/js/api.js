@@ -4,6 +4,8 @@ import {
   validateCallsignWithoutSSID,
 } from "./freedata";
 
+import { processFreedataMessages } from "./messagesHandler";
+
 function buildURL(params, endpoint) {
   const url = "http://" + params.host + ":" + params.port + endpoint;
   return url;
@@ -15,10 +17,9 @@ async function apiGet(endpoint) {
     if (!response.ok) {
       throw new Error(`REST response not ok: ${response.statusText}`);
     }
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
-    console.error("Error getting from REST:", error);
+    //console.error("Error getting from REST:", error);
   }
 }
 
@@ -43,6 +44,27 @@ export async function apiPost(endpoint, payload = {}) {
   }
 }
 
+export async function apiDelete(endpoint, payload = {}) {
+  try {
+    const response = await fetch(buildURL(settings.local, endpoint), {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error(`REST response not ok: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error deleting from REST:", error);
+  }
+}
+
 export async function getVersion() {
   let data = await apiGet("/version").then((res) => {
     return res;
@@ -52,30 +74,30 @@ export async function getVersion() {
 }
 
 export async function getConfig() {
-  return apiGet("/config");
+  return await apiGet("/config");
 }
 
-export function setConfig(config) {
-  return apiPost("/config", config);
+export async function setConfig(config) {
+  return await apiPost("/config", config);
 }
 
-export function getAudioDevices() {
-  return apiGet("/devices/audio");
+export async function getAudioDevices() {
+  return await apiGet("/devices/audio");
 }
 
-export function getSerialDevices() {
-  return apiGet("/devices/serial");
+export async function getSerialDevices() {
+  return await apiGet("/devices/serial");
 }
 
-export function setModemBeacon(enabled = false) {
-  return apiPost("/modem/beacon", { enabled: enabled });
+export async function setModemBeacon(enabled = false) {
+  return await apiPost("/modem/beacon", { enabled: enabled });
 }
 
-export function sendModemCQ() {
-  return apiPost("/modem/cqcqcq");
+export async function sendModemCQ() {
+  return await apiPost("/modem/cqcqcq");
 }
 
-export function sendModemPing(dxcall) {
+export async function sendModemPing(dxcall) {
   if (
     validateCallsignWithSSID(dxcall) === false &&
     validateCallsignWithoutSSID(dxcall) === true
@@ -85,11 +107,11 @@ export function sendModemPing(dxcall) {
   }
   dxcall = String(dxcall).toUpperCase().trim();
   if (validateCallsignWithSSID(dxcall))
-    return apiPost("/modem/ping_ping", { dxcall: dxcall });
+    return await apiPost("/modem/ping_ping", { dxcall: dxcall });
 }
 
-export function sendModemARQRaw(mycall, dxcall, data, uuid) {
-  return apiPost("/modem/send_arq_raw", {
+export async function sendModemARQRaw(mycall, dxcall, data, uuid) {
+  return await apiPost("/modem/send_arq_raw", {
     mycallsign: mycall,
     dxcall: dxcall,
     data: data,
@@ -97,33 +119,63 @@ export function sendModemARQRaw(mycall, dxcall, data, uuid) {
   });
 }
 
-export function stopTransmission() {
-  return apiPost("/modem/stop_transmission");
+export async function stopTransmission() {
+  return await apiPost("/modem/stop_transmission");
 }
 
-export function sendModemTestFrame() {
-  return apiPost("/modem/send_test_frame");
+export async function sendModemTestFrame() {
+  return await apiPost("/modem/send_test_frame");
 }
 
-export function startModem() {
-  return apiPost("/modem/start");
+export async function startModem() {
+  return await apiPost("/modem/start");
 }
 
-export function stopModem() {
-  return apiPost("/modem/stop");
+export async function stopModem() {
+  return await apiPost("/modem/stop");
 }
 
-export function getModemState() {
-  return apiGet("/modem/state");
+export async function getModemState() {
+  return await apiGet("/modem/state");
 }
 
-export function setRadioParameters(frequency, mode, rf_level) {
-  return apiPost("/radio", {
+export async function setRadioParameters(frequency, mode, rf_level) {
+  return await apiPost("/radio", {
     radio_frequency: frequency,
     radio_mode: mode,
     radio_rf_level: rf_level,
   });
 }
-export function getRadioStatus() {
-  return apiGet("/radio");
+export async function getRadioStatus() {
+  return await apiGet("/radio");
+}
+
+export async function getFreedataMessages() {
+  let res = await apiGet("/freedata/messages");
+  processFreedataMessages(res);
+}
+
+export async function getFreedataAttachmentBySha512(data_sha512) {
+  let res = await apiGet(`/freedata/messages/attachment/${data_sha512}`);
+  return res;
+}
+
+export async function sendFreedataMessage(destination, body, attachments) {
+  return await apiPost("/freedata/messages", {
+    destination: destination,
+    body: body,
+    attachments: attachments,
+  });
+}
+
+export async function retransmitFreedataMessage(id) {
+  return await apiPost(`/freedata/messages/${id}`);
+}
+
+export async function deleteFreedataMessage(id) {
+  return await apiDelete(`/freedata/messages/${id}`);
+}
+
+export async function getBeaconDataByCallsign(callsign) {
+  return await apiGet(`/freedata/beacons/${callsign}`);
 }

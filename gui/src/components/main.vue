@@ -20,12 +20,7 @@ import infoScreen from "./infoScreen.vue";
 import main_modem_healthcheck from "./main_modem_healthcheck.vue";
 import Dynamic_components from "./dynamic_components.vue";
 
-import { stopTransmission } from "../js/api";
-
-function stopAllTransmissions() {
-  console.log("stopping transmissions");
-  stopTransmission();
-}
+import { getFreedataMessages } from "../js/api";
 </script>
 
 <template>
@@ -44,7 +39,7 @@ function stopAllTransmissions() {
 
   <div class="container-fluid">
     <div class="row">
-      <div class="col-sm-auto bg-body-secondary border-end">
+      <div class="col-1 p-0 bg-body-secondary border-end">
         <div
           class="d-flex flex-sm-column flex-row flex-nowrap align-items-center sticky-top"
         >
@@ -75,6 +70,7 @@ function stopAllTransmissions() {
               role="tab"
               aria-controls="list-chat"
               title="Chat"
+              @click="getFreedataMessages"
               ><i class="bi bi-chat-text h3"></i
             ></a>
 
@@ -121,7 +117,7 @@ function stopAllTransmissions() {
           </div>
         </div>
       </div>
-      <div class="col-sm min-vh-100 m-0 p-0">
+      <div class="col-11 min-vh-100 m-0 p-0">
         <!-- content -->
 
         <!-- TODO: Remove the top navbar entirely if not needed

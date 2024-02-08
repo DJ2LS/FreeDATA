@@ -5,6 +5,8 @@ import structlog
 from event_manager import EventManager
 from modem_frametypes import FRAME_TYPE
 import time
+from arq_data_type_handler import ARQDataTypeHandler
+
 
 class ARQSession():
 
@@ -31,6 +33,9 @@ class ARQSession():
         self.config = config
 
         self.event_manager: EventManager = modem.event_manager
+        self.states = modem.states
+
+        self.states.setARQ(True)
 
         self.snr = []
 
@@ -44,6 +49,7 @@ class ARQSession():
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
         self.event_frame_received = threading.Event()
 
+        self.arq_data_type_handler = ARQDataTypeHandler(self.event_manager, self.states)
         self.id = None
         self.session_started = time.time()
         self.session_ended = 0
@@ -88,10 +94,14 @@ class ARQSession():
         if self.state in self.STATE_TRANSITION:
             if frame_type in self.STATE_TRANSITION[self.state]:
                 action_name = self.STATE_TRANSITION[self.state][frame_type]
-                getattr(self, action_name)(frame)
+                received_data, type_byte = getattr(self, action_name)(frame)
+                if isinstance(received_data, bytearray) and isinstance(type_byte, int):
+                    self.arq_data_type_handler.dispatch(type_byte, received_data)
+
+                self.states.setARQ(False)
                 return
         
-        self.log(f"Ignoring unknow transition from state {self.state.name} with frame {frame['frame_type']}")
+        self.log(f"Ignoring unknown transition from state {self.state.name} with frame {frame['frame_type']}")
 
     def is_session_outdated(self):
         session_alivetime = time.time() - self.session_max_age

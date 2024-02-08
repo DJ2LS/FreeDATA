@@ -1,3 +1,4 @@
+/*
 import {
   newMessageReceived,
   newBeaconReceived,
@@ -5,7 +6,16 @@ import {
   setStateSuccess,
   setStateFailed,
 } from "./chatHandler";
+*/
 import { displayToast } from "./popupHandler";
+import {
+  getFreedataMessages,
+  getConfig,
+  getAudioDevices,
+  getSerialDevices,
+  getModemState,
+} from "./api";
+import { processFreedataMessages } from "./messagesHandler.ts";
 
 // ----------------- init pinia stores -------------
 import { setActivePinia } from "pinia";
@@ -21,9 +31,12 @@ export function connectionFailed(endpoint, event) {
 }
 export function stateDispatcher(data) {
   data = JSON.parse(data);
+  //Leave commented when not needed, otherwise can lead to heap overflows due to the amount of data logged
   //console.debug(data);
   if (data["type"] == "state-change" || data["type"] == "state") {
     stateStore.modem_connection = "connected";
+
+    stateStore.busy_state = data["is_modem_busy"];
 
     stateStore.channel_busy = data["channel_busy"];
     stateStore.is_codec2_traffic = data["is_codec2_traffic"];
@@ -58,6 +71,14 @@ export function eventDispatcher(data) {
     return;
   }
 
+  switch (data["message-db"]) {
+    case "changed":
+      console.log("fetching new messages...");
+      var messages = getFreedataMessages();
+      processFreedataMessages(messages);
+      return;
+  }
+
   switch (data["ptt"]) {
     case true:
     case false:
@@ -70,14 +91,24 @@ export function eventDispatcher(data) {
   switch (data["modem"]) {
     case "started":
       displayToast("success", "bi-arrow-left-right", "Modem started", 5000);
+      getModemState();
+      getConfig();
+      getAudioDevices();
+      getSerialDevices();
+      getFreedataMessages();
       return;
 
     case "stopped":
-      displayToast("success", "bi-arrow-left-right", "Modem stopped", 5000);
+      displayToast("warning", "bi-arrow-left-right", "Modem stopped", 5000);
       return;
 
     case "restarted":
       displayToast("secondary", "bi-bootstrap-reboot", "Modem restarted", 5000);
+      getModemState();
+      getConfig();
+      getAudioDevices();
+      getSerialDevices();
+      getFreedataMessages();
       return;
 
     case "failed":
@@ -97,7 +128,27 @@ export function eventDispatcher(data) {
       message = "Connected to server";
       displayToast("success", "bi-ethernet", message, 5000);
       stateStore.modem_connection = "connected";
+      getModemState();
+      getOverallHealth();
+      getConfig();
+      getAudioDevices();
+      getSerialDevices();
+      getFreedataMessages();
+      processFreedataMessages();
+
       return;
+
+      switch (data["received"]) {
+        case "PING":
+          message = `Ping request from: ${data.dxcallsign}, SNR: ${data.snr}`;
+          displayToast("success", "bi-check-circle", message, 5000);
+          return;
+
+        case "PING_ACK":
+          message = `Ping acknowledged from: ${data.dxcallsign}, SNR: ${data.snr}`;
+          displayToast("success", "bi-check-circle", message, 5000);
+          return;
+      }
 
     case "arq":
       if (data["arq-transfer-outbound"]) {
@@ -267,4 +318,18 @@ function build_HSL() {
     }
   }
   stateStore.heard_stations.sort((a, b) => b.timestamp - a.timestamp); // b - a for reverse sort
+}
+
+export function getOverallHealth() {
+  //Return a number indicating health for icon bg color; lower the number the healthier
+  let health = 0;
+  if (stateStore.modem_connection !== "connected") {
+    health += 5;
+    stateStore.is_modem_running = false;
+    stateStore.radio_status = false;
+  }
+  if (!stateStore.is_modem_running) health += 3;
+  if (stateStore.radio_status === false) health += 2;
+  if (process.env.FDUpdateAvail === "1") health += 1;
+  return health;
 }

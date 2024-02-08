@@ -17,8 +17,7 @@ import chat_navbar from './chat_navbar.vue'
 import chat_conversations from './chat_conversations.vue'
 import chat_messages from './chat_messages.vue'
 
-import {updateAllChat, newMessage, newBroadcast} from '../js/chatHandler'
-
+import { newMessage } from '../js/messagesHandler.ts'
 
 import {
   Chart as ChartJS,
@@ -45,56 +44,94 @@ chat.inputText += detail.unicode
 const chatModuleMessage=ref(null);
 
 
+// Function to trigger the hidden file input
+function triggerFileInput() {
+  fileInput.value.click();
+}
 
 
-function transmitNewMessage(){
+// Use a ref for storing multiple files
+const selectedFiles = ref([]);
+const fileInput = ref(null);
+
+function handleFileSelection(event) {
+    // Reset previously selected files
+    selectedFiles.value = [];
+
+    // Process each file
+    for (let file of event.target.files) {
+        const reader = new FileReader();
+        reader.onload = () => {
+            // Convert file content to base64
+            const base64Content = btoa(reader.result); // Adjust this line if necessary
+            selectedFiles.value.push({
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                content: base64Content, // Store base64 encoded content
+            });
+        };
+        reader.readAsBinaryString(file); // Read the file content as binary string
+    }
+}
+
+function removeFile(index) {
+    selectedFiles.value.splice(index, 1);
+     // Check if the selectedFiles array is empty
+    if (selectedFiles.value.length === 0) {
+        // Reset the file input if there are no files left
+        resetFile();
+    }
+}
+
+function transmitNewMessage() {
+    // Check if a callsign is selected, default to the first one if not
+    if (typeof(chat.selectedCallsign) === 'undefined') {
+        chat.selectedCallsign = Object.keys(chat.callsign_list)[0];
+    }
 
     chat.inputText = chat.inputText.trim();
-    if (chat.inputText.length==0 && chat.inputFileName == "-")
-      return;
+
+    // Proceed only if there is text or files selected
+    if (chat.inputText.length === 0 && selectedFiles.value.length === 0) return;
+
+    const attachments = selectedFiles.value.map(file => {
+        return {
+            name: file.name,
+            type: file.type,
+            data: file.content
+        };
+    });
+
     if (chat.selectedCallsign.startsWith("BC-")) {
-
-        newBroadcast(chat.selectedCallsign, chat.inputText)
-
+        // Handle broadcast message differently if needed
+        return "new broadcast";
     } else {
-        newMessage(chat.selectedCallsign, chat.inputText, chat.inputFile, chat.inputFileName, chat.inputFileSize, chat.inputFileType)
+        // If there are attachments, send them along with the message
+        if (attachments.length > 0) {
+            newMessage(chat.selectedCallsign, chat.inputText, attachments);
+        } else {
+            // Send text only if no attachments are selected
+            newMessage(chat.selectedCallsign, chat.inputText);
+        }
     }
-    // finally do a cleanup
-    //chatModuleMessage.reset();
+
+    // Cleanup after sending message
     chat.inputText = '';
-    chatModuleMessage.value="";
-    // @ts-expect-error
+    chatModuleMessage.value = "";
     resetFile()
 }
 
 function resetFile(event){
-    chat.inputFileName = '-'
-    chat.inputFileSize = '-'
-    chat.inputFileType = '-'
-
+    if (fileInput.value) {
+        fileInput.value.value = ''; // Reset the file input
+    }
+    // Clear the selected files array to reset the state of attachments
+    selectedFiles.value = [];
 }
 
 
-function readFile(event) {
-    const reader = new FileReader();
 
-    reader.onload = () => {
-        console.log(reader.result);
-        chat.inputFileName = event.target.files[0].name
-        chat.inputFileSize = event.target.files[0].size
-        chat.inputFileType = event.target.files[0].type
-
-        chat.inputFile = reader.result
-        calculateTimeNeeded()
-
-//        String.fromCharCode.apply(null, Array.from(chatFile))
-
-
-      };
-
-    reader.readAsArrayBuffer(event.target.files[0]);
-
-}
 
 
 
@@ -133,9 +170,9 @@ function calculateTimeNeeded(){
             return obj.snr === snrList[i].snr
           })
 
-        calculatedSpeedPerMinutePER0.push(chat.inputFileSize / result.bpm)
-        calculatedSpeedPerMinutePER25.push(chat.inputFileSize / (result.bpm * 0.75))
-        calculatedSpeedPerMinutePER75.push(chat.inputFileSize / (result.bpm * 0.25))
+        calculatedSpeedPerMinutePER0.push(totalSize / result.bpm)
+        calculatedSpeedPerMinutePER25.push(totalSize / (result.bpm * 0.75))
+        calculatedSpeedPerMinutePER75.push(totalSize / (result.bpm * 0.25))
 
     }
 
@@ -162,22 +199,51 @@ const speedChartData = computed(() => ({
 
 <template>
 
-<div class="container-fluid mt-2 p-0">
-                        <input
-                          type="checkbox"
-                          id="expand_textarea"
-                          class="btn-check"
-                          autocomplete="off"
-                        />
-                        <label
-                          class="btn d-flex justify-content-center"
-                          id="expand_textarea_label"
-                          for="expand_textarea"
-                          ><i
-                            id="expand_textarea_button"
-                            class="bi bi-chevron-compact-up"
-                          ></i
-                        ></label>
+
+  <nav class="navbar sticky-bottom bg-body-tertiary border-top mb-5">
+<div class="container-fluid p-0">
+
+
+
+    <!-- Hidden file input -->
+    <input type="file" multiple ref="fileInput" @change="handleFileSelection" style="display: none;" />
+
+
+
+  <div class="container-fluid px-0">
+    <div class="d-flex flex-row overflow-auto bg-light">
+      <div v-for="(file, index) in selectedFiles" :key="index" class="pe-2">
+        <div class="card" style=" min-width: 10rem; max-width: 10rem;">
+          <!-- Card Header with Remove Button -->
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="text-truncate">{{ file.name }}</span>
+            <button class="btn btn-close" @click="removeFile(index)"></button>
+          </div>
+          <div class="card-body">
+            <p class="card-text">...</p>
+          </div>
+          <div class="card-footer text-muted">
+            {{ file.type }}
+          </div>
+          <div class="card-footer text-muted">
+            {{ file.size }} bytes
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!--
+<Line :data="speedChartData" />
+-->
+
+
+
+
+
+
+
+
 
                         <div class="input-group bottom-0 ms-2">
 
@@ -195,10 +261,11 @@ const speedChartData = computed(() => ({
 
 
                                         <!-- trigger file selection modal -->
-                            <button type="button" class="btn btn-outline-secondary border-0 rounded-pill me-1" data-bs-toggle="modal" data-bs-target="#fileSelectionModal">
-                              <i class="bi bi-paperclip" style="font-size: 1.2rem"></i>
-                            </button>
 
+                           <button type="button" class="btn btn-outline-secondary border-0 rounded-pill me-1" @click="triggerFileInput">
+                              <i class="bi bi-paperclip" style="font-size: 1.2rem"></i>
+
+                            </button>
 
                           <textarea
                             class="form-control border rounded-pill"
@@ -226,76 +293,17 @@ const speedChartData = computed(() => ({
                         </div>
                       </div>
 
-
-
-
-                      <!-- select file modal -->
-
-                <div
-                  class="modal fade"
-                  id="fileSelectionModal"
-                  tabindex="-1"
-                  aria-labelledby="fileSelectionModalLabel"
-                  aria-hidden="true"
-                >
-
-                <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="staticBackdropLabel">File Attachment</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="resetFile"></button>
-      </div>
-      <div class="modal-body">
-
-
-     <div class="alert alert-warning d-flex align-items-center" role="alert">
- <i class="bi bi-exclamation-triangle-fill ms-2 me-2"></i>
-  <div>
-    Transmission speed over HF channels is very limited!
-  </div>
-</div>
-
-           <div class="input-group-text mb-3">
-                <input class="" type="file" ref="doc" @change="readFile" />
-           </div>
-
-
-
-<div class="btn-group me-2" role="group" aria-label="Basic outlined example">
-  <button type="button" class="btn btn-secondary">Type</button>
-  <button type="button" class="btn btn-secondary disabled">{{chat.inputFileType}}</button>
-</div>
-
-<div class="btn-group me-2" role="group" aria-label="Basic outlined example">
-  <button type="button" class="btn btn-secondary">Size</button>
-  <button type="button" class="btn btn-secondary disabled">{{chat.inputFileSize}}</button>
-</div>
-
-<Line :data="speedChartData" />
-
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="resetFile">Reset</button>
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Append</button>
-      </div>
-    </div>
-  </div>
-                </div>
-
+</nav>
 <!-- Emoji Picker Modal -->
-<div class="modal fade" id="emojiPickerModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="emojiPickerModal" aria-hidden="true" >
   <div class="modal-dialog modal-dialog-centered modal-sm">
     <div class="modal-content">
       <div class="modal-body p-0">
-        <VuemojiPicker @emojiClick="handleEmojiClick" />
+        <VuemojiPicker @emojiClick="handleEmojiClick"/>
       </div>
     </div>
   </div>
 </div>
-
-
-
-
 
 </template>
 

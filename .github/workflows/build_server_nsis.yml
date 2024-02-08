@@ -1,0 +1,50 @@
+name: Build and Release NSIS Installer
+on: [push]
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build binaries
+        working-directory: modem
+        run: |
+          python3 -m nuitka  --remove-output --assume-yes-for-downloads --follow-imports --include-data-dir=lib=lib --include-data-files=lib/codec2/*=lib/codec2/ --include-data-files=config.ini.example=config.ini --standalone server.py --output-filename=freedata-server
+
+      - name: LIST ALL FILES
+        run: ls -R
+
+      - name: Create installer
+        uses: joncloud/makensis-action@v4
+        with:
+          script-file: "freedata-server-nsis-config.nsi"
+          arguments: '/V3'
+
+      - name: LIST ALL FILES
+        run: ls -R
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 'FreeData-Server-Installer'
+          path: ./FreeData-Server-Installer.exe
+
+      - name: Upload Installer to Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          draft: true
+          files: ./FreeData-Server-Installer.exe

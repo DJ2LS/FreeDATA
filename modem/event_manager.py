@@ -90,3 +90,6 @@ class EventManager:
     def modem_failed(self):
         event = {"modem": "failed"}
         self.broadcast(event)
+
+    def freedata_message_db_change(self):
+        self.broadcast({"message-db": "changed"})

@@ -17,33 +17,32 @@ import time
 log = structlog.get_logger("explorer")
 
 class explorer():
-    def __init__(self, app, config, states):
-        self.config = config
-        self.app = app
+    def __init__(self, modem_version, config_manager, states):
+        self.modem_version = modem_version
+
+        self.config_manager = config_manager
+        self.config = self.config_manager.read()
         self.states = states
         self.explorer_url = "https://api.freedata.app/explorer.php"
         self.publish_interval = 120
 
-        self.scheduler = sched.scheduler(time.time, time.sleep)
-        self.schedule_thread = threading.Thread(target=self.run_scheduler)
-        self.schedule_thread.start()
-
-    def run_scheduler(self):
-        # Schedule the first execution of push
-        self.scheduler.enter(self.publish_interval, 1, self.push)
-        # Run the scheduler in a loop
-        self.scheduler.run()
-
     def push(self):
+        self.config = self.config_manager.read()
 
         frequency = 0 if self.states.radio_frequency is None else self.states.radio_frequency
         band = "USB"
         callsign = str(self.config['STATION']['mycall']) + "-" + str(self.config["STATION"]['myssid'])
         gridsquare = str(self.config['STATION']['mygrid'])
-        version = str(self.app.MODEM_VERSION)
+        version = str(self.modem_version)
         bandwidth = str(self.config['MODEM']['enable_low_bandwidth_mode'])
         beacon = str(self.states.is_beacon_running)
         strength = str(self.states.s_meter_strength)
+
+        # stop pushing if default callsign
+        if callsign in ['XX1XXX-6']:
+            # Reschedule the push method
+            self.scheduler.enter(self.publish_interval, 1, self.push)
+            return
 
         log.info("[EXPLORER] publish", frequency=frequency, band=band, callsign=callsign, gridsquare=gridsquare, version=version, bandwidth=bandwidth)
 
@@ -70,11 +69,3 @@ class explorer():
 
         except Exception as e:
             log.warning("[EXPLORER] connection lost")
-
-        # Reschedule the push method
-        self.scheduler.enter(self.publish_interval, 1, self.push)
-
-        def shutdown(self):
-            # If there are other cleanup tasks, include them here
-            if self.schedule_thread:
-                self.schedule_thread.join()

@@ -19,21 +19,7 @@
   "files": [
     "dist",
     "dist-electron",
-    "../modem/server.dist/",
   ],
-
-    "extraResources": [
-
-      {
-        "from": "../modem/server.dist/",
-        "to": "modem",
-        "filter": [
-          "**/*",
-          "!**/.git"
-        ]
-
-      }
-    ],
 
 
   "mac": {

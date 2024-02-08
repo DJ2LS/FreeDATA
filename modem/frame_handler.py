@@ -5,6 +5,7 @@ from queue import Queue
 import structlog
 import time, uuid
 from codec2 import FREEDV_MODE
+from message_system_db_manager import DatabaseManager
 
 TESTMODE = False
 
@@ -31,7 +32,6 @@ class FrameHandler():
     def is_frame_for_me(self):
         call_with_ssid = self.config['STATION']['mycall'] + "-" + str(self.config['STATION']['myssid'])
         ft = self.details['frame']['frame_type']
-        print(self.details)
         valid = False
         # Check for callsign checksum
         if ft in ['ARQ_SESSION_OPEN', 'ARQ_SESSION_OPEN_ACK', 'PING', 'PING_ACK']:
@@ -91,6 +91,7 @@ class FrameHandler():
     def add_to_heard_stations(self):
         frame = self.details['frame']
 
+        print(frame)
         if 'origin' not in frame:
             return
 
@@ -106,6 +107,7 @@ class FrameHandler():
         )
 
     def make_event(self):
+
         event = {
             "type": "frame-handler",
             "received": self.details['frame']['frame_type'],
@@ -116,6 +118,7 @@ class FrameHandler():
         }
         if 'origin' in self.details['frame']:
             event['dxcallsign'] = self.details['frame']['origin']
+
         return event
 
     def emit_event(self):
@@ -143,6 +146,10 @@ class FrameHandler():
         self.details['frequency_offset'] = frequency_offset
         self.details['freedv_inst'] = freedv_inst
         self.details['bytes_per_frame'] = bytes_per_frame
+
+        # look in database for a full callsign if only crc is present
+        if 'origin' not in frame and 'origin_crc' in frame:
+            self.details['frame']['origin'] = DatabaseManager(self.event_manager).get_callsign_by_checksum(frame['origin_crc'])
 
         self.log()
         self.add_to_heard_stations()

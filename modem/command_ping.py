@@ -1,5 +1,7 @@
 from command import TxCommand
 import api_validations
+from message_system_db_manager import DatabaseManager
+
 
 class PingCommand(TxCommand):
 
@@ -7,6 +9,9 @@ class PingCommand(TxCommand):
         self.dxcall = apiParams['dxcall']
         if not api_validations.validate_freedata_callsign(self.dxcall):
             self.dxcall = f"{self.dxcall}-0"
+
+        # update callsign database...
+        DatabaseManager(self.event_manager).get_or_create_station(self.dxcall)
 
         return super().set_params_from_api(apiParams)
 

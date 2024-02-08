@@ -19,7 +19,10 @@ class StateManager:
         self.channel_busy_condition_codec2 = threading.Event()
 
         self.is_modem_running = False
-        self.is_modem_busy = False
+
+        self.is_modem_busy = threading.Event()
+        self.setARQ(False)
+
         self.is_beacon_running = False
 
         # If true, any wait() call is blocking
@@ -30,13 +33,13 @@ class StateManager:
         self.dxcallsign: bytes = b"ZZ9YY-0"
         self.dxgrid: bytes = b"------"
 
-        self.heard_stations = []  # TODO remove it... heard stations list == deprecated
+        self.heard_stations = []
         self.activities_list = {}
 
         self.arq_iss_sessions = {}
         self.arq_irs_sessions = {}
 
-        self.mesh_routing_table = []
+        #self.mesh_routing_table = []
 
         self.radio_frequency = 0
         self.radio_mode = None
@@ -87,6 +90,7 @@ class StateManager:
             "channel_busy_slot": self.channel_busy_slot,
             "audio_dbfs": self.audio_dbfs,
             "activities": self.activities_list,
+            "is_modem_busy" : self.getARQ()
         }
     
     # .wait() blocks until the event is set
@@ -99,6 +103,15 @@ class StateManager:
             self.transmitting_event.clear()
         else:
             self.transmitting_event.set()
+
+    def setARQ(self, busy):
+        if busy:
+            self.is_modem_busy.clear()
+        else:
+            self.is_modem_busy.set()
+
+    def getARQ(self):
+        return not self.is_modem_busy.is_set()
 
     def waitForTransmission(self):
         self.transmitting_event.wait()

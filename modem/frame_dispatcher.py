@@ -13,6 +13,7 @@ from frame_handler import FrameHandler
 from frame_handler_ping import PingFrameHandler
 from frame_handler_cq import CQFrameHandler
 from frame_handler_arq_session import ARQFrameHandler
+from frame_handler_beacon import BeaconFrameHandler
 
 class DISPATCHER():
 
@@ -26,7 +27,7 @@ class DISPATCHER():
         FR_TYPE.ARQ_CONNECTION_OPEN.value: {"class": ARQFrameHandler, "name": "ARQ OPEN SESSION"},
         FR_TYPE.ARQ_STOP.value: {"class": ARQFrameHandler, "name": "ARQ STOP"},
         FR_TYPE.ARQ_STOP_ACK.value: {"class": ARQFrameHandler, "name": "ARQ STOP ACK"},
-        FR_TYPE.BEACON.value: {"class": FrameHandler, "name": "BEACON"},
+        FR_TYPE.BEACON.value: {"class": BeaconFrameHandler, "name": "BEACON"},
         FR_TYPE.ARQ_BURST_FRAME.value:{"class": ARQFrameHandler, "name": "BURST FRAME"},
         FR_TYPE.ARQ_BURST_ACK.value: {"class": ARQFrameHandler, "name":  "BURST ACK"},
         FR_TYPE.CQ.value: {"class": CQFrameHandler, "name":  "CQ"},

@@ -9,6 +9,10 @@ import {
   validateCallsignWithoutSSID,
 } from "../js/freedata";
 function validateCall() {
+  //ensure callsign is uppercase:
+  let call = settings.remote.STATION.mycall;
+  settings.remote.STATION.mycall = call.toUpperCase();
+
   if (validateCallsignWithoutSSID(settings.remote.STATION.mycall))
     //Send new callsign to modem if valid
     onChange();
@@ -25,6 +29,7 @@ function validateCall() {
     <input
       type="text"
       class="form-control"
+      style="text-transform: uppercase"
       placeholder="Enter your callsign and save it"
       id="myCall"
       aria-label="Station Callsign"

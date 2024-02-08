@@ -62,7 +62,8 @@ class radio:
     def send_command(self, command) -> str:
         if self.connected:
             # wait if we have another command awaiting its response...
-            self.await_response.wait()
+            # we need to set a timeout for avoiding a blocking state
+            self.await_response.wait(timeout=1)
 
             try:
                 self.await_response = threading.Event()
@@ -73,8 +74,6 @@ class radio:
             except Exception as err:
                 self.log.warning(f"[RIGCTLD] Error sending command [{command}] to rigctld: {err}")
                 self.connected = False
-
-
         return ""
 
     def set_ptt(self, state):

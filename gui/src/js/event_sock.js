@@ -19,7 +19,7 @@ function connect(endpoint, dispatcher) {
 
   // handle opening
   socket.addEventListener("open", function (event) {
-    console.log("Connected to the WebSocket server: " + endpoint);
+    //console.log("Connected to the WebSocket server: " + endpoint);
   });
 
   // handle data
@@ -30,18 +30,18 @@ function connect(endpoint, dispatcher) {
 
   // handle errors
   socket.addEventListener("error", function (event) {
-    console.error("WebSocket error:", event);
+    //console.error("WebSocket error:", event);
     connectionFailed(endpoint, event);
   });
 
   // handle closing and reconnect
   socket.addEventListener("close", function (event) {
-    console.log("WebSocket connection closed:", event.code);
+    //console.log("WebSocket connection closed:", event.code);
 
     // Reconnect handler
     if (!event.wasClean) {
       setTimeout(() => {
-        console.log("Reconnecting to websocket");
+        //console.log("Reconnecting to websocket");
         connect(endpoint, dispatcher);
       }, 1000);
     }

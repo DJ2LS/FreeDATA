@@ -32,19 +32,9 @@ jobs:
           repository: DJ2LS/FreeDATA
 
       - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
-      - name: Create modem/dist
-        working-directory: modem
-        run: |
-          mkdir -p dist
-
-      - name: Create modem/dist/modem
-        working-directory: modem
-        run: |
-          mkdir -p dist/modem
 
       - name: Install Linux dependencies
         # if: matrix.os == 'ubuntu-20.04'

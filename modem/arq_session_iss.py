@@ -53,13 +53,13 @@ class ARQSessionISS(arq_session.ARQSession):
         }
     }
 
-    def __init__(self, config: dict, modem, dxcall: str, data: bytearray, state_manager):
+    def __init__(self, config: dict, modem, dxcall: str, state_manager, data: bytearray, type_byte: bytes):
         super().__init__(config, modem, dxcall)
         self.state_manager = state_manager
         self.data = data
         self.total_length = len(data)
         self.data_crc = ''
-
+        self.type_byte = type_byte
         self.confirmed_bytes = 0
 
         self.state = ISS_State.NEW
@@ -119,10 +119,12 @@ class ARQSessionISS(arq_session.ARQSession):
 
         info_frame = self.frame_factory.build_arq_session_info(self.id, self.total_length,
                                                                helpers.get_crc_32(self.data), 
-                                                               self.snr[0])
+                                                               self.snr[0], self.type_byte)
 
         self.launch_twr(info_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(ISS_State.INFO_SENT)
+
+        return None, None
 
     def send_data(self, irs_frame):
 
@@ -137,15 +139,15 @@ class ARQSessionISS(arq_session.ARQSession):
         # check if we received an abort flag
         if irs_frame["flag"]["ABORT"]:
             self.transmission_aborted(irs_frame)
-            return
+            return None, None
 
         if irs_frame["flag"]["FINAL"]:
             if self.confirmed_bytes == self.total_length and irs_frame["flag"]["CHECKSUM"]:
                 self.transmission_ended(irs_frame)
-                return
+
             else:
                 self.transmission_failed()
-                return
+            return None, None
 
         payload_size = self.get_data_payload_size()
         burst = []
@@ -158,6 +160,7 @@ class ARQSessionISS(arq_session.ARQSession):
             burst.append(data_frame)
         self.launch_twr(burst, self.TIMEOUT_TRANSFER, self.RETRIES_CONNECT, mode='auto')
         self.set_state(ISS_State.BURST_SENT)
+        return None, None
 
     def transmission_ended(self, irs_frame):
         # final function for sucessfully ended transmissions
@@ -166,6 +169,9 @@ class ARQSessionISS(arq_session.ARQSession):
         self.log(f"All data transfered! flag_final={irs_frame['flag']['FINAL']}, flag_checksum={irs_frame['flag']['CHECKSUM']}")
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,True, self.state.name, statistics=self.calculate_session_statistics())
         self.state_manager.remove_arq_iss_session(self.id)
+        self.states.setARQ(False)
+        self.arq_data_type_handler.transmitted(self.type_byte, self.data)
+        return None, None
 
     def transmission_failed(self, irs_frame=None):
         # final function for failed transmissions
@@ -173,6 +179,11 @@ class ARQSessionISS(arq_session.ARQSession):
         self.set_state(ISS_State.FAILED)
         self.log(f"Transmission failed!")
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=self.calculate_session_statistics())
+        self.states.setARQ(False)
+
+        self.arq_data_type_handler.failed(self.type_byte, self.data)
+
+        return None, None
 
     def abort_transmission(self, irs_frame=None):
         # function for starting the abort sequence
@@ -202,4 +213,6 @@ class ARQSessionISS(arq_session.ARQSession):
         self.event_manager.send_arq_session_finished(
             True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics())
         self.state_manager.remove_arq_iss_session(self.id)
+        self.states.setARQ(False)
+        return None, None
 

@@ -34,10 +34,6 @@ onMounted(() => {
   new Modal("#modemCheck", {}).show();
 });
 
-function refreshModem() {
-  getModemState();
-}
-
 function getModemStateLocal() {
   // Returns active/inactive if modem is running for modem status label
   if (state.is_modem_running == true) return "Active";
@@ -168,7 +164,9 @@ function testHamlib() {
               <div id="modemStatusCollapse" class="accordion-collapse collapse">
                 <div class="accordion-body">
                   <div class="input-group input-group-sm mb-1">
-                    <label class="input-group-text w-25">Modem control</label>
+                    <label class="input-group-text w-50"
+                      >Manual modem restart</label
+                    >
                     <label class="input-group-text">
                       <button
                         type="button"
@@ -200,20 +198,6 @@ function testHamlib() {
                         }"
                       >
                         <i class="bi bi-stop-fill"></i>
-                      </button>
-                    </label>
-                    <label class="input-group-text">
-                      <button
-                        type="button"
-                        id="refreshModem"
-                        class="btn btn-sm btn-outline-secondary"
-                        data-bs-toggle="tooltip"
-                        data-bs-trigger="hover"
-                        data-bs-html="false"
-                        title="Refresh modem status."
-                        @click="refreshModem"
-                      >
-                        <i class="bi bi-bullseye"></i>
                       </button>
                     </label>
                   </div>
