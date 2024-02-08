@@ -137,6 +137,20 @@ export function eventDispatcher(data) {
 
       return;
 
+   switch (data["received"].state) {
+          case "PING":
+            message = `Ping request from: ${data.dxcallsign}, SNR: ${data.snr}`;
+            displayToast("success", "bi-check-circle", message, 5000);
+            return;
+
+          case "PING_ACK":
+            message = `Ping acknowledged from: ${data.dxcallsign}, SNR: ${data.snr}`;
+            displayToast("success", "bi-check-circle", message, 5000);
+            return;
+
+          }
+
+
     case "arq":
       if (data["arq-transfer-outbound"]) {
         switch (data["arq-transfer-outbound"].state) {
