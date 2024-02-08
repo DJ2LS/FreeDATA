@@ -129,6 +129,7 @@ export function eventDispatcher(data) {
       displayToast("success", "bi-ethernet", message, 5000);
       stateStore.modem_connection = "connected";
       getModemState();
+      getOverallHealth();
       getConfig();
       getAudioDevices();
       getSerialDevices();
@@ -317,4 +318,19 @@ function build_HSL() {
     }
   }
   stateStore.heard_stations.sort((a, b) => b.timestamp - a.timestamp); // b - a for reverse sort
+}
+
+export function getOverallHealth() {
+  //Return a number indicating health for icon bg color; lower the number the healthier
+  let health = 0;
+  if (stateStore.modem_connection !== "connected") {
+    health += 5;
+    stateStore.is_modem_running = false;
+    stateStore.radio_status = false;
+
+  }
+  if (!stateStore.is_modem_running) health += 3;
+  if (stateStore.radio_status === false) health += 2;
+  if (process.env.FDUpdateAvail === "1") health += 1;
+  return health;
 }

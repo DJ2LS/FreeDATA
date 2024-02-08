@@ -19,7 +19,7 @@ async function apiGet(endpoint) {
     }
     return await response.json();
   } catch (error) {
-    console.error("Error getting from REST:", error);
+    //console.error("Error getting from REST:", error);
   }
 }
 
