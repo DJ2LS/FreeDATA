@@ -6,8 +6,7 @@ setActivePinia(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { getOverallHealth } from "../js/eventHandler.js"
-
+import { getOverallHealth } from "../js/eventHandler.js";
 </script>
 <template>
   <a
