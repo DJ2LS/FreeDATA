@@ -357,7 +357,7 @@ import { serialDeviceOptions } from "../js/deviceFormHelper";
       @change="onChange"
       v-model.number="settings.remote.RADIO.serial_speed"
     >
-      <option selected value="ignore">-- ignore --</option>
+      <option selected value="0">-- ignore --</option>
       <option value="1200">1200</option>
       <option value="2400">2400</option>
       <option value="4800">4800</option>
@@ -380,7 +380,7 @@ import { serialDeviceOptions } from "../js/deviceFormHelper";
       @change="onChange"
       v-model.number="settings.remote.RADIO.data_bits"
     >
-      <option selected value="ignore">-- ignore --</option>
+      <option selected value="0">-- ignore --</option>
       <option value="7">7</option>
       <option value="8">8</option>
     </select>
@@ -395,7 +395,7 @@ import { serialDeviceOptions } from "../js/deviceFormHelper";
       @change="onChange"
       v-model.number="settings.remote.RADIO.stop_bits"
     >
-      <option selected value="ignore">-- ignore --</option>
+      <option selected value="0">-- ignore --</option>
       <option value="1">1</option>
       <option value="2">2</option>
     </select>

@@ -15,7 +15,9 @@ import hmac
 import os
 import sys
 from pathlib import Path
-
+import platform
+import subprocess
+import psutil
 
 
 log = structlog.get_logger("helpers")
@@ -701,9 +703,54 @@ def set_flag(byte, flag_name, value, flag_dict):
     position = flag_dict[flag_name]
     return set_bit(byte, position, value)
 
+
 def get_flag(byte, flag_name, flag_dict):
     """Get the value of the flag from the byte according to the flag dictionary."""
     if flag_name not in flag_dict:
         raise ValueError(f"Unknown flag name: {flag_name}")
     position = flag_dict[flag_name]
     return get_bit(byte, position)
+
+
+def find_binary_path(binary_name="rigctld"):
+    """
+    Search for a binary within the current working directory and its subdirectories,
+    adjusting the binary name for the operating system.
+
+    :param binary_name: The base name of the binary to search for, without extension.
+    :return: The full path to the binary if found, otherwise None.
+    """
+    # Adjust binary name for Windows
+    if platform.system() == 'Windows':
+        binary_name += ".exe"
+
+    root_path = os.getcwd()  # Get the current working directory
+    for dirpath, dirnames, filenames in os.walk(root_path):
+        if binary_name in filenames:
+            return os.path.join(dirpath, binary_name)
+    return None
+
+
+def kill_and_execute(binary_path, additional_args=None):
+    """
+    Kills any running instances of the binary across Linux, macOS, and Windows, then starts a new one non-blocking.
+
+    :param binary_path: The full path to the binary to execute.
+    :param additional_args: A list of additional arguments to pass to the binary.
+    :return: subprocess.Popen object of the started process
+    """
+    # Kill any existing instances of the binary
+    for proc in psutil.process_iter(attrs=['pid', 'name', 'cmdline']):
+        try:
+            cmdline = proc.info['cmdline']
+            # Ensure cmdline is iterable and not None
+            if cmdline and binary_path in ' '.join(cmdline):
+                proc.kill()
+                print(f"Killed running instance with PID: {proc.info['pid']}")
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass  # Process no longer exists or no permission to kill
+
+    # Execute the binary with additional arguments non-blocking
+    command = [binary_path] + (additional_args if additional_args else [])
+    process = subprocess.Popen(command)
+    return process

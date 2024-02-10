@@ -21,7 +21,7 @@ class RadioManager:
     def _init_rig_control(self):
         # Check how we want to control the radio
         if self.radiocontrol == "rigctld":
-            self.radio = rigctld.radio(self.state_manager, hostname=self.rigctld_ip,port=self.rigctld_port)
+            self.radio = rigctld.radio(self.config, self.state_manager, hostname=self.rigctld_ip,port=self.rigctld_port)
         elif self.radiocontrol == "tci":
             raise NotImplementedError
             # self.radio = self.tci_module
