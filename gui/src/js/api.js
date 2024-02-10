@@ -69,8 +69,11 @@ export async function getVersion() {
   let data = await apiGet("/version").then((res) => {
     return res;
   });
-  return data.version;
-  //return data["version"];
+
+  if (typeof data !== "undefined" && typeof data.version !== "undefined") {
+    return data.version;
+  }
+  return 0;
 }
 
 export async function getConfig() {

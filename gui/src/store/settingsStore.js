@@ -29,23 +29,8 @@ nconf.file({ file: configPath });
 //They should be an exact mirror (variable wise) of settingsStore.local
 //Nothing else should be needed aslong as components are using v-bind
 // +++
-nconf.defaults({
-  local: {
-    host: "127.0.0.1",
-    port: "5000",
-    spectrum: "waterfall",
-    wf_theme: 2,
-    update_channel: "alpha",
-    enable_sys_notification: false,
-    grid_layout: "[]",
-    grid_preset: "[]",
-    grid_enabled: true,
-  },
-});
 
-nconf.required(["local:host", "local:port"]);
-
-export const settingsStore = reactive({
+const defaultConfig = {
   local: {
     host: "127.0.0.1",
     port: "5000",
@@ -104,7 +89,7 @@ export const settingsStore = reactive({
     STATION: {
       enable_explorer: false,
       enable_stats: false,
-      mycall: "",
+      mycall: "DEFAULT",
       myssid: 0,
       mygrid: "",
       ssid_list: [],
@@ -114,7 +99,12 @@ export const settingsStore = reactive({
       tci_port: 0,
     },
   },
-});
+}
+
+nconf.defaults(defaultConfig.local);
+nconf.required(["local:host", "local:port"]);
+
+export const settingsStore = reactive(defaultConfig);
 
 //Save settings for GUI to config file
 settingsStore.local = nconf.get("local");
@@ -128,9 +118,16 @@ export function onChange() {
 
 export function getRemote() {
   return getConfig().then((conf) => {
-    settingsStore.remote = conf;
+    if (typeof conf !== 'undefined') {
+      settingsStore.remote = conf;
+      onChange();
+    } else {
+      console.warn('Received undefined configuration, using default!');
+      settingsStore.remote = defaultConfig.remote;
+    }
   });
 }
+
 
 watch(settingsStore.local, (oldValue, newValue) => {
   //This function watches for changes, and triggers a save of local settings
