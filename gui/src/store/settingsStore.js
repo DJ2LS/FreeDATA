@@ -99,7 +99,7 @@ const defaultConfig = {
       tci_port: 0,
     },
   },
-}
+};
 
 nconf.defaults(defaultConfig.local);
 nconf.required(["local:host", "local:port"]);
@@ -118,16 +118,15 @@ export function onChange() {
 
 export function getRemote() {
   return getConfig().then((conf) => {
-    if (typeof conf !== 'undefined') {
+    if (typeof conf !== "undefined") {
       settingsStore.remote = conf;
       onChange();
     } else {
-      console.warn('Received undefined configuration, using default!');
+      console.warn("Received undefined configuration, using default!");
       settingsStore.remote = defaultConfig.remote;
     }
   });
 }
-
 
 watch(settingsStore.local, (oldValue, newValue) => {
   //This function watches for changes, and triggers a save of local settings
