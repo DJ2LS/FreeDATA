@@ -24,7 +24,10 @@ setActivePinia(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const stateStore = useStateStore(pinia);
 
-import { settingsStore as settings } from "../store/settingsStore.js";
+import {
+  settingsStore as settings,
+  getRemote,
+} from "../store/settingsStore.js";
 
 export function connectionFailed(endpoint, event) {
   stateStore.modem_connection = "disconnected";
@@ -128,9 +131,15 @@ export function eventDispatcher(data) {
       message = "Connected to server";
       displayToast("success", "bi-ethernet", message, 5000);
       stateStore.modem_connection = "connected";
+
+      getRemote().then(() => {
+        //initConnections();
+        getModemState();
+      });
+
+      //getConfig();
       getModemState();
       getOverallHealth();
-      getConfig();
       getAudioDevices();
       getSerialDevices();
       getFreedataMessages();
