@@ -24,7 +24,6 @@ class explorer():
         self.config = self.config_manager.read()
         self.states = states
         self.explorer_url = "https://api.freedata.app/explorer.php"
-        self.publish_interval = 120
 
     def push(self):
         self.config = self.config_manager.read()
@@ -40,11 +39,10 @@ class explorer():
 
         # stop pushing if default callsign
         if callsign in ['XX1XXX-6']:
-            # Reschedule the push method
-            self.scheduler.enter(self.publish_interval, 1, self.push)
             return
 
-        log.info("[EXPLORER] publish", frequency=frequency, band=band, callsign=callsign, gridsquare=gridsquare, version=version, bandwidth=bandwidth)
+        # disabled this one
+        # log.info("[EXPLORER] publish", frequency=frequency, band=band, callsign=callsign, gridsquare=gridsquare, version=version, bandwidth=bandwidth)
 
         headers = {"Content-Type": "application/json"}
         station_data = {'callsign': callsign, 'gridsquare': gridsquare, 'frequency': frequency, 'strength': strength, 'band': band, 'version': version, 'bandwidth': bandwidth, 'beacon': beacon, "lastheard": []}
