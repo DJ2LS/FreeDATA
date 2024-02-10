@@ -712,23 +712,38 @@ def get_flag(byte, flag_name, flag_dict):
     return get_bit(byte, position)
 
 
-def find_binary_path(binary_name="rigctld"):
+def find_binary_path(binary_name="rigctld", search_system_wide=False):
     """
-    Search for a binary within the current working directory and its subdirectories,
-    adjusting the binary name for the operating system.
+    Search for a binary within the current working directory and its subdirectories.
+    Optionally, check system-wide locations and PATH environment variable if not found.
 
     :param binary_name: The base name of the binary to search for, without extension.
+    :param search_system_wide: Boolean flag to enable or disable system-wide search.
     :return: The full path to the binary if found, otherwise None.
     """
     # Adjust binary name for Windows
     if platform.system() == 'Windows':
         binary_name += ".exe"
 
-    root_path = os.getcwd()  # Get the current working directory
+    # Search in the current working directory and subdirectories
+    root_path = os.getcwd()
     for dirpath, dirnames, filenames in os.walk(root_path):
         if binary_name in filenames:
             return os.path.join(dirpath, binary_name)
-    return None
+
+    # If system-wide search is enabled, look in system locations and PATH
+    if search_system_wide:
+        system_paths = os.environ.get('PATH', '').split(os.pathsep)
+        # Optionally add common binary locations for Unix-like and Windows systems
+        if platform.system() != 'Windows':
+            system_paths.extend(['/usr/bin', '/usr/local/bin', '/bin'])
+        else:
+            system_paths.extend(['C:\\Windows\\System32', 'C:\\Windows'])
+
+        for path in system_paths:
+            potential_path = os.path.join(path, binary_name)
+            if os.path.isfile(potential_path):
+                return potential_path
 
 
 def kill_and_execute(binary_path, additional_args=None):

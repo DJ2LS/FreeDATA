@@ -49,7 +49,8 @@ class radio:
 
     def disconnect(self):
         self.connected = False
-        self.connection.close()
+        if self.connection:
+            self.connection.close()
         del self.connection
         self.connection = None
         self.states.set("radio_status", False)
@@ -208,7 +209,7 @@ class radio:
 
     def start_service(self):
         binary_name = "rigctld"
-        binary_path = helpers.find_binary_path(binary_name)
+        binary_path = helpers.find_binary_path(binary_name, search_system_wide=True)
         additional_args = self.format_rigctld_args()
         if binary_path:
             self.log.info(f"Rigctld binary found at: {binary_path}")
