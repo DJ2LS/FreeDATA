@@ -3,7 +3,7 @@ modemport = 3050
 
 [STATION]
 mycall = XX1XXX
-mygrid = JN18cv
+mygrid = AA12aa
 myssid = 6
 ssid_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 enable_explorer = True
@@ -50,8 +50,8 @@ tuning_range_fmin = -50
 enable_fsk = False
 enable_low_bandwidth_mode = False
 enable_morse_identifier = False
-respond_to_cq = False
+respond_to_cq = True
 rx_buffer_size = 64
 tx_delay = 200
-beacon_interval = 90
+beacon_interval = 300
 
