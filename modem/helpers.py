@@ -15,7 +15,9 @@ import hmac
 import os
 import sys
 from pathlib import Path
-
+import platform
+import subprocess
+import psutil
 
 
 log = structlog.get_logger("helpers")
@@ -701,9 +703,68 @@ def set_flag(byte, flag_name, value, flag_dict):
     position = flag_dict[flag_name]
     return set_bit(byte, position, value)
 
+
 def get_flag(byte, flag_name, flag_dict):
     """Get the value of the flag from the byte according to the flag dictionary."""
     if flag_name not in flag_dict:
         raise ValueError(f"Unknown flag name: {flag_name}")
     position = flag_dict[flag_name]
     return get_bit(byte, position)
+
+
+def find_binary_path(binary_name="rigctld", search_system_wide=False):
+    """
+    Search for a binary within the current working directory and its subdirectories.
+    Optionally, check system-wide locations and PATH environment variable if not found.
+
+    :param binary_name: The base name of the binary to search for, without extension.
+    :param search_system_wide: Boolean flag to enable or disable system-wide search.
+    :return: The full path to the binary if found, otherwise None.
+    """
+    # Adjust binary name for Windows
+    if platform.system() == 'Windows':
+        binary_name += ".exe"
+
+    # Search in the current working directory and subdirectories
+    root_path = os.getcwd()
+    for dirpath, dirnames, filenames in os.walk(root_path):
+        if binary_name in filenames:
+            return os.path.join(dirpath, binary_name)
+
+    # If system-wide search is enabled, look in system locations and PATH
+    if search_system_wide:
+        system_paths = os.environ.get('PATH', '').split(os.pathsep)
+        # Optionally add common binary locations for Unix-like and Windows systems
+        if platform.system() != 'Windows':
+            system_paths.extend(['/usr/bin', '/usr/local/bin', '/bin'])
+        else:
+            system_paths.extend(['C:\\Windows\\System32', 'C:\\Windows'])
+
+        for path in system_paths:
+            potential_path = os.path.join(path, binary_name)
+            if os.path.isfile(potential_path):
+                return potential_path
+
+
+def kill_and_execute(binary_path, additional_args=None):
+    """
+    Kills any running instances of the binary across Linux, macOS, and Windows, then starts a new one non-blocking.
+
+    :param binary_path: The full path to the binary to execute.
+    :param additional_args: A list of additional arguments to pass to the binary.
+    :return: subprocess.Popen object of the started process
+    """
+    # Kill any existing instances of the binary
+    for proc in psutil.process_iter(attrs=['pid', 'name', 'cmdline']):
+        try:
+            cmdline = proc.info['cmdline']
+            # Ensure cmdline is iterable and not None
+            if cmdline and binary_path in ' '.join(cmdline):
+                proc.kill()
+                print(f"Killed running instance with PID: {proc.info['pid']}")
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass  # Process no longer exists or no permission to kill
+
+    # Execute the binary with additional arguments non-blocking
+    command = [binary_path] + (additional_args if additional_args else [])
+    return subprocess.Popen(command)

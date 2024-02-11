@@ -18,7 +18,8 @@ import settings_tci from "./settings_tci.vue";
       <option selected value="disabled">
         Disabled / VOX (no rig control - use with VOX)
       </option>
-      <option selected value="rigctld">Rigctld (Hamlib)</option>
+      <option selected value="rigctld">Rigctld (external Hamlib)</option>
+      <option selected value="rigctld_bundle">Rigctld (internal Hamlib)</option>
       <option selected value="tci">TCI</option>
     </select>
   </div>

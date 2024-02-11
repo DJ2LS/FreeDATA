@@ -101,7 +101,7 @@ const defaultConfig = {
   },
 };
 
-nconf.defaults(defaultConfig.local);
+nconf.defaults(defaultConfig);
 nconf.required(["local:host", "local:port"]);
 
 export const settingsStore = reactive(defaultConfig);
