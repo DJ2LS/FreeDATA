@@ -21,7 +21,7 @@ ip = 127.0.0.1
 port = 4532
 path = 
 command = 
-arguments = --cenas
+arguments = 
 
 [RADIO]
 control = disabled
