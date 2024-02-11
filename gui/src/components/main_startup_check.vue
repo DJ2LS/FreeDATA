@@ -51,6 +51,7 @@ function getRigControlStuff() {
     case "disabled":
       return true;
     case "rigctld":
+    case "rigctld_bundle":
     case "tci":
       return state.radio_status;
     default:
