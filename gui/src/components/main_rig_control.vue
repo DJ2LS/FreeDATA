@@ -10,23 +10,6 @@ import { settingsStore as settings} from "../store/settingsStore.js";
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-function startStopRigctld() {
-  switch (state.rigctld_started) {
-    case "stopped":
-
-      settings.remote.RADIO.serial_port = (<HTMLInputElement>document.getElementById("hamlib_deviceport")).value;
-
-      //startRigctld();
-
-      break;
-    case "running":
-      //stopRigctld();
-      // dirty hack for calling this command twice, otherwise modem won't stop rigctld from time to time
-      //stopRigctld();
-      break;
-    default:
-  }
-}
 
 function selectRadioControl() {
 // @ts-expect-error
@@ -37,6 +20,10 @@ function selectRadioControl() {
     case "list-rig-control-rigctld-list":
       settings.remote.RADIO.control = "rigctld";
       break;
+    case "list-rig-control-rigctld-list":
+      settings.remote.RADIO.control = "rigctld_bundle";
+      break;
+
     case "list-rig-control-tci-list":
       settings.remote.RADIO.control = "tci";
       break;
@@ -151,23 +138,7 @@ alert("not yet implemented")
 
             <div class="input-group input-group-sm mb-1">
               <span class="input-group-text">Rigctld service</span>
-              <button
-                class="btn btn-outline-success"
-                type="button"
-                id="hamlib_rigctld_start"
-                @click="startStopRigctld"
-              >
-                Start
-              </button>
-              <button
-                class="btn btn-outline-danger"
-                type="button"
-                id="hamlib_rigctld_stop"
-                @click="startStopRigctld"
 
-              >
-                Stop
-              </button>
               <input
                 type="text"
                 class="form-control"

@@ -31,7 +31,8 @@ class radio:
         }
 
         # start rigctld...
-        self.start_service()
+        if self.config["RADIO"]["radiocontrol"] in ["rigctld_bundle"]:
+            self.start_service()
 
         # connect to radio
         self.connect()

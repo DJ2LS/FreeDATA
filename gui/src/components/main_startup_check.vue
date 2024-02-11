@@ -285,13 +285,14 @@ function testHamlib() {
                       <option selected value="disabled">
                         Disabled (no rig control; use with VOX)
                       </option>
-                      <option selected value="rigctld">Rigctld (Hamlib)</option>
+                      <option selected value="rigctld">Rigctld (external Hamlib)</option>
+                      <option selected value="rigctld_bundle">Rigctld (internal Hamlib)</option>
                       <option selected value="tci">TCI</option>
                     </select>
                   </div>
                   <div
                     :class="
-                      settings.remote.RADIO.control == 'rigctld' ? '' : 'd-none'
+                      settings.remote.RADIO.control == 'rigctld_bundle' ? '' : 'd-none'
                     "
                   >
                     <!-- Shown when rigctld is selected-->
