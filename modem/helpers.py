@@ -767,5 +767,4 @@ def kill_and_execute(binary_path, additional_args=None):
 
     # Execute the binary with additional arguments non-blocking
     command = [binary_path] + (additional_args if additional_args else [])
-    process = subprocess.Popen(command)
-    return process
+    return subprocess.Popen(command)

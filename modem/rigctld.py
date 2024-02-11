@@ -224,7 +224,7 @@ class radio:
 
         # Helper function to check if the value should be ignored
         def should_ignore(value):
-            return value == 'ignore' or value == 0
+            return value in ['ignore', 0]
 
         # Model ID, Serial Port, and Speed
         if not should_ignore(config.get('model_id', "0")):
