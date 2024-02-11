@@ -6,19 +6,19 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "monthly"
     target-branch: "develop"
     
   # Maintain dependencies for npm
   - package-ecosystem: "npm"
     directory: "/gui"
     schedule:
-      interval: "daily"
+      interval: "monthly"
     target-branch: "develop"
 
   # Maintain dependencies for pip
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "monthly"
     target-branch: "develop"
