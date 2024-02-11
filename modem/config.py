@@ -157,7 +157,7 @@ class CONFIG:
         """
         read config file
         """
-        self.log.info("[CFG] reading...")
+        #self.log.info("[CFG] reading...")
         if not self.config_exists():
             return False
         

@@ -9,6 +9,7 @@ import pinia from "../store/index";
 setActivePinia(pinia);
 
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
+import { sendModemCQ } from "../js/api.js";
 
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
@@ -50,6 +51,7 @@ function getRigControlStuff() {
     case "disabled":
       return true;
     case "rigctld":
+    case "rigctld_bundle":
     case "tci":
       return state.radio_status;
     default:
@@ -61,7 +63,7 @@ function getRigControlStuff() {
 }
 
 function testHamlib() {
-  alert("Not yet implemented.");
+  sendModemCQ();
 }
 </script>
 
@@ -284,68 +286,23 @@ function testHamlib() {
                       <option selected value="disabled">
                         Disabled (no rig control; use with VOX)
                       </option>
-                      <option selected value="rigctld">Rigctld (Hamlib)</option>
+                      <option selected value="rigctld">
+                        Rigctld (external Hamlib)
+                      </option>
+                      <option selected value="rigctld_bundle">
+                        Rigctld (internal Hamlib)
+                      </option>
                       <option selected value="tci">TCI</option>
                     </select>
                   </div>
                   <div
                     :class="
-                      settings.remote.RADIO.control == 'rigctld' ? '' : 'd-none'
+                      settings.remote.RADIO.control == 'rigctld_bundle'
+                        ? ''
+                        : 'd-none'
                     "
                   >
                     <!-- Shown when rigctld is selected-->
-
-                    <div class="input-group input-group-sm mb-1">
-                      <label class="input-group-text w-25"
-                        >Rigctld control</label
-                      >
-                      <label class="input-group-text">
-                        <button
-                          type="button"
-                          class="btn btn-sm btn-outline-success"
-                          data-bs-toggle="tooltip"
-                          data-bs-trigger="hover"
-                          data-bs-html="false"
-                          title="Start rigctld"
-                          v-bind:class="{
-                            disabled: state.rigctld_started == 'true',
-                          }"
-                        >
-                          <i class="bi bi-play-fill"></i>
-                        </button> </label
-                      ><label class="input-group-text">
-                        <button
-                          type="button"
-                          class="btn btn-sm btn-outline-danger"
-                          data-bs-toggle="tooltip"
-                          data-bs-trigger="hover"
-                          data-bs-html="false"
-                          title="Stop rigctld"
-                          v-bind:class="{
-                            disabled:
-                              state.rigctld_started == 'false' ||
-                              state.rigctld_started === undefined,
-                          }"
-                        >
-                          <i class="bi bi-stop-fill"></i>
-                        </button>
-                      </label>
-                      <label class="input-group-text">
-                        <button
-                          type="button"
-                          id="testHamlib"
-                          class="btn btn-sm btn-outline-secondary"
-                          data-bs-placement="bottom"
-                          data-bs-toggle="tooltip"
-                          data-bs-trigger="hover"
-                          data-bs-html="true"
-                          @click="testHamlib"
-                          title="Test your hamlib settings and toggle PTT once. Button will become <strong class='text-success'>green</strong> on success and <strong class='text-danger'>red</strong> if fails."
-                        >
-                          PTT test
-                        </button>
-                      </label>
-                    </div>
 
                     <div class="input-group input-group-sm mb-1">
                       <span class="input-group-text" style="width: 180px"
@@ -367,6 +324,26 @@ function testHamlib() {
                           {{ option.description }}
                         </option>
                       </select>
+                    </div>
+
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="input-group-text w-25">Rigctld Test</label>
+
+                      <label class="input-group-text">
+                        <button
+                          type="button"
+                          id="testHamlib"
+                          class="btn btn-sm btn-outline-secondary"
+                          data-bs-placement="bottom"
+                          data-bs-toggle="tooltip"
+                          data-bs-trigger="hover"
+                          data-bs-html="true"
+                          @click="testHamlib"
+                          title="Test your hamlib settings and toggle PTT once. Button will become <strong class='text-success'>green</strong> on success and <strong class='text-danger'>red</strong> if fails."
+                        >
+                          Send a CQ
+                        </button>
+                      </label>
                     </div>
                   </div>
                   <div

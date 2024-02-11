@@ -1,6 +1,6 @@
 import socket
 import structlog
-import time
+import helpers
 import threading
 
 class radio:
@@ -8,11 +8,12 @@ class radio:
 
     log = structlog.get_logger("radio (rigctld)")
 
-    def __init__(self, states, hostname="localhost", port=4532, timeout=5):
+    def __init__(self, config, states, hostname="localhost", port=4532, timeout=5):
         self.hostname = hostname
         self.port = port
         self.timeout = timeout
         self.states = states
+        self.config = config
 
         self.connection = None
         self.connected = False
@@ -28,6 +29,10 @@ class radio:
             'rf': '---',
             'ptt': False  # Initial PTT state is set to False
         }
+
+        # start rigctld...
+        if self.config["RADIO"]["radiocontrol"] in ["rigctld_bundle"]:
+            self.start_service()
 
         # connect to radio
         self.connect()
@@ -45,7 +50,8 @@ class radio:
 
     def disconnect(self):
         self.connected = False
-        self.connection.close()
+        if self.connection:
+            self.connection.close()
         del self.connection
         self.connection = None
         self.states.set("radio_status", False)
@@ -201,3 +207,49 @@ class radio:
 
         """Return the latest fetched parameters."""
         return self.parameters
+
+    def start_service(self):
+        binary_name = "rigctld"
+        binary_path = helpers.find_binary_path(binary_name, search_system_wide=True)
+        additional_args = self.format_rigctld_args()
+        if binary_path:
+            self.log.info(f"Rigctld binary found at: {binary_path}")
+            helpers.kill_and_execute(binary_path, additional_args)
+            self.log.info(f"Executed rigctld...")
+        else:
+            self.log.warning("Rigctld binary not found.")
+
+    def format_rigctld_args(self):
+        config = self.config['RADIO']  # Accessing the 'RADIO' section of the INI file
+        args = []
+
+        # Helper function to check if the value should be ignored
+        def should_ignore(value):
+            return value in ['ignore', 0]
+
+        # Model ID, Serial Port, and Speed
+        if not should_ignore(config.get('model_id', "0")):
+            args += ['-m', str(config['model_id'])]
+        if not should_ignore(config.get('serial_port', "0")):
+            args += ['-r', config['serial_port']]
+        if not should_ignore(config.get('serial_speed', "0")):
+            args += ['-s', str(config['serial_speed'])]
+
+        # PTT Port and Type
+        if not should_ignore(config.get('ptt_port', "0")):
+            args += ['--ptt-port', config['ptt_port']]
+        if not should_ignore(config.get('ptt_type', "0")):
+            args += ['--ptt-type', config['ptt_type']]
+
+        # Serial DCD and DTR
+        if not should_ignore(config.get('serial_dcd', "0")):
+            args += ['--set-dcd', config['serial_dcd']]
+        if not should_ignore(config.get('serial_dtr', "0")):
+            args += ['--set-dtr', config['serial_dtr']]
+
+        # Handling Stop Bits with the corrected --set-conf syntax
+        if not should_ignore(config.get('stop_bits', "0")):
+            args += ['--set-conf', f'stop_bits={config["stop_bits"]}']
+
+        return args
+
