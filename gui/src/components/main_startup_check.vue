@@ -63,7 +63,7 @@ function getRigControlStuff() {
 }
 
 function testHamlib() {
-  sendḾodemCQ();
+  sendModemCQ();
 }
 </script>
 
