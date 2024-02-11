@@ -221,6 +221,7 @@ class radio:
 
     def format_rigctld_args(self):
         config = self.config['RADIO']  # Accessing the 'RADIO' section of the INI file
+        config_rigctld = self.config['RIGCTLD'] # Accessing the 'RIGCTLD' section of the INI file for custom args
         args = []
 
         # Helper function to check if the value should be ignored
@@ -251,5 +252,10 @@ class radio:
         if not should_ignore(config.get('stop_bits', "0")):
             args += ['--set-conf', f'stop_bits={config["stop_bits"]}']
 
+        # Handle custom arguments for rigctld
+        # Custom args are split via ' ' so python doesn't add extranaeous quotes on windows
+        args += config_rigctld["arguments"].split(" ")
+        #print("Hamlib args ==>" + str(args))
+        
         return args
 
