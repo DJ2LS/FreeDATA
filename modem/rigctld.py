@@ -246,11 +246,15 @@ class radio:
         if not should_ignore(config.get('serial_dcd', "0")):
             args += ['--set-dcd', config['serial_dcd']]
         if not should_ignore(config.get('serial_dtr', "0")):
-            args += ['--set-dtr', config['serial_dtr']]
+            args += ['--set-conf', f'dtr_state={config["serial_dtr"]}']
 
-        # Handling Stop Bits with the corrected --set-conf syntax
+        # Handling Data Bits and Stop Bits
+        if not should_ignore(config.get('data_bits', "0")):
+            args += ['--set-conf', f'data_bits={config["data_bits"]}']
         if not should_ignore(config.get('stop_bits', "0")):
             args += ['--set-conf', f'stop_bits={config["stop_bits"]}']
+
+        # Fixme        #rts_state
 
         # Handle custom arguments for rigctld
         # Custom args are split via ' ' so python doesn't add extranaeous quotes on windows
