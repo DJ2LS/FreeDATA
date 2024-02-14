@@ -229,29 +229,29 @@ class radio:
             return value in ['ignore', 0]
 
         # Model ID, Serial Port, and Speed
-        if not should_ignore(config.get('model_id', "0")):
+        if not should_ignore(config.get('model_id')):
             args += ['-m', str(config['model_id'])]
-        if not should_ignore(config.get('serial_port', "0")):
+        if not should_ignore(config.get('serial_port')):
             args += ['-r', config['serial_port']]
-        if not should_ignore(config.get('serial_speed', "0")):
+        if not should_ignore(config.get('serial_speed')):
             args += ['-s', str(config['serial_speed'])]
 
         # PTT Port and Type
-        if not should_ignore(config.get('ptt_port', "0")):
+        if not should_ignore(config.get('ptt_port')):
             args += ['--ptt-port', config['ptt_port']]
-        if not should_ignore(config.get('ptt_type', "0")):
+        if not should_ignore(config.get('ptt_type')):
             args += ['--ptt-type', config['ptt_type']]
 
         # Serial DCD and DTR
-        if not should_ignore(config.get('serial_dcd', "0")):
+        if not should_ignore(config.get('serial_dcd')):
             args += ['--set-dcd', config['serial_dcd']]
-        if not should_ignore(config.get('serial_dtr', "0")):
+        if not should_ignore(config.get('serial_dtr')):
             args += ['--set-conf', f'dtr_state={config["serial_dtr"]}']
 
         # Handling Data Bits and Stop Bits
-        if not should_ignore(config.get('data_bits', "0")):
+        if not should_ignore(config.get('data_bits')):
             args += ['--set-conf', f'data_bits={config["data_bits"]}']
-        if not should_ignore(config.get('stop_bits', "0")):
+        if not should_ignore(config.get('stop_bits')):
             args += ['--set-conf', f'stop_bits={config["stop_bits"]}']
 
         # Fixme        #rts_state
