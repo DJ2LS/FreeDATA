@@ -70,7 +70,7 @@ class ScheduleManager:
                 cmd.run(self.event_manager, self.modem)
 
     def delete_beacons(self):
-        DatabaseManagerBeacon(self.event_manager).beacon_cleanup_older_than_days(14)
+        DatabaseManagerBeacon(self.event_manager).beacon_cleanup_older_than_days(2)
 
     def push_to_explorer(self):
         self.config = self.config_manager.read()
