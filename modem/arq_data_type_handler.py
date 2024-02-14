@@ -54,6 +54,9 @@ class ARQDataTypeHandler:
 
     def dispatch(self, type_byte: int, data: bytearray):
         session_type = self.get_session_type_from_value(type_byte)
+
+        self.state_manager.setARQ(False)
+
         if session_type and session_type in self.handlers and 'handle' in self.handlers[session_type]:
             return self.handlers[session_type]['handle'](data)
         else:
@@ -61,6 +64,9 @@ class ARQDataTypeHandler:
 
     def failed(self, type_byte: int, data: bytearray):
         session_type = self.get_session_type_from_value(type_byte)
+
+        self.state_manager.setARQ(False)
+
         if session_type in self.handlers and 'failed' in self.handlers[session_type]:
             return self.handlers[session_type]['failed'](data)
         else:
@@ -74,6 +80,9 @@ class ARQDataTypeHandler:
 
     def transmitted(self, type_byte: int, data: bytearray):
         session_type = self.get_session_type_from_value(type_byte)
+
+        self.state_manager.setARQ(False)
+
         if session_type in self.handlers and 'transmitted' in self.handlers[session_type]:
             return self.handlers[session_type]['transmitted'](data)
         else:
