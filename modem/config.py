@@ -56,7 +56,6 @@ class CONFIG:
             'enable_protocol': bool,
         },
         'MODEM': {
-            'enable_fft': bool,
             'tuning_range_fmax': int,
             'tuning_range_fmin': int,
             'enable_fsk': bool,
@@ -73,7 +72,7 @@ class CONFIG:
     def __init__(self, configfile: str):
 
         # set up logger
-        self.log = structlog.get_logger("CONFIG")
+        self.log = structlog.get_logger(type(self).__name__)
 
         # init configparser
         self.parser = configparser.ConfigParser(inline_comment_prefixes="#", allow_no_value=True)
@@ -88,6 +87,9 @@ class CONFIG:
         # check if config file exists
         self.config_exists()
 
+        # validate config structure
+        self.validate_config()
+
     def config_exists(self):
         """
         check if config file exists
@@ -99,13 +101,60 @@ class CONFIG:
             return False
 
     # Validates config data
-    def validate(self, data):
+    def validate_data(self, data):
         for section in data:
             for setting in data[section]:
                 if not isinstance(data[section][setting], self.config_types[section][setting]):
                     message = (f"{section}.{setting} must be {self.config_types[section][setting]}."
                                f" '{data[section][setting]}' {type(data[section][setting])} given.")
                     raise ValueError(message)
+
+    def validate_config(self):
+        """
+        Updates the configuration file to match exactly what is defined in self.config_types.
+        It removes sections and settings not defined there and adds missing sections and settings.
+        """
+        existing_sections = self.parser.sections()
+
+        # Remove sections and settings not defined in self.config_types
+        for section in existing_sections:
+            if section not in self.config_types:
+                self.parser.remove_section(section)
+                self.log.info(f"[CFG] Removing undefined section: {section}")
+                continue
+            existing_settings = self.parser.options(section)
+            for setting in existing_settings:
+                if setting not in self.config_types[section]:
+                    self.parser.remove_option(section, setting)
+                    self.log.info(f"[CFG] Removing undefined setting: {section}.{setting}")
+
+        # Add missing sections and settings from self.config_types
+        for section, settings in self.config_types.items():
+            if section not in existing_sections:
+                self.parser.add_section(section)
+                self.log.info(f"[CFG] Adding missing section: {section}")
+            for setting, value_type in settings.items():
+                if not self.parser.has_option(section, setting):
+                    default_value = self.get_default_value_for_type(value_type)
+                    self.parser.set(section, setting, str(default_value))
+                    self.log.info(f"[CFG] Adding missing setting: {section}.{setting}")
+
+        self.write_to_file()
+
+    def get_default_value_for_type(self, value_type):
+        """
+        Returns a default value for the given type.
+        """
+        if value_type == list:
+            return '[]'  # Empty list in JSON format
+        elif value_type == bool:
+            return 'False'
+        elif value_type == int:
+            return '0'
+        elif value_type == str:
+            return ''
+        else:
+            return None  # You might want to handle more types or throw an error
 
     # Handle special setting data type conversion
     # is_writing means data from a dict being writen to the config file
@@ -132,7 +181,7 @@ class CONFIG:
     # Sets and writes config data from a dict containing data settings
     def write(self, data):
         # Validate config data before writing
-        self.validate(data)
+        self.validate_data(data)
 
         for section in data:
             # init section if it doesn't exist yet
@@ -143,7 +192,10 @@ class CONFIG:
                 new_value = self.handle_setting(
                     section, setting, data[section][setting], True)
                 self.parser[section][setting] = str(new_value)
-        
+
+        self.write_to_file()
+
+    def write_to_file(self):
         # Write config data to file
         try:
             with open(self.config_name, 'w') as configfile:
