@@ -244,7 +244,7 @@ class radio:
 
         # Serial DCD and DTR
         if not should_ignore(config.get('serial_dcd')):
-            args += ['--dcd-type', config.get('serial_dcd')]
+            args += ['--dcd-type', config['serial_dcd']]
 
         if not should_ignore(config.get('serial_dtr')):
             args += ['--set-conf', f'dtr_state={config["serial_dtr"]}']
