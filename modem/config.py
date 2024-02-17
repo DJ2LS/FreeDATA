@@ -69,6 +69,13 @@ class CONFIG:
         },
     }
 
+    default_values = {
+        list: '[]',
+        bool: 'False',
+        int: '0',
+        str: '',
+    }
+
     def __init__(self, configfile: str):
 
         # set up logger
@@ -135,26 +142,14 @@ class CONFIG:
                 self.log.info(f"[CFG] Adding missing section: {section}")
             for setting, value_type in settings.items():
                 if not self.parser.has_option(section, setting):
-                    default_value = self.get_default_value_for_type(value_type)
+                    default_value = self.default_values.get(value_type, None)
+
                     self.parser.set(section, setting, str(default_value))
                     self.log.info(f"[CFG] Adding missing setting: {section}.{setting}")
 
         self.write_to_file()
 
-    def get_default_value_for_type(self, value_type):
-        """
-        Returns a default value for the given type.
-        """
-        if value_type == list:
-            return '[]'  # Empty list in JSON format
-        elif value_type == bool:
-            return 'False'
-        elif value_type == int:
-            return '0'
-        elif value_type == str:
-            return ''
-        else:
-            return None  # You might want to handle more types or throw an error
+
 
     # Handle special setting data type conversion
     # is_writing means data from a dict being writen to the config file
