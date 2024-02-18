@@ -93,7 +93,6 @@ def index():
 @app.route('/config', methods=['GET', 'POST'])
 def config():
     if request.method in ['POST']:
-        print(request.json)
         set_config = app.config_manager.write(request.json)
         if not set_config:
             response = api_response(None, 'error writing config')
