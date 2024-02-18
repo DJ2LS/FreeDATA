@@ -55,3 +55,6 @@ rx_buffer_size = 64
 tx_delay = 200
 beacon_interval = 300
 
+[MESSAGES]
+enable_auto_repeat = False
+

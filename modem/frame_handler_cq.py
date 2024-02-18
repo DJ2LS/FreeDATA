@@ -19,5 +19,5 @@ class CQFrameHandler(frame_handler_ping.PingFrameHandler):
         self.transmit(qrv_frame)
 
         if self.config["MESSAGES"]["enable_auto_repeat"]:
-            # set message to queued if beacon received
+            # set message to queued if CQ received
             DatabaseManagerMessages(self.event_manager).set_message_to_queued_for_callsign(self.details['frame']["origin"])
