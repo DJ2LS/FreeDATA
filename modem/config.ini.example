@@ -1,5 +1,5 @@
 [NETWORK]
-modemport = 3050
+modemport = 5000
 
 [STATION]
 mycall = AA1AAA
