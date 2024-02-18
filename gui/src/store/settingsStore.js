@@ -54,7 +54,6 @@ const defaultConfig = {
       enable_protocol: false,
     },
     MODEM: {
-      enable_fft: false,
       enable_fsk: false,
       enable_low_bandwidth_mode: false,
       respond_to_cq: false,
