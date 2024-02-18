@@ -94,10 +94,10 @@ def index():
 def config():
     if request.method in ['POST']:
         set_config = app.config_manager.write(request.json)
-        app.modem_service.put("restart")
         if not set_config:
             response = api_response(None, 'error writing config')
         else:
+            app.modem_service.put("restart")
             response = api_response(set_config)
         return response
     elif request.method == 'GET':
