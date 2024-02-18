@@ -178,7 +178,6 @@ class CONFIG:
 
     # Sets and writes config data from a dict containing data settings
     def write(self, data):
-        print(data)
         # Validate config data before writing
         self.validate_data(data)
 

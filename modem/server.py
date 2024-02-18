@@ -93,6 +93,7 @@ def index():
 @app.route('/config', methods=['GET', 'POST'])
 def config():
     if request.method in ['POST']:
+        print(request.json)
         set_config = app.config_manager.write(request.json)
         app.modem_service.put("restart")
         if not set_config:
