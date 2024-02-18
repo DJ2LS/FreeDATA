@@ -130,11 +130,11 @@ class TestARQSession(unittest.TestCase):
 
     def testARQSessionSmallPayload(self):
         # set Packet Error Rate (PER) / frame loss probability
-        self.loss_probability = 0
+        self.loss_probability = 30
 
         self.establishChannels()
         params = {
-            'dxcall': "XX1XXX-1",
+            'dxcall': "AA1AAA-1",
             'data': base64.b64encode(bytes("Hello world!", encoding="utf-8")),
             'type': "raw_lzma"
         }
@@ -149,7 +149,7 @@ class TestARQSession(unittest.TestCase):
 
         self.establishChannels()
         params = {
-            'dxcall': "XX1XXX-1",
+            'dxcall': "AA1AAA-1",
             'data': base64.b64encode(np.random.bytes(1000)),
             'type': "raw_lzma"
         }
@@ -165,7 +165,7 @@ class TestARQSession(unittest.TestCase):
 
         self.establishChannels()
         params = {
-            'dxcall': "XX1XXX-1",
+            'dxcall': "AA1AAA-1",
             'data': base64.b64encode(np.random.bytes(100)),
         }
         cmd = ARQRawCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)
@@ -184,7 +184,7 @@ class TestARQSession(unittest.TestCase):
 
         self.establishChannels()
         params = {
-            'dxcall': "XX1XXX-1",
+            'dxcall': "AA1AAA-1",
             'data': base64.b64encode(np.random.bytes(100)),
         }
         cmd = ARQRawCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)
@@ -200,7 +200,7 @@ class TestARQSession(unittest.TestCase):
     def testSessionCleanupISS(self):
 
         params = {
-            'dxcall': "XX1XXX-1",
+            'dxcall': "AA1AAA-1",
             'data': base64.b64encode(np.random.bytes(100)),
         }
         cmd = ARQRawCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)
