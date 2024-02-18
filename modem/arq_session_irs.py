@@ -96,9 +96,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.log(f"Waiting {timeout} seconds...")
         if not self.event_frame_received.wait(timeout):
             self.log("Timeout waiting for ISS. Session failed.")
-            self.session_ended = time.time()
-            self.set_state(IRS_State.FAILED)
-            self.event_manager.send_arq_session_finished(False, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics())
+            self.transmission_failed()
 
     def launch_transmit_and_wait(self, frame, timeout, mode):
         thread_wait = threading.Thread(target = self.transmit_and_wait, 
@@ -208,11 +206,7 @@ class ARQSessionIRS(arq_session.ARQSession):
                                                          flag_checksum=False)
             self.transmit_frame(ack, mode=FREEDV_MODE.signalling)
             self.log("CRC fail at the end of transmission!")
-            self.session_ended = time.time()
-            self.set_state(IRS_State.FAILED)
-            self.event_manager.send_arq_session_finished(
-                False, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics())
-            return False, False
+            self.transmission_failed()
 
     def calibrate_speed_settings(self):
         self.speed_level = 0 # for now stay at lowest speed level
@@ -236,4 +230,13 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.set_state(IRS_State.ABORTED)
         self.event_manager.send_arq_session_finished(
                 False, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics())
+        return None, None
+
+    def transmission_failed(self, irs_frame=None):
+        # final function for failed transmissions
+        self.session_ended = time.time()
+        self.set_state(IRS_State.FAILED)
+        self.log(f"Transmission failed!")
+        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=self.calculate_session_statistics())
+        self.states.setARQ(False)
         return None, None
