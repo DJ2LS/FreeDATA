@@ -31,7 +31,6 @@ class CONFIG:
             'control': str,
             'serial_port': str,
             'model_id': int,
-            'serial_port': str,
             'serial_speed': int,
             'data_bits': int,
             'stop_bits': int,
