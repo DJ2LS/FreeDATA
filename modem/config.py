@@ -67,6 +67,9 @@ class CONFIG:
             'tx_delay': int,
             'beacon_interval': int,
         },
+        'MESSAGES': {
+            'enable_auto_repeat': bool,
+        }
     }
 
     default_values = {
@@ -175,6 +178,7 @@ class CONFIG:
 
     # Sets and writes config data from a dict containing data settings
     def write(self, data):
+        print(data)
         # Validate config data before writing
         self.validate_data(data)
 

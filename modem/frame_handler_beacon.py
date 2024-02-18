@@ -17,5 +17,6 @@ class BeaconFrameHandler(frame_handler.FrameHandler):
                                                              self.details['frame']["gridsquare"]
                                                              )
 
-        # set message to queued if beacon received
-        DatabaseManagerMessages(self.event_manager).set_message_to_queued_for_callsign(self.details['frame']["origin"])
+        if self.config["MESSAGES"]["enable_auto_repeat"]:
+            # set message to queued if beacon received
+            DatabaseManagerMessages(self.event_manager).set_message_to_queued_for_callsign(self.details['frame']["origin"])
