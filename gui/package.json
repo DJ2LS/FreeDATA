@@ -2,7 +2,7 @@
   "name": "FreeDATA",
   "description": "FreeDATA Client application for connecting to FreeDATA server",
   "private": true,
-  "version": "0.13.4-alpha",
+  "version": "0.13.6-alpha",
   "main": "dist-electron/main/index.js",
   "scripts": {
     "start": "vite",

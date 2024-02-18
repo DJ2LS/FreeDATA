@@ -244,7 +244,8 @@ class radio:
 
         # Serial DCD and DTR
         if not should_ignore(config.get('serial_dcd')):
-            args += ['--set-dcd', config['serial_dcd']]
+            args += ['--dcd-type', config['serial_dcd']]
+
         if not should_ignore(config.get('serial_dtr')):
             args += ['--set-conf', f'dtr_state={config["serial_dtr"]}']
 
@@ -255,6 +256,8 @@ class radio:
             args += ['--set-conf', f'stop_bits={config["stop_bits"]}']
 
         # Fixme        #rts_state
+        # if not should_ignore(config.get('rts_state')):
+        #    args += ['--set-conf', f'stop_bits={config["rts_state"]}']
 
         # Handle custom arguments for rigctld
         # Custom args are split via ' ' so python doesn't add extranaeous quotes on windows
