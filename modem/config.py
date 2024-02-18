@@ -66,6 +66,9 @@ class CONFIG:
             'tx_delay': int,
             'beacon_interval': int,
         },
+        'MESSAGES': {
+            'enable_auto_repeat': bool,
+        }
     }
 
     default_values = {

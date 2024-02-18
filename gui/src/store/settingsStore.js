@@ -97,6 +97,9 @@ const defaultConfig = {
       tci_ip: "127.0.0.1",
       tci_port: 0,
     },
+    MESSAGES: {
+      enable_auto_repeat: false,
+    },
   },
 };
 
