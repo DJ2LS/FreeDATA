@@ -150,9 +150,7 @@ class CONFIG:
                     self.parser.set(section, setting, str(default_value))
                     self.log.info(f"[CFG] Adding missing setting: {section}.{setting}")
 
-        self.write_to_file()
-
-
+        return self.write_to_file()
 
     # Handle special setting data type conversion
     # is_writing means data from a dict being writen to the config file
@@ -180,7 +178,6 @@ class CONFIG:
     def write(self, data):
         # Validate config data before writing
         self.validate_data(data)
-
         for section in data:
             # init section if it doesn't exist yet
             if not section.upper() in self.parser.keys():
@@ -189,9 +186,11 @@ class CONFIG:
             for setting in data[section]:
                 new_value = self.handle_setting(
                     section, setting, data[section][setting], True)
-                self.parser[section][setting] = str(new_value)
-
-        self.write_to_file()
+                try:
+                    self.parser[section][setting] = str(new_value)
+                except Exception as e:
+                    self.log.error("[CFG] error setting config key", e=e)
+        return self.write_to_file()
 
     def write_to_file(self):
         # Write config data to file
