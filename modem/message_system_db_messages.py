@@ -171,21 +171,27 @@ class DatabaseManagerMessages(DatabaseManager):
         finally:
             session.remove()
 
-    def increment_message_attempts(self, message_id):
-        session = self.get_thread_scoped_session()
+    def increment_message_attempts(self, message_id, session=None):
+        own_session = False
+        if not session:
+            session = self.get_thread_scoped_session()
+            own_session = True
         try:
             message = session.query(P2PMessage).filter_by(id=message_id).first()
             if message:
                 message.attempt += 1
-                session.commit()
+                if own_session:
+                    session.commit()
                 self.log(f"Incremented attempt count for message {message_id}")
             else:
                 self.log(f"Message with ID {message_id} not found")
         except Exception as e:
-            session.rollback()
+            if own_session:
+                session.rollback()
             self.log(f"An error occurred while incrementing attempts for message {message_id}: {e}")
         finally:
-            session.remove()
+            if own_session:
+                session.remove()
 
     def mark_message_as_read(self, message_id):
         session = self.get_thread_scoped_session()
@@ -227,7 +233,7 @@ class DatabaseManagerMessages(DatabaseManager):
                 # Update each message's status to 'queued'
                 for message in messages:
                     # Increment attempt count using the existing function
-                    self.increment_message_attempts(message.id)
+                    self.increment_message_attempts(message.id, session)
 
                     message.status_id = queued_status.id
                     self.log(f"Set message {message.id} to queued and incremented attempt")
