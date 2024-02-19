@@ -202,3 +202,43 @@ class DatabaseManagerMessages(DatabaseManager):
             self.log(f"An error occurred while marking message {message_id} as read: {e}")
         finally:
             session.remove()
+
+    def set_message_to_queued_for_callsign(self, callsign):
+        session = self.get_thread_scoped_session()
+        try:
+            # Find the 'failed' status object
+            failed_status = session.query(Status).filter_by(name='failed').first()
+            # Find the 'queued' status object
+            queued_status = session.query(Status).filter_by(name='queued').first()
+
+            # Ensure both statuses are found
+            if not failed_status or not queued_status:
+                self.log("Failed or queued status not found", isWarning=True)
+                return
+
+            # Query for messages with the specified callsign, 'failed' status, and fewer than 10 attempts
+            messages = session.query(P2PMessage) \
+                .filter(P2PMessage.origin_callsign == callsign) \
+                .filter(P2PMessage.status_id == failed_status.id) \
+                .filter(P2PMessage.attempt < 10) \
+                .all()
+
+            if messages:
+                # Update each message's status to 'queued'
+                for message in messages:
+                    # Increment attempt count using the existing function
+                    self.increment_message_attempts(message.id)
+
+                    message.status_id = queued_status.id
+                    self.log(f"Set message {message.id} to queued and incremented attempt")
+
+                session.commit()
+                return {'status': 'success', 'message': f'{len(messages)} message(s) set to queued'}
+            else:
+                return {'status': 'failure', 'message': 'No eligible messages found'}
+        except Exception as e:
+            session.rollback()
+            self.log(f"An error occurred while setting messages to queued: {e}", isWarning=True)
+            return {'status': 'failure', 'message': str(e)}
+        finally:
+            session.remove()
