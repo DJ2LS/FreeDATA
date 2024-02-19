@@ -218,7 +218,7 @@ class DatabaseManagerMessages(DatabaseManager):
 
             # Query for messages with the specified callsign, 'failed' status, and fewer than 10 attempts
             messages = session.query(P2PMessage) \
-                .filter(P2PMessage.origin_callsign == callsign) \
+                .filter(P2PMessage.destination_callsign == callsign) \
                 .filter(P2PMessage.status_id == failed_status.id) \
                 .filter(P2PMessage.attempt < 10) \
                 .all()
