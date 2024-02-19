@@ -18,6 +18,7 @@ from pathlib import Path
 import platform
 import subprocess
 import psutil
+import glob
 
 
 log = structlog.get_logger("helpers")
@@ -738,8 +739,9 @@ def find_binary_path(binary_name="rigctld", search_system_wide=False):
         if platform.system() != 'Windows':
             system_paths.extend(['/usr/bin', '/usr/local/bin', '/bin'])
         else:
-            system_paths.extend(['C:\\Windows\\System32', 'C:\\Windows'])
-
+           system_paths.extend(glob.glob("C:\\Program Files\\Hamlib*\\bin"))
+           system_paths.extend(glob.glob("C:\\Program Files (x86)\\Hamlib*\\bin"))
+            
         for path in system_paths:
             potential_path = os.path.join(path, binary_name)
             if os.path.isfile(potential_path):

@@ -1,10 +1,10 @@
 [NETWORK]
-modemport = 3050
+modemport = 5000
 
 [STATION]
-mycall = XX1XXX
+mycall = AA1AAA
 mygrid = AA12aa
-myssid = 6
+myssid = 1
 ssid_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 enable_explorer = True
 enable_stats = True
@@ -21,7 +21,7 @@ ip = 127.0.0.1
 port = 4532
 path = 
 command = 
-arguments = --cenas
+arguments = 
 
 [RADIO]
 control = disabled
@@ -54,4 +54,7 @@ respond_to_cq = True
 rx_buffer_size = 64
 tx_delay = 200
 beacon_interval = 300
+
+[MESSAGES]
+enable_auto_repeat = False
 
