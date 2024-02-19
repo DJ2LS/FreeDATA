@@ -182,7 +182,6 @@ class ARQSessionISS(arq_session.ARQSession):
         self.states.setARQ(False)
 
         self.arq_data_type_handler.failed(self.type_byte, self.data)
-
         return None, None
 
     def abort_transmission(self, irs_frame=None):

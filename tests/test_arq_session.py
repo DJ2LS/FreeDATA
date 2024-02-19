@@ -103,7 +103,7 @@ class TestARQSession(unittest.TestCase):
 
     def waitForSession(self, q, outbound = False):
             key = 'arq-transfer-outbound' if outbound else 'arq-transfer-inbound'
-            while True:
+            while True and self.channels_running:
                 ev = q.get()
                 if key in ev and ('success' in ev[key] or 'ABORTED' in ev[key]):
                     self.logger.info(f"[{threading.current_thread().name}] {key} session ended.")
@@ -125,6 +125,7 @@ class TestARQSession(unittest.TestCase):
 
     def waitAndCloseChannels(self):
         self.waitForSession(self.iss_event_queue, True)
+        self.channels_running = False
         self.waitForSession(self.irs_event_queue, False)
         self.channels_running = False
 
