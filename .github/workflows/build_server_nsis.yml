@@ -22,14 +22,6 @@ jobs:
       - uses: robinraju/release-downloader@v1.9
         with:
           repository: "Hamlib/Hamlib"
-          fileName: " hamlib-w32-*.zip"
-          latest: true
-          extract: true
-          out-file-path: "modem/lib/hamlib/"
-
-      - uses: robinraju/release-downloader@v1.9
-        with:
-          repository: "Hamlib/Hamlib"
           fileName: " hamlib-w64-*.zip"
           latest: true
           extract: true
