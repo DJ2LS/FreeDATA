@@ -140,7 +140,7 @@ class TestMessageProtocol(unittest.TestCase):
 
         self.establishChannels()
         params = {
-            'destination': "XX1XXX-1",
+            'destination': "AA1AAA-1",
             'body': 'Hello World',
         }
 
