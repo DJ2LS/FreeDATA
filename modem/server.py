@@ -94,10 +94,10 @@ def index():
 def config():
     if request.method in ['POST']:
         set_config = app.config_manager.write(request.json)
-        app.modem_service.put("restart")
         if not set_config:
             response = api_response(None, 'error writing config')
         else:
+            app.modem_service.put("restart")
             response = api_response(set_config)
         return response
     elif request.method == 'GET':
@@ -222,10 +222,11 @@ def post_modem_send_raw_stop():
     if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
 
-    for id in app.state_manager.arq_irs_sessions:
-        app.state_manager.arq_irs_sessions[id].abort_transmission()
-    for id in app.state_manager.arq_iss_sessions:
-        app.state_manager.arq_iss_sessions[id].abort_transmission()
+    if app.state_manager.getARQ():
+        for id in app.state_manager.arq_irs_sessions:
+            app.state_manager.arq_irs_sessions[id].abort_transmission()
+        for id in app.state_manager.arq_iss_sessions:
+            app.state_manager.arq_iss_sessions[id].abort_transmission()
 
     return api_response(request.json)
 

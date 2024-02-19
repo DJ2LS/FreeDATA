@@ -54,7 +54,6 @@ const defaultConfig = {
       enable_protocol: false,
     },
     MODEM: {
-      enable_fft: false,
       enable_fsk: false,
       enable_low_bandwidth_mode: false,
       respond_to_cq: false,
@@ -97,6 +96,9 @@ const defaultConfig = {
     TCI: {
       tci_ip: "127.0.0.1",
       tci_port: 0,
+    },
+    MESSAGES: {
+      enable_auto_repeat: false,
     },
   },
 };
