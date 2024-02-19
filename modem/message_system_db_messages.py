@@ -223,23 +223,21 @@ class DatabaseManagerMessages(DatabaseManager):
                 return
 
             # Query for messages with the specified callsign, 'failed' status, and fewer than 10 attempts
-            messages = session.query(P2PMessage) \
+            message = session.query(P2PMessage) \
                 .filter(P2PMessage.destination_callsign == callsign) \
                 .filter(P2PMessage.status_id == failed_status.id) \
                 .filter(P2PMessage.attempt < 10) \
-                .all()
+                .first()
 
-            if messages:
-                # Update each message's status to 'queued'
-                for message in messages:
-                    # Increment attempt count using the existing function
-                    self.increment_message_attempts(message.id, session)
+            if message:
+                # Increment attempt count using the existing function
+                self.increment_message_attempts(message.id, session)
 
-                    message.status_id = queued_status.id
-                    self.log(f"Set message {message.id} to queued and incremented attempt")
+                message.status_id = queued_status.id
+                self.log(f"Set message {message.id} to queued and incremented attempt")
 
                 session.commit()
-                return {'status': 'success', 'message': f'{len(messages)} message(s) set to queued'}
+                return {'status': 'success', 'message': f'{len(message)} message(s) set to queued'}
             else:
                 return {'status': 'failure', 'message': 'No eligible messages found'}
         except Exception as e:
