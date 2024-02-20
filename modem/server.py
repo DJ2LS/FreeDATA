@@ -233,9 +233,12 @@ def post_modem_send_raw_stop():
 @app.route('/radio', methods=['GET', 'POST'])
 def get_post_radio():
     if request.method in ['POST']:
-        app.radio_manager.set_frequency(request.json['radio_frequency'])
-        app.radio_manager.set_mode(request.json['radio_mode'])
-        app.radio_manager.set_rf_level(int(request.json['radio_rf_level']))
+        if "radio_frequency" in [request.json]:
+            app.radio_manager.set_frequency(request.json['radio_frequency'])
+        if "radio_mode" in [request.json]:
+            app.radio_manager.set_mode(request.json['radio_mode'])
+        if "radio_rf_level" in [request.json]:
+            app.radio_manager.set_rf_level(int(request.json['radio_rf_level']))
 
         return api_response(request.json)
     elif request.method == 'GET':
