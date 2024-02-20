@@ -14,6 +14,7 @@ import {
   getAudioDevices,
   getSerialDevices,
   getModemState,
+  getRadioStatus,
 } from "./api";
 import { processFreedataMessages } from "./messagesHandler.ts";
 
@@ -99,6 +100,7 @@ export function eventDispatcher(data) {
       getAudioDevices();
       getSerialDevices();
       getFreedataMessages();
+      getRadioStatus();
       return;
 
     case "stopped":
@@ -112,6 +114,7 @@ export function eventDispatcher(data) {
       getAudioDevices();
       getSerialDevices();
       getFreedataMessages();
+      getRadioStatus();
       return;
 
     case "failed":
@@ -144,6 +147,7 @@ export function eventDispatcher(data) {
       getSerialDevices();
       getFreedataMessages();
       processFreedataMessages();
+      getRadioStatus();
 
       return;
 
