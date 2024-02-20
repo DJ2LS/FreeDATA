@@ -63,6 +63,7 @@ function set_radio_parameter_rflevel(){
                 disabled: state.hamlib_status === 'disconnected',
               }"
             >
+              <option selected value="">---</option>
               <option value="USB">USB</option>
               <option value="USB-D">USB-D</option>
               <option value="PKTUSB">PKT-U</option>

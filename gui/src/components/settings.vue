@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import settings_updater from "./settings_updater.vue";
 import settings_station from "./settings_station.vue";
 import settings_gui from "./settings_gui.vue";
 import settings_chat from "./settings_chat.vue";
@@ -22,6 +23,20 @@ import settings_exp from "./settings_exp.vue";
             <li class="nav-item" role="presentation">
               <button
                 class="nav-link active"
+                id="updater-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#updater"
+                type="button"
+                role="tab"
+                aria-controls="home"
+                aria-selected="true"
+              >
+                Updater
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
                 id="station-tab"
                 data-bs-toggle="tab"
                 data-bs-target="#station"
@@ -126,10 +141,23 @@ import settings_exp from "./settings_exp.vue";
         >
           <!-- SETTINGS Nav Tab panes -->
 
-          <!-- Station tab contents-->
+          <!-- Updater tab contents-->
           <div class="tab-content">
             <div
               class="tab-pane active"
+              id="updater"
+              role="tabpanel"
+              aria-labelledby="updater-tab"
+              tabindex="0"
+            >
+              <settings_updater />
+            </div>
+         </div>
+
+          <!-- Station tab contents-->
+          <div class="tab-content">
+            <div
+              class="tab-pane"
               id="station"
               role="tabpanel"
               aria-labelledby="station-tab"
