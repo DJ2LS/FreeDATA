@@ -123,7 +123,7 @@ const beaconHistogramData = computed(() => ({
       <div class="col-9 border-start vh-100 p-0">
         <div class="d-flex flex-column vh-100">
           <!-- Top Navbar -->
-          <nav class="navbar sticky-top bg-body-tertiary shadow">
+          <nav class="navbar sticky-top z-0 bg-body-tertiary shadow">
             <div class="input-group mb-0 p-0 w-25">
               <button type="button" class="btn btn-outline-secondary" disabled>
                 Beacons
