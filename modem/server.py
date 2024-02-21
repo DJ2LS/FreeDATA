@@ -72,11 +72,14 @@ def validate(req, param, validator, isRequired = True):
 
 # Takes a transmit command and puts it in the transmit command queue
 def enqueue_tx_command(cmd_class, params = {}):
-    command = cmd_class(app.config_manager.read(), app.state_manager, app.event_manager,  params)
-    app.logger.info(f"Command {command.get_name()} running...")
-    if command.run(app.modem_events, app.service_manager.modem): # TODO remove the app.modem_event custom queue
-        return True
-    return False
+    try:
+        command = cmd_class(app.config_manager.read(), app.state_manager, app.event_manager,  params)
+        app.logger.info(f"Command {command.get_name()} running...")
+        if command.run(app.modem_events, app.service_manager.modem): # TODO remove the app.modem_event custom queue
+            return True
+    except Exception as e:
+        app.logger.warning(f"Command {command.get_name()} failed...: {e}")
+        return False
 
 ## REST API
 @app.route('/', methods=['GET'])
@@ -248,11 +251,12 @@ def get_post_radio():
 def get_post_freedata_message():
     if request.method in ['GET']:
         result = DatabaseManagerMessages(app.event_manager).get_all_messages_json()
-        return api_response(result, 200)
-    if enqueue_tx_command(command_message_send.SendMessageCommand, request.json):
-        return api_response(request.json, 200)
-    else:
-        api_abort('Error executing command...', 500)
+        return api_response(result)
+    if request.method in ['POST']:
+        enqueue_tx_command(command_message_send.SendMessageCommand, request.json)
+        return api_response(request.json)
+
+    api_abort('Error executing command...', 500)
 
 @app.route('/freedata/messages/<string:message_id>', methods=['GET', 'POST', 'PATCH', 'DELETE'])
 def handle_freedata_message(message_id):

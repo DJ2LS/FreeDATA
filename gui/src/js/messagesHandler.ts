@@ -82,7 +82,6 @@ function createSortedMessagesList(data: {
 }
 
 export function newMessage(dxcall, body, attachments) {
-  console.log(attachments);
   sendFreedataMessage(dxcall, body, attachments);
 }
 
