@@ -16,6 +16,7 @@ import {
   getModemState,
 } from "./api";
 import { processFreedataMessages } from "./messagesHandler.ts";
+import { processRadioStatus } from "./radioHandler.ts";
 
 // ----------------- init pinia stores -------------
 import { setActivePinia } from "pinia";
@@ -99,6 +100,7 @@ export function eventDispatcher(data) {
       getAudioDevices();
       getSerialDevices();
       getFreedataMessages();
+      processRadioStatus();
       return;
 
     case "stopped":
@@ -112,6 +114,7 @@ export function eventDispatcher(data) {
       getAudioDevices();
       getSerialDevices();
       getFreedataMessages();
+      processRadioStatus();
       return;
 
     case "failed":
@@ -144,6 +147,7 @@ export function eventDispatcher(data) {
       getSerialDevices();
       getFreedataMessages();
       processFreedataMessages();
+      processRadioStatus();
 
       return;
 

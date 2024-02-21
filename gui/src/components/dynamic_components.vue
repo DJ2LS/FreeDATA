@@ -8,7 +8,7 @@ import "../../node_modules/gridstack/dist/gridstack.min.css";
 import { GridStack } from "gridstack";
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
-import { setRadioParameters } from "../js/api";
+import { setRadioParametersFrequency, setRadioParametersMode, setRadioParametersRFLevel } from "../js/api";
 import { saveLocalSettingsToConfig, settingsStore } from "../store/settingsStore";
 
 import active_heard_stations from "./grid/grid_active_heard_stations.vue";
@@ -251,14 +251,22 @@ new gridWidget(
   //New new widget ID should be 20
 ];
 
+
 function updateFrequencyAndApply(frequency) {
   state.new_frequency = frequency;
-  set_radio_parameters();
+  set_radio_parameter_frequency();
 }
 
-function set_radio_parameters(){
-    setRadioParameters(state.new_frequency, state.mode, state.rf_level);
+function set_radio_parameter_frequency(){
+    setRadioParametersFrequency(state.new_frequency)
+}
 
+function set_radio_parameter_mode(){
+    setRadioParametersMode(state.mode)
+}
+
+function set_radio_parameter_rflevel(){
+    setRadioParametersRFLevel(state.rf_level)
 }
 
 
@@ -358,19 +366,21 @@ onMounted(() => {
     setGridEditState();
 });
 function onChange(event, changeItems) {
-  // update item position
-  changeItems.forEach((item) => {
-    var widget = items.value.find((w) => w.id == item.id);
-    if (!widget) {
-      console.error("Widget not found: " + item.id);
-      return;
+  if (typeof changeItems !== "undefined"){
+      // update item position
+      changeItems.forEach((item) => {
+        var widget = items.value.find((w) => w.id == item.id);
+        if (!widget) {
+          console.error("Widget not found: " + item.id);
+          return;
+        }
+        widget.x = item.x;
+        widget.y = item.y;
+        widget.w = item.w;
+        widget.h = item.h;
+      });
+      saveGridLayout();
     }
-    widget.x = item.x;
-    widget.y = item.y;
-    widget.w = item.w;
-    widget.h = item.h;
-  });
-  saveGridLayout();
 }
 function restoreGridLayoutFromConfig(){
     //Try to load grid from saved config

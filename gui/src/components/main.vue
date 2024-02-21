@@ -28,8 +28,7 @@ import { getFreedataMessages } from "../js/api";
   <div
     aria-live="polite"
     aria-atomic="true"
-    class="position-relative"
-    style="z-index: 500"
+    class="position-relative z-3"
   >
     <div
       class="toast-container position-absolute top-0 end-0 p-3"

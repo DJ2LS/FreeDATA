@@ -142,11 +142,19 @@ export async function getModemState() {
   return await apiGet("/modem/state");
 }
 
-export async function setRadioParameters(frequency, mode, rf_level) {
+export async function setRadioParametersFrequency(frequency) {
   return await apiPost("/radio", {
     radio_frequency: frequency,
-    radio_mode: mode,
-    radio_rf_level: rf_level,
+  });
+}
+export async function setRadioParametersMode(mode) {
+  return await apiPost("/radio", {
+    radio_mode: mode
+  });
+}
+export async function setRadioParametersRFLevel(rf_level) {
+  return await apiPost("/radio", {
+    radio_rf_level: rf_level
   });
 }
 export async function getRadioStatus() {

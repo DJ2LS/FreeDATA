@@ -203,7 +203,7 @@ class radio:
 
             self.parameters['alc'] = self.send_command('l ALC')
             self.parameters['strength'] = self.send_command('l STRENGTH')
-            self.parameters['rf'] = self.send_command('l RFPOWER') # RF, RFPOWER
+            self.parameters['rf'] = int(float(self.send_command('l RFPOWER')) * 100) # RF, RFPOWER
 
         """Return the latest fetched parameters."""
         return self.parameters
