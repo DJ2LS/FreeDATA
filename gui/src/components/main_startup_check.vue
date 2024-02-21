@@ -2,7 +2,7 @@
 import { Modal } from "bootstrap";
 import { onMounted } from "vue";
 
-import infoScreen_updater from "./infoScreen_updater.vue";
+import settings_updater_core from "./settings_updater_core.vue";
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -427,7 +427,7 @@ function testHamlib() {
                     Modem version | {{ state.modem_version }}
                   </button>
                   <div :class="updateAvailable === '1' ? '' : 'd-none'">
-                    <infoScreen_updater />
+                    <settings_updater_core />
                   </div>
                 </div>
               </div>
