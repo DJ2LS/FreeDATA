@@ -2,6 +2,9 @@ import frame_handler_ping
 import helpers
 import data_frame_factory
 import frame_handler
+from message_system_db_messages import DatabaseManagerMessages
+
+
 class CQFrameHandler(frame_handler_ping.PingFrameHandler):
 
     def should_respond(self):
@@ -14,3 +17,7 @@ class CQFrameHandler(frame_handler_ping.PingFrameHandler):
             self.details['snr']
         )
         self.transmit(qrv_frame)
+
+        if self.config["MESSAGES"]["enable_auto_repeat"]:
+            # set message to queued if CQ received
+            DatabaseManagerMessages(self.event_manager).set_message_to_queued_for_callsign(self.details['frame']["origin"])

@@ -51,7 +51,7 @@ class TestProtocols(unittest.TestCase):
 
     def testPingWithAck(self):
         # Run ping command
-        api_params = { "dxcall": "XX1XXX-6"}
+        api_params = { "dxcall": "AA1AAA-1"}
         ping_cmd = PingCommand(self.config, self.state_manager, self.event_manager, api_params)
         #ping_cmd.run(self.event_queue, self.modem)
         frame = ping_cmd.test(self.event_queue)

@@ -1,15 +1,26 @@
 <script setup lang="ts">
 import { setActivePinia } from "pinia";
 import pinia from "../../store/index";
-import { setRadioParameters } from "../../js/api";
+import { setRadioParametersFrequency, setRadioParametersMode, setRadioParametersRFLevel } from "../../js/api";
 setActivePinia(pinia);
 
 import { useStateStore } from "../../store/stateStore.js";
 const state = useStateStore(pinia);
 
-function set_radio_parameters() {
-  setRadioParameters(state.frequency, state.mode, state.rf_level);
+function set_radio_parameter_frequency(){
+    setRadioParametersFrequency(state.new_frequency)
 }
+
+function set_radio_parameter_mode(){
+    setRadioParametersMode(state.mode)
+}
+
+function set_radio_parameter_rflevel(){
+    setRadioParametersRFLevel(state.rf_level)
+}
+
+
+
 </script>
 
 <template>
@@ -47,18 +58,15 @@ function set_radio_parameters() {
             <select
               class="form-control"
               v-model="state.mode"
-              @click="set_radio_parameters()"
+              @click="set_radio_parameter_mode()"
               v-bind:class="{
                 disabled: state.hamlib_status === 'disconnected',
               }"
             >
+              <option selected value="">---</option>
               <option value="USB">USB</option>
-              <option value="LSB">LSB</option>
+              <option value="USB-D">USB-D</option>
               <option value="PKTUSB">PKT-U</option>
-              <option value="PKTLSB">PKT-L</option>
-              <option value="AM">AM</option>
-              <option value="FM">FM</option>
-              <option value="PKTFM">PKTFM</option>
             </select>
           </div>
         </div>
@@ -69,7 +77,7 @@ function set_radio_parameters() {
             <select
               class="form-control"
               v-model="state.rf_level"
-              @click="set_radio_parameters()"
+              @click="set_radio_parameter_rflevel()"
               v-bind:class="{
                 disabled: state.hamlib_status === 'disconnected',
               }"

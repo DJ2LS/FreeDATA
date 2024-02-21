@@ -29,7 +29,7 @@ app = Flask(__name__)
 CORS(app)
 CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
-MODEM_VERSION = "0.13.5-alpha"
+MODEM_VERSION = "0.13.6-alpha"
 
 # set config file to use
 def set_config():
@@ -72,11 +72,14 @@ def validate(req, param, validator, isRequired = True):
 
 # Takes a transmit command and puts it in the transmit command queue
 def enqueue_tx_command(cmd_class, params = {}):
-    command = cmd_class(app.config_manager.read(), app.state_manager, app.event_manager,  params)
-    app.logger.info(f"Command {command.get_name()} running...")
-    if command.run(app.modem_events, app.service_manager.modem): # TODO remove the app.modem_event custom queue
-        return True
-    return False
+    try:
+        command = cmd_class(app.config_manager.read(), app.state_manager, app.event_manager,  params)
+        app.logger.info(f"Command {command.get_name()} running...")
+        if command.run(app.modem_events, app.service_manager.modem): # TODO remove the app.modem_event custom queue
+            return True
+    except Exception as e:
+        app.logger.warning(f"Command {command.get_name()} failed...: {e}")
+        return False
 
 ## REST API
 @app.route('/', methods=['GET'])
@@ -94,10 +97,10 @@ def index():
 def config():
     if request.method in ['POST']:
         set_config = app.config_manager.write(request.json)
-        app.modem_service.put("restart")
         if not set_config:
             response = api_response(None, 'error writing config')
         else:
+            app.modem_service.put("restart")
             response = api_response(set_config)
         return response
     elif request.method == 'GET':
@@ -222,19 +225,23 @@ def post_modem_send_raw_stop():
     if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
 
-    for id in app.state_manager.arq_irs_sessions:
-        app.state_manager.arq_irs_sessions[id].abort_transmission()
-    for id in app.state_manager.arq_iss_sessions:
-        app.state_manager.arq_iss_sessions[id].abort_transmission()
+    if app.state_manager.getARQ():
+        for id in app.state_manager.arq_irs_sessions:
+            app.state_manager.arq_irs_sessions[id].abort_transmission()
+        for id in app.state_manager.arq_iss_sessions:
+            app.state_manager.arq_iss_sessions[id].abort_transmission()
 
     return api_response(request.json)
 
 @app.route('/radio', methods=['GET', 'POST'])
 def get_post_radio():
     if request.method in ['POST']:
-        app.radio_manager.set_frequency(request.json['radio_frequency'])
-        app.radio_manager.set_mode(request.json['radio_mode'])
-        app.radio_manager.set_rf_level(int(request.json['radio_rf_level']))
+        if "radio_frequency" in request.json:
+            app.radio_manager.set_frequency(request.json['radio_frequency'])
+        if "radio_mode" in request.json:
+            app.radio_manager.set_mode(request.json['radio_mode'])
+        if "radio_rf_level" in request.json:
+            app.radio_manager.set_rf_level(int(request.json['radio_rf_level']))
 
         return api_response(request.json)
     elif request.method == 'GET':
@@ -244,11 +251,12 @@ def get_post_radio():
 def get_post_freedata_message():
     if request.method in ['GET']:
         result = DatabaseManagerMessages(app.event_manager).get_all_messages_json()
-        return api_response(result, 200)
-    if enqueue_tx_command(command_message_send.SendMessageCommand, request.json):
-        return api_response(request.json, 200)
-    else:
-        api_abort('Error executing command...', 500)
+        return api_response(result)
+    if request.method in ['POST']:
+        enqueue_tx_command(command_message_send.SendMessageCommand, request.json)
+        return api_response(request.json)
+
+    api_abort('Error executing command...', 500)
 
 @app.route('/freedata/messages/<string:message_id>', methods=['GET', 'POST', 'PATCH', 'DELETE'])
 def handle_freedata_message(message_id):

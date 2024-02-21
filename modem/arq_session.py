@@ -98,7 +98,6 @@ class ARQSession():
                 if isinstance(received_data, bytearray) and isinstance(type_byte, int):
                     self.arq_data_type_handler.dispatch(type_byte, received_data)
 
-                self.states.setARQ(False)
                 return
         
         self.log(f"Ignoring unknown transition from state {self.state.name} with frame {frame['frame_type']}")

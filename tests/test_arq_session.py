@@ -103,7 +103,7 @@ class TestARQSession(unittest.TestCase):
 
     def waitForSession(self, q, outbound = False):
             key = 'arq-transfer-outbound' if outbound else 'arq-transfer-inbound'
-            while True:
+            while True and self.channels_running:
                 ev = q.get()
                 if key in ev and ('success' in ev[key] or 'ABORTED' in ev[key]):
                     self.logger.info(f"[{threading.current_thread().name}] {key} session ended.")
@@ -125,16 +125,17 @@ class TestARQSession(unittest.TestCase):
 
     def waitAndCloseChannels(self):
         self.waitForSession(self.iss_event_queue, True)
+        self.channels_running = False
         self.waitForSession(self.irs_event_queue, False)
         self.channels_running = False
 
     def testARQSessionSmallPayload(self):
         # set Packet Error Rate (PER) / frame loss probability
-        self.loss_probability = 0
+        self.loss_probability = 30
 
         self.establishChannels()
         params = {
-            'dxcall': "XX1XXX-1",
+            'dxcall': "AA1AAA-1",
             'data': base64.b64encode(bytes("Hello world!", encoding="utf-8")),
             'type': "raw_lzma"
         }
@@ -149,7 +150,7 @@ class TestARQSession(unittest.TestCase):
 
         self.establishChannels()
         params = {
-            'dxcall': "XX1XXX-1",
+            'dxcall': "AA1AAA-1",
             'data': base64.b64encode(np.random.bytes(1000)),
             'type': "raw_lzma"
         }
@@ -165,7 +166,7 @@ class TestARQSession(unittest.TestCase):
 
         self.establishChannels()
         params = {
-            'dxcall': "XX1XXX-1",
+            'dxcall': "AA1AAA-1",
             'data': base64.b64encode(np.random.bytes(100)),
         }
         cmd = ARQRawCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)
@@ -184,7 +185,7 @@ class TestARQSession(unittest.TestCase):
 
         self.establishChannels()
         params = {
-            'dxcall': "XX1XXX-1",
+            'dxcall': "AA1AAA-1",
             'data': base64.b64encode(np.random.bytes(100)),
         }
         cmd = ARQRawCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)
@@ -200,7 +201,7 @@ class TestARQSession(unittest.TestCase):
     def testSessionCleanupISS(self):
 
         params = {
-            'dxcall': "XX1XXX-1",
+            'dxcall': "AA1AAA-1",
             'data': base64.b64encode(np.random.bytes(100)),
         }
         cmd = ARQRawCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)

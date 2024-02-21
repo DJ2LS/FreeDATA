@@ -171,21 +171,27 @@ class DatabaseManagerMessages(DatabaseManager):
         finally:
             session.remove()
 
-    def increment_message_attempts(self, message_id):
-        session = self.get_thread_scoped_session()
+    def increment_message_attempts(self, message_id, session=None):
+        own_session = False
+        if not session:
+            session = self.get_thread_scoped_session()
+            own_session = True
         try:
             message = session.query(P2PMessage).filter_by(id=message_id).first()
             if message:
                 message.attempt += 1
-                session.commit()
+                if own_session:
+                    session.commit()
                 self.log(f"Incremented attempt count for message {message_id}")
             else:
                 self.log(f"Message with ID {message_id} not found")
         except Exception as e:
-            session.rollback()
+            if own_session:
+                session.rollback()
             self.log(f"An error occurred while incrementing attempts for message {message_id}: {e}")
         finally:
-            session.remove()
+            if own_session:
+                session.remove()
 
     def mark_message_as_read(self, message_id):
         session = self.get_thread_scoped_session()
@@ -200,5 +206,43 @@ class DatabaseManagerMessages(DatabaseManager):
         except Exception as e:
             session.rollback()
             self.log(f"An error occurred while marking message {message_id} as read: {e}")
+        finally:
+            session.remove()
+
+    def set_message_to_queued_for_callsign(self, callsign):
+        session = self.get_thread_scoped_session()
+        try:
+            # Find the 'failed' status object
+            failed_status = session.query(Status).filter_by(name='failed').first()
+            # Find the 'queued' status object
+            queued_status = session.query(Status).filter_by(name='queued').first()
+
+            # Ensure both statuses are found
+            if not failed_status or not queued_status:
+                self.log("Failed or queued status not found", isWarning=True)
+                return
+
+            # Query for messages with the specified callsign, 'failed' status, and fewer than 10 attempts
+            message = session.query(P2PMessage) \
+                .filter(P2PMessage.destination_callsign == callsign) \
+                .filter(P2PMessage.status_id == failed_status.id) \
+                .filter(P2PMessage.attempt < 10) \
+                .first()
+
+            if message:
+                # Increment attempt count using the existing function
+                self.increment_message_attempts(message.id, session)
+
+                message.status_id = queued_status.id
+                self.log(f"Set message {message.id} to queued and incremented attempt")
+
+                session.commit()
+                return {'status': 'success', 'message': f'{len(message)} message(s) set to queued'}
+            else:
+                return {'status': 'failure', 'message': 'No eligible messages found'}
+        except Exception as e:
+            session.rollback()
+            self.log(f"An error occurred while setting messages to queued: {e}", isWarning=True)
+            return {'status': 'failure', 'message': str(e)}
         finally:
             session.remove()
