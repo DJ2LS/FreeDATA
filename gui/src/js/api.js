@@ -149,12 +149,12 @@ export async function setRadioParametersFrequency(frequency) {
 }
 export async function setRadioParametersMode(mode) {
   return await apiPost("/radio", {
-    radio_mode: mode
+    radio_mode: mode,
   });
 }
 export async function setRadioParametersRFLevel(rf_level) {
   return await apiPost("/radio", {
-    radio_rf_level: rf_level
+    radio_rf_level: rf_level,
   });
 }
 export async function getRadioStatus() {
