@@ -6,25 +6,28 @@ setActivePinia(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { setRadioParametersFrequency, setRadioParametersMode, setRadioParametersRFLevel } from "../js/api";
+import {
+  setRadioParametersFrequency,
+  setRadioParametersMode,
+  setRadioParametersRFLevel,
+} from "../js/api";
 
 function updateFrequencyAndApply(frequency) {
   state.new_frequency = frequency;
   set_radio_parameter_frequency();
 }
 
-function set_radio_parameter_frequency(){
-    setRadioParametersFrequency(state.new_frequency)
+function set_radio_parameter_frequency() {
+  setRadioParametersFrequency(state.new_frequency);
 }
 
-function set_radio_parameter_mode(){
-    setRadioParametersMode(state.mode)
+function set_radio_parameter_mode() {
+  setRadioParametersMode(state.mode);
 }
 
-function set_radio_parameter_rflevel(){
-    setRadioParametersRFLevel(state.rf_level)
+function set_radio_parameter_rflevel() {
+  setRadioParametersRFLevel(state.rf_level);
 }
-
 </script>
 
 <template>
@@ -221,9 +224,9 @@ function set_radio_parameter_rflevel(){
                   disabled: state.hamlib_status === 'disconnected',
                 }"
               >
-              <option value="USB">USB</option>
-              <option value="USB-D">USB-D</option>
-              <option value="PKTUSB">PKT-U</option>
+                <option value="USB">USB</option>
+                <option value="USB-D">USB-D</option>
+                <option value="PKTUSB">PKT-U</option>
               </select>
             </div>
           </div>

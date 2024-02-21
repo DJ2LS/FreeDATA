@@ -9,7 +9,7 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 </script>
 
 <template>
-   <div class="input-group input-group-sm mb-1">
+  <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50">Enable message auto repeat</label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline ms-2">

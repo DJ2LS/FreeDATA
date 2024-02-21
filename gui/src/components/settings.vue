@@ -152,7 +152,7 @@ import settings_exp from "./settings_exp.vue";
             >
               <settings_updater />
             </div>
-         </div>
+          </div>
 
           <!-- Station tab contents-->
           <div class="tab-content">

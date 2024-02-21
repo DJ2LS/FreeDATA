@@ -25,11 +25,7 @@ import { getFreedataMessages } from "../js/api";
 
 <template>
   <!-------------------------------- INFO TOASTS ---------------->
-  <div
-    aria-live="polite"
-    aria-atomic="true"
-    class="position-relative z-3"
-  >
+  <div aria-live="polite" aria-atomic="true" class="position-relative z-3">
     <div
       class="toast-container position-absolute top-0 end-0 p-3"
       id="mainToastContainer"
