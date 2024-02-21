@@ -366,19 +366,21 @@ onMounted(() => {
     setGridEditState();
 });
 function onChange(event, changeItems) {
-  // update item position
-  changeItems.forEach((item) => {
-    var widget = items.value.find((w) => w.id == item.id);
-    if (!widget) {
-      console.error("Widget not found: " + item.id);
-      return;
+  if (typeof changeItems !== "undefined"){
+      // update item position
+      changeItems.forEach((item) => {
+        var widget = items.value.find((w) => w.id == item.id);
+        if (!widget) {
+          console.error("Widget not found: " + item.id);
+          return;
+        }
+        widget.x = item.x;
+        widget.y = item.y;
+        widget.w = item.w;
+        widget.h = item.h;
+      });
+      saveGridLayout();
     }
-    widget.x = item.x;
-    widget.y = item.y;
-    widget.w = item.w;
-    widget.h = item.h;
-  });
-  saveGridLayout();
 }
 function restoreGridLayoutFromConfig(){
     //Try to load grid from saved config
