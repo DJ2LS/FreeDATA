@@ -713,15 +713,16 @@ def get_flag(byte, flag_name, flag_dict):
     return get_bit(byte, position)
 
 
-def find_binary_path(binary_name="rigctld", search_system_wide=False):
+def find_binary_paths(binary_name="rigctld", search_system_wide=False):
     """
-    Search for a binary within the current working directory and its subdirectories.
-    Optionally, check system-wide locations and PATH environment variable if not found.
+    Search for a binary within the current working directory, its subdirectories, and optionally,
+    system-wide locations and the PATH environment variable.
 
     :param binary_name: The base name of the binary to search for, without extension.
     :param search_system_wide: Boolean flag to enable or disable system-wide search.
-    :return: The full path to the binary if found, otherwise None.
+    :return: A list of full paths to the binary if found, otherwise an empty list.
     """
+    binary_paths = []  # Initialize an empty list to store found paths
     # Adjust binary name for Windows
     if platform.system() == 'Windows':
         binary_name += ".exe"
@@ -730,7 +731,7 @@ def find_binary_path(binary_name="rigctld", search_system_wide=False):
     root_path = os.getcwd()
     for dirpath, dirnames, filenames in os.walk(root_path):
         if binary_name in filenames:
-            return os.path.join(dirpath, binary_name)
+            binary_paths.append(os.path.join(dirpath, binary_name))
 
     # If system-wide search is enabled, look in system locations and PATH
     if search_system_wide:
@@ -739,13 +740,16 @@ def find_binary_path(binary_name="rigctld", search_system_wide=False):
         if platform.system() != 'Windows':
             system_paths.extend(['/usr/bin', '/usr/local/bin', '/bin'])
         else:
-           system_paths.extend(glob.glob("C:\\Program Files\\Hamlib*\\bin"))
-           system_paths.extend(glob.glob("C:\\Program Files (x86)\\Hamlib*\\bin"))
-            
+            system_paths.extend(glob.glob("C:\\Program Files\\Hamlib*\\bin"))
+            system_paths.extend(glob.glob("C:\\Program Files (x86)\\Hamlib*\\bin"))
+
         for path in system_paths:
             potential_path = os.path.join(path, binary_name)
             if os.path.isfile(potential_path):
-                return potential_path
+                binary_paths.append(potential_path)
+
+    return binary_paths
+
 
 
 def kill_and_execute(binary_path, additional_args=None):

@@ -260,14 +260,25 @@ class radio:
 
     def start_service(self):
         binary_name = "rigctld"
-        binary_path = helpers.find_binary_path(binary_name, search_system_wide=True)
+        binary_paths = helpers.find_binary_paths(binary_name, search_system_wide=True)
         additional_args = self.format_rigctld_args()
-        if binary_path:
-            self.log.info(f"Rigctld binary found at: {binary_path}")
-            helpers.kill_and_execute(binary_path, additional_args)
-            self.log.info(f"Executed rigctld...")
+
+        if binary_paths:
+            for binary_path in binary_paths:
+                try:
+                    self.log.info(f"Attempting to start rigctld using binary found at: {binary_path}")
+                    helpers.kill_and_execute(binary_path, additional_args)
+                    self.log.info("Successfully executed rigctld.")
+                    break  # Exit the loop after successful execution
+                except Exception as e:
+                    pass
+                    # let's keep this hidden for the user to avoid confusion
+                    # self.log.warning(f"Failed to start rigctld with binary at {binary_path}: {e}")
+            else:
+                self.log.warning("Failed to start rigctld with all found binaries.", binaries=binary_paths)
         else:
             self.log.warning("Rigctld binary not found.")
+
 
     def format_rigctld_args(self):
         config = self.config['RADIO']  # Accessing the 'RADIO' section of the INI file
