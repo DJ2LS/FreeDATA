@@ -91,7 +91,6 @@ class FrameHandler():
     def add_to_heard_stations(self):
         frame = self.details['frame']
 
-        print(frame)
         if 'origin' not in frame:
             return
 

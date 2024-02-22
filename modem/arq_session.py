@@ -128,3 +128,12 @@ class ARQSession():
                 'duration': duration,
                 'bytes_per_minute': bytes_per_minute
             }
+
+    def get_appropriate_speed_level(self, snr):
+        # Start with the lowest speed level as default
+        # In case of a not fitting SNR, we return the lowest speed level
+        appropriate_speed_level = min(self.SPEED_LEVEL_DICT.keys())
+        for level, details in self.SPEED_LEVEL_DICT.items():
+            if snr >= details['min_snr'] and level > appropriate_speed_level:
+                appropriate_speed_level = level
+        return appropriate_speed_level

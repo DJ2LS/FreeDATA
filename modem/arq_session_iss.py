@@ -105,11 +105,25 @@ class ARQSessionISS(arq_session.ARQSession):
         self.launch_twr(session_open_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(ISS_State.OPEN_SENT)
 
-    def set_speed_and_frames_per_burst(self, frame):
-        self.speed_level = frame['speed_level']
-        self.log(f"Speed level set to {self.speed_level}")
-        self.frames_per_burst = frame['frames_per_burst']
-        self.log(f"Frames per burst set to {self.frames_per_burst}")
+    def update_speed_level(self, frame):
+        self.log("---------------------------------------------------------", isWarning=True)
+
+        # Log the received frame for debugging
+        self.log(f"Received frame: {frame}", isWarning=True)
+
+        # Safely extract upshift and downshift flags with default to False if not present
+        upshift = frame['flag'].get('UPSHIFT', False)
+        downshift = frame['flag'].get('DOWNSHIFT', False)
+
+        # Check for UPSHIFT frame and ensure speed level does not exceed max limit
+        if upshift and not downshift and self.speed_level < len(self.SPEED_LEVEL_DICT) - 1:
+            self.speed_level += 1
+            self.log(f"Upshifting. New speed level: {self.speed_level}")
+
+        # Check for DOWNSHIFT frame and ensure speed level does not go below 0
+        elif downshift and not upshift and self.speed_level > 0:
+            self.speed_level -= 1
+            self.log(f"Downshifting. New speed level: {self.speed_level}")
 
     def send_info(self, irs_frame):
         # check if we received an abort flag
@@ -128,7 +142,7 @@ class ARQSessionISS(arq_session.ARQSession):
 
     def send_data(self, irs_frame):
 
-        self.set_speed_and_frames_per_burst(irs_frame)
+        self.update_speed_level(irs_frame)
 
         if 'offset' in irs_frame:
             self.confirmed_bytes = irs_frame['offset']

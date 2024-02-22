@@ -15,6 +15,8 @@ class DataFrameFactory:
         'FINAL': 0,  # Bit-position for indicating the FINAL state
         'ABORT': 1, # Bit-position for indicating the ABORT request
         'CHECKSUM': 2,  # Bit-position for indicating the CHECKSUM is correct or not
+        'DOWNSHIFT': 3, # Bit-position for indicating a requested ARQ DOWNSHIFT
+        'UPSHIFT': 4, # Bit-position for indicating a requested ARQ UPSHIFT
     }
 
     def __init__(self, config):
@@ -404,7 +406,7 @@ class DataFrameFactory:
         return frame
 
     def build_arq_burst_ack(self, session_id: bytes, offset, speed_level: int, 
-                            frames_per_burst: int, snr: int, flag_final=False, flag_checksum=False, flag_abort=False):
+                            frames_per_burst: int, snr: int, flag_final=False, flag_checksum=False, flag_abort=False, flag_downshift=False, flag_upshift=False):
         flag = 0b00000000
         if flag_final:
             flag = helpers.set_flag(flag, 'FINAL', True, self.ARQ_FLAGS)
@@ -415,6 +417,13 @@ class DataFrameFactory:
         if flag_abort:
             flag = helpers.set_flag(flag, 'ABORT', True, self.ARQ_FLAGS)
 
+        if flag_downshift:
+            flag = helpers.set_flag(flag, 'DOWNSHIFT', True, self.ARQ_FLAGS)
+            flag = helpers.set_flag(flag, 'UPSHIFT', False, self.ARQ_FLAGS)
+
+        if flag_upshift:
+            flag = helpers.set_flag(flag, 'DOWNSHIFT', False, self.ARQ_FLAGS)
+            flag = helpers.set_flag(flag, 'UPSHIFT', True, self.ARQ_FLAGS)
 
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),
