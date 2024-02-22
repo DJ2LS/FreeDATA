@@ -119,7 +119,6 @@ class ARQSessionISS(arq_session.ARQSession):
                 # Log the speed level change if it's different from the current speed level
                 if new_speed_level != self.speed_level:
                     self.log(f"Changing speed level from {self.speed_level} to {new_speed_level}", isWarning=True)
-                    self.previous_speed_level = self.speed_level  # Store the current speed level as previous
                     self.speed_level = new_speed_level  # Update the current speed level
                 else:
                     self.log("Received speed level is the same as the current speed level.", isWarning=True)
@@ -127,18 +126,6 @@ class ARQSessionISS(arq_session.ARQSession):
                 self.log(f"Received speed level {new_speed_level} is out of allowable range.", isWarning=True)
         else:
             self.log("No speed level specified in the received frame.", isWarning=True)
-
-        # Apply the new decode mode based on the updated speed level, including the previous speed level
-        modes_to_decode = {
-            self.get_mode_by_speed_level(self.speed_level).value: True,
-        }
-        # Include the previous speed level mode if it's different from the current
-        if hasattr(self, 'previous_speed_level') and self.previous_speed_level != self.speed_level:
-            modes_to_decode[self.get_mode_by_speed_level(self.previous_speed_level).value] = True
-
-        self.log(f"Modes to Decode: {list(modes_to_decode.keys())}", isWarning=True)
-        # Apply the new decode mode based on the current and previous speed levels
-        self.modem.demodulator.set_decode_mode(modes_to_decode)
 
     def send_info(self, irs_frame):
         # check if we received an abort flag

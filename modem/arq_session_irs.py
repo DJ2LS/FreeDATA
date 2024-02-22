@@ -219,9 +219,11 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         # Adjust the speed level by one step towards the appropriate level, if needed
         if appropriate_speed_level > self.speed_level and self.speed_level < len(self.SPEED_LEVEL_DICT) - 1:
+            # we need to ensure, the received data is equal to our speed level before changing it
             if received_speed_level == self.speed_level:
                 self.speed_level += 1
         elif appropriate_speed_level < self.speed_level and self.speed_level > 0:
+            # we need to ensure, the received data is equal to our speed level before changing it
             if received_speed_level == self.speed_level:
                 self.speed_level -= 1
 
