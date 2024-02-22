@@ -68,8 +68,6 @@ class ARQSessionISS(arq_session.ARQSession):
 
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
 
-        self.speed_level = 0
-
     def generate_id(self):
         while True:
             random_int = random.randint(1,255)
@@ -113,21 +111,34 @@ class ARQSessionISS(arq_session.ARQSession):
         # Log the received frame for debugging
         self.log(f"Received frame: {frame}", isWarning=True)
 
-        # Safely extract upshift and downshift flags with default to False if not present
-        upshift = frame['flag'].get('UPSHIFT', False)
-        downshift = frame['flag'].get('DOWNSHIFT', False)
+        # Extract the speed_level directly from the frame
+        if 'speed_level' in frame:
+            new_speed_level = frame['speed_level']
+            # Ensure the new speed level is within the allowable range
+            if 0 <= new_speed_level < len(self.SPEED_LEVEL_DICT):
+                # Log the speed level change if it's different from the current speed level
+                if new_speed_level != self.speed_level:
+                    self.log(f"Changing speed level from {self.speed_level} to {new_speed_level}", isWarning=True)
+                    self.previous_speed_level = self.speed_level  # Store the current speed level as previous
+                    self.speed_level = new_speed_level  # Update the current speed level
+                else:
+                    self.log("Received speed level is the same as the current speed level.", isWarning=True)
+            else:
+                self.log(f"Received speed level {new_speed_level} is out of allowable range.", isWarning=True)
+        else:
+            self.log("No speed level specified in the received frame.", isWarning=True)
 
-        # Check for UPSHIFT frame and ensure speed level does not exceed max limit
-        if upshift and not downshift and self.speed_level < len(self.SPEED_LEVEL_DICT) - 1:
-            self.speed_level += 1
-            self.log(f"Upshifting. New speed level: {self.speed_level}")
+        # Apply the new decode mode based on the updated speed level, including the previous speed level
+        modes_to_decode = {
+            self.get_mode_by_speed_level(self.speed_level).value: True,
+        }
+        # Include the previous speed level mode if it's different from the current
+        if hasattr(self, 'previous_speed_level') and self.previous_speed_level != self.speed_level:
+            modes_to_decode[self.get_mode_by_speed_level(self.previous_speed_level).value] = True
 
-        # Check for DOWNSHIFT frame and ensure speed level does not go below 0
-        elif downshift and not upshift and self.speed_level > 0:
-            self.speed_level -= 1
-            self.log(f"Downshifting. New speed level: {self.speed_level}")
-
-
+        self.log(f"Modes to Decode: {list(modes_to_decode.keys())}", isWarning=True)
+        # Apply the new decode mode based on the current and previous speed levels
+        self.modem.demodulator.set_decode_mode(modes_to_decode)
 
     def send_info(self, irs_frame):
         # check if we received an abort flag
@@ -174,7 +185,7 @@ class ARQSessionISS(arq_session.ARQSession):
             payload = self.data[offset : offset + payload_size]
             data_frame = self.frame_factory.build_arq_burst_frame(
                 self.SPEED_LEVEL_DICT[self.speed_level]["mode"],
-                self.id, self.confirmed_bytes, payload)
+                self.id, self.confirmed_bytes, payload, self.speed_level)
             burst.append(data_frame)
         self.launch_twr(burst, self.TIMEOUT_TRANSFER, self.RETRIES_CONNECT, mode='auto')
         self.set_state(ISS_State.BURST_SENT)

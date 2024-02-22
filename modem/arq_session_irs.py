@@ -76,8 +76,6 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.received_bytes = 0
         self.received_crc = None
 
-        self.speed_level = 0
-
         self.abort = False
 
     def all_data_received(self):
@@ -160,16 +158,14 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.process_incoming_data(burst_frame)
 
         if not self.all_data_received():
-            downshift, upshift = self.calibrate_speed_settings()
+            self.calibrate_speed_settings(burst_frame=burst_frame)
             ack = self.frame_factory.build_arq_burst_ack(
                 self.id,
                 self.received_bytes,
                 self.speed_level,
                 self.frames_per_burst,
                 self.snr[0],
-                flag_abort=self.abort,
-                flag_upshift=upshift,
-                flag_downshift=downshift
+                flag_abort=self.abort
             )
 
             self.set_state(IRS_State.BURST_REPLY_SENT)
@@ -204,53 +200,46 @@ class ARQSessionIRS(arq_session.ARQSession):
                                                          flag_checksum=False)
             self.transmit_frame(ack, mode=FREEDV_MODE.signalling)
             self.log("CRC fail at the end of transmission!")
-            self.transmission_failed()
+            return self.transmission_failed()
 
-    def calibrate_speed_settings(self):
+    def calibrate_speed_settings(self, burst_frame=None):
+        if burst_frame:
+            received_speed_level = burst_frame['speed_level']
+        else:
+            received_speed_level = 0
+
         latest_snr = self.snr[-1] if self.snr else -10
         appropriate_speed_level = self.get_appropriate_speed_level(latest_snr)
         modes_to_decode = {}
 
-        # Log the latest SNR, current, and appropriate speed levels for clarity
+        # Log the latest SNR, current, appropriate speed levels, and the previous speed level
         self.log(
-            f"Latest SNR: {latest_snr}, Current Speed Level: {self.speed_level}, Appropriate Speed Level: {appropriate_speed_level}",
+            f"Latest SNR: {latest_snr}, Current Speed Level: {self.speed_level}, Appropriate Speed Level: {appropriate_speed_level}, Previous Speed Level: {self.previous_speed_level}",
             isWarning=True)
 
-        # Initialize shift flags
-        upshift = False
-        downshift = False
-
-        # Determine if we need to shift
+        # Adjust the speed level by one step towards the appropriate level, if needed
         if appropriate_speed_level > self.speed_level and self.speed_level < len(self.SPEED_LEVEL_DICT) - 1:
-            # Upshift by one level, but remember to listen on the current level as well in case of loosing ACK
-            previous_speed_level = self.speed_level
-            self.speed_level += 1
-            upshift = True
-            self.log(f"Upshifting. New speed level: {self.speed_level}", isWarning=True)
+            if received_speed_level == self.speed_level:
+                self.speed_level += 1
         elif appropriate_speed_level < self.speed_level and self.speed_level > 0:
-            # Downshift by one level, but remember to listen on the current level as well in case of loosing ACK
-            previous_speed_level = self.speed_level
-            self.speed_level -= 1
-            downshift = True
-            self.log(f"Downshifting. New speed level: {self.speed_level}", isWarning=True)
-        else:
-            # No shift needed, set previous to current for correct mode decoding setup
-            previous_speed_level = self.speed_level
+            if received_speed_level == self.speed_level:
+                self.speed_level -= 1
 
-        # Decode the current mode
+        # Always decode the current mode
         current_mode = self.get_mode_by_speed_level(self.speed_level).value
         modes_to_decode[current_mode] = True
 
-        # Additionally, decode the previous speed level mode if it has changed
-        if upshift or downshift:
-            previous_mode = self.get_mode_by_speed_level(previous_speed_level).value
+        # Decode the previous speed level mode
+        if self.previous_speed_level != self.speed_level:
+            previous_mode = self.get_mode_by_speed_level(self.previous_speed_level).value
             modes_to_decode[previous_mode] = True
+            self.previous_speed_level = self.speed_level  # Update the previous speed level
 
-        self.log(f"Modes to Decode: {modes_to_decode.keys()}", isWarning=True)
-        # Apply the new decode mode based on the updated speed level
+        self.log(f"Modes to Decode: {list(modes_to_decode.keys())}", isWarning=True)
+        # Apply the new decode mode based on the updated and previous speed levels
         self.modem.demodulator.set_decode_mode(modes_to_decode)
 
-        return downshift, upshift
+        return self.speed_level
 
     def abort_transmission(self):
         self.log(f"Aborting transmission... setting abort flag")

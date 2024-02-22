@@ -44,6 +44,8 @@ class ARQSession():
 
         self.modem = modem
         self.speed_level = 0
+        self.previous_speed_level = 0
+
         self.frames_per_burst = 1
 
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
@@ -97,7 +99,6 @@ class ARQSession():
                 received_data, type_byte = getattr(self, action_name)(frame)
                 if isinstance(received_data, bytearray) and isinstance(type_byte, int):
                     self.arq_data_type_handler.dispatch(type_byte, received_data)
-
                 return
         
         self.log(f"Ignoring unknown transition from state {self.state.name} with frame {frame['frame_type']}")
