@@ -29,7 +29,7 @@ app = Flask(__name__)
 CORS(app)
 CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
-MODEM_VERSION = "0.13.6-alpha"
+MODEM_VERSION = "0.13.7-alpha"
 
 # set config file to use
 def set_config():
@@ -96,6 +96,10 @@ def index():
 @app.route('/config', methods=['GET', 'POST'])
 def config():
     if request.method in ['POST']:
+        # check if config already exists
+        if app.config_manager.read() == request.json:
+            return api_response(request.json)
+
         set_config = app.config_manager.write(request.json)
         if not set_config:
             response = api_response(None, 'error writing config')

@@ -76,7 +76,11 @@ class radio:
                 self.connection.sendall(command.encode('utf-8') + b"\n")
                 response = self.connection.recv(1024)
                 self.await_response.set()
-                return response.decode('utf-8').strip()
+                stripped_result = response.decode('utf-8').strip()
+                if 'RPRT' in stripped_result:
+                    return None
+                return stripped_result
+
             except Exception as err:
                 self.log.warning(f"[RIGCTLD] Error sending command [{command}] to rigctld: {err}")
                 self.connected = False
@@ -189,35 +193,92 @@ class radio:
             self.connect()
 
         if self.connected:
-            self.parameters['frequency'] = self.send_command('f')
-            response = self.send_command(
-                'm').strip()  # Get the mode/bandwidth response and remove leading/trailing spaces
-            try:
-                mode, bandwidth = response.split('\n', 1)  # Split the response into mode and bandwidth
-            except ValueError:
+            self.get_frequency()
+            self.get_mode_bandwidth()
+            self.get_alc()
+            self.get_strength()
+            self.get_rf()
+
+        return self.parameters
+
+    def get_frequency(self):
+        try:
+            frequency_response = self.send_command('f')
+            self.parameters['frequency'] = frequency_response if frequency_response is not None else 'err'
+        except Exception as e:
+            self.log.warning(f"Error getting frequency: {e}")
+            self.parameters['frequency'] = 'err'
+
+    def get_mode_bandwidth(self):
+        try:
+            response = self.send_command('m')
+            if response is not None:
+                response = response.strip()
+                mode, bandwidth = response.split('\n', 1)
+            else:
                 mode = 'err'
                 bandwidth = 'err'
-
+        except ValueError:
+            mode = 'err'
+            bandwidth = 'err'
+        except Exception as e:
+            self.log.warning(f"Error getting mode and bandwidth: {e}")
+            mode = 'err'
+            bandwidth = 'err'
+        finally:
             self.parameters['mode'] = mode
             self.parameters['bandwidth'] = bandwidth
 
-            self.parameters['alc'] = self.send_command('l ALC')
-            self.parameters['strength'] = self.send_command('l STRENGTH')
-            self.parameters['rf'] = int(float(self.send_command('l RFPOWER')) * 100) # RF, RFPOWER
+    def get_alc(self):
+        try:
+            alc_response = self.send_command('l ALC')
+            self.parameters['alc'] = alc_response if alc_response is not None else 'err'
+        except Exception as e:
+            self.log.warning(f"Error getting ALC: {e}")
+            self.parameters['alc'] = 'err'
 
-        """Return the latest fetched parameters."""
-        return self.parameters
+    def get_strength(self):
+        try:
+            strength_response = self.send_command('l STRENGTH')
+            self.parameters['strength'] = strength_response if strength_response is not None else 'err'
+        except Exception as e:
+            self.log.warning(f"Error getting strength: {e}")
+            self.parameters['strength'] = 'err'
+
+    def get_rf(self):
+        try:
+            rf_response = self.send_command('l RFPOWER')
+            if rf_response is not None:
+                self.parameters['rf'] = int(float(rf_response) * 100)
+            else:
+                self.parameters['rf'] = 'err'
+        except ValueError:
+            self.parameters['rf'] = 'err'
+        except Exception as e:
+            self.log.warning(f"Error getting RF power: {e}")
+            self.parameters['rf'] = 'err'
 
     def start_service(self):
         binary_name = "rigctld"
-        binary_path = helpers.find_binary_path(binary_name, search_system_wide=True)
+        binary_paths = helpers.find_binary_paths(binary_name, search_system_wide=True)
         additional_args = self.format_rigctld_args()
-        if binary_path:
-            self.log.info(f"Rigctld binary found at: {binary_path}")
-            helpers.kill_and_execute(binary_path, additional_args)
-            self.log.info(f"Executed rigctld...")
+
+        if binary_paths:
+            for binary_path in binary_paths:
+                try:
+                    self.log.info(f"Attempting to start rigctld using binary found at: {binary_path}")
+                    helpers.kill_and_execute(binary_path, additional_args)
+                    self.log.info("Successfully executed rigctld.")
+                    break  # Exit the loop after successful execution
+                except Exception as e:
+                    pass
+                    # let's keep this hidden for the user to avoid confusion
+                    # self.log.warning(f"Failed to start rigctld with binary at {binary_path}: {e}")
+            else:
+                self.log.warning("Failed to start rigctld with all found binaries.", binaries=binary_paths)
         else:
             self.log.warning("Rigctld binary not found.")
+
 
     def format_rigctld_args(self):
         config = self.config['RADIO']  # Accessing the 'RADIO' section of the INI file
