@@ -130,6 +130,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.launch_transmit_and_wait(info_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
         if not self.abort:
             self.set_state(IRS_State.INFO_ACK_SENT)
+            self.calibrate_speed_settings()
         return None, None
 
     def process_incoming_data(self, frame):

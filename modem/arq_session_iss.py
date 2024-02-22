@@ -68,6 +68,8 @@ class ARQSessionISS(arq_session.ARQSession):
 
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
 
+        self.speed_level = 0
+
     def generate_id(self):
         while True:
             random_int = random.randint(1,255)
@@ -124,6 +126,8 @@ class ARQSessionISS(arq_session.ARQSession):
         elif downshift and not upshift and self.speed_level > 0:
             self.speed_level -= 1
             self.log(f"Downshifting. New speed level: {self.speed_level}")
+
+
 
     def send_info(self, irs_frame):
         # check if we received an abort flag
