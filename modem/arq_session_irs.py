@@ -216,32 +216,37 @@ class ARQSessionIRS(arq_session.ARQSession):
             f"Latest SNR: {latest_snr}, Current Speed Level: {self.speed_level}, Appropriate Speed Level: {appropriate_speed_level}",
             isWarning=True)
 
-        # Always decode the current mode
-        current_mode = self.get_mode_by_speed_level(self.speed_level).value
-        modes_to_decode[current_mode] = True
-
         # Initialize shift flags
         upshift = False
         downshift = False
 
         # Determine if we need to shift
         if appropriate_speed_level > self.speed_level and self.speed_level < len(self.SPEED_LEVEL_DICT) - 1:
-            # Upshift by one level
+            # Upshift by one level, but remember to listen on the current level as well in case of loosing ACK
+            previous_speed_level = self.speed_level
             self.speed_level += 1
             upshift = True
             self.log(f"Upshifting. New speed level: {self.speed_level}", isWarning=True)
         elif appropriate_speed_level < self.speed_level and self.speed_level > 0:
-            # Downshift by one level
+            # Downshift by one level, but remember to listen on the current level as well in case of loosing ACK
+            previous_speed_level = self.speed_level
             self.speed_level -= 1
             downshift = True
             self.log(f"Downshifting. New speed level: {self.speed_level}", isWarning=True)
+        else:
+            # No shift needed, set previous to current for correct mode decoding setup
+            previous_speed_level = self.speed_level
 
-        # Add the new speed level mode to decode, if we have shifted
+        # Decode the current mode
+        current_mode = self.get_mode_by_speed_level(self.speed_level).value
+        modes_to_decode[current_mode] = True
+
+        # Additionally, decode the previous speed level mode if it has changed
         if upshift or downshift:
-            new_mode = self.get_mode_by_speed_level(self.speed_level).value
-            modes_to_decode[new_mode] = True
+            previous_mode = self.get_mode_by_speed_level(previous_speed_level).value
+            modes_to_decode[previous_mode] = True
 
-        self.log(f"Modes to Decode: {modes_to_decode}", isWarning=True)
+        self.log(f"Modes to Decode: {modes_to_decode.keys()}", isWarning=True)
         # Apply the new decode mode based on the updated speed level
         self.modem.demodulator.set_decode_mode(modes_to_decode)
 
