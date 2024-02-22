@@ -391,6 +391,3 @@ class Demodulator():
         for mode, decode in modes_to_decode.items():
             if mode in self.MODE_DICT:
                 self.MODE_DICT[mode]["decode"] = decode
-
-        enabled_modes = [mode.name for mode, details in self.MODE_DICT.items() if details["decode"]]
-        self.log.info(f"[MDM] [demod_audio] Enabled decode modes: {', '.join(enabled_modes)}")

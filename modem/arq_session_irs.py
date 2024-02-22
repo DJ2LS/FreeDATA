@@ -224,23 +224,22 @@ class ARQSessionIRS(arq_session.ARQSession):
         upshift = False
         downshift = False
 
-        # Check if a shift is needed
-        if appropriate_speed_level != self.speed_level:
-            # Determine the direction of the shift
-            upshift = appropriate_speed_level > self.speed_level
-            downshift = appropriate_speed_level < self.speed_level
+        # Determine if we need to shift
+        if appropriate_speed_level > self.speed_level and self.speed_level < len(self.SPEED_LEVEL_DICT) - 1:
+            # Upshift by one level
+            self.speed_level += 1
+            upshift = True
+            self.log(f"Upshifting. New speed level: {self.speed_level}", isWarning=True)
+        elif appropriate_speed_level < self.speed_level and self.speed_level > 0:
+            # Downshift by one level
+            self.speed_level -= 1
+            downshift = True
+            self.log(f"Downshifting. New speed level: {self.speed_level}", isWarning=True)
 
-            # Update the speed level
-            self.speed_level = appropriate_speed_level
-            self.log(f"Updated Speed Level: {self.speed_level}", isWarning=True)
-
-            # Determine additional modes based on the direction of the shift
-            if upshift and self.speed_level < len(self.SPEED_LEVEL_DICT) - 1:
-                next_mode = self.get_mode_by_speed_level(self.speed_level).value
-                modes_to_decode[next_mode] = True
-            elif downshift and self.speed_level > 0:
-                prev_mode = self.get_mode_by_speed_level(self.speed_level).value
-                modes_to_decode[prev_mode] = True
+        # Add the new speed level mode to decode, if we have shifted
+        if upshift or downshift:
+            new_mode = self.get_mode_by_speed_level(self.speed_level).value
+            modes_to_decode[new_mode] = True
 
         self.log(f"Modes to Decode: {modes_to_decode}", isWarning=True)
         # Apply the new decode mode based on the updated speed level
