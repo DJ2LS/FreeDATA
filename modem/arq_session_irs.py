@@ -260,6 +260,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         stop_ack = self.frame_factory.build_arq_stop_ack(self.id)
         self.launch_transmit_and_wait(stop_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(IRS_State.ABORTED)
+        self.states.setARQ(False)
         self.event_manager.send_arq_session_finished(
                 False, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics())
         return None, None
