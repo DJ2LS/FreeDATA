@@ -390,6 +390,9 @@ class Demodulator():
         # signalling is always true
         self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
 
+        # lowest speed level is alwys true
+        self.MODE_DICT[codec2.FREEDV_MODE.datac4.value]["decode"] = True
+
         # Enable specified modes
         for mode, decode in modes_to_decode.items():
             if mode in self.MODE_DICT:
