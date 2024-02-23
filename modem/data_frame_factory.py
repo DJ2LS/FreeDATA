@@ -398,7 +398,7 @@ class DataFrameFactory:
     def build_arq_burst_frame(self, freedv_mode: codec2.FREEDV_MODE, session_id: int, offset: int, data: bytes, speed_level: int):
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),
-            "speed_level": speed_level.to_bytes(4, 'big'),
+            "speed_level": speed_level.to_bytes(1, 'big'),
             "offset": offset.to_bytes(4, 'big'),
             "data": data,
         }
