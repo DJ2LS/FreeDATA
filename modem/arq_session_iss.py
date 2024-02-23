@@ -76,7 +76,7 @@ class ARQSessionISS(arq_session.ARQSession):
             if len(self.state_manager.arq_iss_sessions) >= 255:
                 return False
 
-    def transmit_wait_and_retry(self, frame_or_burst, timeout, retries, mode):
+    def transmit_wait_and_retry(self, frame_or_burst, timeout, retries, mode, isARQBurst=False):
         while retries > 0:
             self.event_frame_received = threading.Event()
             if isinstance(frame_or_burst, list): burst = frame_or_burst
@@ -91,7 +91,7 @@ class ARQSessionISS(arq_session.ARQSession):
             retries = retries - 1
 
             # TODO TEMPORARY TEST FOR SENDING IN LOWER SPEED LEVEL IF WE HAVE TWO FAILED TRANSMISSIONS!!!
-            if retries == 8:
+            if retries == 8 and isARQBurst:
                 self.log("SENDING IN LOWER SPEED LEVEL at", isWarning=True)
                 if self.speed_level > 0:
                     self.speed_level -= 1
@@ -101,8 +101,8 @@ class ARQSessionISS(arq_session.ARQSession):
         self.set_state(ISS_State.FAILED)
         self.transmission_failed()
 
-    def launch_twr(self, frame_or_burst, timeout, retries, mode):
-        twr = threading.Thread(target = self.transmit_wait_and_retry, args=[frame_or_burst, timeout, retries, mode], daemon=True)
+    def launch_twr(self, frame_or_burst, timeout, retries, mode, isARQBurst=False):
+        twr = threading.Thread(target = self.transmit_wait_and_retry, args=[frame_or_burst, timeout, retries, mode, isARQBurst], daemon=True)
         twr.start()
 
     def start(self):
@@ -181,7 +181,7 @@ class ARQSessionISS(arq_session.ARQSession):
                 self.SPEED_LEVEL_DICT[self.speed_level]["mode"],
                 self.id, self.confirmed_bytes, payload, self.speed_level)
             burst.append(data_frame)
-        self.launch_twr(burst, self.TIMEOUT_TRANSFER, self.RETRIES_CONNECT, mode='auto')
+        self.launch_twr(burst, self.TIMEOUT_TRANSFER, self.RETRIES_CONNECT, mode='auto', isARQBurst=True)
         self.set_state(ISS_State.BURST_SENT)
         return None, None
 
