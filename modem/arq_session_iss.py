@@ -76,7 +76,7 @@ class ARQSessionISS(arq_session.ARQSession):
             if len(self.state_manager.arq_iss_sessions) >= 255:
                 return False
 
-    def transmit_wait_and_retry(self, frame_or_burst, timeout, retries, mode, isARQBurst=False):
+    def transmit_wait_and_retry(self, frame_or_burst, timeout, retries, mode, isARQBurst=False, ):
         while retries > 0:
             self.event_frame_received = threading.Event()
             if isinstance(frame_or_burst, list): burst = frame_or_burst
@@ -91,10 +91,9 @@ class ARQSessionISS(arq_session.ARQSession):
             retries = retries - 1
 
             # TODO TEMPORARY TEST FOR SENDING IN LOWER SPEED LEVEL IF WE HAVE TWO FAILED TRANSMISSIONS!!!
-            if retries == 8 and isARQBurst:
-                self.log("SENDING IN LOWER SPEED LEVEL at", isWarning=True)
-                if self.speed_level > 0:
-                    self.speed_level -= 1
+            if retries == 8 and isARQBurst and self.speed_level > 0:
+                self.log("SENDING IN FALLBACK SPEED LEVEL", isWarning=True)
+                self.speed_level = 0
                 self.send_data({'flag':{'ABORT': False, 'FINAL': False}, 'speed_level': self.speed_level})
                 return
 
