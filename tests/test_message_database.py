@@ -37,7 +37,7 @@ class TestDataFrameFactory(unittest.TestCase):
         payload = message.to_payload()
         received_message = MessageP2P.from_payload(payload)
         received_message_dict = MessageP2P.to_dict(received_message)
-        self.database_manager.add_message(received_message_dict)
+        self.database_manager.add_message(received_message_dict, statistics={})
         result = self.database_manager.get_message_by_id(message.id)
 
         self.assertEqual(result["destination"], message.destination)
@@ -53,7 +53,7 @@ class TestDataFrameFactory(unittest.TestCase):
         payload = message.to_payload()
         received_message = MessageP2P.from_payload(payload)
         received_message_dict = MessageP2P.to_dict(received_message)
-        self.database_manager.add_message(received_message_dict)
+        self.database_manager.add_message(received_message_dict, statistics={})
 
         result = self.database_manager.get_all_messages()
         message_id = result[0]["id"]
@@ -75,7 +75,7 @@ class TestDataFrameFactory(unittest.TestCase):
         received_message = MessageP2P.from_payload(payload)
         received_message_dict = MessageP2P.to_dict(received_message)
         print(received_message_dict)
-        message_id = self.database_manager.add_message(received_message_dict, direction='receive')
+        message_id = self.database_manager.add_message(received_message_dict, statistics={}, direction='receive')
         print(message_id)
         self.database_manager.update_message(message_id, {'body' : 'hello123'})
 
@@ -103,7 +103,7 @@ class TestDataFrameFactory(unittest.TestCase):
         payload = message.to_payload()
         received_message = MessageP2P.from_payload(payload)
         received_message_dict = MessageP2P.to_dict(received_message)
-        message_id = self.database_manager.add_message(received_message_dict)
+        message_id = self.database_manager.add_message(received_message_dict, statistics={})
         result = self.database_manager_attachments.get_attachments_by_message_id(message_id)
         attachment_names = [attachment['name'] for attachment in result]
         self.assertIn('test1.gif', attachment_names)
@@ -116,7 +116,7 @@ class TestDataFrameFactory(unittest.TestCase):
         payload = message.to_payload()
         received_message = MessageP2P.from_payload(payload)
         received_message_dict = MessageP2P.to_dict(received_message)
-        message_id = self.database_manager.add_message(received_message_dict)
+        message_id = self.database_manager.add_message(received_message_dict,statistics={},)
         self.database_manager.increment_message_attempts(message_id)
 
 
@@ -129,7 +129,7 @@ class TestDataFrameFactory(unittest.TestCase):
         payload = message.to_payload()
         received_message = MessageP2P.from_payload(payload)
         received_message_dict = MessageP2P.to_dict(received_message)
-        message_id = self.database_manager.add_message(received_message_dict, is_read=False)
+        message_id = self.database_manager.add_message(received_message_dict, statistics={},is_read=False)
         self.database_manager.mark_message_as_read(message_id)
 
         result = self.database_manager.get_message_by_id(message_id)

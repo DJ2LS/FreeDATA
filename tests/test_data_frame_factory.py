@@ -49,7 +49,7 @@ class TestDataFrameFactory(unittest.TestCase):
         offset = 40
         payload = b'Hello World!'
         frame = self.factory.build_arq_burst_frame(FREEDV_MODE.datac3, 
-                                                session_id, offset, payload)
+                                                session_id, offset, payload, 0)
         frame_data = self.factory.deconstruct(frame)
         self.assertEqual(frame_data['session_id'], session_id)
         self.assertEqual(frame_data['offset'], offset)
@@ -58,11 +58,11 @@ class TestDataFrameFactory(unittest.TestCase):
 
         payload = payload * 1000
         self.assertRaises(OverflowError, self.factory.build_arq_burst_frame,
-            FREEDV_MODE.datac3, session_id, offset, payload)
+            FREEDV_MODE.datac3, session_id, offset, payload, 0)
         
     def testAvailablePayload(self):
         avail = self.factory.get_available_data_payload_for_mode(FRAME_TYPE.ARQ_BURST_FRAME, FREEDV_MODE.datac3)
-        self.assertEqual(avail, 120) # 128 bytes datac3 frame payload - BURST frame overhead
+        self.assertEqual(avail, 119) # 128 bytes datac3 frame payload - BURST frame overhead
 
 if __name__ == '__main__':
     unittest.main()
