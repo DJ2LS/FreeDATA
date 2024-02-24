@@ -131,7 +131,6 @@ class DatabaseManagerMessages(DatabaseManager):
                     message.body = update_data['body']
                 if 'status' in update_data:
                     message.status = self.get_or_create_status(session, update_data['status'])
-
                 if 'statistics' in update_data:
                     message.statistics = update_data['statistics']
 
