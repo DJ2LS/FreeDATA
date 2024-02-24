@@ -141,7 +141,7 @@ class ARQSessionISS(arq_session.ARQSession):
 
         info_frame = self.frame_factory.build_arq_session_info(self.id, self.total_length,
                                                                helpers.get_crc_32(self.data), 
-                                                               self.snr[0], self.type_byte)
+                                                               self.snr, self.type_byte)
 
         self.launch_twr(info_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(ISS_State.INFO_SENT)
@@ -149,14 +149,15 @@ class ARQSessionISS(arq_session.ARQSession):
         return None, None
 
     def send_data(self, irs_frame):
+        # update statistics
+        self.update_histograms()
 
         self.update_speed_level(irs_frame)
-
         if 'offset' in irs_frame:
             self.confirmed_bytes = irs_frame['offset']
             self.log(f"IRS confirmed {self.confirmed_bytes}/{self.total_length} bytes")
             self.event_manager.send_arq_session_progress(
-                True, self.id, self.dxcall, self.confirmed_bytes, self.total_length, self.state.name)
+                True, self.id, self.dxcall, self.confirmed_bytes, self.total_length, self.state.name, statistics=self.calculate_session_statistics())
 
         # check if we received an abort flag
         if irs_frame["flag"]["ABORT"]:
@@ -190,9 +191,9 @@ class ARQSessionISS(arq_session.ARQSession):
         self.set_state(ISS_State.ENDED)
         self.log(f"All data transfered! flag_final={irs_frame['flag']['FINAL']}, flag_checksum={irs_frame['flag']['CHECKSUM']}")
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,True, self.state.name, statistics=self.calculate_session_statistics())
+        self.arq_data_type_handler.transmitted(self.type_byte, self.data, self.calculate_session_statistics())
         self.state_manager.remove_arq_iss_session(self.id)
         self.states.setARQ(False)
-        self.arq_data_type_handler.transmitted(self.type_byte, self.data)
         return None, None
 
     def transmission_failed(self, irs_frame=None):

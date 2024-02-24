@@ -105,7 +105,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.id,
             self.dxcall, 
             self.version,
-            self.snr[0], flag_abort=self.abort)
+            self.snr, flag_abort=self.abort)
         self.launch_transmit_and_wait(ack_frame, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
         if not self.abort:
             self.set_state(IRS_State.OPEN_ACK_SENT)
@@ -123,7 +123,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.event_manager.send_arq_session_new(False, self.id, self.dxcall, self.total_length, self.state.name)
 
         info_ack = self.frame_factory.build_arq_session_info_ack(
-            self.id, self.total_crc, self.snr[0],
+            self.id, self.total_crc, self.snr,
             self.speed_level, self.frames_per_burst, flag_abort=self.abort)
         self.launch_transmit_and_wait(info_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
         if not self.abort:
@@ -150,13 +150,15 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.received_bytes += len(data_part)
         self.log(f"Received {self.received_bytes}/{self.total_length} bytes")
         self.event_manager.send_arq_session_progress(
-            False, self.id, self.dxcall, self.received_bytes, self.total_length, self.state.name)
+            False, self.id, self.dxcall, self.received_bytes, self.total_length, self.state.name, self.calculate_session_statistics())
 
         return True
 
     def receive_data(self, burst_frame):
         self.process_incoming_data(burst_frame)
-
+        # update statistics
+        self.update_histograms()
+        
         if not self.all_data_received():
             self.calibrate_speed_settings(burst_frame=burst_frame)
             ack = self.frame_factory.build_arq_burst_ack(
@@ -164,7 +166,7 @@ class ARQSessionIRS(arq_session.ARQSession):
                 self.received_bytes,
                 self.speed_level,
                 self.frames_per_burst,
-                self.snr[0],
+                self.snr,
                 flag_abort=self.abort
             )
 
@@ -178,7 +180,7 @@ class ARQSessionIRS(arq_session.ARQSession):
                                                          self.received_bytes,
                                                          self.speed_level,
                                                          self.frames_per_burst,
-                                                         self.snr[0],
+                                                         self.snr,
                                                          flag_final=True,
                                                          flag_checksum=True)
             self.transmit_frame(ack, mode=FREEDV_MODE.signalling)
@@ -195,7 +197,7 @@ class ARQSessionIRS(arq_session.ARQSession):
                                                          self.received_bytes,
                                                          self.speed_level,
                                                          self.frames_per_burst,
-                                                         self.snr[0],
+                                                         self.snr,
                                                          flag_final=True,
                                                          flag_checksum=False)
             self.transmit_frame(ack, mode=FREEDV_MODE.signalling)
@@ -208,7 +210,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         else:
             received_speed_level = 0
 
-        latest_snr = self.snr[-1] if self.snr else -10
+        latest_snr = self.snr if self.snr else -10
         appropriate_speed_level = self.get_appropriate_speed_level(latest_snr)
         modes_to_decode = {}
 

@@ -11,7 +11,7 @@ class DatabaseManagerMessages(DatabaseManager):
         super().__init__(uri)
         self.attachments_manager = DatabaseManagerAttachments(uri)
 
-    def add_message(self, message_data, direction='receive', status=None, is_read=True):
+    def add_message(self, message_data, statistics, direction='receive', status=None, is_read=True):
         session = self.get_thread_scoped_session()
         try:
             # Create and add the origin and destination Stations
@@ -34,7 +34,8 @@ class DatabaseManagerMessages(DatabaseManager):
                 direction=direction,
                 status_id=status.id if status else None,
                 is_read=is_read,
-                attempt=0
+                attempt=0,
+                statistics=statistics
             )
 
             session.add(new_message)
@@ -130,6 +131,9 @@ class DatabaseManagerMessages(DatabaseManager):
                     message.body = update_data['body']
                 if 'status' in update_data:
                     message.status = self.get_or_create_status(session, update_data['status'])
+
+                if 'statistics' in update_data:
+                    message.statistics = update_data['statistics']
 
                 session.commit()
                 self.log(f"Updated: {message_id}")

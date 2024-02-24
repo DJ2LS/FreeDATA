@@ -52,23 +52,23 @@ class ARQDataTypeHandler:
                 return session_type
         return None
 
-    def dispatch(self, type_byte: int, data: bytearray):
+    def dispatch(self, type_byte: int, data: bytearray, statistics: dict):
         session_type = self.get_session_type_from_value(type_byte)
 
         self.state_manager.setARQ(False)
 
         if session_type and session_type in self.handlers and 'handle' in self.handlers[session_type]:
-            return self.handlers[session_type]['handle'](data)
+            return self.handlers[session_type]['handle'](data, statistics)
         else:
             self.log(f"Unknown handling endpoint for type: {type_byte}", isWarning=True)
 
-    def failed(self, type_byte: int, data: bytearray):
+    def failed(self, type_byte: int, data: bytearray, statistics: dict):
         session_type = self.get_session_type_from_value(type_byte)
 
         self.state_manager.setARQ(False)
 
         if session_type in self.handlers and 'failed' in self.handlers[session_type]:
-            return self.handlers[session_type]['failed'](data)
+            return self.handlers[session_type]['failed'](data, statistics)
         else:
             self.log(f"Unknown handling endpoint: {session_type}", isWarning=True)
 
@@ -78,13 +78,13 @@ class ARQDataTypeHandler:
         else:
             self.log(f"Unknown preparation endpoint: {session_type}", isWarning=True)
 
-    def transmitted(self, type_byte: int, data: bytearray):
+    def transmitted(self, type_byte: int, data: bytearray, statistics: dict):
         session_type = self.get_session_type_from_value(type_byte)
 
         self.state_manager.setARQ(False)
 
         if session_type in self.handlers and 'transmitted' in self.handlers[session_type]:
-            return self.handlers[session_type]['transmitted'](data)
+            return self.handlers[session_type]['transmitted'](data, statistics)
         else:
             self.log(f"Unknown handling endpoint: {session_type}", isWarning=True)
 
@@ -97,14 +97,14 @@ class ARQDataTypeHandler:
         self.log(f"Preparing uncompressed data: {len(data)} Bytes")
         return data
 
-    def handle_raw(self, data):
+    def handle_raw(self, data, statistics):
         self.log(f"Handling uncompressed data: {len(data)} Bytes")
         return data
 
-    def failed_raw(self, data):
+    def failed_raw(self, data, statistics):
         return
 
-    def transmitted_raw(self, data):
+    def transmitted_raw(self, data, statistics):
         return data
 
     def prepare_raw_lzma(self, data):
@@ -112,15 +112,15 @@ class ARQDataTypeHandler:
         self.log(f"Preparing LZMA compressed data: {len(data)} Bytes >>> {len(compressed_data)} Bytes")
         return compressed_data
 
-    def handle_raw_lzma(self, data):
+    def handle_raw_lzma(self, data, statistics):
         decompressed_data = lzma.decompress(data)
         self.log(f"Handling LZMA compressed data: {len(decompressed_data)} Bytes from {len(data)} Bytes")
         return decompressed_data
 
-    def failed_raw_lzma(self, data):
+    def failed_raw_lzma(self, data, statistics):
         return
 
-    def transmitted_raw_lzma(self, data):
+    def transmitted_raw_lzma(self, data, statistics):
         decompressed_data = lzma.decompress(data)
         return decompressed_data
 
@@ -129,15 +129,15 @@ class ARQDataTypeHandler:
         self.log(f"Preparing GZIP compressed data: {len(data)} Bytes >>> {len(compressed_data)} Bytes")
         return compressed_data
 
-    def handle_raw_gzip(self, data):
+    def handle_raw_gzip(self, data, statistics):
         decompressed_data = gzip.decompress(data)
         self.log(f"Handling GZIP compressed data: {len(decompressed_data)} Bytes from {len(data)} Bytes")
         return decompressed_data
 
-    def failed_raw_gzip(self, data):
+    def failed_raw_gzip(self, data, statistics):
         return
 
-    def transmitted_raw_gzip(self, data):
+    def transmitted_raw_gzip(self, data, statistics):
         decompressed_data = gzip.decompress(data)
         return decompressed_data
 
@@ -146,19 +146,19 @@ class ARQDataTypeHandler:
         self.log(f"Preparing LZMA compressed P2PMSG data: {len(data)} Bytes >>> {len(compressed_data)} Bytes")
         return compressed_data
 
-    def handle_p2pmsg_lzma(self, data):
+    def handle_p2pmsg_lzma(self, data, statistics):
         decompressed_data = lzma.decompress(data)
         self.log(f"Handling LZMA compressed P2PMSG data: {len(decompressed_data)} Bytes from {len(data)} Bytes")
-        message_received(self.event_manager, self.state_manager, decompressed_data)
+        message_received(self.event_manager, self.state_manager, decompressed_data, statistics)
         return decompressed_data
 
-    def failed_p2pmsg_lzma(self, data):
+    def failed_p2pmsg_lzma(self, data, statistics):
         decompressed_data = lzma.decompress(data)
         self.log(f"Handling failed LZMA compressed P2PMSG data: {len(decompressed_data)} Bytes from {len(data)} Bytes", isWarning=True)
-        message_failed(self.event_manager, self.state_manager, decompressed_data)
+        message_failed(self.event_manager, self.state_manager, decompressed_data, statistics)
         return decompressed_data
 
-    def transmitted_p2pmsg_lzma(self, data):
+    def transmitted_p2pmsg_lzma(self, data, statistics):
         decompressed_data = lzma.decompress(data)
-        message_transmitted(self.event_manager, self.state_manager, decompressed_data)
+        message_transmitted(self.event_manager, self.state_manager, decompressed_data, statistics)
         return decompressed_data
