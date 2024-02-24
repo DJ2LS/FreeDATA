@@ -79,10 +79,13 @@ class ScheduleManager:
 
     def check_for_queued_messages(self):
         if not self.state_manager.getARQ():
-            if DatabaseManagerMessages(self.event_manager).get_first_queued_message():
-                params = DatabaseManagerMessages(self.event_manager).get_first_queued_message()
-                command = command_message_send.SendMessageCommand(self.config_manager.read(), self.state_manager, self.event_manager, params)
-                command.transmit(self.modem)
-
+            try:
+                if first_queued_message := DatabaseManagerMessages(
+                    self.event_manager
+                ).get_first_queued_message():
+                    command = command_message_send.SendMessageCommand(self.config_manager.read(), self.state_manager, self.event_manager, first_queued_message)
+                    command.transmit(self.modem)
+            except Exception as e:
+                print(e)
         return
 
