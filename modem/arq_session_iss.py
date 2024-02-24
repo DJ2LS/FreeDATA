@@ -204,7 +204,7 @@ class ARQSessionISS(arq_session.ARQSession):
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=self.calculate_session_statistics())
         self.states.setARQ(False)
 
-        self.arq_data_type_handler.failed(self.type_byte, self.data)
+        self.arq_data_type_handler.failed(self.type_byte, self.data, self.calculate_session_statistics())
         return None, None
 
     def abort_transmission(self, irs_frame=None):
