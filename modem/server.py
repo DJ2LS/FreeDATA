@@ -96,6 +96,9 @@ def index():
 @app.route('/config', methods=['GET', 'POST'])
 def config():
     if request.method in ['POST']:
+
+        if not validations.validate_remote_config(request.json):
+            return api_abort("wrong config", 500)
         # check if config already exists
         if app.config_manager.read() == request.json:
             return api_response(request.json)

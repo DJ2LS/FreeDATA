@@ -1,5 +1,16 @@
 import re
 
+
+def validate_remote_config(config):
+    if not config:
+        return
+
+    mygrid = config["STATION"]["mygrid"]
+    if len(mygrid) != 6:
+        raise ValueError(f"Gridsquare must be 6 characters!")
+
+    return True
+
 def validate_freedata_callsign(callsign):
     #regexp = "^[a-zA-Z]+\d+\w+-\d{1,2}$"
     regexp = "^[A-Za-z0-9]{1,7}-[0-9]{1,3}$" # still broken - we need to allow all ssids form 0 - 255
