@@ -65,17 +65,26 @@ class ScheduleManager:
             self.scheduler_thread.join()
 
     def transmit_beacon(self):
-        if not self.state_manager.getARQ() and self.state_manager.is_beacon_running:
-                cmd = command_beacon.BeaconCommand(self.config, self.state_manager, self.event_manager)
-                cmd.run(self.event_manager, self.modem)
+        try:
+            if not self.state_manager.getARQ() and self.state_manager.is_beacon_running:
+                    cmd = command_beacon.BeaconCommand(self.config, self.state_manager, self.event_manager)
+                    cmd.run(self.event_manager, self.modem)
+        except Exception as e:
+            print(e)
 
     def delete_beacons(self):
-        DatabaseManagerBeacon(self.event_manager).beacon_cleanup_older_than_days(2)
+        try:
+            DatabaseManagerBeacon(self.event_manager).beacon_cleanup_older_than_days(2)
+        except Exception as e:
+            print(e)
 
     def push_to_explorer(self):
         self.config = self.config_manager.read()
         if self.config['STATION']['enable_explorer']:
-            explorer.explorer(self.modem_version, self.config_manager, self.state_manager).push()
+            try:
+                explorer.explorer(self.modem_version, self.config_manager, self.state_manager).push()
+            except Exception as e:
+                print(e)
 
     def check_for_queued_messages(self):
         if not self.state_manager.getARQ():
