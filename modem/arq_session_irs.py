@@ -151,14 +151,14 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.received_bytes += len(data_part)
         self.log(f"Received {self.received_bytes}/{self.total_length} bytes")
         self.event_manager.send_arq_session_progress(
-            False, self.id, self.dxcall, self.received_bytes, self.total_length, self.state.name, self.calculate_session_statistics())
+            False, self.id, self.dxcall, self.received_bytes, self.total_length, self.state.name, self.calculate_session_statistics(self.received_bytes, self.total_length))
 
         return True
 
     def receive_data(self, burst_frame):
         self.process_incoming_data(burst_frame)
         # update statistics
-        self.update_histograms()
+        self.update_histograms(self.received_bytes, self.total_length)
         
         if not self.all_data_received():
             self.calibrate_speed_settings(burst_frame=burst_frame)
@@ -189,7 +189,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.session_ended = time.time()
             self.set_state(IRS_State.ENDED)
             self.event_manager.send_arq_session_finished(
-                False, self.id, self.dxcall, True, self.state.name, data=self.received_data, statistics=self.calculate_session_statistics())
+                False, self.id, self.dxcall, True, self.state.name, data=self.received_data, statistics=self.calculate_session_statistics(self.received_bytes, self.total_length))
 
             return self.received_data, self.type_byte
         else:
@@ -256,7 +256,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.set_state(IRS_State.ABORTED)
         self.states.setARQ(False)
         self.event_manager.send_arq_session_finished(
-                False, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics())
+                False, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.received_bytes, self.total_length))
         return None, None
 
     def transmission_failed(self, irs_frame=None):
@@ -264,6 +264,6 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.session_ended = time.time()
         self.set_state(IRS_State.FAILED)
         self.log(f"Transmission failed!")
-        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=self.calculate_session_statistics())
+        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=self.calculate_session_statistics(self.received_bytes, self.total_length))
         self.states.setARQ(False)
         return None, None

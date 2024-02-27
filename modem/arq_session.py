@@ -104,7 +104,7 @@ class ARQSession():
                 action_name = self.STATE_TRANSITION[self.state][frame_type]
                 received_data, type_byte = getattr(self, action_name)(frame)
                 if isinstance(received_data, bytearray) and isinstance(type_byte, int):
-                    self.arq_data_type_handler.dispatch(type_byte, received_data, self.calculate_session_statistics())
+                    self.arq_data_type_handler.dispatch(type_byte, received_data, self.update_histograms(len(received_data), len(received_data)))
                 return
         
         self.log(f"Ignoring unknown transition from state {self.state.name} with frame {frame['frame_type']}")
@@ -121,15 +121,15 @@ class ARQSession():
 
         return self.session_ended - self.session_started
 
-    def calculate_session_statistics(self):
+    def calculate_session_statistics(self, confirmed_bytes, total_bytes):
         duration = self.calculate_session_duration()
-        total_bytes = self.total_length
+        #total_bytes = self.total_length
         # self.total_length
         duration_in_minutes = duration / 60  # Convert duration from seconds to minutes
 
         # Calculate bytes per minute
         if duration_in_minutes > 0:
-            bytes_per_minute = int(total_bytes / duration_in_minutes)
+            bytes_per_minute = int(confirmed_bytes / duration_in_minutes)
         else:
             bytes_per_minute = 0
 
@@ -147,11 +147,12 @@ class ARQSession():
             'bpm_histogram': bpm_histogram_dict,
         }
 
-    def update_histograms(self):
-        stats = self.calculate_session_statistics()
+    def update_histograms(self, confirmed_bytes, total_bytes):
+        stats = self.calculate_session_statistics(confirmed_bytes, total_bytes)
         self.snr_histogram.append(self.snr)
         self.bpm_histogram.append(stats['bytes_per_minute'])
         self.time_histogram.append(datetime.datetime.now().isoformat())
+        return stats
 
     def get_appropriate_speed_level(self, snr):
         # Start with the lowest speed level as default
