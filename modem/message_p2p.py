@@ -7,23 +7,28 @@ from message_system_db_messages import DatabaseManagerMessages
 #import command_message_send
 
 
-def message_received(event_manager, state_manager, data):
+def message_received(event_manager, state_manager, data, statistics):
     decompressed_json_string = data.decode('utf-8')
     received_message_obj = MessageP2P.from_payload(decompressed_json_string)
     received_message_dict = MessageP2P.to_dict(received_message_obj)
-    DatabaseManagerMessages(event_manager).add_message(received_message_dict, direction='receive', status='received', is_read=False)
+    DatabaseManagerMessages(event_manager).add_message(received_message_dict, statistics, direction='receive', status='received', is_read=False)
 
-def message_transmitted(event_manager, state_manager, data):
+def message_transmitted(event_manager, state_manager, data, statistics):
     decompressed_json_string = data.decode('utf-8')
     payload_message_obj = MessageP2P.from_payload(decompressed_json_string)
     payload_message = MessageP2P.to_dict(payload_message_obj)
+    # Todo we need to optimize this - WIP
     DatabaseManagerMessages(event_manager).update_message(payload_message["id"], update_data={'status': 'transmitted'})
+    DatabaseManagerMessages(event_manager).update_message(payload_message["id"], update_data={'statistics': statistics})
 
-def message_failed(event_manager, state_manager, data):
+
+def message_failed(event_manager, state_manager, data, statistics):
     decompressed_json_string = data.decode('utf-8')
     payload_message_obj = MessageP2P.from_payload(decompressed_json_string)
     payload_message = MessageP2P.to_dict(payload_message_obj)
+    # Todo we need to optimize this - WIP
     DatabaseManagerMessages(event_manager).update_message(payload_message["id"], update_data={'status': 'failed'})
+    DatabaseManagerMessages(event_manager).update_message(payload_message["id"], update_data={'statistics': statistics})
 
 class MessageP2P:
     def __init__(self, id: str, origin: str, destination: str, body: str, attachments: list) -> None:

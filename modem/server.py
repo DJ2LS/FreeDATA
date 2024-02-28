@@ -9,7 +9,7 @@ import audio
 import queue
 import service_manager
 import state_manager
-import ujson as json
+import json
 import websocket_manager as wsm
 import api_validations as validations
 import command_cq
@@ -29,7 +29,7 @@ app = Flask(__name__)
 CORS(app)
 CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
-MODEM_VERSION = "0.13.7-alpha"
+MODEM_VERSION = "0.14.0-alpha-exp"
 
 # set config file to use
 def set_config():
@@ -96,6 +96,9 @@ def index():
 @app.route('/config', methods=['GET', 'POST'])
 def config():
     if request.method in ['POST']:
+
+        if not validations.validate_remote_config(request.json):
+            return api_abort("wrong config", 500)
         # check if config already exists
         if app.config_manager.read() == request.json:
             return api_response(request.json)

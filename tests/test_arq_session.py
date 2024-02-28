@@ -144,7 +144,7 @@ class TestARQSession(unittest.TestCase):
         self.waitAndCloseChannels()
         del cmd
 
-    def DisabledtestARQSessionLargePayload(self):
+    def testARQSessionLargePayload(self):
         # set Packet Error Rate (PER) / frame loss probability
         self.loss_probability = 0
 

@@ -8,7 +8,7 @@ Created on 05.11.23
 # pylint: disable=import-outside-toplevel, attribute-defined-outside-init
 
 import requests
-import ujson as json
+import json
 import structlog
 
 log = structlog.get_logger("stats")

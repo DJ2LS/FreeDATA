@@ -42,7 +42,10 @@ class EventManager:
         }
         self.broadcast(event)
 
-    def send_arq_session_progress(self, outbound: bool, session_id, dxcall, received_bytes, total_bytes, state):
+    def send_arq_session_progress(self, outbound: bool, session_id, dxcall, received_bytes, total_bytes, state, statistics=None):
+        if statistics is None:
+            statistics = {}
+
         direction = 'outbound' if outbound else 'inbound'
         event = {
                 "type": "arq",
@@ -52,6 +55,7 @@ class EventManager:
                 'received_bytes': received_bytes,
                 'total_bytes': total_bytes,
                 'state': state,
+                'statistics': statistics,
             }
         }
         self.broadcast(event)

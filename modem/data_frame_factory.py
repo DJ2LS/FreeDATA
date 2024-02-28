@@ -144,6 +144,7 @@ class DataFrameFactory:
         self.template_list[FR_TYPE.ARQ_BURST_FRAME.value] = {
             "frame_length": None,
             "session_id": 1,
+            "speed_level": 1,
             "offset": 4,
             "data": "dynamic",
         }
@@ -394,9 +395,10 @@ class DataFrameFactory:
         }        
         return self.construct(FR_TYPE.ARQ_SESSION_INFO_ACK, payload)
 
-    def build_arq_burst_frame(self, freedv_mode: codec2.FREEDV_MODE, session_id: int, offset: int, data: bytes):
+    def build_arq_burst_frame(self, freedv_mode: codec2.FREEDV_MODE, session_id: int, offset: int, data: bytes, speed_level: int):
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),
+            "speed_level": speed_level.to_bytes(1, 'big'),
             "offset": offset.to_bytes(4, 'big'),
             "data": data,
         }
@@ -414,7 +416,6 @@ class DataFrameFactory:
 
         if flag_abort:
             flag = helpers.set_flag(flag, 'ABORT', True, self.ARQ_FLAGS)
-
 
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),

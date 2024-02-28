@@ -76,8 +76,7 @@ class ARQSessionISS(arq_session.ARQSession):
             if len(self.state_manager.arq_iss_sessions) >= 255:
                 return False
 
-
-    def transmit_wait_and_retry(self, frame_or_burst, timeout, retries, mode):
+    def transmit_wait_and_retry(self, frame_or_burst, timeout, retries, mode, isARQBurst=False, ):
         while retries > 0:
             self.event_frame_received = threading.Event()
             if isinstance(frame_or_burst, list): burst = frame_or_burst
@@ -90,12 +89,19 @@ class ARQSessionISS(arq_session.ARQSession):
                 return
             self.log("Timeout!")
             retries = retries - 1
-        
+
+            # TODO TEMPORARY TEST FOR SENDING IN LOWER SPEED LEVEL IF WE HAVE TWO FAILED TRANSMISSIONS!!!
+            if retries == 8 and isARQBurst and self.speed_level > 0:
+                self.log("SENDING IN FALLBACK SPEED LEVEL", isWarning=True)
+                self.speed_level = 0
+                self.send_data({'flag':{'ABORT': False, 'FINAL': False}, 'speed_level': self.speed_level})
+                return
+
         self.set_state(ISS_State.FAILED)
         self.transmission_failed()
 
-    def launch_twr(self, frame_or_burst, timeout, retries, mode):
-        twr = threading.Thread(target = self.transmit_wait_and_retry, args=[frame_or_burst, timeout, retries, mode], daemon=True)
+    def launch_twr(self, frame_or_burst, timeout, retries, mode, isARQBurst=False):
+        twr = threading.Thread(target = self.transmit_wait_and_retry, args=[frame_or_burst, timeout, retries, mode, isARQBurst], daemon=True)
         twr.start()
 
     def start(self):
@@ -105,11 +111,27 @@ class ARQSessionISS(arq_session.ARQSession):
         self.launch_twr(session_open_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(ISS_State.OPEN_SENT)
 
-    def set_speed_and_frames_per_burst(self, frame):
-        self.speed_level = frame['speed_level']
-        self.log(f"Speed level set to {self.speed_level}")
-        self.frames_per_burst = frame['frames_per_burst']
-        self.log(f"Frames per burst set to {self.frames_per_burst}")
+    def update_speed_level(self, frame):
+        self.log("---------------------------------------------------------", isWarning=True)
+
+        # Log the received frame for debugging
+        self.log(f"Received frame: {frame}", isWarning=True)
+
+        # Extract the speed_level directly from the frame
+        if 'speed_level' in frame:
+            new_speed_level = frame['speed_level']
+            # Ensure the new speed level is within the allowable range
+            if 0 <= new_speed_level < len(self.SPEED_LEVEL_DICT):
+                # Log the speed level change if it's different from the current speed level
+                if new_speed_level != self.speed_level:
+                    self.log(f"Changing speed level from {self.speed_level} to {new_speed_level}", isWarning=True)
+                    self.speed_level = new_speed_level  # Update the current speed level
+                else:
+                    self.log("Received speed level is the same as the current speed level.", isWarning=True)
+            else:
+                self.log(f"Received speed level {new_speed_level} is out of allowable range.", isWarning=True)
+        else:
+            self.log("No speed level specified in the received frame.", isWarning=True)
 
     def send_info(self, irs_frame):
         # check if we received an abort flag
@@ -119,7 +141,7 @@ class ARQSessionISS(arq_session.ARQSession):
 
         info_frame = self.frame_factory.build_arq_session_info(self.id, self.total_length,
                                                                helpers.get_crc_32(self.data), 
-                                                               self.snr[0], self.type_byte)
+                                                               self.snr, self.type_byte)
 
         self.launch_twr(info_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(ISS_State.INFO_SENT)
@@ -127,14 +149,15 @@ class ARQSessionISS(arq_session.ARQSession):
         return None, None
 
     def send_data(self, irs_frame):
+        # update statistics
+        self.update_histograms(self.confirmed_bytes, self.total_length)
 
-        self.set_speed_and_frames_per_burst(irs_frame)
-
+        self.update_speed_level(irs_frame)
         if 'offset' in irs_frame:
             self.confirmed_bytes = irs_frame['offset']
             self.log(f"IRS confirmed {self.confirmed_bytes}/{self.total_length} bytes")
             self.event_manager.send_arq_session_progress(
-                True, self.id, self.dxcall, self.confirmed_bytes, self.total_length, self.state.name)
+                True, self.id, self.dxcall, self.confirmed_bytes, self.total_length, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
 
         # check if we received an abort flag
         if irs_frame["flag"]["ABORT"]:
@@ -156,9 +179,9 @@ class ARQSessionISS(arq_session.ARQSession):
             payload = self.data[offset : offset + payload_size]
             data_frame = self.frame_factory.build_arq_burst_frame(
                 self.SPEED_LEVEL_DICT[self.speed_level]["mode"],
-                self.id, self.confirmed_bytes, payload)
+                self.id, self.confirmed_bytes, payload, self.speed_level)
             burst.append(data_frame)
-        self.launch_twr(burst, self.TIMEOUT_TRANSFER, self.RETRIES_CONNECT, mode='auto')
+        self.launch_twr(burst, self.TIMEOUT_TRANSFER, self.RETRIES_CONNECT, mode='auto', isARQBurst=True)
         self.set_state(ISS_State.BURST_SENT)
         return None, None
 
@@ -167,10 +190,10 @@ class ARQSessionISS(arq_session.ARQSession):
         self.session_ended = time.time()
         self.set_state(ISS_State.ENDED)
         self.log(f"All data transfered! flag_final={irs_frame['flag']['FINAL']}, flag_checksum={irs_frame['flag']['CHECKSUM']}")
-        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,True, self.state.name, statistics=self.calculate_session_statistics())
+        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,True, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
+        self.arq_data_type_handler.transmitted(self.type_byte, self.data, self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
         self.state_manager.remove_arq_iss_session(self.id)
         self.states.setARQ(False)
-        self.arq_data_type_handler.transmitted(self.type_byte, self.data)
         return None, None
 
     def transmission_failed(self, irs_frame=None):
@@ -178,10 +201,10 @@ class ARQSessionISS(arq_session.ARQSession):
         self.session_ended = time.time()
         self.set_state(ISS_State.FAILED)
         self.log(f"Transmission failed!")
-        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=self.calculate_session_statistics())
+        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
         self.states.setARQ(False)
 
-        self.arq_data_type_handler.failed(self.type_byte, self.data)
+        self.arq_data_type_handler.failed(self.type_byte, self.data, self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
         return None, None
 
     def abort_transmission(self, irs_frame=None):
@@ -190,7 +213,7 @@ class ARQSessionISS(arq_session.ARQSession):
         self.set_state(ISS_State.ABORTING)
 
         self.event_manager.send_arq_session_finished(
-            True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics())
+            True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
 
         # break actual retries
         self.event_frame_received.set()
@@ -210,7 +233,7 @@ class ARQSessionISS(arq_session.ARQSession):
         self.event_frame_received.set()
 
         self.event_manager.send_arq_session_finished(
-            True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics())
+            True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
         self.state_manager.remove_arq_iss_session(self.id)
         self.states.setARQ(False)
         return None, None

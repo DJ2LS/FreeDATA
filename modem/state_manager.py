@@ -1,5 +1,4 @@
 import time
-import ujson as json
 import threading
 import numpy as np
 class StateManager:
