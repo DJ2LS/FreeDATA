@@ -57,7 +57,7 @@ class TestIntegration(unittest.TestCase):
         r = requests.get(self.url + '/config')
         self.assertEqual(r.status_code, 200)
         config = r.json()
-        self.assertEqual(config['NETWORK']['modemport'], 3050)
+        self.assertEqual(config['NETWORK']['modemport'], 5000)
 
 if __name__ == '__main__':
     unittest.main()
