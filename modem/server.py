@@ -9,7 +9,7 @@ import audio
 import queue
 import service_manager
 import state_manager
-import ujson as json
+import json
 import websocket_manager as wsm
 import api_validations as validations
 import command_cq

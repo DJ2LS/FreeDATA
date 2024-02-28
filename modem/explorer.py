@@ -9,7 +9,7 @@ Created on 05.11.23
 
 import requests
 import threading
-import ujson as json
+import json
 import structlog
 import sched
 import time
