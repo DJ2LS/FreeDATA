@@ -53,6 +53,7 @@ export const useStateStore = defineStore("stateStore", () => {
   var arq_speed_list_bpm = ref([]);
   var arq_speed_list_snr = ref([]);
 
+  /* TODO Those 3 can be removed I guess , DJ2LS*/
   var arq_seconds_until_finish = ref();
   var arq_seconds_until_timeout = ref();
   var arq_seconds_until_timeout_percent = ref();

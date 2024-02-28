@@ -1,3 +1,4 @@
+import datetime
 import queue, threading
 import codec2
 import data_frame_factory
@@ -44,6 +45,8 @@ class ARQSession():
 
         self.modem = modem
         self.speed_level = 0
+        self.previous_speed_level = 0
+
         self.frames_per_burst = 1
 
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
@@ -54,6 +57,11 @@ class ARQSession():
         self.session_started = time.time()
         self.session_ended = 0
         self.session_max_age = 500
+
+        # histogram lists for storing statistics
+        self.snr_histogram = []
+        self.bpm_histogram = []
+        self.time_histogram = []
 
     def log(self, message, isWarning = False):
         msg = f"[{type(self).__name__}][id={self.id}][state={self.state}]: {message}"
@@ -84,7 +92,7 @@ class ARQSession():
             )
 
     def set_details(self, snr, frequency_offset):
-        self.snr.append(snr)
+        self.snr = snr
         self.frequency_offset = frequency_offset
 
     def on_frame_received(self, frame):
@@ -96,8 +104,7 @@ class ARQSession():
                 action_name = self.STATE_TRANSITION[self.state][frame_type]
                 received_data, type_byte = getattr(self, action_name)(frame)
                 if isinstance(received_data, bytearray) and isinstance(type_byte, int):
-                    self.arq_data_type_handler.dispatch(type_byte, received_data)
-
+                    self.arq_data_type_handler.dispatch(type_byte, received_data, self.update_histograms(len(received_data), len(received_data)))
                 return
         
         self.log(f"Ignoring unknown transition from state {self.state.name} with frame {frame['frame_type']}")
@@ -109,22 +116,49 @@ class ARQSession():
         return False
 
     def calculate_session_duration(self):
+        if self.session_ended == 0:
+            return time.time() - self.session_started
+
         return self.session_ended - self.session_started
 
-    def calculate_session_statistics(self):
+    def calculate_session_statistics(self, confirmed_bytes, total_bytes):
         duration = self.calculate_session_duration()
-        total_bytes = self.total_length
+        #total_bytes = self.total_length
         # self.total_length
         duration_in_minutes = duration / 60  # Convert duration from seconds to minutes
 
         # Calculate bytes per minute
         if duration_in_minutes > 0:
-            bytes_per_minute = int(total_bytes / duration_in_minutes)
+            bytes_per_minute = int(confirmed_bytes / duration_in_minutes)
         else:
             bytes_per_minute = 0
 
+        # Convert histograms lists to dictionaries
+        time_histogram_dict = {i: timestamp for i, timestamp in enumerate(self.time_histogram)}
+        snr_histogram_dict = {i: snr for i, snr in enumerate(self.snr_histogram)}
+        bpm_histogram_dict = {i: bpm for i, bpm in enumerate(self.bpm_histogram)}
+
         return {
-                'total_bytes': total_bytes,
-                'duration': duration,
-                'bytes_per_minute': bytes_per_minute
-            }
+            'total_bytes': total_bytes,
+            'duration': duration,
+            'bytes_per_minute': bytes_per_minute,
+            'time_histogram': time_histogram_dict,
+            'snr_histogram': snr_histogram_dict,
+            'bpm_histogram': bpm_histogram_dict,
+        }
+
+    def update_histograms(self, confirmed_bytes, total_bytes):
+        stats = self.calculate_session_statistics(confirmed_bytes, total_bytes)
+        self.snr_histogram.append(self.snr)
+        self.bpm_histogram.append(stats['bytes_per_minute'])
+        self.time_histogram.append(datetime.datetime.now().isoformat())
+        return stats
+
+    def get_appropriate_speed_level(self, snr):
+        # Start with the lowest speed level as default
+        # In case of a not fitting SNR, we return the lowest speed level
+        appropriate_speed_level = min(self.SPEED_LEVEL_DICT.keys())
+        for level, details in self.SPEED_LEVEL_DICT.items():
+            if snr >= details['min_snr'] and level > appropriate_speed_level:
+                appropriate_speed_level = level
+        return appropriate_speed_level

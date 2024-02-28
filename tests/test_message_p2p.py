@@ -60,7 +60,7 @@ class TestDataFrameFactory(unittest.TestCase):
         payload = message.to_payload()
         received_message = MessageP2P.from_payload(payload)
         received_message_dict = MessageP2P.to_dict(received_message)
-        self.database_manager.add_message(received_message_dict)
+        self.database_manager.add_message(received_message_dict, statistics={})
 
         self.assertEqual(message.origin, received_message.origin)
         self.assertEqual(message.destination, received_message.destination)

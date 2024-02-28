@@ -5,7 +5,6 @@ PyAudio
 pyserial
 sounddevice
 structlog
-ujson
 requests
 chardet
 colorama
