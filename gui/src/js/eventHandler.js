@@ -190,9 +190,12 @@ export function eventDispatcher(data) {
               100;
             stateStore.arq_total_bytes =
               data["arq-transfer-outbound"].received_bytes;
-            stateStore.arq_speed_list_timestamp = data["arq-transfer-outbound"].statistics.time_histogram
-            stateStore.arq_speed_list_bpm = data["arq-transfer-outbound"].statistics.bpm_histogram
-            stateStore.arq_speed_list_snr = data["arq-transfer-outbound"].statistics.snr_histogram
+            stateStore.arq_speed_list_timestamp =
+              data["arq-transfer-outbound"].statistics.time_histogram;
+            stateStore.arq_speed_list_bpm =
+              data["arq-transfer-outbound"].statistics.bpm_histogram;
+            stateStore.arq_speed_list_snr =
+              data["arq-transfer-outbound"].statistics.snr_histogram;
             return;
 
           case "ABORTING":
@@ -235,9 +238,12 @@ export function eventDispatcher(data) {
             stateStore.dxcallsign = data["arq-transfer-inbound"].dxcall;
             stateStore.arq_transmission_percent = 0;
             stateStore.arq_total_bytes = 0;
-            stateStore.arq_speed_list_timestamp = data["arq-transfer-inbound"].statistics.time_histogram
-            stateStore.arq_speed_list_bpm = data["arq-transfer-inbound"].statistics.bpm_histogram
-            stateStore.arq_speed_list_snr = data["arq-transfer-inbound"].statistics.snr_histogram
+            stateStore.arq_speed_list_timestamp =
+              data["arq-transfer-inbound"].statistics.time_histogram;
+            stateStore.arq_speed_list_bpm =
+              data["arq-transfer-inbound"].statistics.bpm_histogram;
+            stateStore.arq_speed_list_snr =
+              data["arq-transfer-inbound"].statistics.snr_histogram;
 
             return;
 
