@@ -48,7 +48,7 @@ class TestIntegration(unittest.TestCase):
         self.assertIn('RADIO', config)
 
     def test_config_post(self):
-        config = {'NETWORK': {'modemport' : 3050}}
+        config = {'STATION': {'mygrid' : 'JN48ea'}}
         r = requests.post(self.url + '/config', 
                           headers={'Content-type': 'application/json'},
                           data = json.dumps(config))
