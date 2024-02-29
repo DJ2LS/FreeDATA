@@ -2,7 +2,6 @@
 import { Modal } from "bootstrap";
 import { onMounted } from "vue";
 
-import settings_updater_core from "./settings_updater_core.vue";
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -25,7 +24,6 @@ import { audioInputOptions, audioOutputOptions } from "../js/deviceFormHelper";
 import { serialDeviceOptions } from "../js/deviceFormHelper";
 
 const version = import.meta.env.PACKAGE_VERSION;
-var updateAvailable = process.env.FDUpdateAvail;
 
 // start modemCheck modal once on startup
 onMounted(() => {
@@ -392,18 +390,7 @@ function testHamlib() {
                   data-bs-toggle="collapse"
                 >
                   Version
-                  <span
-                    class="badge ms-2"
-                    :class="
-                      updateAvailable === '1' ? 'bg-warning' : 'bg-success'
-                    "
-                  >
-                    {{
-                      updateAvailable === "1"
-                        ? "Update available ! ! ! !"
-                        : "Current"
-                    }}</span
-                  >
+
                 </button>
               </h2>
               <div
@@ -426,9 +413,7 @@ function testHamlib() {
                   >
                     Modem version | {{ state.modem_version }}
                   </button>
-                  <div :class="updateAvailable === '1' ? '' : 'd-none'">
-                    <settings_updater_core />
-                  </div>
+
                 </div>
               </div>
             </div>
