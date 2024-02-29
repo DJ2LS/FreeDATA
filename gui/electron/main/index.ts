@@ -1,6 +1,6 @@
 import { app, BrowserWindow, shell, ipcMain } from "electron";
 import { release, platform } from "node:os";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 import { existsSync } from "fs";
 import { spawn } from "child_process";
 
