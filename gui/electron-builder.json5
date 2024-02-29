@@ -45,7 +45,7 @@
     "icon": "build/icon.png",
     "target": [
       {
-        "target": "nsis",
+        "target": "portable",
         "arch": ["arm64", "x64"]
       }
     ],
