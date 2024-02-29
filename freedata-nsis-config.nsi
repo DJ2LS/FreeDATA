@@ -57,12 +57,12 @@ Section "FreeData Server" SEC01
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 SectionEnd
 
-Section "FreeData GUI" SEC02
+Section "FreeData x64 GUI" SEC02
   ; Set output path to the GUI installation directory
   SetOutPath $INSTDIR\freedata-gui
 
   ; Add GUI files here
-  File /r "gui\release\windows-unpacked\*"
+  File /r "gui\release\win-unpacked\*"
 
   ; Create a shortcut on the desktop for the GUI
   CreateShortCut "$DESKTOP\FreeDATA GUI.lnk" "$INSTDIR\freedata-gui\freedata.exe"

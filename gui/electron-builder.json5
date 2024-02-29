@@ -51,12 +51,6 @@
     ],
     "artifactName": "${productName}-GUI-Windows-${version}.${ext}"
   },
-  "nsis": {
-    "oneClick": false,
-    "perMachine": false,
-    "allowToChangeInstallationDirectory": true,
-    "deleteAppDataOnUninstall": true
-  },
   "linux": {
     "category": "Development",
     "target": [
