@@ -111,37 +111,28 @@ app.whenReady().then(() => {
       console.log("Unhandled OS Platform: ", platform());
       break;
   }
-
+  console.log("serverPath:", serverPath);
   //Start daemon binary if it exists
   if (existsSync(serverPath)) {
-    console.log("Starting freedata-server binary");
-    console.log("serverPath:", serverPath);
-    console.log("CWD:", join(serverPath, ".."));
+    console.log(`Starting server with path: ${serverPath}`);
+serverProcess = spawn(serverPath, [], { shell: true });
 
-    serverProcess = spawn(serverPath, [], { shell: true });
+    serverProcess.on('error', (err) => {
+  console.error('Failed to start server process:', err);
+});
+serverProcess.stdout.on('data', (data) => {
+  console.log(`stdout: ${data}`);
+});
 
-    // return process messages
-    serverProcess.on("error", (err) => {
-      //serverProcessLog.error(`error when starting daemon: ${err}`);
-      console.log(err);
-    });
-    serverProcess.on("message", () => {
-      // serverProcessLog.info(`${data}`);
-    });
-    serverProcess.stdout.on("data", () => {
-      // serverProcessLog.info(`${data}`);
-    });
-    serverProcess.stderr.on("data", (data) => {
-      // serverProcessLog.info(`${data}`);
-      console.log(data);
-    });
-    serverProcess.on("close", (code) => {
-      // serverProcessLog.warn(`serverProcess exited with code ${code}`);
-    });
+serverProcess.stderr.on('data', (data) => {
+  console.error(`stderr: ${data}`);
+});
+
+
   } else {
     serverProcess = null;
     serverPath = null;
-    console.log("Daemon binary doesn't exist--normal for dev environments.");
+    console.log("Server binary doesn't exist in setup folder");
   }
 
   //)
