@@ -96,6 +96,7 @@ app.whenReady().then(() => {
   console.log(platform());
   //Generate daemon binary path
   var serverPath = "";
+
   switch (platform().toLowerCase()) {
     //case "darwin":
     //  serverPath = join(process.resourcesPath, "modem", "freedata-server");
@@ -104,7 +105,7 @@ app.whenReady().then(() => {
     //  break;
     case "win32":
     case "win64":
-    serverPath = join(process.env.LOCALAPPDATA, "FreeDATA", "freedata-server", "freedata-server.exe");
+        serverPath = join(__dirname, "..", "freedata-server", "freedata-server.exe");
     break;
     default:
       console.log("Unhandled OS Platform: ", platform());
