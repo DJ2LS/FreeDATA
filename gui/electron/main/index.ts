@@ -101,7 +101,9 @@ app.whenReady().then(() => {
   // Attempt to find Installation Folder
   console.log(app.getAppPath())
   console.log(join(app.getAppPath(), '..', '..'))
-  var basePath = join(app.getAppPath(), '..', '..') || join(process.env.PWD, '..') || join(process.env.INIT_CWD, '..') || join(process.env.DIST, '..', '..', '..');
+  console.log(join(app.getAppPath(), '..', '..', '..'))
+
+  var basePath = join(app.getAppPath(), '..', '..', '..') || join(process.env.PWD, '..') || join(process.env.INIT_CWD, '..') || join(process.env.DIST, '..', '..', '..');
 
   switch (platform().toLowerCase()) {
     //case "darwin":
