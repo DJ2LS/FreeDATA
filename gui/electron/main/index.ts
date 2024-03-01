@@ -104,16 +104,19 @@ app.whenReady().then(() => {
     //  serverPath = join(process.resourcesPath, "modem", "freedata-server");
     //  break;
     case "win32":
+        serverPath = join(process.env.PWD, "..", "freedata-server", "freedata-server.exe");
+
     case "win64":
         serverPath = join(process.env.PWD, "..", "freedata-server", "freedata-server.exe");
+
     break;
     default:
       console.log("Unhandled OS Platform: ", platform());
       break;
   }
-  console.log(process.env.PWD)
+  console.log(process.env)
   console.log("serverPath:", serverPath);
-  //Start daemon binary if it exists
+  //Start server binary if it exists
   if (existsSync(serverPath)) {
     console.log(`Starting server with path: ${serverPath}`);
 serverProcess = spawn(serverPath, [], { shell: true });
