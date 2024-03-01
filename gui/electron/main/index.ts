@@ -1,6 +1,6 @@
 import { app, BrowserWindow, shell, ipcMain } from "electron";
-import { release, platform } from "node:os";
-import { join, dirname } from "node:path";
+import { release, platform } from "os";
+import { join, dirname } from "path";
 import { existsSync } from "fs";
 import { spawn } from "child_process";
 
@@ -98,8 +98,10 @@ app.whenReady().then(() => {
   var serverPath = "";
   console.log(process.env)
 
-  // Attempt to use PWD; if undefined, use INIT_CWD and adjust accordingly
-  var basePath = path.join(process.env.PWD, '..') || path.join(process.env.INIT_CWD, '..');
+  // Attempt to find Installation Folder
+  console.log(app.getAppPath())
+  console.log(join(app.getAppPath(), '..', '..'))
+  var basePath = join(app.getAppPath(), '..', '..') || join(process.env.PWD, '..') || join(process.env.INIT_CWD, '..') || join(process.env.DIST, '..', '..', '..');
 
   switch (platform().toLowerCase()) {
     //case "darwin":
@@ -108,8 +110,6 @@ app.whenReady().then(() => {
     //  serverPath = join(process.resourcesPath, "modem", "freedata-server");
     //  break;
     case "win32":
-
-
         serverPath = join(basePath, "freedata-server", "freedata-server.exe");
 
     case "win64":
