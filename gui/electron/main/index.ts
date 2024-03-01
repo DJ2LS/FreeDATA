@@ -96,6 +96,10 @@ app.whenReady().then(() => {
   console.log(platform());
   //Generate daemon binary path
   var serverPath = "";
+  console.log(process.env)
+
+  // Attempt to use PWD; if undefined, use INIT_CWD and adjust accordingly
+  var basePath = path.join(process.env.PWD, '..') || path.join(process.env.INIT_CWD, '..');
 
   switch (platform().toLowerCase()) {
     //case "darwin":
@@ -104,17 +108,19 @@ app.whenReady().then(() => {
     //  serverPath = join(process.resourcesPath, "modem", "freedata-server");
     //  break;
     case "win32":
-        serverPath = join(process.env.PWD, "..", "freedata-server", "freedata-server.exe");
+
+
+        serverPath = join(basePath, "freedata-server", "freedata-server.exe");
 
     case "win64":
-        serverPath = join(process.env.PWD, "..", "freedata-server", "freedata-server.exe");
+        serverPath = join(basePath, "freedata-server", "freedata-server.exe");
 
     break;
     default:
       console.log("Unhandled OS Platform: ", platform());
       break;
   }
-  console.log(process.env)
+
   console.log("serverPath:", serverPath);
   //Start server binary if it exists
   if (existsSync(serverPath)) {

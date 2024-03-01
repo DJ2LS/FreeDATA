@@ -45,7 +45,7 @@ jobs:
         run: ls -R
 
       - name: Create installer
-        uses: joncloud/makensis-action@v4
+        uses: joncloud/makensis-action@v4.1
         with:
           script-file: "freedata-nsis-config.nsi"
           arguments: '/V3'
