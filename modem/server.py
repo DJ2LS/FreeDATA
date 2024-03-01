@@ -36,7 +36,8 @@ def set_config():
     if 'FREEDATA_CONFIG' in os.environ:
         config_file = os.environ['FREEDATA_CONFIG']
     else:
-        config_file = 'config.ini'
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        config_file = os.path.join(script_dir, 'config.ini')
 
     if os.path.exists(config_file):
         print(f"Using config from {config_file}")

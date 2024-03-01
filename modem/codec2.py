@@ -77,7 +77,6 @@ def freedv_get_mode_name_by_value(mode: int) -> str:
 # Get the directory of the current script file
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(script_dir)
-
 # Use script_dir to construct the paths for file search
 if sys.platform == "linux":
     files = glob.glob(os.path.join(script_dir, "**/*libcodec2*"), recursive=True)
