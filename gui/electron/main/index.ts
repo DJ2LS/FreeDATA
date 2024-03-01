@@ -149,7 +149,6 @@ serverProcess.stderr.on('data', (data) => {
 });
 
 app.on("window-all-closed", () => {
-app.on("window-all-closed", () => {
   win = null;
   if (process.platform !== "darwin") app.quit();
 });
