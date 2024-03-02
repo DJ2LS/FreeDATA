@@ -20,12 +20,15 @@ import infoScreen from "./infoScreen.vue";
 import main_modem_healthcheck from "./main_modem_healthcheck.vue";
 import Dynamic_components from "./dynamic_components.vue";
 
-import { getFreedataMessages, getConfig, getSerialDevices, getAudioDevices } from "../js/api";
+import { getFreedataMessages } from "../js/api";
+import { getRemote } from "../store/settingsStore.js";
+import { loadAudioDevices, loadSerialDevices } from "../js/deviceFormHelper";
+
 
 function getAllSettings(){
-    getConfig()
-    getAudioDevices()
-    getSerialDevices()
+    getRemote()
+    loadAudioDevices()
+    loadSerialDevices()
 }
 
 </script>

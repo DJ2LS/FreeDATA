@@ -103,8 +103,8 @@ app.whenReady().then(() => {
   console.log(join(app.getAppPath(), '..', '..'))
   console.log(join(app.getAppPath(), '..', '..', '..'))
 
-  var basePath = join(app.getAppPath(), '..', '..', '..') || join(process.env.PWD, '..') || join(process.env.INIT_CWD, '..') || join(process.env.DIST, '..', '..', '..');
-
+  //var basePath = join(app.getAppPath(), '..', '..', '..') || join(process.env.PWD, '..') || join(process.env.INIT_CWD, '..') || join(process.env.DIST, '..', '..', '..');
+  var basePath = join(app.getAppPath(), '..', '..', '..')
   switch (platform().toLowerCase()) {
     //case "darwin":
         //serverPath = join(basePath, "freedata-server", "freedata-server.exe");

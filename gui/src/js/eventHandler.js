@@ -10,13 +10,12 @@ import {
 import { displayToast } from "./popupHandler";
 import {
   getFreedataMessages,
-  getConfig,
-  getAudioDevices,
-  getSerialDevices,
   getModemState,
 } from "./api";
 import { processFreedataMessages } from "./messagesHandler.ts";
 import { processRadioStatus } from "./radioHandler.ts";
+import { loadAudioDevices, loadSerialDevices } from "./deviceFormHelper.ts";
+
 
 // ----------------- init pinia stores -------------
 import { setActivePinia } from "pinia";
@@ -96,9 +95,9 @@ export function eventDispatcher(data) {
     case "started":
       displayToast("success", "bi-arrow-left-right", "Modem started", 5000);
       getModemState();
-      getConfig();
-      getAudioDevices();
-      getSerialDevices();
+      getRemote();
+      loadAudioDevices();
+      loadSerialDevices();
       getFreedataMessages();
       processRadioStatus();
       return;
@@ -110,9 +109,9 @@ export function eventDispatcher(data) {
     case "restarted":
       displayToast("secondary", "bi-bootstrap-reboot", "Modem restarted", 5000);
       getModemState();
-      getConfig();
-      getAudioDevices();
-      getSerialDevices();
+      getRemote();
+      loadAudioDevices();
+      loadSerialDevices();
       getFreedataMessages();
       processRadioStatus();
       return;
@@ -140,11 +139,11 @@ export function eventDispatcher(data) {
         getModemState();
       });
 
-      //getConfig();
+      //getRemote();
       getModemState();
       getOverallHealth();
-      getAudioDevices();
-      getSerialDevices();
+      loadAudioDevices();
+      loadSerialDevices();
       getFreedataMessages();
       processFreedataMessages();
       processRadioStatus();
