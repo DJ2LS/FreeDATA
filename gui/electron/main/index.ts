@@ -124,11 +124,15 @@ app.whenReady().then(() => {
 
     default:
         console.log("Unhandled OS Platform: ", platform());
+        serverProcess = null;
+    serverPath = null;
         break;
   }
 
     serverProcess.on('error', (err) => {
   console.error('Failed to start server process:', err);
+  serverProcess = null;
+    serverPath = null;
 });
 serverProcess.stdout.on('data', (data) => {
   //console.log(`stdout: ${data}`);
@@ -138,12 +142,6 @@ serverProcess.stderr.on('data', (data) => {
   console.error(`stderr: ${data}`);
 });
 
-
-  } else {
-    serverProcess = null;
-    serverPath = null;
-    console.log("Server binary doesn't exist in setup folder");
-  }
 
   //)
 });
