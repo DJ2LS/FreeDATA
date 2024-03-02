@@ -73,9 +73,9 @@ async function createWindow() {
   }
 
   // Test actively push message to the Electron-Renderer
-  win.webContents.on("did-finish-load", () => {
-    win?.webContents.send("main-process-message", new Date().toLocaleString());
-  });
+  //win.webContents.on("did-finish-load", () => {
+ //   win?.webContents.send("main-process-message", new Date().toLocaleString());
+  //});
 
   // Make all links open with the browser, not with the application
   win.webContents.setWindowOpenHandler(({ url }) => {
@@ -196,13 +196,26 @@ function close_sub_processes() {
     if (serverProcess != null) {
         try {
             console.log(`Killing server process with PID: ${serverProcess.pid}`);
-            // For Windows, use taskkill to ensure all child processes are also terminated
-            if (isWindows) {
-                spawn("taskkill", ["/pid", serverProcess.pid.toString(), "/f", "/t"]);
-            } else {
-                // On macOS and Linux, sending SIGTERM should suffice
-                process.kill(serverProcess.pid);
-            }
+
+              switch (platform().toLowerCase()) {
+    //case "darwin":
+        // process.kill(serverProcess.pid);
+        //  break;
+    //case "linux":
+    // process.kill(serverProcess.pid);
+        //  break;
+    case "win32":
+        // For Windows, use taskkill to ensure all child processes are also terminated
+        spawn("taskkill", ["/pid", serverProcess.pid.toString(), "/f", "/t"]);
+        break;
+
+    default:
+        console.log("Unhandled OS Platform: ", platform());
+        serverProcess = null;
+        serverPath = null;
+        break;
+  }
+
         } catch (error) {
             console.error(`Error killing server process: ${error}`);
         }
