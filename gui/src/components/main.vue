@@ -20,7 +20,14 @@ import infoScreen from "./infoScreen.vue";
 import main_modem_healthcheck from "./main_modem_healthcheck.vue";
 import Dynamic_components from "./dynamic_components.vue";
 
-import { getFreedataMessages, getConfig } from "../js/api";
+import { getFreedataMessages, getConfig, getSerialDevices, getAudioDevices } from "../js/api";
+
+function getAllSettings(){
+    getConfig()
+    getAudioDevices()
+    getSerialDevices()
+}
+
 </script>
 
 <template>
@@ -47,6 +54,7 @@ import { getFreedataMessages, getConfig } from "../js/api";
             id="main-list-tab"
             role="tablist"
             style="margin-top: 100px"
+            @click="getAllSettings"
           >
             <main_modem_healthcheck />
 
@@ -111,7 +119,7 @@ import { getFreedataMessages, getConfig } from "../js/api";
               role="tab"
               aria-controls="list-settings"
               title="Settings"
-              @click="getConfig"
+              @click="getAllSettings"
               ><i class="bi bi-gear-wide-connected h3"></i
             ></a>
           </div>
