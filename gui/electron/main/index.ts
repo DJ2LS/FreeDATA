@@ -107,33 +107,31 @@ app.whenReady().then(() => {
 
   switch (platform().toLowerCase()) {
     //case "darwin":
-    //  serverPath = join(process.resourcesPath, "modem", "freedata-server");
+        //serverPath = join(basePath, "freedata-server", "freedata-server.exe");
+        //serverProcess = spawn(serverPath, [], { detached: true });
+        //serverProcess.unref(); // Allow the server process to continue running independently of the parent process
+        //  break;
     //case "linux":
-    //  serverPath = join(process.resourcesPath, "modem", "freedata-server");
-    //  break;
+        //serverPath = join(basePath, "freedata-server", "freedata-server.exe");
+        //serverProcess = spawn(serverPath, [], { detached: true });
+        //serverProcess.unref(); // Allow the server process to continue running independently of the parent process
+        //  break;
     case "win32":
+        console.log(`Starting server with path: ${serverPath}`);
         serverPath = join(basePath, "freedata-server", "freedata-server.exe");
+        serverProcess = spawn('cmd.exe', ['/c', 'start', 'cmd.exe', '/k', serverPath], { shell: true });
+        break;
 
-    case "win64":
-        serverPath = join(basePath, "freedata-server", "freedata-server.exe");
-
-    break;
     default:
-      console.log("Unhandled OS Platform: ", platform());
-      break;
+        console.log("Unhandled OS Platform: ", platform());
+        break;
   }
-
-  console.log("serverPath:", serverPath);
-  //Start server binary if it exists
-  if (existsSync(serverPath)) {
-    console.log(`Starting server with path: ${serverPath}`);
-serverProcess = spawn(serverPath, [], { shell: true });
 
     serverProcess.on('error', (err) => {
   console.error('Failed to start server process:', err);
 });
 serverProcess.stdout.on('data', (data) => {
-  console.log(`stdout: ${data}`);
+  //console.log(`stdout: ${data}`);
 });
 
 serverProcess.stderr.on('data', (data) => {
@@ -149,6 +147,11 @@ serverProcess.stderr.on('data', (data) => {
 
   //)
 });
+
+app.on('before-quit', () => {
+    close_sub_processes();
+});
+
 
 app.on("window-all-closed", () => {
   win = null;
@@ -189,34 +192,21 @@ ipcMain.handle("open-win", (_, arg) => {
   }
 });
 
-
-
 function close_sub_processes() {
-  console.log("closing sub processes");
+    console.log("Closing sub processes...");
 
-  // closing the modem binary if not closed when closing application and also our daemon which has been started by the gui
-  try {
     if (serverProcess != null) {
-      serverProcess.kill();
+        try {
+            console.log(`Killing server process with PID: ${serverProcess.pid}`);
+            // For Windows, use taskkill to ensure all child processes are also terminated
+            if (isWindows) {
+                spawn("taskkill", ["/pid", serverProcess.pid.toString(), "/f", "/t"]);
+            } else {
+                // On macOS and Linux, sending SIGTERM should suffice
+                process.kill(serverProcess.pid);
+            }
+        } catch (error) {
+            console.error(`Error killing server process: ${error}`);
+        }
     }
-  } catch (e) {
-    console.log(e);
-  }
-
-  console.log("closing freedata server process");
-  try {
-    if (platform() == "win32") {
-      spawn("Taskkill", ["/IM", "freedata-server.exe", "/F"]);
-    }
-
-    if (platform() == "linux") {
-      spawn("pkill", ["-9", "freedata-server"]);
-    }
-
-    if (platform() == "darwin") {
-      spawn("pkill", ["-9", "freedata-server"]);
-    }
-  } catch (e) {
-    console.log(e);
-  }
 }
