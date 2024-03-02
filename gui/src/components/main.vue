@@ -20,7 +20,7 @@ import infoScreen from "./infoScreen.vue";
 import main_modem_healthcheck from "./main_modem_healthcheck.vue";
 import Dynamic_components from "./dynamic_components.vue";
 
-import { getFreedataMessages } from "../js/api";
+import { getFreedataMessages, getConfig } from "../js/api";
 </script>
 
 <template>
@@ -111,6 +111,7 @@ import { getFreedataMessages } from "../js/api";
               role="tab"
               aria-controls="list-settings"
               title="Settings"
+              @click="getConfig"
               ><i class="bi bi-gear-wide-connected h3"></i
             ></a>
           </div>
