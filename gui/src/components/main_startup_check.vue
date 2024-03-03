@@ -9,6 +9,7 @@ setActivePinia(pinia);
 
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 import { sendModemCQ } from "../js/api.js";
+import { loadAudioDevices } from "../js/deviceFormHelper";
 
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
@@ -201,11 +202,28 @@ function testHamlib() {
                       </button>
                     </label>
                   </div>
+
+
                   <!-- Audio Input Device -->
                   <div class="input-group input-group-sm mb-1">
                     <label class="input-group-text w-50"
                       >Audio Input device</label
                     >
+
+                    <button
+                        type="button"
+                        id="stopModem"
+                        class="btn btn-sm btn-secondary"
+                        data-bs-toggle="tooltip"
+                        data-bs-trigger="hover"
+                        data-bs-html="false"
+                        title="Refresh audio devices"
+                        @click="loadAudioDevices"
+
+                      >
+                        <i class="bi bi-arrow-clockwise"></i>
+                      </button>
+
                     <select
                       class="form-select form-select-sm"
                       aria-label=".form-select-sm"
@@ -226,6 +244,21 @@ function testHamlib() {
                     <label class="input-group-text w-50"
                       >Audio Output device</label
                     >
+
+                    <button
+                        type="button"
+                        id="stopModem"
+                        class="btn btn-sm btn-secondary"
+                        data-bs-toggle="tooltip"
+                        data-bs-trigger="hover"
+                        data-bs-html="false"
+                        title="Refresh audio devices"
+                        @click="loadAudioDevices"
+
+                      >
+                        <i class="bi bi-arrow-clockwise"></i>
+                      </button>
+
                     <select
                       class="form-select form-select-sm"
                       aria-label=".form-select-sm"

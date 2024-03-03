@@ -42,6 +42,9 @@ InstallDirRegKey HKCU "Software\FreeDATA" "Install_Dir"
 ; Language (you can choose and configure the language(s) you want)
 !insertmacro MUI_LANGUAGE "English"
 
+!define StartMenuFolder "FreeDATA"
+
+
 ; Installer Sections
 Section "FreeData Server" SEC01
   ; Set output path to the installation directory
@@ -62,6 +65,16 @@ doneBackup:
 
   ; Create Uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"
+
+  ; Create a Start Menu directory
+  CreateDirectory "$SMPROGRAMS\${StartMenuFolder}"
+
+  ; Create shortcut in the Start Menu directory
+  CreateShortCut "$SMPROGRAMS\${StartMenuFolder}\FreeDATA Server.lnk" "$INSTDIR\freedata-server\freedata-server.exe"
+
+  ; Create an Uninstall shortcut
+  CreateShortCut "$SMPROGRAMS\${StartMenuFolder}\Uninstall FreeDATA.lnk" "$INSTDIR\Uninstall.exe"
+
 
   ; Backup "config.ini" before overwriting files
 backupConfig:
@@ -86,6 +99,13 @@ Section "FreeData x64 GUI" SEC02
 
   ; Create a shortcut on the desktop for the GUI
   CreateShortCut "$DESKTOP\FreeDATA GUI.lnk" "$INSTDIR\freedata-gui\freedata.exe"
+
+  ; Create a start menu shortcut
+  CreateShortCut "$SMPROGRAMS\${StartMenuFolder}\FreeDATA GUI.lnk" "$INSTDIR\freedata-gui\freedata.exe"
+
+  ; Create an Uninstall shortcut
+  CreateShortCut "$SMPROGRAMS\${StartMenuFolder}\Uninstall FreeDATA.lnk" "$INSTDIR\Uninstall.exe"
+
 SectionEnd
 
 ; Uninstaller Section
@@ -102,5 +122,13 @@ Section "Uninstall"
   Delete "$DESKTOP\FreeDATA Server.lnk"
   Delete "$DESKTOP\FreeDATA GUI.lnk"
 
-  ; Additional uninstallation commands here
+; Remove Start Menu shortcuts
+  Delete "$SMPROGRAMS\${StartMenuFolder}\*.*"
+  RMDir "$SMPROGRAMS\${StartMenuFolder}"
+
+  ; Attempt to delete the uninstaller itself
+  Delete $EXEPATH
+
+  ; Now remove the installation directory if it's empty
+  RMDir /r $INSTDIR
 SectionEnd
