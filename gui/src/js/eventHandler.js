@@ -134,12 +134,7 @@ export function eventDispatcher(data) {
       displayToast("success", "bi-ethernet", message, 5000);
       stateStore.modem_connection = "connected";
 
-      getRemote().then(() => {
-        //initConnections();
-        getModemState();
-      });
 
-      //getRemote();
       getModemState();
       getOverallHealth();
       loadAudioDevices();

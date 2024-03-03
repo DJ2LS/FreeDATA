@@ -117,9 +117,10 @@ app.whenReady().then(() => {
         //serverProcess.unref(); // Allow the server process to continue running independently of the parent process
         //  break;
     case "win32":
-        console.log(`Starting server with path: ${serverPath}`);
         serverPath = join(basePath, "freedata-server", "freedata-server.exe");
-        serverProcess = spawn('cmd.exe', ['/c', 'start', 'cmd.exe', '/k', serverPath], { shell: true });
+        console.log(`Starting server with path: ${serverPath}`);
+        serverProcess = spawn('cmd.exe', ['/c', 'start', 'cmd.exe', '/c', serverPath], { shell: true });
+        console.log(`Started server | PID: ${serverProcess.pid}`);
         break;
 
     default:
@@ -142,8 +143,6 @@ serverProcess.stderr.on('data', (data) => {
   console.error(`stderr: ${data}`);
 });
 
-
-  //)
 });
 
 app.on('before-quit', () => {
