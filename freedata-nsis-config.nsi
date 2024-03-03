@@ -58,7 +58,7 @@ doneBackup:
   IfFileExists $INSTDIR\freedata-server\config.ini.bak restoreConfig
 
   ; Create a shortcut in the user's desktop
-  CreateShortCut "$DESKTOP\FreeDATA Server.lnk" "$INSTDIR\freedata-server.exe"
+  CreateShortCut "$DESKTOP\FreeDATA Server.lnk" "$INSTDIR\freedata-server\freedata-server.exe"
 
   ; Create Uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"
@@ -91,7 +91,7 @@ SectionEnd
 ; Uninstaller Section
 Section "Uninstall"
   ; Delete files and directories for the server
-  Delete $INSTDIR\freedata-server.exe
+  Delete $INSTDIR\freedata-server\*.*
   RMDir /r $INSTDIR\freedata-server
 
   ; Delete files and directories for the GUI
