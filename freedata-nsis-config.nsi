@@ -67,13 +67,13 @@ doneBackup:
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 
   ; Create a Start Menu directory
-  CreateDirectory "$SMPROGRAMS\${StartMenuFolder}"
+  CreateDirectory "$COMMON_STARTMENU\${StartMenuFolder}"
 
   ; Create shortcut in the Start Menu directory
-  CreateShortCut "$SMPROGRAMS\${StartMenuFolder}\FreeDATA Server.lnk" "$INSTDIR\freedata-server\freedata-server.exe"
+  CreateShortCut "$COMMON_STARTMENU\${StartMenuFolder}\FreeDATA Server.lnk" "$INSTDIR\freedata-server\freedata-server.exe"
 
   ; Create an Uninstall shortcut
-  CreateShortCut "$SMPROGRAMS\${StartMenuFolder}\Uninstall FreeDATA.lnk" "$INSTDIR\Uninstall.exe"
+  CreateShortCut "$COMMON_STARTMENU\${StartMenuFolder}\Uninstall FreeDATA.lnk" "$INSTDIR\Uninstall.exe"
 
 
   ; Backup "config.ini" before overwriting files
@@ -101,10 +101,10 @@ Section "FreeData x64 GUI" SEC02
   CreateShortCut "$DESKTOP\FreeDATA GUI.lnk" "$INSTDIR\freedata-gui\freedata.exe"
 
   ; Create a start menu shortcut
-  CreateShortCut "$SMPROGRAMS\${StartMenuFolder}\FreeDATA GUI.lnk" "$INSTDIR\freedata-gui\freedata.exe"
+  CreateShortCut "$COMMON_STARTMENU\${StartMenuFolder}\FreeDATA GUI.lnk" "$INSTDIR\freedata-gui\freedata.exe"
 
   ; Create an Uninstall shortcut
-  CreateShortCut "$SMPROGRAMS\${StartMenuFolder}\Uninstall FreeDATA.lnk" "$INSTDIR\Uninstall.exe"
+  CreateShortCut "$COMMON_STARTMENU\${StartMenuFolder}\Uninstall FreeDATA.lnk" "$INSTDIR\Uninstall.exe"
 
 SectionEnd
 
@@ -123,8 +123,8 @@ Section "Uninstall"
   Delete "$DESKTOP\FreeDATA GUI.lnk"
 
 ; Remove Start Menu shortcuts
-  Delete "$SMPROGRAMS\${StartMenuFolder}\*.*"
-  RMDir "$SMPROGRAMS\${StartMenuFolder}"
+  Delete "$COMMON_STARTMENU\${StartMenuFolder}\*.*"
+  RMDir "$COMMON_STARTMENU\${StartMenuFolder}"
 
   ; Attempt to delete the uninstaller itself
   Delete $EXEPATH
