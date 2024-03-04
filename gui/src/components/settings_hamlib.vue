@@ -23,13 +23,13 @@ const serialStore = useSerialStore();
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text" style="width: 180px">Rigctld port</span>
     <input
-      type="text"
+      type="number"
       class="form-control"
       placeholder="rigctld port"
       id="hamlib_rigctld_port"
       aria-label="Device Port"
       @change="onChange"
-      v-model="settings.remote.RIGCTLD.port"
+      v-model.number="settings.remote.RIGCTLD.port"
     />
   </div>
 
