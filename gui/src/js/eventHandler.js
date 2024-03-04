@@ -8,11 +8,7 @@ import {
 } from "./chatHandler";
 */
 import { displayToast } from "./popupHandler";
-import {
-  getFreedataMessages,
-  getModemState,
-  getAudioDevices,
-} from "./api";
+import { getFreedataMessages, getModemState, getAudioDevices } from "./api";
 import { processFreedataMessages } from "./messagesHandler.ts";
 import { processRadioStatus } from "./radioHandler.ts";
 
@@ -33,17 +29,15 @@ import {
   getRemote,
 } from "../store/settingsStore.js";
 
-
-export function loadAllData(){
-    getModemState();
-    getRemote();
-    getOverallHealth();
-    audioStore.loadAudioDevices();
-    serialStore.loadSerialDevices();
-    getFreedataMessages();
-    processFreedataMessages();
-    processRadioStatus();
-
+export function loadAllData() {
+  getModemState();
+  getRemote();
+  getOverallHealth();
+  audioStore.loadAudioDevices();
+  serialStore.loadSerialDevices();
+  getFreedataMessages();
+  processFreedataMessages();
+  processRadioStatus();
 }
 
 export function connectionFailed(endpoint, event) {
@@ -140,7 +134,6 @@ export function eventDispatcher(data) {
       message = "Connected to server";
       displayToast("success", "bi-ethernet", message, 5000);
       stateStore.modem_connection = "connected";
-
 
       loadAllData();
 
