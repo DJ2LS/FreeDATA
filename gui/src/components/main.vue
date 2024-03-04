@@ -22,14 +22,8 @@ import Dynamic_components from "./dynamic_components.vue";
 
 import { getFreedataMessages } from "../js/api";
 import { getRemote } from "../store/settingsStore.js";
-import { loadAudioDevices, loadSerialDevices } from "../js/deviceFormHelper";
+import { loadAllData } from "../js/eventHandler";
 
-
-function getAllSettings(){
-    getRemote()
-    loadAudioDevices()
-    loadSerialDevices()
-}
 
 </script>
 
@@ -57,7 +51,7 @@ function getAllSettings(){
             id="main-list-tab"
             role="tablist"
             style="margin-top: 100px"
-            @click="getAllSettings"
+            @click="loadAllData"
           >
             <main_modem_healthcheck />
 
@@ -122,7 +116,7 @@ function getAllSettings(){
               role="tab"
               aria-controls="list-settings"
               title="Settings"
-              @click="getAllSettings"
+              @click="loadAllData"
               ><i class="bi bi-gear-wide-connected h3"></i
             ></a>
           </div>

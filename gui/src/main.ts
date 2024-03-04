@@ -32,12 +32,9 @@ const tooltipList = [...tooltipTriggerList].map(
 import { getRemote } from "./store/settingsStore";
 import { initConnections } from "./js/event_sock.js";
 import { getModemState } from "./js/api";
-import { loadAudioDevices, loadSerialDevices } from "./js/deviceFormHelper";
 
 
 getRemote().then(() => {
   initConnections();
-  loadAudioDevices();
-  loadSerialDevices();
   getModemState();
 });

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
-import { serialDeviceOptions } from "../js/deviceFormHelper";
 </script>
 
 <template>

@@ -11,11 +11,15 @@ import { displayToast } from "./popupHandler";
 import {
   getFreedataMessages,
   getModemState,
+  getAudioDevices,
 } from "./api";
 import { processFreedataMessages } from "./messagesHandler.ts";
 import { processRadioStatus } from "./radioHandler.ts";
-import { loadAudioDevices, loadSerialDevices } from "./deviceFormHelper.ts";
 
+import { useAudioStore } from "../store/audioStore";
+const audioStore = useAudioStore();
+import { useSerialStore } from "../store/serialStore";
+const serialStore = useSerialStore();
 
 // ----------------- init pinia stores -------------
 import { setActivePinia } from "pinia";
@@ -28,6 +32,19 @@ import {
   settingsStore as settings,
   getRemote,
 } from "../store/settingsStore.js";
+
+
+export function loadAllData(){
+    getModemState();
+    getRemote();
+    getOverallHealth();
+    audioStore.loadAudioDevices();
+    serialStore.loadSerialDevices();
+    getFreedataMessages();
+    processFreedataMessages();
+    processRadioStatus();
+
+}
 
 export function connectionFailed(endpoint, event) {
   stateStore.modem_connection = "disconnected";
@@ -94,12 +111,7 @@ export function eventDispatcher(data) {
   switch (data["modem"]) {
     case "started":
       displayToast("success", "bi-arrow-left-right", "Modem started", 5000);
-      getModemState();
-      getRemote();
-      loadAudioDevices();
-      loadSerialDevices();
-      getFreedataMessages();
-      processRadioStatus();
+      loadAllData();
       return;
 
     case "stopped":
@@ -108,12 +120,7 @@ export function eventDispatcher(data) {
 
     case "restarted":
       displayToast("secondary", "bi-bootstrap-reboot", "Modem restarted", 5000);
-      getModemState();
-      getRemote();
-      loadAudioDevices();
-      loadSerialDevices();
-      getFreedataMessages();
-      processRadioStatus();
+      loadAllData();
       return;
 
     case "failed":
@@ -135,13 +142,7 @@ export function eventDispatcher(data) {
       stateStore.modem_connection = "connected";
 
 
-      getModemState();
-      getOverallHealth();
-      loadAudioDevices();
-      loadSerialDevices();
-      getFreedataMessages();
-      processFreedataMessages();
-      processRadioStatus();
+      loadAllData();
 
       return;
 

@@ -9,10 +9,15 @@ setActivePinia(pinia);
 
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 import { sendModemCQ } from "../js/api.js";
-import { loadAudioDevices } from "../js/deviceFormHelper";
 
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
+
+import { useAudioStore } from "../store/audioStore";
+const audioStore = useAudioStore();
+import { useSerialStore } from "../store/serialStore";
+const serialStore = useSerialStore();
+
 
 import {
   getVersion,
@@ -21,8 +26,8 @@ import {
   stopModem,
   getModemState,
 } from "../js/api";
-import { audioInputOptions, audioOutputOptions } from "../js/deviceFormHelper";
-import { serialDeviceOptions } from "../js/deviceFormHelper";
+
+
 
 const version = import.meta.env.PACKAGE_VERSION;
 
@@ -33,6 +38,8 @@ onMounted(() => {
   });
   new Modal("#modemCheck", {}).show();
 });
+
+
 
 function getModemStateLocal() {
   // Returns active/inactive if modem is running for modem status label
@@ -205,74 +212,26 @@ function testHamlib() {
 
 
                   <!-- Audio Input Device -->
-                  <div class="input-group input-group-sm mb-1">
-                    <label class="input-group-text w-50"
-                      >Audio Input device</label
-                    >
-
-                    <button
-                        type="button"
-                        id="stopModem"
-                        class="btn btn-sm btn-secondary"
-                        data-bs-toggle="tooltip"
-                        data-bs-trigger="hover"
-                        data-bs-html="false"
-                        title="Refresh audio devices"
-                        @click="loadAudioDevices"
-
-                      >
-                        <i class="bi bi-arrow-clockwise"></i>
-                      </button>
-
-                    <select
-                      class="form-select form-select-sm"
-                      aria-label=".form-select-sm"
-                      @change="onChange"
-                      v-model="settings.remote.AUDIO.input_device"
-                    >
-                      <option
-                        v-for="option in audioInputOptions()"
-                        v-bind:value="option.id"
-                      >
-                        {{ option.name }} [{{ option.api }}]
-                      </option>
-                    </select>
-                  </div>
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50">Audio Input device</label>
+    <select class="form-select form-select-sm" aria-label=".form-select-sm" @change="onChange" v-model="settings.remote.AUDIO.input_device">
+      <option v-for="device in audioStore.audioInputs" :value="device.id">
+        {{ device.name }} [{{ device.api }}]
+      </option>
+    </select>
+  </div>
 
                   <!-- Audio Output Device -->
-                  <div class="input-group input-group-sm mb-1">
-                    <label class="input-group-text w-50"
-                      >Audio Output device</label
-                    >
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50">Audio Output device</label>
+    <select class="form-select form-select-sm" aria-label=".form-select-sm" @change="onChange" v-model="settings.remote.AUDIO.output_device">
+      <option v-for="device in audioStore.audioOutputs" :value="device.id">
+        {{ device.name }} [{{ device.api }}]
+      </option>
+    </select>
+  </div>
 
-                    <button
-                        type="button"
-                        id="stopModem"
-                        class="btn btn-sm btn-secondary"
-                        data-bs-toggle="tooltip"
-                        data-bs-trigger="hover"
-                        data-bs-html="false"
-                        title="Refresh audio devices"
-                        @click="loadAudioDevices"
 
-                      >
-                        <i class="bi bi-arrow-clockwise"></i>
-                      </button>
-
-                    <select
-                      class="form-select form-select-sm"
-                      aria-label=".form-select-sm"
-                      @change="onChange"
-                      v-model="settings.remote.AUDIO.output_device"
-                    >
-                      <option
-                        v-for="option in audioOutputOptions()"
-                        v-bind:value="option.id"
-                      >
-                        {{ option.name }} [{{ option.api }}]
-                      </option>
-                    </select>
-                  </div>
                 </div>
               </div>
             </div>
@@ -340,21 +299,15 @@ function testHamlib() {
                         >Radio port</span
                       >
 
-                      <select
-                        class="form-select form-select-sm"
-                        aria-label=".form-select-sm"
-                        id="hamlib_deviceport"
-                        style="width: 7rem"
-                        @change="onChange"
-                        v-model="settings.remote.RADIO.serial_port"
-                      >
-                        <option
-                          v-for="option in serialDeviceOptions()"
-                          v-bind:value="option.port"
-                        >
-                          {{ option.description }}
-                        </option>
-                      </select>
+
+
+                      <select @change="onChange" v-model="settings.remote.RADIO.serial_port" class="form-select form-select-sm">
+    <option v-for="device in serialStore.serialDevices" :value="device.port" :key="device.port">
+      {{ device.description }}
+    </option>
+  </select>
+
+
                     </div>
 
                     <div class="input-group input-group-sm mb-1">
