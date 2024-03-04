@@ -126,6 +126,7 @@ function testHamlib() {
                       max="65534"
                       min="1025"
                       v-model="settings.local.port"
+                      @change="onChange"
                     />
                   </div>
 
@@ -137,6 +138,7 @@ function testHamlib() {
                       placeholder="modem host (default 127.0.0.1)"
                       id="modem_port"
                       v-model="settings.local.host"
+                      @change="onChange"
                     />
                   </div>
                 </div>
