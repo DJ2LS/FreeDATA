@@ -19,7 +19,6 @@ import settings_exp from "./settings_exp.vue";
         <div class="card-header">
           <!-- SETTINGS Nav tabs -->
           <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist">
-
             <li class="nav-item" role="presentation">
               <button
                 class="nav-link active"
@@ -126,8 +125,6 @@ import settings_exp from "./settings_exp.vue";
           style="height: calc(100vh - 105px)"
         >
           <!-- SETTINGS Nav Tab panes -->
-
-
 
           <!-- Station tab contents-->
           <div class="tab-content">

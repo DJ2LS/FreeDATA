@@ -2,7 +2,6 @@
 import { Modal } from "bootstrap";
 import { onMounted } from "vue";
 
-
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
@@ -18,7 +17,6 @@ const audioStore = useAudioStore();
 import { useSerialStore } from "../store/serialStore";
 const serialStore = useSerialStore();
 
-
 import {
   getVersion,
   setConfig,
@@ -26,8 +24,6 @@ import {
   stopModem,
   getModemState,
 } from "../js/api";
-
-
 
 const version = import.meta.env.PACKAGE_VERSION;
 
@@ -38,8 +34,6 @@ onMounted(() => {
   });
   new Modal("#modemCheck", {}).show();
 });
-
-
 
 function getModemStateLocal() {
   // Returns active/inactive if modem is running for modem status label
@@ -210,28 +204,45 @@ function testHamlib() {
                     </label>
                   </div>
 
-
                   <!-- Audio Input Device -->
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Audio Input device</label>
-    <select class="form-select form-select-sm" aria-label=".form-select-sm" @change="onChange" v-model="settings.remote.AUDIO.input_device">
-      <option v-for="device in audioStore.audioInputs" :value="device.id">
-        {{ device.name }} [{{ device.api }}]
-      </option>
-    </select>
-  </div>
+                  <div class="input-group input-group-sm mb-1">
+                    <label class="input-group-text w-50"
+                      >Audio Input device</label
+                    >
+                    <select
+                      class="form-select form-select-sm"
+                      aria-label=".form-select-sm"
+                      @change="onChange"
+                      v-model="settings.remote.AUDIO.input_device"
+                    >
+                      <option
+                        v-for="device in audioStore.audioInputs"
+                        :value="device.id"
+                      >
+                        {{ device.name }} [{{ device.api }}]
+                      </option>
+                    </select>
+                  </div>
 
                   <!-- Audio Output Device -->
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Audio Output device</label>
-    <select class="form-select form-select-sm" aria-label=".form-select-sm" @change="onChange" v-model="settings.remote.AUDIO.output_device">
-      <option v-for="device in audioStore.audioOutputs" :value="device.id">
-        {{ device.name }} [{{ device.api }}]
-      </option>
-    </select>
-  </div>
-
-
+                  <div class="input-group input-group-sm mb-1">
+                    <label class="input-group-text w-50"
+                      >Audio Output device</label
+                    >
+                    <select
+                      class="form-select form-select-sm"
+                      aria-label=".form-select-sm"
+                      @change="onChange"
+                      v-model="settings.remote.AUDIO.output_device"
+                    >
+                      <option
+                        v-for="device in audioStore.audioOutputs"
+                        :value="device.id"
+                      >
+                        {{ device.name }} [{{ device.api }}]
+                      </option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
@@ -299,15 +310,19 @@ function testHamlib() {
                         >Radio port</span
                       >
 
-
-
-                      <select @change="onChange" v-model="settings.remote.RADIO.serial_port" class="form-select form-select-sm">
-    <option v-for="device in serialStore.serialDevices" :value="device.port" :key="device.port">
-      {{ device.description }}
-    </option>
-  </select>
-
-
+                      <select
+                        @change="onChange"
+                        v-model="settings.remote.RADIO.serial_port"
+                        class="form-select form-select-sm"
+                      >
+                        <option
+                          v-for="device in serialStore.serialDevices"
+                          :value="device.port"
+                          :key="device.port"
+                        >
+                          {{ device.description }}
+                        </option>
+                      </select>
                     </div>
 
                     <div class="input-group input-group-sm mb-1">
@@ -376,7 +391,6 @@ function testHamlib() {
                   data-bs-toggle="collapse"
                 >
                   Version
-
                 </button>
               </h2>
               <div
@@ -399,7 +413,6 @@ function testHamlib() {
                   >
                     Modem version | {{ state.modem_version }}
                   </button>
-
                 </div>
               </div>
             </div>

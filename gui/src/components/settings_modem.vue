@@ -9,9 +9,6 @@ import { startModem, stopModem } from "../js/api.js";
 
 import { useAudioStore } from "../store/audioStore";
 const audioStore = useAudioStore();
-
-
-
 </script>
 
 <template>
@@ -70,30 +67,35 @@ const audioStore = useAudioStore();
     />
   </div>
 
-
-
-
-                    <!-- Audio Input Device -->
+  <!-- Audio Input Device -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50">Audio Input device</label>
-    <select class="form-select form-select-sm" aria-label=".form-select-sm" @change="onChange" v-model="settings.remote.AUDIO.input_device">
+    <select
+      class="form-select form-select-sm"
+      aria-label=".form-select-sm"
+      @change="onChange"
+      v-model="settings.remote.AUDIO.input_device"
+    >
       <option v-for="device in audioStore.audioInputs" :value="device.id">
         {{ device.name }} [{{ device.api }}]
       </option>
     </select>
   </div>
 
-                  <!-- Audio Output Device -->
+  <!-- Audio Output Device -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50">Audio Output device</label>
-    <select class="form-select form-select-sm" aria-label=".form-select-sm" @change="onChange" v-model="settings.remote.AUDIO.output_device">
+    <select
+      class="form-select form-select-sm"
+      aria-label=".form-select-sm"
+      @change="onChange"
+      v-model="settings.remote.AUDIO.output_device"
+    >
       <option v-for="device in audioStore.audioOutputs" :value="device.id">
         {{ device.name }} [{{ device.api }}]
       </option>
     </select>
   </div>
-
-
 
   <!-- Audio rx level-->
   <div class="input-group input-group-sm mb-1">
