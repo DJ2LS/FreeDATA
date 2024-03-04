@@ -4,12 +4,18 @@ from message_system_db_model import Status, P2PMessage
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 import json
+import os
 
 
 class DatabaseManagerMessages(DatabaseManager):
-    def __init__(self, uri='sqlite:///freedata-messages.db'):
-        super().__init__(uri)
-        self.attachments_manager = DatabaseManagerAttachments(uri)
+    def __init__(self, db_file=None):
+        if not db_file:
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            db_path = os.path.join(script_dir, 'freedata-messages.db')
+            db_file = 'sqlite:///' + db_path
+
+        super().__init__(db_file)
+        self.attachments_manager = DatabaseManagerAttachments(db_file)
 
     def add_message(self, message_data, statistics, direction='receive', status=None, is_read=True):
         session = self.get_thread_scoped_session()

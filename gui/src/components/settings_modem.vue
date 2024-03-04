@@ -6,7 +6,9 @@ import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
 import { startModem, stopModem } from "../js/api.js";
-import { audioInputOptions, audioOutputOptions } from "../js/deviceFormHelper";
+
+import { useAudioStore } from "../store/audioStore";
+const audioStore = useAudioStore();
 </script>
 
 <template>
@@ -74,8 +76,8 @@ import { audioInputOptions, audioOutputOptions } from "../js/deviceFormHelper";
       @change="onChange"
       v-model="settings.remote.AUDIO.input_device"
     >
-      <option v-for="option in audioInputOptions()" v-bind:value="option.id">
-        {{ option.name }} [{{ option.api }}]
+      <option v-for="device in audioStore.audioInputs" :value="device.id">
+        {{ device.name }} [{{ device.api }}]
       </option>
     </select>
   </div>
@@ -89,11 +91,12 @@ import { audioInputOptions, audioOutputOptions } from "../js/deviceFormHelper";
       @change="onChange"
       v-model="settings.remote.AUDIO.output_device"
     >
-      <option v-for="option in audioOutputOptions()" v-bind:value="option.id">
-        {{ option.name }} [{{ option.api }}]
+      <option v-for="device in audioStore.audioOutputs" :value="device.id">
+        {{ device.name }} [{{ device.api }}]
       </option>
     </select>
   </div>
+
   <!-- Audio rx level-->
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-25">RX Audio Level</span>

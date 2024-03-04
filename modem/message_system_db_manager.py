@@ -7,12 +7,17 @@ from threading import local
 from message_system_db_model import Base, Station, Status
 import structlog
 import helpers
+import os
 
 class DatabaseManager:
-    def __init__(self, event_manger, uri='sqlite:///freedata-messages.db'):
+    def __init__(self, event_manger, db_file=None):
         self.event_manager = event_manger
+        if not db_file:
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            db_path = os.path.join(script_dir, 'freedata-messages.db')
+            db_file = 'sqlite:///' + db_path
 
-        self.engine = create_engine(uri, echo=False)
+        self.engine = create_engine(db_file, echo=False)
         self.thread_local = local()
         self.session_factory = sessionmaker(bind=self.engine)
         Base.metadata.create_all(self.engine)

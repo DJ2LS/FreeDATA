@@ -1,7 +1,6 @@
 import { app, BrowserWindow, shell, ipcMain } from "electron";
-import { release, platform } from "node:os";
-import { join } from "node:path";
-import { autoUpdater } from "electron-updater";
+import { release, platform } from "os";
+import { join, dirname } from "path";
 import { existsSync } from "fs";
 import { spawn } from "child_process";
 
@@ -20,7 +19,6 @@ process.env.DIST = join(process.env.DIST_ELECTRON, "../dist");
 process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL
   ? join(process.env.DIST_ELECTRON, "../public")
   : process.env.DIST;
-process.env.FDUpdateAvail = "0";
 
 // Disable GPU Acceleration for Windows 7
 if (release().startsWith("6.1")) app.disableHardwareAcceleration();
@@ -40,7 +38,7 @@ if (!app.requestSingleInstanceLock()) {
 // process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
 
 // set daemon process var
-var daemonProcess = null;
+var serverProcess = null;
 let win: BrowserWindow | null = null;
 // Here, you can also use other preload
 const preload = join(__dirname, "../preload/index.js");
@@ -75,9 +73,9 @@ async function createWindow() {
   }
 
   // Test actively push message to the Electron-Renderer
-  win.webContents.on("did-finish-load", () => {
-    win?.webContents.send("main-process-message", new Date().toLocaleString());
-  });
+  //win.webContents.on("did-finish-load", () => {
+  //   win?.webContents.send("main-process-message", new Date().toLocaleString());
+  //});
 
   // Make all links open with the browser, not with the application
   win.webContents.setWindowOpenHandler(({ url }) => {
@@ -87,12 +85,7 @@ async function createWindow() {
   // win.webContents.on('will-navigate', (event, url) => { }) #344
 
   win.once("ready-to-show", () => {
-    //autoUpdater.logger = log.scope("updater");
-    //autoUpdater.channel = config.update_channel;
-    autoUpdater.autoInstallOnAppQuit = false;
-    autoUpdater.autoDownload = true;
-    autoUpdater.checkForUpdatesAndNotify();
-    //autoUpdater.quitAndInstall();
+    //
   });
 }
 
@@ -102,68 +95,61 @@ app.whenReady().then(() => {
 
   console.log(platform());
   //Generate daemon binary path
-  var daemonPath = "";
+  var serverPath = "";
+  console.log(process.env);
+
+  // Attempt to find Installation Folder
+  console.log(app.getAppPath());
+  console.log(join(app.getAppPath(), "..", ".."));
+  console.log(join(app.getAppPath(), "..", "..", ".."));
+
+  //var basePath = join(app.getAppPath(), '..', '..', '..') || join(process.env.PWD, '..') || join(process.env.INIT_CWD, '..') || join(process.env.DIST, '..', '..', '..');
+  var basePath = join(app.getAppPath(), "..", "..", "..");
   switch (platform().toLowerCase()) {
-    case "darwin":
-      daemonPath = join(process.resourcesPath, "modem", "freedata-server");
-    case "linux":
-      daemonPath = join(process.resourcesPath, "modem", "freedata-server");
-      break;
+    //case "darwin":
+    //serverPath = join(basePath, "freedata-server", "freedata-server.exe");
+    //serverProcess = spawn(serverPath, [], { detached: true });
+    //serverProcess.unref(); // Allow the server process to continue running independently of the parent process
+    //  break;
+    //case "linux":
+    //serverPath = join(basePath, "freedata-server", "freedata-server.exe");
+    //serverProcess = spawn(serverPath, [], { detached: true });
+    //serverProcess.unref(); // Allow the server process to continue running independently of the parent process
+    //  break;
     case "win32":
-      daemonPath = join(process.resourcesPath, "modem", "freedata-server.exe");
+      serverPath = join(basePath, "freedata-server", "freedata-server.exe");
+      console.log(`Starting server with path: ${serverPath}`);
+      serverProcess = spawn(
+        "cmd.exe",
+        ["/c", "start", "cmd.exe", "/c", serverPath],
+        { shell: true },
+      );
+      console.log(`Started server | PID: ${serverProcess.pid}`);
       break;
-    case "win64":
-      daemonPath = join(process.resourcesPath, "modem", "freedata-server.exe");
-      break;
+
     default:
       console.log("Unhandled OS Platform: ", platform());
+      serverProcess = null;
+      serverPath = null;
       break;
   }
 
-  //Start daemon binary if it exists
-  if (existsSync(daemonPath)) {
-    console.log("Starting freedata-server binary");
-    console.log("daemonPath:", daemonPath);
-    console.log("CWD:", join(daemonPath, ".."));
-    /*
-    var daemonProcess = spawn("freedata-server", [], {
-      cwd: join(process.env.DIST, "modem"),
-      shell: true
-    });
-*/
-    /*
-daemonProcess = spawn(daemonPath, [], {
-      shell: true
-    });
-    console.log(daemonProcess)
-*/
-    daemonProcess = spawn(daemonPath, [], {});
+  serverProcess.on("error", (err) => {
+    console.error("Failed to start server process:", err);
+    serverProcess = null;
+    serverPath = null;
+  });
+  serverProcess.stdout.on("data", (data) => {
+    //console.log(`stdout: ${data}`);
+  });
 
-    // return process messages
-    daemonProcess.on("error", (err) => {
-      //daemonProcessLog.error(`error when starting daemon: ${err}`);
-      console.log(err);
-    });
-    daemonProcess.on("message", () => {
-      // daemonProcessLog.info(`${data}`);
-    });
-    daemonProcess.stdout.on("data", () => {
-      // daemonProcessLog.info(`${data}`);
-    });
-    daemonProcess.stderr.on("data", (data) => {
-      // daemonProcessLog.info(`${data}`);
-      console.log(data);
-    });
-    daemonProcess.on("close", (code) => {
-      // daemonProcessLog.warn(`daemonProcess exited with code ${code}`);
-    });
-  } else {
-    daemonProcess = null;
-    daemonPath = null;
-    console.log("Daemon binary doesn't exist--normal for dev environments.");
-  }
+  serverProcess.stderr.on("data", (data) => {
+    console.error(`stderr: ${data}`);
+  });
+});
 
-  //)
+app.on("before-quit", () => {
+  close_sub_processes();
 });
 
 app.on("window-all-closed", () => {
@@ -205,104 +191,33 @@ ipcMain.handle("open-win", (_, arg) => {
   }
 });
 
-//restart and install udpate
-ipcMain.on("request-restart-and-install-update", (event, data) => {
-  close_sub_processes();
-  autoUpdater.quitAndInstall();
-});
-
-// LISTENER FOR UPDATER EVENTS
-autoUpdater.on("update-available", (info) => {
-  process.env.FDUpdateAvail = "1";
-  console.log("update available");
-
-  let arg = {
-    status: "update-available",
-    info: info,
-  };
-  win.webContents.send("action-updater", arg);
-});
-
-autoUpdater.on("update-not-available", (info) => {
-  console.log("update not available");
-  let arg = {
-    status: "update-not-available",
-    info: info,
-  };
-  win.webContents.send("action-updater", arg);
-});
-
-autoUpdater.on("update-downloaded", (info) => {
-  process.env.FDUpdateAvail = "1";
-  console.log("update downloaded");
-  let arg = {
-    status: "update-downloaded",
-    info: info,
-  };
-  win.webContents.send("action-updater", arg);
-  // we need to call this at this point.
-  // if an update is available and we are force closing the app
-  // the entire screen crashes...
-  //console.log('quit application and install update');
-  //autoUpdater.quitAndInstall();
-});
-
-autoUpdater.on("checking-for-update", () => {
-  console.log("checking for update");
-  let arg = {
-    status: "checking-for-update",
-    version: app.getVersion(),
-  };
-  win.webContents.send("action-updater", arg);
-});
-
-autoUpdater.on("download-progress", (progress) => {
-  let arg = {
-    status: "download-progress",
-    progress: progress,
-  };
-  win.webContents.send("action-updater", arg);
-});
-
-autoUpdater.on("error", (error) => {
-  console.log("update error");
-  let arg = {
-    status: "error",
-    progress: error,
-  };
-  win.webContents.send("action-updater", arg);
-  console.log("AUTO UPDATER : " + error);
-});
-
 function close_sub_processes() {
-  console.log("closing sub processes");
+  console.log("Closing sub processes...");
 
-  // closing the modem binary if not closed when closing application and also our daemon which has been started by the gui
-  try {
-    if (daemonProcess != null) {
-      daemonProcess.kill();
-    }
-  } catch (e) {
-    console.log(e);
-  }
+  if (serverProcess != null) {
+    try {
+      console.log(`Killing server process with PID: ${serverProcess.pid}`);
 
-  console.log("closing modem and daemon");
-  try {
-    if (platform() == "win32") {
-      spawn("Taskkill", ["/IM", "freedata-modem.exe", "/F"]);
-      spawn("Taskkill", ["/IM", "freedata-server.exe", "/F"]);
-    }
+      switch (platform().toLowerCase()) {
+        //case "darwin":
+        // process.kill(serverProcess.pid);
+        //  break;
+        //case "linux":
+        // process.kill(serverProcess.pid);
+        //  break;
+        case "win32":
+          // For Windows, use taskkill to ensure all child processes are also terminated
+          spawn("taskkill", ["/pid", serverProcess.pid.toString(), "/f", "/t"]);
+          break;
 
-    if (platform() == "linux") {
-      spawn("pkill", ["-9", "freedata-modem"]);
-      spawn("pkill", ["-9", "freedata-server"]);
+        default:
+          console.log("Unhandled OS Platform: ", platform());
+          serverProcess = null;
+          serverPath = null;
+          break;
+      }
+    } catch (error) {
+      console.error(`Error killing server process: ${error}`);
     }
-
-    if (platform() == "darwin") {
-      spawn("pkill", ["-9", "freedata-modem"]);
-      spawn("pkill", ["-9", "freedata-server"]);
-    }
-  } catch (e) {
-    console.log(e);
   }
 }

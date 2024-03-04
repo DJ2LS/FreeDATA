@@ -21,15 +21,13 @@ import main_modem_healthcheck from "./main_modem_healthcheck.vue";
 import Dynamic_components from "./dynamic_components.vue";
 
 import { getFreedataMessages } from "../js/api";
+import { getRemote } from "../store/settingsStore.js";
+import { loadAllData } from "../js/eventHandler";
 </script>
 
 <template>
   <!-------------------------------- INFO TOASTS ---------------->
-  <div
-    aria-live="polite"
-    aria-atomic="true"
-    class="position-relative z-3"
-  >
+  <div aria-live="polite" aria-atomic="true" class="position-relative z-3">
     <div
       class="toast-container position-absolute top-0 end-0 p-3"
       id="mainToastContainer"
@@ -47,6 +45,7 @@ import { getFreedataMessages } from "../js/api";
             id="main-list-tab"
             role="tablist"
             style="margin-top: 100px"
+            @click="loadAllData"
           >
             <main_modem_healthcheck />
 
@@ -111,6 +110,7 @@ import { getFreedataMessages } from "../js/api";
               role="tab"
               aria-controls="list-settings"
               title="Settings"
+              @click="loadAllData"
               ><i class="bi bi-gear-wide-connected h3"></i
             ></a>
           </div>

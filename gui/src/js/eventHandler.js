@@ -8,15 +8,14 @@ import {
 } from "./chatHandler";
 */
 import { displayToast } from "./popupHandler";
-import {
-  getFreedataMessages,
-  getConfig,
-  getAudioDevices,
-  getSerialDevices,
-  getModemState,
-} from "./api";
+import { getFreedataMessages, getModemState, getAudioDevices } from "./api";
 import { processFreedataMessages } from "./messagesHandler.ts";
 import { processRadioStatus } from "./radioHandler.ts";
+
+import { useAudioStore } from "../store/audioStore";
+const audioStore = useAudioStore();
+import { useSerialStore } from "../store/serialStore";
+const serialStore = useSerialStore();
 
 // ----------------- init pinia stores -------------
 import { setActivePinia } from "pinia";
@@ -29,6 +28,17 @@ import {
   settingsStore as settings,
   getRemote,
 } from "../store/settingsStore.js";
+
+export function loadAllData() {
+  getModemState();
+  getRemote();
+  getOverallHealth();
+  audioStore.loadAudioDevices();
+  serialStore.loadSerialDevices();
+  getFreedataMessages();
+  processFreedataMessages();
+  processRadioStatus();
+}
 
 export function connectionFailed(endpoint, event) {
   stateStore.modem_connection = "disconnected";
@@ -95,12 +105,7 @@ export function eventDispatcher(data) {
   switch (data["modem"]) {
     case "started":
       displayToast("success", "bi-arrow-left-right", "Modem started", 5000);
-      getModemState();
-      getConfig();
-      getAudioDevices();
-      getSerialDevices();
-      getFreedataMessages();
-      processRadioStatus();
+      loadAllData();
       return;
 
     case "stopped":
@@ -109,12 +114,7 @@ export function eventDispatcher(data) {
 
     case "restarted":
       displayToast("secondary", "bi-bootstrap-reboot", "Modem restarted", 5000);
-      getModemState();
-      getConfig();
-      getAudioDevices();
-      getSerialDevices();
-      getFreedataMessages();
-      processRadioStatus();
+      loadAllData();
       return;
 
     case "failed":
@@ -135,19 +135,7 @@ export function eventDispatcher(data) {
       displayToast("success", "bi-ethernet", message, 5000);
       stateStore.modem_connection = "connected";
 
-      getRemote().then(() => {
-        //initConnections();
-        getModemState();
-      });
-
-      //getConfig();
-      getModemState();
-      getOverallHealth();
-      getAudioDevices();
-      getSerialDevices();
-      getFreedataMessages();
-      processFreedataMessages();
-      processRadioStatus();
+      loadAllData();
 
       return;
 

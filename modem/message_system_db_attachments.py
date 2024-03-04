@@ -2,12 +2,16 @@ from message_system_db_manager import DatabaseManager
 from message_system_db_model import MessageAttachment, Attachment, P2PMessage
 import json
 import hashlib
-
+import os
 
 
 class DatabaseManagerAttachments(DatabaseManager):
-    def __init__(self, uri='sqlite:///freedata-messages.db'):
-        super().__init__(uri)
+    def __init__(self, db_file=None):
+        if not db_file:
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            db_path = os.path.join(script_dir, 'freedata-messages.db')
+            db_file = 'sqlite:///' + db_path
+        super().__init__(db_file)
 
 
     def add_attachment(self, session, message, attachment_data):

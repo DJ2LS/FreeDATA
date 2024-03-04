@@ -2,8 +2,6 @@
 import { Modal } from "bootstrap";
 import { onMounted } from "vue";
 
-import settings_updater_core from "./settings_updater_core.vue";
-
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
@@ -14,6 +12,11 @@ import { sendModemCQ } from "../js/api.js";
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
+import { useAudioStore } from "../store/audioStore";
+const audioStore = useAudioStore();
+import { useSerialStore } from "../store/serialStore";
+const serialStore = useSerialStore();
+
 import {
   getVersion,
   setConfig,
@@ -21,11 +24,8 @@ import {
   stopModem,
   getModemState,
 } from "../js/api";
-import { audioInputOptions, audioOutputOptions } from "../js/deviceFormHelper";
-import { serialDeviceOptions } from "../js/deviceFormHelper";
 
 const version = import.meta.env.PACKAGE_VERSION;
-var updateAvailable = process.env.FDUpdateAvail;
 
 // start modemCheck modal once on startup
 onMounted(() => {
@@ -203,6 +203,7 @@ function testHamlib() {
                       </button>
                     </label>
                   </div>
+
                   <!-- Audio Input Device -->
                   <div class="input-group input-group-sm mb-1">
                     <label class="input-group-text w-50"
@@ -215,10 +216,10 @@ function testHamlib() {
                       v-model="settings.remote.AUDIO.input_device"
                     >
                       <option
-                        v-for="option in audioInputOptions()"
-                        v-bind:value="option.id"
+                        v-for="device in audioStore.audioInputs"
+                        :value="device.id"
                       >
-                        {{ option.name }} [{{ option.api }}]
+                        {{ device.name }} [{{ device.api }}]
                       </option>
                     </select>
                   </div>
@@ -235,10 +236,10 @@ function testHamlib() {
                       v-model="settings.remote.AUDIO.output_device"
                     >
                       <option
-                        v-for="option in audioOutputOptions()"
-                        v-bind:value="option.id"
+                        v-for="device in audioStore.audioOutputs"
+                        :value="device.id"
                       >
-                        {{ option.name }} [{{ option.api }}]
+                        {{ device.name }} [{{ device.api }}]
                       </option>
                     </select>
                   </div>
@@ -310,18 +311,16 @@ function testHamlib() {
                       >
 
                       <select
-                        class="form-select form-select-sm"
-                        aria-label=".form-select-sm"
-                        id="hamlib_deviceport"
-                        style="width: 7rem"
                         @change="onChange"
                         v-model="settings.remote.RADIO.serial_port"
+                        class="form-select form-select-sm"
                       >
                         <option
-                          v-for="option in serialDeviceOptions()"
-                          v-bind:value="option.port"
+                          v-for="device in serialStore.serialDevices"
+                          :value="device.port"
+                          :key="device.port"
                         >
-                          {{ option.description }}
+                          {{ device.description }}
                         </option>
                       </select>
                     </div>
@@ -392,18 +391,6 @@ function testHamlib() {
                   data-bs-toggle="collapse"
                 >
                   Version
-                  <span
-                    class="badge ms-2"
-                    :class="
-                      updateAvailable === '1' ? 'bg-warning' : 'bg-success'
-                    "
-                  >
-                    {{
-                      updateAvailable === "1"
-                        ? "Update available ! ! ! !"
-                        : "Current"
-                    }}</span
-                  >
                 </button>
               </h2>
               <div
@@ -426,9 +413,6 @@ function testHamlib() {
                   >
                     Modem version | {{ state.modem_version }}
                   </button>
-                  <div :class="updateAvailable === '1' ? '' : 'd-none'">
-                    <settings_updater_core />
-                  </div>
                 </div>
               </div>
             </div>

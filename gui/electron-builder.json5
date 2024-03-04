@@ -45,17 +45,11 @@
     "icon": "build/icon.png",
     "target": [
       {
-        "target": "nsis",
+        "target": "portable",
         "arch": ["arm64", "x64"]
       }
     ],
     "artifactName": "${productName}-GUI-Windows-${version}.${ext}"
-  },
-  "nsis": {
-    "oneClick": false,
-    "perMachine": false,
-    "allowToChangeInstallationDirectory": true,
-    "deleteAppDataOnUninstall": true
   },
   "linux": {
     "category": "Development",
