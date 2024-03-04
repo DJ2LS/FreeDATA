@@ -10,6 +10,7 @@ class CONFIG:
 
     config_types = {
         'NETWORK': {
+            'modemaddress': str,
             'modemport': int,
         },
         'STATION': {

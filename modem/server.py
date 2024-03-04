@@ -345,4 +345,13 @@ if __name__ == "__main__":
     # initialize database default values
     DatabaseManager(app.event_manager).initialize_default_values()
     wsm.startThreads(app)
-    app.run()
+
+    conf = app.config_manager.read()
+    modemaddress = conf['NETWORK']['modemaddress']
+    modemport = conf['NETWORK']['modemport']
+
+    if not modemaddress:
+        modemaddress = '127.0.0.1'
+    if not modemport:
+        modemport = 5000
+    app.run(modemaddress, modemport)
