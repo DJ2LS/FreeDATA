@@ -23,6 +23,11 @@ class SendMessageCommand(TxCommand):
             self.log("Modem busy, waiting until ready...")
             return
 
+        if not modem:
+            self.log("Modem not running...", isWarning=True)
+            return
+
+
         first_queued_message = DatabaseManagerMessages(self.event_manager).get_first_queued_message()
         if not first_queued_message:
             self.log("No queued message in database.")
