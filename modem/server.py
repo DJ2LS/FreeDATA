@@ -26,7 +26,6 @@ from message_system_db_beacon import DatabaseManagerBeacon
 from schedule_manager import ScheduleManager
 
 app = Flask(__name__)
-CORS(app)
 CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
 MODEM_VERSION = "0.14.1-alpha"
