@@ -2,22 +2,18 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 
 export const useChatStore = defineStore("chatStore", () => {
-
-
   var callsign_list = ref();
   var sorted_chat_list = ref();
   var newChatCallsign = ref();
   var newChatMessage = ref();
 
-
   /* ------------------------------------------------ */
-    // Scroll to bottom functions
+  // Scroll to bottom functions
   const scrollTrigger = ref(0);
 
   function triggerScrollToBottom() {
     scrollTrigger.value++;
   }
-
 
   /* ------------------------------------------------ */
 
