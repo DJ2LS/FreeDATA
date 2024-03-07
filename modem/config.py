@@ -64,8 +64,7 @@ class CONFIG:
             'enable_low_bandwidth_mode': bool,
             'respond_to_cq': bool,
             'rx_buffer_size': int,
-            'tx_delay': int,
-            'beacon_interval': int,
+            'tx_delay': int
         },
         'MESSAGES': {
             'enable_auto_repeat': bool,

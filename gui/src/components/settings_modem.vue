@@ -193,26 +193,6 @@ const audioStore = useAudioStore();
       <option value="250">250</option>
     </select>
   </div>
-  <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text w-50">Beacon interval</span>
-    <select
-      class="form-select form-select-sm"
-      aria-label=".form-select-sm"
-      id="beaconInterval"
-      style="width: 6rem"
-      @change="onChange"
-      v-model.number="settings.remote.MODEM.beacon_interval"
-    >
-      <option value="60">60 secs</option>
-      <option value="90">90 secs</option>
-      <option value="120">2 mins</option>
-      <option selected value="300">5 mins</option>
-      <option value="600">10 mins</option>
-      <option value="900">15 mins</option>
-      <option value="1800">30 mins</option>
-      <option value="3600">60 mins</option>
-    </select>
-  </div>
 
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50">Enable 250Hz bandwidth mode</label>

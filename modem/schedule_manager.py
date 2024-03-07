@@ -16,13 +16,12 @@ class ScheduleManager:
         self.state_manager = state_manger
         self.event_manager = event_manager
         self.config = self.config_manager.read()
-        self.beacon_interval = self.config['MODEM']['beacon_interval']
 
         self.scheduler = sched.scheduler(time.time, time.sleep)
         self.events = {
             'check_for_queued_messages': {'function': self.check_for_queued_messages, 'interval': 10},
             'explorer_publishing': {'function': self.push_to_explorer, 'interval': 60},
-            'transmitting_beacon': {'function': self.transmit_beacon, 'interval': self.beacon_interval},
+            'transmitting_beacon': {'function': self.transmit_beacon, 'interval': 600},
             'beacon_cleanup': {'function': self.delete_beacons, 'interval': 600},
         }
         self.running = False  # Flag to control the running state

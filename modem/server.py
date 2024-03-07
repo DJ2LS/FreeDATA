@@ -13,6 +13,7 @@ import json
 import websocket_manager as wsm
 import api_validations as validations
 import command_cq
+import command_beacon
 import command_ping
 import command_feq
 import command_test
@@ -150,6 +151,8 @@ def post_beacon():
 
     if not app.state_manager.is_beacon_running:
         app.state_manager.set('is_beacon_running', request.json['enabled'])
+        if not app.state_manager.getARQ():
+            enqueue_tx_command(command_beacon.BeaconCommand, request.json)
     else:
         app.state_manager.set('is_beacon_running', request.json['enabled'])
 

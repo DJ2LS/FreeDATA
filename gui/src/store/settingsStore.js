@@ -61,7 +61,6 @@ const defaultConfig = {
       tuning_range_fmax: 0,
       tuning_range_fmin: 0,
       tx_delay: 0,
-      beacon_interval: 0,
       enable_hamc: false,
       enable_morse_identifier: false,
     },
