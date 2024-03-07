@@ -1,4 +1,6 @@
 <script setup lang="ts">
+
+
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
@@ -24,7 +26,10 @@ function getDateTime(timestampRaw) {
 </script>
 
 <template>
-  <div class="tab-content p-3" id="nav-tabContent-chat-messages">
+
+
+  <div class="tab-content p-3" id="nav-tabContent-chat-messages"
+>
     <template
       v-for="(details, callsign, key) in chat.callsign_list"
       :key="callsign"

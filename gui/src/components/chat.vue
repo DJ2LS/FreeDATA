@@ -2,6 +2,7 @@
 // @ts-nocheck
 // disable typescript check beacuse of error with beacon histogram options
 
+
 import chat_conversations from "./chat_conversations.vue";
 import chat_messages from "./chat_messages.vue";
 import chat_new_message from "./chat_new_message.vue";
@@ -12,6 +13,8 @@ setActivePinia(pinia);
 
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
+
+
 
 import {
   Chart as ChartJS,
@@ -25,7 +28,7 @@ import {
 } from "chart.js";
 
 import { Bar } from "vue-chartjs";
-import { ref, computed } from "vue";
+import { watch, nextTick, ref, computed } from "vue";
 import annotationPlugin from "chartjs-plugin-annotation";
 
 ChartJS.register(
@@ -101,6 +104,18 @@ const beaconHistogramData = computed(() => ({
     },
   ],
 }));
+
+const messagesContainer = ref(null);
+watch(() => chat.scrollTrigger, (newVal, oldVal) => {
+  //console.log("Trigger changed from", oldVal, "to", newVal); // Debugging line
+  nextTick(() => {
+    if (messagesContainer.value) {
+      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+    }
+  });
+});
+
+
 </script>
 
 <template>
@@ -143,7 +158,7 @@ const beaconHistogramData = computed(() => ({
           </nav>
 
           <!-- Chat Messages Area -->
-          <div class="flex-grow-1 overflow-auto">
+          <div class="flex-grow-1 overflow-auto"  ref="messagesContainer">
             <chat_messages />
           </div>
 

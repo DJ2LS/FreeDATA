@@ -13,11 +13,7 @@ const chat = useChatStore(pinia);
 function chatSelected(callsign) {
   chat.selectedCallsign = callsign.toUpperCase();
   // scroll message container to bottom
-  var messageBody = document.getElementById("message-container");
-  if (messageBody != null) {
-    // needs sensible defaults
-    messageBody.scrollTop = messageBody.scrollHeight - messageBody.clientHeight;
-  }
+  chat.triggerScrollToBottom();
 
   processBeaconData(callsign);
 }
