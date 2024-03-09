@@ -107,7 +107,6 @@ class RF:
 
         # Initialize codec2, rig control, and data threads
         self.init_codec2()
-        self.init_data_threads()
 
         return True
 
