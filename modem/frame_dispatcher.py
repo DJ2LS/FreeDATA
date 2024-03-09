@@ -13,7 +13,10 @@ from frame_handler import FrameHandler
 from frame_handler_ping import PingFrameHandler
 from frame_handler_cq import CQFrameHandler
 from frame_handler_arq_session import ARQFrameHandler
+from frame_handler_p2p_connection import P2PConnectionFrameHandler
 from frame_handler_beacon import BeaconFrameHandler
+
+
 
 class DISPATCHER():
 
@@ -22,9 +25,15 @@ class DISPATCHER():
         FR_TYPE.ARQ_SESSION_OPEN.value: {"class": ARQFrameHandler, "name": "ARQ Data Channel Open"},
         FR_TYPE.ARQ_SESSION_INFO_ACK.value: {"class": ARQFrameHandler, "name": "ARQ INFO ACK"},
         FR_TYPE.ARQ_SESSION_INFO.value: {"class": ARQFrameHandler, "name": "ARQ Data Channel Info"},
-        FR_TYPE.ARQ_CONNECTION_CLOSE.value: {"class": ARQFrameHandler, "name": "ARQ CLOSE SESSION"},
-        FR_TYPE.ARQ_CONNECTION_HB.value: {"class": ARQFrameHandler, "name": "ARQ HEARTBEAT"},
-        FR_TYPE.ARQ_CONNECTION_OPEN.value: {"class": ARQFrameHandler, "name": "ARQ OPEN SESSION"},
+        FR_TYPE.P2P_CONNECTION_CONNECT.value: {"class": P2PConnectionFrameHandler, "name": "P2P Connection CONNECT"},
+        FR_TYPE.P2P_CONNECTION_CONNECT_ACK.value: {"class": P2PConnectionFrameHandler, "name": "P2P Connection CONNECT ACK"},
+        FR_TYPE.P2P_CONNECTION_PAYLOAD.value: {"class": P2PConnectionFrameHandler,
+                                                   "name": "P2P Connection PAYLOAD"},
+        FR_TYPE.P2P_CONNECTION_PAYLOAD_ACK.value: {"class": P2PConnectionFrameHandler,
+                                                   "name": "P2P Connection PAYLOAD ACK"},
+
+        #FR_TYPE.ARQ_CONNECTION_HB.value: {"class": ARQFrameHandler, "name": "ARQ HEARTBEAT"},
+        #FR_TYPE.ARQ_CONNECTION_OPEN.value: {"class": ARQFrameHandler, "name": "ARQ OPEN SESSION"},
         FR_TYPE.ARQ_STOP.value: {"class": ARQFrameHandler, "name": "ARQ STOP"},
         FR_TYPE.ARQ_STOP_ACK.value: {"class": ARQFrameHandler, "name": "ARQ STOP ACK"},
         FR_TYPE.BEACON.value: {"class": BeaconFrameHandler, "name": "BEACON"},
@@ -82,7 +91,7 @@ class DISPATCHER():
 
         if frametype not in self.FRAME_HANDLER:
             self.log.warning(
-                "[Modem] ARQ - other frame type", frametype=FR_TYPE(frametype).name)
+                "[DISPATCHER] ARQ - other frame type", frametype=FR_TYPE(frametype).name)
             return
         
         # instantiate handler

@@ -38,6 +38,8 @@ class StateManager:
         self.arq_iss_sessions = {}
         self.arq_irs_sessions = {}
 
+        self.p2p_connection_sessions = {}
+
         #self.mesh_routing_table = []
 
         self.radio_frequency = 0
@@ -214,3 +216,14 @@ class StateManager:
             "radio_rf_level": self.radio_rf_level,
             "s_meter_strength": self.s_meter_strength,
         }
+
+    def register_p2p_connection_session(self, session):
+        if session.session_id in self.p2p_connection_sessions:
+            return False
+        self.p2p_connection_sessions[session.session_id] = session
+        return True
+
+    def get_p2p_connection_session(self, id):
+        if id not in self.p2p_connection_sessions:
+            pass
+        return self.p2p_connection_sessions[id]

@@ -329,6 +329,7 @@ if __name__ == "__main__":
     app.config_manager = CONFIG(config_file)
 
     # start modem
+    app.p2p_data_queue = queue.Queue() # queue which holds processing data of p2p connections
     app.state_queue = queue.Queue()  # queue which holds latest states
     app.modem_events = queue.Queue()  # queue which holds latest events
     app.modem_fft = queue.Queue()  # queue which holds latest fft data
