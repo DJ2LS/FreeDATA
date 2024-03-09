@@ -30,8 +30,6 @@ class Demodulator():
     def __init__(self, config, audio_rx_q, modem_rx_q, data_q_rx, states, event_manager, fft_queue):
         self.log = structlog.get_logger("Demodulator")
 
-        self.tuning_range_fmin = config['MODEM']['tuning_range_fmin']
-        self.tuning_range_fmax = config['MODEM']['tuning_range_fmax']
         self.rx_audio_level = config['AUDIO']['rx_audio_level']
 
         self.AUDIO_FRAMES_PER_BUFFER_RX = 4800
@@ -77,13 +75,6 @@ class Demodulator():
         # create codec2 instance
         c2instance = ctypes.cast(
             codec2.api.freedv_open(mode), ctypes.c_void_p
-        )
-
-        # set tuning range
-        codec2.api.freedv_set_tuning_range(
-            c2instance,
-            ctypes.c_float(float(self.tuning_range_fmin)),
-            ctypes.c_float(float(self.tuning_range_fmax)),
         )
 
         # get bytes per frame

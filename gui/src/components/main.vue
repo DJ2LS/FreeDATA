@@ -5,15 +5,8 @@ setActivePinia(pinia);
 
 import main_modals from "./main_modals.vue";
 import main_top_navbar from "./main_top_navbar.vue";
-import main_rig_control from "./main_rig_control.vue";
 import settings_view from "./settings.vue";
-import main_active_rig_control from "./main_active_rig_control.vue";
 import main_footer_navbar from "./main_footer_navbar.vue";
-
-import main_active_stats from "./main_active_stats.vue";
-import main_active_broadcasts from "./main_active_broadcasts.vue";
-import main_active_heard_stations from "./main_active_heard_stations.vue";
-import main_active_audio_level from "./main_active_audio_level.vue";
 
 import chat from "./chat.vue";
 import infoScreen from "./infoScreen.vue";
