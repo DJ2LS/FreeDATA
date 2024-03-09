@@ -54,12 +54,8 @@ const defaultConfig = {
       enable_protocol: false,
     },
     MODEM: {
-      enable_fsk: false,
       enable_low_bandwidth_mode: false,
       respond_to_cq: false,
-      rx_buffer_size: 0,
-      tuning_range_fmax: 0,
-      tuning_range_fmin: 0,
       tx_delay: 0,
       enable_hamc: false,
       enable_morse_identifier: false,

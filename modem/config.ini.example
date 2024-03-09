@@ -46,13 +46,9 @@ enable_protocol = False
 
 [MODEM]
 enable_hmac = False
-tuning_range_fmax = 50
-tuning_range_fmin = -50
-enable_fsk = False
 enable_low_bandwidth_mode = False
 enable_morse_identifier = False
 respond_to_cq = True
-rx_buffer_size = 64
 tx_delay = 200
 
 [MESSAGES]
