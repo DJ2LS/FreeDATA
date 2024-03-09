@@ -74,14 +74,12 @@ class RF:
         # Make sure our resampler will work
         assert (self.AUDIO_SAMPLE_RATE / self.MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48  # type: ignore
 
-        self.modem_received_queue = queue.Queue()
         self.audio_received_queue = queue.Queue()
         self.data_queue_received = queue.Queue()
         self.fft_queue = fft_queue
 
         self.demodulator = demodulator.Demodulator(self.config, 
                                             self.audio_received_queue, 
-                                            self.modem_received_queue,
                                             self.data_queue_received,
                                             self.states,
                                             self.event_manager,
@@ -405,11 +403,6 @@ class RF:
         self.freedv_datac4_tx = codec2.open_instance(codec2.FREEDV_MODE.datac4.value)
         self.freedv_datac13_tx = codec2.open_instance(codec2.FREEDV_MODE.datac13.value)
 
-    def init_data_threads(self):
-        worker_received = threading.Thread(
-            target=self.demodulator.worker_received, name="WORKER_THREAD", daemon=True
-        )
-        worker_received.start()
 
     # Low level modem audio transmit
     def transmit_audio(self, audio_48k) -> None:
