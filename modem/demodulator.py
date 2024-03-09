@@ -127,8 +127,8 @@ class Demodulator():
 
     def sd_input_audio_callback(self, indata: np.ndarray, frames: int, time, status) -> None:
             if status:
-                self.log.warning("[AUDIO STATUS]", status=status)
-
+                self.log.warning("[AUDIO STATUS]", status=status, time=time, frames=frames, indata=indata)
+                return
             audio_48k = np.frombuffer(indata, dtype=np.int16)
             audio_8k = self.resampler.resample48_to_8(audio_48k)
 
