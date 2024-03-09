@@ -353,7 +353,7 @@ if __name__ == "__main__":
     modemport = conf['NETWORK']['modemport']
 
     if not modemaddress:
-        modemaddress = '127.0.0.1'
+        modemaddress = '0.0.0.0'
     if not modemport:
         modemport = 5000
     app.run(modemaddress, modemport)
