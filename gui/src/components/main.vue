@@ -9,7 +9,6 @@ import settings_view from "./settings.vue";
 import main_footer_navbar from "./main_footer_navbar.vue";
 
 import chat from "./chat.vue";
-import infoScreen from "./infoScreen.vue";
 import main_modem_healthcheck from "./main_modem_healthcheck.vue";
 import Dynamic_components from "./dynamic_components.vue";
 
@@ -75,16 +74,7 @@ import { loadAllData } from "../js/eventHandler";
               ><i class="bi bi-rocket h3"></i
             ></a>
 
-            <a
-              class="list-group-item list-group-item-dark list-group-item-action border border-0 rounded-3 mb-2"
-              id="list-info-list"
-              data-bs-toggle="list"
-              href="#list-info"
-              role="tab"
-              aria-controls="list-info"
-              title="About"
-              ><i class="bi bi-info h3"></i
-            ></a>
+
 
             <a
               class="list-group-item list-group-item-dark list-group-item-action d-none border-0 rounded-3 mb-2"
@@ -295,14 +285,7 @@ import { loadAllData } from "../js/eventHandler";
               </div>
             </div>
           </div>
-          <div
-            class="tab-pane fade"
-            id="list-info"
-            role="tabpanel"
-            aria-labelledby="list-info-list"
-          >
-            <infoScreen />
-          </div>
+
           <div
             class="tab-pane fade show active"
             id="list-grid"
