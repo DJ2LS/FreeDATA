@@ -52,7 +52,6 @@ jobs:
 
       - name: Create Desktop shortcut
         run: |
-          #
           echo '
           # Create desktop file
           echo "[Desktop Entry]
@@ -64,7 +63,7 @@ jobs:
 
       - name: Create AppImage build script
         run: |
-            echo '#!/bin/bash
+          echo '#!/bin/bash
           # Navigate to the AppDir root; this ensures relative paths work as expected
           cd "$(dirname "$(readlink -f "${0}")")"
           
@@ -84,7 +83,7 @@ jobs:
           ./linux-unpacked/freedata
           
           ' > $HOME/AppRun
-            chmod +x $HOME/freedata-appimage/AppRun
+          chmod +x $HOME/freedata-appimage/AppRun
 
       - name: Download AppImage
         run: |
