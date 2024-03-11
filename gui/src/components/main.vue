@@ -74,8 +74,6 @@ import { loadAllData } from "../js/eventHandler";
               ><i class="bi bi-rocket h3"></i
             ></a>
 
-
-
             <a
               class="list-group-item list-group-item-dark list-group-item-action d-none border-0 rounded-3 mb-2"
               id="list-logger-list"
