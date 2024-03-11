@@ -1,3 +1,5 @@
+import time
+
 from flask import Flask, request, jsonify, make_response, abort, Response
 from flask_sock import Sock
 from flask_cors import CORS
@@ -20,6 +22,8 @@ import command_test
 import command_arq_raw
 import command_message_send
 import event_manager
+import atexit
+
 from message_system_db_manager import DatabaseManager
 from message_system_db_messages import DatabaseManagerMessages
 from message_system_db_attachments import DatabaseManagerAttachments
@@ -320,6 +324,11 @@ def sock_fft(sock):
 def sock_states(sock):
     wsm.handle_connection(sock, wsm.states_client_list, app.state_queue)
 
+@atexit.register
+def stop_server():
+    app.service_manager.stop_modem()
+    time.sleep(1)
+    print('Server shutdown...')
 
 
 if __name__ == "__main__":
@@ -353,7 +362,7 @@ if __name__ == "__main__":
     modemport = conf['NETWORK']['modemport']
 
     if not modemaddress:
-        modemaddress = '0.0.0.0'
+        modemaddress = '127.0.0.1'
     if not modemport:
         modemport = 5000
     app.run(modemaddress, modemport)
