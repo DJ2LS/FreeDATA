@@ -74,23 +74,20 @@ def freedv_get_mode_name_by_value(mode: int) -> str:
     return FREEDV_MODE(mode).name
 
 
-# Check if we are running in a pyinstaller environment
-#if hasattr(sys, "_MEIPASS"):
-#    sys.path.append(getattr(sys, "_MEIPASS"))
-#else:
-sys.path.append(os.path.abspath("."))
-
-#log.info("[C2 ] Searching for libcodec2...")
+# Get the directory of the current script file
+script_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(script_dir)
+# Use script_dir to construct the paths for file search
 if sys.platform == "linux":
-    files = glob.glob(r"**/*libcodec2*", recursive=True)
-    files.append("libcodec2.so")
+    files = glob.glob(os.path.join(script_dir, "**/*libcodec2*"), recursive=True)
+    files.append(os.path.join(script_dir, "libcodec2.so"))
 elif sys.platform == "darwin":
     if hasattr(sys, "_MEIPASS"):
-        files = glob.glob(getattr(sys, "_MEIPASS") + '/**/*libcodec2*', recursive=True)
+        files = glob.glob(os.path.join(getattr(sys, "_MEIPASS"), '**/*libcodec2*'), recursive=True)
     else:
-        files = glob.glob(r"**/*libcodec2*.dylib", recursive=True)
+        files = glob.glob(os.path.join(script_dir, "**/*libcodec2*.dylib"), recursive=True)
 elif sys.platform in ["win32", "win64"]:
-    files = glob.glob(r"**\*libcodec2*.dll", recursive=True)
+    files = glob.glob(os.path.join(script_dir, "**\\*libcodec2*.dll"), recursive=True)
 else:
     files = []
 

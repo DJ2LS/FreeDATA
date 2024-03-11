@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
-import { serialDeviceOptions } from "../js/deviceFormHelper";
+import { useSerialStore } from "../store/serialStore";
+const serialStore = useSerialStore();
 </script>
 
 <template>
@@ -21,13 +22,13 @@ import { serialDeviceOptions } from "../js/deviceFormHelper";
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text" style="width: 180px">Rigctld port</span>
     <input
-      type="text"
+      type="number"
       class="form-control"
       placeholder="rigctld port"
       id="hamlib_rigctld_port"
       aria-label="Device Port"
       @change="onChange"
-      v-model="settings.remote.RIGCTLD.port"
+      v-model.number="settings.remote.RIGCTLD.port"
     />
   </div>
 
@@ -334,18 +335,16 @@ import { serialDeviceOptions } from "../js/deviceFormHelper";
       <span class="input-group-text" style="width: 180px">Radio port</span>
 
       <select
-        class="form-select form-select-sm"
-        aria-label=".form-select-sm"
-        id="hamlib_deviceport"
-        style="width: 7rem"
         @change="onChange"
         v-model="settings.remote.RADIO.serial_port"
+        class="form-select form-select-sm"
       >
         <option
-          v-for="option in serialDeviceOptions()"
-          v-bind:value="option.port"
+          v-for="device in serialStore.serialDevices"
+          :value="device.port"
+          :key="device.port"
         >
-          {{ option.description }}
+          {{ device.description }}
         </option>
       </select>
     </div>
@@ -422,18 +421,18 @@ import { serialDeviceOptions } from "../js/deviceFormHelper";
 
     <div class="input-group input-group-sm mb-1">
       <span class="input-group-text" style="width: 180px">PTT device port</span>
+
       <select
-        class="form-select form-select-sm"
-        aria-label=".form-select-sm"
-        id="hamlib_ptt_port"
         @change="onChange"
         v-model="settings.remote.RADIO.ptt_port"
+        class="form-select form-select-sm"
       >
         <option
-          v-for="option in serialDeviceOptions()"
-          v-bind:value="option.port"
+          v-for="device in serialStore.serialDevices"
+          :value="device.port"
+          :key="device.port"
         >
-          {{ option.description }}
+          {{ device.description }}
         </option>
       </select>
     </div>

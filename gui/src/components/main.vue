@@ -5,31 +5,21 @@ setActivePinia(pinia);
 
 import main_modals from "./main_modals.vue";
 import main_top_navbar from "./main_top_navbar.vue";
-import main_rig_control from "./main_rig_control.vue";
 import settings_view from "./settings.vue";
-import main_active_rig_control from "./main_active_rig_control.vue";
 import main_footer_navbar from "./main_footer_navbar.vue";
 
-import main_active_stats from "./main_active_stats.vue";
-import main_active_broadcasts from "./main_active_broadcasts.vue";
-import main_active_heard_stations from "./main_active_heard_stations.vue";
-import main_active_audio_level from "./main_active_audio_level.vue";
-
 import chat from "./chat.vue";
-import infoScreen from "./infoScreen.vue";
 import main_modem_healthcheck from "./main_modem_healthcheck.vue";
 import Dynamic_components from "./dynamic_components.vue";
 
 import { getFreedataMessages } from "../js/api";
+import { getRemote } from "../store/settingsStore.js";
+import { loadAllData } from "../js/eventHandler";
 </script>
 
 <template>
   <!-------------------------------- INFO TOASTS ---------------->
-  <div
-    aria-live="polite"
-    aria-atomic="true"
-    class="position-relative z-3"
-  >
+  <div aria-live="polite" aria-atomic="true" class="position-relative z-3">
     <div
       class="toast-container position-absolute top-0 end-0 p-3"
       id="mainToastContainer"
@@ -47,6 +37,7 @@ import { getFreedataMessages } from "../js/api";
             id="main-list-tab"
             role="tablist"
             style="margin-top: 100px"
+            @click="loadAllData"
           >
             <main_modem_healthcheck />
 
@@ -84,17 +75,6 @@ import { getFreedataMessages } from "../js/api";
             ></a>
 
             <a
-              class="list-group-item list-group-item-dark list-group-item-action border border-0 rounded-3 mb-2"
-              id="list-info-list"
-              data-bs-toggle="list"
-              href="#list-info"
-              role="tab"
-              aria-controls="list-info"
-              title="About"
-              ><i class="bi bi-info h3"></i
-            ></a>
-
-            <a
               class="list-group-item list-group-item-dark list-group-item-action d-none border-0 rounded-3 mb-2"
               id="list-logger-list"
               data-bs-toggle="list"
@@ -111,6 +91,7 @@ import { getFreedataMessages } from "../js/api";
               role="tab"
               aria-controls="list-settings"
               title="Settings"
+              @click="loadAllData"
               ><i class="bi bi-gear-wide-connected h3"></i
             ></a>
           </div>
@@ -302,14 +283,7 @@ import { getFreedataMessages } from "../js/api";
               </div>
             </div>
           </div>
-          <div
-            class="tab-pane fade"
-            id="list-info"
-            role="tabpanel"
-            aria-labelledby="list-info-list"
-          >
-            <infoScreen />
-          </div>
+
           <div
             class="tab-pane fade show active"
             id="list-grid"

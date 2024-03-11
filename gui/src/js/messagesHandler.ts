@@ -83,6 +83,7 @@ function createSortedMessagesList(data: {
 
 export function newMessage(dxcall, body, attachments) {
   sendFreedataMessage(dxcall, body, attachments);
+  chatStore.triggerScrollToBottom();
 }
 
 /* ------ TEMPORARY DUMMY FUNCTIONS --- */

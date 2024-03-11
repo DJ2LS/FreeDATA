@@ -25,7 +25,7 @@ import {
 } from "chart.js";
 
 import { Bar } from "vue-chartjs";
-import { ref, computed } from "vue";
+import { watch, nextTick, ref, computed } from "vue";
 import annotationPlugin from "chartjs-plugin-annotation";
 
 ChartJS.register(
@@ -101,6 +101,20 @@ const beaconHistogramData = computed(() => ({
     },
   ],
 }));
+
+const messagesContainer = ref(null);
+watch(
+  () => chat.scrollTrigger,
+  (newVal, oldVal) => {
+    //console.log("Trigger changed from", oldVal, "to", newVal); // Debugging line
+    nextTick(() => {
+      if (messagesContainer.value) {
+        messagesContainer.value.scrollTop =
+          messagesContainer.value.scrollHeight;
+      }
+    });
+  },
+);
 </script>
 
 <template>
@@ -143,7 +157,7 @@ const beaconHistogramData = computed(() => ({
           </nav>
 
           <!-- Chat Messages Area -->
-          <div class="flex-grow-1 overflow-auto">
+          <div class="flex-grow-1 overflow-auto" ref="messagesContainer">
             <chat_messages />
           </div>
 

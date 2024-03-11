@@ -2,7 +2,7 @@
   "name": "FreeDATA",
   "description": "FreeDATA Client application for connecting to FreeDATA server",
   "private": true,
-  "version": "0.14.0-alpha",
+  "version": "0.14.2-alpha",
   "main": "dist-electron/main/index.js",
   "scripts": {
     "start": "vite",
@@ -13,7 +13,8 @@
     "release": "vue-tsc --noEmit && vite build && electron-builder -p onTag",
     "preview": "vite preview",
     "lint": "eslint --ext .js,.vue src",
-    "lint-fix": "eslint --ext .js,.vue --fix src"
+    "lint-fix": "eslint --ext .js,.vue --fix src",
+    "install-deps": "npm install && npm update"
   },
   "repository": {
     "type": "git",

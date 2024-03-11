@@ -30,7 +30,7 @@ import {
   Legend
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
-import { ref, computed } from 'vue';
+import { ref, computed, nextTick } from 'vue';
 
 
 import { VuemojiPicker, EmojiClickEventDetail } from 'vuemoji-picker'
@@ -90,6 +90,8 @@ function transmitNewMessage() {
         chat.selectedCallsign = Object.keys(chat.callsign_list)[0];
     }
 
+
+
     chat.inputText = chat.inputText.trim();
 
     // Proceed only if there is text or files selected
@@ -101,6 +103,7 @@ function transmitNewMessage() {
             type: file.type,
             data: file.content
         };
+
     });
 
     if (chat.selectedCallsign.startsWith("BC-")) {
@@ -120,6 +123,7 @@ function transmitNewMessage() {
     chat.inputText = '';
     chatModuleMessage.value = "";
     resetFile()
+
 }
 
 function resetFile(event){

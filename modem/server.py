@@ -13,6 +13,7 @@ import json
 import websocket_manager as wsm
 import api_validations as validations
 import command_cq
+import command_beacon
 import command_ping
 import command_feq
 import command_test
@@ -26,17 +27,17 @@ from message_system_db_beacon import DatabaseManagerBeacon
 from schedule_manager import ScheduleManager
 
 app = Flask(__name__)
-CORS(app)
 CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
-MODEM_VERSION = "0.14.0-alpha"
+MODEM_VERSION = "0.14.2-alpha"
 
 # set config file to use
 def set_config():
     if 'FREEDATA_CONFIG' in os.environ:
         config_file = os.environ['FREEDATA_CONFIG']
     else:
-        config_file = 'config.ini'
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        config_file = os.path.join(script_dir, 'config.ini')
 
     if os.path.exists(config_file):
         print(f"Using config from {config_file}")
@@ -149,6 +150,8 @@ def post_beacon():
 
     if not app.state_manager.is_beacon_running:
         app.state_manager.set('is_beacon_running', request.json['enabled'])
+        if not app.state_manager.getARQ():
+            enqueue_tx_command(command_beacon.BeaconCommand, request.json)
     else:
         app.state_manager.set('is_beacon_running', request.json['enabled'])
 
@@ -344,4 +347,13 @@ if __name__ == "__main__":
     # initialize database default values
     DatabaseManager(app.event_manager).initialize_default_values()
     wsm.startThreads(app)
-    app.run()
+
+    conf = app.config_manager.read()
+    modemaddress = conf['NETWORK']['modemaddress']
+    modemport = conf['NETWORK']['modemport']
+
+    if not modemaddress:
+        modemaddress = '0.0.0.0'
+    if not modemport:
+        modemport = 5000
+    app.run(modemaddress, modemport)
