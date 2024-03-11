@@ -65,7 +65,7 @@ class RF:
         self.MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
 
         # 8192 Let's do some tests with very small chunks for TX
-        self.AUDIO_FRAMES_PER_BUFFER_TX = 1200 if self.radiocontrol in ["tci"] else 2400 * 2
+        #self.AUDIO_FRAMES_PER_BUFFER_TX = 1200 if self.radiocontrol in ["tci"] else 2400 * 2
         # 8 * (self.AUDIO_SAMPLE_RATE/self.MODEM_SAMPLE_RATE) == 48
         self.AUDIO_CHANNELS = 1
         self.MODE = 0
@@ -83,6 +83,7 @@ class RF:
                                             self.data_queue_received,
                                             self.states,
                                             self.event_manager,
+                                            self.service_queue,
                                             self.fft_queue
                                                    )
 
