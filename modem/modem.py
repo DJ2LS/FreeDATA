@@ -10,9 +10,7 @@ Created on Wed Dec 23 07:04:24 2020
 # pylint: disable=import-outside-toplevel
 
 import atexit
-import ctypes
 import queue
-import threading
 import time
 import codec2
 import numpy as np
@@ -20,9 +18,9 @@ import sounddevice as sd
 import structlog
 import tci
 import cw
-from queues import RIGCTLD_COMMAND_QUEUE
 import audio
 import demodulator
+import modulator
 
 TESTMODE = False
 
@@ -44,28 +42,26 @@ class RF:
         self.audio_input_device = config['AUDIO']['input_device']
         self.audio_output_device = config['AUDIO']['output_device']
 
-        self.tx_audio_level = config['AUDIO']['tx_audio_level']
-        self.enable_audio_auto_tune = config['AUDIO']['enable_auto_tune']
-        self.tx_delay = config['MODEM']['tx_delay']
+
 
         self.radiocontrol = config['RADIO']['control']
         self.rigctld_ip = config['RIGCTLD']['ip']
         self.rigctld_port = config['RIGCTLD']['port']
 
-
-        self.ptt_state = False
-        self.radio_alc = 0.0
-
         self.tci_ip = config['TCI']['tci_ip']
         self.tci_port = config['TCI']['tci_port']
 
+        self.tx_audio_level = config['AUDIO']['tx_audio_level']
+
+
+        self.ptt_state = False
 
         self.AUDIO_SAMPLE_RATE = 48000
-        self.MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
+        self.modem_sample_rate = codec2.api.FREEDV_FS_8000
 
         # 8192 Let's do some tests with very small chunks for TX
         #self.AUDIO_FRAMES_PER_BUFFER_TX = 1200 if self.radiocontrol in ["tci"] else 2400 * 2
-        # 8 * (self.AUDIO_SAMPLE_RATE/self.MODEM_SAMPLE_RATE) == 48
+        # 8 * (self.AUDIO_SAMPLE_RATE/self.modem_sample_rate) == 48
         self.AUDIO_CHANNELS = 1
         self.MODE = 0
         self.rms_counter = 0
@@ -73,7 +69,7 @@ class RF:
         self.audio_out_queue = queue.Queue()
 
         # Make sure our resampler will work
-        assert (self.AUDIO_SAMPLE_RATE / self.MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48  # type: ignore
+        assert (self.AUDIO_SAMPLE_RATE / self.modem_sample_rate) == codec2.api.FDMDV_OS_48  # type: ignore
 
         self.audio_received_queue = queue.Queue()
         self.data_queue_received = queue.Queue()
@@ -87,6 +83,8 @@ class RF:
                                             self.service_queue,
                                             self.fft_queue
                                                    )
+
+        self.modulator = modulator.Modulator(self.config)
 
 
 
@@ -107,8 +105,7 @@ class RF:
             self.demodulator.start(self.sd_input_stream)
             atexit.register(self.sd_input_stream.stop)
 
-        # Initialize codec2, rig control, and data threads
-        self.init_codec2()
+
 
         return True
 
@@ -195,188 +192,7 @@ class RF:
 
         return True
 
-    def audio_auto_tune(self):
-        # enable / disable AUDIO TUNE Feature / ALC correction
-        if self.enable_audio_auto_tune:
-            if self.radio_alc == 0.0:
-                self.tx_audio_level = self.tx_audio_level + 20
-            elif 0.0 < self.radio_alc <= 0.1:
-                print("0.0 < self.radio_alc <= 0.1")
-                self.tx_audio_level = self.tx_audio_level + 2
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
-                               alc_level=str(self.radio_alc))
-            elif 0.1 < self.radio_alc < 0.2:
-                print("0.1 < self.radio_alc < 0.2")
-                self.tx_audio_level = self.tx_audio_level
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
-                               alc_level=str(self.radio_alc))
-            elif 0.2 < self.radio_alc < 0.99:
-                print("0.2 < self.radio_alc < 0.99")
-                self.tx_audio_level = self.tx_audio_level - 20
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
-                               alc_level=str(self.radio_alc))
-            elif 1.0 >= self.radio_alc:
-                print("1.0 >= self.radio_alc")
-                self.tx_audio_level = self.tx_audio_level - 40
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
-                               alc_level=str(self.radio_alc))
-            else:
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(self.tx_audio_level),
-                               alc_level=str(self.radio_alc))
 
-    def transmit(
-            self, mode, repeats: int, repeat_delay: int, frames: bytearray
-    ) -> bool:
-        """
-
-        Args:
-          mode:
-          repeats:
-          repeat_delay:
-          frames:
-
-        """
-        if TESTMODE:
-            return
-
-
-        self.demodulator.reset_data_sync()
-        # get freedv instance by mode
-        mode_transition = {
-            codec2.FREEDV_MODE.signalling: self.freedv_datac13_tx,
-            codec2.FREEDV_MODE.datac0: self.freedv_datac0_tx,
-            codec2.FREEDV_MODE.datac1: self.freedv_datac1_tx,
-            codec2.FREEDV_MODE.datac3: self.freedv_datac3_tx,
-            codec2.FREEDV_MODE.datac4: self.freedv_datac4_tx,
-            codec2.FREEDV_MODE.datac13: self.freedv_datac13_tx,
-        }
-        if mode in mode_transition:
-            freedv = mode_transition[mode]
-        else:
-            print("wrong mode.................")
-            print(mode)
-            return False
-
-        # Wait for some other thread that might be transmitting
-        self.states.waitForTransmission()
-        self.states.setTransmitting(True)
-        #self.states.channel_busy_event.wait()
-
-
-        start_of_transmission = time.time()
-
-        # Open codec2 instance
-        self.MODE = mode
-
-        txbuffer = bytes()
-
-        # Add empty data to handle ptt toggle time
-        if self.tx_delay > 0:
-            self.transmit_add_silence(txbuffer, self.tx_delay)
-
-        self.log.debug(
-            "[MDM] TRANSMIT", mode=self.MODE.name, delay=self.tx_delay
-        )
-
-        if not isinstance(frames, list): frames = [frames]
-        for _ in range(repeats):
-
-            # Create modulation for all frames in the list
-            for frame in frames:
-
-                txbuffer = self.transmit_add_preamble(txbuffer, freedv)
-                txbuffer = self.transmit_create_frame(txbuffer, freedv, frame)
-                txbuffer = self.transmit_add_postamble(txbuffer, freedv)
-
-            # Add delay to end of frames
-            self.transmit_add_silence(txbuffer, repeat_delay)
-
-        # Re-sample back up to 48k (resampler works on np.int16)
-        x = np.frombuffer(txbuffer, dtype=np.int16)
-
-        self.audio_auto_tune()
-        x = audio.set_audio_volume(x, self.tx_audio_level)
-
-        if self.radiocontrol not in ["tci"]:
-            txbuffer_out = self.resampler.resample8_to_48(x)
-        else:
-            txbuffer_out = x
-
-        # transmit audio
-        self.enqueue_audio_out(txbuffer_out)
-
-        end_of_transmission = time.time()
-        transmission_time = end_of_transmission - start_of_transmission
-        self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
-
-        return True
-
-    def transmit_add_preamble(self, buffer, freedv):
-        
-        # Init buffer for preample
-        n_tx_preamble_modem_samples = codec2.api.freedv_get_n_tx_preamble_modem_samples(
-            freedv
-        )
-        mod_out_preamble =  ctypes.create_string_buffer(n_tx_preamble_modem_samples * 2)
-
-        # Write preamble to txbuffer
-        codec2.api.freedv_rawdatapreambletx(freedv, mod_out_preamble)
-        buffer += bytes(mod_out_preamble)
-        return buffer
-
-    def transmit_add_postamble(self, buffer, freedv):
-        # Init buffer for postamble
-        n_tx_postamble_modem_samples = (
-            codec2.api.freedv_get_n_tx_postamble_modem_samples(freedv)
-        )
-        mod_out_postamble =  ctypes.create_string_buffer(
-            n_tx_postamble_modem_samples * 2
-        )
-        # Write postamble to txbuffer
-        codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
-        # Append postamble to txbuffer
-        buffer += bytes(mod_out_postamble)
-        return buffer
-
-    def transmit_add_silence(self, buffer, duration):
-        data_delay = int(self.MODEM_SAMPLE_RATE * (duration / 1000))  # type: ignore
-        mod_out_silence = ctypes.create_string_buffer(data_delay * 2)
-        buffer += bytes(mod_out_silence)
-        return buffer
-
-    def transmit_create_frame(self, txbuffer, freedv, frame):
-        # Get number of bytes per frame for mode
-        bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv) / 8)
-        payload_bytes_per_frame = bytes_per_frame - 2
-
-        # Init buffer for data
-        n_tx_modem_samples = codec2.api.freedv_get_n_tx_modem_samples(freedv)
-        mod_out = ctypes.create_string_buffer(n_tx_modem_samples * 2)
-
-        # Create buffer for data
-        # Use this if CRC16 checksum is required (DATAc1-3)
-        buffer = bytearray(payload_bytes_per_frame)
-        # Set buffersize to length of data which will be send
-        buffer[: len(frame)] = frame  # type: ignore
-
-        # Create crc for data frame -
-        #   Use the crc function shipped with codec2
-        #   to avoid CRC algorithm incompatibilities
-        # Generate CRC16
-        crc = ctypes.c_ushort(
-            codec2.api.freedv_gen_crc16(bytes(buffer), payload_bytes_per_frame)
-        )
-        # Convert crc to 2-byte (16-bit) hex string
-        crc = crc.value.to_bytes(2, byteorder="big")
-        # Append CRC to data buffer
-        buffer += crc
-
-        assert (bytes_per_frame == len(buffer))
-        data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
-        # modulate DATA and save it into mod_out pointer
-        codec2.api.freedv_rawdatatx(freedv, mod_out, data)
-        txbuffer += bytes(mod_out)
-        return txbuffer
 
     def transmit_morse(self, repeats, repeat_delay, frames):
         self.states.waitForTransmission()
@@ -399,15 +215,7 @@ class RF:
         transmission_time = end_of_transmission - start_of_transmission
         self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
 
-    def init_codec2(self):
-        # Open codec2 instances
 
-        # INIT TX MODES - here we need all modes. 
-        self.freedv_datac0_tx = codec2.open_instance(codec2.FREEDV_MODE.datac0.value)
-        self.freedv_datac1_tx = codec2.open_instance(codec2.FREEDV_MODE.datac1.value)
-        self.freedv_datac3_tx = codec2.open_instance(codec2.FREEDV_MODE.datac3.value)
-        self.freedv_datac4_tx = codec2.open_instance(codec2.FREEDV_MODE.datac4.value)
-        self.freedv_datac13_tx = codec2.open_instance(codec2.FREEDV_MODE.datac13.value)
 
 
     def enqueue_audio_out(self, audio_48k) -> None:
@@ -453,3 +261,33 @@ class RF:
         except Exception as e:
             self.log.warning("[AUDIO STATUS]", status=status, time=time, frames=frames, e=e)
             outdata.fill(0)
+
+    def transmit(
+            self, mode, repeats: int, repeat_delay: int, frames: bytearray
+    ) -> bool:
+
+        self.demodulator.reset_data_sync()
+
+        # Wait for some other thread that might be transmitting
+        self.states.waitForTransmission()
+        self.states.setTransmitting(True)
+        # self.states.channel_busy_event.wait()
+
+        start_of_transmission = time.time()
+        txbuffer = self.modulator.create_burst(mode, repeats, repeat_delay, frames)
+
+        # Re-sample back up to 48k (resampler works on np.int16)
+        x = np.frombuffer(txbuffer, dtype=np.int16)
+        x = audio.set_audio_volume(x, self.tx_audio_level)
+
+        if self.radiocontrol not in ["tci"]:
+            txbuffer_out = self.resampler.resample8_to_48(x)
+        else:
+            txbuffer_out = x
+
+        # transmit audio
+        self.enqueue_audio_out(txbuffer_out)
+
+        end_of_transmission = time.time()
+        transmission_time = end_of_transmission - start_of_transmission
+        self.log.debug("[MDM] ON AIR TIME", time=transmission_time)

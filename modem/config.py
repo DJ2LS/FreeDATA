@@ -26,7 +26,6 @@ class CONFIG:
             'output_device': str,
             'rx_audio_level': int,
             'tx_audio_level': int,
-            'enable_auto_tune': bool,
         },
         'RADIO': {
             'control': str,
