@@ -326,10 +326,12 @@ def sock_states(sock):
 
 @atexit.register
 def stop_server():
-    app.service_manager.stop_modem()
+    try:
+        app.service_manager.stop_modem()
+    except Exception:
+        print("Error stopping modem")
     time.sleep(1)
     print('Server shutdown...')
-
 
 if __name__ == "__main__":
     app.config['SOCK_SERVER_OPTIONS'] = {'ping_interval': 10}

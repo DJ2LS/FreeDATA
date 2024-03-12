@@ -52,6 +52,7 @@ class RF:
         self.tci_port = config['TCI']['tci_port']
 
         self.tx_audio_level = config['AUDIO']['tx_audio_level']
+        self.rx_audio_level = config['AUDIO']['rx_audio_level']
 
 
         self.ptt_state = False
@@ -151,7 +152,7 @@ class RF:
             self.sd_input_stream = sd.InputStream(
                 channels=1,
                 dtype="int16",
-                callback=self.demodulator.sd_input_audio_callback,
+                callback=self.sd_input_audio_callback,
                 device=in_dev_index,
                 samplerate=self.AUDIO_SAMPLE_RATE,
                 blocksize=4800,
@@ -205,16 +206,43 @@ class RF:
 
         txbuffer_out = cw.MorseCodePlayer().text_to_signal(self.config['STATION'].mycall)
 
+        # transmit audio
         self.enqueue_audio_out(txbuffer_out)
-        self.radio.set_ptt(False)
-        self.event_manager.send_ptt_change(False)
-
-        self.states.setTransmitting(False)
 
         end_of_transmission = time.time()
         transmission_time = end_of_transmission - start_of_transmission
         self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
 
+
+    def transmit(
+            self, mode, repeats: int, repeat_delay: int, frames: bytearray
+    ) -> bool:
+
+        self.demodulator.reset_data_sync()
+
+        # Wait for some other thread that might be transmitting
+        self.states.waitForTransmission()
+        self.states.setTransmitting(True)
+        # self.states.channel_busy_event.wait()
+
+        start_of_transmission = time.time()
+        txbuffer = self.modulator.create_burst(mode, repeats, repeat_delay, frames)
+
+        # Re-sample back up to 48k (resampler works on np.int16)
+        x = np.frombuffer(txbuffer, dtype=np.int16)
+        x = audio.set_audio_volume(x, self.tx_audio_level)
+
+        if self.radiocontrol not in ["tci"]:
+            txbuffer_out = self.resampler.resample8_to_48(x)
+        else:
+            txbuffer_out = x
+
+        # transmit audio
+        self.enqueue_audio_out(txbuffer_out)
+
+        end_of_transmission = time.time()
+        transmission_time = end_of_transmission - start_of_transmission
+        self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
 
 
 
@@ -262,32 +290,37 @@ class RF:
             self.log.warning("[AUDIO STATUS]", status=status, time=time, frames=frames, e=e)
             outdata.fill(0)
 
-    def transmit(
-            self, mode, repeats: int, repeat_delay: int, frames: bytearray
-    ) -> bool:
+    def sd_input_audio_callback(self, indata: np.ndarray, frames: int, time, status) -> None:
+            if status:
+                self.log.warning("[AUDIO STATUS]", status=status, time=time, frames=frames)
+                # FIXME on windows input overflows crashing the rx audio stream. Lets restart the server then
+                if status.input_overflow:
+                    self.service_queue.put("restart")
+                return
+            try:
+                audio_48k = np.frombuffer(indata, dtype=np.int16)
+                audio_8k = self.resampler.resample48_to_8(audio_48k)
 
-        self.demodulator.reset_data_sync()
+                audio_8k_level_adjusted = audio.set_audio_volume(audio_8k, self.rx_audio_level)
 
-        # Wait for some other thread that might be transmitting
-        self.states.waitForTransmission()
-        self.states.setTransmitting(True)
-        # self.states.channel_busy_event.wait()
+                if not self.states.isTransmitting():
+                    audio.calculate_fft(audio_8k_level_adjusted, self.fft_queue, self.states)
 
-        start_of_transmission = time.time()
-        txbuffer = self.modulator.create_burst(mode, repeats, repeat_delay, frames)
+                length_audio_8k_level_adjusted = len(audio_8k_level_adjusted)
+                # Avoid buffer overflow by filling only if buffer for
+                # selected datachannel mode is not full
+                index = 0
+                for mode in self.demodulator.MODE_DICT:
+                    mode_data = self.demodulator.MODE_DICT[mode]
+                    audiobuffer = mode_data['audio_buffer']
+                    decode = mode_data['decode']
+                    index += 1
+                    if audiobuffer:
+                        if (audiobuffer.nbuffer + length_audio_8k_level_adjusted) > audiobuffer.size:
+                            self.demodulator.buffer_overflow_counter[index] += 1
+                            self.event_manager.send_buffer_overflow(self.demodulator.buffer_overflow_counter)
+                        elif decode:
+                            audiobuffer.push(audio_8k_level_adjusted)
+            except Exception as e:
+                self.log.warning("[AUDIO EXCEPTION]", status=status, time=time, frames=frames, e=e)
 
-        # Re-sample back up to 48k (resampler works on np.int16)
-        x = np.frombuffer(txbuffer, dtype=np.int16)
-        x = audio.set_audio_volume(x, self.tx_audio_level)
-
-        if self.radiocontrol not in ["tci"]:
-            txbuffer_out = self.resampler.resample8_to_48(x)
-        else:
-            txbuffer_out = x
-
-        # transmit audio
-        self.enqueue_audio_out(txbuffer_out)
-
-        end_of_transmission = time.time()
-        transmission_time = end_of_transmission - start_of_transmission
-        self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
