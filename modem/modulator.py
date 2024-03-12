@@ -132,7 +132,7 @@ class Modulator:
 
         # Add empty data to handle ptt toggle time
         if self.tx_delay > 0:
-            self.transmit_add_silence(txbuffer, self.tx_delay)
+            txbuffer = self.transmit_add_silence(txbuffer, self.tx_delay)
 
         if not isinstance(frames, list): frames = [frames]
         for _ in range(repeats):
@@ -144,7 +144,7 @@ class Modulator:
                 txbuffer = self.transmit_add_postamble(txbuffer, freedv)
 
             # Add delay to end of frames
-            self.transmit_add_silence(txbuffer, repeat_delay)
+            txbuffer = self.transmit_add_silence(txbuffer, repeat_delay)
 
         return txbuffer
 
