@@ -52,7 +52,6 @@ class RF:
         self.rigctld_ip = config['RIGCTLD']['ip']
         self.rigctld_port = config['RIGCTLD']['port']
 
-        self.states.setTransmitting(False)
 
         self.ptt_state = False
         self.radio_alc = 0.0
@@ -70,6 +69,8 @@ class RF:
         self.AUDIO_CHANNELS = 1
         self.MODE = 0
         self.rms_counter = 0
+
+        self.audio_out_queue = queue.Queue()
 
         # Make sure our resampler will work
         assert (self.AUDIO_SAMPLE_RATE / self.MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48  # type: ignore
@@ -160,9 +161,17 @@ class RF:
             )
             self.sd_input_stream.start()
 
+            self.sd_output_stream = sd.OutputStream(
+                channels=1,
+                dtype="int16",
+                callback=self.sd_output_audio_callback,
+                device=out_dev_index,
+                samplerate=self.AUDIO_SAMPLE_RATE,
+                blocksize=4800,
+            )
+            self.sd_output_stream.start()
+
             return True
-
-
 
         except Exception as audioerr:
             self.log.error("[MDM] init: starting pyaudio callback failed", e=audioerr)
@@ -294,15 +303,12 @@ class RF:
             txbuffer_out = x
 
         # transmit audio
-        self.transmit_audio(txbuffer_out)
-
-        self.radio.set_ptt(False)
-        self.event_manager.send_ptt_change(False)
-        self.states.setTransmitting(False)
+        self.enqueue_audio_out(txbuffer_out)
 
         end_of_transmission = time.time()
         transmission_time = end_of_transmission - start_of_transmission
         self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
+
         return True
 
     def transmit_add_preamble(self, buffer, freedv):
@@ -381,9 +387,9 @@ class RF:
         )
         start_of_transmission = time.time()
 
-        txbuffer_out = cw.MorseCodePlayer().text_to_signal("DJ2LS-1")
+        txbuffer_out = cw.MorseCodePlayer().text_to_signal(self.config['STATION'].mycall)
 
-        self.transmit_audio(txbuffer_out)
+        self.enqueue_audio_out(txbuffer_out)
         self.radio.set_ptt(False)
         self.event_manager.send_ptt_change(False)
 
@@ -404,8 +410,10 @@ class RF:
         self.freedv_datac13_tx = codec2.open_instance(codec2.FREEDV_MODE.datac13.value)
 
 
-    # Low level modem audio transmit
-    def transmit_audio(self, audio_48k) -> None:
+    def enqueue_audio_out(self, audio_48k) -> None:
+        if not self.states.isTransmitting():
+            self.states.setTransmitting(True)
+
         self.radio.set_ptt(True)
         self.event_manager.send_ptt_change(True)
 
@@ -414,5 +422,34 @@ class RF:
             # we need to wait manually for tci processing
             self.tci_module.wait_until_transmitted(audio_48k)
         else:
-            sd.play(audio_48k, blocksize=4096, blocking=True)
+            # slice audio data to needed blocklength
+            block_size = 4800
+            pad_length = -len(audio_48k) % block_size
+            padded_data = np.pad(audio_48k, (0, pad_length), mode='constant')
+            sliced_audio_data = padded_data.reshape(-1, block_size)
+            # add each block to audio out queue
+            for block in sliced_audio_data:
+                self.audio_out_queue.put(block)
+
+        self.states.transmitting_event.wait()
+
+        self.radio.set_ptt(False)
+        self.event_manager.send_ptt_change(False)
+
         return
+
+    def sd_output_audio_callback(self, outdata: np.ndarray, frames: int, time, status) -> None:
+
+        try:
+            if not self.audio_out_queue.empty():
+                chunk = self.audio_out_queue.get_nowait()
+                audio.calculate_fft(chunk, self.fft_queue, self.states)
+                outdata[:] = chunk.reshape(outdata.shape)
+
+            else:
+                # Fill with zeros if the queue is empty
+                self.states.setTransmitting(False)
+                outdata.fill(0)
+        except Exception as e:
+            self.log.warning("[AUDIO STATUS]", status=status, time=time, frames=frames, e=e)
+            outdata.fill(0)
