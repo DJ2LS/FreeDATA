@@ -294,8 +294,8 @@ class RF:
             if status:
                 self.log.warning("[AUDIO STATUS]", status=status, time=time, frames=frames)
                 # FIXME on windows input overflows crashing the rx audio stream. Lets restart the server then
-                if status.input_overflow:
-                    self.service_queue.put("restart")
+                #if status.input_overflow:
+                #    self.service_queue.put("restart")
                 return
             try:
                 audio_48k = np.frombuffer(indata, dtype=np.int16)
