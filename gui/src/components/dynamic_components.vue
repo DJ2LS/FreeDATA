@@ -832,7 +832,7 @@ function quickfill() {
       <h6>15m</h6>
     </div>
   </a>
-  <a href="#" class="list-group-item list-group-item-action" @click="updateFrequencyAndApply(14093000)">
+  <a href="#" class="list-group-item list-group-item-action" @click="updateFrequencyAndApply(18106000)">
     <div class="d-flex w-100 justify-content-between">
       <h5 class="mb-1">18.106 MHz</h5>
       <small>EU / US</small>

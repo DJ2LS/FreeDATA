@@ -15,7 +15,6 @@ input_device = 5a1c
 output_device = bd6c
 rx_audio_level = 0
 tx_audio_level = 0
-enable_auto_tune = False
 
 [RIGCTLD]
 ip = 127.0.0.1

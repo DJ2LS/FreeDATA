@@ -4,10 +4,7 @@ import ctypes
 import structlog
 import threading
 import audio
-import os
-from modem_frametypes import FRAME_TYPE
 import itertools
-from time import sleep
 
 TESTMODE = False
 
@@ -28,11 +25,10 @@ class Demodulator():
             'decoding_thread': None
         }
 
-    def __init__(self, config, audio_rx_q, data_q_rx, states, event_manager, fft_queue):
+    def __init__(self, config, audio_rx_q, data_q_rx, states, event_manager, service_queue, fft_queue):
         self.log = structlog.get_logger("Demodulator")
 
-        self.rx_audio_level = config['AUDIO']['rx_audio_level']
-
+        self.service_queue = service_queue
         self.AUDIO_FRAMES_PER_BUFFER_RX = 4800
         self.buffer_overflow_counter = [0, 0, 0, 0, 0, 0, 0, 0]
         self.is_codec2_traffic_counter = 0
@@ -125,35 +121,6 @@ class Demodulator():
                 target=self.demodulate_audio,args=[mode], name=self.MODE_DICT[mode]['name'], daemon=True
             )
             self.MODE_DICT[mode]['decoding_thread'].start()
-
-    def sd_input_audio_callback(self, indata: np.ndarray, frames: int, time, status) -> None:
-            if status:
-                self.log.warning("[AUDIO STATUS]", status=status, time=time, frames=frames)
-                return
-            try:
-                audio_48k = np.frombuffer(indata, dtype=np.int16)
-                audio_8k = self.resampler.resample48_to_8(audio_48k)
-
-                audio_8k_level_adjusted = audio.set_audio_volume(audio_8k, self.rx_audio_level)
-                audio.calculate_fft(audio_8k_level_adjusted, self.fft_queue, self.states)
-
-                length_audio_8k_level_adjusted = len(audio_8k_level_adjusted)
-                # Avoid buffer overflow by filling only if buffer for
-                # selected datachannel mode is not full
-                index = 0
-                for mode in self.MODE_DICT:
-                    mode_data = self.MODE_DICT[mode]
-                    audiobuffer = mode_data['audio_buffer']
-                    decode = mode_data['decode']
-                    index += 1
-                    if audiobuffer:
-                        if (audiobuffer.nbuffer + length_audio_8k_level_adjusted) > audiobuffer.size:
-                            self.buffer_overflow_counter[index] += 1
-                            self.event_manager.send_buffer_overflow(self.buffer_overflow_counter)
-                        elif decode:
-                            audiobuffer.push(audio_8k_level_adjusted)
-            except Exception as e:
-                self.log.warning("[AUDIO EXCEPTION]", status=status, time=time, frames=frames, e=e)
 
 
     def get_frequency_offset(self, freedv: ctypes.c_void_p) -> float:
