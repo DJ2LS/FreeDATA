@@ -34,9 +34,19 @@ class P2PConnection:
             FRAME_TYPE.P2P_CONNECTION_CONNECT.value: 'connected_irs',
             FRAME_TYPE.P2P_CONNECTION_CONNECT_ACK.value: 'connected_iss',
             FRAME_TYPE.P2P_CONNECTION_PAYLOAD.value: 'received_data',
+            FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
+        },
+        States.PAYLOAD_SENT: {
             FRAME_TYPE.P2P_CONNECTION_PAYLOAD_ACK.value: 'process_data_queue',
+        },
+        States.DISCONNECTING: {
+            FRAME_TYPE.P2P_CONNECTION_DISCONNECT_ACK.value: 'received_disconnect_ack',
+        },
+        States.DISCONNECTED: {
+            FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
+            FRAME_TYPE.P2P_CONNECTION_DISCONNECT_ACK.value: 'received_disconnect_ack',
 
-        }
+        },
     }
 
     def __init__(self, config: dict, modem, origin: str, destination: str, state_manager):
@@ -183,9 +193,10 @@ class P2PConnection:
         self.set_state(States.FAILED)
 
     def process_data_queue(self, frame=None):
-        print("processing data....")
-        print(self.p2p_tx_queue.empty())
         if not self.p2p_tx_queue.empty():
+            print("processing data....")
+
+            self.set_state(States.PAYLOAD_SENT)
             data = self.p2p_tx_queue.get()
             sequence_id = random.randint(0,255)
             data = data.encode('utf-8')
@@ -198,6 +209,7 @@ class P2PConnection:
                             mode=mode)
             return
         print("ALL DATA SENT!!!!!")
+        self.disconnect()
 
     def prepare_data_chunk(self, data, mode):
         return data
@@ -209,3 +221,20 @@ class P2PConnection:
 
     def transmit_data_ack(self, frame):
         print(frame)
+
+    def disconnect(self):
+        self.set_state(States.DISCONNECTING)
+        disconnect_frame = self.frame_factory.build_p2p_connection_disconnect(self.session_id)
+        self.launch_twr(disconnect_frame, self.TIMEOUT_CONNECT, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
+        return
+
+    def received_disconnect(self, frame):
+        self.log("DISCONNECTED...............")
+        self.set_state(States.DISCONNECTED)
+        self.is_ISS = False
+        disconnect_ack_frame = self.frame_factory.build_p2p_connection_disconnect_ack(self.session_id)
+        self.launch_twr_irs(disconnect_ack_frame, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
+
+    def received_disconnect_ack(self, frame):
+        self.log("DISCONNECTED...............")
+        self.set_state(States.DISCONNECTED)

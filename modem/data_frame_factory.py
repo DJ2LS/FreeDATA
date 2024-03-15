@@ -205,7 +205,18 @@ class DataFrameFactory:
             "sequence_id": 1,
         }
         
-        
+        # heartbeat for "is alive"
+        self.template_list[FR_TYPE.P2P_CONNECTION_DISCONNECT.value] = {
+            "frame_length": self.LENGTH_SIG1_FRAME,
+            "session_id": 1,
+        }
+
+        # ack heartbeat
+        self.template_list[FR_TYPE.P2P_CONNECTION_DISCONNECT_ACK.value] = {
+            "frame_length": self.LENGTH_SIG1_FRAME,
+            "session_id": 1,
+        }
+
 
 
     def construct(self, frametype, content, frame_length = LENGTH_SIG1_FRAME):
@@ -521,3 +532,15 @@ class DataFrameFactory:
             "sequence_id": sequence_id.to_bytes(1, 'big'),
         }
         return self.construct(FR_TYPE.P2P_CONNECTION_PAYLOAD_ACK, payload)
+
+    def build_p2p_connection_disconnect(self, session_id):
+        payload = {
+            "session_id": session_id.to_bytes(1, 'big'),
+        }
+        return self.construct(FR_TYPE.P2P_CONNECTION_DISCONNECT, payload)
+
+    def build_p2p_connection_disconnect_ack(self, session_id):
+        payload = {
+            "session_id": session_id.to_bytes(1, 'big'),
+        }
+        return self.construct(FR_TYPE.P2P_CONNECTION_DISCONNECT_ACK, payload)

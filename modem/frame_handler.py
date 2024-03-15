@@ -60,7 +60,7 @@ class FrameHandler():
                 self.config['STATION']['ssid_list'])
 
         #check for p2p connection
-        elif ft in ['P2P_CONNECTION_CONNECT_ACK', 'P2P_CONNECTION_PAYLOAD', 'P2P_CONNECTION_PAYLOAD_ACK']:
+        elif ft in ['P2P_CONNECTION_CONNECT_ACK', 'P2P_CONNECTION_PAYLOAD', 'P2P_CONNECTION_PAYLOAD_ACK', 'P2P_CONNECTION_DISCONNECT', 'P2P_CONNECTION_DISCONNECT_ACK']:
             session_id = self.details['frame']['session_id']
             if session_id in self.states.p2p_connection_sessions:
                 valid = True

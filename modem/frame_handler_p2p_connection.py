@@ -39,6 +39,8 @@ class P2PConnectionFrameHandler(frame_handler.FrameHandler):
 
         elif frame['frame_type_int'] in [
             FR.P2P_CONNECTION_CONNECT_ACK.value,
+            FR.P2P_CONNECTION_DISCONNECT.value,
+            FR.P2P_CONNECTION_DISCONNECT_ACK.value,
             FR.P2P_CONNECTION_PAYLOAD.value,
             FR.P2P_CONNECTION_PAYLOAD_ACK.value,
         ]:
