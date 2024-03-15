@@ -9,7 +9,6 @@ Created on Wed Dec 23 07:04:24 2020
 # pylint: disable=invalid-name, line-too-long, c-extension-no-member
 # pylint: disable=import-outside-toplevel
 
-import atexit
 import queue
 import time
 import codec2
@@ -56,6 +55,7 @@ class RF:
 
 
         self.ptt_state = False
+        self.enqueuing_audio = False # set to True, while we are processing audio
 
         self.AUDIO_SAMPLE_RATE = 48000
         self.modem_sample_rate = codec2.api.FREEDV_FS_8000
@@ -104,9 +104,6 @@ class RF:
             if not self.init_audio():
                 raise RuntimeError("Unable to init audio devices")
             self.demodulator.start(self.sd_input_stream)
-            atexit.register(self.sd_input_stream.stop)
-
-
 
         return True
 
@@ -247,6 +244,8 @@ class RF:
 
 
     def enqueue_audio_out(self, audio_48k) -> None:
+        self.enqueuing_audio = True
+
         if not self.states.isTransmitting():
             self.states.setTransmitting(True)
 
@@ -267,6 +266,7 @@ class RF:
             for block in sliced_audio_data:
                 self.audio_out_queue.put(block)
 
+        self.enqueuing_audio = False
         self.states.transmitting_event.wait()
 
         self.radio.set_ptt(False)
@@ -275,7 +275,6 @@ class RF:
         return
 
     def sd_output_audio_callback(self, outdata: np.ndarray, frames: int, time, status) -> None:
-
         try:
             if not self.audio_out_queue.empty():
                 chunk = self.audio_out_queue.get_nowait()
@@ -283,8 +282,11 @@ class RF:
                 outdata[:] = chunk.reshape(outdata.shape)
 
             else:
+                # reset transmitting state only, if we are not actively processing audio
+                # for avoiding a ptt toggle state bug
+                if not self.enqueuing_audio:
+                    self.states.setTransmitting(False)
                 # Fill with zeros if the queue is empty
-                self.states.setTransmitting(False)
                 outdata.fill(0)
         except Exception as e:
             self.log.warning("[AUDIO STATUS]", status=status, time=time, frames=frames, e=e)

@@ -328,9 +328,13 @@ def sock_states(sock):
 def stop_server():
     try:
         app.service_manager.stop_modem()
-    except Exception:
+        if app.service_manager.modem:
+            app.service_manager.modem.sd_input_stream.stop
+        audio.sd._terminate()
+    except Exception as e:
         print("Error stopping modem")
     time.sleep(1)
+    print("------------------------------------------")
     print('Server shutdown...')
 
 if __name__ == "__main__":
@@ -367,4 +371,5 @@ if __name__ == "__main__":
         modemaddress = '127.0.0.1'
     if not modemport:
         modemport = 5000
+
     app.run(modemaddress, modemport)
