@@ -238,3 +238,13 @@ class P2PConnection:
     def received_disconnect_ack(self, frame):
         self.log("DISCONNECTED...............")
         self.set_state(States.DISCONNECTED)
+
+
+    def transmit_arq(self):
+        pass
+        #command = cmd_class(self.config, self.states, self.eve, params)
+        #app.logger.info(f"Command {command.get_name()} running...")
+        #if command.run(app.modem_events, app.service_manager.modem):
+
+    def received_arq(self):
+        pass
