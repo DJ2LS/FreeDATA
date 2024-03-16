@@ -38,7 +38,6 @@ class SM:
             elif cmd in ['stop'] and self.modem:
                 self.stop_modem()
                 self.stop_radio_manager()
-
                 self.socket_interface_manager.stop_servers()
                 # we need to wait a bit for avoiding a portaudio crash
                 threading.Event().wait(0.5)
@@ -46,6 +45,8 @@ class SM:
             elif cmd in ['restart']:
                 self.stop_modem()
                 self.stop_radio_manager()
+                self.socket_interface_manager.stop_servers()
+
                 # we need to wait a bit for avoiding a portaudio crash
                 threading.Event().wait(0.5)
 

@@ -49,12 +49,12 @@ class P2PConnection:
         },
     }
 
-    def __init__(self, config: dict, modem, origin: str, destination: str, state_manager, request=None):
+    def __init__(self, config: dict, modem, origin: str, destination: str, state_manager, socket_command_handler=None):
         self.logger = structlog.get_logger(type(self).__name__)
         self.config = config
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
 
-        self.request = request
+        self.socket_command_handler = socket_command_handler
 
         self.destination = destination
         self.origin = origin
@@ -193,8 +193,7 @@ class P2PConnection:
     def session_failed(self):
         self.log("FAILED...........................")
         self.set_state(States.FAILED)
-        message = "DISCONNECTED\r\n"
-        self.request.sendall(message.encode())
+        self.socket_command_handler.socket_respond_disconnected()
 
     def process_data_queue(self, frame=None):
         if not self.p2p_tx_queue.empty():
@@ -235,6 +234,7 @@ class P2PConnection:
     def received_disconnect(self, frame):
         self.log("DISCONNECTED...............")
         self.set_state(States.DISCONNECTED)
+        self.socket_command_handler.socket_respond_disconnected()
         self.is_ISS = False
         disconnect_ack_frame = self.frame_factory.build_p2p_connection_disconnect_ack(self.session_id)
         self.launch_twr_irs(disconnect_ack_frame, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
@@ -242,6 +242,7 @@ class P2PConnection:
     def received_disconnect_ack(self, frame):
         self.log("DISCONNECTED...............")
         self.set_state(States.DISCONNECTED)
+        self.socket_command_handler.socket_respond_disconnected()
 
 
     def transmit_arq(self):
