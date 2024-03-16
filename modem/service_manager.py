@@ -19,7 +19,7 @@ class SM:
         self.state_manager = app.state_manager
         self.event_manager = app.event_manager
         self.schedule_manager = app.schedule_manager
-        self.socket_interface_manager = SocketInterfaceHandler(self.config, self.state_manager)
+        self.socket_interface_manager = SocketInterfaceHandler(self.config, self.state_manager, self.event_manager)
 
         runner_thread = threading.Thread(
             target=self.runner, name="runner thread", daemon=True
