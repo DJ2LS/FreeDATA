@@ -21,6 +21,14 @@ function startStopBeacon() {
   }
 }
 var dxcallPing = ref("");
+window.addEventListener(
+      "stationSelected",
+      function (eventdata) {
+        let evt = <CustomEvent>eventdata;
+        dxcallPing.value = evt.detail;
+      },
+      false,
+    );
 </script>
 <template>
   <div class="card h-100">

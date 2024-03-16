@@ -26,7 +26,6 @@ class CONFIG:
             'output_device': str,
             'rx_audio_level': int,
             'tx_audio_level': int,
-            'enable_auto_tune': bool,
         },
         'RADIO': {
             'control': str,
@@ -56,16 +55,11 @@ class CONFIG:
             'enable_protocol': bool,
         },
         'MODEM': {
-            'tuning_range_fmax': int,
-            'tuning_range_fmin': int,
-            'enable_fsk': bool,
             'enable_hmac': bool,
             'enable_morse_identifier': bool,
             'enable_low_bandwidth_mode': bool,
             'respond_to_cq': bool,
-            'rx_buffer_size': int,
-            'tx_delay': int,
-            'beacon_interval': int,
+            'tx_delay': int
         },
         'MESSAGES': {
             'enable_auto_repeat': bool,

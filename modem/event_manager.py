@@ -12,6 +12,8 @@ class EventManager:
     def broadcast(self, data):
         for q in self.queues:
             self.logger.debug(f"Event: ", ev=data)
+            if q.qsize() > 10:
+                q.queue.clear()
             q.put(data)
 
     def send_ptt_change(self, on:bool = False):

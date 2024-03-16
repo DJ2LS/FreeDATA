@@ -1,3 +1,5 @@
+import time
+
 from flask import Flask, request, jsonify, make_response, abort, Response
 from flask_sock import Sock
 from flask_cors import CORS
@@ -13,12 +15,15 @@ import json
 import websocket_manager as wsm
 import api_validations as validations
 import command_cq
+import command_beacon
 import command_ping
 import command_feq
 import command_test
 import command_arq_raw
 import command_message_send
 import event_manager
+import atexit
+
 from message_system_db_manager import DatabaseManager
 from message_system_db_messages import DatabaseManagerMessages
 from message_system_db_attachments import DatabaseManagerAttachments
@@ -26,10 +31,9 @@ from message_system_db_beacon import DatabaseManagerBeacon
 from schedule_manager import ScheduleManager
 
 app = Flask(__name__)
-CORS(app)
 CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
-MODEM_VERSION = "0.14.1-alpha"
+MODEM_VERSION = "0.14.3-alpha"
 
 # set config file to use
 def set_config():
@@ -150,6 +154,8 @@ def post_beacon():
 
     if not app.state_manager.is_beacon_running:
         app.state_manager.set('is_beacon_running', request.json['enabled'])
+        if not app.state_manager.getARQ():
+            enqueue_tx_command(command_beacon.BeaconCommand, request.json)
     else:
         app.state_manager.set('is_beacon_running', request.json['enabled'])
 
@@ -318,7 +324,18 @@ def sock_fft(sock):
 def sock_states(sock):
     wsm.handle_connection(sock, wsm.states_client_list, app.state_queue)
 
-
+@atexit.register
+def stop_server():
+    try:
+        app.service_manager.stop_modem()
+        if app.service_manager.modem:
+            app.service_manager.modem.sd_input_stream.stop
+        audio.sd._terminate()
+    except Exception as e:
+        print("Error stopping modem")
+    time.sleep(1)
+    print("------------------------------------------")
+    print('Server shutdown...')
 
 if __name__ == "__main__":
     app.config['SOCK_SERVER_OPTIONS'] = {'ping_interval': 10}
@@ -355,4 +372,5 @@ if __name__ == "__main__":
         modemaddress = '127.0.0.1'
     if not modemport:
         modemport = 5000
+
     app.run(modemaddress, modemport)

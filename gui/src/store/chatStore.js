@@ -8,6 +8,14 @@ export const useChatStore = defineStore("chatStore", () => {
   var newChatMessage = ref();
 
   /* ------------------------------------------------ */
+  // Scroll to bottom functions
+  const scrollTrigger = ref(0);
+
+  function triggerScrollToBottom() {
+    scrollTrigger.value++;
+  }
+
+  /* ------------------------------------------------ */
 
   var chat_filter = ref([
     { type: "newchat" },
@@ -92,5 +100,7 @@ export const useChatStore = defineStore("chatStore", () => {
     arq_speed_list_bpm,
     arq_speed_list_snr,
     arq_speed_list_timestamp,
+    scrollTrigger,
+    triggerScrollToBottom,
   };
 });

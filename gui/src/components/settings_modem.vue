@@ -165,56 +165,6 @@ const audioStore = useAudioStore();
   </div>
 
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-25">Tuning range</label>
-    <label class="input-group-text">fmin</label>
-    <select
-      class="form-select form-select-sm"
-      id="tuning_range_fmin"
-      @change="onChange"
-      v-model.number="settings.remote.MODEM.tuning_range_fmin"
-    >
-      <option value="-50">-50</option>
-      <option value="-100">-100</option>
-      <option value="-150">-150</option>
-      <option value="-200">-200</option>
-      <option value="-250">-250</option>
-    </select>
-    <label class="input-group-text">fmax</label>
-    <select
-      class="form-select form-select-sm"
-      id="tuning_range_fmax"
-      @change="onChange"
-      v-model.number="settings.remote.MODEM.tuning_range_fmax"
-    >
-      <option value="50">50</option>
-      <option value="100">100</option>
-      <option value="150">150</option>
-      <option value="200">200</option>
-      <option value="250">250</option>
-    </select>
-  </div>
-  <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text w-50">Beacon interval</span>
-    <select
-      class="form-select form-select-sm"
-      aria-label=".form-select-sm"
-      id="beaconInterval"
-      style="width: 6rem"
-      @change="onChange"
-      v-model.number="settings.remote.MODEM.beacon_interval"
-    >
-      <option value="60">60 secs</option>
-      <option value="90">90 secs</option>
-      <option value="120">2 mins</option>
-      <option selected value="300">5 mins</option>
-      <option value="600">10 mins</option>
-      <option value="900">15 mins</option>
-      <option value="1800">30 mins</option>
-      <option value="3600">60 mins</option>
-    </select>
-  </div>
-
-  <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50">Enable 250Hz bandwidth mode</label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
@@ -242,29 +192,6 @@ const audioStore = useAudioStore();
         />
         <label class="form-check-label" for="respondCQSwitch">QRV</label>
       </div>
-    </label>
-  </div>
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">RX buffer size</label>
-    <label class="input-group-text w-50">
-      <select
-        class="form-select form-select-sm"
-        id="rx_buffer_size"
-        @change="onChange"
-        v-model.number="settings.remote.MODEM.rx_buffer_size"
-      >
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="4">4</option>
-        <option value="8">8</option>
-        <option value="16">16</option>
-        <option value="32">32</option>
-        <option value="64">64</option>
-        <option value="128">128</option>
-        <option value="256">256</option>
-        <option value="512">512</option>
-        <option value="1024">1024</option>
-      </select>
     </label>
   </div>
 </template>

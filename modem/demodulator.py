@@ -4,8 +4,6 @@ import ctypes
 import structlog
 import threading
 import audio
-import os
-from modem_frametypes import FRAME_TYPE
 import itertools
 
 TESTMODE = False
@@ -27,20 +25,16 @@ class Demodulator():
             'decoding_thread': None
         }
 
-    def __init__(self, config, audio_rx_q, modem_rx_q, data_q_rx, states, event_manager, fft_queue):
+    def __init__(self, config, audio_rx_q, data_q_rx, states, event_manager, service_queue, fft_queue):
         self.log = structlog.get_logger("Demodulator")
 
-        self.tuning_range_fmin = config['MODEM']['tuning_range_fmin']
-        self.tuning_range_fmax = config['MODEM']['tuning_range_fmax']
-        self.rx_audio_level = config['AUDIO']['rx_audio_level']
-
+        self.service_queue = service_queue
         self.AUDIO_FRAMES_PER_BUFFER_RX = 4800
         self.buffer_overflow_counter = [0, 0, 0, 0, 0, 0, 0, 0]
         self.is_codec2_traffic_counter = 0
         self.is_codec2_traffic_cooldown = 5
 
         self.audio_received_queue = audio_rx_q
-        self.modem_received_queue = modem_rx_q
         self.data_queue_received = data_q_rx
 
         self.states = states
@@ -77,13 +71,6 @@ class Demodulator():
         # create codec2 instance
         c2instance = ctypes.cast(
             codec2.api.freedv_open(mode), ctypes.c_void_p
-        )
-
-        # set tuning range
-        codec2.api.freedv_set_tuning_range(
-            c2instance,
-            ctypes.c_float(float(self.tuning_range_fmin)),
-            ctypes.c_float(float(self.tuning_range_fmax)),
         )
 
         # get bytes per frame
@@ -135,49 +122,6 @@ class Demodulator():
             )
             self.MODE_DICT[mode]['decoding_thread'].start()
 
-    def sd_input_audio_callback(self, indata: np.ndarray, frames: int, time, status) -> None:
-            audio_48k = np.frombuffer(indata, dtype=np.int16)
-            audio_8k = self.resampler.resample48_to_8(audio_48k)
-
-            audio_8k_level_adjusted = audio.set_audio_volume(audio_8k, self.rx_audio_level)
-            audio.calculate_fft(audio_8k_level_adjusted, self.fft_queue, self.states)
-
-            length_audio_8k_level_adjusted = len(audio_8k_level_adjusted)
-            # Avoid buffer overflow by filling only if buffer for
-            # selected datachannel mode is not full
-            index = 0
-            for mode in self.MODE_DICT:
-                mode_data = self.MODE_DICT[mode]
-                audiobuffer = mode_data['audio_buffer']
-                decode = mode_data['decode']
-                index += 1
-                if audiobuffer:
-                    if (audiobuffer.nbuffer + length_audio_8k_level_adjusted) > audiobuffer.size:
-                        self.buffer_overflow_counter[index] += 1
-                        self.event_manager.send_buffer_overflow(self.buffer_overflow_counter)
-                    elif decode:
-                        audiobuffer.push(audio_8k_level_adjusted)
-
-    def worker_received(self) -> None:
-        """Worker for FIFO queue for processing received frames"""
-        while True:
-            data = self.modem_received_queue.get()
-            self.log.debug("[MDM] worker_received: received data!")
-            # data[0] = bytes_out
-            # data[1] = freedv session
-            # data[2] = bytes_per_frame
-            # data[3] = snr
-
-            item = {
-                'payload': data[0],
-                'freedv': data[1],
-                'bytes_per_frame': data[2],
-                'snr': data[3],
-                'frequency_offset': self.get_frequency_offset(data[1]),
-            }
-
-            self.data_queue_received.put(item)
-            self.modem_received_queue.task_done()
 
     def get_frequency_offset(self, freedv: ctypes.c_void_p) -> float:
         """
@@ -247,7 +191,16 @@ class Demodulator():
                         snr = self.calculate_snr(freedv)
                         self.get_scatter(freedv)
 
-                        self.modem_received_queue.put([bytes_out, freedv, bytes_per_frame, snr])
+                        item = {
+                            'payload': bytes_out,
+                            'freedv': freedv,
+                            'bytes_per_frame': bytes_per_frame,
+                            'snr': snr,
+                            'frequency_offset': self.get_frequency_offset(freedv),
+                        }
+                        self.data_queue_received.put(item)
+
+
                         state_buffer = []
         except Exception as e:
             error_message = str(e)
@@ -257,6 +210,7 @@ class Demodulator():
             self.log.debug(
                 "[MDM] [demod_audio] demod loop ended", mode=mode_name, e=e
             )
+
     def tci_rx_callback(self) -> None:
         """
         Callback for TCI RX
@@ -297,6 +251,7 @@ class Demodulator():
         frames_per_burst = min(frames_per_burst, 1)
         frames_per_burst = max(frames_per_burst, 5)
 
+        # FIXME
         frames_per_burst = 1
 
         codec2.api.freedv_set_frames_per_burst(self.dat0_datac1_freedv, frames_per_burst)
