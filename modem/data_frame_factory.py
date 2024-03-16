@@ -18,10 +18,6 @@ class DataFrameFactory:
     }
 
     def __init__(self, config):
-        print(config)
-        print(config['STATION']['mycall'])
-        print(config['STATION']['myssid'])
-        print(config['STATION']['mygrid'])
 
         self.myfullcall = f"{config['STATION']['mycall']}-{config['STATION']['myssid']}"
         self.mygrid = config['STATION']['mygrid']
