@@ -151,8 +151,6 @@ class TestP2PConnectionSession(unittest.TestCase):
             self.iss_state_manager.register_p2p_connection_session(session)
             session.connect()
 
-
-
         self.waitAndCloseChannels()
         del cmd
 

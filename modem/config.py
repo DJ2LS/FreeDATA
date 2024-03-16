@@ -61,6 +61,13 @@ class CONFIG:
             'respond_to_cq': bool,
             'tx_delay': int
         },
+        'SOCKET_INTERFACE': {
+            'enable' : bool,
+            'host' : str,
+            'cmd_port' : int,
+            'data_port' : int,
+
+        },
         'MESSAGES': {
             'enable_auto_repeat': bool,
         }

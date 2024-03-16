@@ -327,7 +327,7 @@ def sock_states(sock):
 @atexit.register
 def stop_server():
     try:
-        app.service_manager.stop_modem()
+        app.service_manager.modem_service.put("stop")
         if app.service_manager.modem:
             app.service_manager.modem.sd_input_stream.stop
         audio.sd._terminate()
