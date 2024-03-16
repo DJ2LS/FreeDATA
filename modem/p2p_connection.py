@@ -58,6 +58,8 @@ class P2PConnection:
 
         self.destination = destination
         self.origin = origin
+        self.bandwidth = 0
+
         self.states = state_manager
         self.modem = modem
 
@@ -181,17 +183,22 @@ class P2PConnection:
         self.log("CONNECTED ISS...........................")
         self.set_state(States.CONNECTED)
         self.is_ISS = True
+        self.socket_command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
         self.process_data_queue()
 
     def connected_irs(self, frame):
         self.log("CONNECTED IRS...........................")
         self.set_state(States.CONNECTED)
         self.is_ISS = False
+        self.orign = frame["origin"]
+        self.destination = frame["destination"]
+
+        self.socket_command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
+
         session_open_frame = self.frame_factory.build_p2p_connection_connect_ack(self.destination, self.origin, self.session_id)
         self.launch_twr_irs(session_open_frame, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
 
     def session_failed(self):
-        self.log("FAILED...........................")
         self.set_state(States.FAILED)
         self.socket_command_handler.socket_respond_disconnected()
 

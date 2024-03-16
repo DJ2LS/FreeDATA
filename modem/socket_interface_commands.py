@@ -66,3 +66,6 @@ class SocketCommandHandler:
     def socket_respond_disconnected(self):
         self.send_response("DISCONNECTED")
 
+    def socket_respond_connected(self, mycall, dxcall, bandwidth):
+        message = f"CONNECTED {mycall} {dxcall} {bandwidth}"
+        self.send_response(message)
