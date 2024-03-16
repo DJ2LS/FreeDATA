@@ -27,7 +27,7 @@ class SocketCommandHandler:
             'destination': "BB2BBB-2",
             'origin': "AA1AAA-1",
         }
-        cmd = P2PConnectionCommand(self.config_manager.read(), self.state_manager, self.event_manager, params)
+        cmd = P2PConnectionCommand(self.config_manager.read(), self.state_manager, self.event_manager, params, self.request)
         session = cmd.run(self.event_manager.queues, self.modem)
         if session.session_id:
             self.state_manager.register_p2p_connection_session(session)

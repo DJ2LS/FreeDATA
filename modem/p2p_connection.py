@@ -49,10 +49,12 @@ class P2PConnection:
         },
     }
 
-    def __init__(self, config: dict, modem, origin: str, destination: str, state_manager):
+    def __init__(self, config: dict, modem, origin: str, destination: str, state_manager, request=None):
         self.logger = structlog.get_logger(type(self).__name__)
         self.config = config
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
+
+        self.request = request
 
         self.destination = destination
         self.origin = origin
@@ -191,6 +193,8 @@ class P2PConnection:
     def session_failed(self):
         self.log("FAILED...........................")
         self.set_state(States.FAILED)
+        message = "DISCONNECTED\r\n"
+        self.request.sendall(message.encode())
 
     def process_data_queue(self, frame=None):
         if not self.p2p_tx_queue.empty():
