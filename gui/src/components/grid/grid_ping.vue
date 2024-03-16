@@ -12,6 +12,15 @@ function transmitPing() {
   sendModemPing(dxcallPing.value.toUpperCase());
 }
 var dxcallPing = ref("");
+
+window.addEventListener(
+      "stationSelected",
+      function (eventdata) {
+        let evt = <CustomEvent>eventdata;
+        dxcallPing.value = evt.detail;
+      },
+      false,
+    );
 </script>
 <template>
   <div class="input-group" style="width: calc(100% - 24px)">

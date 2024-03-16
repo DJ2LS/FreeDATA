@@ -1,16 +1,12 @@
 """
 Gather information about audio devices.
 """
-import atexit
 import multiprocessing
 import crcengine
 import sounddevice as sd
 import structlog
 import numpy as np
 import queue
-import threading
-
-atexit.register(sd._terminate)
 
 log = structlog.get_logger("audio")
 

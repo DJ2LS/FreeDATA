@@ -34,6 +34,10 @@ function getMaidenheadDistance(dxGrid) {
     //
   }
 }
+function pushToPing(origin)
+{
+   window.dispatchEvent(new CustomEvent("stationSelected", {bubbles:true, detail: origin }));
+}
 </script>
 <template>
   <div class="card h-100">
@@ -61,7 +65,7 @@ function getMaidenheadDistance(dxGrid) {
           </thead>
           <tbody id="gridHeardStations">
             <!--https://vuejs.org/guide/essentials/list.html-->
-            <tr v-for="item in state.heard_stations" :key="item.origin">
+            <tr v-for="item in state.heard_stations" :key="item.origin" @click="pushToPing(item.origin)">
               <td>
                 {{ getDateTime(item.timestamp) }}
               </td>

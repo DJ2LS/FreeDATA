@@ -152,6 +152,12 @@ class ARQSession():
         self.snr_histogram.append(self.snr)
         self.bpm_histogram.append(stats['bytes_per_minute'])
         self.time_histogram.append(datetime.datetime.now().isoformat())
+
+        # Limit the size of each histogram to the last 20 entries
+        self.snr_histogram = self.snr_histogram[-20:]
+        self.bpm_histogram = self.bpm_histogram[-20:]
+        self.time_histogram = self.time_histogram[-20:]
+
         return stats
 
     def get_appropriate_speed_level(self, snr):
