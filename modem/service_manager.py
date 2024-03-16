@@ -19,7 +19,7 @@ class SM:
         self.state_manager = app.state_manager
         self.event_manager = app.event_manager
         self.schedule_manager = app.schedule_manager
-        self.socket_interface_manager = SocketInterfaceHandler(self.config, self.state_manager, self.event_manager)
+        self.socket_interface_manager = None
 
         runner_thread = threading.Thread(
             target=self.runner, name="runner thread", daemon=True
@@ -33,8 +33,7 @@ class SM:
                 self.config = self.app.config_manager.read()
                 self.start_radio_manager()
                 self.start_modem()
-
-                self.socket_interface_manager.start_servers()
+                self.socket_interface_manager = SocketInterfaceHandler(self.modem, self.app.config_manager, self.state_manager, self.event_manager).start_servers()
 
             elif cmd in ['stop'] and self.modem:
                 self.stop_modem()

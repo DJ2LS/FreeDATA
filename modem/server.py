@@ -23,6 +23,7 @@ import command_arq_raw
 import command_message_send
 import event_manager
 import atexit
+from socket_interface import SocketInterfaceHandler
 
 from message_system_db_manager import DatabaseManager
 from message_system_db_messages import DatabaseManagerMessages
@@ -328,6 +329,8 @@ def sock_states(sock):
 def stop_server():
     try:
         app.service_manager.modem_service.put("stop")
+        app.socket_interface_manager.stop_servers()
+
         if app.service_manager.modem:
             app.service_manager.modem.sd_input_stream.stop
         audio.sd._terminate()
@@ -358,6 +361,11 @@ if __name__ == "__main__":
     app.schedule_manager = ScheduleManager(app.MODEM_VERSION, app.config_manager, app.state_manager, app.event_manager)
     # start service manager
     app.service_manager = service_manager.SM(app)
+
+
+    #app.socket_interface_manager = SocketInterfaceHandler(app.service_manager.modem, app.config_manager, app.state_manager, app.event_manager)
+
+
     # start modem service
     app.modem_service.put("start")
     # initialize database default values
@@ -373,4 +381,7 @@ if __name__ == "__main__":
     if not modemport:
         modemport = 5000
 
+    #app.socket_interface_manager.start_servers()
+
     app.run(modemaddress, modemport)
+

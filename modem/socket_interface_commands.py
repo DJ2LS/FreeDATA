@@ -2,30 +2,35 @@ from command_p2p_connection import P2PConnectionCommand
 
 class SocketCommandHandler:
 
-    def __init__(self, request, state_manager):
+    def __init__(self, request, modem, config_manager, state_manager, event_manager):
         self.request = request
+        self.modem = modem
+        self.config_manager = config_manager
         self.state_manager = state_manager
-
-        print(self.state_manager)
-
+        self.event_manager = event_manager
 
     def send_response(self, message):
         self.request.sendall(message.encode())
-
-
 
     def handle_connect(self, data):
         # Your existing connect logic
         self.send_response("OK\r\n")
 
+
+
+        print(self.modem)
+        print(self.config_manager)
+        print(self.state_manager)
+        print(self.event_manager)
+
         params = {
             'destination': "BB2BBB-2",
             'origin': "AA1AAA-1",
         }
-        cmd = P2PConnectionCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)
-        session = cmd.run(self.iss_event_queue, self.iss_modem)
+        cmd = P2PConnectionCommand(self.config_manager.read(), self.state_manager, self.event_manager, params)
+        session = cmd.run(self.event_manager.queues, self.modem)
         if session.session_id:
-            self.iss_state_manager.register_p2p_connection_session(session)
+            self.state_manager.register_p2p_connection_session(session)
             session.connect()
 
 

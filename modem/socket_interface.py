@@ -10,12 +10,15 @@ data_queue = Queue()
 
 class CommandSocket(socketserver.BaseRequestHandler):
     #def __init__(self, request, client_address, server):
-    def __init__(self, request, client_address, server, state_manager=None, event_manager=None):
+    def __init__(self, request, client_address, server, modem=None, state_manager=None, event_manager=None, config_manager=None):
         self.state_manager = state_manager
-
+        self.event_manager = event_manager
+        self.config_manager = config_manager
+        self.modem = modem
+        print(self.config_manager)
         self.logger = structlog.get_logger(type(self).__name__)
 
-        self.command_handler = SocketCommandHandler(request, self.state_manager)
+        self.command_handler = SocketCommandHandler(request, self.modem, self.config_manager, self.state_manager, self.event_manager)
 
         self.handlers = {
             'CONNECT': self.command_handler.handle_connect,
@@ -69,8 +72,11 @@ class CommandSocket(socketserver.BaseRequestHandler):
 
 class DataSocket(socketserver.BaseRequestHandler):
     #def __init__(self, request, client_address, server):
-    def __init__(self, request, client_address, server, state_manager=None, event_manager=None):
+    def __init__(self, request, client_address, server, modem=None, state_manager=None, event_manager=None, config_manager=None):
         self.state_manager = state_manager
+        self.event_manager = event_manager
+        self.config_manager = config_manager
+        self.modem = modem
 
         self.logger = structlog.get_logger(type(self).__name__)
 
@@ -120,8 +126,10 @@ class CustomThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServe
         self.RequestHandlerClass(request, client_address, self, **self.extra_args)
 
 class SocketInterfaceHandler:
-    def __init__(self, config, state_manager, event_manager):
-        self.config = config
+    def __init__(self, modem, config_manager, state_manager, event_manager):
+        self.modem = modem
+        self.config_manager = config_manager
+        self.config = self.config_manager.read()
         self.state_manager = state_manager
         self.event_manager = event_manager
         self.logger = structlog.get_logger(type(self).__name__)
@@ -148,7 +156,7 @@ class SocketInterfaceHandler:
         self.log(f"Interfaces started")
 
     def run_server(self, port, handler):
-        with CustomThreadedTCPServer(('127.0.0.1', port), handler, state_manager=self.state_manager, event_manager=self.event_manager) as server:
+        with CustomThreadedTCPServer(('127.0.0.1', port), handler, modem=self.modem, state_manager=self.state_manager, event_manager=self.event_manager, config_manager=self.config_manager) as server:
             self.log(f"Server started on port {port}")
             if port == self.command_port:
                 self.command_server = server
