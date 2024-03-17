@@ -299,13 +299,13 @@ class radio:
 
         # PTT Port and Type
         if not should_ignore(config.get('ptt_port')):
-            args += ['--ptt-port', config['ptt_port']]
+            args += ['-p', config['ptt_port']]
         if not should_ignore(config.get('ptt_type')):
-            args += ['--ptt-type', config['ptt_type']]
+            args += ['-P', config['ptt_type']]
 
         # Serial DCD and DTR
         if not should_ignore(config.get('serial_dcd')):
-            args += ['--dcd-type', config['serial_dcd']]
+            args += ['-D', config['serial_dcd']]
 
         if not should_ignore(config.get('serial_dtr')):
             args += ['--set-conf', f'dtr_state={config["serial_dtr"]}']
@@ -323,7 +323,7 @@ class radio:
         # Handle custom arguments for rigctld
         # Custom args are split via ' ' so python doesn't add extranaeous quotes on windows
         args += config_rigctld["arguments"].split(" ")
-        #print("Hamlib args ==>" + str(args))
+        print("Hamlib args ==>" + str(args))
         
         return args
 

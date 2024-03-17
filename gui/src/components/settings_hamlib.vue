@@ -45,7 +45,7 @@ const serialStore = useSerialStore();
         @change="onChange"
         v-model.number="settings.remote.RADIO.model_id"
       >
-        <option selected value="-- ignore --">-- ignore --</option>
+        <option selected value="0">-- ignore --</option>
         <option value="1">Hamlib Dummy</option>
         <option value="2">Hamlib NET rigctl</option>
         <option value="4">FLRig FLRig</option>
