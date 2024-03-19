@@ -308,8 +308,8 @@ class P2PConnection:
         self.last_data_timestamp = time.time()
         self.set_state(States.CONNECTED)
 
-
-
-    def received_arq(self):
-        pass
+    def received_arq(self, data):
+        self.last_data_timestamp = time.time()
+        self.set_state(States.CONNECTED)
+        self.p2p_data_rx_queue.put(data)
 
