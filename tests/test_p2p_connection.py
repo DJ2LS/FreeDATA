@@ -117,9 +117,9 @@ class TestP2PConnectionSession(unittest.TestCase):
         key = 'arq-transfer-outbound' if outbound else 'arq-transfer-inbound'
         while True and self.channels_running:
             ev = q.get()
-            if key in ev and ('success' in ev[key] or 'ABORTED' in ev[key]):
-                self.logger.info(f"[{threading.current_thread().name}] {key} session ended.")
-                break
+            #if key in ev and ('success' in ev[key] or 'P2P_CONNECTION_DISCONNECT_ACK' in ev[key]):
+            #    self.logger.info(f"[{threading.current_thread().name}] {key} session ended.")
+            #    break
 
     def establishChannels(self):
         self.channels_running = True
@@ -162,10 +162,15 @@ class TestP2PConnectionSession(unittest.TestCase):
             session = self.iss_state_manager.get_p2p_connection_session(session_id)
             session.ENTIRE_CONNECTION_TIMEOUT = 15
             # Generate and add 5 random entries to the queue
-            for _ in range(5):
-               random_entry = self.generate_random_string(2, 11)
-               session.p2p_data_tx_queue.put(random_entry)
+            for _ in range(3):
+                min_length = (30 * _ ) + 1
+                max_length = (30 * _ ) + 1
+                print(min_length)
+                print(max_length)
+                random_entry = self.generate_random_string(min_length, max_length)
+                session.p2p_data_tx_queue.put(random_entry)
 
+            session.p2p_data_tx_queue.put('12345')
         self.waitAndCloseChannels()
 
 
@@ -184,7 +189,6 @@ class TestSocket:
 
         if b'DISCONNECTED\r\n' in self.sent_data:
             self.test_class.assertEqual(b'DISCONNECTED\r\n', b'DISCONNECTED\r\n')
-
 
 if __name__ == '__main__':
     unittest.main()

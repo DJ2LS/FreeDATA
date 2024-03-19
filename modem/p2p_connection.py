@@ -7,6 +7,11 @@ import structlog
 import random
 from queue import Queue
 import time
+from command_arq_raw import ARQRawCommand
+import numpy as np
+import base64
+from arq_data_type_handler import ARQDataTypeHandler, ARQ_SESSION_TYPES
+from arq_session_iss import ARQSessionISS
 
 class States(Enum):
     NEW = 0
@@ -14,12 +19,13 @@ class States(Enum):
     CONNECT_SENT = 2
     CONNECT_ACK_SENT = 3
     CONNECTED = 4
-    HEARTBEAT_SENT = 5
-    HEARTBEAT_ACK_SENT = 6
+    #HEARTBEAT_SENT = 5
+    #HEARTBEAT_ACK_SENT = 6
     PAYLOAD_SENT = 7
-    DISCONNECTING = 8
-    DISCONNECTED = 9
-    FAILED = 10
+    ARQ_SESSION = 8
+    DISCONNECTING = 9
+    DISCONNECTED = 10
+    FAILED = 11
 
 
 
@@ -50,7 +56,7 @@ class P2PConnection:
         },
     }
 
-    def __init__(self, config: dict, modem, origin: str, destination: str, state_manager, socket_command_handler=None):
+    def __init__(self, config: dict, modem, origin: str, destination: str, state_manager, event_manager, socket_command_handler=None):
         self.logger = structlog.get_logger(type(self).__name__)
         self.config = config
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
@@ -61,11 +67,15 @@ class P2PConnection:
         self.origin = origin
         self.bandwidth = 0
 
-        self.states = state_manager
+        self.state_manager = state_manager
+        self.event_manager = event_manager
         self.modem = modem
+        self.modem.demodulator.set_decode_mode([])
 
         self.p2p_data_rx_queue = Queue()
         self.p2p_data_tx_queue = Queue()
+
+        self.arq_data_type_handler = ARQDataTypeHandler(self.event_manager, self.state_manager)
 
 
         self.state = States.NEW
@@ -85,12 +95,13 @@ class P2PConnection:
 
         self.start_data_processing_worker()
 
+
     def start_data_processing_worker(self):
         """Starts a worker thread to monitor the transmit data queue and process data."""
 
         def data_processing_worker():
             while True:
-                if time.time() > self.last_data_timestamp + self.ENTIRE_CONNECTION_TIMEOUT:
+                if time.time() > self.last_data_timestamp + self.ENTIRE_CONNECTION_TIMEOUT and self.state is not States.ARQ_SESSION:
                     self.disconnect()
                     return
 
@@ -108,10 +119,10 @@ class P2PConnection:
     def generate_id(self):
         while True:
             random_int = random.randint(1,255)
-            if random_int not in self.states.p2p_connection_sessions:
+            if random_int not in self.state_manager.p2p_connection_sessions:
                 return random_int
 
-            if len(self.states.p2p_connection_sessions) >= 255:
+            if len(self.state_manager.p2p_connection_sessions) >= 255:
                 return False
 
     def set_details(self, snr, frequency_offset):
@@ -201,7 +212,7 @@ class P2PConnection:
 
     def connected_irs(self, frame):
         self.log("CONNECTED IRS...........................")
-        self.states.register_p2p_connection_session(self)
+        self.state_manager.register_p2p_connection_session(self)
         self.set_state(States.CONNECTED)
         self.is_ISS = False
         self.orign = frame["origin"]
@@ -229,10 +240,14 @@ class P2PConnection:
 
             if len(data) <= 11:
                 mode = FREEDV_MODE.signalling
+            elif 11 < len(data) < 32:
+                mode = FREEDV_MODE.datac4
+            else:
+                self.transmit_arq(data)
+                return
 
             payload = self.frame_factory.build_p2p_connection_payload(mode, self.session_id, sequence_id, data)
-            self.launch_twr(payload, self.TIMEOUT_DATA, self.RETRIES_DATA,
-                            mode=mode)
+            self.launch_twr(payload, self.TIMEOUT_DATA, self.RETRIES_DATA,mode=mode)
             return
 
     def prepare_data_chunk(self, data, mode):
@@ -274,12 +289,26 @@ class P2PConnection:
         if self.socket_command_handler:
             self.socket_command_handler.socket_respond_disconnected()
 
+    def transmit_arq(self, data):
+        self.set_state(States.ARQ_SESSION)
 
-    def transmit_arq(self):
-        pass
-        #command = cmd_class(self.config, self.states, self.eve, params)
-        #app.logger.info(f"Command {command.get_name()} running...")
-        #if command.run(app.modem_events, app.service_manager.modem):
+        print("----------------------------------------------------------------")
+        print(self.destination)
+        print(self.state_manager.p2p_connection_sessions)
+
+        prepared_data, type_byte = self.arq_data_type_handler.prepare(data, ARQ_SESSION_TYPES.p2p_connection)
+        iss = ARQSessionISS(self.config, self.modem, 'AA1AAA-1', self.state_manager, prepared_data, type_byte)
+        iss.id = self.session_id
+        if iss.id:
+            self.state_manager.register_arq_iss_session(iss)
+            iss.start()
+            return iss
+
+    def transmitted_arq(self):
+        self.last_data_timestamp = time.time()
+        self.set_state(States.CONNECTED)
+
+
 
     def received_arq(self):
         pass
