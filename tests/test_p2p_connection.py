@@ -136,6 +136,11 @@ class TestP2PConnectionSession(unittest.TestCase):
         self.waitForSession(self.irs_event_queue, False)
         self.channels_running = False
 
+    def generate_random_string(self, min_length, max_length):
+        import string
+        length = random.randint(min_length, max_length)
+        return ''.join(random.choices(string.ascii_letters, k=length))#
+
     def testARQSessionSmallPayload(self):
         # set Packet Error Rate (PER) / frame loss probability
         self.loss_probability = 0
@@ -151,8 +156,25 @@ class TestP2PConnectionSession(unittest.TestCase):
             self.iss_state_manager.register_p2p_connection_session(session)
             session.connect()
 
+        # Generate and add 5 random entries to the queue
+        for _ in range(5):
+           random_entry = self.generate_random_string(2, 11)
+           session.p2p_data_tx_queue.put(random_entry)
+
         self.waitAndCloseChannels()
         del cmd
+
+
+class TestSocket:
+    def __init__(self, isCmd=True):
+        self.isCmd = isCmd
+        self.sent_data = []  # To capture data sent through this socket
+        self.received_data = b""  # To simulate data received by this socket
+
+    def sendall(self, data):
+        print(f"Mock sendall called with data: {data}")
+        self.sent_data.append(data)
+
 
 if __name__ == '__main__':
     unittest.main()

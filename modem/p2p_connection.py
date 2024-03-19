@@ -6,6 +6,7 @@ import data_frame_factory
 import structlog
 import random
 from queue import Queue
+import time
 
 class States(Enum):
     NEW = 0
@@ -37,7 +38,7 @@ class P2PConnection:
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
         },
         States.PAYLOAD_SENT: {
-            FRAME_TYPE.P2P_CONNECTION_PAYLOAD_ACK.value: 'process_data_queue',
+            FRAME_TYPE.P2P_CONNECTION_PAYLOAD_ACK.value: 'transmitted_data',
         },
         States.DISCONNECTING: {
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT_ACK.value: 'received_disconnect_ack',
@@ -63,25 +64,12 @@ class P2PConnection:
         self.states = state_manager
         self.modem = modem
 
-        self.p2p_rx_queue = Queue()
-        self.p2p_tx_queue = Queue()
+        self.p2p_data_rx_queue = Queue()
+        self.p2p_data_tx_queue = Queue()
 
 
         self.state = States.NEW
         self.session_id = self.generate_id()
-
-        def generate_random_string(min_length, max_length):
-            import string
-            length = random.randint(min_length, max_length)
-            return ''.join(random.choices(string.ascii_letters, k=length))
-
-        # Generate and add 5 random entries to the queue
-        for _ in range(1):
-            random_entry = generate_random_string(2, 11)
-            self.p2p_tx_queue.put(random_entry)
-
-
-
 
         self.event_frame_received = threading.Event()
 
@@ -93,6 +81,30 @@ class P2PConnection:
 
         self.is_ISS = False # Indicator, if we are ISS or IRS
 
+        self.last_data_timestamp= time.time()
+
+        self.start_data_processing_worker()
+
+    def start_data_processing_worker(self):
+        """Starts a worker thread to monitor the transmit data queue and process data."""
+
+        def data_processing_worker():
+            while True:
+                if time.time() > self.last_data_timestamp + self.ENTIRE_CONNECTION_TIMEOUT:
+                    self.disconnect()
+                    return
+
+                if not self.p2p_data_tx_queue.empty() and self.state == States.CONNECTED:
+                    self.process_data_queue()
+                threading.Event().wait(0.1)
+
+
+
+
+        # Create and start the worker thread
+        worker_thread = threading.Thread(target=data_processing_worker, daemon=True)
+        worker_thread.start()
+
     def generate_id(self):
         while True:
             random_int = random.randint(1,255)
@@ -101,7 +113,6 @@ class P2PConnection:
 
             if len(self.states.p2p_connection_sessions) >= 255:
                 return False
-
 
     def set_details(self, snr, frequency_offset):
         self.snr = snr
@@ -120,6 +131,7 @@ class P2PConnection:
         self.state = state
 
     def on_frame_received(self, frame):
+        self.last_data_timestamp = time.time()
         self.event_frame_received.set()
         self.log(f"Received {frame['frame_type']}")
         frame_type = frame['frame_type_int']
@@ -153,6 +165,7 @@ class P2PConnection:
             self.log("Timeout!")
             retries = retries - 1
 
+        #self.connected_iss() # override connection state for simulation purposes
         self.session_failed()
 
     def launch_twr(self, frame_or_burst, timeout, retries, mode):
@@ -179,35 +192,38 @@ class P2PConnection:
         self.launch_twr(session_open_frame, self.TIMEOUT_CONNECT, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         return
 
-    def connected_iss(self, frame):
+    def connected_iss(self):
         self.log("CONNECTED ISS...........................")
         self.set_state(States.CONNECTED)
         self.is_ISS = True
-        self.socket_command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
-        self.process_data_queue()
+        if self.socket_command_handler:
+            self.socket_command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
 
     def connected_irs(self, frame):
         self.log("CONNECTED IRS...........................")
+        self.states.register_p2p_connection_session(self)
         self.set_state(States.CONNECTED)
         self.is_ISS = False
         self.orign = frame["origin"]
-        self.destination = frame["destination"]
+        self.destination = frame["destination_crc"]
 
-        self.socket_command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
+        if self.socket_command_handler:
+            self.socket_command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
 
         session_open_frame = self.frame_factory.build_p2p_connection_connect_ack(self.destination, self.origin, self.session_id)
         self.launch_twr_irs(session_open_frame, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
 
     def session_failed(self):
         self.set_state(States.FAILED)
-        self.socket_command_handler.socket_respond_disconnected()
+        if self.socket_command_handler:
+            self.socket_command_handler.socket_respond_disconnected()
 
     def process_data_queue(self, frame=None):
-        if not self.p2p_tx_queue.empty():
+        if not self.p2p_data_tx_queue.empty():
             print("processing data....")
 
             self.set_state(States.PAYLOAD_SENT)
-            data = self.p2p_tx_queue.get()
+            data = self.p2p_data_tx_queue.get()
             sequence_id = random.randint(0,255)
             data = data.encode('utf-8')
 
@@ -218,30 +234,35 @@ class P2PConnection:
             self.launch_twr(payload, self.TIMEOUT_DATA, self.RETRIES_DATA,
                             mode=mode)
             return
-        print("ALL DATA SENT!!!!!")
-        self.disconnect()
 
     def prepare_data_chunk(self, data, mode):
         return data
 
     def received_data(self, frame):
         print(frame)
+        self.p2p_data_rx_queue.put(frame['data'])
         ack_data = self.frame_factory.build_p2p_connection_payload_ack(self.session_id, 0)
         self.launch_twr_irs(ack_data, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
 
     def transmit_data_ack(self, frame):
         print(frame)
 
+    def transmitted_data(self, frame):
+        print("transmitted data...")
+        self.set_state(States.CONNECTED)
+
     def disconnect(self):
-        self.set_state(States.DISCONNECTING)
-        disconnect_frame = self.frame_factory.build_p2p_connection_disconnect(self.session_id)
-        self.launch_twr(disconnect_frame, self.TIMEOUT_CONNECT, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
+        if self.state not in [States.DISCONNECTING, States.DISCONNECTED]:
+            self.set_state(States.DISCONNECTING)
+            disconnect_frame = self.frame_factory.build_p2p_connection_disconnect(self.session_id)
+            self.launch_twr(disconnect_frame, self.TIMEOUT_CONNECT, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         return
 
     def received_disconnect(self, frame):
         self.log("DISCONNECTED...............")
         self.set_state(States.DISCONNECTED)
-        self.socket_command_handler.socket_respond_disconnected()
+        if self.socket_command_handler:
+            self.socket_command_handler.socket_respond_disconnected()
         self.is_ISS = False
         disconnect_ack_frame = self.frame_factory.build_p2p_connection_disconnect_ack(self.session_id)
         self.launch_twr_irs(disconnect_ack_frame, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
@@ -249,7 +270,8 @@ class P2PConnection:
     def received_disconnect_ack(self, frame):
         self.log("DISCONNECTED...............")
         self.set_state(States.DISCONNECTED)
-        self.socket_command_handler.socket_respond_disconnected()
+        if self.socket_command_handler:
+            self.socket_command_handler.socket_respond_disconnected()
 
 
     def transmit_arq(self):
@@ -260,3 +282,4 @@ class P2PConnection:
 
     def received_arq(self):
         pass
+

@@ -15,7 +15,6 @@ class CommandSocket(socketserver.BaseRequestHandler):
         self.event_manager = event_manager
         self.config_manager = config_manager
         self.modem = modem
-        print(self.config_manager)
         self.logger = structlog.get_logger(type(self).__name__)
 
         self.command_handler = SocketCommandHandler(request, self.modem, self.config_manager, self.state_manager, self.event_manager)
@@ -86,11 +85,13 @@ class DataSocket(socketserver.BaseRequestHandler):
         msg = f"[{type(self).__name__}]: {message}"
         logger = self.logger.warn if isWarning else self.logger.info
         logger(msg)
+
     def handle(self):
         self.log(f"Data connection established with {self.client_address}")
 
         try:
             while True:
+                
                 ready_to_read, _, _ = select.select([self.request], [], [], 1)  # 1-second timeout
                 if ready_to_read:
                     self.data = self.request.recv(1024).strip()
@@ -98,14 +99,21 @@ class DataSocket(socketserver.BaseRequestHandler):
                         break
                     try:
                         self.log(f"Data received from {self.client_address}: [{len(self.data)}] - {self.data.decode()}")
-                    except:
+                    except Exception:
                         self.log(f"Data received from {self.client_address}: [{len(self.data)}] - {self.data}")
 
+                    for session in self.state_manager.p2p_connection_sessions:
+                        print(f"sessions: {session}")
+                        session.p2p_data_tx_queue.put(self.data)
+
                 # Check if there's something to send from the queue, without blocking
-                if not data_queue.empty():
-                    data_to_send = data_queue.get_nowait()  # Use get_nowait to avoid blocking
-                    self.request.sendall(data_to_send)
-                    self.log(f"Sent data to {self.client_address}")
+
+                for session_id in self.state_manager.p2p_connection_sessions:
+                    session = self.state_manager.get_p2p_connection_session(session_id)
+                    if not session.p2p_data_tx_queue.empty():
+                        data_to_send = session.p2p_data_tx_queue.get_nowait()  # Use get_nowait to avoid blocking
+                        self.request.sendall(data_to_send)
+                        self.log(f"Sent data to {self.client_address}")
 
         finally:
             self.log(f"Data connection closed with {self.client_address}")
