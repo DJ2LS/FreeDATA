@@ -192,7 +192,7 @@ class P2PConnection:
         self.launch_twr(session_open_frame, self.TIMEOUT_CONNECT, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         return
 
-    def connected_iss(self):
+    def connected_iss(self, frame=None):
         self.log("CONNECTED ISS...........................")
         self.set_state(States.CONNECTED)
         self.is_ISS = True

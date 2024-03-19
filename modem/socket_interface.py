@@ -5,8 +5,6 @@ import select
 from queue import Queue
 from socket_interface_commands import SocketCommandHandler
 
-# Shared queue for command and data handlers
-data_queue = Queue()
 
 class CommandSocket(socketserver.BaseRequestHandler):
     #def __init__(self, request, client_address, server):
