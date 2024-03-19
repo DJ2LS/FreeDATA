@@ -241,6 +241,7 @@ class P2PConnection:
     def received_data(self, frame):
         print(frame)
         self.p2p_data_rx_queue.put(frame['data'])
+
         ack_data = self.frame_factory.build_p2p_connection_payload_ack(self.session_id, 0)
         self.launch_twr_irs(ack_data, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
 

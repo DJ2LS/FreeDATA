@@ -219,6 +219,7 @@ class StateManager:
 
     def register_p2p_connection_session(self, session):
         if session.session_id in self.p2p_connection_sessions:
+            print("session already registered...")
             return False
         self.p2p_connection_sessions[session.session_id] = session
         return True

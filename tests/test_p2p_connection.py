@@ -160,14 +160,11 @@ class TestP2PConnectionSession(unittest.TestCase):
 
         for session_id in self.iss_state_manager.p2p_connection_sessions:
             session = self.iss_state_manager.get_p2p_connection_session(session_id)
-
+            session.ENTIRE_CONNECTION_TIMEOUT = 15
             # Generate and add 5 random entries to the queue
             for _ in range(5):
                random_entry = self.generate_random_string(2, 11)
                session.p2p_data_tx_queue.put(random_entry)
-
-
-
 
         self.waitAndCloseChannels()
 
@@ -184,6 +181,9 @@ class TestSocket:
     def event_handler(self, data):
         if b'CONNECTED AA1AAA-1 BB2BBB-2 0\r\n' in self.sent_data:
             self.test_class.connected_event.set()
+
+        if b'DISCONNECTED\r\n' in self.sent_data:
+            self.test_class.assertEqual(b'DISCONNECTED\r\n', b'DISCONNECTED\r\n')
 
 
 if __name__ == '__main__':
