@@ -45,10 +45,10 @@ enable_protocol = False
 
 [MODEM]
 enable_hmac = False
-enable_low_bandwidth_mode = False
 enable_morse_identifier = False
 respond_to_cq = True
-tx_delay = 200
+tx_delay = 50
+maximum_bandwidth = 1700
 
 [MESSAGES]
 enable_auto_repeat = False

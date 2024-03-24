@@ -76,6 +76,8 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.received_bytes = 0
         self.received_crc = None
 
+        self.maximum_bandwidth = 0
+
         self.abort = False
 
     def all_data_received(self):
@@ -98,6 +100,12 @@ class ARQSessionIRS(arq_session.ARQSession):
         thread_wait.start()
     
     def send_open_ack(self, open_frame):
+        self.maximum_bandwidth = open_frame['maximum_bandwidth']
+        # check for maximum bandwidth. If ISS bandwidth is higher than own, then use own
+        if open_frame['maximum_bandwidth'] > self.config['MODEM']['maximum_bandwidth']:
+            self.maximum_bandwidth = self.config['MODEM']['maximum_bandwidth']
+
+
         self.event_manager.send_arq_session_new(
             False, self.id, self.dxcall, 0, self.state.name)
         ack_frame = self.frame_factory.build_arq_session_open_ack(
@@ -211,7 +219,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             received_speed_level = 0
 
         latest_snr = self.snr if self.snr else -10
-        appropriate_speed_level = self.get_appropriate_speed_level(latest_snr)
+        appropriate_speed_level = self.get_appropriate_speed_level(latest_snr, self.maximum_bandwidth)
         modes_to_decode = {}
 
         # Log the latest SNR, current, appropriate speed levels, and the previous speed level
