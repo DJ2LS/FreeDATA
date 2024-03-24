@@ -164,8 +164,9 @@ class ARQSession:
 
         return stats
 
-    def get_appropriate_speed_level(self, snr):
-        maximum_bandwidth = self.config['MODEM']['maximum_bandwidth']
+    def get_appropriate_speed_level(self, snr, maximum_bandwidth=None):
+        if maximum_bandwidth is None:
+            maximum_bandwidth = self.config['MODEM']['maximum_bandwidth']
 
         # Adjust maximum_bandwidth based on special conditions or invalid configurations
         if maximum_bandwidth == 0:
@@ -176,9 +177,7 @@ class ARQSession:
         appropriate_speed_level = min(self.SPEED_LEVEL_DICT.keys())
 
         for level, details in self.SPEED_LEVEL_DICT.items():
-            if snr >= details['min_snr'] and details['bandwidth'] <= maximum_bandwidth:
-                # Update appropriate_speed_level to the current level if it meets both SNR and bandwidth criteria
-                if level > appropriate_speed_level:
-                    appropriate_speed_level = level
+            if snr >= details['min_snr'] and details['bandwidth'] <= maximum_bandwidth and level > appropriate_speed_level:
+                appropriate_speed_level = level
 
         return appropriate_speed_level
