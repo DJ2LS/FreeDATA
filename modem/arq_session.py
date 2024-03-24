@@ -16,16 +16,19 @@ class ARQSession:
             'mode': codec2.FREEDV_MODE.datac4,
             'min_snr': -10,
             'duration_per_frame': 5.17,
+            'bandwidth': 250,
         },
         1: {
             'mode': codec2.FREEDV_MODE.datac3,
             'min_snr': 0,
             'duration_per_frame': 3.19,
+            'bandwidth': 563,
         },
         2: {
             'mode': codec2.FREEDV_MODE.datac1,
             'min_snr': 3,
             'duration_per_frame': 4.18,
+            'bandwidth': 1700,
         },
     }
 
@@ -162,10 +165,20 @@ class ARQSession:
         return stats
 
     def get_appropriate_speed_level(self, snr):
-        # Start with the lowest speed level as default
-        # In case of a not fitting SNR, we return the lowest speed level
+        maximum_bandwidth = self.config['MODEM']['maximum_bandwidth']
+
+        # Adjust maximum_bandwidth based on special conditions or invalid configurations
+        if maximum_bandwidth == 0:
+            # Use the maximum available bandwidth from the speed level dictionary
+            maximum_bandwidth = max(details['bandwidth'] for details in self.SPEED_LEVEL_DICT.values())
+
+        # Initialize appropriate_speed_level to the lowest level that meets the minimum criteria
         appropriate_speed_level = min(self.SPEED_LEVEL_DICT.keys())
+
         for level, details in self.SPEED_LEVEL_DICT.items():
-            if snr >= details['min_snr'] and level > appropriate_speed_level:
-                appropriate_speed_level = level
+            if snr >= details['min_snr'] and details['bandwidth'] <= maximum_bandwidth:
+                # Update appropriate_speed_level to the current level if it meets both SNR and bandwidth criteria
+                if level > appropriate_speed_level:
+                    appropriate_speed_level = level
+
         return appropriate_speed_level
