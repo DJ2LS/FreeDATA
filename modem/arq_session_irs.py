@@ -82,8 +82,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         return self.total_length == self.received_bytes
 
     def final_crc_matches(self) -> bool:
-        match = self.total_crc == helpers.get_crc_32(bytes(self.received_data)).hex()
-        return match
+        return self.total_crc == helpers.get_crc_32(bytes(self.received_data)).hex()
 
     def transmit_and_wait(self, frame, timeout, mode):
         self.event_frame_received.clear()
@@ -247,7 +246,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         return self.speed_level
 
     def abort_transmission(self):
-        self.log(f"Aborting transmission... setting abort flag")
+        self.log("Aborting transmission... setting abort flag")
         self.abort = True
 
     def send_stop_ack(self, stop_frame):
@@ -263,7 +262,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         # final function for failed transmissions
         self.session_ended = time.time()
         self.set_state(IRS_State.FAILED)
-        self.log(f"Transmission failed!")
+        self.log("Transmission failed!")
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=self.calculate_session_statistics(self.received_bytes, self.total_length))
         self.states.setARQ(False)
         return None, None
