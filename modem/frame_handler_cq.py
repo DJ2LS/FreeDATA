@@ -9,7 +9,8 @@ class CQFrameHandler(frame_handler_ping.PingFrameHandler):
 
     def should_respond(self):
         self.logger.debug(f"Respond to CQ: {self.config['MODEM']['respond_to_cq']}")
-        return self.config['MODEM']['respond_to_cq']
+        return bool(self.config['MODEM']['respond_to_cq'] and not self.states.getARQ())
+
 
     def send_ack(self):
         factory = data_frame_factory.DataFrameFactory(self.config)
