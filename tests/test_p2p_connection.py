@@ -98,6 +98,8 @@ class TestP2PConnectionSession(unittest.TestCase):
 
         cls.channels_running = True
 
+        cls.disconnect_received = False
+
     def channelWorker(self, modem_transmit_queue: queue.Queue, frame_dispatcher: DISPATCHER):
         while self.channels_running:
             # Transfer data between both parties
@@ -114,12 +116,12 @@ class TestP2PConnectionSession(unittest.TestCase):
         self.logger.info(f"[{threading.current_thread().name}] Channel closed.")
 
     def waitForSession(self, q, outbound=False):
-        key = 'arq-transfer-outbound' if outbound else 'arq-transfer-inbound'
         while True and self.channels_running:
             ev = q.get()
-            #if key in ev and ('success' in ev[key] or 'P2P_CONNECTION_DISCONNECT_ACK' in ev[key]):
-            #    self.logger.info(f"[{threading.current_thread().name}] {key} session ended.")
-            #    break
+            print(ev)
+            if 'P2P_CONNECTION_DISCONNECT_ACK' in ev or self.disconnect_received:
+                self.logger.info(f"[{threading.current_thread().name}] session ended.")
+                break
 
     def establishChannels(self):
         self.channels_running = True
@@ -188,6 +190,7 @@ class TestSocket:
             self.test_class.connected_event.set()
 
         if b'DISCONNECTED\r\n' in self.sent_data:
+            self.disconnect_received = True
             self.test_class.assertEqual(b'DISCONNECTED\r\n', b'DISCONNECTED\r\n')
 
 if __name__ == '__main__':
