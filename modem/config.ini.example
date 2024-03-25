@@ -49,6 +49,7 @@ enable_morse_identifier = False
 respond_to_cq = True
 tx_delay = 50
 maximum_bandwidth = 1700
+enable_socket_interface = False
 
 [SOCKET_INTERFACE]
 enable = False

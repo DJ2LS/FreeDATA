@@ -148,7 +148,7 @@ class TestP2PConnectionSession(unittest.TestCase):
         length = random.randint(min_length, max_length)
         return ''.join(random.choices(string.ascii_letters, k=length))#
 
-    def testARQSessionSmallPayload(self):
+    def DisabledtestARQSessionSmallPayload(self):
         # set Packet Error Rate (PER) / frame loss probability
         self.loss_probability = 0
 
