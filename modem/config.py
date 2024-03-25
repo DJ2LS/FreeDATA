@@ -57,7 +57,7 @@ class CONFIG:
         'MODEM': {
             'enable_hmac': bool,
             'enable_morse_identifier': bool,
-            'enable_low_bandwidth_mode': bool,
+            'maximum_bandwidth': int,
             'respond_to_cq': bool,
             'tx_delay': int
         },

@@ -5,11 +5,22 @@ import frame_handler
 from message_system_db_messages import DatabaseManagerMessages
 
 
-class CQFrameHandler(frame_handler_ping.PingFrameHandler):
+class CQFrameHandler(frame_handler.FrameHandler):
 
-    def should_respond(self):
-        self.logger.debug(f"Respond to CQ: {self.config['MODEM']['respond_to_cq']}")
-        return self.config['MODEM']['respond_to_cq']
+    #def should_respond(self):
+    #    self.logger.debug(f"Respond to CQ: {self.config['MODEM']['respond_to_cq']}")
+    #    return bool(self.config['MODEM']['respond_to_cq'] and not self.states.getARQ())
+
+    def follow_protocol(self):
+        if self.states.getARQ():
+            return
+
+        self.logger.debug(
+            f"[Modem] Responding to request from [{self.details['frame']['origin']}]",
+            snr=self.details['snr'],
+        )
+
+        self.send_ack()
 
     def send_ack(self):
         factory = data_frame_factory.DataFrameFactory(self.config)

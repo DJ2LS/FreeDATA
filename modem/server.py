@@ -33,7 +33,7 @@ from schedule_manager import ScheduleManager
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
-MODEM_VERSION = "0.14.4-alpha"
+MODEM_VERSION = "0.14.5-alpha"
 
 # set config file to use
 def set_config():
