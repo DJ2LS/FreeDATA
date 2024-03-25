@@ -124,27 +124,6 @@ import { loadAllData } from "../js/eventHandler";
               <!-------------------------------- MAIN AREA ---------------->
 
               <!------------------------------------------------------------------------------------------>
-              <div class="container">
-                <div class="row">
-                  <div class="col-5">
-                    <main_active_rig_control />
-                  </div>
-                  <div class="col-4">
-                    <main_active_broadcasts />
-                  </div>
-                  <div class="col-3">
-                    <main_active_audio_level />
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-7">
-                    <main_active_heard_stations />
-                  </div>
-                  <div class="col-5">
-                    <main_active_stats />
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 

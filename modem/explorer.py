@@ -33,7 +33,7 @@ class explorer():
         callsign = str(self.config['STATION']['mycall']) + "-" + str(self.config["STATION"]['myssid'])
         gridsquare = str(self.config['STATION']['mygrid'])
         version = str(self.modem_version)
-        bandwidth = str(self.config['MODEM']['enable_low_bandwidth_mode'])
+        bandwidth = str(self.config['MODEM']['maximum_bandwidth'])
         beacon = str(self.states.is_beacon_running)
         strength = str(self.states.s_meter_strength)
 

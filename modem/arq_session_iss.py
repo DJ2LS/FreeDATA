@@ -1,6 +1,5 @@
 import threading
 import data_frame_factory
-import queue
 import random
 from codec2 import FREEDV_MODE
 from modem_frametypes import FRAME_TYPE
@@ -105,9 +104,10 @@ class ARQSessionISS(arq_session.ARQSession):
         twr.start()
 
     def start(self):
+        maximum_bandwidth = self.config['MODEM']['maximum_bandwidth']
         self.event_manager.send_arq_session_new(
             True, self.id, self.dxcall, self.total_length, self.state.name)
-        session_open_frame = self.frame_factory.build_arq_session_open(self.dxcall, self.id)
+        session_open_frame = self.frame_factory.build_arq_session_open(self.dxcall, self.id, maximum_bandwidth)
         self.launch_twr(session_open_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(ISS_State.OPEN_SENT)
 
@@ -174,7 +174,7 @@ class ARQSessionISS(arq_session.ARQSession):
 
         payload_size = self.get_data_payload_size()
         burst = []
-        for f in range(0, self.frames_per_burst):
+        for _ in range(0, self.frames_per_burst):
             offset = self.confirmed_bytes
             payload = self.data[offset : offset + payload_size]
             data_frame = self.frame_factory.build_arq_burst_frame(
@@ -204,7 +204,7 @@ class ARQSessionISS(arq_session.ARQSession):
         # final function for failed transmissions
         self.session_ended = time.time()
         self.set_state(ISS_State.FAILED)
-        self.log(f"Transmission failed!")
+        self.log("Transmission failed!")
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
         self.states.setARQ(False)
 
@@ -213,7 +213,7 @@ class ARQSessionISS(arq_session.ARQSession):
 
     def abort_transmission(self, irs_frame=None):
         # function for starting the abort sequence
-        self.log(f"aborting transmission...")
+        self.log("aborting transmission...")
         self.set_state(ISS_State.ABORTING)
 
         self.event_manager.send_arq_session_finished(

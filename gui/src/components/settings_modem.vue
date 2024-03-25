@@ -165,20 +165,20 @@ const audioStore = useAudioStore();
   </div>
 
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Enable 250Hz bandwidth mode</label>
-    <label class="input-group-text w-50">
-      <div class="form-check form-switch form-check-inline">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          id="250HzModeSwitch"
-          v-model="settings.remote.MODEM.enable_low_bandwidth_mode"
-          @change="onChange"
-        />
-        <label class="form-check-label" for="250HzModeSwitch">250Hz</label>
-      </div>
-    </label>
+    <label class="input-group-text w-50">Maximum used bandwidth</label>
+    <select
+      class="form-select form-select-sm"
+      id="maximum_bandwidth"
+      @change="onChange"
+      v-model.number="settings.remote.MODEM.maximum_bandwidth"
+    >
+      <option value="250">250 Hz</option>
+      <option value="563">563 Hz</option>
+      <option value="1700">1700 Hz</option>
+    </select>
   </div>
+
+
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50">Respond to CQ</label>
     <label class="input-group-text w-50">
