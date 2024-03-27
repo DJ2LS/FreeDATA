@@ -221,7 +221,9 @@ class TestARQSession(unittest.TestCase):
         session = arq_session_irs.ARQSessionIRS(self.config,
                             self.irs_modem,
                             'AA1AAA-1',
-                            random.randint(0, 255))
+                            random.randint(0, 255),
+                            self.irs_state_manager
+                                                )
         self.irs_state_manager.register_arq_irs_session(session)
         for session_id in self.irs_state_manager.arq_irs_sessions:
             session = self.irs_state_manager.arq_irs_sessions[session_id]
