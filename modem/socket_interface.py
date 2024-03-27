@@ -154,6 +154,13 @@ class SocketInterfaceHandler:
         logger(msg)
 
     def start_servers(self):
+
+        if self.command_port == 0:
+            self.command_port = 8300
+
+        if self.data_port == 0:
+            self.data_port = 8301
+
         # Method to start both command and data server threads
         self.command_server_thread = threading.Thread(target=self.run_server, args=(self.command_port, CommandSocket))
         self.data_server_thread = threading.Thread(target=self.run_server, args=(self.data_port, DataSocket))

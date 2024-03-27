@@ -17,8 +17,6 @@ class SocketCommandHandler:
         self.cmd_request.sendall(full_message.encode())
 
     def handle_connect(self, data):
-        # Your existing connect logic
-        self.send_response("OK")
 
         params = {
             'origin': data[0],
@@ -26,10 +24,13 @@ class SocketCommandHandler:
         }
         cmd = P2PConnectionCommand(self.config_manager.read(), self.state_manager, self.event_manager, params, self)
         self.session = cmd.run(self.event_manager.queues, self.modem)
-        if self.session.session_id:
-            self.state_manager.register_p2p_connection_session(self.session)
-            self.session.connect()
 
+        #if self.session.session_id:
+        #    self.state_manager.register_p2p_connection_session(self.session)
+        #    self.send_response("OK")
+        #    self.session.connect()
+        #else:
+        #    self.send_response("ERROR")
 
     def handle_disconnect(self, data):
         # Your existing connect logic

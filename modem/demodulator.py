@@ -337,7 +337,7 @@ class Demodulator():
         for mode in self.MODE_DICT:
             codec2.api.freedv_set_sync(self.MODE_DICT[mode]["instance"], 0)
 
-    def set_decode_mode(self, modes_to_decode):
+    def set_decode_mode(self, modes_to_decode=None):
         # Reset all modes to not decode
         for m in self.MODE_DICT:
             self.MODE_DICT[m]["decode"] = False
@@ -349,6 +349,7 @@ class Demodulator():
         self.MODE_DICT[codec2.FREEDV_MODE.datac4.value]["decode"] = True
 
         # Enable specified modes
-        for mode, decode in modes_to_decode.items():
-            if mode in self.MODE_DICT:
-                self.MODE_DICT[mode]["decode"] = decode
+        if modes_to_decode:
+            for mode, decode in modes_to_decode.items():
+                if mode in self.MODE_DICT:
+                    self.MODE_DICT[mode]["decode"] = decode

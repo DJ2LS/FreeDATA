@@ -59,6 +59,7 @@ class P2PConnection:
     def __init__(self, config: dict, modem, origin: str, destination: str, state_manager, event_manager, socket_command_handler=None):
         self.logger = structlog.get_logger(type(self).__name__)
         self.config = config
+
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
 
         self.socket_command_handler = socket_command_handler
@@ -70,7 +71,7 @@ class P2PConnection:
         self.state_manager = state_manager
         self.event_manager = event_manager
         self.modem = modem
-        self.modem.demodulator.set_decode_mode([])
+        self.modem.demodulator.set_decode_mode()
 
         self.p2p_data_rx_queue = Queue()
         self.p2p_data_tx_queue = Queue()
@@ -83,8 +84,8 @@ class P2PConnection:
 
         self.event_frame_received = threading.Event()
 
-        self.RETRIES_CONNECT = 1
-        self.TIMEOUT_CONNECT = 10
+        self.RETRIES_CONNECT = 5
+        self.TIMEOUT_CONNECT = 5
         self.TIMEOUT_DATA = 5
         self.RETRIES_DATA = 5
         self.ENTIRE_CONNECTION_TIMEOUT = 100
@@ -92,7 +93,6 @@ class P2PConnection:
         self.is_ISS = False # Indicator, if we are ISS or IRS
 
         self.last_data_timestamp= time.time()
-
         self.start_data_processing_worker()
 
 
