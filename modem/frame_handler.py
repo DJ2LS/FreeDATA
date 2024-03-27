@@ -6,8 +6,10 @@ import structlog
 import time, uuid
 from codec2 import FREEDV_MODE
 from message_system_db_manager import DatabaseManager
+import maidenhead
 
 TESTMODE = False
+
 
 class FrameHandler():
 
@@ -101,14 +103,21 @@ class FrameHandler():
 
         self.states.add_activity(activity)
 
-
     def add_to_heard_stations(self):
         frame = self.details['frame']
 
         if 'origin' not in frame:
             return
 
-        dxgrid = frame['gridsquare'] if 'gridsquare' in frame else "------"
+        dxgrid = frame.get('gridsquare', "------")
+        # Initialize distance values
+        distance_km = None
+        distance_miles = None
+        if dxgrid != "------" and frame.get('gridsquare'):
+            distance_dict = maidenhead.distance_between_locators(self.config['STATION']['mygrid'], frame['gridsquare'])
+            distance_km = distance_dict['kilometers']
+            distance_miles = distance_dict['miles']
+
         helpers.add_to_heard_stations(
             frame['origin'],
             dxgrid,
@@ -117,8 +126,9 @@ class FrameHandler():
             self.details['frequency_offset'],
             self.states.radio_frequency,
             self.states.heard_stations,
+            distance_km=distance_km,  # Pass the kilometer distance
+            distance_miles=distance_miles  # Pass the miles distance
         )
-
     def make_event(self):
 
         event = {
@@ -135,6 +145,9 @@ class FrameHandler():
         if 'gridsquare' in self.details['frame']:
             event['gridsquare'] = self.details['frame']['gridsquare']
 
+            distance = maidenhead.distance_between_locators(self.config['STATION']['mygrid'], self.details['frame']['gridsquare'])
+            event['distance_kilometers'] = distance['kilometers']
+            event['distance_miles'] = distance['miles']
 
         return event
 
@@ -163,8 +176,6 @@ class FrameHandler():
         self.details['frequency_offset'] = frequency_offset
         self.details['freedv_inst'] = freedv_inst
         self.details['bytes_per_frame'] = bytes_per_frame
-
-        print(self.details)
 
         # look in database for a full callsign if only crc is present
         if 'origin' not in frame and 'origin_crc' in frame:
