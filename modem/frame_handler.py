@@ -132,6 +132,10 @@ class FrameHandler():
         if 'origin' in self.details['frame']:
             event['dxcallsign'] = self.details['frame']['origin']
 
+        if 'gridsquare' in self.details['frame']:
+            event['gridsquare'] = self.details['frame']['gridsquare']
+
+
         return event
 
     def emit_event(self):
@@ -159,6 +163,8 @@ class FrameHandler():
         self.details['frequency_offset'] = frequency_offset
         self.details['freedv_inst'] = freedv_inst
         self.details['bytes_per_frame'] = bytes_per_frame
+
+        print(self.details)
 
         # look in database for a full callsign if only crc is present
         if 'origin' not in frame and 'origin_crc' in frame:
