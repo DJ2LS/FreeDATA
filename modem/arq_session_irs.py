@@ -18,7 +18,7 @@ class IRS_State(Enum):
 class ARQSessionIRS(arq_session.ARQSession):
 
     TIMEOUT_CONNECT = 55 #14.2
-    TIMEOUT_DATA = 60
+    TIMEOUT_DATA = 120
 
     STATE_TRANSITION = {
         IRS_State.NEW: { 
@@ -59,8 +59,8 @@ class ARQSessionIRS(arq_session.ARQSession):
         },
     }
 
-    def __init__(self, config: dict, modem, dxcall: str, session_id: int):
-        super().__init__(config, modem, dxcall)
+    def __init__(self, config: dict, modem, dxcall: str, session_id: int, state_manager):
+        super().__init__(config, modem, dxcall, state_manager)
 
         self.id = session_id
         self.dxcall = dxcall
@@ -76,14 +76,15 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.received_bytes = 0
         self.received_crc = None
 
+        self.maximum_bandwidth = 0
+
         self.abort = False
 
     def all_data_received(self):
         return self.total_length == self.received_bytes
 
     def final_crc_matches(self) -> bool:
-        match = self.total_crc == helpers.get_crc_32(bytes(self.received_data)).hex()
-        return match
+        return self.total_crc == helpers.get_crc_32(bytes(self.received_data)).hex()
 
     def transmit_and_wait(self, frame, timeout, mode):
         self.event_frame_received.clear()
@@ -99,6 +100,12 @@ class ARQSessionIRS(arq_session.ARQSession):
         thread_wait.start()
     
     def send_open_ack(self, open_frame):
+        self.maximum_bandwidth = open_frame['maximum_bandwidth']
+        # check for maximum bandwidth. If ISS bandwidth is higher than own, then use own
+        if open_frame['maximum_bandwidth'] > self.config['MODEM']['maximum_bandwidth']:
+            self.maximum_bandwidth = self.config['MODEM']['maximum_bandwidth']
+
+
         self.event_manager.send_arq_session_new(
             False, self.id, self.dxcall, 0, self.state.name)
         ack_frame = self.frame_factory.build_arq_session_open_ack(
@@ -212,7 +219,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             received_speed_level = 0
 
         latest_snr = self.snr if self.snr else -10
-        appropriate_speed_level = self.get_appropriate_speed_level(latest_snr)
+        appropriate_speed_level = self.get_appropriate_speed_level(latest_snr, self.maximum_bandwidth)
         modes_to_decode = {}
 
         # Log the latest SNR, current, appropriate speed levels, and the previous speed level
@@ -247,7 +254,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         return self.speed_level
 
     def abort_transmission(self):
-        self.log(f"Aborting transmission... setting abort flag")
+        self.log("Aborting transmission... setting abort flag")
         self.abort = True
 
     def send_stop_ack(self, stop_frame):
@@ -263,7 +270,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         # final function for failed transmissions
         self.session_ended = time.time()
         self.set_state(IRS_State.FAILED)
-        self.log(f"Transmission failed!")
+        self.log("Transmission failed!")
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=self.calculate_session_statistics(self.received_bytes, self.total_length))
         self.states.setARQ(False)
         return None, None

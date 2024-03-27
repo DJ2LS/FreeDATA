@@ -1,5 +1,5 @@
 import datetime
-import queue, threading
+import threading
 import codec2
 import data_frame_factory
 import structlog
@@ -9,33 +9,36 @@ import time
 from arq_data_type_handler import ARQDataTypeHandler
 
 
-class ARQSession():
+class ARQSession:
 
     SPEED_LEVEL_DICT = {
         0: {
             'mode': codec2.FREEDV_MODE.datac4,
             'min_snr': -10,
             'duration_per_frame': 5.17,
+            'bandwidth': 250,
         },
         1: {
             'mode': codec2.FREEDV_MODE.datac3,
             'min_snr': 0,
             'duration_per_frame': 3.19,
+            'bandwidth': 563,
         },
         2: {
             'mode': codec2.FREEDV_MODE.datac1,
             'min_snr': 3,
             'duration_per_frame': 4.18,
+            'bandwidth': 1700,
         },
     }
 
-    def __init__(self, config: dict, modem, dxcall: str):
+    def __init__(self, config: dict, modem, dxcall: str, state_manager):
         self.logger = structlog.get_logger(type(self).__name__)
         self.config = config
 
         self.event_manager: EventManager = modem.event_manager
-        self.states = modem.states
-
+        #self.states = modem.states
+        self.states = state_manager
         self.states.setARQ(True)
 
         self.snr = []
@@ -63,7 +66,7 @@ class ARQSession():
         self.bpm_histogram = []
         self.time_histogram = []
 
-    def log(self, message, isWarning = False):
+    def log(self, message, isWarning=False):
         msg = f"[{type(self).__name__}][id={self.id}][state={self.state}]: {message}"
         logger = self.logger.warn if isWarning else self.logger.info
         logger(msg)
@@ -99,21 +102,22 @@ class ARQSession():
         self.event_frame_received.set()
         self.log(f"Received {frame['frame_type']}")
         frame_type = frame['frame_type_int']
-        if self.state in self.STATE_TRANSITION:
-            if frame_type in self.STATE_TRANSITION[self.state]:
-                action_name = self.STATE_TRANSITION[self.state][frame_type]
-                received_data, type_byte = getattr(self, action_name)(frame)
-                if isinstance(received_data, bytearray) and isinstance(type_byte, int):
-                    self.arq_data_type_handler.dispatch(type_byte, received_data, self.update_histograms(len(received_data), len(received_data)))
-                return
+        if self.state in self.STATE_TRANSITION and frame_type in self.STATE_TRANSITION[self.state]:
+            action_name = self.STATE_TRANSITION[self.state][frame_type]
+            received_data, type_byte = getattr(self, action_name)(frame)
+            if isinstance(received_data, bytearray) and isinstance(type_byte, int):
+                self.arq_data_type_handler.dispatch(type_byte, received_data, self.update_histograms(len(received_data), len(received_data)))
+            return
         
         self.log(f"Ignoring unknown transition from state {self.state.name} with frame {frame['frame_type']}")
 
     def is_session_outdated(self):
         session_alivetime = time.time() - self.session_max_age
-        if self.session_ended < session_alivetime and self.state.name in ['FAILED', 'ENDED', 'ABORTED']:
-            return True
-        return False
+        return self.session_ended < session_alivetime and self.state.name in [
+            'FAILED',
+            'ENDED',
+            'ABORTED',
+        ]
 
     def calculate_session_duration(self):
         if self.session_ended == 0:
@@ -123,7 +127,7 @@ class ARQSession():
 
     def calculate_session_statistics(self, confirmed_bytes, total_bytes):
         duration = self.calculate_session_duration()
-        #total_bytes = self.total_length
+        # total_bytes = self.total_length
         # self.total_length
         duration_in_minutes = duration / 60  # Convert duration from seconds to minutes
 
@@ -134,9 +138,9 @@ class ARQSession():
             bytes_per_minute = 0
 
         # Convert histograms lists to dictionaries
-        time_histogram_dict = {i: timestamp for i, timestamp in enumerate(self.time_histogram)}
-        snr_histogram_dict = {i: snr for i, snr in enumerate(self.snr_histogram)}
-        bpm_histogram_dict = {i: bpm for i, bpm in enumerate(self.bpm_histogram)}
+        time_histogram_dict = dict(enumerate(self.time_histogram))
+        snr_histogram_dict = dict(enumerate(self.snr_histogram))
+        bpm_histogram_dict = dict(enumerate(self.bpm_histogram))
 
         return {
             'total_bytes': total_bytes,
@@ -160,11 +164,20 @@ class ARQSession():
 
         return stats
 
-    def get_appropriate_speed_level(self, snr):
-        # Start with the lowest speed level as default
-        # In case of a not fitting SNR, we return the lowest speed level
+    def get_appropriate_speed_level(self, snr, maximum_bandwidth=None):
+        if maximum_bandwidth is None:
+            maximum_bandwidth = self.config['MODEM']['maximum_bandwidth']
+
+        # Adjust maximum_bandwidth based on special conditions or invalid configurations
+        if maximum_bandwidth == 0:
+            # Use the maximum available bandwidth from the speed level dictionary
+            maximum_bandwidth = max(details['bandwidth'] for details in self.SPEED_LEVEL_DICT.values())
+
+        # Initialize appropriate_speed_level to the lowest level that meets the minimum criteria
         appropriate_speed_level = min(self.SPEED_LEVEL_DICT.keys())
+
         for level, details in self.SPEED_LEVEL_DICT.items():
-            if snr >= details['min_snr'] and level > appropriate_speed_level:
+            if snr >= details['min_snr'] and details['bandwidth'] <= maximum_bandwidth and level > appropriate_speed_level:
                 appropriate_speed_level = level
+
         return appropriate_speed_level

@@ -33,7 +33,7 @@ from schedule_manager import ScheduleManager
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
-MODEM_VERSION = "0.14.4-alpha"
+MODEM_VERSION = "0.14.5-alpha"
 
 # set config file to use
 def set_config():
@@ -327,7 +327,9 @@ def sock_states(sock):
 @atexit.register
 def stop_server():
     try:
-        app.service_manager.stop_modem()
+        app.service_manager.modem_service.put("stop")
+        app.socket_interface_manager.stop_servers()
+
         if app.service_manager.modem:
             app.service_manager.modem.sd_input_stream.stop
         audio.sd._terminate()
@@ -346,6 +348,7 @@ if __name__ == "__main__":
     app.config_manager = CONFIG(config_file)
 
     # start modem
+    app.p2p_data_queue = queue.Queue() # queue which holds processing data of p2p connections
     app.state_queue = queue.Queue()  # queue which holds latest states
     app.modem_events = queue.Queue()  # queue which holds latest events
     app.modem_fft = queue.Queue()  # queue which holds latest fft data
@@ -357,6 +360,7 @@ if __name__ == "__main__":
     app.schedule_manager = ScheduleManager(app.MODEM_VERSION, app.config_manager, app.state_manager, app.event_manager)
     # start service manager
     app.service_manager = service_manager.SM(app)
+
     # start modem service
     app.modem_service.put("start")
     # initialize database default values
@@ -373,3 +377,4 @@ if __name__ == "__main__":
         modemport = 5000
 
     app.run(modemaddress, modemport)
+

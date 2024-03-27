@@ -57,9 +57,17 @@ class CONFIG:
         'MODEM': {
             'enable_hmac': bool,
             'enable_morse_identifier': bool,
-            'enable_low_bandwidth_mode': bool,
+            'maximum_bandwidth': int,
             'respond_to_cq': bool,
-            'tx_delay': int
+            'tx_delay': int,
+            'enable_socket_interface': bool,
+        },
+        'SOCKET_INTERFACE': {
+            'enable' : bool,
+            'host' : str,
+            'cmd_port' : int,
+            'data_port' : int,
+
         },
         'MESSAGES': {
             'enable_auto_repeat': bool,

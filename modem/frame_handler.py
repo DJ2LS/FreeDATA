@@ -6,8 +6,10 @@ import structlog
 import time, uuid
 from codec2 import FREEDV_MODE
 from message_system_db_manager import DatabaseManager
+import maidenhead
 
 TESTMODE = False
+
 
 class FrameHandler():
 
@@ -34,7 +36,7 @@ class FrameHandler():
         ft = self.details['frame']['frame_type']
         valid = False
         # Check for callsign checksum
-        if ft in ['ARQ_SESSION_OPEN', 'ARQ_SESSION_OPEN_ACK', 'PING', 'PING_ACK']:
+        if ft in ['ARQ_SESSION_OPEN', 'ARQ_SESSION_OPEN_ACK', 'PING', 'PING_ACK', 'P2P_CONNECTION_CONNECT']:
             valid, mycallsign = helpers.check_callsign(
                 call_with_ssid,
                 self.details["frame"]["destination_crc"],
@@ -51,6 +53,20 @@ class FrameHandler():
             session_id = self.details['frame']['session_id']
             if session_id in self.states.arq_iss_sessions:
                 valid = True
+
+        # check for p2p connection
+        elif ft in ['P2P_CONNECTION_CONNECT']:
+            valid, mycallsign = helpers.check_callsign(
+                call_with_ssid,
+                self.details["frame"]["destination_crc"],
+                self.config['STATION']['ssid_list'])
+
+        #check for p2p connection
+        elif ft in ['P2P_CONNECTION_CONNECT_ACK', 'P2P_CONNECTION_PAYLOAD', 'P2P_CONNECTION_PAYLOAD_ACK', 'P2P_CONNECTION_DISCONNECT', 'P2P_CONNECTION_DISCONNECT_ACK']:
+            session_id = self.details['frame']['session_id']
+            if session_id in self.states.p2p_connection_sessions:
+                valid = True
+
         else:
             valid = False
 
@@ -87,14 +103,21 @@ class FrameHandler():
 
         self.states.add_activity(activity)
 
-
     def add_to_heard_stations(self):
         frame = self.details['frame']
 
         if 'origin' not in frame:
             return
 
-        dxgrid = frame['gridsquare'] if 'gridsquare' in frame else "------"
+        dxgrid = frame.get('gridsquare', "------")
+        # Initialize distance values
+        distance_km = None
+        distance_miles = None
+        if dxgrid != "------" and frame.get('gridsquare'):
+            distance_dict = maidenhead.distance_between_locators(self.config['STATION']['mygrid'], frame['gridsquare'])
+            distance_km = distance_dict['kilometers']
+            distance_miles = distance_dict['miles']
+
         helpers.add_to_heard_stations(
             frame['origin'],
             dxgrid,
@@ -103,8 +126,9 @@ class FrameHandler():
             self.details['frequency_offset'],
             self.states.radio_frequency,
             self.states.heard_stations,
+            distance_km=distance_km,  # Pass the kilometer distance
+            distance_miles=distance_miles  # Pass the miles distance
         )
-
     def make_event(self):
 
         event = {
@@ -117,6 +141,13 @@ class FrameHandler():
         }
         if 'origin' in self.details['frame']:
             event['dxcallsign'] = self.details['frame']['origin']
+
+        if 'gridsquare' in self.details['frame']:
+            event['gridsquare'] = self.details['frame']['gridsquare']
+
+            distance = maidenhead.distance_between_locators(self.config['STATION']['mygrid'], self.details['frame']['gridsquare'])
+            event['distance_kilometers'] = distance['kilometers']
+            event['distance_miles'] = distance['miles']
 
         return event
 

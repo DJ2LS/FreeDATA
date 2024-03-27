@@ -18,6 +18,7 @@ class DataFrameFactory:
     }
 
     def __init__(self, config):
+
         self.myfullcall = f"{config['STATION']['mycall']}-{config['STATION']['myssid']}"
         self.mygrid = config['STATION']['mygrid']
 
@@ -28,6 +29,7 @@ class DataFrameFactory:
         self._load_ping_templates()
         self._load_fec_templates()
         self._load_arq_templates()
+        self._load_p2p_connection_templates()
 
     def _load_broadcast_templates(self):
         # cq frame
@@ -98,6 +100,7 @@ class DataFrameFactory:
             "destination_crc": 3,
             "origin": 6,
             "session_id": 1,
+            "maximum_bandwidth": 2,
         }
 
         self.template_list[FR_TYPE.ARQ_SESSION_OPEN_ACK.value] = {
@@ -159,6 +162,63 @@ class DataFrameFactory:
             "snr": 1,
             "flag": 1,
         }
+    
+    def _load_p2p_connection_templates(self):
+        # p2p connect request
+        self.template_list[FR_TYPE.P2P_CONNECTION_CONNECT.value] = {
+            "frame_length": self.LENGTH_SIG1_FRAME,
+            "destination_crc": 3,
+            "origin": 6,
+            "session_id": 1,
+        }
+        
+        # connect ACK
+        self.template_list[FR_TYPE.P2P_CONNECTION_CONNECT_ACK.value] = {
+            "frame_length": self.LENGTH_SIG1_FRAME,
+            "destination_crc": 3,
+            "origin": 6,
+            "session_id": 1,
+        }
+        
+        # heartbeat for "is alive"
+        self.template_list[FR_TYPE.P2P_CONNECTION_HEARTBEAT.value] = {
+            "frame_length": self.LENGTH_SIG1_FRAME,
+            "session_id": 1,
+        }
+
+        # ack heartbeat
+        self.template_list[FR_TYPE.P2P_CONNECTION_HEARTBEAT_ACK.value] = {
+            "frame_length": self.LENGTH_SIG1_FRAME,
+            "session_id": 1,
+        }
+
+        # p2p payload frames
+        self.template_list[FR_TYPE.P2P_CONNECTION_PAYLOAD.value] = {
+            "frame_length": None,
+            "session_id": 1,
+            "sequence_id": 1,
+            "data": "dynamic",
+        }
+
+        # p2p payload frame ack
+        self.template_list[FR_TYPE.P2P_CONNECTION_PAYLOAD_ACK.value] = {
+            "frame_length": self.LENGTH_SIG1_FRAME,
+            "session_id": 1,
+            "sequence_id": 1,
+        }
+        
+        # heartbeat for "is alive"
+        self.template_list[FR_TYPE.P2P_CONNECTION_DISCONNECT.value] = {
+            "frame_length": self.LENGTH_SIG1_FRAME,
+            "session_id": 1,
+        }
+
+        # ack heartbeat
+        self.template_list[FR_TYPE.P2P_CONNECTION_DISCONNECT_ACK.value] = {
+            "frame_length": self.LENGTH_SIG1_FRAME,
+            "session_id": 1,
+        }
+
 
 
     def construct(self, frametype, content, frame_length = LENGTH_SIG1_FRAME):
@@ -219,7 +279,7 @@ class DataFrameFactory:
 
             elif key in ["session_id", "speed_level", 
                             "frames_per_burst", "version",
-                            "offset", "total_length", "state", "type"]:
+                            "offset", "total_length", "state", "type", "maximum_bandwidth"]:
                 extracted_data[key] = int.from_bytes(data, 'big')
 
             elif key in ["snr"]:
@@ -328,11 +388,12 @@ class DataFrameFactory:
         test_frame[:1] = bytes([FR_TYPE.TEST_FRAME.value])
         return test_frame
 
-    def build_arq_session_open(self, destination, session_id):
+    def build_arq_session_open(self, destination, session_id, maximum_bandwidth):
         payload = {
             "destination_crc": helpers.get_crc_24(destination),
             "origin": helpers.callsign_to_bytes(self.myfullcall),
             "session_id": session_id.to_bytes(1, 'big'),
+            "maximum_bandwidth": maximum_bandwidth.to_bytes(2, 'big'),
         }
         return self.construct(FR_TYPE.ARQ_SESSION_OPEN, payload)
 
@@ -402,8 +463,9 @@ class DataFrameFactory:
             "offset": offset.to_bytes(4, 'big'),
             "data": data,
         }
-        frame = self.construct(FR_TYPE.ARQ_BURST_FRAME, payload, self.get_bytes_per_frame(freedv_mode))
-        return frame
+        return self.construct(
+            FR_TYPE.ARQ_BURST_FRAME, payload, self.get_bytes_per_frame(freedv_mode)
+        )
 
     def build_arq_burst_ack(self, session_id: bytes, offset, speed_level: int, 
                             frames_per_burst: int, snr: int, flag_final=False, flag_checksum=False, flag_abort=False):
@@ -426,3 +488,62 @@ class DataFrameFactory:
             "flag": flag.to_bytes(1, 'big'),
         }
         return self.construct(FR_TYPE.ARQ_BURST_ACK, payload)
+    
+    def build_p2p_connection_connect(self, destination, origin, session_id):
+        payload = {
+            "destination_crc": helpers.get_crc_24(destination),
+            "origin": helpers.callsign_to_bytes(origin),
+            "session_id": session_id.to_bytes(1, 'big'),
+        }
+        return self.construct(FR_TYPE.P2P_CONNECTION_CONNECT, payload)
+    
+    def build_p2p_connection_connect_ack(self, destination, origin, session_id):
+        payload = {
+            "destination_crc": helpers.get_crc_24(destination),
+            "origin": helpers.callsign_to_bytes(origin),
+            "session_id": session_id.to_bytes(1, 'big'),
+        }
+        return self.construct(FR_TYPE.P2P_CONNECTION_CONNECT_ACK, payload)
+    
+    def build_p2p_connection_heartbeat(self, session_id):
+        payload = {
+            "session_id": session_id.to_bytes(1, 'big'),
+        }
+        return self.construct(FR_TYPE.P2P_CONNECTION_HEARTBEAT, payload)
+    
+    def build_p2p_connection_heartbeat_ack(self, session_id):
+        payload = {
+            "session_id": session_id.to_bytes(1, 'big'),
+        }
+        return self.construct(FR_TYPE.P2P_CONNECTION_HEARTBEAT_ACK, payload)
+    
+    def build_p2p_connection_payload(self, freedv_mode: codec2.FREEDV_MODE, session_id: int, sequence_id: int, data: bytes):
+        payload = {
+            "session_id": session_id.to_bytes(1, 'big'),
+            "sequence_id": sequence_id.to_bytes(1, 'big'),
+            "data": data,
+        }
+        return self.construct(
+            FR_TYPE.P2P_CONNECTION_PAYLOAD,
+            payload,
+            self.get_bytes_per_frame(freedv_mode),
+        )
+    
+    def build_p2p_connection_payload_ack(self, session_id, sequence_id):
+        payload = {
+            "session_id": session_id.to_bytes(1, 'big'),
+            "sequence_id": sequence_id.to_bytes(1, 'big'),
+        }
+        return self.construct(FR_TYPE.P2P_CONNECTION_PAYLOAD_ACK, payload)
+
+    def build_p2p_connection_disconnect(self, session_id):
+        payload = {
+            "session_id": session_id.to_bytes(1, 'big'),
+        }
+        return self.construct(FR_TYPE.P2P_CONNECTION_DISCONNECT, payload)
+
+    def build_p2p_connection_disconnect_ack(self, session_id):
+        payload = {
+            "session_id": session_id.to_bytes(1, 'big'),
+        }
+        return self.construct(FR_TYPE.P2P_CONNECTION_DISCONNECT_ACK, payload)
