@@ -34,7 +34,7 @@ class FrameHandler():
         ft = self.details['frame']['frame_type']
         valid = False
         # Check for callsign checksum
-        if ft in ['ARQ_SESSION_OPEN', 'ARQ_SESSION_OPEN_ACK', 'PING', 'PING_ACK']:
+        if ft in ['ARQ_SESSION_OPEN', 'ARQ_SESSION_OPEN_ACK', 'PING', 'PING_ACK', 'P2P_CONNECTION_CONNECT']:
             valid, mycallsign = helpers.check_callsign(
                 call_with_ssid,
                 self.details["frame"]["destination_crc"],
@@ -51,6 +51,20 @@ class FrameHandler():
             session_id = self.details['frame']['session_id']
             if session_id in self.states.arq_iss_sessions:
                 valid = True
+
+        # check for p2p connection
+        elif ft in ['P2P_CONNECTION_CONNECT']:
+            valid, mycallsign = helpers.check_callsign(
+                call_with_ssid,
+                self.details["frame"]["destination_crc"],
+                self.config['STATION']['ssid_list'])
+
+        #check for p2p connection
+        elif ft in ['P2P_CONNECTION_CONNECT_ACK', 'P2P_CONNECTION_PAYLOAD', 'P2P_CONNECTION_PAYLOAD_ACK', 'P2P_CONNECTION_DISCONNECT', 'P2P_CONNECTION_DISCONNECT_ACK']:
+            session_id = self.details['frame']['session_id']
+            if session_id in self.states.p2p_connection_sessions:
+                valid = True
+
         else:
             valid = False
 

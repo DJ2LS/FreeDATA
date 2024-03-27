@@ -32,13 +32,13 @@ class ARQSession:
         },
     }
 
-    def __init__(self, config: dict, modem, dxcall: str):
+    def __init__(self, config: dict, modem, dxcall: str, state_manager):
         self.logger = structlog.get_logger(type(self).__name__)
         self.config = config
 
         self.event_manager: EventManager = modem.event_manager
-        self.states = modem.states
-
+        #self.states = modem.states
+        self.states = state_manager
         self.states.setARQ(True)
 
         self.snr = []

@@ -59,8 +59,8 @@ class ARQSessionIRS(arq_session.ARQSession):
         },
     }
 
-    def __init__(self, config: dict, modem, dxcall: str, session_id: int):
-        super().__init__(config, modem, dxcall)
+    def __init__(self, config: dict, modem, dxcall: str, session_id: int, state_manager):
+        super().__init__(config, modem, dxcall, state_manager)
 
         self.id = session_id
         self.dxcall = dxcall
