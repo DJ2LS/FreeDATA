@@ -81,6 +81,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.abort = False
 
     def all_data_received(self):
+        print(f"{self.total_length} vs {self.received_bytes}")
         return self.total_length == self.received_bytes
 
     def final_crc_matches(self) -> bool:
@@ -141,7 +142,7 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     def process_incoming_data(self, frame):
         if frame['offset'] != self.received_bytes:
-            self.log(f"Discarding data offset {frame['offset']}")
+            self.log(f"Discarding data offset {frame['offset']} vs {self.received_bytes}")
             return False
 
         remaining_data_length = self.total_length - self.received_bytes

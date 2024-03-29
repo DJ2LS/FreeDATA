@@ -156,10 +156,10 @@ class DataFrameFactory:
         self.template_list[FR_TYPE.ARQ_BURST_ACK.value] = {
             "frame_length": self.LENGTH_SIG1_FRAME,
             "session_id": 1,
-            "offset":4,
+            #"offset":4,
             "speed_level": 1,
-            "frames_per_burst": 1,
-            "snr": 1,
+            #"frames_per_burst": 1,
+            #"snr": 1,
             "flag": 1,
         }
     
@@ -227,11 +227,13 @@ class DataFrameFactory:
         if isinstance(frame_template["frame_length"], int):
             frame_length = frame_template["frame_length"]
         else:
-            frame_length -= 2
+            frame_length -= 0#2
         frame = bytearray(frame_length)
-        frame[:1] = bytes([frametype.value])
-
-        buffer_position = 1
+        if frametype in [FR_TYPE.ARQ_BURST_ACK]:
+            buffer_position = 0
+        else:
+            frame[:1] = bytes([frametype.value])
+            buffer_position = 1
         for key, item_length in frame_template.items():
             if key == "frame_length":
                 continue
@@ -242,6 +244,7 @@ class DataFrameFactory:
                 raise OverflowError("Frame data overflow!")
             frame[buffer_position: buffer_position + item_length] = content[key]
             buffer_position += item_length
+        print(frame)
         return frame
 
     def deconstruct(self, frame):
@@ -252,10 +255,15 @@ class DataFrameFactory:
 
         if not frame_template:
             # Handle the case where the frame type is not recognized
-            raise ValueError(f"Unknown frame type: {frametype}")
+            #raise ValueError(f"Unknown frame type: {frametype}")
+            print(f"Unknown frame type, handling as ACK")
+            frametype = FR_TYPE.ARQ_BURST_ACK.value
+            frame_template = self.template_list.get(frametype)
+            print(frame)
+            frame = bytes([frametype]) + frame
 
         extracted_data = {"frame_type": FR_TYPE(frametype).name, "frame_type_int": frametype}
-
+        print(extracted_data)
         for key, item_length in frame_template.items():
             if key == "frame_length":
                 continue
@@ -481,10 +489,10 @@ class DataFrameFactory:
 
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),
-            "offset": offset.to_bytes(4, 'big'),
+            #"offset": offset.to_bytes(4, 'big'),
             "speed_level": speed_level.to_bytes(1, 'big'),
-            "frames_per_burst": frames_per_burst.to_bytes(1, 'big'),
-            "snr": helpers.snr_to_bytes(snr),
+            #"frames_per_burst": frames_per_burst.to_bytes(1, 'big'),
+            #"snr": helpers.snr_to_bytes(snr),
             "flag": flag.to_bytes(1, 'big'),
         }
         return self.construct(FR_TYPE.ARQ_BURST_ACK, payload)

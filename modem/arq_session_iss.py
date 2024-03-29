@@ -60,6 +60,7 @@ class ARQSessionISS(arq_session.ARQSession):
         self.data_crc = ''
         self.type_byte = type_byte
         self.confirmed_bytes = 0
+        self.expected_byte_offset = 0
 
         self.state = ISS_State.NEW
         self.state_enum = ISS_State # needed for access State enum from outside
@@ -153,11 +154,18 @@ class ARQSessionISS(arq_session.ARQSession):
         self.update_histograms(self.confirmed_bytes, self.total_length)
 
         self.update_speed_level(irs_frame)
-        if 'offset' in irs_frame:
-            self.confirmed_bytes = irs_frame['offset']
-            self.log(f"IRS confirmed {self.confirmed_bytes}/{self.total_length} bytes")
-            self.event_manager.send_arq_session_progress(
-                True, self.id, self.dxcall, self.confirmed_bytes, self.total_length, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
+        #if 'offset' in irs_frame:
+        #    self.confirmed_bytes = irs_frame['offset']
+        #    self.log(f"IRS confirmed {self.confirmed_bytes}/{self.total_length} bytes")
+        #    self.event_manager.send_arq_session_progress(
+        #        True, self.id, self.dxcall, self.confirmed_bytes, self.total_length, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
+
+
+        if self.expected_byte_offset > self.total_length:
+            self.confirmed_bytes = self.total_length
+        else:
+            self.confirmed_bytes = self.expected_byte_offset
+        self.log(f"IRS confirmed {self.confirmed_bytes}/{self.total_length} bytes")
 
         # check if we received an abort flag
         if irs_frame["flag"]["ABORT"]:
@@ -176,10 +184,17 @@ class ARQSessionISS(arq_session.ARQSession):
         burst = []
         for _ in range(0, self.frames_per_burst):
             offset = self.confirmed_bytes
+            #self.expected_byte_offset = offset
             payload = self.data[offset : offset + payload_size]
+
+            print(len(payload))
+            #self.expected_byte_offset = offset + payload_size
+            #print(self.expected_byte_offset)
+            self.expected_byte_offset = offset + len(payload)
+            print(f"EXPECTED----------------------{self.expected_byte_offset}")
             data_frame = self.frame_factory.build_arq_burst_frame(
                 self.SPEED_LEVEL_DICT[self.speed_level]["mode"],
-                self.id, self.confirmed_bytes, payload, self.speed_level)
+                self.id, offset, payload, self.speed_level)
             burst.append(data_frame)
         self.launch_twr(burst, self.TIMEOUT_TRANSFER, self.RETRIES_CONNECT, mode='auto', isARQBurst=True)
         self.set_state(ISS_State.BURST_SENT)
