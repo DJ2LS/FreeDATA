@@ -6,6 +6,7 @@ class DataFrameFactory:
 
     LENGTH_SIG0_FRAME = 14
     LENGTH_SIG1_FRAME = 14
+    LENGTH_ACK_FRAME = 3
 
     """
         helpers.set_flag(byte, 'DATA-ACK-NACK', True, FLAG_POSITIONS)
@@ -154,7 +155,7 @@ class DataFrameFactory:
 
         # arq burst ack
         self.template_list[FR_TYPE.ARQ_BURST_ACK.value] = {
-            "frame_length": self.LENGTH_SIG1_FRAME,
+            "frame_length": self.LENGTH_ACK_FRAME,
             "session_id": 1,
             #"offset":4,
             "speed_level": 1,
@@ -475,8 +476,7 @@ class DataFrameFactory:
             FR_TYPE.ARQ_BURST_FRAME, payload, self.get_bytes_per_frame(freedv_mode)
         )
 
-    def build_arq_burst_ack(self, session_id: bytes, offset, speed_level: int, 
-                            frames_per_burst: int, snr: int, flag_final=False, flag_checksum=False, flag_abort=False):
+    def build_arq_burst_ack(self, session_id: bytes, speed_level: int, flag_final=False, flag_checksum=False, flag_abort=False):
         flag = 0b00000000
         if flag_final:
             flag = helpers.set_flag(flag, 'FINAL', True, self.ARQ_FLAGS)

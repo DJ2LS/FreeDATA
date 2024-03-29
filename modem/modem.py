@@ -325,4 +325,3 @@ class RF:
                             audiobuffer.push(audio_8k_level_adjusted)
             except Exception as e:
                 self.log.warning("[AUDIO EXCEPTION]", status=status, time=time, frames=frames, e=e)
-

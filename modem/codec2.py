@@ -25,11 +25,13 @@ class FREEDV_MODE(Enum):
     Enumeration for codec2 modes and names
     """
     signalling = 19
+    signalling_ack = 20
     datac0 = 14
     datac1 = 10
     datac3 = 12
     datac4 = 18
     datac13 = 19
+    datac14 = 20
 
 
 class FREEDV_MODE_USED_SLOTS(Enum):
@@ -43,6 +45,7 @@ class FREEDV_MODE_USED_SLOTS(Enum):
     datac3 = [False, False, True, False, False]
     datac4 = [False, False, True, False, False]
     datac13 = [False, False, True, False, False]
+    datac14 = [False, False, True, False, False]
     fsk_ldpc = [False, False, True, False, False]
     fsk_ldpc_0 = [False, False, True, False, False]
     fsk_ldpc_1 = [False, False, True, False, False]

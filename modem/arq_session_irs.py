@@ -114,7 +114,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.dxcall, 
             self.version,
             self.snr, flag_abort=self.abort)
-        self.launch_transmit_and_wait(ack_frame, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
+        self.launch_transmit_and_wait(ack_frame, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling_ack)
         if not self.abort:
             self.set_state(IRS_State.OPEN_ACK_SENT)
         return None, None
@@ -172,10 +172,10 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.calibrate_speed_settings(burst_frame=burst_frame)
             ack = self.frame_factory.build_arq_burst_ack(
                 self.id,
-                self.received_bytes,
+                #self.received_bytes,
                 self.speed_level,
-                self.frames_per_burst,
-                self.snr,
+                #self.frames_per_burst,
+                #self.snr,
                 flag_abort=self.abort
             )
 
