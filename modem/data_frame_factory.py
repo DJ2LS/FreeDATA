@@ -28,7 +28,6 @@ class DataFrameFactory:
 
         self._load_broadcast_templates()
         self._load_ping_templates()
-        self._load_fec_templates()
         self._load_arq_templates()
         self._load_p2p_connection_templates()
 
@@ -73,26 +72,6 @@ class DataFrameFactory:
             "snr": 1,
         }
 
-    def _load_fec_templates(self):
-        # fec wakeup frame
-        self.template_list[FR_TYPE.FEC_WAKEUP.value] = {
-            "frame_length": self.LENGTH_SIG0_FRAME,
-            "origin": 6,
-            "mode": 1,
-            "n_bursts": 1,
-        }
-
-        # fec frame
-        self.template_list[FR_TYPE.FEC.value] = {
-            "frame_length": self.LENGTH_SIG0_FRAME,
-            "data": self.LENGTH_SIG0_FRAME - 1
-        }
-
-        # fec is writing frame
-        self.template_list[FR_TYPE.IS_WRITING.value] = {
-            "frame_length": self.LENGTH_SIG0_FRAME,
-            "origin": 6
-        }
 
     def _load_arq_templates(self):
 
@@ -477,6 +456,8 @@ class DataFrameFactory:
         )
 
     def build_arq_burst_ack(self, session_id: bytes, speed_level: int, flag_final=False, flag_checksum=False, flag_abort=False):
+        print(session_id)
+        print(speed_level)
         flag = 0b00000000
         if flag_final:
             flag = helpers.set_flag(flag, 'FINAL', True, self.ARQ_FLAGS)
@@ -489,12 +470,10 @@ class DataFrameFactory:
 
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),
-            #"offset": offset.to_bytes(4, 'big'),
             "speed_level": speed_level.to_bytes(1, 'big'),
-            #"frames_per_burst": frames_per_burst.to_bytes(1, 'big'),
-            #"snr": helpers.snr_to_bytes(snr),
             "flag": flag.to_bytes(1, 'big'),
         }
+        print(payload)
         return self.construct(FR_TYPE.ARQ_BURST_ACK, payload)
     
     def build_p2p_connection_connect(self, destination, origin, session_id):

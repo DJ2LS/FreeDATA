@@ -46,9 +46,9 @@ class DISPATCHER():
         FR_TYPE.PING_ACK.value: {"class": FrameHandler, "name":  "PING ACK"},
         FR_TYPE.PING.value: {"class": PingFrameHandler, "name":  "PING"},
         FR_TYPE.QRV.value: {"class": FrameHandler, "name":  "QRV"},
-        FR_TYPE.IS_WRITING.value: {"class": FrameHandler, "name": "IS_WRITING"},
-        FR_TYPE.FEC.value: {"class": FrameHandler, "name":  "FEC"},
-        FR_TYPE.FEC_WAKEUP.value: {"class": FrameHandler, "name":  "FEC WAKEUP"},
+        #FR_TYPE.IS_WRITING.value: {"class": FrameHandler, "name": "IS_WRITING"},
+        #FR_TYPE.FEC.value: {"class": FrameHandler, "name":  "FEC"},
+        #FR_TYPE.FEC_WAKEUP.value: {"class": FrameHandler, "name":  "FEC WAKEUP"},
     }
 
     def __init__(self, config, event_manager, states, modem):

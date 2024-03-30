@@ -114,7 +114,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.dxcall, 
             self.version,
             self.snr, flag_abort=self.abort)
-        self.launch_transmit_and_wait(ack_frame, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling_ack)
+        self.launch_transmit_and_wait(ack_frame, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
         if not self.abort:
             self.set_state(IRS_State.OPEN_ACK_SENT)
         return None, None
@@ -172,27 +172,21 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.calibrate_speed_settings(burst_frame=burst_frame)
             ack = self.frame_factory.build_arq_burst_ack(
                 self.id,
-                #self.received_bytes,
                 self.speed_level,
-                #self.frames_per_burst,
-                #self.snr,
                 flag_abort=self.abort
             )
 
             self.set_state(IRS_State.BURST_REPLY_SENT)
-            self.launch_transmit_and_wait(ack, self.TIMEOUT_DATA, mode=FREEDV_MODE.signalling)
+            self.launch_transmit_and_wait(ack, self.TIMEOUT_DATA, mode=FREEDV_MODE.signalling_ack)
             return None, None
 
         if self.final_crc_matches():
             self.log("All data received successfully!")
             ack = self.frame_factory.build_arq_burst_ack(self.id,
-                                                         self.received_bytes,
                                                          self.speed_level,
-                                                         self.frames_per_burst,
-                                                         self.snr,
                                                          flag_final=True,
                                                          flag_checksum=True)
-            self.transmit_frame(ack, mode=FREEDV_MODE.signalling)
+            self.transmit_frame(ack, mode=FREEDV_MODE.signalling_ack)
             self.log("ACK sent")
             self.session_ended = time.time()
             self.set_state(IRS_State.ENDED)
