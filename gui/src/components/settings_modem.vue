@@ -178,7 +178,6 @@ const audioStore = useAudioStore();
     </select>
   </div>
 
-
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50">Respond to CQ</label>
     <label class="input-group-text w-50">

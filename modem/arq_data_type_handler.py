@@ -11,6 +11,7 @@ class ARQ_SESSION_TYPES(Enum):
     raw_lzma = 10
     raw_gzip = 11
     p2pmsg_lzma = 20
+    p2p_connection = 30
 
 class ARQDataTypeHandler:
     def __init__(self, event_manager, state_manager):
@@ -42,6 +43,12 @@ class ARQDataTypeHandler:
                 'handle': self.handle_p2pmsg_lzma,
                 'failed' : self.failed_p2pmsg_lzma,
                 'transmitted': self.transmitted_p2pmsg_lzma,
+            },
+            ARQ_SESSION_TYPES.p2p_connection: {
+                'prepare': self.prepare_p2p_connection,
+                'handle': self.handle_p2p_connection,
+                'failed': self.failed_p2p_connection,
+                'transmitted': self.transmitted_p2p_connection,
             },
         }
 
@@ -162,3 +169,35 @@ class ARQDataTypeHandler:
         decompressed_data = lzma.decompress(data)
         message_transmitted(self.event_manager, self.state_manager, decompressed_data, statistics)
         return decompressed_data
+    
+    
+    def prepare_p2p_connection(self, data):
+        compressed_data = gzip.compress(data)
+        self.log(f"Preparing gzip compressed P2P_CONNECTION data: {len(data)} Bytes >>> {len(compressed_data)} Bytes")
+        print(self.state_manager.p2p_connection_sessions)
+        return compressed_data
+
+    def handle_p2p_connection(self, data, statistics):
+        decompressed_data = gzip.decompress(data)
+        self.log(f"Handling gzip compressed P2P_CONNECTION data: {len(decompressed_data)} Bytes from {len(data)} Bytes")
+        print(self.state_manager.p2p_connection_sessions)
+        print(decompressed_data)
+        print(self.state_manager.p2p_connection_sessions)
+        for session_id in self.state_manager.p2p_connection_sessions:
+            print(session_id)
+            self.state_manager.p2p_connection_sessions[session_id].received_arq(decompressed_data)
+
+    def failed_p2p_connection(self, data, statistics):
+        decompressed_data = gzip.decompress(data)
+        self.log(f"Handling failed gzip compressed P2P_CONNECTION data: {len(decompressed_data)} Bytes from {len(data)} Bytes", isWarning=True)
+        print(self.state_manager.p2p_connection_sessions)
+        return decompressed_data
+
+    def transmitted_p2p_connection(self, data, statistics):
+
+        decompressed_data = gzip.decompress(data)
+        print(decompressed_data)
+        print(self.state_manager.p2p_connection_sessions)
+        for session_id in self.state_manager.p2p_connection_sessions:
+            print(session_id)
+            self.state_manager.p2p_connection_sessions[session_id].transmitted_arq()
