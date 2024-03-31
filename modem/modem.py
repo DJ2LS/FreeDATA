@@ -152,7 +152,7 @@ class RF:
                 callback=self.sd_input_audio_callback,
                 device=in_dev_index,
                 samplerate=self.AUDIO_SAMPLE_RATE,
-                blocksize=4800,
+                blocksize=1200,
             )
             self.sd_input_stream.start()
 
@@ -162,7 +162,7 @@ class RF:
                 callback=self.sd_output_audio_callback,
                 device=out_dev_index,
                 samplerate=self.AUDIO_SAMPLE_RATE,
-                blocksize=4800,
+                blocksize=256,
             )
             self.sd_output_stream.start()
 
@@ -215,9 +215,7 @@ class RF:
             self, mode, repeats: int, repeat_delay: int, frames: bytearray
     ) -> bool:
 
-
         self.demodulator.reset_data_sync()
-
         # Wait for some other thread that might be transmitting
         self.states.waitForTransmission()
         self.states.setTransmitting(True)
@@ -235,6 +233,8 @@ class RF:
         else:
             txbuffer_out = x
 
+
+
         # transmit audio
         self.enqueue_audio_out(txbuffer_out)
 
@@ -246,11 +246,11 @@ class RF:
 
     def enqueue_audio_out(self, audio_48k) -> None:
         self.enqueuing_audio = True
-
         if not self.states.isTransmitting():
             self.states.setTransmitting(True)
 
         self.radio.set_ptt(True)
+
         self.event_manager.send_ptt_change(True)
 
         if self.radiocontrol in ["tci"]:
@@ -259,13 +259,14 @@ class RF:
             self.tci_module.wait_until_transmitted(audio_48k)
         else:
             # slice audio data to needed blocklength
-            block_size = 4800
+            block_size = 256
             pad_length = -len(audio_48k) % block_size
             padded_data = np.pad(audio_48k, (0, pad_length), mode='constant')
             sliced_audio_data = padded_data.reshape(-1, block_size)
             # add each block to audio out queue
             for block in sliced_audio_data:
                 self.audio_out_queue.put(block)
+
 
         self.enqueuing_audio = False
         self.states.transmitting_event.wait()
@@ -277,7 +278,7 @@ class RF:
 
     def sd_output_audio_callback(self, outdata: np.ndarray, frames: int, time, status) -> None:
         try:
-            if not self.audio_out_queue.empty():
+            if not self.audio_out_queue.empty() and not self.enqueuing_audio:
                 chunk = self.audio_out_queue.get_nowait()
                 audio.calculate_fft(chunk, self.fft_queue, self.states)
                 outdata[:] = chunk.reshape(outdata.shape)
@@ -285,7 +286,7 @@ class RF:
             else:
                 # reset transmitting state only, if we are not actively processing audio
                 # for avoiding a ptt toggle state bug
-                if not self.enqueuing_audio:
+                if self.audio_out_queue.empty() and not self.enqueuing_audio:
                     self.states.setTransmitting(False)
                 # Fill with zeros if the queue is empty
                 outdata.fill(0)

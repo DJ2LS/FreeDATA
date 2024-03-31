@@ -200,6 +200,7 @@ class Demodulator():
                             'snr': snr,
                             'frequency_offset': self.get_frequency_offset(freedv),
                         }
+
                         self.data_queue_received.put(item)
 
 
