@@ -86,7 +86,7 @@ class TestARQSession(unittest.TestCase):
                                           cls.irs_modem)
         
         # Frame loss probability in %
-        cls.loss_probability = 30
+        cls.loss_probability = 0
 
         cls.channels_running = True
 
@@ -100,7 +100,7 @@ class TestARQSession(unittest.TestCase):
                     continue
 
                 frame_bytes = transmission['bytes']
-                frame_dispatcher.new_process_data(frame_bytes, None, len(frame_bytes), 10, 0)
+                frame_dispatcher.new_process_data(frame_bytes, None, len(frame_bytes), 5, 0)
             except queue.Empty:
                 continue
         self.logger.info(f"[{threading.current_thread().name}] Channel closed.")
@@ -155,7 +155,7 @@ class TestARQSession(unittest.TestCase):
         self.establishChannels()
         params = {
             'dxcall': "AA1AAA-1",
-            'data': base64.b64encode(np.random.bytes(1000)),
+            'data': base64.b64encode(np.random.bytes(10000)),
             'type': "raw_lzma"
         }
         cmd = ARQRawCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)

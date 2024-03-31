@@ -94,7 +94,9 @@ class ARQSessionISS(arq_session.ARQSession):
             if retries == 8 and isARQBurst and self.speed_level > 0:
                 self.log("SENDING IN FALLBACK SPEED LEVEL", isWarning=True)
                 self.speed_level = 0
-                self.send_data({'flag':{'ABORT': False, 'FINAL': False}, 'speed_level': self.speed_level})
+                print(f" CONFIRMED BYTES: {self.confirmed_bytes}")
+                self.send_data({'flag':{'ABORT': False, 'FINAL': False}, 'speed_level': self.speed_level}, fallback=True)
+
                 return
 
         self.set_state(ISS_State.FAILED)
@@ -149,7 +151,7 @@ class ARQSessionISS(arq_session.ARQSession):
 
         return None, None
 
-    def send_data(self, irs_frame):
+    def send_data(self, irs_frame, fallback=None):
         # update statistics
         self.update_histograms(self.confirmed_bytes, self.total_length)
 
@@ -160,10 +162,9 @@ class ARQSessionISS(arq_session.ARQSession):
         #    self.event_manager.send_arq_session_progress(
         #        True, self.id, self.dxcall, self.confirmed_bytes, self.total_length, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
 
-
         if self.expected_byte_offset > self.total_length:
             self.confirmed_bytes = self.total_length
-        else:
+        elif not fallback:
             self.confirmed_bytes = self.expected_byte_offset
         self.log(f"IRS confirmed {self.confirmed_bytes}/{self.total_length} bytes")
 

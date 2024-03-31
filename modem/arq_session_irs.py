@@ -141,8 +141,11 @@ class ARQSessionIRS(arq_session.ARQSession):
         return None, None
 
     def process_incoming_data(self, frame):
+        print(frame)
         if frame['offset'] != self.received_bytes:
-            self.log(f"Discarding data offset {frame['offset']} vs {self.received_bytes}")
+            # TODO: IF WE HAVE AN OFFSET BECAUSE OF A SPEED LEVEL CHANGE FOR EXAMPLE,
+            # TODO: WE HAVE TO DISCARD THE LAST BYTES, BUT NOT returning False!!
+            self.log(f"Discarding data offset {frame['offset']} vs {self.received_bytes}", isWarning=True)
             return False
 
         remaining_data_length = self.total_length - self.received_bytes
@@ -197,10 +200,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         else:
 
             ack = self.frame_factory.build_arq_burst_ack(self.id,
-                                                         self.received_bytes,
                                                          self.speed_level,
-                                                         self.frames_per_burst,
-                                                         self.snr,
                                                          flag_final=True,
                                                          flag_checksum=False)
             self.transmit_frame(ack, mode=FREEDV_MODE.signalling)
