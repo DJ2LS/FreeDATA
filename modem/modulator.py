@@ -109,6 +109,7 @@ class Modulator:
 
         # get freedv instance by mode
         mode_transition = {
+            codec2.FREEDV_MODE.signalling_ack: self.freedv_datac14_tx,
             codec2.FREEDV_MODE.signalling: self.freedv_datac13_tx,
             codec2.FREEDV_MODE.datac0: self.freedv_datac0_tx,
             codec2.FREEDV_MODE.datac1: self.freedv_datac1_tx,
