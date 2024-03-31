@@ -207,7 +207,10 @@ class DataFrameFactory:
         if isinstance(frame_template["frame_length"], int):
             frame_length = frame_template["frame_length"]
         else:
-            frame_length -= 0#2
+            frame_length -= 2
+
+        print(frame_length)
+
         frame = bytearray(frame_length)
         if frametype in [FR_TYPE.ARQ_BURST_ACK]:
             buffer_position = 0
@@ -300,6 +303,8 @@ class DataFrameFactory:
     def get_available_data_payload_for_mode(self, type: FR_TYPE, mode:codec2.FREEDV_MODE):
         whole_frame_length = self.get_bytes_per_frame(mode)
         available = whole_frame_length - 2 # 2Bytes CRC16
+        print("------------------------------")
+        print(available)
         available -= 1 # Frame Type
         for field, length in self.template_list[type.value].items():
             if field != 'frame_length' and isinstance(length, int):

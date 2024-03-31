@@ -83,7 +83,8 @@ class Modulator:
         crc = crc.value.to_bytes(2, byteorder="big")
         # Append CRC to data buffer
         buffer += crc
-
+        print(bytes_per_frame)
+        print(len(buffer))
         assert (bytes_per_frame == len(buffer))
         data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
         # modulate DATA and save it into mod_out pointer

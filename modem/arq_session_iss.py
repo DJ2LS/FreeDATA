@@ -182,6 +182,7 @@ class ARQSessionISS(arq_session.ARQSession):
             return None, None
 
         payload_size = self.get_data_payload_size()
+        print(f"PAYLOAD SIZE: {payload_size}")
         burst = []
         for _ in range(0, self.frames_per_burst):
             offset = self.confirmed_bytes
