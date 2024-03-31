@@ -49,6 +49,8 @@ class Demodulator():
 
         # enable decoding of signalling modes
         self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
+        self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
+
 
         tci_rx_callback_thread = threading.Thread(
             target=self.tci_rx_callback,
