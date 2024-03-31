@@ -215,6 +215,7 @@ class RF:
             self, mode, repeats: int, repeat_delay: int, frames: bytearray
     ) -> bool:
 
+
         self.demodulator.reset_data_sync()
 
         # Wait for some other thread that might be transmitting
