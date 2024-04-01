@@ -280,7 +280,8 @@ class RF:
         try:
             if not self.audio_out_queue.empty() and not self.enqueuing_audio:
                 chunk = self.audio_out_queue.get_nowait()
-                audio.calculate_fft(chunk, self.fft_queue, self.states)
+                audio_8k = self.resampler.resample48_to_8(chunk)
+                audio.calculate_fft(audio_8k, self.fft_queue, self.states)
                 outdata[:] = chunk.reshape(outdata.shape)
 
             else:
