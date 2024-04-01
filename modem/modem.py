@@ -152,7 +152,7 @@ class RF:
                 callback=self.sd_input_audio_callback,
                 device=in_dev_index,
                 samplerate=self.AUDIO_SAMPLE_RATE,
-                blocksize=1200,
+                blocksize=4800,
             )
             self.sd_input_stream.start()
 
@@ -162,7 +162,7 @@ class RF:
                 callback=self.sd_output_audio_callback,
                 device=out_dev_index,
                 samplerate=self.AUDIO_SAMPLE_RATE,
-                blocksize=256,
+                blocksize=512,
             )
             self.sd_output_stream.start()
 
@@ -259,7 +259,7 @@ class RF:
             self.tci_module.wait_until_transmitted(audio_48k)
         else:
             # slice audio data to needed blocklength
-            block_size = 256
+            block_size = 512
             pad_length = -len(audio_48k) % block_size
             padded_data = np.pad(audio_48k, (0, pad_length), mode='constant')
             sliced_audio_data = padded_data.reshape(-1, block_size)
