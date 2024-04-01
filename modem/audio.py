@@ -225,7 +225,6 @@ def calculate_fft(data, fft_queue, states) -> None:
     global RMS_COUNTER, CHANNEL_BUSY_DELAY
 
     try:
-        data = bytearray()
 
         fftarray = np.fft.rfft(data)
 
