@@ -188,14 +188,11 @@ class ARQSessionISS(arq_session.ARQSession):
             return None, None
 
         payload_size = self.get_data_payload_size()
-        print(f"PAYLOAD SIZE: {payload_size}")
         burst = []
         for _ in range(0, self.frames_per_burst):
             offset = self.confirmed_bytes
             #self.expected_byte_offset = offset
             payload = self.data[offset : offset + payload_size]
-
-            print(len(payload))
             #self.expected_byte_offset = offset + payload_size
             #print(self.expected_byte_offset)
             self.expected_byte_offset = offset + len(payload)
@@ -215,8 +212,8 @@ class ARQSessionISS(arq_session.ARQSession):
         self.log(f"All data transfered! flag_final={irs_frame['flag']['FINAL']}, flag_checksum={irs_frame['flag']['CHECKSUM']}")
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,True, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
 
-        print(self.state_manager.p2p_connection_sessions)
-        print(self.arq_data_type_handler.state_manager.p2p_connection_sessions)
+        #print(self.state_manager.p2p_connection_sessions)
+        #print(self.arq_data_type_handler.state_manager.p2p_connection_sessions)
 
         self.arq_data_type_handler.transmitted(self.type_byte, self.data, self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
         self.state_manager.remove_arq_iss_session(self.id)

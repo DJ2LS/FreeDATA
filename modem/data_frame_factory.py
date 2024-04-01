@@ -209,8 +209,6 @@ class DataFrameFactory:
         else:
             frame_length -= 2
 
-        print(frame_length)
-
         frame = bytearray(frame_length)
         if frametype in [FR_TYPE.ARQ_BURST_ACK]:
             buffer_position = 0
@@ -227,26 +225,24 @@ class DataFrameFactory:
                 raise OverflowError("Frame data overflow!")
             frame[buffer_position: buffer_position + item_length] = content[key]
             buffer_position += item_length
-        print(frame)
         return frame
 
-    def deconstruct(self, frame):
+    def deconstruct(self, frame, mode_name=None):
         buffer_position = 1
-        # Extract frametype and get the corresponding template
-        frametype = int.from_bytes(frame[:1], "big")
-        frame_template = self.template_list.get(frametype)
 
-        if not frame_template:
-            # Handle the case where the frame type is not recognized
-            #raise ValueError(f"Unknown frame type: {frametype}")
-            print(f"Unknown frame type, handling as ACK")
+        # Handle the case where the frame type is not recognized
+        #raise ValueError(f"Unknown frame type: {frametype}")
+        if mode_name in ["SIGNALLING_ACK"]:
             frametype = FR_TYPE.ARQ_BURST_ACK.value
             frame_template = self.template_list.get(frametype)
-            print(frame)
             frame = bytes([frametype]) + frame
+        else:
+            # Extract frametype and get the corresponding template
+            frametype = int.from_bytes(frame[:1], "big")
+            frame_template = self.template_list.get(frametype)
 
         extracted_data = {"frame_type": FR_TYPE(frametype).name, "frame_type_int": frametype}
-        print(extracted_data)
+
         for key, item_length in frame_template.items():
             if key == "frame_length":
                 continue
@@ -303,8 +299,6 @@ class DataFrameFactory:
     def get_available_data_payload_for_mode(self, type: FR_TYPE, mode:codec2.FREEDV_MODE):
         whole_frame_length = self.get_bytes_per_frame(mode)
         available = whole_frame_length - 2 # 2Bytes CRC16
-        print("------------------------------")
-        print(available)
         available -= 1 # Frame Type
         for field, length in self.template_list[type.value].items():
             if field != 'frame_length' and isinstance(length, int):
@@ -461,8 +455,6 @@ class DataFrameFactory:
         )
 
     def build_arq_burst_ack(self, session_id: bytes, speed_level: int, flag_final=False, flag_checksum=False, flag_abort=False):
-        print(session_id)
-        print(speed_level)
         flag = 0b00000000
         if flag_final:
             flag = helpers.set_flag(flag, 'FINAL', True, self.ARQ_FLAGS)
@@ -478,7 +470,6 @@ class DataFrameFactory:
             "speed_level": speed_level.to_bytes(1, 'big'),
             "flag": flag.to_bytes(1, 'big'),
         }
-        print(payload)
         return self.construct(FR_TYPE.ARQ_BURST_ACK, payload)
     
     def build_p2p_connection_connect(self, destination, origin, session_id):

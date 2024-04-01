@@ -177,6 +177,7 @@ class FrameHandler():
         self.details['freedv_inst'] = freedv_inst
         self.details['bytes_per_frame'] = bytes_per_frame
 
+
         # look in database for a full callsign if only crc is present
         if 'origin' not in frame and 'origin_crc' in frame:
             self.details['frame']['origin'] = DatabaseManager(self.event_manager).get_callsign_by_checksum(frame['origin_crc'])

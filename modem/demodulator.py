@@ -188,7 +188,7 @@ class Demodulator():
                     nin = codec2.api.freedv_nin(freedv)
                     if nbytes == bytes_per_frame:
                         self.log.debug(
-                            "[MDM] [demod_audio] Pushing received data to received_queue", nbytes=nbytes
+                            "[MDM] [demod_audio] Pushing received data to received_queue", nbytes=nbytes, mode_name=mode_name
                         )
                         snr = self.calculate_snr(freedv)
                         self.get_scatter(freedv)
@@ -199,6 +199,7 @@ class Demodulator():
                             'bytes_per_frame': bytes_per_frame,
                             'snr': snr,
                             'frequency_offset': self.get_frequency_offset(freedv),
+                            'mode_name': mode_name
                         }
 
                         self.data_queue_received.put(item)

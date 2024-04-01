@@ -277,6 +277,7 @@ class RF:
         return
 
     def sd_output_audio_callback(self, outdata: np.ndarray, frames: int, time, status) -> None:
+
         try:
             if not self.audio_out_queue.empty() and not self.enqueuing_audio:
                 chunk = self.audio_out_queue.get_nowait()
