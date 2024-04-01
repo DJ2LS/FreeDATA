@@ -109,6 +109,11 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         self.event_manager.send_arq_session_new(
             False, self.id, self.dxcall, 0, self.state.name)
+
+        if open_frame['protocol_version'] not in [self.protocol_version]:
+            self.abort = True
+            self.log(f"Protocol version mismatch! Setting disconnect flag!", isWarning=True)
+
         ack_frame = self.frame_factory.build_arq_session_open_ack(
             self.id,
             self.dxcall, 

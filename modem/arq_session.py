@@ -41,6 +41,8 @@ class ARQSession:
         self.states = state_manager
         self.states.setARQ(True)
 
+        self.protocol_version = 1
+
         self.snr = []
 
         self.dxcall = dxcall

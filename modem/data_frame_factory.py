@@ -81,6 +81,7 @@ class DataFrameFactory:
             "origin": 6,
             "session_id": 1,
             "maximum_bandwidth": 2,
+            "protocol_version" : 1
         }
 
         self.template_list[FR_TYPE.ARQ_SESSION_OPEN_ACK.value] = {
@@ -266,7 +267,7 @@ class DataFrameFactory:
 
             elif key in ["session_id", "speed_level", 
                             "frames_per_burst", "version",
-                            "offset", "total_length", "state", "type", "maximum_bandwidth"]:
+                            "offset", "total_length", "state", "type", "maximum_bandwidth", "protocol_version"]:
                 extracted_data[key] = int.from_bytes(data, 'big')
 
             elif key in ["snr"]:
@@ -375,12 +376,13 @@ class DataFrameFactory:
         test_frame[:1] = bytes([FR_TYPE.TEST_FRAME.value])
         return test_frame
 
-    def build_arq_session_open(self, destination, session_id, maximum_bandwidth):
+    def build_arq_session_open(self, destination, session_id, maximum_bandwidth, protocol_version):
         payload = {
             "destination_crc": helpers.get_crc_24(destination),
             "origin": helpers.callsign_to_bytes(self.myfullcall),
             "session_id": session_id.to_bytes(1, 'big'),
             "maximum_bandwidth": maximum_bandwidth.to_bytes(2, 'big'),
+            "protocol_version": protocol_version.to_bytes(1, 'big'),
         }
         return self.construct(FR_TYPE.ARQ_SESSION_OPEN, payload)
 

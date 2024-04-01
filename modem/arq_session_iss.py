@@ -110,7 +110,7 @@ class ARQSessionISS(arq_session.ARQSession):
         maximum_bandwidth = self.config['MODEM']['maximum_bandwidth']
         self.event_manager.send_arq_session_new(
             True, self.id, self.dxcall, self.total_length, self.state.name)
-        session_open_frame = self.frame_factory.build_arq_session_open(self.dxcall, self.id, maximum_bandwidth)
+        session_open_frame = self.frame_factory.build_arq_session_open(self.dxcall, self.id, maximum_bandwidth, self.protocol_version)
         self.launch_twr(session_open_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(ISS_State.OPEN_SENT)
 
