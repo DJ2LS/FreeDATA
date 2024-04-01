@@ -113,12 +113,14 @@ class ARQSessionIRS(arq_session.ARQSession):
         if open_frame['protocol_version'] not in [self.protocol_version]:
             self.abort = True
             self.log(f"Protocol version mismatch! Setting disconnect flag!", isWarning=True)
+            self.set_state(IRS_State.ABORTED)
 
         ack_frame = self.frame_factory.build_arq_session_open_ack(
             self.id,
             self.dxcall, 
             self.version,
             self.snr, flag_abort=self.abort)
+
         self.launch_transmit_and_wait(ack_frame, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
         if not self.abort:
             self.set_state(IRS_State.OPEN_ACK_SENT)

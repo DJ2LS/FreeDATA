@@ -139,8 +139,7 @@ class ARQSessionISS(arq_session.ARQSession):
     def send_info(self, irs_frame):
         # check if we received an abort flag
         if irs_frame["flag"]["ABORT"]:
-            self.transmission_aborted(irs_frame)
-            return
+            return self.transmission_aborted(irs_frame)
 
         info_frame = self.frame_factory.build_arq_session_info(self.id, self.total_length,
                                                                helpers.get_crc_32(self.data), 
