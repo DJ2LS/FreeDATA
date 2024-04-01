@@ -152,9 +152,14 @@ class ARQSessionISS(arq_session.ARQSession):
         return None, None
 
     def send_data(self, irs_frame, fallback=None):
+
+        # interrupt transmission when aborting
+        if self.state in [ISS_State.ABORTED, ISS_State.ABORTING]:
+            self.event_frame_received.set()
+            return
+
         # update statistics
         self.update_histograms(self.confirmed_bytes, self.total_length)
-
         self.update_speed_level(irs_frame)
         #if 'offset' in irs_frame:
         #    self.confirmed_bytes = irs_frame['offset']
