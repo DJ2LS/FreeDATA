@@ -166,6 +166,7 @@ class ARQSessionISS(arq_session.ARQSession):
             self.confirmed_bytes = self.total_length
         elif not fallback:
             self.confirmed_bytes = self.expected_byte_offset
+
         self.log(f"IRS confirmed {self.confirmed_bytes}/{self.total_length} bytes")
 
         # check if we received an abort flag
