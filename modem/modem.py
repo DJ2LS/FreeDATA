@@ -162,7 +162,7 @@ class RF:
                 callback=self.sd_output_audio_callback,
                 device=out_dev_index,
                 samplerate=self.AUDIO_SAMPLE_RATE,
-                blocksize=400,
+                blocksize=256,
             )
             self.sd_output_stream.start()
 
@@ -259,7 +259,7 @@ class RF:
             self.tci_module.wait_until_transmitted(audio_48k)
         else:
             # slice audio data to needed blocklength
-            block_size = self.sd_output_stream.blocksize
+            block_size = 400# self.sd_output_stream.blocksize
             pad_length = -len(audio_48k) % block_size
             padded_data = np.pad(audio_48k, (0, pad_length), mode='constant')
             sliced_audio_data = padded_data.reshape(-1, block_size)
@@ -282,7 +282,7 @@ class RF:
             if not self.audio_out_queue.empty() and not self.enqueuing_audio:
                 chunk = self.audio_out_queue.get_nowait()
                 audio_8k = self.resampler.resample48_to_8(chunk)
-                audio.calculate_fft(audio_8k, self.fft_queue, self.states)
+                #audio.calculate_fft(audio_8k, self.fft_queue, self.states)
                 outdata[:] = chunk.reshape(outdata.shape)
 
             else:
