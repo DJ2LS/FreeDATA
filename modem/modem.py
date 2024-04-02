@@ -259,7 +259,7 @@ class RF:
             self.tci_module.wait_until_transmitted(audio_48k)
         else:
             # slice audio data to needed blocklength
-            block_size = 400# self.sd_output_stream.blocksize
+            block_size = self.sd_output_stream.blocksize
             pad_length = -len(audio_48k) % block_size
             padded_data = np.pad(audio_48k, (0, pad_length), mode='constant')
             sliced_audio_data = padded_data.reshape(-1, block_size)
