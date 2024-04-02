@@ -162,7 +162,7 @@ class RF:
                 callback=self.sd_output_audio_callback,
                 device=out_dev_index,
                 samplerate=self.AUDIO_SAMPLE_RATE,
-                blocksize=256,
+                blocksize=600,
             )
             self.sd_output_stream.start()
 
@@ -282,7 +282,7 @@ class RF:
             if not self.audio_out_queue.empty() and not self.enqueuing_audio:
                 chunk = self.audio_out_queue.get_nowait()
                 audio_8k = self.resampler.resample48_to_8(chunk)
-                #audio.calculate_fft(audio_8k, self.fft_queue, self.states)
+                audio.calculate_fft(audio_8k, self.fft_queue, self.states)
                 outdata[:] = chunk.reshape(outdata.shape)
 
             else:
