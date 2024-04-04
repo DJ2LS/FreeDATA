@@ -437,41 +437,7 @@ class OFDM_CONFIG(ctypes.Structure):
         ("fmax", ctypes.c_float),  # Maximum frequency for tuning range
     ]
 
-uw_sequence = (c_uint8 * MAX_UW_BITS)(*([1, 1, 0, 0, 1, 0, 1, 0] * 8))
 
-ofdm_default_config = OFDM_CONFIG(
-    tx_centre=1500.0,
-    rx_centre=1500.0,
-    fs=8000.0,
-    rs=1.0,
-    ts=0.016,
-    tcp=0.006,
-    timing_mx_thresh=0.10,
-    nc=9,
-    ns=5,
-    np=29,
-    bps=2,
-    txtbits=0,
-    nuwbits=40,
-    bad_uw_errors=10,
-    ftwindowwidth=80,
-    edge_pilots=False,
-    state_machine=b"data",
-    codename=b"H_1024_2048_4f",
-    tx_uw=uw_sequence,
-    amp_est_mode=1,
-    tx_bpf_en=False,
-    rx_bpf_en=False,
-    foff_limiter=False,
-    amp_scale=300E3,
-    clip_gain1=2.2,
-    clip_gain2=0.8,
-    clip_en=True,
-    mode=b"CUSTOM",
-    data_mode=b"streaming",
-    fmin=-50.0,
-    fmax=50.0,
-)
 
 
 class FREEDV_ADVANCED(ctypes.Structure):
@@ -491,6 +457,42 @@ api.freedv_open_advanced.argtypes = [ctypes.c_int, ctypes.POINTER(FREEDV_ADVANCE
 api.freedv_open_advanced.restype = ctypes.c_void_p
 
 def create_default_ofdm_config():
+    uw_sequence = (c_uint8 * MAX_UW_BITS)(*([1, 1, 0, 0, 1, 0, 1, 0] * 8))
+
+    ofdm_default_config = OFDM_CONFIG(
+        tx_centre=1500.0,
+        rx_centre=1500.0,
+        fs=8000.0,
+        rs=1.0,
+        ts=0.016,
+        tcp=0.006,
+        timing_mx_thresh=0.10,
+        nc=9,
+        ns=5,
+        np=29,
+        bps=2,
+        txtbits=0,
+        nuwbits=40,
+        bad_uw_errors=10,
+        ftwindowwidth=80,
+        edge_pilots=False,
+        state_machine=b"data",
+        codename=b"H_1024_2048_4f",
+        tx_uw=uw_sequence,
+        amp_est_mode=1,
+        tx_bpf_en=False,
+        rx_bpf_en=False,
+        foff_limiter=False,
+        amp_scale=300E3,
+        clip_gain1=2.2,
+        clip_gain2=0.8,
+        clip_en=True,
+        mode=b"CUSTOM",
+        data_mode=b"streaming",
+        fmin=-50.0,
+        fmax=50.0,
+    )
+
     return FREEDV_ADVANCED(
         interleave_frames = 0,
         M = 2,
@@ -503,29 +505,56 @@ def create_default_ofdm_config():
     )
 
 
+
+data_ofdm_500_config = create_default_ofdm_config()
+print(data_ofdm_500_config)
+data_ofdm_500_config.config.contents.ns = 5
+data_ofdm_500_config.config.contents.np = 29
+data_ofdm_500_config.config.contents.tcp = 0.006
+data_ofdm_500_config.config.contents.ts = 0.016
+data_ofdm_500_config.config.contents.nc = 9
+data_ofdm_500_config.config.contents.nuwbits = 40
+data_ofdm_500_config.config.contents.timing_mx_thresh = 0.10
+data_ofdm_500_config.config.contents.bad_uw_errors = 10
+data_ofdm_500_config.config.contents.amp_est_mode = 1
+data_ofdm_500_config.config.contents.amp_scale = 300E3
+data_ofdm_500_config.config.contents.codename = b"H_1024_2048_4f"
+data_ofdm_500_config.config.contents.clip_en = True
+data_ofdm_500_config.config.contents.clip_gain1 = 2.7;
+data_ofdm_500_config.config.contents.clip_gain2 = 0.8;
+data_ofdm_500_config.config.contents.timing_mx_thresh = 0.10;
+data_ofdm_500_config.config.contents.tx_bpf_en = False
+data_ofdm_500_config.config.contents.rx_bpf_en = False
+# Fill the tx_uw field with the uw_sequence, and pad the rest with zeros if necessary
+uw_sequence = [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0]
+data_ofdm_500_config.tx_uw = (ctypes.c_uint8 * MAX_UW_BITS)(*(uw_sequence + [0]*(MAX_UW_BITS-len(uw_sequence))))
+
+
 data_ofdm_2438_config = create_default_ofdm_config()
+print(data_ofdm_2438_config)
 data_ofdm_2438_config.config.contents.ns = 5
-data_ofdm_2438_config.config.contents.np = 52
+data_ofdm_2438_config.config.contents.np = 51
 data_ofdm_2438_config.config.contents.tcp = 0.005
 data_ofdm_2438_config.config.contents.ts = 0.018
-data_ofdm_2438_config.config.contents.nc = 39
-data_ofdm_2438_config.config.contents.nuwbits = 12
+data_ofdm_2438_config.config.contents.nc = 40#39
+data_ofdm_2438_config.config.contents.nuwbits = 60#12
 data_ofdm_2438_config.config.contents.timing_mx_thresh = 0.10
 data_ofdm_2438_config.config.contents.bad_uw_errors = 8
-data_ofdm_2438_config.config.contents.amp_est_mode = 1
+data_ofdm_2438_config.config.contents.amp_est_mode = 0
 data_ofdm_2438_config.config.contents.amp_scale = 145E3
 data_ofdm_2438_config.config.contents.codename = b"H_16200_9720"
+data_ofdm_500_config.config.contents.clip_en = True
 data_ofdm_2438_config.config.contents.clip_gain1 = 2.7;
 data_ofdm_2438_config.config.contents.clip_gain2 = 0.8;
 data_ofdm_2438_config.config.contents.timing_mx_thresh = 0.10;
 data_ofdm_2438_config.config.contents.tx_bpf_en = False
 data_ofdm_2438_config.config.contents.rx_bpf_en = False
 # Fill the tx_uw field with the uw_sequence, and pad the rest with zeros if necessary
-uw_sequence = [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1]
+#uw_sequence = [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1]
+uw_sequence = [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0]
 data_ofdm_2438_config.tx_uw = (ctypes.c_uint8 * MAX_UW_BITS)(*(uw_sequence + [0]*(MAX_UW_BITS-len(uw_sequence))))
 
 
-data_ofdm_500_config = create_default_ofdm_config()
 
 
 ofdm_configurations = {
