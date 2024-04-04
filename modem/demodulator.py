@@ -13,17 +13,17 @@ class Demodulator():
     MODE_DICT = {}
     # Iterate over the FREEDV_MODE enum members
     for mode in codec2.FREEDV_MODE:
-        MODE_DICT[mode.value] = {
-            'decode': False,
-            'bytes_per_frame': None,
-            'bytes_out': None,
-            'audio_buffer': None,
-            'nin': None,
-            'instance': None,
-            'state_buffer': [],
-            'name': mode.name.upper(),
-            'decoding_thread': None
-        }
+            MODE_DICT[mode.value] = {
+                'decode': False,
+                'bytes_per_frame': None,
+                'bytes_out': None,
+                'audio_buffer': None,
+                'nin': None,
+                'instance': None,
+                'state_buffer': [],
+                'name': mode.name.upper(),
+                'decoding_thread': None
+            }
 
     def __init__(self, config, audio_rx_q, data_q_rx, states, event_manager, service_queue, fft_queue):
         self.log = structlog.get_logger("Demodulator")
@@ -71,15 +71,20 @@ class Demodulator():
         """
 
         # create codec2 instance
-        c2instance = ctypes.cast(
-            codec2.api.freedv_open(mode), ctypes.c_void_p
-        )
+        #c2instance = ctypes.cast(
+        #    codec2.api.freedv_open(mode), ctypes.c_void_p
+        #)
+        print(mode)
+        c2instance = codec2.open_instance(mode)
+        print(c2instance)
+        print("hat geklappt...")
+
 
         # get bytes per frame
         bytes_per_frame = int(
             codec2.api.freedv_get_bits_per_modem_frame(c2instance) / 8
         )
-
+        print(f"bytes per frame: {bytes_per_frame}")
         # create byte out buffer
         bytes_out = ctypes.create_string_buffer(bytes_per_frame)
 

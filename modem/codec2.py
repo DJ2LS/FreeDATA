@@ -7,6 +7,8 @@ Python interface to the C-language codec2 library.
 # pylint: disable=import-outside-toplevel, attribute-defined-outside-init
 
 import ctypes
+from ctypes import *
+import hashlib
 import glob
 import os
 import sys
@@ -32,7 +34,8 @@ class FREEDV_MODE(Enum):
     datac4 = 18
     datac13 = 19
     datac14 = 20
-
+    data_ofdm_500 = 21500
+    data_ofdm_2438 = 212438
 
 class FREEDV_MODE_USED_SLOTS(Enum):
     """
@@ -46,9 +49,8 @@ class FREEDV_MODE_USED_SLOTS(Enum):
     datac4 = [False, False, True, False, False]
     datac13 = [False, False, True, False, False]
     datac14 = [False, False, True, False, False]
-    fsk_ldpc = [False, False, True, False, False]
-    fsk_ldpc_0 = [False, False, True, False, False]
-    fsk_ldpc_1 = [False, False, True, False, False]
+    data_ofdm_500 = [False, False, True, False, False]
+    data_ofdm_2438 = [True, True, True, True, True]
 
 # Function for returning the mode value
 def freedv_get_mode_value_by_name(mode: str) -> int:
@@ -93,7 +95,6 @@ elif sys.platform in ["win32", "win64"]:
     files = glob.glob(os.path.join(script_dir, "**\\*libcodec2*.dll"), recursive=True)
 else:
     files = []
-
 api = None
 for file in files:
     try:
@@ -108,7 +109,7 @@ for file in files:
 if api is None or "api" not in locals():
     log.critical("[C2 ] Error:  Libcodec2 not loaded - Exiting")
     sys.exit(1)
-log.info("[C2 ] Libcodec2 loaded...")
+log.info("[C2 ] Libcodec2 loaded...", path=file)
 # ctypes function init
 
 # api.freedv_set_tuning_range.restype = ctypes.c_int
@@ -170,64 +171,6 @@ api.freedv_get_n_max_modem_samples.restype = ctypes.c_int
 
 api.FREEDV_FS_8000 = 8000  # type: ignore
 
-# -------------------------------- FSK LDPC MODE SETTINGS
-
-
-class ADVANCED(ctypes.Structure):
-    """Advanced structure for fsk modes"""
-
-    _fields_ = [
-        ("interleave_frames", ctypes.c_int),
-        ("M", ctypes.c_int),
-        ("Rs", ctypes.c_int),
-        ("Fs", ctypes.c_int),
-        ("first_tone", ctypes.c_int),
-        ("tone_spacing", ctypes.c_int),
-        ("codename", ctypes.c_char_p),
-    ]
-
-
-# pylint: disable=pointless-string-statement
-"""
-adv.interleave_frames = 0                       # max amplitude
-adv.M = 2                                       # number of fsk tones 2/4
-adv.Rs = 100                                    # symbol rate
-adv.Fs = 8000                                   # sample rate
-adv.first_tone = 1500                           # first tone freq
-adv.tone_spacing = 200                          # shift between tones
-adv.codename = "H_128_256_5".encode("utf-8")    # code word
-
-HRA_112_112          rate 0.50 (224,112)    BPF: 14     not working
-HRA_56_56            rate 0.50 (112,56)     BPF: 7      not working
-H_2064_516_sparse    rate 0.80 (2580,2064)  BPF: 258    working
-HRAb_396_504         rate 0.79 (504,396)    BPF: 49     not working
-H_256_768_22         rate 0.33 (768,256)    BPF: 32     working
-H_256_512_4          rate 0.50 (512,256)    BPF: 32     working
-HRAa_1536_512        rate 0.75 (2048,1536)  BPF: 192    not working
-H_128_256_5          rate 0.50 (256,128)    BPF: 16     working
-H_4096_8192_3d       rate 0.50 (8192,4096)  BPF: 512    not working
-H_16200_9720         rate 0.60 (16200,9720) BPF: 1215   not working
-H_1024_2048_4f       rate 0.50 (2048,1024)  BPF: 128    working
-"""
-# --------------- 2 FSK H_128_256_5, 16 bytes
-api.FREEDV_MODE_FSK_LDPC_0_ADV = ADVANCED()  # type: ignore
-api.FREEDV_MODE_FSK_LDPC_0_ADV.interleave_frames = 0
-api.FREEDV_MODE_FSK_LDPC_0_ADV.M = 4
-api.FREEDV_MODE_FSK_LDPC_0_ADV.Rs = 500
-api.FREEDV_MODE_FSK_LDPC_0_ADV.Fs = 8000
-api.FREEDV_MODE_FSK_LDPC_0_ADV.first_tone = 1150  # 1150 4fsk, 1500 2fsk
-api.FREEDV_MODE_FSK_LDPC_0_ADV.tone_spacing = 200  # 200
-api.FREEDV_MODE_FSK_LDPC_0_ADV.codename = "H_128_256_5".encode("utf-8")  # code word
-
-# --------------- 4 H_256_512_4, 7 bytes
-api.FREEDV_MODE_FSK_LDPC_1_ADV = ADVANCED()  # type: ignore
-api.FREEDV_MODE_FSK_LDPC_1_ADV.interleave_frames = 0
-api.FREEDV_MODE_FSK_LDPC_1_ADV.M = 4
-api.FREEDV_MODE_FSK_LDPC_1_ADV.Rs = 1000
-api.FREEDV_MODE_FSK_LDPC_1_ADV.Fs = 8000
-api.FREEDV_MODE_FSK_LDPC_1_ADV.first_tone = 1150  # 1250 4fsk, 1500 2fsk
-api.FREEDV_MODE_FSK_LDPC_1_ADV.tone_spacing = 200
-api.FREEDV_MODE_FSK_LDPC_1_ADV.codename = "H_4096_8192_3d".encode("utf-8")  # code word
 
 # ------- MODEM STATS STRUCTURES
 MODEM_STATS_NC_MAX = 50 + 1 * 2
@@ -237,6 +180,8 @@ MODEM_STATS_EYE_IND_MAX = 160
 MODEM_STATS_NSPEC = 512
 MODEM_STATS_MAX_F_HZ = 4000
 MODEM_STATS_MAX_F_EST = 4
+
+
 
 
 class MODEMSTATS(ctypes.Structure):
@@ -424,33 +369,21 @@ class resampler:
         return out48
 
 def open_instance(mode: int) -> ctypes.c_void_p:
-    """
-    Return a codec2 instance of the type `mode`
+    data_custom = 21
 
-    :param mode: Type of codec2 instance to return
-    :type mode: Union[int, str]
-    :return: C-function of the requested codec2 instance
-    :rtype: ctypes.c_void_p
-    """
-    #    if mode in [FREEDV_MODE.fsk_ldpc_0.value]:
-    #        return ctypes.cast(
-    #            api.freedv_open_advanced(
-    #                FREEDV_MODE.fsk_ldpc.value,
-    #                ctypes.byref(api.FREEDV_MODE_FSK_LDPC_0_ADV),
-    #            ),
-    #            ctypes.c_void_p,
-    #        )
-    #
-    #    if mode in [FREEDV_MODE.fsk_ldpc_1.value]:
-    #        return ctypes.cast(
-    #            api.freedv_open_advanced(
-    #                FREEDV_MODE.fsk_ldpc.value,
-    #                ctypes.byref(api.FREEDV_MODE_FSK_LDPC_1_ADV),
-    #            ),
-    #            ctypes.c_void_p,
-    #        )
-    #
-    return ctypes.cast(api.freedv_open(mode), ctypes.c_void_p)
+    if mode in [FREEDV_MODE.data_ofdm_500.value, FREEDV_MODE.data_ofdm_2438.value]:
+        custom_params = ofdm_configurations[mode]
+        return ctypes.cast(
+                    api.freedv_open_advanced(
+                        data_custom,
+                        ctypes.byref(custom_params),
+                    ),
+                    ctypes.c_void_p,
+                )
+    else:
+        if mode not in [data_custom]:
+            return ctypes.cast(api.freedv_open(mode), ctypes.c_void_p)
+
 
 def get_bytes_per_frame(mode: int) -> int:
     """
@@ -465,3 +398,138 @@ def get_bytes_per_frame(mode: int) -> int:
     # TODO add close session
     # get number of bytes per frame for mode
     return int(api.freedv_get_bits_per_modem_frame(freedv) / 8)
+
+
+MAX_UW_BITS = 64
+
+class OFDM_CONFIG(ctypes.Structure):
+    _fields_ = [
+        ("tx_centre", ctypes.c_float),  # TX Centre Audio Frequency
+        ("rx_centre", ctypes.c_float),  # RX Centre Audio Frequency
+        ("fs", ctypes.c_float),  # Sample Frequency
+        ("rs", ctypes.c_float),  # Symbol Rate
+        ("ts", ctypes.c_float),  # Symbol duration
+        ("tcp", ctypes.c_float),  # Cyclic Prefix duration
+        ("timing_mx_thresh", ctypes.c_float),  # Threshold for timing metrics
+        ("nc", ctypes.c_int),  # Number of carriers
+        ("ns", ctypes.c_int),  # Number of Symbol frames
+        ("np", ctypes.c_int),  # Number of modem frames per packet
+        ("bps", ctypes.c_int),  # Bits per Symbol
+        ("txtbits", ctypes.c_int),  # Number of auxiliary data bits
+        ("nuwbits", ctypes.c_int),  # Number of unique word bits
+        ("bad_uw_errors", ctypes.c_int),  # Threshold for bad unique word detection
+        ("ftwindowwidth", ctypes.c_int),  # Filter window width
+        ("edge_pilots", ctypes.c_int),  # Edge pilots configuration
+        ("state_machine", ctypes.c_char_p),  # Name of sync state machine used
+        ("codename", ctypes.c_char_p),  # LDPC codename
+        ("tx_uw", ctypes.c_uint8 * MAX_UW_BITS),  # User defined unique word
+        ("amp_est_mode", ctypes.c_int),  # Amplitude estimator algorithm mode
+        ("tx_bpf_en", ctypes.c_bool),  # TX BPF enable flag
+        ("rx_bpf_en", ctypes.c_bool),  # RX BPF enable flag
+        ("foff_limiter", ctypes.c_bool),  # Frequency offset limiter enable flag
+        ("amp_scale", ctypes.c_float),  # Amplitude scale factor
+        ("clip_gain1", ctypes.c_float),  # Pre-clipping gain
+        ("clip_gain2", ctypes.c_float),  # Post-clipping gain
+        ("clip_en", ctypes.c_bool),  # Clipping enable flag
+        ("mode", ctypes.c_char * 16),  # OFDM mode in string form
+        ("data_mode", ctypes.c_char_p),  # Data mode ("streaming", "burst", etc.)
+        ("fmin", ctypes.c_float),  # Minimum frequency for tuning range
+        ("fmax", ctypes.c_float),  # Maximum frequency for tuning range
+    ]
+
+uw_sequence = (c_uint8 * MAX_UW_BITS)(*([1, 1, 0, 0, 1, 0, 1, 0] * 8))
+
+ofdm_default_config = OFDM_CONFIG(
+    tx_centre=1500.0,
+    rx_centre=1500.0,
+    fs=8000.0,
+    rs=1.0,
+    ts=0.016,
+    tcp=0.006,
+    timing_mx_thresh=0.10,
+    nc=9,
+    ns=5,
+    np=29,
+    bps=2,
+    txtbits=0,
+    nuwbits=40,
+    bad_uw_errors=10,
+    ftwindowwidth=80,
+    edge_pilots=False,
+    state_machine=b"data",
+    codename=b"H_1024_2048_4f",
+    tx_uw=uw_sequence,
+    amp_est_mode=1,
+    tx_bpf_en=False,
+    rx_bpf_en=False,
+    foff_limiter=False,
+    amp_scale=300E3,
+    clip_gain1=2.2,
+    clip_gain2=0.8,
+    clip_en=True,
+    mode=b"CUSTOM",
+    data_mode=b"streaming",
+    fmin=-50.0,
+    fmax=50.0,
+)
+
+
+class FREEDV_ADVANCED(ctypes.Structure):
+    """Advanced structure for fsk and ofdm modes"""
+    _fields_ = [
+        ("interleave_frames", ctypes.c_int),
+        ("M", ctypes.c_int),
+        ("Rs", ctypes.c_int),
+        ("Fs", ctypes.c_int),
+        ("first_tone", ctypes.c_int),
+        ("tone_spacing", ctypes.c_int),
+        ("codename", ctypes.c_char_p),
+        ("config", ctypes.POINTER(OFDM_CONFIG))
+    ]
+
+api.freedv_open_advanced.argtypes = [ctypes.c_int, ctypes.POINTER(FREEDV_ADVANCED)]
+api.freedv_open_advanced.restype = ctypes.c_void_p
+
+def create_default_ofdm_config():
+    return FREEDV_ADVANCED(
+        interleave_frames = 0,
+        M = 2,
+        Rs = 100,
+        Fs = 8000,
+        first_tone = 1000,
+        tone_spacing = 200,
+        codename = "H_256_512_4".encode("utf-8"),
+        config = ctypes.pointer(ofdm_default_config),
+    )
+
+
+data_ofdm_2438_config = create_default_ofdm_config()
+data_ofdm_2438_config.config.contents.ns = 5
+data_ofdm_2438_config.config.contents.np = 52
+data_ofdm_2438_config.config.contents.tcp = 0.005
+data_ofdm_2438_config.config.contents.ts = 0.018
+data_ofdm_2438_config.config.contents.nc = 39
+data_ofdm_2438_config.config.contents.nuwbits = 12
+data_ofdm_2438_config.config.contents.timing_mx_thresh = 0.10
+data_ofdm_2438_config.config.contents.bad_uw_errors = 8
+data_ofdm_2438_config.config.contents.amp_est_mode = 1
+data_ofdm_2438_config.config.contents.amp_scale = 145E3
+data_ofdm_2438_config.config.contents.codename = b"H_16200_9720"
+data_ofdm_2438_config.config.contents.clip_gain1 = 2.7;
+data_ofdm_2438_config.config.contents.clip_gain2 = 0.8;
+data_ofdm_2438_config.config.contents.timing_mx_thresh = 0.10;
+data_ofdm_2438_config.config.contents.tx_bpf_en = False
+data_ofdm_2438_config.config.contents.rx_bpf_en = False
+# Fill the tx_uw field with the uw_sequence, and pad the rest with zeros if necessary
+uw_sequence = [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1]
+data_ofdm_2438_config.tx_uw = (ctypes.c_uint8 * MAX_UW_BITS)(*(uw_sequence + [0]*(MAX_UW_BITS-len(uw_sequence))))
+
+
+data_ofdm_500_config = create_default_ofdm_config()
+
+
+ofdm_configurations = {
+    FREEDV_MODE.data_ofdm_500.value: data_ofdm_500_config,
+    FREEDV_MODE.data_ofdm_2438.value: data_ofdm_2438_config
+
+}
