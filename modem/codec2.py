@@ -475,11 +475,11 @@ def create_default_ofdm_config():
         nuwbits=40,
         bad_uw_errors=10,
         ftwindowwidth=80,
-        edge_pilots=False,
-        state_machine=b"data",
+        edge_pilots=0,
+        state_machine="data".encode("utf-8"),
         codename=b"H_1024_2048_4f",
         tx_uw=uw_sequence,
-        amp_est_mode=1,
+        amp_est_mode=True,
         tx_bpf_en=False,
         rx_bpf_en=False,
         foff_limiter=False,
@@ -507,7 +507,7 @@ def create_default_ofdm_config():
 
 
 data_ofdm_500_config = create_default_ofdm_config()
-print(data_ofdm_500_config)
+#print(data_ofdm_500_config)
 data_ofdm_500_config.config.contents.ns = 5
 data_ofdm_500_config.config.contents.np = 29
 data_ofdm_500_config.config.contents.tcp = 0.006
@@ -520,13 +520,17 @@ data_ofdm_500_config.config.contents.amp_est_mode = 1
 data_ofdm_500_config.config.contents.amp_scale = 300E3
 data_ofdm_500_config.config.contents.codename = b"H_1024_2048_4f"
 data_ofdm_500_config.config.contents.clip_en = True
-data_ofdm_500_config.config.contents.clip_gain1 = 2.7;
+data_ofdm_500_config.config.contents.clip_gain1 = 2.2;
 data_ofdm_500_config.config.contents.clip_gain2 = 0.8;
 data_ofdm_500_config.config.contents.timing_mx_thresh = 0.10;
 data_ofdm_500_config.config.contents.tx_bpf_en = False
 data_ofdm_500_config.config.contents.rx_bpf_en = False
 # Fill the tx_uw field with the uw_sequence, and pad the rest with zeros if necessary
-uw_sequence = [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0]
+uw_sequence = [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0]
+#print(uw_sequence)
+#print(len(uw_sequence))
+#uw_sequence.reverse()
+#print(uw_sequence)
 data_ofdm_500_config.tx_uw = (ctypes.c_uint8 * MAX_UW_BITS)(*(uw_sequence + [0]*(MAX_UW_BITS-len(uw_sequence))))
 
 
