@@ -511,9 +511,34 @@ def create_default_ofdm_config():
     )
 
 
-
+"""
+# DATAC1
 data_ofdm_500_config = create_default_ofdm_config()
-#print(data_ofdm_500_config)
+data_ofdm_500_config.config.contents.ns = 5
+data_ofdm_500_config.config.contents.np = 38
+data_ofdm_500_config.config.contents.tcp = 0.006
+data_ofdm_500_config.config.contents.ts = 0.016
+data_ofdm_500_config.config.contents.rs = 1.0 / data_ofdm_500_config.config.contents.ts
+data_ofdm_500_config.config.contents.nc = 27
+data_ofdm_500_config.config.contents.nuwbits = 16
+data_ofdm_500_config.config.contents.timing_mx_thresh = 0.10
+data_ofdm_500_config.config.contents.bad_uw_errors = 6
+data_ofdm_500_config.config.contents.codename = b"H_4096_8192_3d"
+data_ofdm_500_config.config.contents.clip_gain1 = 2.2
+data_ofdm_500_config.config.contents.clip_gain2 = 0.8
+data_ofdm_500_config.config.contents.amp_scale = 145E3
+
+uw_sequence = [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0]
+data_ofdm_500_config.config.contents.tx_uw = (ctypes.c_uint8 * MAX_UW_BITS)(*(uw_sequence + [0]*(MAX_UW_BITS-len(uw_sequence))))
+#tx_uw_array = (ctypes.c_uint8 * MAX_UW_BITS)(*([0] * MAX_UW_BITS))
+#for i in range(min(len(uw_sequence), MAX_UW_BITS)):
+#    tx_uw_array[i] = uw_sequence[i]
+#data_ofdm_500_config.config.contents.tx_uw = tx_uw_array
+"""
+
+
+# DATAC3
+data_ofdm_500_config = create_default_ofdm_config()
 data_ofdm_500_config.config.contents.ns = 5
 data_ofdm_500_config.config.contents.np = 29
 data_ofdm_500_config.config.contents.tcp = 0.006
@@ -523,45 +548,17 @@ data_ofdm_500_config.config.contents.nc = 9
 data_ofdm_500_config.config.contents.nuwbits = 40
 data_ofdm_500_config.config.contents.timing_mx_thresh = 0.10
 data_ofdm_500_config.config.contents.bad_uw_errors = 10
-data_ofdm_500_config.config.contents.amp_scale = 300E3
-data_ofdm_500_config.config.contents.codename = "H_1024_2048_4f".encode("utf-8")
-data_ofdm_500_config.config.contents.clip_en = True
+data_ofdm_500_config.config.contents.codename = b"H_1024_2048_4f"
 data_ofdm_500_config.config.contents.clip_gain1 = 2.2
 data_ofdm_500_config.config.contents.clip_gain2 = 0.8
-data_ofdm_500_config.config.contents.tx_bpf_en = False
-data_ofdm_500_config.config.contents.rx_bpf_en = False
-# Fill the tx_uw field with the uw_sequence, and pad the rest with zeros if necessary
 uw_sequence = [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0]
-#print(uw_sequence)
-#print(len(uw_sequence))
-#uw_sequence.reverse()
-#print(uw_sequence)
-"""
-uw_sequence_len = len(uw_sequence)
-
-# Create a ctypes array of uint8 with length MAX_UW_BITS, filled with 0
-tx_uw_array = (ctypes.c_uint8 * MAX_UW_BITS)(*([0] * MAX_UW_BITS))
-
-# Copy uw_sequence to the beginning of tx_uw_array
-for i in range(min(uw_sequence_len, MAX_UW_BITS)):
-    tx_uw_array[i] = uw_sequence[i]
-
-data_ofdm_500_config.config.contents.tx_uw = tx_uw_array
-"""
+data_ofdm_500_config.config.contents.tx_uw = (ctypes.c_uint8 * MAX_UW_BITS)(*(uw_sequence + [0]*(MAX_UW_BITS-len(uw_sequence))))
+#tx_uw_array = (ctypes.c_uint8 * MAX_UW_BITS)(*([0] * MAX_UW_BITS))
+#for i in range(min(len(uw_sequence), MAX_UW_BITS)):
+#    tx_uw_array[i] = uw_sequence[i]
+#data_ofdm_500_config.config.contents.tx_uw = tx_uw_array
 
 
-# Create the list with uw_sequence repeated as necessary and padded with zeros
-uw_list = uw_sequence + [0] * (MAX_UW_BITS - len(uw_sequence))
-
-
-#data_ofdm_500_config.config.contents.tx_uw = (ctypes.c_uint8 * MAX_UW_BITS)(*(uw_sequence + [0]*(MAX_UW_BITS-len(uw_sequence))))
-
-tx_uw_array = (ctypes.c_uint8 * MAX_UW_BITS)(*([0] * MAX_UW_BITS))
-uw_sequence_len = len(uw_sequence)
-#uw_sequence.reverse()
-for i in range(min(uw_sequence_len, MAX_UW_BITS)):
-    tx_uw_array[i] = uw_sequence[i]
-data_ofdm_500_config.config.contents.tx_uw = tx_uw_array
 
 
 data_ofdm_2438_config = create_default_ofdm_config()
@@ -570,19 +567,17 @@ data_ofdm_2438_config.config.contents.np = 51
 data_ofdm_2438_config.config.contents.tcp = 0.005
 data_ofdm_2438_config.config.contents.ts = 0.018
 data_ofdm_500_config.config.contents.rs = 1.0 / data_ofdm_2438_config.config.contents.ts
-data_ofdm_2438_config.config.contents.nc = 40#39
-data_ofdm_2438_config.config.contents.nuwbits = 60#12
+data_ofdm_2438_config.config.contents.nc = 39
+data_ofdm_2438_config.config.contents.nuwbits =12
 data_ofdm_2438_config.config.contents.timing_mx_thresh = 0.10
 data_ofdm_2438_config.config.contents.bad_uw_errors = 8
 data_ofdm_2438_config.config.contents.amp_est_mode = 0
 data_ofdm_2438_config.config.contents.amp_scale = 145E3
 data_ofdm_2438_config.config.contents.codename = b"H_16200_9720"
-data_ofdm_500_config.config.contents.clip_en = True
-data_ofdm_2438_config.config.contents.clip_gain1 = 2.7;
-data_ofdm_2438_config.config.contents.clip_gain2 = 0.8;
-data_ofdm_2438_config.config.contents.timing_mx_thresh = 0.10;
-data_ofdm_2438_config.config.contents.tx_bpf_en = False
-data_ofdm_2438_config.config.contents.rx_bpf_en = False
+data_ofdm_2438_config.config.contents.clip_gain1 = 2.7
+data_ofdm_2438_config.config.contents.clip_gain2 = 0.8
+data_ofdm_2438_config.config.contents.timing_mx_thresh = 0.10
+
 # Fill the tx_uw field with the uw_sequence, and pad the rest with zeros if necessary
 #uw_sequence = [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1]
 uw_sequence = [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0]
