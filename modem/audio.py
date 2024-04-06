@@ -352,8 +352,8 @@ def calculate_fft(data, fft_queue, states) -> None:
             # erase queue if greater than 3
         if fft_queue.qsize() >= 1:
             fft_queue = queue.Queue()
-        fft_queue.put(dfftlist[:315]) # 315 --> bandwidth 3200
-        #fft_queue.put(dfftlist) # 315 --> bandwidth 3200
+        #fft_queue.put(dfftlist[:315]) # 315 --> bandwidth 3200
+        fft_queue.put(dfftlist) # 315 --> bandwidth 3200
 
     except Exception as err:
         print(f"[MDM] calculate_fft: Exception: {err}")

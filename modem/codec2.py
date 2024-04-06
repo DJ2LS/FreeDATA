@@ -400,7 +400,7 @@ def get_bytes_per_frame(mode: int) -> int:
     return int(api.freedv_get_bits_per_modem_frame(freedv) / 8)
 
 
-MAX_UW_BITS = 64
+MAX_UW_BITS = 192
 
 class OFDM_CONFIG(ctypes.Structure):
     _fields_ = [
@@ -531,7 +531,6 @@ data_ofdm_500_config.tx_uw = (ctypes.c_uint8 * MAX_UW_BITS)(*(uw_sequence + [0]*
 
 
 data_ofdm_2438_config = create_default_ofdm_config()
-print(data_ofdm_2438_config)
 data_ofdm_2438_config.config.contents.ns = 5
 data_ofdm_2438_config.config.contents.np = 51
 data_ofdm_2438_config.config.contents.tcp = 0.005
