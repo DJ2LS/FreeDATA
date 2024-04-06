@@ -25,18 +25,18 @@ modulator = modulator.Modulator(config.read())
 #freedv = open_instance(FREEDV_MODE.data_ofdm_2438.value)
 #freedv = open_instance(FREEDV_MODE.datac3.value)
 freedv = open_instance(FREEDV_MODE.data_ofdm_500.value)
+#freedv = open_instance(FREEDV_MODE.qam16c2.value)
 
-frames = 10
+
+frames = 1
 txbuffer = bytearray()
 
 for frame in range(0,frames):
-    txbuffer = modulator.transmit_add_silence(txbuffer, 1000)
+    #txbuffer = modulator.transmit_add_silence(txbuffer, 1000)
     txbuffer = modulator.transmit_add_preamble(txbuffer, freedv)
     txbuffer = modulator.transmit_create_frame(txbuffer, freedv, b'123')
     txbuffer = modulator.transmit_add_postamble(txbuffer, freedv)
     txbuffer = modulator.transmit_add_silence(txbuffer, 1000)
-
-#print(txbuffer)
 
 sys.stdout.buffer.write(txbuffer)
 sys.stdout.buffer.flush()

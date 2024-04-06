@@ -7,3 +7,6 @@ class CQCommand(TxCommand):
 
     def get_tx_mode(self):
         return FREEDV_MODE.data_ofdm_500
+        #return FREEDV_MODE.datac3
+        #return FREEDV_MODE.data_ofdm_2438
+        #return FREEDV_MODE.qam16c2
