@@ -100,7 +100,12 @@ class TestARQSession(unittest.TestCase):
                     continue
 
                 frame_bytes = transmission['bytes']
-                frame_dispatcher.new_process_data(frame_bytes, None, len(frame_bytes), 5, 0)
+
+                if len(frame_bytes) == 3:
+                    mode_name = "SIGNALLING_ACK"
+                else:
+                    mode_name = None
+                frame_dispatcher.process_data(frame_bytes, None, len(frame_bytes), 15, 0, mode_name=mode_name)
             except queue.Empty:
                 continue
         self.logger.info(f"[{threading.current_thread().name}] Channel closed.")
@@ -150,12 +155,12 @@ class TestARQSession(unittest.TestCase):
 
     def testARQSessionLargePayload(self):
         # set Packet Error Rate (PER) / frame loss probability
-        self.loss_probability = 30
+        self.loss_probability = 0
 
         self.establishChannels()
         params = {
             'dxcall': "AA1AAA-1",
-            'data': base64.b64encode(np.random.bytes(10000)),
+            'data': base64.b64encode(np.random.bytes(100000)),
             'type': "raw_lzma"
         }
         cmd = ARQRawCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)

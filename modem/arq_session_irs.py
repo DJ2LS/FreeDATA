@@ -190,7 +190,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.event_manager.send_arq_session_progress(False, self.id, self.dxcall, self.received_bytes,
                                                          self.total_length, self.state.name,
                                                          statistics=self.calculate_session_statistics(
-                                                             self.confirmed_bytes, self.total_length))
+                                                             self.received_bytes, self.total_length))
 
             self.launch_transmit_and_wait(ack, self.TIMEOUT_DATA, mode=FREEDV_MODE.signalling_ack)
             return None, None
