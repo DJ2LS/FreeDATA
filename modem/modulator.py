@@ -27,6 +27,7 @@ class Modulator:
         self.data_ofdm_500_tx = codec2.open_instance(codec2.FREEDV_MODE.data_ofdm_500.value)
         self.data_ofdm_2438_tx = codec2.open_instance(codec2.FREEDV_MODE.data_ofdm_2438.value)
         self.freedv_qam16c2_tx = codec2.open_instance(codec2.FREEDV_MODE.qam16c2.value)
+        #self.data_qam_2438_tx = codec2.open_instance(codec2.FREEDV_MODE.data_qam_2438.value)
 
     def transmit_add_preamble(self, buffer, freedv):
         # Init buffer for preample
@@ -120,7 +121,8 @@ class Modulator:
             codec2.FREEDV_MODE.datac14: self.freedv_datac14_tx,
             codec2.FREEDV_MODE.data_ofdm_500: self.data_ofdm_500_tx,
             codec2.FREEDV_MODE.data_ofdm_2438: self.data_ofdm_2438_tx,
-            codec2.FREEDV_MODE.qam16c2: self.freedv_qam16c2_tx
+            codec2.FREEDV_MODE.qam16c2: self.freedv_qam16c2_tx,
+            #codec2.FREEDV_MODE.data_qam_2438: self.freedv_data_qam_2438_tx,
         }
         if mode in mode_transition:
             freedv = mode_transition[mode]
