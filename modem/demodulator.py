@@ -74,17 +74,12 @@ class Demodulator():
         #c2instance = ctypes.cast(
         #    codec2.api.freedv_open(mode), ctypes.c_void_p
         #)
-        print(mode)
         c2instance = codec2.open_instance(mode)
-        print(c2instance)
-        print("hat geklappt...")
-
 
         # get bytes per frame
         bytes_per_frame = int(
             codec2.api.freedv_get_bits_per_modem_frame(c2instance) / 8
         )
-        print(f"bytes per frame: {bytes_per_frame}")
         # create byte out buffer
         bytes_out = ctypes.create_string_buffer(bytes_per_frame)
 

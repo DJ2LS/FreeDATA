@@ -23,8 +23,10 @@ import config as config
 config = config.CONFIG('config.ini')
 modulator = modulator.Modulator(config.read())
 #freedv = open_instance(FREEDV_MODE.data_ofdm_2438.value)
-#freedv = open_instance(FREEDV_MODE.datac3.value)
-freedv = open_instance(FREEDV_MODE.data_ofdm_500.value)
+#freedv = open_instance(FREEDV_MODE.datac14.value)
+#freedv = open_instance(FREEDV_MODE.datac1.value)
+freedv = open_instance(FREEDV_MODE.datac3.value)
+#freedv = open_instance(FREEDV_MODE.data_ofdm_500.value)
 #freedv = open_instance(FREEDV_MODE.qam16c2.value)
 
 
@@ -38,5 +40,6 @@ for frame in range(0,frames):
     txbuffer = modulator.transmit_add_postamble(txbuffer, freedv)
     txbuffer = modulator.transmit_add_silence(txbuffer, 1000)
 
+sys.stdout.buffer.flush()
 sys.stdout.buffer.write(txbuffer)
 sys.stdout.buffer.flush()
