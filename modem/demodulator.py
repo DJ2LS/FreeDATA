@@ -50,6 +50,8 @@ class Demodulator():
         # enable decoding of signalling modes
         self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
         self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
+        self.MODE_DICT[codec2.FREEDV_MODE.data_ofdm_2438.value]["decode"] = True
+        self.MODE_DICT[codec2.FREEDV_MODE.data_ofdm_500.value]["decode"] = True
 
 
         tci_rx_callback_thread = threading.Thread(
@@ -72,8 +74,6 @@ class Demodulator():
 
         # create codec2 instance
         #c2instance = ctypes.cast(
-        #    codec2.api.freedv_open(mode), ctypes.c_void_p
-        #)
         c2instance = codec2.open_instance(mode)
 
         # get bytes per frame

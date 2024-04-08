@@ -38,8 +38,8 @@ class ARQSession:
         },
         4: {
             'mode': codec2.FREEDV_MODE.qam16c2,
-            'min_snr': 10,
-            'duration_per_frame': 2.18,
+            'min_snr': 11,
+            'duration_per_frame': 2.8,
             'bandwidth': 2100,
         },
     }

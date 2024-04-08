@@ -581,7 +581,7 @@ data_ofdm_500_config.config.contents.codename = b"H_4096_8192_3d"
 data_ofdm_500_config.config.contents.amp_scale = 145E3
 data_ofdm_500_config.config.contents.tx_uw = create_tx_uw(16, [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0])
 
-"""
+
 # ---------------- OFDM 2438 Hz Bandwidth 16200,9720 ---------------#
 data_ofdm_2438_config = create_default_ofdm_config()
 data_ofdm_2438_config.config.contents.ns = 5
@@ -600,8 +600,9 @@ data_ofdm_2438_config.config.contents.clip_gain1 = 2.7
 data_ofdm_2438_config.config.contents.clip_gain2 = 0.8
 data_ofdm_2438_config.config.contents.timing_mx_thresh = 0.10
 data_ofdm_2438_config.config.contents.tx_uw = create_tx_uw(24, [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1])
-"""
+
 # ---------------- OFDM 2438 Hz Bandwidth 8192,4096 ---------------#
+"""
 data_ofdm_2438_config = create_default_ofdm_config()
 data_ofdm_2438_config.config.contents.ns = 5
 data_ofdm_2438_config.config.contents.np = 27
@@ -619,7 +620,8 @@ data_ofdm_2438_config.config.contents.clip_gain1 = 2.7
 data_ofdm_2438_config.config.contents.clip_gain2 = 0.8
 data_ofdm_2438_config.config.contents.timing_mx_thresh = 0.10
 data_ofdm_2438_config.config.contents.tx_uw = create_tx_uw(16, [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1])
-
+"""
+"""
 # ---------------- QAM 2438 Hz Bandwidth ---------------#
 data_qam_2438_config = create_default_ofdm_config()
 data_qam_2438_config.config.contents.bps = 4
@@ -639,7 +641,7 @@ data_qam_2438_config.config.contents.clip_gain1 = 2.7
 data_qam_2438_config.config.contents.clip_gain2 = 0.8
 data_qam_2438_config.config.contents.timing_mx_thresh = 0.10
 data_qam_2438_config.config.contents.tx_uw = create_tx_uw(162, [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0])
-
+"""
 ofdm_configurations = {
     FREEDV_MODE.data_ofdm_500.value: data_ofdm_500_config,
     FREEDV_MODE.data_ofdm_2438.value: data_ofdm_2438_config,

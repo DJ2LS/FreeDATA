@@ -105,7 +105,7 @@ class TestARQSession(unittest.TestCase):
                     mode_name = "SIGNALLING_ACK"
                 else:
                     mode_name = None
-                frame_dispatcher.process_data(frame_bytes, None, len(frame_bytes), 15, 0, mode_name=mode_name)
+                frame_dispatcher.process_data(frame_bytes, None, len(frame_bytes), 5, 0, mode_name=mode_name)
             except queue.Empty:
                 continue
         self.logger.info(f"[{threading.current_thread().name}] Channel closed.")

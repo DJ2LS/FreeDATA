@@ -328,7 +328,8 @@ def sock_states(sock):
 def stop_server():
     try:
         app.service_manager.modem_service.put("stop")
-        app.socket_interface_manager.stop_servers()
+        if app.socket_interface_manager:
+            app.socket_interface_manager.stop_servers()
 
         if app.service_manager.modem:
             app.service_manager.modem.sd_input_stream.stop
