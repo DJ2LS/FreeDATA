@@ -51,7 +51,7 @@ class Demodulator():
         self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
         self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
         self.MODE_DICT[codec2.FREEDV_MODE.data_ofdm_2438.value]["decode"] = True
-        self.MODE_DICT[codec2.FREEDV_MODE.data_ofdm_500.value]["decode"] = True
+        #self.MODE_DICT[codec2.FREEDV_MODE.qam16c2.value]["decode"] = True
 
 
         tci_rx_callback_thread = threading.Thread(
