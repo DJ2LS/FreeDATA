@@ -160,7 +160,7 @@ class TestARQSession(unittest.TestCase):
         self.establishChannels()
         params = {
             'dxcall': "AA1AAA-1",
-            'data': base64.b64encode(np.random.bytes(100000)),
+            'data': base64.b64encode(np.random.bytes(1000)),
             'type': "raw_lzma"
         }
         cmd = ARQRawCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)

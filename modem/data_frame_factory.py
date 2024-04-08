@@ -249,7 +249,8 @@ class DataFrameFactory:
 
             # data is always on the last payload slots
             if item_length in ["dynamic"] and key in["data"]:
-                data = frame[buffer_position:]
+                # TODO: We need to check the "-2", for some reason the tests are failing with "-2", and real world test i failing without...
+                data = frame[buffer_position:-2]
                 item_length = len(data)
                 print("---------------------------------------------")
                 print(len(data))
