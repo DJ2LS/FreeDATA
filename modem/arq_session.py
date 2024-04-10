@@ -32,7 +32,7 @@ class ARQSession:
         },
         3: {
             'mode': codec2.FREEDV_MODE.data_ofdm_2438,
-            'min_snr': 7,
+            'min_snr': 8,
             'duration_per_frame': 6.5,
             'bandwidth': 2438,
         },
