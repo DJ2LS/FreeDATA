@@ -14,7 +14,8 @@ class BeaconFrameHandler(frame_handler.FrameHandler):
         DatabaseManagerBeacon(self.event_manager).add_beacon(datetime.datetime.now(),
                                                              self.details['frame']["origin"],
                                                              self.details["snr"],
-                                                             self.details['frame']["gridsquare"]
+                                                             self.details['frame']["gridsquare"],
+                                                             self.details['frame']["flag"]["away_from_key"]
                                                              )
 
         if self.config["MESSAGES"]["enable_auto_repeat"]:

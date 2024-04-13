@@ -126,7 +126,7 @@ import time
 
 
 def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency, heard_stations_list, distance_km=None,
-                          distance_miles=None):
+                          distance_miles=None, away_from_key=False):
     """
     Args:
         dxcallsign (str): The callsign of the DX station.
@@ -138,6 +138,7 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency, 
         heard_stations_list (list): List containing heard stations.
         distance_km (float): Distance to the DX station in kilometers.
         distance_miles (float): Distance to the DX station in miles.
+        away_from_key (bool): Away from key indicator
 
     Returns:
         Nothing. The function updates the heard_stations_list in-place.
@@ -147,7 +148,7 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency, 
 
     # Initialize the new entry
     new_entry = [
-        dxcallsign, dxgrid, current_timestamp, datatype, snr, offset, frequency, distance_km, distance_miles
+        dxcallsign, dxgrid, current_timestamp, datatype, snr, offset, frequency, distance_km, distance_miles, away_from_key
     ]
 
     # Check if the buffer is empty or if the callsign is not already in the list

@@ -92,8 +92,8 @@ export async function getSerialDevices() {
   return await apiGet("/devices/serial");
 }
 
-export async function setModemBeacon(enabled = false, afk = false) {
-  return await apiPost("/modem/beacon", { enabled: enabled, afk: afk});
+export async function setModemBeacon(enabled = false, away_from_key = false) {
+  return await apiPost("/modem/beacon", { enabled: enabled, away_from_key: away_from_key});
 }
 
 export async function sendModemCQ() {

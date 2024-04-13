@@ -146,14 +146,14 @@ def post_cqcqcq():
 def post_beacon():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for controlling BEACON STATE via POST"})
-    if not isinstance(request.json['enabled'], bool) or not isinstance(request.json['afk'], bool):
+    if not isinstance(request.json['enabled'], bool) or not isinstance(request.json['away_from_key'], bool):
         api_abort(f"Incorrect value for 'enabled'. Shoud be bool.")
     if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
 
     if not app.state_manager.is_beacon_running:
         app.state_manager.set('is_beacon_running', request.json['enabled'])
-        app.state_manager.set('is_away_from_key', request.json['afk'])
+        app.state_manager.set('is_away_from_key', request.json['away_from_key'])
 
         if not app.state_manager.getARQ():
             enqueue_tx_command(command_beacon.BeaconCommand, request.json)
