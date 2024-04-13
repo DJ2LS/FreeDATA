@@ -231,9 +231,11 @@ class DataFrameFactory:
                 raise OverflowError("Frame data overflow!")
             frame[buffer_position: buffer_position + item_length] = content[key]
             buffer_position += item_length
+
         return frame
 
     def deconstruct(self, frame, mode_name=None):
+
         buffer_position = 1
         # Handle the case where the frame type is not recognized
         #raise ValueError(f"Unknown frame type: {frametype}")
@@ -254,11 +256,9 @@ class DataFrameFactory:
 
             # data is always on the last payload slots
             if item_length in ["dynamic"] and key in["data"]:
-                # TODO: We need to check the "-2", for some reason the tests are failing with "-2", and real world test i failing without...
+                print(len(frame))
                 data = frame[buffer_position:-2]
                 item_length = len(data)
-                print("---------------------------------------------")
-                print(len(data))
             else:
                 data = frame[buffer_position: buffer_position + item_length]
 
@@ -316,8 +316,6 @@ class DataFrameFactory:
     def get_available_data_payload_for_mode(self, type: FR_TYPE, mode:codec2.FREEDV_MODE):
         whole_frame_length = self.get_bytes_per_frame(mode)
         available = whole_frame_length - 2 # 2Bytes CRC16
-        print("##############################")
-        print(available)
         available -= 1 # Frame Type
         for field, length in self.template_list[type.value].items():
             if field != 'frame_length' and isinstance(length, int):

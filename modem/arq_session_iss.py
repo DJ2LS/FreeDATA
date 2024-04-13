@@ -196,9 +196,8 @@ class ARQSessionISS(arq_session.ARQSession):
             #self.expected_byte_offset = offset
             payload = self.data[offset : offset + payload_size]
             #self.expected_byte_offset = offset + payload_size
-            #print(self.expected_byte_offset)
             self.expected_byte_offset = offset + len(payload)
-            print(f"EXPECTED----------------------{self.expected_byte_offset}")
+            #print(f"EXPECTED----------------------{self.expected_byte_offset}")
             data_frame = self.frame_factory.build_arq_burst_frame(
                 self.SPEED_LEVEL_DICT[self.speed_level]["mode"],
                 self.id, offset, payload, self.speed_level)

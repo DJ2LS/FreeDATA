@@ -95,13 +95,14 @@ class TestARQSession(unittest.TestCase):
             # Transfer data between both parties
             try:
                 transmission = modem_transmit_queue.get(timeout=1)
+                transmission["bytes"] += bytes(2) # simulate 2 bytes crc checksum
                 if random.randint(0, 100) < self.loss_probability:
                     self.logger.info(f"[{threading.current_thread().name}] Frame lost...")
                     continue
 
                 frame_bytes = transmission['bytes']
 
-                if len(frame_bytes) == 3:
+                if len(frame_bytes) == 5:
                     mode_name = "SIGNALLING_ACK"
                 else:
                     mode_name = None
