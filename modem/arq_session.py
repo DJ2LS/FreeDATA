@@ -166,6 +166,7 @@ class ARQSession:
         }
 
     def update_histograms(self, confirmed_bytes, total_bytes):
+
         stats = self.calculate_session_statistics(confirmed_bytes, total_bytes)
         self.snr_histogram.append(self.snr)
         self.bpm_histogram.append(stats['bytes_per_minute'])

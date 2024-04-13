@@ -161,11 +161,6 @@ class ARQSessionISS(arq_session.ARQSession):
         # update statistics
         self.update_histograms(self.confirmed_bytes, self.total_length)
         self.update_speed_level(irs_frame)
-        #if 'offset' in irs_frame:
-        #    self.confirmed_bytes = irs_frame['offset']
-        #    self.log(f"IRS confirmed {self.confirmed_bytes}/{self.total_length} bytes")
-        #    self.event_manager.send_arq_session_progress(
-        #        True, self.id, self.dxcall, self.confirmed_bytes, self.total_length, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
 
 
         if self.expected_byte_offset > self.total_length:

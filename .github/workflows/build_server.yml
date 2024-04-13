@@ -48,9 +48,6 @@ jobs:
           brew install portaudio
           python -m pip install --upgrade pip
           pip3 install pyaudio
-          export PYTHONPATH=/Library/Frameworks/Python.framework/Versions/3.11/lib/:$PYTHONPATH 
-          otool -L /Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/_sounddevice_data/portaudio-binaries/libportaudio.dylib
-          otool -L /usr/local/lib/libportaudio.2.dylib
 
       - name: Install Python dependencies
         run: |
