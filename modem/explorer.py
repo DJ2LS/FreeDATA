@@ -36,6 +36,7 @@ class explorer():
         bandwidth = str(self.config['MODEM']['maximum_bandwidth'])
         beacon = str(self.states.is_beacon_running)
         strength = str(self.states.s_meter_strength)
+        away_from_key = str(self.states.is_away_from_key)
 
         # stop pushing if default callsign
         if callsign in ['XX1XXX-6']:
@@ -45,7 +46,7 @@ class explorer():
         # log.info("[EXPLORER] publish", frequency=frequency, band=band, callsign=callsign, gridsquare=gridsquare, version=version, bandwidth=bandwidth)
 
         headers = {"Content-Type": "application/json"}
-        station_data = {'callsign': callsign, 'gridsquare': gridsquare, 'frequency': frequency, 'strength': strength, 'band': band, 'version': version, 'bandwidth': bandwidth, 'beacon': beacon, "lastheard": []}
+        station_data = {'callsign': callsign, 'gridsquare': gridsquare, 'frequency': frequency, 'strength': strength, 'band': band, 'version': version, 'bandwidth': bandwidth, 'beacon': beacon, "lastheard": [], "away_from_key": away_from_key}
 
         for i in self.states.heard_stations:
             try:
