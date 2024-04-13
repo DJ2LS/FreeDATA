@@ -116,6 +116,7 @@ export const useStateStore = defineStore("stateStore", () => {
     activities,
     heard_stations,
     beacon_state,
+    away_from_key,
     rigctld_started,
     rigctld_process,
     python_version,
