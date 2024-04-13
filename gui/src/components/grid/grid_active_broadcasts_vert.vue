@@ -15,11 +15,22 @@ function transmitPing() {
 
 function startStopBeacon() {
   if (state.beacon_state === true) {
-    setModemBeacon(false);
+    setModemBeacon(false, state.away_from_key);
   } else {
-    setModemBeacon(true);
+    setModemBeacon(true, state.away_from_key);
   }
 }
+
+function setAwayFromKey(){
+ if (state.away_from_key === true) {
+    setModemBeacon(state.beacon_state, false);
+  } else {
+    setModemBeacon(state.beacon_state, true);
+  }
+
+}
+
+
 var dxcallPing = ref("");
 window.addEventListener(
       "stationSelected",
@@ -81,6 +92,22 @@ window.addEventListener(
               />
               <label class="form-check-label" for="flexSwitchBeacon"
                 >Beacon</label
+              >
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="form-check form-switch">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                role="switch"
+                id="flexSwitchAFK"
+                v-model="state.away_from_key"
+                @click="setAwayFromKey()"
+              />
+              <label class="form-check-label" for="flexSwitchAFK"
+                >AFK</label
               >
             </div>
           </div>

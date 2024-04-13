@@ -38,6 +38,7 @@ export const useStateStore = defineStore("stateStore", () => {
   var arq_session_state = ref("");
   var arq_state = ref("");
   var beacon_state = ref(false);
+  var away_from_key = ref(false);
 
   var audio_recording = ref(false);
 

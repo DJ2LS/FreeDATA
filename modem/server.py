@@ -33,7 +33,7 @@ from schedule_manager import ScheduleManager
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
-MODEM_VERSION = "0.15.1-alpha"
+MODEM_VERSION = "0.15.2-alpha"
 
 # set config file to use
 def set_config():
@@ -146,14 +146,15 @@ def post_cqcqcq():
 def post_beacon():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for controlling BEACON STATE via POST"})
-
-    if not isinstance(request.json['enabled'], bool):
+    if not isinstance(request.json['enabled'], bool) or not isinstance(request.json['afk'], bool):
         api_abort(f"Incorrect value for 'enabled'. Shoud be bool.")
     if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
 
     if not app.state_manager.is_beacon_running:
         app.state_manager.set('is_beacon_running', request.json['enabled'])
+        app.state_manager.set('is_away_from_key', request.json['afk'])
+
         if not app.state_manager.getARQ():
             enqueue_tx_command(command_beacon.BeaconCommand, request.json)
     else:

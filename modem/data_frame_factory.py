@@ -18,6 +18,10 @@ class DataFrameFactory:
         'CHECKSUM': 2,  # Bit-position for indicating the CHECKSUM is correct or not
     }
 
+    BEACON_FLAGS = {
+        'AWAY_FROM_KEY': 0,  # Bit-position for indicating the AWAY FROM KEY state
+    }
+
     def __init__(self, config):
 
         self.myfullcall = f"{config['STATION']['mycall']}-{config['STATION']['myssid']}"
@@ -51,7 +55,8 @@ class DataFrameFactory:
         self.template_list[FR_TYPE.BEACON.value] = {
             "frame_length": self.LENGTH_SIG0_FRAME,
             "origin": 6,
-            "gridsquare": 4
+            "gridsquare": 4,
+            "flag": 1
         }
 
     def _load_ping_templates(self):
@@ -287,6 +292,15 @@ class DataFrameFactory:
                         # Update extracted_data with the status of each flag
                         # get_flag returns True or False based on the bit value at the flag's position
                         extracted_data[key][flag] = helpers.get_flag(data, flag, flag_dict)
+
+                if frametype in [FR_TYPE.BEACON]:
+                    flag_dict = self.BEACON_FLAGS
+                    for flag in flag_dict:
+                        # Update extracted_data with the status of each flag
+                        # get_flag returns True or False based on the bit value at the flag's position
+                        extracted_data[key][flag] = helpers.get_flag(data, flag, flag_dict)
+
+
             else:
                 extracted_data[key] = data
 
@@ -342,10 +356,16 @@ class DataFrameFactory:
         }
         return self.construct(FR_TYPE.QRV, payload)
 
-    def build_beacon(self):
+    def build_beacon(self, flag_away_from_key = False):
+        flag = 0b00000000
+        if flag_away_from_key:
+            flag = helpers.set_flag(flag, 'AWAY_FROM_KEY', True, self.BEACON_FLAGS)
+
         payload = {
             "origin": helpers.callsign_to_bytes(self.myfullcall),
-            "gridsquare": helpers.encode_grid(self.mygrid)
+            "gridsquare": helpers.encode_grid(self.mygrid),
+            "flag": flag.to_bytes(1, 'big'),
+
         }
         return self.construct(FR_TYPE.BEACON, payload)
 

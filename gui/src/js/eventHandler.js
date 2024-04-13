@@ -30,8 +30,11 @@ import {
   getRemote,
 } from "../store/settingsStore.js";
 
-export function loadAllData() {
-  getModemState();
+export async function loadAllData() {
+  // TODO: Make this working
+  let stateData = await getModemState();
+  console.log(stateData)
+
   getRemote();
   getOverallHealth();
   audioStore.loadAudioDevices();
@@ -67,7 +70,10 @@ export function stateDispatcher(data) {
     );
 
     stateStore.channel_busy_slot = data["channel_busy_slot"];
+
     stateStore.beacon_state = data["is_beacon_running"];
+    stateStore.is_away_from_key = data["is_away_from_key"];
+
     stateStore.radio_status = data["radio_status"];
     stateStore.frequency = data["radio_frequency"];
     stateStore.mode = data["radio_mode"];

@@ -23,6 +23,7 @@ class StateManager:
         self.setARQ(False)
 
         self.is_beacon_running = False
+        self.is_away_from_key = False
 
         # If true, any wait() call is blocking
         self.transmitting_event = threading.Event()
@@ -84,6 +85,7 @@ class StateManager:
             "type": msgtype,
             "is_modem_running": self.is_modem_running,
             "is_beacon_running": self.is_beacon_running,
+            "is_away_from_key": self.is_away_from_key,
             "radio_status": self.radio_status,
             "radio_frequency": self.radio_frequency,
             "radio_mode": self.radio_mode,
