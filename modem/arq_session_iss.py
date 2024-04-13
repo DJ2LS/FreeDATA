@@ -156,6 +156,7 @@ class ARQSessionISS(arq_session.ARQSession):
         # interrupt transmission when aborting
         if self.state in [ISS_State.ABORTED, ISS_State.ABORTING]:
             self.event_frame_received.set()
+            self.send_stop()
             return
 
         # update statistics
@@ -237,9 +238,6 @@ class ARQSessionISS(arq_session.ARQSession):
 
         # break actual retries
         self.event_frame_received.set()
-
-        # start with abort sequence
-        self.send_stop()
 
     def send_stop(self):
         stop_frame = self.frame_factory.build_arq_stop(self.id)
