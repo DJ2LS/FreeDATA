@@ -33,7 +33,7 @@ import {
 export async function loadAllData() {
   // TODO: Make this working
   let stateData = await getModemState();
-  console.log(stateData)
+  console.log(stateData);
 
   getRemote();
   getOverallHealth();
@@ -185,13 +185,16 @@ export function eventDispatcher(data) {
               100;
             stateStore.arq_total_bytes =
               data["arq-transfer-outbound"].received_bytes;
-            stateStore.arq_speed_list_timestamp.value =
-              toRaw(data["arq-transfer-outbound"].statistics.time_histogram);
-            stateStore.arq_speed_list_bpm.value =
-              toRaw(data["arq-transfer-outbound"].statistics.bpm_histogram);
-            stateStore.arq_speed_list_snr.value =
-              toRaw(data["arq-transfer-outbound"].statistics.snr_histogram);
-              //console.log(toRaw(stateStore.arq_speed_list_timestamp.value));
+            stateStore.arq_speed_list_timestamp.value = toRaw(
+              data["arq-transfer-outbound"].statistics.time_histogram,
+            );
+            stateStore.arq_speed_list_bpm.value = toRaw(
+              data["arq-transfer-outbound"].statistics.bpm_histogram,
+            );
+            stateStore.arq_speed_list_snr.value = toRaw(
+              data["arq-transfer-outbound"].statistics.snr_histogram,
+            );
+            //console.log(toRaw(stateStore.arq_speed_list_timestamp.value));
             return;
 
           case "ABORTING":
@@ -273,16 +276,19 @@ export function eventDispatcher(data) {
               100;
             stateStore.arq_total_bytes =
               data["arq-transfer-inbound"].received_bytes;
-              //console.log(data["arq-transfer-inbound"].statistics.time_histogram);
-            stateStore.arq_speed_list_timestamp.value =
-            toRaw(data["arq-transfer-inbound"].statistics.time_histogram);
-            stateStore.arq_speed_list_bpm.value =
-              toRaw(data["arq-transfer-inbound"].statistics.bpm_histogram);
-            stateStore.arq_speed_list_snr.value =
-              toRaw(data["arq-transfer-inbound"].statistics.snr_histogram);
-              console.log((stateStore.arq_speed_list_timestamp.value));
-              console.log((stateStore.arq_speed_list_bpm.value));
-              console.log((stateStore.arq_speed_list_snr.value));
+            //console.log(data["arq-transfer-inbound"].statistics.time_histogram);
+            stateStore.arq_speed_list_timestamp.value = toRaw(
+              data["arq-transfer-inbound"].statistics.time_histogram,
+            );
+            stateStore.arq_speed_list_bpm.value = toRaw(
+              data["arq-transfer-inbound"].statistics.bpm_histogram,
+            );
+            stateStore.arq_speed_list_snr.value = toRaw(
+              data["arq-transfer-inbound"].statistics.snr_histogram,
+            );
+            console.log(stateStore.arq_speed_list_timestamp.value);
+            console.log(stateStore.arq_speed_list_bpm.value);
+            console.log(stateStore.arq_speed_list_snr.value);
             return;
 
           case "ENDED":
