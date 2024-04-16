@@ -7,7 +7,7 @@ import { useStateStore } from "../../store/stateStore.js";
 const state = useStateStore(pinia);
 </script>
 <template>
-  <div class="progress mb-0 me-4 rounded-0 rounded-top" style="height: 22px">
+  <div class="progress mb-0 rounded-0 rounded-top" style="height: 22px">
     <div
       class="progress-bar progress-bar-striped bg-primary force-gpu"
       id="dbfs_level"
@@ -24,7 +24,7 @@ const state = useStateStore(pinia);
       {{ state.dbfs_level }} dBFS
     </p>
   </div>
-  <div class="progress mb-0 me-4 rounded-0 rounded-bottom" style="height: 8px">
+  <div class="progress mb-0 rounded-0 rounded-bottom" style="height: 8px">
     <div
       class="progress-bar progress-bar-striped bg-warning"
       role="progressbar"
