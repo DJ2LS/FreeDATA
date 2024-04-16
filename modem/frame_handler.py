@@ -127,7 +127,8 @@ class FrameHandler():
             self.states.radio_frequency,
             self.states.heard_stations,
             distance_km=distance_km,  # Pass the kilometer distance
-            distance_miles=distance_miles  # Pass the miles distance
+            distance_miles=distance_miles,  # Pass the miles distance
+            away_from_key=self.details['frame']["flag"]["AWAY_FROM_KEY"]
         )
     def make_event(self):
 

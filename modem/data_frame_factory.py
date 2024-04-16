@@ -284,7 +284,6 @@ class DataFrameFactory:
 
                 data = int.from_bytes(data, "big")
                 extracted_data[key] = {}
-
                 # check for frametype for selecting the correspinding flag dictionary
                 if frametype in [FR_TYPE.ARQ_SESSION_OPEN_ACK.value, FR_TYPE.ARQ_SESSION_INFO_ACK.value, FR_TYPE.ARQ_BURST_ACK.value]:
                     flag_dict = self.ARQ_FLAGS
@@ -293,7 +292,7 @@ class DataFrameFactory:
                         # get_flag returns True or False based on the bit value at the flag's position
                         extracted_data[key][flag] = helpers.get_flag(data, flag, flag_dict)
 
-                if frametype in [FR_TYPE.BEACON]:
+                if frametype in [FR_TYPE.BEACON.value]:
                     flag_dict = self.BEACON_FLAGS
                     for flag in flag_dict:
                         # Update extracted_data with the status of each flag
@@ -354,7 +353,7 @@ class DataFrameFactory:
         }
         return self.construct(FR_TYPE.QRV, payload)
 
-    def build_beacon(self, flag_away_from_key = False):
+    def build_beacon(self, flag_away_from_key=False):
         flag = 0b00000000
         if flag_away_from_key:
             flag = helpers.set_flag(flag, 'AWAY_FROM_KEY', True, self.BEACON_FLAGS)
