@@ -186,7 +186,6 @@ class StateManager:
         # if frequency not provided, add it here
         if 'frequency' not in activity_data:
             activity_data['frequency'] = self.radio_frequency
-
         self.activities_list[activity_id] = activity_data
         self.sendStateUpdate()
 
