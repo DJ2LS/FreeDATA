@@ -89,7 +89,7 @@ jobs:
           # Launch the main application executable from the linux-unpacked directory
           ./linux-unpacked/freedata
           
-          ' > $HOME/AppRun
+          ' > $HOME/freedata-appimage/AppRun
           chmod +x $HOME/freedata-appimage/AppRun
 
       - name: Download AppImage
