@@ -15,7 +15,7 @@ jobs:
           python-version: "3.11"
 
       - name: Electron Builder
-        working-directory: gui
+        working-directory: freedata-gui
         run: |
           npm i
           npm run build
