@@ -25,7 +25,7 @@ jobs:
 
       - name: Install Linux dependencies
         run: |
-          sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2 patchelf
+          sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2 patchelf desktop-file-utils
 
       - name: Install Python dependencies
         run: |
@@ -40,6 +40,9 @@ jobs:
       - name: Prepare AppImage folder
         run: |
           mkdir -p $HOME/freedata-appimage
+          mkdir -p $HOME/freedata-appimage/gui
+          mkdir -p $HOME/freedata-appimage/server
+
 
       - name: Copy GUI
         run: |
@@ -86,7 +89,7 @@ jobs:
           # Launch the main application executable from the linux-unpacked directory
           ./linux-unpacked/freedata
           
-          ' > $HOME/AppRun
+          ' > $HOME/freedata-appimage/AppRun
           chmod +x $HOME/freedata-appimage/AppRun
 
       - name: Download AppImage
@@ -96,7 +99,7 @@ jobs:
 
       - name: Execute AppImage
         run: |
-          ./appimagetool-x86_64.AppImage freedata-appimage/
+          ./appimagetool-x86_64.AppImage $HOME/freedata-appimage/
 
       - name: LIST ALL FILES
         run: ls -R
