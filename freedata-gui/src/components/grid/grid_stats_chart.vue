@@ -21,7 +21,6 @@ import {
 } from "chart.js";
 import { Line, Scatter } from "vue-chartjs";
 
-
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -94,12 +93,11 @@ const transmissionSpeedChartData = computed(() => ({
     },
   ],
 }));
-
 </script>
 
 <template>
-          <Line
-            :data="transmissionSpeedChartData"
-            :options="transmissionSpeedChartOptions"
-          />
+  <Line
+    :data="transmissionSpeedChartData"
+    :options="transmissionSpeedChartOptions"
+  />
 </template>

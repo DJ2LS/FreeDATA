@@ -112,11 +112,11 @@ app.whenReady().then(() => {
     //serverProcess.unref(); // Allow the server process to continue running independently of the parent process
     //  break;
     case "linux":
-        serverPath = join(basePath, "server.dist", "freedata-server");
-        console.log(`Starting server with path: ${serverPath}`);
-        serverProcess = spawn(serverPath, [], { detached: true });
-        serverProcess.unref(); // Allow the server process to continue running independently of the parent process
-        break;
+      serverPath = join(basePath, "server.dist", "freedata-server");
+      console.log(`Starting server with path: ${serverPath}`);
+      serverProcess = spawn(serverPath, [], { detached: true });
+      serverProcess.unref(); // Allow the server process to continue running independently of the parent process
+      break;
     case "win32":
       serverPath = join(basePath, "freedata-server", "freedata-server.exe");
       console.log(`Starting server with path: ${serverPath}`);

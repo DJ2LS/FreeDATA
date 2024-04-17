@@ -8,13 +8,11 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 import { useStateStore } from "../store/stateStore";
 const stateStore = useStateStore(pinia);
 
-import {
-  getRadioStatus,
-} from "./api";
+import { getRadioStatus } from "./api";
 
-export async function processRadioStatus(){
-    let result = await getRadioStatus()
-    stateStore.mode = result.radio_mode
-    stateStore.frequency = result.radio_frequency
-    stateStore.rf_level = result.radio_rf_level
+export async function processRadioStatus() {
+  let result = await getRadioStatus();
+  stateStore.mode = result.radio_mode;
+  stateStore.frequency = result.radio_frequency;
+  stateStore.rf_level = result.radio_rf_level;
 }
