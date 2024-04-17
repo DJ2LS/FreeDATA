@@ -1,5 +1,10 @@
 name: Deploy Python Package
-on: [push]
+on:
+  push:
+    tags:
+      - '*'
+    branches:
+      - main
 
 jobs:
   deploy:
