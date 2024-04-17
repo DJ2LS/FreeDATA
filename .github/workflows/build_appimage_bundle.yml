@@ -99,7 +99,7 @@ jobs:
 
       - name: Execute AppImage
         run: |
-          ./appimagetool-x86_64.AppImage freedata-appimage/
+          ./appimagetool-x86_64.AppImage $HOME/freedata-appimage/
 
       - name: LIST ALL FILES
         run: ls -R
