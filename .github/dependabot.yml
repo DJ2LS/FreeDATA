@@ -11,7 +11,7 @@ updates:
     
   # Maintain dependencies for npm
   - package-ecosystem: "npm"
-    directory: "/gui"
+    directory: "/freedata-gui"
     schedule:
       interval: "monthly"
     target-branch: "develop"

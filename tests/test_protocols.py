@@ -1,5 +1,5 @@
 import sys
-sys.path.append('modem')
+sys.path.append('freedata-server')
 
 import unittest
 from config import CONFIG
@@ -18,7 +18,7 @@ class TestProtocols(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        config_manager = CONFIG('modem/config.ini.example')
+        config_manager = CONFIG('freedata-server/config.ini.example')
         cls.config = config_manager.read()
 
         cls.state_manager_queue = queue.Queue()
@@ -34,7 +34,7 @@ class TestProtocols(unittest.TestCase):
         modem.TESTMODE = True
         frame_handler.TESTMODE = True
 
-        #cls.modem.start_modem()
+        #cls.freedata-server.start_modem()
         cls.frame_dispatcher = DISPATCHER(cls.config, 
                                           cls.event_manager,
                                           cls.state_manager,
@@ -53,7 +53,7 @@ class TestProtocols(unittest.TestCase):
         # Run ping command
         api_params = { "dxcall": "AA1AAA-1"}
         ping_cmd = PingCommand(self.config, self.state_manager, self.event_manager, api_params)
-        #ping_cmd.run(self.event_queue, self.modem)
+        #ping_cmd.run(self.event_queue, self.freedata-server)
         frame = ping_cmd.test(self.event_queue)
         # Shortcut the transmit queue directly to the frame dispatcher
         self.shortcutTransmission(frame)
@@ -69,7 +69,7 @@ class TestProtocols(unittest.TestCase):
 
         api_params = {}
         cmd = CQCommand(self.config, self.state_manager, self.event_manager, api_params)
-        #cmd.run(self.event_queue, self.modem)
+        #cmd.run(self.event_queue, self.freedata-server)
         frame = cmd.test(self.event_queue)
 
         self.shortcutTransmission(frame)

@@ -39,7 +39,7 @@ def create_hmac_salts(dxcallsign: str, mycallsign: str, num_tokens: int):
             for _ in range(len(token_array)):
                 file.write(token_array[_] + '\n')
 
-        print("files created - place them in modem/hmac folder and share the file with the remote station")
+        print("files created - place them in freedata-server/hmac folder and share the file with the remote station")
 
     except Exception:
         print("error creating hmac file")
