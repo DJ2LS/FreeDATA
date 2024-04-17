@@ -3,7 +3,8 @@ from command import TxCommand
 class BeaconCommand(TxCommand):
 
     def build_frame(self):
-        return self.frame_factory.build_beacon()
+        beacon_state = self.state_manager.is_away_from_key
+        return self.frame_factory.build_beacon(beacon_state)
 
 
     #def transmit(self, modem):

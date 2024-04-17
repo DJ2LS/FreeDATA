@@ -15,7 +15,6 @@ input_device = 5a1c
 output_device = bd6c
 rx_audio_level = 0
 tx_audio_level = 0
-enable_auto_tune = False
 
 [RIGCTLD]
 ip = 127.0.0.1
@@ -46,10 +45,17 @@ enable_protocol = False
 
 [MODEM]
 enable_hmac = False
-enable_low_bandwidth_mode = False
 enable_morse_identifier = False
 respond_to_cq = True
-tx_delay = 200
+tx_delay = 50
+maximum_bandwidth = 2375
+enable_socket_interface = False
+
+[SOCKET_INTERFACE]
+enable = False
+host = 127.0.0.1
+cmd_port = 8000
+data_port = 8001
 
 [MESSAGES]
 enable_auto_repeat = False

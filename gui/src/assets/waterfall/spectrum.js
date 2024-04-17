@@ -105,6 +105,8 @@ Spectrum.prototype.drawSpectrum = function () {
   var linePositionHigh = 178.4; //150 + bandwidth/20
   var linePositionLow2 = 65; //150 - bandwith/20
   var linePositionHigh2 = 235; //150 + bandwith/20
+  var linePositionLow3 = 28.1; //150 - bandwith/20
+  var linePositionHigh3 = 271.9; //150 + bandwith/20
   this.ctx_wf.beginPath();
   this.ctx_wf.moveTo(linePositionLow, 0);
   this.ctx_wf.lineTo(linePositionLow, height);
@@ -114,6 +116,10 @@ Spectrum.prototype.drawSpectrum = function () {
   this.ctx_wf.lineTo(linePositionLow2, height);
   this.ctx_wf.moveTo(linePositionHigh2, 0);
   this.ctx_wf.lineTo(linePositionHigh2, height);
+  this.ctx_wf.moveTo(linePositionLow3, 0);
+  this.ctx_wf.lineTo(linePositionLow3, height);
+  this.ctx_wf.moveTo(linePositionHigh3, 0);
+  this.ctx_wf.lineTo(linePositionHigh3, height);
   this.ctx_wf.lineWidth = 1;
   this.ctx_wf.strokeStyle = "#C3C3C3";
   this.ctx_wf.stroke();
@@ -454,7 +460,7 @@ export function Spectrum(id, options) {
   this.centerHz = options && options.centerHz ? options.centerHz : 1500;
   this.spanHz = options && options.spanHz ? options.spanHz : 0;
   this.wf_size = options && options.wf_size ? options.wf_size : 0;
-  this.wf_rows = options && options.wf_rows ? options.wf_rows : 1024;
+  this.wf_rows = options && options.wf_rows ? options.wf_rows : 512;
   this.spectrumPercent =
     options && options.spectrumPercent ? options.spectrumPercent : 0;
   this.spectrumPercentStep =

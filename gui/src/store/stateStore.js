@@ -38,6 +38,7 @@ export const useStateStore = defineStore("stateStore", () => {
   var arq_session_state = ref("");
   var arq_state = ref("");
   var beacon_state = ref(false);
+  var away_from_key = ref(false);
 
   var audio_recording = ref(false);
 
@@ -115,6 +116,7 @@ export const useStateStore = defineStore("stateStore", () => {
     activities,
     heard_stations,
     beacon_state,
+    away_from_key,
     rigctld_started,
     rigctld_process,
     python_version,

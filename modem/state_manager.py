@@ -23,6 +23,7 @@ class StateManager:
         self.setARQ(False)
 
         self.is_beacon_running = False
+        self.is_away_from_key = False
 
         # If true, any wait() call is blocking
         self.transmitting_event = threading.Event()
@@ -37,6 +38,8 @@ class StateManager:
 
         self.arq_iss_sessions = {}
         self.arq_irs_sessions = {}
+
+        self.p2p_connection_sessions = {}
 
         #self.mesh_routing_table = []
 
@@ -82,6 +85,7 @@ class StateManager:
             "type": msgtype,
             "is_modem_running": self.is_modem_running,
             "is_beacon_running": self.is_beacon_running,
+            "is_away_from_key": self.is_away_from_key,
             "radio_status": self.radio_status,
             "radio_frequency": self.radio_frequency,
             "radio_mode": self.radio_mode,
@@ -182,7 +186,6 @@ class StateManager:
         # if frequency not provided, add it here
         if 'frequency' not in activity_data:
             activity_data['frequency'] = self.radio_frequency
-
         self.activities_list[activity_id] = activity_data
         self.sendStateUpdate()
 
@@ -214,3 +217,15 @@ class StateManager:
             "radio_rf_level": self.radio_rf_level,
             "s_meter_strength": self.s_meter_strength,
         }
+
+    def register_p2p_connection_session(self, session):
+        if session.session_id in self.p2p_connection_sessions:
+            print("session already registered...")
+            return False
+        self.p2p_connection_sessions[session.session_id] = session
+        return True
+
+    def get_p2p_connection_session(self, id):
+        if id not in self.p2p_connection_sessions:
+            pass
+        return self.p2p_connection_sessions[id]

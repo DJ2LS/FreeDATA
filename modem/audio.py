@@ -1,16 +1,12 @@
 """
 Gather information about audio devices.
 """
-import atexit
 import multiprocessing
 import crcengine
 import sounddevice as sd
 import structlog
 import numpy as np
 import queue
-import threading
-
-atexit.register(sd._terminate)
 
 log = structlog.get_logger("audio")
 
@@ -214,6 +210,36 @@ def set_audio_volume(datalist: np.ndarray, dB: float) -> np.ndarray:
 RMS_COUNTER = 0
 CHANNEL_BUSY_DELAY = 0
 
+
+def prepare_data_for_fft(data, target_length_samples=400):
+    """
+    Prepare data array for FFT by padding if necessary to match the target length.
+    Center the data if it's shorter than the target length.
+
+    Parameters:
+    - data: numpy array of np.int16, representing the input data.
+    - target_length_samples: int, the target length of the data in samples.
+
+    Returns:
+    - numpy array of np.int16, padded and/or centered if necessary.
+    """
+    # Calculate the current length in samples
+    current_length_samples = data.size
+
+    # Check if padding is needed
+    if current_length_samples < target_length_samples:
+        # Calculate total padding needed
+        total_pad_length = target_length_samples - current_length_samples
+        # Calculate padding on each side
+        pad_before = total_pad_length // 2
+        pad_after = total_pad_length - pad_before
+        # Pad the data to center it
+        data_padded = np.pad(data, (pad_before, pad_after), 'constant', constant_values=(0,))
+        return data_padded
+    else:
+        # No padding needed, return original data
+        return data
+
 def calculate_fft(data, fft_queue, states) -> None:
     """
     Calculate an average signal strength of the channel to assess
@@ -229,6 +255,7 @@ def calculate_fft(data, fft_queue, states) -> None:
     global RMS_COUNTER, CHANNEL_BUSY_DELAY
 
     try:
+        data = prepare_data_for_fft(data, target_length_samples=800)
         fftarray = np.fft.rfft(data)
 
         # Set value 0 to 1 to avoid division by zero
@@ -325,6 +352,8 @@ def calculate_fft(data, fft_queue, states) -> None:
             # erase queue if greater than 3
         if fft_queue.qsize() >= 1:
             fft_queue = queue.Queue()
-        fft_queue.put(dfftlist[:315]) # 315 --> bandwidth 3200
+        #fft_queue.put(dfftlist[:315]) # 315 --> bandwidth 3200
+        fft_queue.put(dfftlist) # 315 --> bandwidth 3200
+
     except Exception as err:
         print(f"[MDM] calculate_fft: Exception: {err}")

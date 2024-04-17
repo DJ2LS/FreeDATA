@@ -48,7 +48,6 @@ jobs:
           brew install portaudio
           python -m pip install --upgrade pip
           pip3 install pyaudio
-          export PYTHONPATH=/Library/Frameworks/Python.framework/Versions/3.11/lib/:$PYTHONPATH 
 
       - name: Install Python dependencies
         run: |
@@ -114,7 +113,7 @@ jobs:
           path: ./modem/server.dist/${{ matrix.zip_name }}.zip
 
       - name: Release Modem
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           draft: true

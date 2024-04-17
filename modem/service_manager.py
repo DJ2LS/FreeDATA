@@ -5,7 +5,7 @@ import structlog
 import audio
 
 import radio_manager
-
+from socket_interface import SocketInterfaceHandler
 
 class SM:
     def __init__(self, app):
@@ -19,7 +19,7 @@ class SM:
         self.state_manager = app.state_manager
         self.event_manager = app.event_manager
         self.schedule_manager = app.schedule_manager
-
+        self.socket_interface_manager = None
 
         runner_thread = threading.Thread(
             target=self.runner, name="runner thread", daemon=True
@@ -34,15 +34,24 @@ class SM:
                 self.start_radio_manager()
                 self.start_modem()
 
+                if self.config['SOCKET_INTERFACE']['enable']:
+                    self.socket_interface_manager = SocketInterfaceHandler(self.modem, self.app.config_manager, self.state_manager, self.event_manager).start_servers()
+
             elif cmd in ['stop'] and self.modem:
                 self.stop_modem()
                 self.stop_radio_manager()
+                if self.config['SOCKET_INTERFACE']['enable'] and self.socket_interface_manager:
+                    self.socket_interface_manager.stop_servers()
                 # we need to wait a bit for avoiding a portaudio crash
                 threading.Event().wait(0.5)
 
             elif cmd in ['restart']:
                 self.stop_modem()
                 self.stop_radio_manager()
+                if self.config['SOCKET_INTERFACE']['enable'] and self.socket_interface_manager:
+
+                    self.socket_interface_manager.stop_servers()
+
                 # we need to wait a bit for avoiding a portaudio crash
                 threading.Event().wait(0.5)
 

@@ -8,7 +8,7 @@ from arq_data_type_handler import ARQDataTypeHandler
 
 class TxCommand():
 
-    def __init__(self, config: dict, state_manager: StateManager, event_manager, apiParams:dict = {}):
+    def __init__(self, config: dict, state_manager: StateManager, event_manager, apiParams:dict = {}, socket_command_handler=None):
         self.config = config
         self.logger = structlog.get_logger(type(self).__name__)
         self.state_manager = state_manager
@@ -16,6 +16,7 @@ class TxCommand():
         self.set_params_from_api(apiParams)
         self.frame_factory = DataFrameFactory(config)
         self.arq_data_type_handler = ARQDataTypeHandler(event_manager, state_manager)
+        self.socket_command_handler = socket_command_handler
 
     def log(self, message, isWarning = False):
         msg = f"[{type(self).__name__}]: {message}"
@@ -60,5 +61,4 @@ class TxCommand():
     def test(self, event_queue: queue.Queue):
         self.emit_event(event_queue)
         self.logger.info(self.log_message())
-        frame = self.build_frame()
-        return frame
+        return self.build_frame()

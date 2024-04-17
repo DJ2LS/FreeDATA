@@ -1,3 +1,5 @@
+import time
+
 from flask import Flask, request, jsonify, make_response, abort, Response
 from flask_sock import Sock
 from flask_cors import CORS
@@ -20,6 +22,8 @@ import command_test
 import command_arq_raw
 import command_message_send
 import event_manager
+import atexit
+
 from message_system_db_manager import DatabaseManager
 from message_system_db_messages import DatabaseManagerMessages
 from message_system_db_attachments import DatabaseManagerAttachments
@@ -29,7 +33,7 @@ from schedule_manager import ScheduleManager
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
-MODEM_VERSION = "0.14.2-alpha"
+MODEM_VERSION = "0.15.2-alpha"
 
 # set config file to use
 def set_config():
@@ -142,14 +146,15 @@ def post_cqcqcq():
 def post_beacon():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for controlling BEACON STATE via POST"})
-
-    if not isinstance(request.json['enabled'], bool):
+    if not isinstance(request.json['enabled'], bool) or not isinstance(request.json['away_from_key'], bool):
         api_abort(f"Incorrect value for 'enabled'. Shoud be bool.")
     if not app.state_manager.is_modem_running:
         api_abort('Modem not running', 503)
 
     if not app.state_manager.is_beacon_running:
         app.state_manager.set('is_beacon_running', request.json['enabled'])
+        app.state_manager.set('is_away_from_key', request.json['away_from_key'])
+
         if not app.state_manager.getARQ():
             enqueue_tx_command(command_beacon.BeaconCommand, request.json)
     else:
@@ -320,7 +325,23 @@ def sock_fft(sock):
 def sock_states(sock):
     wsm.handle_connection(sock, wsm.states_client_list, app.state_queue)
 
+@atexit.register
+def stop_server():
+    print("------------------------------------------")
+    try:
+        app.service_manager.modem_service.put("stop")
+        if app.socket_interface_manager:
+            app.socket_interface_manager.stop_servers()
 
+        if app.service_manager.modem:
+            app.service_manager.modem.sd_input_stream.stop
+        audio.sd._terminate()
+    except Exception as e:
+        print(e)
+        print("Error stopping modem")
+    time.sleep(1)
+    print('Server shutdown...')
+    print("------------------------------------------")
 
 if __name__ == "__main__":
     app.config['SOCK_SERVER_OPTIONS'] = {'ping_interval': 10}
@@ -331,6 +352,7 @@ if __name__ == "__main__":
     app.config_manager = CONFIG(config_file)
 
     # start modem
+    app.p2p_data_queue = queue.Queue() # queue which holds processing data of p2p connections
     app.state_queue = queue.Queue()  # queue which holds latest states
     app.modem_events = queue.Queue()  # queue which holds latest events
     app.modem_fft = queue.Queue()  # queue which holds latest fft data
@@ -342,6 +364,7 @@ if __name__ == "__main__":
     app.schedule_manager = ScheduleManager(app.MODEM_VERSION, app.config_manager, app.state_manager, app.event_manager)
     # start service manager
     app.service_manager = service_manager.SM(app)
+
     # start modem service
     app.modem_service.put("start")
     # initialize database default values
@@ -353,7 +376,9 @@ if __name__ == "__main__":
     modemport = conf['NETWORK']['modemport']
 
     if not modemaddress:
-        modemaddress = '0.0.0.0'
+        modemaddress = '127.0.0.1'
     if not modemport:
         modemport = 5000
+
     app.run(modemaddress, modemport)
+

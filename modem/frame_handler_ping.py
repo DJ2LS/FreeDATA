@@ -15,15 +15,11 @@ class PingFrameHandler(frame_handler.FrameHandler):
     #        ft = self.details['frame']['frame_type']
     #        self.logger.info(f"[Modem] {ft} received but not for us.")
     #    return valid
-    
-    #def should_respond(self):
-    #    return self.is_frame_for_me()
 
     def follow_protocol(self):
-
-        if not self.should_respond():
+        if not bool(self.is_frame_for_me() and not self.states.getARQ()):
             return
-
+        
         self.logger.debug(
             f"[Modem] Responding to request from [{self.details['frame']['origin']}]",
             snr=self.details['snr'],

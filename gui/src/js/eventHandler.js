@@ -7,6 +7,7 @@ import {
   setStateFailed,
 } from "./chatHandler";
 */
+import { toRaw } from "vue";
 import { displayToast } from "./popupHandler";
 import { getFreedataMessages, getModemState, getAudioDevices } from "./api";
 import { processFreedataMessages } from "./messagesHandler.ts";
@@ -29,8 +30,11 @@ import {
   getRemote,
 } from "../store/settingsStore.js";
 
-export function loadAllData() {
-  getModemState();
+export async function loadAllData() {
+  // TODO: Make this working
+  let stateData = await getModemState();
+  console.log(stateData);
+
   getRemote();
   getOverallHealth();
   audioStore.loadAudioDevices();
@@ -66,7 +70,10 @@ export function stateDispatcher(data) {
     );
 
     stateStore.channel_busy_slot = data["channel_busy_slot"];
+
     stateStore.beacon_state = data["is_beacon_running"];
+    stateStore.is_away_from_key = data["is_away_from_key"];
+
     stateStore.radio_status = data["radio_status"];
     stateStore.frequency = data["radio_frequency"];
     stateStore.mode = data["radio_mode"];
@@ -178,12 +185,16 @@ export function eventDispatcher(data) {
               100;
             stateStore.arq_total_bytes =
               data["arq-transfer-outbound"].received_bytes;
-            stateStore.arq_speed_list_timestamp =
-              data["arq-transfer-outbound"].statistics.time_histogram;
-            stateStore.arq_speed_list_bpm =
-              data["arq-transfer-outbound"].statistics.bpm_histogram;
-            stateStore.arq_speed_list_snr =
-              data["arq-transfer-outbound"].statistics.snr_histogram;
+            stateStore.arq_speed_list_timestamp.value = toRaw(
+              data["arq-transfer-outbound"].statistics.time_histogram,
+            );
+            stateStore.arq_speed_list_bpm.value = toRaw(
+              data["arq-transfer-outbound"].statistics.bpm_histogram,
+            );
+            stateStore.arq_speed_list_snr.value = toRaw(
+              data["arq-transfer-outbound"].statistics.snr_histogram,
+            );
+            //console.log(toRaw(stateStore.arq_speed_list_timestamp.value));
             return;
 
           case "ABORTING":
@@ -226,13 +237,12 @@ export function eventDispatcher(data) {
             stateStore.dxcallsign = data["arq-transfer-inbound"].dxcall;
             stateStore.arq_transmission_percent = 0;
             stateStore.arq_total_bytes = 0;
-            stateStore.arq_speed_list_timestamp =
-              data["arq-transfer-inbound"].statistics.time_histogram;
-            stateStore.arq_speed_list_bpm =
-              data["arq-transfer-inbound"].statistics.bpm_histogram;
-            stateStore.arq_speed_list_snr =
-              data["arq-transfer-inbound"].statistics.snr_histogram;
-
+            //stateStore.arq_speed_list_timestamp =
+            //  [];
+            //stateStore.arq_speed_list_bpm =
+            //  [];
+            //stateStore.arq_speed_list_snr =
+            //  [];
             return;
 
           case "OPEN_ACK_SENT":
@@ -266,6 +276,19 @@ export function eventDispatcher(data) {
               100;
             stateStore.arq_total_bytes =
               data["arq-transfer-inbound"].received_bytes;
+            //console.log(data["arq-transfer-inbound"].statistics.time_histogram);
+            stateStore.arq_speed_list_timestamp.value = toRaw(
+              data["arq-transfer-inbound"].statistics.time_histogram,
+            );
+            stateStore.arq_speed_list_bpm.value = toRaw(
+              data["arq-transfer-inbound"].statistics.bpm_histogram,
+            );
+            stateStore.arq_speed_list_snr.value = toRaw(
+              data["arq-transfer-inbound"].statistics.snr_histogram,
+            );
+            console.log(stateStore.arq_speed_list_timestamp.value);
+            console.log(stateStore.arq_speed_list_bpm.value);
+            console.log(stateStore.arq_speed_list_snr.value);
             return;
 
           case "ENDED":

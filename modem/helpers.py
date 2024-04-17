@@ -121,60 +121,45 @@ def get_crc_32(data: str) -> bytes:
     return crc_algorithm(data).to_bytes(4, byteorder="big")
 
 
-def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency, heard_stations_list):
-    """
+from datetime import datetime, timezone
+import time
 
+
+def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency, heard_stations_list, distance_km=None,
+                          distance_miles=None, away_from_key=False):
+    """
     Args:
-        dxcallsign:
-        dxgrid:
-        datatype:
-        snr:
-        offset:
-        frequency:
+        dxcallsign (str): The callsign of the DX station.
+        dxgrid (str): The Maidenhead grid square of the DX station.
+        datatype (str): The type of data received (e.g., FT8, CW).
+        snr (int): Signal-to-noise ratio of the received signal.
+        offset (float): Frequency offset.
+        frequency (float): Base frequency of the received signal.
+        heard_stations_list (list): List containing heard stations.
+        distance_km (float): Distance to the DX station in kilometers.
+        distance_miles (float): Distance to the DX station in miles.
+        away_from_key (bool): Away from key indicator
 
     Returns:
-        Nothing
+        Nothing. The function updates the heard_stations_list in-place.
     """
-    # check if buffer empty
-    if len(heard_stations_list) == 0:
-        heard_stations_list.append(
-            [dxcallsign, dxgrid, int(datetime.now(timezone.utc).timestamp()), datatype, snr, offset, frequency]
-        )
-    # if not, we search and update
+    # Convert current timestamp to an integer
+    current_timestamp = int(datetime.now(timezone.utc).timestamp())
+
+    # Initialize the new entry
+    new_entry = [
+        dxcallsign, dxgrid, current_timestamp, datatype, snr, offset, frequency, distance_km, distance_miles, away_from_key
+    ]
+
+    # Check if the buffer is empty or if the callsign is not already in the list
+    if not any(dxcallsign == station[0] for station in heard_stations_list):
+        heard_stations_list.append(new_entry)
     else:
-        for i in range(len(heard_stations_list)):
-            # Update callsign with new timestamp
-            if heard_stations_list[i].count(dxcallsign) > 0:
-                heard_stations_list[i] = [
-                    dxcallsign,
-                    dxgrid,
-                    int(time.time()),
-                    datatype,
-                    snr,
-                    offset,
-                    frequency,
-                ]
+        # Search for the existing entry and update
+        for i, entry in enumerate(heard_stations_list):
+            if entry[0] == dxcallsign:
+                heard_stations_list[i] = new_entry
                 break
-            # Insert if nothing found
-            if i == len(heard_stations_list) - 1:
-                heard_stations_list.append(
-                    [
-                        dxcallsign,
-                        dxgrid,
-                        int(time.time()),
-                        datatype,
-                        snr,
-                        offset,
-                        frequency,
-                    ]
-                )
-                break
-
-
-#    for idx, item in enumerate(heard_stations_list):
-#        if dxcallsign in item:
-#            item = [dxcallsign, int(time.time())]
-#            heard_stations_list[idx] = item
 
 
 def callsign_to_bytes(callsign: str) -> bytes:

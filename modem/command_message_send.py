@@ -41,7 +41,7 @@ class SendMessageCommand(TxCommand):
             # Convert JSON string to bytes (using UTF-8 encoding)
             payload = message.to_payload().encode('utf-8')
             json_bytearray = bytearray(payload)
-            data, data_type = self.arq_data_type_handler.prepare(json_bytearray, ARQ_SESSION_TYPES.p2pmsg_lzma)
+            data, data_type = self.arq_data_type_handler.prepare(json_bytearray, ARQ_SESSION_TYPES.p2pmsg_zlib)
 
             iss = ARQSessionISS(self.config,
                                 modem,

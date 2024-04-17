@@ -9,7 +9,6 @@ import settings_view from "./settings.vue";
 import main_footer_navbar from "./main_footer_navbar.vue";
 
 import chat from "./chat.vue";
-import infoScreen from "./infoScreen.vue";
 import main_modem_healthcheck from "./main_modem_healthcheck.vue";
 import Dynamic_components from "./dynamic_components.vue";
 
@@ -76,17 +75,6 @@ import { loadAllData } from "../js/eventHandler";
             ></a>
 
             <a
-              class="list-group-item list-group-item-dark list-group-item-action border border-0 rounded-3 mb-2"
-              id="list-info-list"
-              data-bs-toggle="list"
-              href="#list-info"
-              role="tab"
-              aria-controls="list-info"
-              title="About"
-              ><i class="bi bi-info h3"></i
-            ></a>
-
-            <a
               class="list-group-item list-group-item-dark list-group-item-action d-none border-0 rounded-3 mb-2"
               id="list-logger-list"
               data-bs-toggle="list"
@@ -136,27 +124,6 @@ import { loadAllData } from "../js/eventHandler";
               <!-------------------------------- MAIN AREA ---------------->
 
               <!------------------------------------------------------------------------------------------>
-              <div class="container">
-                <div class="row">
-                  <div class="col-5">
-                    <main_active_rig_control />
-                  </div>
-                  <div class="col-4">
-                    <main_active_broadcasts />
-                  </div>
-                  <div class="col-3">
-                    <main_active_audio_level />
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-7">
-                    <main_active_heard_stations />
-                  </div>
-                  <div class="col-5">
-                    <main_active_stats />
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -295,14 +262,7 @@ import { loadAllData } from "../js/eventHandler";
               </div>
             </div>
           </div>
-          <div
-            class="tab-pane fade"
-            id="list-info"
-            role="tabpanel"
-            aria-labelledby="list-info-list"
-          >
-            <infoScreen />
-          </div>
+
           <div
             class="tab-pane fade show active"
             id="list-grid"

@@ -32,7 +32,8 @@ class ARQFrameHandler(frame_handler.FrameHandler):
                 session = ARQSessionIRS(self.config,
                                         self.modem,
                                         frame['origin'], 
-                                        session_id)
+                                        session_id,
+                                        self.states)
                 self.states.register_arq_irs_session(session)
 
         elif frame['frame_type_int'] in [

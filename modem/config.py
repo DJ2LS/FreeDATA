@@ -26,7 +26,6 @@ class CONFIG:
             'output_device': str,
             'rx_audio_level': int,
             'tx_audio_level': int,
-            'enable_auto_tune': bool,
         },
         'RADIO': {
             'control': str,
@@ -58,9 +57,17 @@ class CONFIG:
         'MODEM': {
             'enable_hmac': bool,
             'enable_morse_identifier': bool,
-            'enable_low_bandwidth_mode': bool,
+            'maximum_bandwidth': int,
             'respond_to_cq': bool,
-            'tx_delay': int
+            'tx_delay': int,
+            'enable_socket_interface': bool,
+        },
+        'SOCKET_INTERFACE': {
+            'enable' : bool,
+            'host' : str,
+            'cmd_port' : int,
+            'data_port' : int,
+
         },
         'MESSAGES': {
             'enable_auto_repeat': bool,
@@ -87,7 +94,7 @@ class CONFIG:
         except Exception:
             self.config_name = "config.ini"
 
-        self.log.info("[CFG] config init", file=self.config_name)
+        #self.log.info("[CFG] config init", file=self.config_name)
 
         # check if config file exists
         self.config_exists()

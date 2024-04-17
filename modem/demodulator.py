@@ -4,10 +4,7 @@ import ctypes
 import structlog
 import threading
 import audio
-import os
-from modem_frametypes import FRAME_TYPE
 import itertools
-from time import sleep
 
 TESTMODE = False
 
@@ -16,23 +13,22 @@ class Demodulator():
     MODE_DICT = {}
     # Iterate over the FREEDV_MODE enum members
     for mode in codec2.FREEDV_MODE:
-        MODE_DICT[mode.value] = {
-            'decode': False,
-            'bytes_per_frame': None,
-            'bytes_out': None,
-            'audio_buffer': None,
-            'nin': None,
-            'instance': None,
-            'state_buffer': [],
-            'name': mode.name.upper(),
-            'decoding_thread': None
-        }
+            MODE_DICT[mode.value] = {
+                'decode': False,
+                'bytes_per_frame': None,
+                'bytes_out': None,
+                'audio_buffer': None,
+                'nin': None,
+                'instance': None,
+                'state_buffer': [],
+                'name': mode.name.upper(),
+                'decoding_thread': None
+            }
 
-    def __init__(self, config, audio_rx_q, data_q_rx, states, event_manager, fft_queue):
+    def __init__(self, config, audio_rx_q, data_q_rx, states, event_manager, service_queue, fft_queue):
         self.log = structlog.get_logger("Demodulator")
 
-        self.rx_audio_level = config['AUDIO']['rx_audio_level']
-
+        self.service_queue = service_queue
         self.AUDIO_FRAMES_PER_BUFFER_RX = 4800
         self.buffer_overflow_counter = [0, 0, 0, 0, 0, 0, 0, 0]
         self.is_codec2_traffic_counter = 0
@@ -53,6 +49,10 @@ class Demodulator():
 
         # enable decoding of signalling modes
         self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
+        self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
+        self.MODE_DICT[codec2.FREEDV_MODE.data_ofdm_2438.value]["decode"] = True
+        #self.MODE_DICT[codec2.FREEDV_MODE.qam16c2.value]["decode"] = True
+
 
         tci_rx_callback_thread = threading.Thread(
             target=self.tci_rx_callback,
@@ -73,15 +73,13 @@ class Demodulator():
         """
 
         # create codec2 instance
-        c2instance = ctypes.cast(
-            codec2.api.freedv_open(mode), ctypes.c_void_p
-        )
+        #c2instance = ctypes.cast(
+        c2instance = codec2.open_instance(mode)
 
         # get bytes per frame
         bytes_per_frame = int(
             codec2.api.freedv_get_bits_per_modem_frame(c2instance) / 8
         )
-
         # create byte out buffer
         bytes_out = ctypes.create_string_buffer(bytes_per_frame)
 
@@ -125,35 +123,6 @@ class Demodulator():
                 target=self.demodulate_audio,args=[mode], name=self.MODE_DICT[mode]['name'], daemon=True
             )
             self.MODE_DICT[mode]['decoding_thread'].start()
-
-    def sd_input_audio_callback(self, indata: np.ndarray, frames: int, time, status) -> None:
-            if status:
-                self.log.warning("[AUDIO STATUS]", status=status, time=time, frames=frames)
-                return
-            try:
-                audio_48k = np.frombuffer(indata, dtype=np.int16)
-                audio_8k = self.resampler.resample48_to_8(audio_48k)
-
-                audio_8k_level_adjusted = audio.set_audio_volume(audio_8k, self.rx_audio_level)
-                audio.calculate_fft(audio_8k_level_adjusted, self.fft_queue, self.states)
-
-                length_audio_8k_level_adjusted = len(audio_8k_level_adjusted)
-                # Avoid buffer overflow by filling only if buffer for
-                # selected datachannel mode is not full
-                index = 0
-                for mode in self.MODE_DICT:
-                    mode_data = self.MODE_DICT[mode]
-                    audiobuffer = mode_data['audio_buffer']
-                    decode = mode_data['decode']
-                    index += 1
-                    if audiobuffer:
-                        if (audiobuffer.nbuffer + length_audio_8k_level_adjusted) > audiobuffer.size:
-                            self.buffer_overflow_counter[index] += 1
-                            self.event_manager.send_buffer_overflow(self.buffer_overflow_counter)
-                        elif decode:
-                            audiobuffer.push(audio_8k_level_adjusted)
-            except Exception as e:
-                self.log.warning("[AUDIO EXCEPTION]", status=status, time=time, frames=frames, e=e)
 
 
     def get_frequency_offset(self, freedv: ctypes.c_void_p) -> float:
@@ -219,7 +188,7 @@ class Demodulator():
                     nin = codec2.api.freedv_nin(freedv)
                     if nbytes == bytes_per_frame:
                         self.log.debug(
-                            "[MDM] [demod_audio] Pushing received data to received_queue", nbytes=nbytes
+                            "[MDM] [demod_audio] Pushing received data to received_queue", nbytes=nbytes, mode_name=mode_name
                         )
                         snr = self.calculate_snr(freedv)
                         self.get_scatter(freedv)
@@ -230,7 +199,9 @@ class Demodulator():
                             'bytes_per_frame': bytes_per_frame,
                             'snr': snr,
                             'frequency_offset': self.get_frequency_offset(freedv),
+                            'mode_name': mode_name
                         }
+
                         self.data_queue_received.put(item)
 
 
@@ -370,18 +341,20 @@ class Demodulator():
         for mode in self.MODE_DICT:
             codec2.api.freedv_set_sync(self.MODE_DICT[mode]["instance"], 0)
 
-    def set_decode_mode(self, modes_to_decode):
+    def set_decode_mode(self, modes_to_decode=None):
         # Reset all modes to not decode
         for m in self.MODE_DICT:
             self.MODE_DICT[m]["decode"] = False
 
         # signalling is always true
         self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
+        self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
 
         # lowest speed level is alwys true
         self.MODE_DICT[codec2.FREEDV_MODE.datac4.value]["decode"] = True
 
         # Enable specified modes
-        for mode, decode in modes_to_decode.items():
-            if mode in self.MODE_DICT:
-                self.MODE_DICT[mode]["decode"] = decode
+        if modes_to_decode:
+            for mode, decode in modes_to_decode.items():
+                if mode in self.MODE_DICT:
+                    self.MODE_DICT[mode]["decode"] = decode
