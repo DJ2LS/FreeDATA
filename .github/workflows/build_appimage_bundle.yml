@@ -23,6 +23,12 @@ jobs:
       - name: LIST ALL FILES
         run: ls -R
 
+      - name: Install Linux dependencies
+        # if: matrix.os == 'ubuntu-20.04'
+        if: ${{startsWith(matrix.os, 'ubuntu')}}
+        run: |
+          sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2 patchelf
+
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
