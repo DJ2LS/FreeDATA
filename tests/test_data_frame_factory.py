@@ -32,7 +32,7 @@ class TestDataFrameFactory(unittest.TestCase):
     def testARQConnect(self):
         dxcall = "DJ2LS-4"
         session_id = 123
-        frame = self.factory.build_arq_session_open(dxcall, session_id, 1700)
+        frame = self.factory.build_arq_session_open(dxcall, session_id, 1700, 1)
         frame_data = self.factory.deconstruct(frame)
 
         self.assertEqual(frame_data['origin'], self.factory.myfullcall)

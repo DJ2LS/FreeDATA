@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macos-latest, windows-latest]
+        os: [ubuntu-20.04, windows-latest] # removed macos-latest as it's broken for now
         include:
           - os: ubuntu-20.04
             zip_name: freedata-server_ubuntu

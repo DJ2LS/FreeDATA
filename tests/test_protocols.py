@@ -41,7 +41,7 @@ class TestProtocols(unittest.TestCase):
                                           cls.modem)
 
     def shortcutTransmission(self, frame_bytes):
-        self.frame_dispatcher.new_process_data(frame_bytes, None, len(frame_bytes), 0, 0)
+        self.frame_dispatcher.process_data(frame_bytes, None, len(frame_bytes), 0, 0, mode_name="TEST")
 
     def assertEventReceivedType(self, event_type):
         ev = self.event_queue.get()
