@@ -4,6 +4,9 @@ from setuptools import setup, find_packages
 with open('requirements.txt') as f:
     required = f.read().splitlines()
 
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+
 setup(
     name='freedata-server',
     version='0.15.3',
@@ -14,6 +17,8 @@ setup(
     author='DJ2LS',
     author_email='dj2ls@proton.me',
     description='A free, open-source, multi-platform application for sending files and messages, using the codec2 HF modems.',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     url='https://freedata.app',
     license='GPL3.0',
     entry_points={
