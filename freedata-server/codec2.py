@@ -101,7 +101,6 @@ else:
     files = []
 api = None
 
-print(files)
 for file in files:
     try:
         api = ctypes.CDLL(file)

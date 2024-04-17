@@ -101,8 +101,9 @@ class FrameHandler():
         if "session_id" in frame:
             activity["session_id"] = frame["session_id"]
 
-        if "AWAY_FROM_KEY" in frame["flag"]:
-            activity["away_from_key"] = frame["flag"]["AWAY_FROM_KEY"]
+        if "flag" in frame:
+            if "AWAY_FROM_KEY" in frame["flag"]:
+                activity["away_from_key"] = frame["flag"]["AWAY_FROM_KEY"]
 
         self.states.add_activity(activity)
 
@@ -121,6 +122,11 @@ class FrameHandler():
             distance_km = distance_dict['kilometers']
             distance_miles = distance_dict['miles']
 
+        away_from_key = False
+        if "flag" in self.details['frame']:
+            if "AWAY_FROM_KEY" in self.details['frame']["flag"]:
+                away_from_key = self.details['frame']["flag"]["AWAY_FROM_KEY"]
+
         helpers.add_to_heard_stations(
             frame['origin'],
             dxgrid,
@@ -131,7 +137,7 @@ class FrameHandler():
             self.states.heard_stations,
             distance_km=distance_km,  # Pass the kilometer distance
             distance_miles=distance_miles,  # Pass the miles distance
-            away_from_key=self.details['frame']["flag"]["AWAY_FROM_KEY"]
+            away_from_key=away_from_key
         )
     def make_event(self):
 

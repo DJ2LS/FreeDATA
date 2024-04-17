@@ -53,7 +53,7 @@ Section "FreeData Server" SEC01
 
 doneBackup:
   ; Add your application files here
-  File /r "modem\server.dist\*"
+  File /r "freedata-server\server.dist\*"
 
 ; Restore the original "config.ini" if it was backed up
   IfFileExists $INSTDIR\freedata-server\config.ini.bak restoreConfig
@@ -93,7 +93,7 @@ Section "FreeData x64 GUI" SEC02
   SetOutPath $INSTDIR\freedata-gui
 
   ; Add GUI files here
-  File /r "gui\release\win-unpacked\*"
+  File /r "freedata-gui\release\win-unpacked\*"
 
   ; Create a shortcut on the desktop for the GUI
   CreateShortCut "$DESKTOP\FreeDATA GUI.lnk" "$INSTDIR\freedata-gui\freedata.exe"
