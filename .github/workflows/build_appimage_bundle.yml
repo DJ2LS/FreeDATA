@@ -40,6 +40,9 @@ jobs:
       - name: Prepare AppImage folder
         run: |
           mkdir -p $HOME/freedata-appimage
+          mkdir -p $HOME/freedata-appimage/gui
+          mkdir -p $HOME/freedata-appimage/server
+
 
       - name: Copy GUI
         run: |
