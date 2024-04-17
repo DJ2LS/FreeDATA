@@ -94,7 +94,7 @@ class CONFIG:
         except Exception:
             self.config_name = "config.ini"
 
-        self.log.info("[CFG] config init", file=self.config_name)
+        #self.log.info("[CFG] config init", file=self.config_name)
 
         # check if config file exists
         self.config_exists()

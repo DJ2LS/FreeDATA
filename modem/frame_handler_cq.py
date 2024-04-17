@@ -12,6 +12,7 @@ class CQFrameHandler(frame_handler.FrameHandler):
     #    return bool(self.config['MODEM']['respond_to_cq'] and not self.states.getARQ())
 
     def follow_protocol(self):
+
         if self.states.getARQ():
             return
 

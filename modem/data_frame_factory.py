@@ -6,6 +6,7 @@ class DataFrameFactory:
 
     LENGTH_SIG0_FRAME = 14
     LENGTH_SIG1_FRAME = 14
+    LENGTH_ACK_FRAME = 3
 
     """
         helpers.set_flag(byte, 'DATA-ACK-NACK', True, FLAG_POSITIONS)
@@ -15,6 +16,10 @@ class DataFrameFactory:
         'FINAL': 0,  # Bit-position for indicating the FINAL state
         'ABORT': 1, # Bit-position for indicating the ABORT request
         'CHECKSUM': 2,  # Bit-position for indicating the CHECKSUM is correct or not
+    }
+
+    BEACON_FLAGS = {
+        'AWAY_FROM_KEY': 0,  # Bit-position for indicating the AWAY FROM KEY state
     }
 
     def __init__(self, config):
@@ -27,7 +32,6 @@ class DataFrameFactory:
 
         self._load_broadcast_templates()
         self._load_ping_templates()
-        self._load_fec_templates()
         self._load_arq_templates()
         self._load_p2p_connection_templates()
 
@@ -51,7 +55,8 @@ class DataFrameFactory:
         self.template_list[FR_TYPE.BEACON.value] = {
             "frame_length": self.LENGTH_SIG0_FRAME,
             "origin": 6,
-            "gridsquare": 4
+            "gridsquare": 4,
+            "flag": 1
         }
 
     def _load_ping_templates(self):
@@ -72,26 +77,6 @@ class DataFrameFactory:
             "snr": 1,
         }
 
-    def _load_fec_templates(self):
-        # fec wakeup frame
-        self.template_list[FR_TYPE.FEC_WAKEUP.value] = {
-            "frame_length": self.LENGTH_SIG0_FRAME,
-            "origin": 6,
-            "mode": 1,
-            "n_bursts": 1,
-        }
-
-        # fec frame
-        self.template_list[FR_TYPE.FEC.value] = {
-            "frame_length": self.LENGTH_SIG0_FRAME,
-            "data": self.LENGTH_SIG0_FRAME - 1
-        }
-
-        # fec is writing frame
-        self.template_list[FR_TYPE.IS_WRITING.value] = {
-            "frame_length": self.LENGTH_SIG0_FRAME,
-            "origin": 6
-        }
 
     def _load_arq_templates(self):
 
@@ -101,6 +86,7 @@ class DataFrameFactory:
             "origin": 6,
             "session_id": 1,
             "maximum_bandwidth": 2,
+            "protocol_version" : 1
         }
 
         self.template_list[FR_TYPE.ARQ_SESSION_OPEN_ACK.value] = {
@@ -154,12 +140,12 @@ class DataFrameFactory:
 
         # arq burst ack
         self.template_list[FR_TYPE.ARQ_BURST_ACK.value] = {
-            "frame_length": self.LENGTH_SIG1_FRAME,
+            "frame_length": self.LENGTH_ACK_FRAME,
             "session_id": 1,
-            "offset":4,
+            #"offset":4,
             "speed_level": 1,
-            "frames_per_burst": 1,
-            "snr": 1,
+            #"frames_per_burst": 1,
+            #"snr": 1,
             "flag": 1,
         }
     
@@ -228,10 +214,13 @@ class DataFrameFactory:
             frame_length = frame_template["frame_length"]
         else:
             frame_length -= 2
-        frame = bytearray(frame_length)
-        frame[:1] = bytes([frametype.value])
 
-        buffer_position = 1
+        frame = bytearray(frame_length)
+        if frametype in [FR_TYPE.ARQ_BURST_ACK]:
+            buffer_position = 0
+        else:
+            frame[:1] = bytes([frametype.value])
+            buffer_position = 1
         for key, item_length in frame_template.items():
             if key == "frame_length":
                 continue
@@ -242,17 +231,22 @@ class DataFrameFactory:
                 raise OverflowError("Frame data overflow!")
             frame[buffer_position: buffer_position + item_length] = content[key]
             buffer_position += item_length
+
         return frame
 
-    def deconstruct(self, frame):
-        buffer_position = 1
-        # Extract frametype and get the corresponding template
-        frametype = int.from_bytes(frame[:1], "big")
-        frame_template = self.template_list.get(frametype)
+    def deconstruct(self, frame, mode_name=None):
 
-        if not frame_template:
-            # Handle the case where the frame type is not recognized
-            raise ValueError(f"Unknown frame type: {frametype}")
+        buffer_position = 1
+        # Handle the case where the frame type is not recognized
+        #raise ValueError(f"Unknown frame type: {frametype}")
+        if mode_name in ["SIGNALLING_ACK"]:
+            frametype = FR_TYPE.ARQ_BURST_ACK.value
+            frame_template = self.template_list.get(frametype)
+            frame = bytes([frametype]) + frame
+        else:
+            # Extract frametype and get the corresponding template
+            frametype = int.from_bytes(frame[:1], "big")
+            frame_template = self.template_list.get(frametype)
 
         extracted_data = {"frame_type": FR_TYPE(frametype).name, "frame_type_int": frametype}
 
@@ -262,6 +256,7 @@ class DataFrameFactory:
 
             # data is always on the last payload slots
             if item_length in ["dynamic"] and key in["data"]:
+                print(len(frame))
                 data = frame[buffer_position:-2]
                 item_length = len(data)
             else:
@@ -279,7 +274,7 @@ class DataFrameFactory:
 
             elif key in ["session_id", "speed_level", 
                             "frames_per_burst", "version",
-                            "offset", "total_length", "state", "type", "maximum_bandwidth"]:
+                            "offset", "total_length", "state", "type", "maximum_bandwidth", "protocol_version"]:
                 extracted_data[key] = int.from_bytes(data, 'big')
 
             elif key in ["snr"]:
@@ -289,7 +284,6 @@ class DataFrameFactory:
 
                 data = int.from_bytes(data, "big")
                 extracted_data[key] = {}
-
                 # check for frametype for selecting the correspinding flag dictionary
                 if frametype in [FR_TYPE.ARQ_SESSION_OPEN_ACK.value, FR_TYPE.ARQ_SESSION_INFO_ACK.value, FR_TYPE.ARQ_BURST_ACK.value]:
                     flag_dict = self.ARQ_FLAGS
@@ -297,6 +291,15 @@ class DataFrameFactory:
                         # Update extracted_data with the status of each flag
                         # get_flag returns True or False based on the bit value at the flag's position
                         extracted_data[key][flag] = helpers.get_flag(data, flag, flag_dict)
+
+                if frametype in [FR_TYPE.BEACON.value]:
+                    flag_dict = self.BEACON_FLAGS
+                    for flag in flag_dict:
+                        # Update extracted_data with the status of each flag
+                        # get_flag returns True or False based on the bit value at the flag's position
+                        extracted_data[key][flag] = helpers.get_flag(data, flag, flag_dict)
+
+
             else:
                 extracted_data[key] = data
 
@@ -350,10 +353,16 @@ class DataFrameFactory:
         }
         return self.construct(FR_TYPE.QRV, payload)
 
-    def build_beacon(self):
+    def build_beacon(self, flag_away_from_key=False):
+        flag = 0b00000000
+        if flag_away_from_key:
+            flag = helpers.set_flag(flag, 'AWAY_FROM_KEY', True, self.BEACON_FLAGS)
+
         payload = {
             "origin": helpers.callsign_to_bytes(self.myfullcall),
-            "gridsquare": helpers.encode_grid(self.mygrid)
+            "gridsquare": helpers.encode_grid(self.mygrid),
+            "flag": flag.to_bytes(1, 'big'),
+
         }
         return self.construct(FR_TYPE.BEACON, payload)
 
@@ -388,12 +397,13 @@ class DataFrameFactory:
         test_frame[:1] = bytes([FR_TYPE.TEST_FRAME.value])
         return test_frame
 
-    def build_arq_session_open(self, destination, session_id, maximum_bandwidth):
+    def build_arq_session_open(self, destination, session_id, maximum_bandwidth, protocol_version):
         payload = {
             "destination_crc": helpers.get_crc_24(destination),
             "origin": helpers.callsign_to_bytes(self.myfullcall),
             "session_id": session_id.to_bytes(1, 'big'),
             "maximum_bandwidth": maximum_bandwidth.to_bytes(2, 'big'),
+            "protocol_version": protocol_version.to_bytes(1, 'big'),
         }
         return self.construct(FR_TYPE.ARQ_SESSION_OPEN, payload)
 
@@ -467,8 +477,7 @@ class DataFrameFactory:
             FR_TYPE.ARQ_BURST_FRAME, payload, self.get_bytes_per_frame(freedv_mode)
         )
 
-    def build_arq_burst_ack(self, session_id: bytes, offset, speed_level: int, 
-                            frames_per_burst: int, snr: int, flag_final=False, flag_checksum=False, flag_abort=False):
+    def build_arq_burst_ack(self, session_id: bytes, speed_level: int, flag_final=False, flag_checksum=False, flag_abort=False):
         flag = 0b00000000
         if flag_final:
             flag = helpers.set_flag(flag, 'FINAL', True, self.ARQ_FLAGS)
@@ -481,10 +490,7 @@ class DataFrameFactory:
 
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),
-            "offset": offset.to_bytes(4, 'big'),
             "speed_level": speed_level.to_bytes(1, 'big'),
-            "frames_per_burst": frames_per_burst.to_bytes(1, 'big'),
-            "snr": helpers.snr_to_bytes(snr),
             "flag": flag.to_bytes(1, 'big'),
         }
         return self.construct(FR_TYPE.ARQ_BURST_ACK, payload)

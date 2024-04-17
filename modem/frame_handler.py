@@ -101,6 +101,9 @@ class FrameHandler():
         if "session_id" in frame:
             activity["session_id"] = frame["session_id"]
 
+        if "AWAY_FROM_KEY" in frame["flag"]:
+            activity["away_from_key"] = frame["flag"]["AWAY_FROM_KEY"]
+
         self.states.add_activity(activity)
 
     def add_to_heard_stations(self):
@@ -127,7 +130,8 @@ class FrameHandler():
             self.states.radio_frequency,
             self.states.heard_stations,
             distance_km=distance_km,  # Pass the kilometer distance
-            distance_miles=distance_miles  # Pass the miles distance
+            distance_miles=distance_miles,  # Pass the miles distance
+            away_from_key=self.details['frame']["flag"]["AWAY_FROM_KEY"]
         )
     def make_event(self):
 

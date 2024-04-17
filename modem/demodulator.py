@@ -13,17 +13,17 @@ class Demodulator():
     MODE_DICT = {}
     # Iterate over the FREEDV_MODE enum members
     for mode in codec2.FREEDV_MODE:
-        MODE_DICT[mode.value] = {
-            'decode': False,
-            'bytes_per_frame': None,
-            'bytes_out': None,
-            'audio_buffer': None,
-            'nin': None,
-            'instance': None,
-            'state_buffer': [],
-            'name': mode.name.upper(),
-            'decoding_thread': None
-        }
+            MODE_DICT[mode.value] = {
+                'decode': False,
+                'bytes_per_frame': None,
+                'bytes_out': None,
+                'audio_buffer': None,
+                'nin': None,
+                'instance': None,
+                'state_buffer': [],
+                'name': mode.name.upper(),
+                'decoding_thread': None
+            }
 
     def __init__(self, config, audio_rx_q, data_q_rx, states, event_manager, service_queue, fft_queue):
         self.log = structlog.get_logger("Demodulator")
@@ -49,6 +49,10 @@ class Demodulator():
 
         # enable decoding of signalling modes
         self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
+        self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
+        self.MODE_DICT[codec2.FREEDV_MODE.data_ofdm_2438.value]["decode"] = True
+        #self.MODE_DICT[codec2.FREEDV_MODE.qam16c2.value]["decode"] = True
+
 
         tci_rx_callback_thread = threading.Thread(
             target=self.tci_rx_callback,
@@ -69,15 +73,13 @@ class Demodulator():
         """
 
         # create codec2 instance
-        c2instance = ctypes.cast(
-            codec2.api.freedv_open(mode), ctypes.c_void_p
-        )
+        #c2instance = ctypes.cast(
+        c2instance = codec2.open_instance(mode)
 
         # get bytes per frame
         bytes_per_frame = int(
             codec2.api.freedv_get_bits_per_modem_frame(c2instance) / 8
         )
-
         # create byte out buffer
         bytes_out = ctypes.create_string_buffer(bytes_per_frame)
 
@@ -186,7 +188,7 @@ class Demodulator():
                     nin = codec2.api.freedv_nin(freedv)
                     if nbytes == bytes_per_frame:
                         self.log.debug(
-                            "[MDM] [demod_audio] Pushing received data to received_queue", nbytes=nbytes
+                            "[MDM] [demod_audio] Pushing received data to received_queue", nbytes=nbytes, mode_name=mode_name
                         )
                         snr = self.calculate_snr(freedv)
                         self.get_scatter(freedv)
@@ -197,7 +199,9 @@ class Demodulator():
                             'bytes_per_frame': bytes_per_frame,
                             'snr': snr,
                             'frequency_offset': self.get_frequency_offset(freedv),
+                            'mode_name': mode_name
                         }
+
                         self.data_queue_received.put(item)
 
 
@@ -344,6 +348,7 @@ class Demodulator():
 
         # signalling is always true
         self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
+        self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
 
         # lowest speed level is alwys true
         self.MODE_DICT[codec2.FREEDV_MODE.datac4.value]["decode"] = True

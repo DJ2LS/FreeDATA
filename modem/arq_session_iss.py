@@ -24,7 +24,7 @@ class ARQSessionISS(arq_session.ARQSession):
 
     # DJ2LS: 3 seconds seems to be too small for radios with a too slow PTT toggle time
     # DJ2LS: 3.5 seconds is working well WITHOUT a channel busy detection delay
-    TIMEOUT_CHANNEL_BUSY = 2
+    TIMEOUT_CHANNEL_BUSY = 0
     TIMEOUT_CONNECT_ACK = 3.5 + TIMEOUT_CHANNEL_BUSY
     TIMEOUT_TRANSFER = 3.5 + TIMEOUT_CHANNEL_BUSY
     TIMEOUT_STOP_ACK = 3.5 + TIMEOUT_CHANNEL_BUSY
@@ -60,6 +60,7 @@ class ARQSessionISS(arq_session.ARQSession):
         self.data_crc = ''
         self.type_byte = type_byte
         self.confirmed_bytes = 0
+        self.expected_byte_offset = 0
 
         self.state = ISS_State.NEW
         self.state_enum = ISS_State # needed for access State enum from outside
@@ -93,7 +94,9 @@ class ARQSessionISS(arq_session.ARQSession):
             if retries == 8 and isARQBurst and self.speed_level > 0:
                 self.log("SENDING IN FALLBACK SPEED LEVEL", isWarning=True)
                 self.speed_level = 0
-                self.send_data({'flag':{'ABORT': False, 'FINAL': False}, 'speed_level': self.speed_level})
+                print(f" CONFIRMED BYTES: {self.confirmed_bytes}")
+                self.send_data({'flag':{'ABORT': False, 'FINAL': False}, 'speed_level': self.speed_level}, fallback=True)
+
                 return
 
         self.set_state(ISS_State.FAILED)
@@ -105,9 +108,10 @@ class ARQSessionISS(arq_session.ARQSession):
 
     def start(self):
         maximum_bandwidth = self.config['MODEM']['maximum_bandwidth']
+        print(maximum_bandwidth)
         self.event_manager.send_arq_session_new(
             True, self.id, self.dxcall, self.total_length, self.state.name)
-        session_open_frame = self.frame_factory.build_arq_session_open(self.dxcall, self.id, maximum_bandwidth)
+        session_open_frame = self.frame_factory.build_arq_session_open(self.dxcall, self.id, maximum_bandwidth, self.protocol_version)
         self.launch_twr(session_open_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         self.set_state(ISS_State.OPEN_SENT)
 
@@ -136,8 +140,7 @@ class ARQSessionISS(arq_session.ARQSession):
     def send_info(self, irs_frame):
         # check if we received an abort flag
         if irs_frame["flag"]["ABORT"]:
-            self.transmission_aborted(irs_frame)
-            return
+            return self.transmission_aborted(irs_frame)
 
         info_frame = self.frame_factory.build_arq_session_info(self.id, self.total_length,
                                                                helpers.get_crc_32(self.data), 
@@ -148,16 +151,26 @@ class ARQSessionISS(arq_session.ARQSession):
 
         return None, None
 
-    def send_data(self, irs_frame):
+    def send_data(self, irs_frame, fallback=None):
+
+        # interrupt transmission when aborting
+        if self.state in [ISS_State.ABORTED, ISS_State.ABORTING]:
+            self.event_frame_received.set()
+            self.send_stop()
+            return
+
         # update statistics
         self.update_histograms(self.confirmed_bytes, self.total_length)
-
         self.update_speed_level(irs_frame)
-        if 'offset' in irs_frame:
-            self.confirmed_bytes = irs_frame['offset']
-            self.log(f"IRS confirmed {self.confirmed_bytes}/{self.total_length} bytes")
-            self.event_manager.send_arq_session_progress(
-                True, self.id, self.dxcall, self.confirmed_bytes, self.total_length, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
+
+
+        if self.expected_byte_offset > self.total_length:
+            self.confirmed_bytes = self.total_length
+        elif not fallback:
+            self.confirmed_bytes = self.expected_byte_offset
+
+        self.log(f"IRS confirmed {self.confirmed_bytes}/{self.total_length} bytes")
+        self.event_manager.send_arq_session_progress(True, self.id, self.dxcall, self.confirmed_bytes, self.total_length, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
 
         # check if we received an abort flag
         if irs_frame["flag"]["ABORT"]:
@@ -176,10 +189,14 @@ class ARQSessionISS(arq_session.ARQSession):
         burst = []
         for _ in range(0, self.frames_per_burst):
             offset = self.confirmed_bytes
+            #self.expected_byte_offset = offset
             payload = self.data[offset : offset + payload_size]
+            #self.expected_byte_offset = offset + payload_size
+            self.expected_byte_offset = offset + len(payload)
+            #print(f"EXPECTED----------------------{self.expected_byte_offset}")
             data_frame = self.frame_factory.build_arq_burst_frame(
                 self.SPEED_LEVEL_DICT[self.speed_level]["mode"],
-                self.id, self.confirmed_bytes, payload, self.speed_level)
+                self.id, offset, payload, self.speed_level)
             burst.append(data_frame)
         self.launch_twr(burst, self.TIMEOUT_TRANSFER, self.RETRIES_CONNECT, mode='auto', isARQBurst=True)
         self.set_state(ISS_State.BURST_SENT)
@@ -192,8 +209,8 @@ class ARQSessionISS(arq_session.ARQSession):
         self.log(f"All data transfered! flag_final={irs_frame['flag']['FINAL']}, flag_checksum={irs_frame['flag']['CHECKSUM']}")
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,True, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
 
-        print(self.state_manager.p2p_connection_sessions)
-        print(self.arq_data_type_handler.state_manager.p2p_connection_sessions)
+        #print(self.state_manager.p2p_connection_sessions)
+        #print(self.arq_data_type_handler.state_manager.p2p_connection_sessions)
 
         self.arq_data_type_handler.transmitted(self.type_byte, self.data, self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
         self.state_manager.remove_arq_iss_session(self.id)
@@ -221,9 +238,6 @@ class ARQSessionISS(arq_session.ARQSession):
 
         # break actual retries
         self.event_frame_received.set()
-
-        # start with abort sequence
-        self.send_stop()
 
     def send_stop(self):
         stop_frame = self.frame_factory.build_arq_stop(self.id)

@@ -30,6 +30,18 @@ class ARQSession:
             'duration_per_frame': 4.18,
             'bandwidth': 1700,
         },
+        3: {
+            'mode': codec2.FREEDV_MODE.data_ofdm_2438,
+            'min_snr': 8,
+            'duration_per_frame': 6.5,
+            'bandwidth': 2438,
+        },
+        4: {
+            'mode': codec2.FREEDV_MODE.qam16c2,
+            'min_snr': 11,
+            'duration_per_frame': 2.8,
+            'bandwidth': 2438,
+        },
     }
 
     def __init__(self, config: dict, modem, dxcall: str, state_manager):
@@ -40,6 +52,8 @@ class ARQSession:
         #self.states = modem.states
         self.states = state_manager
         self.states.setARQ(True)
+
+        self.protocol_version = 1
 
         self.snr = []
 
@@ -152,6 +166,7 @@ class ARQSession:
         }
 
     def update_histograms(self, confirmed_bytes, total_bytes):
+
         stats = self.calculate_session_statistics(confirmed_bytes, total_bytes)
         self.snr_histogram.append(self.snr)
         self.bpm_histogram.append(stats['bytes_per_minute'])

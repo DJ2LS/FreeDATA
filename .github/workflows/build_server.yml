@@ -48,7 +48,6 @@ jobs:
           brew install portaudio
           python -m pip install --upgrade pip
           pip3 install pyaudio
-          export PYTHONPATH=/Library/Frameworks/Python.framework/Versions/3.11/lib/:$PYTHONPATH 
 
       - name: Install Python dependencies
         run: |

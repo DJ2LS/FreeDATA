@@ -130,3 +130,6 @@ dmypy.json
 
 # FreeDATA config
 config.ini
+
+#FreeData DB
+freedata-messages.db

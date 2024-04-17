@@ -46,9 +46,9 @@ class DISPATCHER():
         FR_TYPE.PING_ACK.value: {"class": FrameHandler, "name":  "PING ACK"},
         FR_TYPE.PING.value: {"class": PingFrameHandler, "name":  "PING"},
         FR_TYPE.QRV.value: {"class": FrameHandler, "name":  "QRV"},
-        FR_TYPE.IS_WRITING.value: {"class": FrameHandler, "name": "IS_WRITING"},
-        FR_TYPE.FEC.value: {"class": FrameHandler, "name":  "FEC"},
-        FR_TYPE.FEC_WAKEUP.value: {"class": FrameHandler, "name":  "FEC WAKEUP"},
+        #FR_TYPE.IS_WRITING.value: {"class": FrameHandler, "name": "IS_WRITING"},
+        #FR_TYPE.FEC.value: {"class": FrameHandler, "name":  "FEC"},
+        #FR_TYPE.FEC_WAKEUP.value: {"class": FrameHandler, "name":  "FEC WAKEUP"},
     }
 
     def __init__(self, config, event_manager, states, modem):
@@ -79,17 +79,18 @@ class DISPATCHER():
         """Queue received data for processing"""
         while True:
             data = self.data_queue_received.get()
-            self.new_process_data(
+            self.process_data(
                 data['payload'],
                 data['freedv'],
                 data['bytes_per_frame'],
                 data['snr'],
                 data['frequency_offset'],
+                data['mode_name'],
             )
 
-    def new_process_data(self, bytes_out, freedv, bytes_per_frame: int, snr, frequency_offset) -> None:
+    def process_data(self, bytes_out, freedv, bytes_per_frame: int, snr, frequency_offset, mode_name) -> None:
         # get frame as dictionary
-        deconstructed_frame = self.frame_factory.deconstruct(bytes_out)
+        deconstructed_frame = self.frame_factory.deconstruct(bytes_out, mode_name=mode_name)
         frametype = deconstructed_frame["frame_type_int"]
 
         if frametype not in self.FRAME_HANDLER:

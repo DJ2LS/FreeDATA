@@ -81,6 +81,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.abort = False
 
     def all_data_received(self):
+        print(f"{self.total_length} vs {self.received_bytes}")
         return self.total_length == self.received_bytes
 
     def final_crc_matches(self) -> bool:
@@ -108,11 +109,18 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         self.event_manager.send_arq_session_new(
             False, self.id, self.dxcall, 0, self.state.name)
+
+        if open_frame['protocol_version'] not in [self.protocol_version]:
+            self.abort = True
+            self.log(f"Protocol version mismatch! Setting disconnect flag!", isWarning=True)
+            self.set_state(IRS_State.ABORTED)
+
         ack_frame = self.frame_factory.build_arq_session_open_ack(
             self.id,
             self.dxcall, 
             self.version,
             self.snr, flag_abort=self.abort)
+
         self.launch_transmit_and_wait(ack_frame, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
         if not self.abort:
             self.set_state(IRS_State.OPEN_ACK_SENT)
@@ -140,12 +148,14 @@ class ARQSessionIRS(arq_session.ARQSession):
         return None, None
 
     def process_incoming_data(self, frame):
+        print(frame)
         if frame['offset'] != self.received_bytes:
-            self.log(f"Discarding data offset {frame['offset']}")
-            return False
+            # TODO: IF WE HAVE AN OFFSET BECAUSE OF A SPEED LEVEL CHANGE FOR EXAMPLE,
+            # TODO: WE HAVE TO DISCARD THE LAST BYTES, BUT NOT returning False!!
+            self.log(f"Discarding data offset {frame['offset']} vs {self.received_bytes}", isWarning=True)
+            #return False
 
         remaining_data_length = self.total_length - self.received_bytes
-
         # Is this the last data part?
         if remaining_data_length <= len(frame['data']):
             # we only want the remaining length, not the entire frame data
@@ -155,7 +165,8 @@ class ARQSessionIRS(arq_session.ARQSession):
             data_part = frame['data']
 
         self.received_data[frame['offset']:] = data_part
-        self.received_bytes += len(data_part)
+        #self.received_bytes += len(data_part)
+        self.received_bytes = len(self.received_data)
         self.log(f"Received {self.received_bytes}/{self.total_length} bytes")
         self.event_manager.send_arq_session_progress(
             False, self.id, self.dxcall, self.received_bytes, self.total_length, self.state.name, self.calculate_session_statistics(self.received_bytes, self.total_length))
@@ -171,41 +182,35 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.calibrate_speed_settings(burst_frame=burst_frame)
             ack = self.frame_factory.build_arq_burst_ack(
                 self.id,
-                self.received_bytes,
                 self.speed_level,
-                self.frames_per_burst,
-                self.snr,
                 flag_abort=self.abort
             )
 
             self.set_state(IRS_State.BURST_REPLY_SENT)
-            self.launch_transmit_and_wait(ack, self.TIMEOUT_DATA, mode=FREEDV_MODE.signalling)
+            self.event_manager.send_arq_session_progress(False, self.id, self.dxcall, self.received_bytes,
+                                                         self.total_length, self.state.name,
+                                                         statistics=self.calculate_session_statistics(
+                                                             self.received_bytes, self.total_length))
+
+            self.launch_transmit_and_wait(ack, self.TIMEOUT_DATA, mode=FREEDV_MODE.signalling_ack)
             return None, None
 
         if self.final_crc_matches():
             self.log("All data received successfully!")
             ack = self.frame_factory.build_arq_burst_ack(self.id,
-                                                         self.received_bytes,
                                                          self.speed_level,
-                                                         self.frames_per_burst,
-                                                         self.snr,
                                                          flag_final=True,
                                                          flag_checksum=True)
-            self.transmit_frame(ack, mode=FREEDV_MODE.signalling)
+            self.transmit_frame(ack, mode=FREEDV_MODE.signalling_ack)
             self.log("ACK sent")
             self.session_ended = time.time()
             self.set_state(IRS_State.ENDED)
-            self.event_manager.send_arq_session_finished(
-                False, self.id, self.dxcall, True, self.state.name, data=self.received_data, statistics=self.calculate_session_statistics(self.received_bytes, self.total_length))
 
             return self.received_data, self.type_byte
         else:
 
             ack = self.frame_factory.build_arq_burst_ack(self.id,
-                                                         self.received_bytes,
                                                          self.speed_level,
-                                                         self.frames_per_burst,
-                                                         self.snr,
                                                          flag_final=True,
                                                          flag_checksum=False)
             self.transmit_frame(ack, mode=FREEDV_MODE.signalling)

@@ -23,6 +23,11 @@ class Modulator:
         self.freedv_datac3_tx = codec2.open_instance(codec2.FREEDV_MODE.datac3.value)
         self.freedv_datac4_tx = codec2.open_instance(codec2.FREEDV_MODE.datac4.value)
         self.freedv_datac13_tx = codec2.open_instance(codec2.FREEDV_MODE.datac13.value)
+        self.freedv_datac14_tx = codec2.open_instance(codec2.FREEDV_MODE.datac14.value)
+        self.data_ofdm_500_tx = codec2.open_instance(codec2.FREEDV_MODE.data_ofdm_500.value)
+        self.data_ofdm_2438_tx = codec2.open_instance(codec2.FREEDV_MODE.data_ofdm_2438.value)
+        self.freedv_qam16c2_tx = codec2.open_instance(codec2.FREEDV_MODE.qam16c2.value)
+        #self.data_qam_2438_tx = codec2.open_instance(codec2.FREEDV_MODE.data_qam_2438.value)
 
     def transmit_add_preamble(self, buffer, freedv):
         # Init buffer for preample
@@ -82,7 +87,6 @@ class Modulator:
         crc = crc.value.to_bytes(2, byteorder="big")
         # Append CRC to data buffer
         buffer += crc
-
         assert (bytes_per_frame == len(buffer))
         data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
         # modulate DATA and save it into mod_out pointer
@@ -107,19 +111,25 @@ class Modulator:
 
         # get freedv instance by mode
         mode_transition = {
+            codec2.FREEDV_MODE.signalling_ack: self.freedv_datac14_tx,
             codec2.FREEDV_MODE.signalling: self.freedv_datac13_tx,
             codec2.FREEDV_MODE.datac0: self.freedv_datac0_tx,
             codec2.FREEDV_MODE.datac1: self.freedv_datac1_tx,
             codec2.FREEDV_MODE.datac3: self.freedv_datac3_tx,
             codec2.FREEDV_MODE.datac4: self.freedv_datac4_tx,
             codec2.FREEDV_MODE.datac13: self.freedv_datac13_tx,
+            codec2.FREEDV_MODE.datac14: self.freedv_datac14_tx,
+            codec2.FREEDV_MODE.data_ofdm_500: self.data_ofdm_500_tx,
+            codec2.FREEDV_MODE.data_ofdm_2438: self.data_ofdm_2438_tx,
+            codec2.FREEDV_MODE.qam16c2: self.freedv_qam16c2_tx,
+            #codec2.FREEDV_MODE.data_qam_2438: self.freedv_data_qam_2438_tx,
         }
         if mode in mode_transition:
             freedv = mode_transition[mode]
         else:
             print("wrong mode.................")
             print(mode)
-            return False
+            #return False
 
 
         # Open codec2 instance

@@ -32,8 +32,7 @@ import grid_freq from "./grid/grid_frequency.vue";
 import grid_beacon from "./grid/grid_beacon.vue";
 import grid_mycall_small from "./grid/grid_mycall small.vue";
 import grid_scatter from "./grid/grid_scatter.vue";
-import { stateDispatcher } from "../js/eventHandler";
-import { Scatter } from "vue-chartjs";
+import grid_stats_chart from "./grid/grid_stats_chart.vue";
 
 let count = ref(0);
 let grid = null; // DO NOT use ref(null) as proxies GS will break all logic when comparing structures... see https://github.com/gridstack/gridstack.js/issues/2115
@@ -63,7 +62,8 @@ class gridWidget {
     this.id = id;
   }
 }
-//Array of grid widgets, do not change array order as it'll affect saved configs
+//Array of grid widgets
+//Order can be changed so sorted correctly, but do not change ID as it'll affect saved configs
 const gridWidgets = [
 new gridWidget(
     grid_activities,
@@ -247,8 +247,16 @@ new gridWidget(
     "Stats",
     19,
   ),
-
-  //New new widget ID should be 20
+  new gridWidget(
+    grid_stats_chart,
+    { x: 0, y: 114, w: 6, h: 30 },
+    "Speed/SNR graph",
+    false,
+    true,
+    "Stats",
+    20,
+  ),
+  //Next new widget ID should be 21
 ];
 
 

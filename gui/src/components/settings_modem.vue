@@ -175,6 +175,7 @@ const audioStore = useAudioStore();
       <option value="250">250 Hz</option>
       <option value="563">563 Hz</option>
       <option value="1700">1700 Hz</option>
+      <option value="2438">2438 Hz</option>
     </select>
   </div>
 
