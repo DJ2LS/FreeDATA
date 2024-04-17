@@ -82,14 +82,14 @@ def freedv_get_mode_name_by_value(mode: int) -> str:
     """
     return FREEDV_MODE(mode).name
 
-
 # Get the directory of the current script file
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(script_dir)
+
 # Use script_dir to construct the paths for file search
 if sys.platform == "linux":
     files = glob.glob(os.path.join(script_dir, "**/*libcodec2*"), recursive=True)
-    files.append(os.path.join(script_dir, "libcodec2.so"))
+    #files.append(os.path.join(script_dir, "libcodec2.so"))
 elif sys.platform == "darwin":
     if hasattr(sys, "_MEIPASS"):
         files = glob.glob(os.path.join(getattr(sys, "_MEIPASS"), '**/*libcodec2*'), recursive=True)
@@ -100,6 +100,8 @@ elif sys.platform in ["win32", "win64"]:
 else:
     files = []
 api = None
+
+print(files)
 for file in files:
     try:
         api = ctypes.CDLL(file)
