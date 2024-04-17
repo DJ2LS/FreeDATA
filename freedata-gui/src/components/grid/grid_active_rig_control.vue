@@ -1,26 +1,27 @@
 <script setup lang="ts">
 import { setActivePinia } from "pinia";
 import pinia from "../../store/index";
-import { setRadioParametersFrequency, setRadioParametersMode, setRadioParametersRFLevel } from "../../js/api";
+import {
+  setRadioParametersFrequency,
+  setRadioParametersMode,
+  setRadioParametersRFLevel,
+} from "../../js/api";
 setActivePinia(pinia);
 
 import { useStateStore } from "../../store/stateStore.js";
 const state = useStateStore(pinia);
 
-function set_radio_parameter_frequency(){
-    setRadioParametersFrequency(state.new_frequency)
+function set_radio_parameter_frequency() {
+  setRadioParametersFrequency(state.new_frequency);
 }
 
-function set_radio_parameter_mode(){
-    setRadioParametersMode(state.mode)
+function set_radio_parameter_mode() {
+  setRadioParametersMode(state.mode);
 }
 
-function set_radio_parameter_rflevel(){
-    setRadioParametersRFLevel(state.rf_level)
+function set_radio_parameter_rflevel() {
+  setRadioParametersRFLevel(state.rf_level);
 }
-
-
-
 </script>
 
 <template>
