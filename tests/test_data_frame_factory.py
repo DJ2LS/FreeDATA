@@ -1,5 +1,5 @@
 import sys
-sys.path.append('modem')
+sys.path.append('freedata-server')
 
 import unittest
 from config import CONFIG
@@ -12,7 +12,7 @@ class TestDataFrameFactory(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        config_manager = CONFIG('modem/config.ini.example')
+        config_manager = CONFIG('freedata-server/config.ini.example')
         config = config_manager.read()
         cls.factory = DataFrameFactory(config)
 

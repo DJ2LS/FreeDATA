@@ -82,19 +82,19 @@ class EventManager:
         self.broadcast(event)
 
     def modem_started(self):
-        event = {"modem": "started"}
+        event = {"freedata-server": "started"}
         self.broadcast(event)
 
     def modem_restarted(self):
-        event = {"modem": "restarted"}
+        event = {"freedata-server": "restarted"}
         self.broadcast(event)
 
     def modem_stopped(self):
-        event = {"modem": "stopped"}
+        event = {"freedata-server": "stopped"}
         self.broadcast(event)
 
     def modem_failed(self):
-        event = {"modem": "failed"}
+        event = {"freedata-server": "failed"}
         self.broadcast(event)
 
     def freedata_message_db_change(self):

@@ -1,2 +1,2 @@
-# FREEDATA_CONFIG=modem/config.ini flask --app modem/server run
-FREEDATA_CONFIG=modem/config.ini python3 modem/server.py
+# FREEDATA_CONFIG=freedata-server/config.ini flask --app freedata-server/server run
+FREEDATA_CONFIG=freedata-server/config.ini python3 freedata-server/server.py

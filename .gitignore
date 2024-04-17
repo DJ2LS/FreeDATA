@@ -1,5 +1,5 @@
-# possible installation of codec2 within modem
-modem/codec2
+# possible installation of codec2 within freedata-server
+freedata-server/codec2
 
 # temporary test artifacts
 **/build

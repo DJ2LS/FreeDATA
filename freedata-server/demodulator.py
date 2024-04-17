@@ -160,7 +160,7 @@ class Demodulator():
                     nbytes = codec2.api.freedv_rawdatarx(
                         freedv, bytes_out, audiobuffer.buffer.ctypes
                     )
-                    # get current modem states and write to list
+                    # get current freedata-server states and write to list
                     # 1 trial
                     # 2 sync
                     # 3 trial sync
@@ -171,7 +171,7 @@ class Demodulator():
                     if rx_status not in [0]:
                         self.is_codec2_traffic_counter = self.is_codec2_traffic_cooldown
                         self.log.debug(
-                            "[MDM] [demod_audio] modem state", mode=mode_name, rx_status=rx_status,
+                            "[MDM] [demod_audio] freedata-server state", mode=mode_name, rx_status=rx_status,
                             sync_flag=codec2.api.rx_sync_flags_to_text[rx_status]
                         )
 

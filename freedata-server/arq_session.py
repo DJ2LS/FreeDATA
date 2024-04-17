@@ -49,7 +49,7 @@ class ARQSession:
         self.config = config
 
         self.event_manager: EventManager = modem.event_manager
-        #self.states = modem.states
+        #self.states = freedata-server.states
         self.states = state_manager
         self.states.setARQ(True)
 

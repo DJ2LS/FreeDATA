@@ -1,5 +1,5 @@
 import sys
-sys.path.append('modem')
+sys.path.append('freedata-server')
 
 import unittest
 import queue

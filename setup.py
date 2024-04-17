@@ -23,12 +23,12 @@ setup(
     license='GPL3.0',
     entry_points={
         'console_scripts': [
-            'freedata-server=modem.server:main',  # Points to the main() function in server.py
+            'freedata-server=freedata-server.server:main',  # Points to the main() function in server.py
         ],
     },
     include_package_data=True,  # Ensure non-python files are included if specified
     package_data={
-        # Include all files under any directory within the 'modem' package
-        'modem': ['lib/**/*'],  # Recursive include for all files in 'lib' and its subdirectories
+        # Include all files under any directory within the 'freedata-server' package
+        'freedata-server': ['lib/**/*'],  # Recursive include for all files in 'lib' and its subdirectories
     },
 )

@@ -109,7 +109,7 @@ class RF:
 
     def stop_modem(self):
         try:
-            # let's stop the modem service
+            # let's stop the freedata-server service
             self.service_queue.put("stop")
             # simulate audio class active state for reducing cli output
             # self.stream = lambda: None
@@ -117,7 +117,7 @@ class RF:
             # self.stream.stop
 
         except Exception:
-            self.log.error("[MDM] Error stopping modem")
+            self.log.error("[MDM] Error stopping freedata-server")
 
     def init_audio(self):
         self.log.info(f"[MDM] init: get audio devices", input_device=self.audio_input_device,

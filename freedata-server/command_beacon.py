@@ -7,8 +7,8 @@ class BeaconCommand(TxCommand):
         return self.frame_factory.build_beacon(beacon_state)
 
 
-    #def transmit(self, modem):
-    #    super().transmit(modem)
+    #def transmit(self, freedata-server):
+    #    super().transmit(freedata-server)
     #    if self.config['MODEM']['enable_morse_identifier']:
     #        mycall = f"{self.config['STATION']['mycall']}-{self.config['STATION']['myssid']}"
-    #        modem.transmit_morse("morse", 1, 0, mycall)
+    #        freedata-server.transmit_morse("morse", 1, 0, mycall)

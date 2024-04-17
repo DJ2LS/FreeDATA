@@ -1,6 +1,6 @@
 import sys
 import time
-sys.path.append('modem')
+sys.path.append('freedata-server')
 
 import unittest
 import unittest.mock
@@ -58,7 +58,7 @@ class TestARQSession(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        config_manager = CONFIG('modem/config.ini.example')
+        config_manager = CONFIG('freedata-server/config.ini.example')
         cls.config = config_manager.read()
         cls.logger = structlog.get_logger("TESTS")
         cls.frame_factory = DataFrameFactory(cls.config)
