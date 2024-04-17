@@ -1,10 +1,13 @@
-import time
+import sys
+import os
+script_directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(script_directory)
 
+
+import time
 from flask import Flask, request, jsonify, make_response, abort, Response
 from flask_sock import Sock
 from flask_cors import CORS
-import os
-import sys
 import serial_ports
 from config import CONFIG
 import audio
@@ -33,7 +36,7 @@ from schedule_manager import ScheduleManager
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
-MODEM_VERSION = "0.15.2-alpha"
+MODEM_VERSION = "0.15.3-alpha"
 
 # set config file to use
 def set_config():
@@ -343,7 +346,7 @@ def stop_server():
     print('Server shutdown...')
     print("------------------------------------------")
 
-if __name__ == "__main__":
+def main():
     app.config['SOCK_SERVER_OPTIONS'] = {'ping_interval': 10}
     # define global MODEM_VERSION
     app.MODEM_VERSION = MODEM_VERSION
@@ -382,3 +385,5 @@ if __name__ == "__main__":
 
     app.run(modemaddress, modemport)
 
+if __name__ == "__main__":
+    main()
