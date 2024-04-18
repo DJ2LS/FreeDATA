@@ -62,7 +62,7 @@ class SM:
                     self.event_manager.modem_restarted()
 
             else:
-                self.log.warning("[SVC] freedata-server command processing failed", cmd=cmd, state=self.state_manager.is_modem_running)
+                self.log.warning("[SVC] freedata_server command processing failed", cmd=cmd, state=self.state_manager.is_modem_running)
 
 
     def start_modem(self):
@@ -72,7 +72,7 @@ class SM:
             return False
 
         if self.state_manager.is_modem_running:
-            self.log.warning("freedata-server already running")
+            self.log.warning("freedata_server already running")
             return False
 
 
@@ -80,12 +80,12 @@ class SM:
         audio_test = self.test_audio()
 
         if False in audio_test or None in audio_test or self.state_manager.is_modem_running:
-            self.log.warning("starting freedata-server failed", input_test=audio_test[0], output_test=audio_test[1])
+            self.log.warning("starting freedata_server failed", input_test=audio_test[0], output_test=audio_test[1])
             self.state_manager.set("is_modem_running", False)
             self.event_manager.modem_failed()
             return False
 
-        self.log.info("starting freedata-server....")
+        self.log.info("starting freedata_server....")
         self.modem = modem.RF(self.config, self.event_manager, self.modem_fft, self.modem_service, self.state_manager, self.app.radio_manager)
 
         self.frame_dispatcher = frame_dispatcher.DISPATCHER(self.config, 
@@ -102,7 +102,7 @@ class SM:
         return True
         
     def stop_modem(self):
-        self.log.info("stopping freedata-server....")
+        self.log.info("stopping freedata_server....")
         del self.modem
         self.modem = False
         self.state_manager.set("is_modem_running", False)

@@ -1,20 +1,20 @@
 """
 
-FreeDATA % python3.11 tools/custom_mode_tests/create_custom_ofdm_mod.py | ./freedata-server/lib/codec2/build_osx/src/freedv_data_raw_rx --vv --framesperburst 1 DATAC1 - /dev/null
+FreeDATA % python3.11 tools/custom_mode_tests/create_custom_ofdm_mod.py | ./freedata_server/lib/codec2/build_osx/src/freedv_data_raw_rx --vv --framesperburst 1 DATAC1 - /dev/null
 
 
 """
 import sys
-sys.path.append('freedata-server')
+sys.path.append('freedata_server')
 import numpy as np
 
-modem_path = '/../../freedata-server'
+modem_path = '/../../freedata_server'
 if modem_path not in sys.path:
     sys.path.append(modem_path)
 
 
 
-#import freedata-server.codec2 as codec2
+#import freedata_server.codec2 as codec2
 from codec2 import *
 import threading
 import modulator as modulator
@@ -50,7 +50,7 @@ def demod(txbuffer):
         nbytes = api.freedv_rawdatarx(
             freedv, bytes_out, audiobuffer.buffer.ctypes
         )
-        # get current freedata-server states and write to list
+        # get current freedata_server states and write to list
         # 1 trial
         # 2 sync
         # 3 trial sync

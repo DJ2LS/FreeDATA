@@ -1,7 +1,7 @@
 import sys
 import time
 
-sys.path.append('freedata-server')
+sys.path.append('freedata_server')
 
 import unittest
 import unittest.mock
@@ -58,7 +58,7 @@ class TestP2PConnectionSession(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        config_manager = CONFIG('freedata-server/config.ini.example')
+        config_manager = CONFIG('freedata_server/config.ini.example')
         cls.config = config_manager.read()
         cls.logger = structlog.get_logger("TESTS")
         cls.frame_factory = DataFrameFactory(cls.config)

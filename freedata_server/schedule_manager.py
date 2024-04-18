@@ -41,7 +41,7 @@ class ScheduleManager:
         # wait some time
         threading.Event().wait(timeout=10)
 
-        # get actual freedata-server instance
+        # get actual freedata_server instance
         self.modem = modem
 
         self.running = True  # Set the running flag to True

@@ -14,8 +14,13 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Electron Builder
-        working-directory: freedata-gui
+        working-directory: freedata_gui
         run: |
           npm i
           npm run build
@@ -33,7 +38,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Build binaries
-        working-directory: freedata-server
+        working-directory: freedata_server
         run: |
           python3 -m nuitka  --remove-output --assume-yes-for-downloads --follow-imports --include-data-dir=lib=lib --include-data-files=lib/codec2/*=lib/codec2/ --include-data-files=config.ini.example=config.ini --standalone server.py --output-filename=freedata-server
 
@@ -46,16 +51,16 @@ jobs:
 
       - name: Copy GUI
         run: |
-          cp -r gui/release/linux-unpacked/* $HOME/freedata-appimage/gui
+          cp -r freedata_gui/release/linux-unpacked/* $HOME/freedata-appimage/gui
 
 
       - name: Copy server
         run: |
-          cp -r modem/server.dist/* $HOME/freedata-appimage/server
+          cp -r freedata_server/server.dist/* $HOME/freedata-appimage/server
 
       - name: Copy Icon
         run: |
-          cp gui/build/icon.png $HOME/freedata-appimage/icon.png
+          cp freedata_gui/build/icon.png $HOME/freedata-appimage/icon.png
 
       - name: Create Desktop shortcut
         run: |

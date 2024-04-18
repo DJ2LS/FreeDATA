@@ -1,5 +1,5 @@
 import sys
-sys.path.append('freedata-server')
+sys.path.append('freedata_server')
 
 import unittest
 from config import CONFIG
@@ -12,7 +12,7 @@ class TestDataFrameFactory(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        config_manager = CONFIG('freedata-server/config.ini.example')
+        config_manager = CONFIG('freedata_server/config.ini.example')
         config = config_manager.read()
         cls.factory = DataFrameFactory(config)
 
@@ -32,7 +32,7 @@ class TestDataFrameFactory(unittest.TestCase):
     def testARQConnect(self):
         dxcall = "DJ2LS-4"
         session_id = 123
-        frame = self.factory.build_arq_session_open(dxcall, session_id, 1700)
+        frame = self.factory.build_arq_session_open(dxcall, session_id, 1700, 1)
         frame_data = self.factory.deconstruct(frame)
 
         self.assertEqual(frame_data['origin'], self.factory.myfullcall)

@@ -1,2 +1,1 @@
-# FREEDATA_CONFIG=freedata-server/config.ini flask --app freedata-server/server run
-FREEDATA_CONFIG=freedata-server/config.ini python3 freedata-server/server.py
+FREEDATA_CONFIG=freedata_server/config.ini python3 freedata_server/server.py

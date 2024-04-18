@@ -1,5 +1,5 @@
 import sys
-sys.path.append('freedata-server')
+sys.path.append('freedata_server')
 import unittest
 import config
 
@@ -7,13 +7,13 @@ class TestConfigMethods(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.config = config.CONFIG('freedata-server/config.ini.example')
+        cls.config = config.CONFIG('freedata_server/config.ini.example')
 
     def test_config_exists(self):
-        c = config.CONFIG('freedata-server/config.ini.example')
+        c = config.CONFIG('freedata_server/config.ini.example')
         self.assertTrue(c.config_exists())
 
-        #c = config.CONFIG('freedata-server/nonexistant')
+        #c = config.CONFIG('freedata_server/nonexistant')
         #self.assertFalse(c.config_exists())
 
     def test_read(self):

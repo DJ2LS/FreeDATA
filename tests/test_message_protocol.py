@@ -1,7 +1,7 @@
 import sys
 import time
 
-sys.path.append('freedata-server')
+sys.path.append('freedata_server')
 
 import unittest
 import unittest.mock
@@ -59,7 +59,7 @@ class TestMessageProtocol(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        config_manager = CONFIG('freedata-server/config.ini.example')
+        config_manager = CONFIG('freedata_server/config.ini.example')
         cls.config = config_manager.read()
         cls.logger = structlog.get_logger("TESTS")
         cls.frame_factory = DataFrameFactory(cls.config)
@@ -96,12 +96,17 @@ class TestMessageProtocol(unittest.TestCase):
             # Transfer data between both parties
             try:
                 transmission = modem_transmit_queue.get(timeout=1)
+                transmission["bytes"] += bytes(2)  # simulate 2 bytes crc checksum
                 if random.randint(0, 100) < self.loss_probability:
                     self.logger.info(f"[{threading.current_thread().name}] Frame lost...")
                     continue
 
                 frame_bytes = transmission['bytes']
-                frame_dispatcher.new_process_data(frame_bytes, None, len(frame_bytes), 0, 0)
+                if len(frame_bytes) == 5:
+                    mode_name = "SIGNALLING_ACK"
+                else:
+                    mode_name = None
+                frame_dispatcher.process_data(frame_bytes, None, len(frame_bytes), 0, 0, mode_name=mode_name)
             except queue.Empty:
                 continue
         self.logger.info(f"[{threading.current_thread().name}] Channel closed.")

@@ -101,7 +101,6 @@ else:
     files = []
 api = None
 
-print(files)
 for file in files:
     try:
         api = ctypes.CDLL(file)
@@ -419,7 +418,7 @@ class OFDM_CONFIG(ctypes.Structure):
         ("timing_mx_thresh", ctypes.c_float),  # Threshold for timing metrics
         ("nc", ctypes.c_int),  # Number of carriers
         ("ns", ctypes.c_int),  # Number of Symbol frames
-        ("np", ctypes.c_int),  # Number of freedata-server frames per packet
+        ("np", ctypes.c_int),  # Number of freedata_server frames per packet
         ("bps", ctypes.c_int),  # Bits per Symbol
         ("txtbits", ctypes.c_int),  # Number of auxiliary data bits
         ("nuwbits", ctypes.c_int),  # Number of unique word bits

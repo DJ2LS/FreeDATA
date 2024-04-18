@@ -5,8 +5,8 @@ if [ ! -d "gui" ]; then
     exit 1
 fi
 
-# Move into freedata-gui directory
-cd freedata-gui
+# Move into freedata_gui directory
+cd freedata_gui
 
 # Common variables
 OLDPATH=${PATH}
