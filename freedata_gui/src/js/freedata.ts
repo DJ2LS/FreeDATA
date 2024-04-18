@@ -108,7 +108,7 @@ export function getAppDataPath() {
   // Check if running in GitHub Actions
   const isGitHubActions = process.env.GITHUB_ACTIONS === "true";
   if (isGitHubActions) {
-    return "/home/runner/work/FreeDATA/FreeDATA/gui/config";
+    return "/home/runner/work/FreeDATA/FreeDATA/freedata_gui/config";
   }
 
   switch (platform) {
