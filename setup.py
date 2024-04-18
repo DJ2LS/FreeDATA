@@ -8,7 +8,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name='freedata_server',
+    name='freedata-server',
     version='0.15.4',
     packages=find_packages(where='.'),
     package_dir={'': '.'},
@@ -23,7 +23,7 @@ setup(
     license='GPL3.0',
     entry_points={
         'console_scripts': [
-            'freedata_server=freedata_server.server:main',  # Points to the main() function in server.py
+            'freedata-server=freedata_server.server:main',  # Points to the main() function in server.py
         ],
     },
     include_package_data=True,  # Ensure non-python files are included if specified
