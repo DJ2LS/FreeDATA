@@ -51,16 +51,16 @@ jobs:
 
       - name: Copy GUI
         run: |
-          cp -r gui/release/linux-unpacked/* $HOME/freedata-appimage/gui
+          cp -r freedata_gui/release/linux-unpacked/* $HOME/freedata-appimage/gui
 
 
       - name: Copy server
         run: |
-          cp -r modem/server.dist/* $HOME/freedata-appimage/server
+          cp -r freedata_server/server.dist/* $HOME/freedata-appimage/server
 
       - name: Copy Icon
         run: |
-          cp gui/build/icon.png $HOME/freedata-appimage/icon.png
+          cp freedata_gui/build/icon.png $HOME/freedata-appimage/icon.png
 
       - name: Create Desktop shortcut
         run: |
