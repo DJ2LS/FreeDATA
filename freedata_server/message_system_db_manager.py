@@ -13,7 +13,7 @@ class DatabaseManager:
     def __init__(self, event_manger, db_file=None):
         self.event_manager = event_manger
         if not db_file:
-            print(os.environ)
+            #print(os.environ)
 
             script_dir = os.path.dirname(os.path.abspath(__file__))
             db_path = os.path.join(script_dir, 'freedata-messages.db')

@@ -331,18 +331,16 @@ def sock_states(sock):
 @atexit.register
 def stop_server():
     print("------------------------------------------")
-    try:
-        app.service_manager.modem_service.put("stop")
-        if app.socket_interface_manager:
-            app.socket_interface_manager.stop_servers()
+    # TODO This is causing problems for some reasons.
+    #if "service_manager" :
+    #    app.service_manager.modem_service.put("stop")
+    #    if app.socket_interface_manager:
+    #        app.socket_interface_manager.stop_servers()
 
-        if app.service_manager.modem:
-            app.service_manager.modem.sd_input_stream.stop
-        audio.sd._terminate()
-    except Exception as e:
-        print(e)
-        print("Error stopping freedata_server")
-    time.sleep(1)
+    #    if app.service_manager.modem:
+    #        app.service_manager.modem.sd_input_stream.stop
+    audio.sd._terminate()
+    #time.sleep(1)
     print('Server shutdown...')
     print("------------------------------------------")
 
@@ -360,6 +358,7 @@ def main():
     app.modem_events = queue.Queue()  # queue which holds latest events
     app.modem_fft = queue.Queue()  # queue which holds latest fft data
     app.modem_service = queue.Queue()  # start / stop freedata_server service
+
     app.event_manager = event_manager.EventManager([app.modem_events])  # TODO remove the app.modem_event custom queue
     # init state manager
     app.state_manager = state_manager.StateManager(app.state_queue)
@@ -371,6 +370,7 @@ def main():
     # start freedata_server service
     app.modem_service.put("start")
     # initialize database default values
+
     DatabaseManager(app.event_manager).initialize_default_values()
     wsm.startThreads(app)
 
