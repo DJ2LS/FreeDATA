@@ -14,6 +14,11 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Electron Builder
         working-directory: freedata_gui
         run: |
