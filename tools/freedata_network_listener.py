@@ -5,7 +5,7 @@ deprecated_daemon.py
 
 Author: DJ2LS, January 2022
 
-daemon for providing basic information for the freedata-server like audio or serial devices
+daemon for providing basic information for the freedata_server like audio or serial devices
 
 """
 # pylint: disable=invalid-name, line-too-long, c-extension-no-member
@@ -92,7 +92,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                     #pass
                     print(jsondata.get("routing_table"))
 
-                if jsondata.get('freedata') == "freedata-server-message":
+                if jsondata.get('freedata') == "freedata_server-message":
                     log.info(jsondata)
 
                 if jsondata.get('ping') == "acknowledge":

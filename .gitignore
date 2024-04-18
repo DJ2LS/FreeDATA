@@ -1,5 +1,5 @@
-# possible installation of codec2 within freedata-server
-freedata-server/codec2
+# possible installation of codec2 within freedata_server
+freedata_server/codec2
 
 # temporary test artifacts
 **/build
@@ -24,12 +24,12 @@ coverage.sh
 coverage.xml
 
 #ignore node_modules
-/freedata-gui/node_modules/
+/freedata_gui/node_modules/
 
-#Ignore freedata-gui build items
-/freedata-gui/dist
-/freedata-gui/release
-/freedata-gui/dist-electron
+#Ignore freedata_gui build items
+/freedata_gui/dist
+/freedata_gui/release
+/freedata_gui/dist-electron
 
 #Ignore GUI config
-/freedata-gui/config/config.json
+/freedata_gui/config/config.json

@@ -15,7 +15,7 @@ jobs:
           python-version: "3.11"
 
       - name: Electron Builder
-        working-directory: freedata-gui
+        working-directory: freedata_gui
         run: |
           npm i
           npm run build
@@ -33,7 +33,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Build binaries
-        working-directory: freedata-server
+        working-directory: freedata_server
         run: |
           python3 -m nuitka  --remove-output --assume-yes-for-downloads --follow-imports --include-data-dir=lib=lib --include-data-files=lib/codec2/*=lib/codec2/ --include-data-files=config.ini.example=config.ini --standalone server.py --output-filename=freedata-server
 

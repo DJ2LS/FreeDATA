@@ -9,7 +9,7 @@ class StateManager:
         self.newstate = None
         self.last = time.time()
 
-        # freedata-server related states
+        # freedata_server related states
         # not every state is needed to publish, yet
         # TODO can we reduce them?
         self.channel_busy_slot = [False, False, False, False, False]

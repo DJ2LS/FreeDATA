@@ -1,5 +1,5 @@
 import sys
-sys.path.append('freedata-server')
+sys.path.append('freedata_server')
 
 import unittest
 from config import CONFIG
@@ -12,7 +12,7 @@ class TestDataFrameFactory(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        config_manager = CONFIG('freedata-server/config.ini.example')
+        config_manager = CONFIG('freedata_server/config.ini.example')
         config = config_manager.read()
         cls.factory = DataFrameFactory(config)
 

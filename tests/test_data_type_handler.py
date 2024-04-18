@@ -1,5 +1,5 @@
 import sys
-sys.path.append('freedata-server')
+sys.path.append('freedata_server')
 
 import unittest
 import queue

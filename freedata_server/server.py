@@ -132,11 +132,11 @@ def get_serial_devices():
     devices = serial_ports.get_ports()
     return api_response(devices)
 
-@app.route('/freedata-server/state', methods=['GET'])
+@app.route('/freedata_server/state', methods=['GET'])
 def get_modem_state():
     return api_response(app.state_manager.sendState())
 
-@app.route('/freedata-server/cqcqcq', methods=['POST', 'GET'])
+@app.route('/freedata_server/cqcqcq', methods=['POST', 'GET'])
 def post_cqcqcq():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for triggering a CQ via POST"})
@@ -145,7 +145,7 @@ def post_cqcqcq():
     enqueue_tx_command(command_cq.CQCommand)
     return api_ok()
 
-@app.route('/freedata-server/beacon', methods=['POST'])
+@app.route('/freedata_server/beacon', methods=['POST'])
 def post_beacon():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for controlling BEACON STATE via POST"})
@@ -165,7 +165,7 @@ def post_beacon():
 
     return api_response(request.json)
 
-@app.route('/freedata-server/ping_ping', methods=['POST'])
+@app.route('/freedata_server/ping_ping', methods=['POST'])
 def post_ping():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for controlling PING via POST"})
@@ -175,7 +175,7 @@ def post_ping():
     enqueue_tx_command(command_ping.PingCommand, request.json)
     return api_ok()
 
-@app.route('/freedata-server/send_test_frame', methods=['POST'])
+@app.route('/freedata_server/send_test_frame', methods=['POST'])
 def post_send_test_frame():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for triggering a TEST_FRAME via POST"})
@@ -184,7 +184,7 @@ def post_send_test_frame():
     enqueue_tx_command(command_test.TestCommand)
     return api_ok()
 
-@app.route('/freedata-server/fec_transmit', methods=['POST'])
+@app.route('/freedata_server/fec_transmit', methods=['POST'])
 def post_send_fec_frame():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for triggering a FEC frame via POST"})
@@ -193,7 +193,7 @@ def post_send_fec_frame():
     enqueue_tx_command(command_feq.FecCommand, request.json)
     return api_ok()
 
-@app.route('/freedata-server/fec_is_writing', methods=['POST'])
+@app.route('/freedata_server/fec_is_writing', methods=['POST'])
 def post_send_fec_is_writing():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for triggering a IS WRITING frame via POST"})
@@ -202,18 +202,18 @@ def post_send_fec_is_writing():
     #server_commands.modem_fec_is_writing(request.json)
     return 'Not implemented yet'
 
-@app.route('/freedata-server/start', methods=['POST'])
+@app.route('/freedata_server/start', methods=['POST'])
 def post_modem_start():
     if request.method not in ['POST']:
-        return api_response({"info": "endpoint for STARTING freedata-server via POST"})
+        return api_response({"info": "endpoint for STARTING freedata_server via POST"})
     print("start received...")
     app.modem_service.put("start")
     return api_response(request.json)
 
-@app.route('/freedata-server/stop', methods=['POST'])
+@app.route('/freedata_server/stop', methods=['POST'])
 def post_modem_stop():
     if request.method not in ['POST']:
-        return api_response({"info": "endpoint for STOPPING freedata-server via POST"})
+        return api_response({"info": "endpoint for STOPPING freedata_server via POST"})
     print("stop received...")
 
     app.modem_service.put("stop")
@@ -223,7 +223,7 @@ def post_modem_stop():
 def get_modem_version():
     return api_response({"version": app.MODEM_VERSION})
 
-@app.route('/freedata-server/send_arq_raw', methods=['POST'])
+@app.route('/freedata_server/send_arq_raw', methods=['POST'])
 def post_modem_send_raw():
     if request.method not in ['POST']:
         return api_response({"info": "endpoint for SENDING RAW DATA via POST"})
@@ -235,7 +235,7 @@ def post_modem_send_raw():
         return api_response(request.json)
     else:
         api_abort('Error executing command...', 500)
-@app.route('/freedata-server/stop_transmission', methods=['POST'])
+@app.route('/freedata_server/stop_transmission', methods=['POST'])
 def post_modem_send_raw_stop():
 
     if request.method not in ['POST']:
@@ -341,7 +341,7 @@ def stop_server():
         audio.sd._terminate()
     except Exception as e:
         print(e)
-        print("Error stopping freedata-server")
+        print("Error stopping freedata_server")
     time.sleep(1)
     print('Server shutdown...')
     print("------------------------------------------")
@@ -354,12 +354,12 @@ def main():
     config_file = set_config()
     app.config_manager = CONFIG(config_file)
 
-    # start freedata-server
+    # start freedata_server
     app.p2p_data_queue = queue.Queue() # queue which holds processing data of p2p connections
     app.state_queue = queue.Queue()  # queue which holds latest states
     app.modem_events = queue.Queue()  # queue which holds latest events
     app.modem_fft = queue.Queue()  # queue which holds latest fft data
-    app.modem_service = queue.Queue()  # start / stop freedata-server service
+    app.modem_service = queue.Queue()  # start / stop freedata_server service
     app.event_manager = event_manager.EventManager([app.modem_events])  # TODO remove the app.modem_event custom queue
     # init state manager
     app.state_manager = state_manager.StateManager(app.state_queue)
@@ -368,7 +368,7 @@ def main():
     # start service manager
     app.service_manager = service_manager.SM(app)
 
-    # start freedata-server service
+    # start freedata_server service
     app.modem_service.put("start")
     # initialize database default values
     DatabaseManager(app.event_manager).initialize_default_values()

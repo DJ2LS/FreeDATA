@@ -13,17 +13,17 @@ jobs:
           - os: ubuntu-20.04
             zip_name: freedata-server_ubuntu
             generator: Unix Makefiles
-            modem_binary_name: freedata-server
+            modem_binary_name: freedata_server
 
           - os: macos-latest
             zip_name: freedata-server_macos
             generator: Unix Makefiles
-            modem_binary_name: freedata-server
+            modem_binary_name: freedata_server
 
           - os: windows-latest
             zip_name: freedata-server_windows
             generator: Visual Studio 16 2019
-            modem_binary_name: freedata-server.exe
+            modem_binary_name: freedata_server.exe
 
     steps:
       - name: Checkout code for ${{ matrix.platform.name }}
@@ -62,26 +62,26 @@ jobs:
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
 
       - name: Build binaries
-        working-directory: freedata-server
+        working-directory: freedata_server
         run: |
           python3 -m nuitka  --remove-output --assume-yes-for-downloads --follow-imports --include-data-dir=lib=lib --include-data-files=lib/codec2/*=lib/codec2/ --include-data-files=config.ini.example=config.ini --standalone server.py --output-filename=freedata-server
 
       #- name: Download Portaudio binaries Linux macOS
       #  if: ${{!startsWith(matrix.os, 'windows')}}
-      #  working-directory: freedata-server
+      #  working-directory: freedata_server
       #  run: |
-      #    if ! test -d "server.dist/freedata-server/_sounddevice_data"; then
-      #    git clone https://github.com/spatialaudio/portaudio-binaries dist/freedata-server/_sounddevice_data/portaudio-binaries
+      #    if ! test -d "server.dist/freedata_server/_sounddevice_data"; then
+      #    git clone https://github.com/spatialaudio/portaudio-binaries dist/freedata_server/_sounddevice_data/portaudio-binaries
       #    fi
 
       #- name: Download Portaudio binaries Windows
       #  if: ${{startsWith(matrix.os, 'windows')}}
-      #  working-directory: freedata-server
+      #  working-directory: freedata_server
       #  run: |
-      #    if(Test-Path -Path "server.dist/freedata-server/_sounddevice_data"){
+      #    if(Test-Path -Path "server.dist/freedata_server/_sounddevice_data"){
       #    echo "sounddevice folder already exists"
       #    } else {
-      #    git clone https://github.com/spatialaudio/portaudio-binaries dist/freedata-server/_sounddevice_data/portaudio-binaries
+      #    git clone https://github.com/spatialaudio/portaudio-binaries dist/freedata_server/_sounddevice_data/portaudio-binaries
       #    }
 
       - name: LIST ALL FILES
@@ -99,7 +99,7 @@ jobs:
         with:
             type: 'zip'
             filename: '${{ matrix.zip_name }}.zip'
-            directory: ./freedata-server/server.dist
+            directory: ./freedata_server/server.dist
             path: .
             # exclusions: '*.git* /*node_modules/* .editorconfig'
 
@@ -110,14 +110,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: '${{ matrix.zip_name }}'
-          path: ./freedata-server/server.dist/${{ matrix.zip_name }}.zip
+          path: ./freedata_server/server.dist/${{ matrix.zip_name }}.zip
 
       - name: Release Modem
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           draft: true
-          files: ./freedata-server/server.dist/${{ matrix.zip_name }}.zip
+          files: ./freedata_server/server.dist/${{ matrix.zip_name }}.zip
 
       - name: LIST ALL FILES
         run: ls -R
