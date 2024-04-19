@@ -233,28 +233,36 @@ class ARQSessionIRS(arq_session.ARQSession):
             isWarning=True)
 
         # Adjust the speed level by one step towards the appropriate level, if needed
-        if appropriate_speed_level > self.speed_level and self.speed_level < len(self.SPEED_LEVEL_DICT) - 1:
-            # we need to ensure, the received data is equal to our speed level before changing it
-            if received_speed_level == self.speed_level:
-                self.speed_level += 1
-        elif appropriate_speed_level < self.speed_level and self.speed_level > 0:
-            # we need to ensure, the received data is equal to our speed level before changing it
-            if received_speed_level == self.speed_level:
-                self.speed_level -= 1
+        #if appropriate_speed_level > self.speed_level and self.speed_level < len(self.SPEED_LEVEL_DICT) - 1:
+        #    # we need to ensure, the received data is equal to our speed level before changing it
+        #    if received_speed_level == self.speed_level:
+        #        self.speed_level += 1
+        #elif appropriate_speed_level < self.speed_level and self.speed_level > 0:
+        #    #if received_speed_level == self.speed_level:
+        #    #    self.speed_level -= 1
 
         # Always decode the current mode
         current_mode = self.get_mode_by_speed_level(self.speed_level).value
         modes_to_decode[current_mode] = True
 
-        # Decode the previous speed level mode
+        # Update previous speed level
         if self.previous_speed_level != self.speed_level:
-            previous_mode = self.get_mode_by_speed_level(self.previous_speed_level).value
-            modes_to_decode[previous_mode] = True
             self.previous_speed_level = self.speed_level  # Update the previous speed level
+
+        # Ensure, previous mode is decoded as well
+        previous_mode = self.get_mode_by_speed_level(self.previous_speed_level).value
+        modes_to_decode[previous_mode] = True
+
+        # Ensure, appropriate mode is decoded as well
+        appropriate_mode = self.get_mode_by_speed_level(appropriate_speed_level).value
+        modes_to_decode[appropriate_mode] = True
 
         self.log(f"Modes to Decode: {list(modes_to_decode.keys())}", isWarning=True)
         # Apply the new decode mode based on the updated and previous speed levels
         self.modem.demodulator.set_decode_mode(modes_to_decode)
+
+        # finally update the speed level to the appropriate one
+        self.speed_level = appropriate_speed_level
 
         return self.speed_level
 
