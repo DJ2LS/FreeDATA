@@ -85,13 +85,18 @@ jobs:
           else 
               echo "$SERVER_CONFIG_FILE does not exist. Copying the default one"
               mkdir ~/.config/FreeDATA
-              cp server.dist/config.ini $SERVER_CONFIG_FILE
+              cp ./server/config.ini $SERVER_CONFIG_FILE
           fi
-          
+
+          # Launch the server
+          echo "Starting freedata-server"
+
           export FREEDATA_CONFIG=$SERVER_CONFIG_FILE
+          ./server/freedata-server
           
-          # Launch the main application executable from the linux-unpacked directory
-          ./linux-unpacked/freedata
+          # Launch the gui
+          echo "Starting gui"
+          ./gui/freedata
           
           ' > $HOME/freedata-appimage/AppRun
           chmod +x $HOME/freedata-appimage/AppRun
