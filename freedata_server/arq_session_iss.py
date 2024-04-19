@@ -46,6 +46,7 @@ class ARQSessionISS(arq_session.ARQSession):
         },
         ISS_State.ABORTING: {
             FRAME_TYPE.ARQ_STOP_ACK.value: 'transmission_aborted',
+
         },
         ISS_State.ABORTED: {
             FRAME_TYPE.ARQ_STOP_ACK.value: 'transmission_aborted',
@@ -91,7 +92,7 @@ class ARQSessionISS(arq_session.ARQSession):
             retries = retries - 1
 
             # TODO TEMPORARY TEST FOR SENDING IN LOWER SPEED LEVEL IF WE HAVE TWO FAILED TRANSMISSIONS!!!
-            if retries == 8 and isARQBurst and self.speed_level > 0:
+            if retries == 8 and isARQBurst and self.speed_level > 0 and self.state not in [ISS_State.ABORTED, ISS_State.ABORTING]:
                 self.log("SENDING IN FALLBACK SPEED LEVEL", isWarning=True)
                 self.speed_level = 0
                 print(f" CONFIRMED BYTES: {self.confirmed_bytes}")
@@ -155,14 +156,13 @@ class ARQSessionISS(arq_session.ARQSession):
 
         # interrupt transmission when aborting
         if self.state in [ISS_State.ABORTED, ISS_State.ABORTING]:
-            self.event_frame_received.set()
-            self.send_stop()
+            #self.event_frame_received.set()
+            #self.send_stop()
             return
 
         # update statistics
         self.update_histograms(self.confirmed_bytes, self.total_length)
         self.update_speed_level(irs_frame)
-
 
         if self.expected_byte_offset > self.total_length:
             self.confirmed_bytes = self.total_length
@@ -236,8 +236,18 @@ class ARQSessionISS(arq_session.ARQSession):
         self.event_manager.send_arq_session_finished(
             True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
 
+        # clear audio out queue
+        self.modem.audio_out_queue.queue.clear()
+
+        # wait for transmit function to be ready before setting event
+        threading.Event().wait(0.100)
+
         # break actual retries
         self.event_frame_received.set()
+
+        # sleep some time for avoiding packet collission
+        threading.Event().wait(self.TIMEOUT_STOP_ACK)
+        self.send_stop()
 
     def send_stop(self):
         stop_frame = self.frame_factory.build_arq_stop(self.id)
