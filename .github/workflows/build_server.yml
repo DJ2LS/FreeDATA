@@ -15,10 +15,10 @@ jobs:
             generator: Unix Makefiles
             modem_binary_name: freedata_server
 
-          - os: macos-latest
-            zip_name: freedata-server_macos
-            generator: Unix Makefiles
-            modem_binary_name: freedata_server
+          #- os: macos-latest
+          #  zip_name: freedata-server_macos
+          #  generator: Unix Makefiles
+          #  modem_binary_name: freedata_server
 
           - os: windows-latest
             zip_name: freedata-server_windows
