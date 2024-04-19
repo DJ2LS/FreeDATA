@@ -108,6 +108,14 @@ jobs:
       - name: LIST ALL FILES
         run: ls -R
 
+      - name: Move AppImage
+        run: |
+          cp FreeDATA-x86_64.AppImage $HOME/FreeDATA-x86_64.AppImage
+
+      - name: LIST ALL FILES
+        run: ls -R
+
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
