@@ -9,7 +9,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='freedata-server',
-    version='0.15.4a2',
+    version='0.15.4a4',
     packages=find_packages(where='.'),
     package_dir={'': '.'},
     install_requires=required,
@@ -19,7 +19,7 @@ setup(
     description='A free, open-source, multi-platform application for sending files and messages, using the codec2 HF modems.',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url='https://freedata.app',
+    url='https://github.com/DJ2LS/FreeDATA',
     license='GPL3.0',
     entry_points={
         'console_scripts': [
