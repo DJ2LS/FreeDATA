@@ -108,25 +108,19 @@ jobs:
       - name: LIST ALL FILES
         run: ls -R
 
-      - name: Move AppImage
-        run: |
-          cp FreeDATA-x86_64.AppImage $HOME/FreeDATA-x86_64.AppImage
-
-      - name: LIST ALL FILES
-        run: ls -R
 
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: 'FreeDATA-x86_64.AppImage'
-          path: ./$HOME/FreeDATA-x86_64.AppImage
+          path: FreeDATA-x86_64.AppImage
 
       - name: Upload Installer to Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           draft: true
-          files: ./$HOME/FreeDATA-x86_64.AppImage
+          files: FreeDATA-x86_64.AppImage
           tag_name: ${{ github.ref_name }}
           name: 'FreeDATA-x86_64.AppImage'
