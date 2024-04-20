@@ -112,8 +112,10 @@ app.whenReady().then(() => {
     //serverProcess.unref(); // Allow the server process to continue running independently of the parent process
     //  break;
     case "linux":
-      serverPath = join(basePath, "server.dist", "freedata-server");
+      serverPath = join(basePath, "server", "freedata-server");
+      //process.env.FREEDATA_CONFIG = '~/.config/FreeDATA/config.ini';
       console.log(`Starting server with path: ${serverPath}`);
+
       serverProcess = spawn(serverPath, [], { detached: true });
       serverProcess.unref(); // Allow the server process to continue running independently of the parent process
       break;

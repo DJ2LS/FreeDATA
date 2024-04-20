@@ -88,11 +88,9 @@ jobs:
               cp ./server/config.ini $SERVER_CONFIG_FILE
           fi
 
-          # Launch the server
-          echo "Starting freedata-server"
-
+          echo "Setting server config variable"
           export FREEDATA_CONFIG=$SERVER_CONFIG_FILE
-          ./server/freedata-server
+          # ./server/freedata-server
           
           # Launch the gui
           echo "Starting gui"
