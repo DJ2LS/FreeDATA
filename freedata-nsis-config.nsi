@@ -53,7 +53,7 @@ Section "FreeData Server" SEC01
 
 doneBackup:
   ; Add your application files here
-  File /r "freedata-server\server.dist\*"
+  File /r "freedata_server\server.dist\*"
 
 ; Restore the original "config.ini" if it was backed up
   IfFileExists $INSTDIR\freedata-server\config.ini.bak restoreConfig
