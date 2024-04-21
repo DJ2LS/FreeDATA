@@ -37,7 +37,7 @@ class FREEDV_MODE(Enum):
     data_ofdm_500 = 21500
     data_ofdm_2438 = 2124381
     #data_qam_2438 = 2124382
-    qam16c2 = 22
+    #qam16c2 = 22
 
 class FREEDV_MODE_USED_SLOTS(Enum):
     """

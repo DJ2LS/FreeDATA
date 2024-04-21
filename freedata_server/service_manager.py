@@ -22,7 +22,7 @@ class SM:
         self.socket_interface_manager = None
 
         runner_thread = threading.Thread(
-            target=self.runner, name="runner thread", daemon=True
+            target=self.runner, name="runner thread", daemon=False
         )
         runner_thread.start()
 
@@ -66,6 +66,9 @@ class SM:
             else:
                 self.log.warning("[SVC] freedata_server command processing failed", cmd=cmd, state=self.state_manager.is_modem_running)
 
+            # finally clear processing commands
+            self.modem_service.queue.clear()
+
     def start_modem(self):
 
         if self.config['STATION']['mycall'] in ['XX1XXX']:
@@ -76,10 +79,8 @@ class SM:
             self.log.warning("freedata_server already running")
             return False
 
-
         # test audio devices
         audio_test = self.test_audio()
-
         if False in audio_test or None in audio_test or self.state_manager.is_modem_running:
             self.log.warning("starting freedata_server failed", input_test=audio_test[0], output_test=audio_test[1])
             self.state_manager.set("is_modem_running", False)
@@ -104,13 +105,13 @@ class SM:
         
     def stop_modem(self):
         self.log.info("stopping freedata_server....")
-        self.modem.stop_modem()
-        del self.modem
-        self.modem = False
+        if self.modem:
+            self.modem.stop_modem()
+            del self.modem
+            self.modem = False
         self.state_manager.set("is_modem_running", False)
         self.schedule_manager.stop()
         self.event_manager.modem_stopped()
-
     def test_audio(self):
         try:
             audio_test = audio.test_audio_devices(self.config['AUDIO']['input_device'],

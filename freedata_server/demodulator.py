@@ -119,7 +119,7 @@ class Demodulator():
         for mode in self.MODE_DICT:
             # Start decoder threads
             self.MODE_DICT[mode]['decoding_thread'] = threading.Thread(
-                target=self.demodulate_audio,args=[mode], name=self.MODE_DICT[mode]['name'], daemon=True
+                target=self.demodulate_audio,args=[mode], name=self.MODE_DICT[mode]['name'], daemon=False
             )
             self.MODE_DICT[mode]['decoding_thread'].start()
 

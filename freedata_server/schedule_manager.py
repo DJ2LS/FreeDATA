@@ -50,7 +50,7 @@ class ScheduleManager:
             self.scheduler.enter(0, 1, self.schedule_event, (event_info['function'], event_info['interval']))
 
         # Run the scheduler in a separate thread
-        self.scheduler_thread = threading.Thread(target=self.scheduler.run, daemon=True)
+        self.scheduler_thread = threading.Thread(target=self.scheduler.run, daemon=False)
         self.scheduler_thread.start()
 
     def stop(self):

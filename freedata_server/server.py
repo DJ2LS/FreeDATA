@@ -380,7 +380,7 @@ def main():
     if not modemport:
         modemport = 5000
 
-    app.run(modemaddress, modemport)
+    app.run(modemaddress, modemport, debug=False)
 
 if __name__ == "__main__":
     main()
