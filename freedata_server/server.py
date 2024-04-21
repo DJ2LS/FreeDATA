@@ -339,10 +339,7 @@ def stop_server():
 
     #    if app.service_manager.modem:
     #        app.service_manager.modem.sd_input_stream.stop
-    audio.sd._terminate()
     #time.sleep(1)
-    print('Server shutdown...')
-    print("------------------------------------------")
 
 def main():
     app.config['SOCK_SERVER_OPTIONS'] = {'ping_interval': 10}

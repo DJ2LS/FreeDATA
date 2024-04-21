@@ -36,6 +36,8 @@ class SM:
 
                 if self.config['SOCKET_INTERFACE']['enable']:
                     self.socket_interface_manager = SocketInterfaceHandler(self.modem, self.app.config_manager, self.state_manager, self.event_manager).start_servers()
+                else:
+                    self.socket_interface_manager = None
 
             elif cmd in ['stop'] and self.modem:
                 self.stop_modem()
@@ -49,9 +51,9 @@ class SM:
                 self.stop_modem()
                 self.stop_radio_manager()
                 if self.config['SOCKET_INTERFACE']['enable'] and self.socket_interface_manager:
-
                     self.socket_interface_manager.stop_servers()
-
+                    del self.socket_interface_manager
+                    self.socket_interface_manager = SocketInterfaceHandler(self.modem, self.app.config_manager, self.state_manager, self.event_manager).start_servers()
                 # we need to wait a bit for avoiding a portaudio crash
                 threading.Event().wait(0.5)
 
@@ -63,7 +65,6 @@ class SM:
 
             else:
                 self.log.warning("[SVC] freedata_server command processing failed", cmd=cmd, state=self.state_manager.is_modem_running)
-
 
     def start_modem(self):
 
@@ -103,6 +104,7 @@ class SM:
         
     def stop_modem(self):
         self.log.info("stopping freedata_server....")
+        self.modem.stop_modem()
         del self.modem
         self.modem = False
         self.state_manager.set("is_modem_running", False)

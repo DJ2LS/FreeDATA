@@ -115,9 +115,10 @@ class RF:
             # self.stream = lambda: None
             # self.stream.active = False
             # self.stream.stop
-
-        except Exception:
-            self.log.error("[MDM] Error stopping freedata_server")
+            self.sd_input_stream.close()
+            self.sd_output_stream.close()
+        except Exception as e:
+            self.log.error("[MDM] Error stopping freedata_server", e=e)
 
     def init_audio(self):
         self.log.info(f"[MDM] init: get audio devices", input_device=self.audio_input_device,

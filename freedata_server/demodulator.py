@@ -42,6 +42,9 @@ class Demodulator():
 
         self.fft_queue = fft_queue
 
+        # Audio Stream object
+        self.stream = None
+
         # init codec2 resampler
         self.resampler = codec2.resampler()
 
@@ -50,9 +53,6 @@ class Demodulator():
         # enable decoding of signalling modes
         self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
         self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
-        self.MODE_DICT[codec2.FREEDV_MODE.data_ofdm_2438.value]["decode"] = True
-        #self.MODE_DICT[codec2.FREEDV_MODE.qam16c2.value]["decode"] = True
-
 
         tci_rx_callback_thread = threading.Thread(
             target=self.tci_rx_callback,
@@ -114,7 +114,6 @@ class Demodulator():
         self.MODE_DICT[mode]["nin"] = nin
 
     def start(self, stream):
-
         self.stream = stream
 
         for mode in self.MODE_DICT:
@@ -153,7 +152,7 @@ class Demodulator():
         state_buffer = self.MODE_DICT[mode]["state_buffer"]
         mode_name = self.MODE_DICT[mode]["name"]
         try:
-            while self.stream.active:
+            while self.stream and self.stream.active:
                 threading.Event().wait(0.01)
                 while audiobuffer.nbuffer >= nin:
                     # demodulate audio
@@ -209,11 +208,13 @@ class Demodulator():
         except Exception as e:
             error_message = str(e)
             # we expect this error when shutdown
-            if "PortAudio not initialized" in error_message:
-                e = None
-            self.log.debug(
-                "[MDM] [demod_audio] demod loop ended", mode=mode_name, e=e
-            )
+            if error_message in ["PortAudio not initialized [PaErrorCode -10000]", "Invalid stream pointer [PaErrorCode -9988]"]:
+                return
+            else:
+                self.log.warning(
+                    "[MDM] [demod_audio] demod loop ended", mode=mode_name, e=e
+                )
+                audio.sd._terminate()
 
     def tci_rx_callback(self) -> None:
         """

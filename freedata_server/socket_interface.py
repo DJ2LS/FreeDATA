@@ -7,7 +7,6 @@ import select
 from queue import Queue
 from socket_interface_commands import SocketCommandHandler
 
-
 class CommandSocket(socketserver.BaseRequestHandler):
     #def __init__(self, request, client_address, server):
     def __init__(self, request, client_address, server, modem=None, state_manager=None, event_manager=None, config_manager=None):
@@ -88,7 +87,6 @@ class DataSocket(socketserver.BaseRequestHandler):
 
     def handle(self):
         self.log(f"Data connection established with {self.client_address}")
-
         try:
             while True:
                 
@@ -171,23 +169,28 @@ class SocketInterfaceHandler:
         self.log(f"Interfaces started")
 
     def run_server(self, port, handler):
-        with CustomThreadedTCPServer(('127.0.0.1', port), handler, modem=self.modem, state_manager=self.state_manager, event_manager=self.event_manager, config_manager=self.config_manager) as server:
-            self.log(f"Server started on port {port}")
-            if port == self.command_port:
-                self.command_server = server
-            else:
-                self.data_server = server
-            server.serve_forever()
+        try:
+            with CustomThreadedTCPServer(('127.0.0.1', port), handler, modem=self.modem, state_manager=self.state_manager, event_manager=self.event_manager, config_manager=self.config_manager) as server:
+                self.log(f"Server starting on port {port}")
+                if port == self.command_port:
+                    self.command_server = server
+                else:
+                    self.data_server = server
+                server.serve_forever()
+                self.log(f"Server started on port {port}")
+        except Exception as e:
+            self.log(f"Error starting server on port {port} | {e}", isWarning=True)
 
     def stop_servers(self):
         # Gracefully shutdown the server
         if self.command_server:
             self.command_server.shutdown()
+            self.command_server_thread.join()
+
+            del self.command_server
         if self.data_server:
             self.data_server.shutdown()
-        self.log(f"Interfaces stopped")
+            self.data_server_thread.join()
+            del self.data_server
 
-    def wait_for_server_threads(self):
-        # Wait for both server threads to finish
-        self.command_server_thread.join()
-        self.data_server_thread.join()
+        self.log(f"Interfaces stopped")
