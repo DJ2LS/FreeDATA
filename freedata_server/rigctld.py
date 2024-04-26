@@ -27,7 +27,9 @@ class radio:
             'strength': '---',
             'bandwidth': '---',
             'rf': '---',
-            'ptt': False  # Initial PTT state is set to False
+            'ptt': False,  # Initial PTT state is set to False,
+            'tuner': False,
+            'swr': '---'
         }
 
         # start rigctld...
@@ -62,7 +64,9 @@ class radio:
             'strength': '---',
             'bandwidth': '---',
             'rf': '---',
-            'ptt': False  # Initial PTT state is set to False
+            'ptt': False,  # Initial PTT state is set to False,
+            'tuner': False,
+            'swr': '---'
         }
 
     def send_command(self, command) -> str:
@@ -167,6 +171,8 @@ class radio:
                 self.log.warning(f"[RIGCTLD] Error setting bandwidth: {err}")
                 self.connected = False
         return False
+    
+
 
     def set_rf_level(self, rf):
         """Set the RF.
@@ -188,6 +194,49 @@ class radio:
                 self.connected = False
         return False
 
+    def set_tuner(self, state):
+        """Set the TUNER state.
+
+        Args:
+            state (bool): True to enable PTT, False to disable.
+
+        Returns:
+            bool: True if the PTT state was set successfully, False otherwise.
+        """
+        if self.connected:
+            try:
+                if state:
+                    self.send_command('U TUNER 1')  # Enable PTT
+                else:
+                    self.send_command('U TUNER 0')  # Disable PTT
+                self.parameters['tuner'] = state  # Update PTT state in parameters
+                return True
+            except Exception as err:
+                self.log.warning(f"[RIGCTLD] Error setting TUNER state: {err}")
+                self.connected = False
+        return False
+
+    def get_tuner(self):
+        """Set the TUNER state.
+
+        Args:
+            state (bool): True to enable PTT, False to disable.
+
+        Returns:
+            bool: True if the PTT state was set successfully, False otherwise.
+        """
+        if self.connected:
+            try:
+                result = self.send_command('u TUNER')
+                state = result == 1
+                self.parameters['tuner'] = state  # Update TUNER state in parameters
+                return True
+            except Exception as err:
+                self.log.warning(f"[RIGCTLD] Error setting TUNER state: {err}")
+                self.connected = False
+        return False
+
+
     def get_parameters(self):
         if not self.connected:
             self.connect()
@@ -198,6 +247,8 @@ class radio:
             self.get_alc()
             self.get_strength()
             self.get_rf()
+            self.get_tuner()
+            self.get_swr()
 
         return self.parameters
 
@@ -257,6 +308,19 @@ class radio:
         except Exception as e:
             self.log.warning(f"Error getting RF power: {e}")
             self.parameters['rf'] = 'err'
+
+    def get_swr(self):
+        try:
+            rf_response = self.send_command('l SWR')
+            if rf_response is not None:
+                self.parameters['swr'] = rf_response
+            else:
+                self.parameters['swr'] = 'err'
+        except ValueError:
+            self.parameters['swr'] = 'err'
+        except Exception as e:
+            self.log.warning(f"Error getting SWR: {e}")
+            self.parameters['swr'] = 'err'
 
     def start_service(self):
         binary_name = "rigctld"

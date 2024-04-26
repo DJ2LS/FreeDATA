@@ -260,6 +260,8 @@ def get_post_radio():
             app.radio_manager.set_mode(request.json['radio_mode'])
         if "radio_rf_level" in request.json:
             app.radio_manager.set_rf_level(int(request.json['radio_rf_level']))
+        if "radio_tuner" in request.json:
+            app.radio_manager.set_tuner(int(request.json['radio_tuner']))
 
         return api_response(request.json)
     elif request.method == 'GET':

@@ -48,6 +48,8 @@ class StateManager:
         self.radio_bandwidth = 0
         self.radio_rf_level = 0
         self.s_meter_strength = 0
+        self.radio_tuner = False
+        self.radio_swr = 0
         # Set rig control status regardless or rig control method
         self.radio_status = False
 
@@ -216,6 +218,8 @@ class StateManager:
             "radio_mode": self.radio_mode,
             "radio_rf_level": self.radio_rf_level,
             "s_meter_strength": self.s_meter_strength,
+            "radio_swr": self.radio_swr,
+            "radio_tuner": self.radio_tuner
         }
 
     def register_p2p_connection_session(self, session):

@@ -63,10 +63,29 @@ class radio:
         """ """
         return None
 
+    def get_tuner(self):
+        """ """
+        return None
+
+    def get_swr(self):
+        """ """
+        return None
+
     def set_bandwidth(self):
         """ """
         return None
     def set_mode(self, mode):
+        """
+
+        Args:
+          mode:
+
+        Returns:
+
+        """
+        return None
+
+    def set_tuner(self, state):
         """
 
         Args:

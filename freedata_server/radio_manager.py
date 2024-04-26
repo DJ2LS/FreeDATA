@@ -1,5 +1,4 @@
 import rigctld
-import tci
 import rigdummy
 import time
 import threading
@@ -33,6 +32,9 @@ class RadioManager:
     def set_ptt(self, state):
         self.radio.set_ptt(state)
 
+    def set_tuner(self, state):
+        self.radio.set_tuner(state)
+
     def set_frequency(self, frequency):
         self.radio.set_frequency(frequency)
 
@@ -49,9 +51,12 @@ class RadioManager:
             self.state_manager.set("radio_mode", parameters['mode'])
             self.state_manager.set("radio_bandwidth", parameters['bandwidth'])
             self.state_manager.set("radio_rf_level", parameters['rf'])
+            self.state_manager.set("radio_tuner", parameters['tuner'])
 
             if self.state_manager.isTransmitting():
                 self.radio_alc = parameters['alc']
+                self.state_manager.set("radio_swr", parameters['swr'])
+
             self.state_manager.set("s_meter_strength", parameters['strength'])
             time.sleep(self.refresh_rate)
     def stop(self):
