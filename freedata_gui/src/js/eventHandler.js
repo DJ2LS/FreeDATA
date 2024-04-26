@@ -62,7 +62,6 @@ export function stateDispatcher(data) {
       Math.pow(10, data["audio_dbfs"] / 20) * 100,
     );
 
-
     stateStore.channel_busy_slot = data["channel_busy_slot"];
 
     stateStore.beacon_state = data["is_beacon_running"];
@@ -74,20 +73,16 @@ export function stateDispatcher(data) {
   }
 
   if (data["type"] == "state-change" && data["type"] == "radio") {
-
     stateStore.s_meter_strength_raw = Math.round(data["s_meter_strength"]);
     stateStore.s_meter_strength_percent = Math.round(
       Math.pow(10, data["s_meter_strength"] / 20) * 100,
     );
-
 
     stateStore.radio_status = data["radio_status"];
     stateStore.frequency = data["radio_frequency"];
     stateStore.mode = data["radio_mode"];
     stateStore.swr = data["radio_swr"];
     stateStore.tuner = data["radio_tuner"];
-
-
   }
 }
 
