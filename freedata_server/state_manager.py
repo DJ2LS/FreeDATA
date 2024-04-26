@@ -54,12 +54,12 @@ class StateManager:
         # Set rig control status regardless or rig control method
         self.radio_status = False
 
-    def sendState (self):
+    def sendState(self):
         currentState = self.get_state_event(False)
         self.statequeue.put(currentState)
         return currentState
 
-    def sendStateUpdate (self, state):
+    def sendStateUpdate(self, state):
         self.statequeue.put(state)
 
     def set(self, key, value):

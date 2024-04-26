@@ -256,7 +256,7 @@ class radio:
 
     def get_frequency(self):
         try:
-            frequency_response = self.send_command('f')
+            frequency_response = int(self.send_command('f'))
             self.parameters['frequency'] = frequency_response if frequency_response is not None else 'err'
         except Exception as e:
             self.log.warning(f"Error getting frequency: {e}")
@@ -280,7 +280,7 @@ class radio:
             bandwidth = 'err'
         finally:
             self.parameters['mode'] = mode
-            self.parameters['bandwidth'] = bandwidth
+            self.parameters['bandwidth'] = int(bandwidth)
 
     def get_alc(self):
         try:
@@ -292,7 +292,7 @@ class radio:
 
     def get_strength(self):
         try:
-            strength_response = self.send_command('l STRENGTH')
+            strength_response = int(self.send_command('l STRENGTH'))
             self.parameters['strength'] = strength_response if strength_response is not None else 'err'
         except Exception as e:
             self.log.warning(f"Error getting strength: {e}")
