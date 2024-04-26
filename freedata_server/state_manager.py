@@ -7,7 +7,7 @@ class StateManager:
         # state related settings
         self.statequeue = statequeue
         self.newstate = None
-        self.new_radio = None
+        self.newradio = None
         self.last = time.time()
 
         # freedata_server related states
@@ -76,10 +76,9 @@ class StateManager:
         #print(f"State ==> Setting {key} to value {value}")
         # only process data if changed
         new_radio = self.get_radio_event(True)
-        if new_radio != self.new_radio:
-            self.new_radio = new_radio
+        if new_radio != self.newradio:
+            self.newradio = new_radio
             self.sendStateUpdate()
-
 
     def set_channel_slot_busy(self, array):
         for i in range(0,len(array),1):

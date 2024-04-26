@@ -9,7 +9,7 @@ import {
 */
 import { toRaw } from "vue";
 import { displayToast } from "./popupHandler";
-import { getFreedataMessages, getModemState, getAudioDevices } from "./api";
+import { getFreedataMessages, getModemState, getAudioDevices, getRadioStatus } from "./api";
 import { processFreedataMessages } from "./messagesHandler.ts";
 import { processRadioStatus } from "./radioHandler.ts";
 
@@ -35,6 +35,9 @@ export async function loadAllData() {
   let stateData = await getModemState();
   console.log(stateData);
 
+  let radioData = await getRadioStatus();
+  console.log(stateData);
+
   getRemote();
   getOverallHealth();
   audioStore.loadAudioDevices();
@@ -50,7 +53,7 @@ export function connectionFailed(endpoint, event) {
 export function stateDispatcher(data) {
   data = JSON.parse(data);
   //Leave commented when not needed, otherwise can lead to heap overflows due to the amount of data logged
-  //console.debug(data);
+  console.log(data);
   if (data["type"] == "state-change" || data["type"] == "state") {
     stateStore.modem_connection = "connected";
     stateStore.busy_state = data["is_modem_busy"];
@@ -62,9 +65,7 @@ export function stateDispatcher(data) {
       Math.pow(10, data["audio_dbfs"] / 20) * 100,
     );
 
-
     stateStore.channel_busy_slot = data["channel_busy_slot"];
-
     stateStore.beacon_state = data["is_beacon_running"];
     stateStore.is_away_from_key = data["is_away_from_key"];
 
@@ -74,20 +75,16 @@ export function stateDispatcher(data) {
   }
 
   if (data["type"] == "radio-change" || data["type"] == "radio") {
-
     stateStore.s_meter_strength_raw = Math.round(data["s_meter_strength"]);
     stateStore.s_meter_strength_percent = Math.round(
       Math.pow(10, data["s_meter_strength"] / 20) * 100,
     );
-
 
     stateStore.radio_status = data["radio_status"];
     stateStore.frequency = data["radio_frequency"];
     stateStore.mode = data["radio_mode"];
     stateStore.swr = data["radio_swr"];
     stateStore.tuner = data["radio_tuner"];
-
-
   }
 }
 
