@@ -54,6 +54,22 @@ case $osname in
 
    ;;
 
+   "Ubuntu")
+	case $osversion in
+	   "24.04 LTS (Noble Numbat)")
+		sudo apt install --upgrade -y libhamlib-utils libhamlib-dev libhamlib4 fonts-noto-color-emoji git build-essential cmake npm nodejs python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama python3-venv
+	   ;;
+
+	   *)
+	   	echo "*************************************************************************"
+	   	echo "This version of Linux is not yet supported by this script."
+	   	echo $osname $osversion
+	   	echo "*************************************************************************"
+		exit 1
+	   ;;
+	esac
+   ;;
+
    *)
 	echo "*************************************************************************"
 	echo "This version of Linux is not yet supported by this script."
