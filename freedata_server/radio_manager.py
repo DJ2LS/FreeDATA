@@ -47,6 +47,7 @@ class RadioManager:
     def update_parameters(self):
         while not self.stop_event.is_set():
             parameters = self.radio.get_parameters()
+
             self.state_manager.set_radio("radio_frequency", parameters['frequency'])
             self.state_manager.set_radio("radio_mode", parameters['mode'])
             self.state_manager.set_radio("radio_bandwidth", parameters['bandwidth'])

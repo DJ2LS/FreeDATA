@@ -59,8 +59,8 @@ class StateManager:
         self.statequeue.put(currentState)
         return currentState
 
-    def sendStateUpdate (self):
-        self.statequeue.put(self.newstate)
+    def sendStateUpdate (self, state):
+        self.statequeue.put(state)
 
     def set(self, key, value):
         setattr(self, key, value)
@@ -69,7 +69,7 @@ class StateManager:
         new_state = self.get_state_event(True)
         if new_state != self.newstate:
             self.newstate = new_state
-            self.sendStateUpdate()
+            self.sendStateUpdate(new_state)
 
     def set_radio(self, key, value):
         setattr(self, key, value)
@@ -78,14 +78,14 @@ class StateManager:
         new_radio = self.get_radio_event(True)
         if new_radio != self.newradio:
             self.newradio = new_radio
-            self.sendStateUpdate()
+            self.sendStateUpdate(new_radio)
 
     def set_channel_slot_busy(self, array):
         for i in range(0,len(array),1):
             if not array[i] == self.channel_busy_slot[i]:
                 self.channel_busy_slot = array
                 self.newstate = self.get_state_event(True)
-                self.sendStateUpdate()
+                self.sendStateUpdate(self.newstate)
                 continue
     
     def get_state_event(self, isChangedState):
@@ -211,7 +211,7 @@ class StateManager:
         if 'frequency' not in activity_data:
             activity_data['frequency'] = self.radio_frequency
         self.activities_list[activity_id] = activity_data
-        self.sendStateUpdate()
+        self.sendStateUpdate(self.newstate)
 
     def calculate_channel_busy_state(self):
         if self.channel_busy_condition_traffic.is_set() and self.channel_busy_condition_codec2.is_set():
