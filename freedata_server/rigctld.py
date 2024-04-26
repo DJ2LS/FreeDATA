@@ -43,12 +43,12 @@ class radio:
         try:
             self.connection = socket.create_connection((self.hostname, self.port), timeout=self.timeout)
             self.connected = True
-            self.states.set("radio_status", True)
+            self.states.set_radio("radio_status", True)
             self.log.info(f"[RIGCTLD] Connected to rigctld at {self.hostname}:{self.port}")
         except Exception as err:
             self.log.warning(f"[RIGCTLD] Failed to connect to rigctld: {err}")
             self.connected = False
-            self.states.set("radio_status", False)
+            self.states.set_radio("radio_status", False)
 
     def disconnect(self):
         self.connected = False
@@ -56,7 +56,7 @@ class radio:
             self.connection.close()
         del self.connection
         self.connection = None
-        self.states.set("radio_status", False)
+        self.states.set_radio("radio_status", False)
         self.parameters = {
             'frequency': '---',
             'mode': '---',
@@ -239,7 +239,6 @@ class radio:
                 self.log.warning(f"[RIGCTLD] Error setting TUNER state: {err}")
                 self.connected = False
         return False
-
 
     def get_parameters(self):
         if not self.connected:
