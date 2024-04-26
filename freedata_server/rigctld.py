@@ -228,7 +228,7 @@ class radio:
         if self.connected:
             try:
                 result = self.send_command('u TUNER')
-                if result == 1:
+                if int(result) == 1:
                     state = True
                 else:
                     state = False
