@@ -10,7 +10,9 @@ class radio:
             'strength': '---',
             'bandwidth': '---',
             'rf': '---',
-            'ptt': False  # Initial PTT state is set to False
+            'ptt': False,  # Initial PTT state is set to False
+            'tuner': False,
+            'swr': '---'
         }
 
     def connect(self, **kwargs):

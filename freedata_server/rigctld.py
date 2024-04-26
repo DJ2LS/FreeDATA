@@ -249,7 +249,6 @@ class radio:
             self.get_rf()
             self.get_tuner()
             self.get_swr()
-
         return self.parameters
 
     def get_frequency(self):
