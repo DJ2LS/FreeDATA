@@ -228,7 +228,11 @@ class radio:
         if self.connected:
             try:
                 result = self.send_command('u TUNER')
-                state = result == 1
+                if result == 1:
+                    state = True
+                else:
+                    state = False
+
                 self.parameters['tuner'] = state  # Update TUNER state in parameters
                 return True
             except Exception as err:
