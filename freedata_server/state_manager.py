@@ -107,7 +107,7 @@ class StateManager:
         }
 
     def get_radio_event(self, isChangedState):
-        msgtype = "state-change"
+        msgtype = "radio-change"
         if (not isChangedState):
             msgtype = "radio"
 
@@ -117,6 +117,8 @@ class StateManager:
             "radio_frequency": self.radio_frequency,
             "radio_mode": self.radio_mode,
             "s_meter_strength": self.s_meter_strength,
+            "radio_swr" : self.radio_swr,
+            "radio_tuner": self.radio_tuner,
         }
     
     # .wait() blocks until the event is set

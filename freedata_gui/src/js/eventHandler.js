@@ -51,7 +51,7 @@ export function stateDispatcher(data) {
   data = JSON.parse(data);
   //Leave commented when not needed, otherwise can lead to heap overflows due to the amount of data logged
   //console.debug(data);
-  if (data["type"] == "state-change" && data["type"] == "state") {
+  if (data["type"] == "state-change" || data["type"] == "state") {
     stateStore.modem_connection = "connected";
     stateStore.busy_state = data["is_modem_busy"];
     stateStore.channel_busy = data["channel_busy"];
@@ -73,7 +73,7 @@ export function stateDispatcher(data) {
     build_HSL();
   }
 
-  if (data["type"] == "state-change" && data["type"] == "radio") {
+  if (data["type"] == "radio-change" || data["type"] == "radio") {
 
     stateStore.s_meter_strength_raw = Math.round(data["s_meter_strength"]);
     stateStore.s_meter_strength_percent = Math.round(
