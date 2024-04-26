@@ -7,6 +7,7 @@ class StateManager:
         # state related settings
         self.statequeue = statequeue
         self.newstate = None
+        self.new_radio = None
         self.last = time.time()
 
         # freedata_server related states
@@ -70,6 +71,16 @@ class StateManager:
             self.newstate = new_state
             self.sendStateUpdate()
 
+    def set_radio(self, key, value):
+        setattr(self, key, value)
+        #print(f"State ==> Setting {key} to value {value}")
+        # only process data if changed
+        new_radio = self.get_radio_event(True)
+        if new_radio != self.new_radio:
+            self.new_radio = new_radio
+            self.sendStateUpdate()
+
+
     def set_channel_slot_busy(self, array):
         for i in range(0,len(array),1):
             if not array[i] == self.channel_busy_slot[i]:
@@ -89,13 +100,23 @@ class StateManager:
             "is_beacon_running": self.is_beacon_running,
             "is_away_from_key": self.is_away_from_key,
             "radio_status": self.radio_status,
-            #"radio_frequency": self.radio_frequency,
-            #"radio_mode": self.radio_mode,
-            #"s_meter_strength": self.s_meter_strength,
             "channel_busy_slot": self.channel_busy_slot,
             "audio_dbfs": self.audio_dbfs,
             "activities": self.activities_list,
             "is_modem_busy" : self.getARQ()
+        }
+
+    def get_radio_event(self, isChangedState):
+        msgtype = "state-change"
+        if (not isChangedState):
+            msgtype = "radio"
+
+        return {
+            "type": msgtype,
+            "radio_status": self.radio_status,
+            "radio_frequency": self.radio_frequency,
+            "radio_mode": self.radio_mode,
+            "s_meter_strength": self.s_meter_strength,
         }
     
     # .wait() blocks until the event is set

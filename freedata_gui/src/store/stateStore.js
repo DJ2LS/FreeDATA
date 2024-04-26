@@ -10,6 +10,10 @@ export const useStateStore = defineStore("stateStore", () => {
   var mode = ref("-");
   var rf_level = ref("10");
   var bandwidth = ref("-");
+
+  var swr = ref(0)
+  var tuner = ref("-")
+
   var dbfs_level_percent = ref(0);
   var dbfs_level = ref(0);
   var radio_status = ref(false);
@@ -84,6 +88,8 @@ export const useStateStore = defineStore("stateStore", () => {
     frequency,
     mode,
     bandwidth,
+    swr,
+    tuner,
     dbfs_level,
     dbfs_level_percent,
     speed_level,

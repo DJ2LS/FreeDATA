@@ -51,11 +51,9 @@ export function stateDispatcher(data) {
   data = JSON.parse(data);
   //Leave commented when not needed, otherwise can lead to heap overflows due to the amount of data logged
   //console.debug(data);
-  if (data["type"] == "state-change" || data["type"] == "state") {
+  if (data["type"] == "state-change" && data["type"] == "state") {
     stateStore.modem_connection = "connected";
-
     stateStore.busy_state = data["is_modem_busy"];
-
     stateStore.channel_busy = data["channel_busy"];
     stateStore.is_codec2_traffic = data["is_codec2_traffic"];
     stateStore.is_modem_running = data["is_modem_running"];
@@ -64,22 +62,32 @@ export function stateDispatcher(data) {
       Math.pow(10, data["audio_dbfs"] / 20) * 100,
     );
 
-    stateStore.s_meter_strength_raw = Math.round(data["s_meter_strength"]);
-    stateStore.s_meter_strength_percent = Math.round(
-      Math.pow(10, data["s_meter_strength"] / 20) * 100,
-    );
 
     stateStore.channel_busy_slot = data["channel_busy_slot"];
 
     stateStore.beacon_state = data["is_beacon_running"];
     stateStore.is_away_from_key = data["is_away_from_key"];
 
-    stateStore.radio_status = data["radio_status"];
-    stateStore.frequency = data["radio_frequency"];
-    stateStore.mode = data["radio_mode"];
     //Reverse entries so most recent is first
     stateStore.activities = Object.entries(data["activities"]).reverse();
     build_HSL();
+  }
+
+  if (data["type"] == "state-change" && data["type"] == "radio") {
+
+    stateStore.s_meter_strength_raw = Math.round(data["s_meter_strength"]);
+    stateStore.s_meter_strength_percent = Math.round(
+      Math.pow(10, data["s_meter_strength"] / 20) * 100,
+    );
+
+
+    stateStore.radio_status = data["radio_status"];
+    stateStore.frequency = data["radio_frequency"];
+    stateStore.mode = data["radio_mode"];
+    stateStore.swr = data["radio_swr"];
+    stateStore.tuner = data["radio_tuner"];
+
+
   }
 }
 

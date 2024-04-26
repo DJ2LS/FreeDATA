@@ -47,17 +47,17 @@ class RadioManager:
     def update_parameters(self):
         while not self.stop_event.is_set():
             parameters = self.radio.get_parameters()
-            self.state_manager.set("radio_frequency", parameters['frequency'])
-            self.state_manager.set("radio_mode", parameters['mode'])
-            self.state_manager.set("radio_bandwidth", parameters['bandwidth'])
-            self.state_manager.set("radio_rf_level", parameters['rf'])
-            self.state_manager.set("radio_tuner", parameters['tuner'])
+            self.state_manager.set_radio("radio_frequency", parameters['frequency'])
+            self.state_manager.set_radio("radio_mode", parameters['mode'])
+            self.state_manager.set_radio("radio_bandwidth", parameters['bandwidth'])
+            self.state_manager.set_radio("radio_rf_level", parameters['rf'])
+            self.state_manager.set_radio("radio_tuner", parameters['tuner'])
 
             if self.state_manager.isTransmitting():
                 self.radio_alc = parameters['alc']
-                self.state_manager.set("radio_swr", parameters['swr'])
+                self.state_manager.set_radio("radio_swr", parameters['swr'])
 
-            self.state_manager.set("s_meter_strength", parameters['strength'])
+            self.state_manager.set_radio("s_meter_strength", parameters['strength'])
             time.sleep(self.refresh_rate)
     def stop(self):
         self.radio.disconnect()
