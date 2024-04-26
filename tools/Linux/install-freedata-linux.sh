@@ -34,10 +34,6 @@ echo "*************************************************************************"
 case $osname in
    "Debian GNU/Linux")
 	case $osversion in
-	   "11 (bullseye)")
-		sudo apt install --upgrade -y libhamlib-utils libhamlib-dev libhamlib4 fonts-noto-color-emoji git build-essential cmake npm nodejs python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama
-	   ;;
-
 	   "12 (bookworm)")
 		sudo apt install --upgrade -y libhamlib-utils libhamlib-dev libhamlib4 fonts-noto-color-emoji git build-essential cmake npm nodejs python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama
 	   ;;
