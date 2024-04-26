@@ -3,7 +3,7 @@
 # Simple script to install FreeDATA in Linux
 # Dj Merrill - 25 Apr 2024
 #
-# Currently supports Debian 12
+# Currently supports Debian 12, Ubuntu 24.04 LTS
 # 
 # args: nothing or "main" (use main branch of FreeDATA)
 # 	"develop" (use develop branch of FreeDATA)
