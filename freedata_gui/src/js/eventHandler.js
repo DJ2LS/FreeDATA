@@ -9,7 +9,12 @@ import {
 */
 import { toRaw } from "vue";
 import { displayToast } from "./popupHandler";
-import { getFreedataMessages, getModemState, getAudioDevices, getRadioStatus } from "./api";
+import {
+  getFreedataMessages,
+  getModemState,
+  getAudioDevices,
+  getRadioStatus,
+} from "./api";
 import { processFreedataMessages } from "./messagesHandler.ts";
 import { processRadioStatus } from "./radioHandler.ts";
 
