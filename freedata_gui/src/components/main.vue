@@ -88,14 +88,18 @@ import { loadAllData } from "../js/eventHandler";
           >
             <chat />
           </div>
-        </div>
+
 
         <settings_view />
+                    <main_footer_navbar />
+
+        </div>
+
 
         <!---------------------------------------------------------------------- FOOTER AREA ------------------------------------------------------------>
 
         <div class="container">
-          <main_footer_navbar />
+          <!--<main_footer_navbar />-->
         </div>
       </div>
     </div>

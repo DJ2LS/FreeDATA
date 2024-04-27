@@ -118,7 +118,7 @@ watch(
 </script>
 
 <template>
-  <div class="container-fluid m-0 p-0">
+  <div class="container m-0 p-0">
     <div class="row h-100 ms-0 mt-0 me-1">
       <div class="col-3 m-0 p-0 h-100 bg-light">
         <!------Chats area ---------------------------------------------------------------------->

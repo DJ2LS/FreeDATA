@@ -8,12 +8,8 @@ const state = useStateStore(pinia);
 </script>
 
 <template>
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-1">123</div>
-      <div class="col-11">
         <nav
-          class="navbar fixed-bottom navbar-expand-xl bg-body-tertiary border-top p-2"
+          class="navbar navbar-expand-xl bg-body-tertiary border-top p-2"
         >
           <div class="col">
             <div class="btn-toolbar" role="toolbar">
@@ -273,7 +269,5 @@ const state = useStateStore(pinia);
             </div>
           </div>
         </nav>
-      </div>
-    </div>
-  </div>
+
 </template>
