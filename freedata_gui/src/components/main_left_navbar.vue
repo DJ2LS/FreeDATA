@@ -2,6 +2,10 @@
 import { ref } from "vue";
 import main_modem_healthcheck from "./main_modem_healthcheck.vue";
 import { getOverallHealth } from "../js/eventHandler.js";
+import { getFreedataMessages } from "../js/api";
+import { getRemote } from "../store/settingsStore.js";
+import { loadAllData } from "../js/eventHandler";
+
 
 const isTextVisible = ref(false); // Initially, the text is invisible
 function toggleTextVisibility() {
