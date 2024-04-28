@@ -15,12 +15,7 @@ import Dynamic_components from "./dynamic_components.vue";
 import { getFreedataMessages } from "../js/api";
 import { getRemote } from "../store/settingsStore.js";
 import { loadAllData } from "../js/eventHandler";
-
-
-
 </script>
-
-
 
 <template>
   <!-------------------------------- INFO TOASTS ---------------->
@@ -31,24 +26,22 @@ import { loadAllData } from "../js/eventHandler";
     ></div>
   </div>
 
-
-
-
   <div class="container-fluid">
     <div class="row">
-
-<!-- Collapsible Left Navbar -->
-<div class="col-auto p-0 bg-body-secondary border-end">
+      <!-- Collapsible Left Navbar -->
+      <div class="col-auto p-0 bg-body-secondary border-end">
         <div class="flex-shrink-0 p-3">
-          <div class="collapse collapse-horizontal show" id="collapseLeftNavbar">
+          <div
+            class="collapse collapse-horizontal show"
+            id="collapseLeftNavbar"
+          >
             <main_left_navbar />
           </div>
         </div>
       </div>
 
-
       <div class="col min-vh-100 m-0 p-0">
-<!--
+        <!--
         <main_top_navbar />
 -->
         <div class="tab-content" id="nav-tabContent-settings">
@@ -57,9 +50,7 @@ import { loadAllData } from "../js/eventHandler";
             id="list-home"
             role="tabpanel"
             aria-labelledby="list-home-list"
-          >
-
-          </div>
+          ></div>
 
           <div
             class="tab-pane fade d-none"
@@ -67,9 +58,8 @@ import { loadAllData } from "../js/eventHandler";
             role="tabpanel"
             aria-labelledby="list-mesh-list"
           >
-           <mesh />
-           </div>
-
+            <mesh />
+          </div>
 
           <div
             class="tab-pane fade show active"
@@ -89,12 +79,9 @@ import { loadAllData } from "../js/eventHandler";
             <chat />
           </div>
 
-
-        <settings_view />
-                    <main_footer_navbar />
-
+          <settings_view />
+          <main_footer_navbar />
         </div>
-
 
         <!---------------------------------------------------------------------- FOOTER AREA ------------------------------------------------------------>
 
