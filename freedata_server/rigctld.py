@@ -228,15 +228,17 @@ class radio:
         if self.connected:
             try:
                 result = self.send_command('u TUNER')
-                if int(result) == 1:
-                    state = True
+                if result is not None:
+                    if int(result) == 1:
+                        state = True
+                    else:
+                        state = False
                 else:
                     state = False
-
-                self.parameters['tuner'] = state  # Update TUNER state in parameters
+                    self.parameters['tuner'] = state  # Update TUNER state in parameters
                 return True
             except Exception as err:
-                self.log.warning(f"[RIGCTLD] Error setting TUNER state: {err}")
+                self.log.warning(f"[RIGCTLD] Error getting TUNER state: {err}")
                 self.connected = False
         return False
 
