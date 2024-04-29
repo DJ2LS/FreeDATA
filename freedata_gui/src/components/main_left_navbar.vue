@@ -6,7 +6,6 @@ import { getFreedataMessages } from "../js/api";
 import { getRemote } from "../store/settingsStore.js";
 import { loadAllData } from "../js/eventHandler";
 
-
 const isTextVisible = ref(false); // Initially, the text is invisible
 function toggleTextVisibility() {
   isTextVisible.value = !isTextVisible.value; // Toggle the visibility
