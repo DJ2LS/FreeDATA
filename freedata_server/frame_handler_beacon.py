@@ -17,6 +17,8 @@ class BeaconFrameHandler(frame_handler.FrameHandler):
                                                              self.details['frame']["gridsquare"]
                                                              )
 
-        if self.config["MESSAGES"]["enable_auto_repeat"]:
+        # only check for queued messages, if we have enabled this and if we have a minimum snr received
+        print(self.details["snr"])
+        if self.config["MESSAGES"]["enable_auto_repeat"] and self.details["snr"] >= -2:
             # set message to queued if beacon received
             DatabaseManagerMessages(self.event_manager).set_message_to_queued_for_callsign(self.details['frame']["origin"])
