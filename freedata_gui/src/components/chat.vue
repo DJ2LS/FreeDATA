@@ -157,7 +157,11 @@ watch(
           </nav>
 
           <!-- Chat Messages Area -->
-          <div class="overflow-auto" style="height: calc(100vh - 156px)" ref="messagesContainer">
+          <div
+            class="overflow-auto"
+            style="height: calc(100vh - 156px)"
+            ref="messagesContainer"
+          >
             <chat_messages />
           </div>
 
