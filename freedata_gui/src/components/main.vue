@@ -40,8 +40,8 @@ import { loadAllData } from "../js/eventHandler";
       </div>
 
       <!-- Main Content -->
-      <div class="col min-vh-100 m-0 p-0">
-        <div class="tab-content" id="nav-tabContent-settings">
+      <div class="col min-vh-50 m-0 p-0">
+        <div class="tab-content">
           <!-- Tab Panes -->
           <div
             class="tab-pane fade"
@@ -74,13 +74,11 @@ import { loadAllData } from "../js/eventHandler";
             <chat />
           </div>
           <settings_view />
-          <main_footer_navbar />
+        <!-- Footer Area -->
+         <main_footer_navbar />
         </div>
 
-        <!-- Footer Area -->
-        <div class="container">
-          <!--<main_footer_navbar />-->
-        </div>
+
       </div>
     </div>
   </div>

@@ -24,7 +24,7 @@ function getDateTime(timestampRaw) {
 </script>
 
 <template>
-  <div class="tab-content p-3 vh-100" id="nav-tabContent-chat-messages">
+  <div class="tab-content p-3" id="nav-tabContent-chat-messages">
     <template
       v-for="(details, callsign, key) in chat.callsign_list"
       :key="callsign"
