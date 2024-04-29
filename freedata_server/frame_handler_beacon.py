@@ -1,6 +1,3 @@
-import frame_handler_ping
-import helpers
-import data_frame_factory
 import frame_handler
 import datetime
 from message_system_db_beacon import DatabaseManagerBeacon
@@ -18,7 +15,6 @@ class BeaconFrameHandler(frame_handler.FrameHandler):
                                                              )
 
         # only check for queued messages, if we have enabled this and if we have a minimum snr received
-        print(self.details["snr"])
         if self.config["MESSAGES"]["enable_auto_repeat"] and self.details["snr"] >= -2:
             # set message to queued if beacon received
             DatabaseManagerMessages(self.event_manager).set_message_to_queued_for_callsign(self.details['frame']["origin"])
