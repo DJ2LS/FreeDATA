@@ -118,43 +118,53 @@ watch(
 </script>
 
 <template>
-<div class="container-fluid">
-  <div class="row">
-    <!-- Chat Conversations -->
-    <div class="col-3 bg-light p-0">
-      <div class="container-fluid overflow-auto p-0">
-        <chat_conversations />
-      </div>
-      <div class="list-group overflow-auto" id="list-tab-chat" role="tablist">
-      </div>
-    </div>
-
-    <!-- Chat Messages -->
-    <div class="col-9 border-start p-0">
-      <div class="d-flex flex-column">
-        <!-- Top Navbar -->
-        <nav class="navbar sticky-top z-0 bg-body-tertiary border-bottom p-1">
-          <h4 class="p-0 m-0">{{ chat.selectedCallsign }}</h4>
-
-          <div class="input-group mb-0 p-0 w-25">
-            <button type="button" class="btn btn-outline-secondary" disabled>
-              Beacons
-            </button>
-            <div class="form-floating border border-secondary-subtle border-1 rounded-end">
-              <Bar :data="beaconHistogramData" :options="beaconHistogramOptions" width="300" height="50" />
-            </div>
-          </div>
-        </nav>
-
-        <!-- Chat Messages Area -->
-        <div class="flex-grow-1 overflow-auto" ref="messagesContainer">
-          <chat_messages />
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Chat Conversations -->
+      <div class="col-3 bg-light p-0">
+        <div class="container-fluid overflow-auto p-0">
+          <chat_conversations />
         </div>
+        <div
+          class="list-group overflow-auto"
+          id="list-tab-chat"
+          role="tablist"
+        ></div>
+      </div>
 
-        <!-- New Message Area -->
-        <chat_new_message />
+      <!-- Chat Messages -->
+      <div class="col-9 border-start p-0">
+        <div class="d-flex flex-column">
+          <!-- Top Navbar -->
+          <nav class="navbar sticky-top z-0 bg-body-tertiary border-bottom p-1">
+            <h4 class="p-0 m-0">{{ chat.selectedCallsign }}</h4>
+
+            <div class="input-group mb-0 p-0 w-25">
+              <button type="button" class="btn btn-outline-secondary" disabled>
+                Beacons
+              </button>
+              <div
+                class="form-floating border border-secondary-subtle border-1 rounded-end"
+              >
+                <Bar
+                  :data="beaconHistogramData"
+                  :options="beaconHistogramOptions"
+                  width="300"
+                  height="50"
+                />
+              </div>
+            </div>
+          </nav>
+
+          <!-- Chat Messages Area -->
+          <div class="flex-grow-1 overflow-auto" ref="messagesContainer">
+            <chat_messages />
+          </div>
+
+          <!-- New Message Area -->
+          <chat_new_message />
+        </div>
       </div>
     </div>
   </div>
-</div>
 </template>
