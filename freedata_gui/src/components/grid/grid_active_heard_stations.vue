@@ -40,26 +40,27 @@ function pushToPing(origin) {
   );
 }
 
-  function getActivityInfo(activityType) {
-    switch (activityType) {
-      case "ARQ_SESSION_INFO":
-        return { iconClass: "bi bi-info-circle", description: activityType };
-      case "ARQ_SESSION_OPEN":
-        return { iconClass: "bi bi-link", description: activityType };
-      case "ARQ_SESSION_OPEN_ACK":
-        return { iconClass: "bi bi-link", description: activityType };
-      case "QRV":
-        return { iconClass: "bi bi-person-raised-hand", description: activityType };
-      case "CQ":
-        return { iconClass: "bi bi-megaphone", description: activityType };
-      case "BEACON":
-        return { iconClass: "bi bi-globe", description: activityType };
-      default:
-        return { iconClass: "", description: activityType };
-    }
+function getActivityInfo(activityType) {
+  switch (activityType) {
+    case "ARQ_SESSION_INFO":
+      return { iconClass: "bi bi-info-circle", description: activityType };
+    case "ARQ_SESSION_OPEN":
+      return { iconClass: "bi bi-link", description: activityType };
+    case "ARQ_SESSION_OPEN_ACK":
+      return { iconClass: "bi bi-link", description: activityType };
+    case "QRV":
+      return {
+        iconClass: "bi bi-person-raised-hand",
+        description: activityType,
+      };
+    case "CQ":
+      return { iconClass: "bi bi-megaphone", description: activityType };
+    case "BEACON":
+      return { iconClass: "bi bi-globe", description: activityType };
+    default:
+      return { iconClass: "", description: activityType };
   }
-
-
+}
 </script>
 <template>
   <div class="card h-100">
@@ -106,10 +107,10 @@ function pushToPing(origin) {
               <td>{{ getMaidenheadDistance(item.gridsquare) }} km</td>
               <td>
                 <i
-            :class="getActivityInfo(item.activity_type).iconClass"
-            data-bs-toggle="tooltip"
-            :title="getActivityInfo(item.activity_type).description"
-          ></i>
+                  :class="getActivityInfo(item.activity_type).iconClass"
+                  data-bs-toggle="tooltip"
+                  :title="getActivityInfo(item.activity_type).description"
+                ></i>
               </td>
               <td>
                 {{ item.snr }}
