@@ -204,7 +204,7 @@ const speedChartData = computed(() => ({
 <template>
 
 
-  <nav class="navbar sticky-bottom bg-body-tertiary border-top mb-5">
+  <nav class="navbar sticky-bottom bg-body-tertiary border-top">
 <div class="container-fluid p-0">
 
 

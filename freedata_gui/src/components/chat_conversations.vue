@@ -1,25 +1,21 @@
 <script setup lang="ts">
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
-setActivePinia(pinia);
-
 import { useChatStore } from "../store/chatStore.js";
 import { getBeaconDataByCallsign } from "../js/api.js";
+import { ref } from "vue";
 
-import { ref, computed } from "vue";
-
+setActivePinia(pinia);
 const chat = useChatStore(pinia);
+const newChatCall = ref(null);
 
 function chatSelected(callsign) {
   chat.selectedCallsign = callsign.toUpperCase();
-  // scroll message container to bottom
   chat.triggerScrollToBottom();
-
   processBeaconData(callsign);
 }
 
 async function processBeaconData(callsign) {
-  // fetch beacon data when selecting a callsign
   let beacons = await getBeaconDataByCallsign(callsign);
   chat.beaconLabelArray = beacons.map((entry) => entry.timestamp);
   chat.beaconDataArray = beacons.map((entry) => entry.snr);
@@ -33,8 +29,6 @@ function getDateTime(timestamp) {
   return `${hours}:${minutes}`;
 }
 
-const newChatCall = ref(null);
-
 function newChat() {
   let callsign = this.newChatCall.value;
   callsign = callsign.toUpperCase().trim();
@@ -42,8 +36,9 @@ function newChat() {
   this.newChatCall.value = "";
 }
 </script>
+
 <template>
-  <nav class="navbar sticky-top bg-body-tertiary shadow">
+  <nav class="navbar sticky-top bg-body-tertiary border-bottom p-1">
     <button
       class="btn btn-outline-primary w-100"
       data-bs-target="#newChatModal"
@@ -69,7 +64,7 @@ function newChat() {
         data-bs-toggle="list"
         :href="`#list-${callsign}-messages`"
         role="tab"
-        aria-controls="list-{{callsign}}-messages"
+        :aria-controls="`list-${callsign}-messages`"
         @click="chatSelected(callsign)"
       >
         <div class="row">
