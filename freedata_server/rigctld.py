@@ -270,6 +270,7 @@ class radio:
             if response is not None:
                 response = response.strip()
                 mode, bandwidth = response.split('\n', 1)
+                bandwidth = int(bandwidth)
             else:
                 mode = 'err'
                 bandwidth = 'err'
@@ -282,7 +283,7 @@ class radio:
             bandwidth = 'err'
         finally:
             self.parameters['mode'] = mode
-            self.parameters['bandwidth'] = int(bandwidth)
+            self.parameters['bandwidth'] = bandwidth
 
     def get_alc(self):
         try:
