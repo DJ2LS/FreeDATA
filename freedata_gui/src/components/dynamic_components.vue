@@ -33,6 +33,7 @@ import grid_beacon from "./grid/grid_beacon.vue";
 import grid_mycall_small from "./grid/grid_mycall small.vue";
 import grid_scatter from "./grid/grid_scatter.vue";
 import grid_stats_chart from "./grid/grid_stats_chart.vue";
+import grid_swr_meter from "./grid/grid_swr_meter.vue";
 
 let count = ref(0);
 let grid = null; // DO NOT use ref(null) as proxies GS will break all logic when comparing structures... see https://github.com/gridstack/gridstack.js/issues/2115
@@ -155,6 +156,7 @@ new gridWidget(
     "Rig",
     6,
   ),
+
   new gridWidget(
     dbfs_meter,
     { x: 20, y: 0, w: 4, h: 8 },
@@ -256,7 +258,16 @@ new gridWidget(
     "Stats",
     20,
   ),
-  //Next new widget ID should be 21
+  new gridWidget(
+    grid_swr_meter,
+    { x: 16, y: 0, w: 4, h: 8 },
+    "SWR",
+    true,
+    true,
+    "Rig",
+    21,
+  ),
+  //Next new widget ID should be 22
 ];
 
 
@@ -276,11 +287,6 @@ function set_radio_parameter_mode(){
 function set_radio_parameter_rflevel(){
     setRadioParametersRFLevel(state.rf_level)
 }
-
-
-
-
-
 
 
 function savePreset()

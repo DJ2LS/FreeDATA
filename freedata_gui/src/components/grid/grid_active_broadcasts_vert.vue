@@ -121,7 +121,7 @@ window.addEventListener(
                 role="switch"
                 id="flexSwitchAFK"
                 v-model="state.away_from_key"
-                @click="setAwayFromKey()"
+                @change="setAwayFromKey()"
               />
               <label class="form-check-label" for="flexSwitchAFK"
                 >Away From Key</label
