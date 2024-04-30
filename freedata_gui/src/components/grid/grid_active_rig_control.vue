@@ -25,7 +25,7 @@ function set_radio_parameter_rflevel() {
 }
 
 function set_radio_parameter_auto_tuner() {
-  console.log(state.tuner)
+  console.log(state.tuner);
   setRadioParametersTuner(state.tuner);
 }
 </script>
@@ -105,19 +105,16 @@ function set_radio_parameter_auto_tuner() {
         </div>
 
         <div class="form-check form-switch">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                role="switch"
-                id="flexSwitchTuner"
-                v-model="state.tuner"
-                @change="set_radio_parameter_auto_tuner()"
-              />
-              <label class="form-check-label" for="flexSwitchTuner"
-                >Tuner</label
-              >
-            </div>
-
+          <input
+            class="form-check-input"
+            type="checkbox"
+            role="switch"
+            id="flexSwitchTuner"
+            v-model="state.tuner"
+            @change="set_radio_parameter_auto_tuner()"
+          />
+          <label class="form-check-label" for="flexSwitchTuner">Tuner</label>
+        </div>
       </div>
     </div>
   </div>
