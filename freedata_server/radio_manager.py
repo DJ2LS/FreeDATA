@@ -32,17 +32,22 @@ class RadioManager:
     def set_ptt(self, state):
         self.radio.set_ptt(state)
 
+
     def set_tuner(self, state):
         self.radio.set_tuner(state)
+        self.state_manager.set_radio("radio_tuner", state)
 
     def set_frequency(self, frequency):
         self.radio.set_frequency(frequency)
+        self.state_manager.set_radio("radio_frequency", frequency)
 
     def set_mode(self, mode):
         self.radio.set_mode(mode)
+        self.state_manager.set_radio("radio_mode", mode)
 
     def set_rf_level(self, level):
         self.radio.set_rf_level(level)
+        self.state_manager.set_radio("radio_rf_level", level)
 
     def update_parameters(self):
         while not self.stop_event.is_set():

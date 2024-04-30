@@ -160,6 +160,13 @@ export async function setRadioParametersRFLevel(rf_level) {
     radio_rf_level: rf_level,
   });
 }
+
+export async function setRadioParametersTuner(state) {
+  return await apiPost("/radio", {
+    radio_tuner: state,
+  });
+}
+
 export async function getRadioStatus() {
   return await apiGet("/radio");
 }

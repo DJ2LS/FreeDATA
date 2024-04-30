@@ -84,7 +84,7 @@ export function stateDispatcher(data) {
     stateStore.s_meter_strength_percent = Math.round(
       Math.pow(10, data["s_meter_strength"] / 20) * 100,
     );
-
+    console.log(data)
     stateStore.radio_status = data["radio_status"];
     stateStore.frequency = data["radio_frequency"];
     stateStore.mode = data["radio_mode"];

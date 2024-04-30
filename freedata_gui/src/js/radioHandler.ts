@@ -15,4 +15,5 @@ export async function processRadioStatus() {
   stateStore.mode = result.radio_mode;
   stateStore.frequency = result.radio_frequency;
   stateStore.rf_level = result.radio_rf_level;
+  stateStore.tuner = result.radio_tuner;
 }
