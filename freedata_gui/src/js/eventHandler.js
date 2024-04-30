@@ -72,7 +72,7 @@ export function stateDispatcher(data) {
 
     stateStore.channel_busy_slot = data["channel_busy_slot"];
     stateStore.beacon_state = data["is_beacon_running"];
-    stateStore.is_away_from_key = data["is_away_from_key"];
+    stateStore.away_from_key = data["is_away_from_key"];
 
     //Reverse entries so most recent is first
     stateStore.activities = Object.entries(data["activities"]).reverse();
@@ -84,7 +84,6 @@ export function stateDispatcher(data) {
     stateStore.s_meter_strength_percent = Math.round(
       Math.pow(10, data["s_meter_strength"] / 20) * 100,
     );
-    console.log(data);
     stateStore.radio_status = data["radio_status"];
     stateStore.frequency = data["radio_frequency"];
     stateStore.mode = data["radio_mode"];
