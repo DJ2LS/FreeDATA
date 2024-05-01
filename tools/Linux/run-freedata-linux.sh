@@ -74,6 +74,24 @@ else
 fi
 
 cd $guidir
+
+if [ -f "$HOME/.nvm/bash_completion" ];
+then
+	export NVM_DIR="$HOME/.nvm"
+	[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+	[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+else
+	echo "Something went wrong.  $HOME/.nvm environment not created properly."
+	exit 1
+fi
+
+checknpm=`which npm`
+if [ -z "$checknpm" ];
+then
+	echo "Something went wrong.  npm not found."
+	exit 1
+fi
+
 npm start > ../../FreeDATA-client.log 2>&1
 
 # If we are this far, then we have just quit the GUI, so let's clean up the
