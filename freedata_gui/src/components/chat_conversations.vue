@@ -35,7 +35,6 @@ function newChat() {
   if (callsign === "") return;
   this.newChatCall.value = "";
 }
-
 </script>
 
 <template>

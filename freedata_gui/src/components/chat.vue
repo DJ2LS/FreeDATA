@@ -6,7 +6,7 @@ import chat_conversations from "./chat_conversations.vue";
 import chat_messages from "./chat_messages.vue";
 import chat_new_message from "./chat_new_message.vue";
 
-import {getStationInfo} from "./../js/api";
+import { getStationInfo } from "./../js/api";
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -119,33 +119,30 @@ watch(
 );
 
 const stationInfo = ref({
-  callsign: 'N/A', // Default value for callsign
+  callsign: "N/A", // Default value for callsign
   location: {
-    gridsquare: 'N/A', // Default value for gridsquare
+    gridsquare: "N/A", // Default value for gridsquare
   },
 });
 
-async function getStationInfoByCallsign(){
- try {
-        const data = await getStationInfo(chat.selectedCallsign);
-        stationInfo.value = {
-            callsign: data.callsign || 'N/A',  // Default if not present
-            location: {
-                gridsquare: data.location?.gridsquare ||  'N/A',  // Default if not present
-            },
-        };
-    } catch (error) {
-        console.error("Error fetching station info:", error);
-    }
+async function getStationInfoByCallsign() {
+  try {
+    const data = await getStationInfo(chat.selectedCallsign);
+    stationInfo.value = {
+      callsign: data.callsign || "N/A", // Default if not present
+      location: {
+        gridsquare: data.location?.gridsquare || "N/A", // Default if not present
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching station info:", error);
+  }
 }
-
-
 </script>
 
 <template>
-
-<!-- Station Info Modal -->
-<div
+  <!-- Station Info Modal -->
+  <div
     class="modal fade"
     ref="modalEle"
     id="stationInfoModal"
@@ -155,23 +152,19 @@ async function getStationInfoByCallsign(){
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-            <h4 class="p-0 m-0">{{ stationInfo.callsign }}</h4>
+          <h4 class="p-0 m-0">{{ stationInfo.callsign }}</h4>
           <button
             type="button"
             class="btn-close"
             data-bs-dismiss="modal"
             aria-label="Close"
           ></button>
-
         </div>
         <div class="modal-body">
-
-
-
-    <p><strong>Location:</strong> {{ stationInfo.location.gridsquare }}</p>
-    <p><strong>Details:</strong> {{ stationInfo.details }}</p>
-
-
+          <p>
+            <strong>Location:</strong> {{ stationInfo.location.gridsquare }}
+          </p>
+          <p><strong>Details:</strong> {{ stationInfo.details }}</p>
         </div>
 
         <div class="modal-footer">
@@ -187,64 +180,62 @@ async function getStationInfoByCallsign(){
     </div>
   </div>
 
-
-
   <div class="container-fluid d-flex p-0">
-      <!-- Chat Conversations -->
-      <div class="bg-light p-0" style="width: 250px">
-        <div class="container-fluid overflow-auto p-0">
-          <chat_conversations />
-        </div>
-        <div class="list-group overflow-auto" id="list-tab-chat" role="tablist"></div>
+    <!-- Chat Conversations -->
+    <div class="bg-light p-0" style="width: 250px">
+      <div class="container-fluid overflow-auto p-0">
+        <chat_conversations />
       </div>
+      <div
+        class="list-group overflow-auto"
+        id="list-tab-chat"
+        role="tablist"
+      ></div>
+    </div>
 
-
-      <!-- Chat Messages -->
-      <div class="flex-grow-1 border-start p-0">
-        <div class="d-flex flex-column">
-          <!-- Top Navbar -->
-          <nav class="navbar sticky-top z-0 bg-body-tertiary border-bottom p-1">
-            <button
-              class="btn btn-sm btn-outline-secondary ms-2 border-0"
-              data-bs-target="#stationInfoModal"
-              data-bs-toggle="modal"
-              @click="getStationInfoByCallsign()"
-            >
-               <h4 class="p-0 m-0">{{ chat.selectedCallsign }}</h4>
-            </button>
-
-
-
-
-            <div class="input-group mb-0 p-0 w-25">
-              <button type="button" class="btn btn-outline-secondary" disabled>
-                Beacons
-              </button>
-              <div
-                class="form-floating border border-secondary-subtle border-1 rounded-end"
-              >
-                <Bar
-                  :data="beaconHistogramData"
-                  :options="beaconHistogramOptions"
-                  width="300"
-                  height="50"
-                />
-              </div>
-            </div>
-          </nav>
-
-          <!-- Chat Messages Area -->
-          <div
-            class="overflow-auto"
-            style="height: calc(100vh - 156px)"
-            ref="messagesContainer"
+    <!-- Chat Messages -->
+    <div class="flex-grow-1 border-start p-0">
+      <div class="d-flex flex-column">
+        <!-- Top Navbar -->
+        <nav class="navbar sticky-top z-0 bg-body-tertiary border-bottom p-1">
+          <button
+            class="btn btn-sm btn-outline-secondary ms-2 border-0"
+            data-bs-target="#stationInfoModal"
+            data-bs-toggle="modal"
+            @click="getStationInfoByCallsign()"
           >
-            <chat_messages />
-          </div>
+            <h4 class="p-0 m-0">{{ chat.selectedCallsign }}</h4>
+          </button>
 
-          <!-- New Message Area -->
-          <chat_new_message />
+          <div class="input-group mb-0 p-0 w-25">
+            <button type="button" class="btn btn-outline-secondary" disabled>
+              Beacons
+            </button>
+            <div
+              class="form-floating border border-secondary-subtle border-1 rounded-end"
+            >
+              <Bar
+                :data="beaconHistogramData"
+                :options="beaconHistogramOptions"
+                width="300"
+                height="50"
+              />
+            </div>
+          </div>
+        </nav>
+
+        <!-- Chat Messages Area -->
+        <div
+          class="overflow-auto"
+          style="height: calc(100vh - 156px)"
+          ref="messagesContainer"
+        >
+          <chat_messages />
         </div>
+
+        <!-- New Message Area -->
+        <chat_new_message />
       </div>
+    </div>
   </div>
 </template>
