@@ -63,7 +63,7 @@ function handleFileSelection(event) {
         const reader = new FileReader();
         reader.onload = () => {
             // Convert file content to base64
-            const base64Content = btoa(reader.result); // Adjust this line if necessary
+            const base64Content = btoa(reader.result);
             selectedFiles.value.push({
                 name: file.name,
                 size: file.size,
@@ -214,17 +214,14 @@ const speedChartData = computed(() => ({
 
 
 
-  <div class="container-fluid px-0">
+  <div class="container-fluid">
     <div class="d-flex flex-row overflow-auto bg-light">
-      <div v-for="(file, index) in selectedFiles" :key="index" class="pe-2">
+      <div v-for="(file, index) in selectedFiles" :key="index" class="p-2">
         <div class="card" style=" min-width: 10rem; max-width: 10rem;">
           <!-- Card Header with Remove Button -->
           <div class="card-header d-flex justify-content-between align-items-center">
             <span class="text-truncate">{{ file.name }}</span>
             <button class="btn btn-close" @click="removeFile(index)"></button>
-          </div>
-          <div class="card-body">
-            <p class="card-text">...</p>
           </div>
           <div class="card-footer text-muted">
             {{ file.type }}
