@@ -119,51 +119,54 @@ watch(
 
 <template>
   <div class="container-fluid d-flex">
-      <!-- Chat Conversations -->
-      <div class="bg-light p-0" style="width: 250px">
-        <div class="container-fluid overflow-auto p-0">
-          <chat_conversations />
-        </div>
-        <div class="list-group overflow-auto" id="list-tab-chat" role="tablist"></div>
+    <!-- Chat Conversations -->
+    <div class="bg-light p-0" style="width: 250px">
+      <div class="container-fluid overflow-auto p-0">
+        <chat_conversations />
       </div>
+      <div
+        class="list-group overflow-auto"
+        id="list-tab-chat"
+        role="tablist"
+      ></div>
+    </div>
 
+    <!-- Chat Messages -->
+    <div class="flex-grow-1 border-start p-0">
+      <div class="d-flex flex-column">
+        <!-- Top Navbar -->
+        <nav class="navbar sticky-top z-0 bg-body-tertiary border-bottom p-1">
+          <h4 class="p-0 m-0">{{ chat.selectedCallsign }}</h4>
 
-      <!-- Chat Messages -->
-      <div class="flex-grow-1 border-start p-0">
-        <div class="d-flex flex-column">
-          <!-- Top Navbar -->
-          <nav class="navbar sticky-top z-0 bg-body-tertiary border-bottom p-1">
-            <h4 class="p-0 m-0">{{ chat.selectedCallsign }}</h4>
-
-            <div class="input-group mb-0 p-0 w-25">
-              <button type="button" class="btn btn-outline-secondary" disabled>
-                Beacons
-              </button>
-              <div
-                class="form-floating border border-secondary-subtle border-1 rounded-end"
-              >
-                <Bar
-                  :data="beaconHistogramData"
-                  :options="beaconHistogramOptions"
-                  width="300"
-                  height="50"
-                />
-              </div>
+          <div class="input-group mb-0 p-0 w-25">
+            <button type="button" class="btn btn-outline-secondary" disabled>
+              Beacons
+            </button>
+            <div
+              class="form-floating border border-secondary-subtle border-1 rounded-end"
+            >
+              <Bar
+                :data="beaconHistogramData"
+                :options="beaconHistogramOptions"
+                width="300"
+                height="50"
+              />
             </div>
-          </nav>
-
-          <!-- Chat Messages Area -->
-          <div
-            class="overflow-auto"
-            style="height: calc(100vh - 156px)"
-            ref="messagesContainer"
-          >
-            <chat_messages />
           </div>
+        </nav>
 
-          <!-- New Message Area -->
-          <chat_new_message />
+        <!-- Chat Messages Area -->
+        <div
+          class="overflow-auto"
+          style="height: calc(100vh - 156px)"
+          ref="messagesContainer"
+        >
+          <chat_messages />
         </div>
+
+        <!-- New Message Area -->
+        <chat_new_message />
       </div>
+    </div>
   </div>
 </template>
