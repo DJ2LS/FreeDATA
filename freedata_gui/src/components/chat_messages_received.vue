@@ -23,7 +23,7 @@
         </div>
 
         <div class="card-body">
-          <p class="card-text">{{ message.body }}</p>
+          <p class="card-text text-break">{{ message.body }}</p>
         </div>
 
         <div class="card-footer p-0 bg-light border-top-0">

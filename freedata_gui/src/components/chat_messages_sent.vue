@@ -46,8 +46,8 @@
           </div>
         </div>
 
-        <div class="card-body w-100">
-          <p class="card-text w-100">{{ message.body }}</p>
+        <div class="card-body">
+          <p class="card-text text-break">{{ message.body }}</p>
         </div>
 
         <div class="card-footer p-0 bg-secondary border-top-0">
@@ -167,9 +167,9 @@ export default {
       if (this.message.body.length <= 50) {
         return "col-4";
       } else if (this.message.body.length <= 100) {
-        return "col-5";
+        return "col-6";
       } else {
-        return "col-5";
+        return "col-8";
       }
     },
 

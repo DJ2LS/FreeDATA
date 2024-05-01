@@ -118,22 +118,18 @@ watch(
 </script>
 
 <template>
-  <div class="container-fluid">
-    <div class="row">
+  <div class="container-fluid d-flex">
       <!-- Chat Conversations -->
-      <div class="col-3 bg-light p-0">
+      <div class="bg-light p-0" style="width: 250px">
         <div class="container-fluid overflow-auto p-0">
           <chat_conversations />
         </div>
-        <div
-          class="list-group overflow-auto"
-          id="list-tab-chat"
-          role="tablist"
-        ></div>
+        <div class="list-group overflow-auto" id="list-tab-chat" role="tablist"></div>
       </div>
 
+
       <!-- Chat Messages -->
-      <div class="col-9 border-start p-0">
+      <div class="flex-grow-1 border-start p-0">
         <div class="d-flex flex-column">
           <!-- Top Navbar -->
           <nav class="navbar sticky-top z-0 bg-body-tertiary border-bottom p-1">
@@ -169,6 +165,5 @@ watch(
           <chat_new_message />
         </div>
       </div>
-    </div>
   </div>
 </template>
