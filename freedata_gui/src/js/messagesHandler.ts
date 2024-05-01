@@ -34,6 +34,7 @@ export async function processFreedataMessages(data) {
     chatStore.callsign_list = createCallsignListFromAPI(data);
     chatStore.sorted_chat_list = createSortedMessagesList(data);
 
+    console.log(chatStore.sorted_chat_list)
     // also update the selectedCallsign - if its undefined, then we select the first available callsign
     if (typeof chatStore.selectedCallsign == "undefined"){
         chatStore.selectedCallsign = Object.keys(chatStore.sorted_chat_list)[0]

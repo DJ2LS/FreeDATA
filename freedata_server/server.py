@@ -31,12 +31,13 @@ from message_system_db_manager import DatabaseManager
 from message_system_db_messages import DatabaseManagerMessages
 from message_system_db_attachments import DatabaseManagerAttachments
 from message_system_db_beacon import DatabaseManagerBeacon
+from message_system_db_station import DatabaseManagerStations
 from schedule_manager import ScheduleManager
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
-MODEM_VERSION = "0.15.5-alpha"
+MODEM_VERSION = "0.15.6-alpha"
 
 # set config file to use
 def set_config():
@@ -315,6 +316,12 @@ def get_all_beacons():
 def get_beacons_by_callsign(callsign):
     beacons = DatabaseManagerBeacon(app.event_manager).get_beacons_by_callsign(callsign)
     return api_response(beacons)
+
+@app.route('/freedata/station/<string:callsign>', methods=['GET'])
+def get_station_info_by_callsign(callsign):
+    station = DatabaseManagerStations(app.event_manager).get_station(callsign)
+    print(station)
+    return api_response(station)
 
 # Event websocket
 @sock.route('/events')

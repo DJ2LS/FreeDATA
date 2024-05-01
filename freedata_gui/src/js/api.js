@@ -200,3 +200,7 @@ export async function deleteFreedataMessage(id) {
 export async function getBeaconDataByCallsign(callsign) {
   return await apiGet(`/freedata/beacons/${callsign}`);
 }
+
+export async function getStationInfo(callsign) {
+  return await apiGet(`/freedata/station/${callsign}`);
+}
