@@ -120,7 +120,7 @@ jobs:
           path: FreeDATA-x86_64.AppImage
 
       - name: Upload Installer to Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           draft: true
