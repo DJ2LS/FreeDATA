@@ -3,7 +3,7 @@
 # Simple script to install FreeDATA in Linux
 # Dj Merrill - 25 Apr 2024
 #
-# Currently supports Debian 12, Ubuntu 24.04 LTS
+# Currently supports Debian [11,12], Ubuntu [24.04]
 # 
 # args: nothing or "main" (use main branch of FreeDATA)
 # 	"develop" (use develop branch of FreeDATA)
@@ -34,8 +34,8 @@ echo "*************************************************************************"
 case $osname in
    "Debian GNU/Linux")
 	case $osversion in
-	   "12 (bookworm)")
-		sudo apt install --upgrade -y libhamlib-utils libhamlib-dev libhamlib4 fonts-noto-color-emoji git build-essential cmake npm nodejs python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama
+	   "11 (bullseye)" | "12 (bookworm)")
+		sudo apt install --upgrade -y libhamlib-utils libhamlib-dev libhamlib4 fonts-noto-color-emoji git build-essential cmake python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama python3-venv wget
 	   ;;
 
 	   *)
@@ -53,7 +53,7 @@ case $osname in
    "Ubuntu")
 	case $osversion in
 	   "24.04 LTS (Noble Numbat)")
-		sudo apt install --upgrade -y libhamlib-utils libhamlib-dev libhamlib4 fonts-noto-color-emoji git build-essential cmake npm nodejs python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama python3-venv
+		sudo apt install --upgrade -y libhamlib-utils libhamlib-dev libhamlib4 fonts-noto-color-emoji git build-essential cmake python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama python3-venv curl wget
 	   ;;
 
 	   *)
@@ -74,6 +74,34 @@ case $osname in
 	exit 1
    ;;
 esac
+
+echo "*************************************************************************"
+echo "Installing nvm and node v 20 into ~/.nvm"
+echo "*************************************************************************"
+wget https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh
+if [ -f "install.sh" ];
+then
+	XDG_CONFIG_HOME=""
+	chmod 750 install.sh
+	./install.sh
+else
+	echo "Something went wrong.  npm install.sh not downloaded."
+	exit 1
+fi
+
+if [ -f "$HOME/.nvm/bash_completion" ];
+then
+	export NVM_DIR="$HOME/.nvm"
+	[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+	[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+	nvm install 20
+	echo "nvm is version" `npm -v`
+	echo "node is version" `node -v`
+	rm install.sh
+else
+	echo "Something went wrong.  $HOME/.nvm environment not created properly."
+	exit 1
+fi
 
 echo "*************************************************************************"
 echo "Checking for old FreeDATA directories"
