@@ -118,9 +118,25 @@ watch(
   },
 );
 
-const stationInfo = ref({});
+const stationInfo = ref({
+  callsign: 'N/A', // Default value for callsign
+  location: {
+    gridsquare: 'N/A', // Default value for gridsquare
+  },
+});
+
 async function getStationInfoByCallsign(){
-    stationInfo.value = await getStationInfo(chat.selectedCallsign);
+ try {
+        const data = await getStationInfo(chat.selectedCallsign);
+        stationInfo.value = {
+            callsign: data.callsign || 'N/A',  // Default if not present
+            location: {
+                gridsquare: data.location?.gridsquare ||  'N/A',  // Default if not present
+            },
+        };
+    } catch (error) {
+        console.error("Error fetching station info:", error);
+    }
 }
 
 
