@@ -1,12 +1,35 @@
 #!/bin/bash
 #
 # Simple script to install FreeDATA in Linux
-# Dj Merrill - 25 Apr 2024
+# Dj Merrill - N1JOV
 #
-# Currently supports Debian [11,12], Ubuntu [24.04]
+# Currently supports Debian [11, 12], Ubuntu [22.04, 24.04]
 # 
+# Run this script by typing "bash install-freedata-linux.sh" in the terminal
+#
 # args: nothing or "main" (use main branch of FreeDATA)
 # 	"develop" (use develop branch of FreeDATA)
+#
+# This script creates three subdirectories in the directory it is run
+# FreeDATA: Contains the FreeDATA software
+# FreeDATA-venv: Contains the Python virtual environment
+# FreeDATA-hamlib: Contains the hamlib libraries
+#
+# Changelog:
+# 1.3:	02 May 2024
+#	Remove dependency on distro supplied hamlib library which can be old
+#	Download and install hamlib 4.5.5 into ./FreeDATA-hamlib
+#	Add support for Debian 11 and Ubuntu 22.04
+#
+# 1.2:	30 Apr 2024
+#	Remove dependency on distro supplied nodejs which can be too old
+#	Install nodejs version 20 into ~/.nvm
+#
+# 1.1:	26 Apr 2024
+#	Add support for installing from FreeDATA develop branch
+#	Add support for Ubuntu 24.04
+#	
+# 1.0:	Initial release 25 Apr 2024 supporting Debian 12
 #
 
 case $1 in
@@ -29,13 +52,14 @@ echo "Running on" $osname "version" $osversion
 
 echo "*************************************************************************"
 echo "Installing software prerequisites"
+echo "If prompted, enter your password to run the sudo command"
 echo "*************************************************************************"
 
 case $osname in
    "Debian GNU/Linux")
 	case $osversion in
 	   "11 (bullseye)" | "12 (bookworm)")
-		sudo apt install --upgrade -y libhamlib-utils libhamlib-dev libhamlib4 fonts-noto-color-emoji git build-essential cmake python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama python3-venv wget
+		sudo apt install --upgrade -y fonts-noto-color-emoji git build-essential cmake python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama python3-venv wget
 	   ;;
 
 	   *)
@@ -52,8 +76,8 @@ case $osname in
 
    "Ubuntu")
 	case $osversion in
-	   "24.04 LTS (Noble Numbat)")
-		sudo apt install --upgrade -y libhamlib-utils libhamlib-dev libhamlib4 fonts-noto-color-emoji git build-essential cmake python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama python3-venv curl wget
+	   "22.04.4 LTS (Jammy Jellyfish)" | "24.04 LTS (Noble Numbat)")
+		sudo apt install --upgrade -y fonts-noto-color-emoji git build-essential cmake python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama python3-venv wget
 	   ;;
 
 	   *)
@@ -97,10 +121,57 @@ then
 	nvm install 20
 	echo "nvm is version" `npm -v`
 	echo "node is version" `node -v`
-	rm install.sh
+	rm -f install.sh
 else
 	echo "Something went wrong.  $HOME/.nvm environment not created properly."
 	exit 1
+fi
+
+echo "*************************************************************************"
+echo "Installing hamlib into FreeDATA-hamlib"
+echo "*************************************************************************"
+
+if [ -d "FreeDATA-hamlib.old" ];
+then
+	rm -rf FreeDATA-hamlib.old
+fi
+
+if [ -d "FreeDATA-hamlib" ];
+then
+	mv FreeDATA-hamlib FreeDATA-hamlib.old
+fi
+
+if [ ! -d "FreeDATA-hamlib" ];
+then
+	curdir=`pwd`
+	wget https://github.com/Hamlib/Hamlib/releases/download/4.5.5/hamlib-4.5.5.tar.gz
+	if [ -f "hamlib-4.5.5.tar.gz" ];
+	then
+		tar -xplf hamlib-4.5.5.tar.gz
+	else
+		echo "Something went wrong.  hamlib-4.5.5.tar.gz not downloaded."
+		exit 1
+	fi
+	if [ -d "hamlib-4.5.5" ];
+	then
+		cd hamlib-4.5.5
+		./configure --prefix=$curdir/FreeDATA-hamlib
+		make
+		make install
+		cd ..
+	else
+		echo "Something went wrong.  hamlib-4.5.5 directory not found."
+		exit 1
+	fi
+	if [ ! -f "$curdir/FreeDATA-hamlib/bin/rigctl" ];
+	then
+		echo "Something went wrong." $curdir"/FreeDATA.hamlib/bin/rigctl not found."
+                exit 1
+	else
+		echo "Cleaning up files from hamlib build."
+		rm -f hamlib-4.5.5.tar.gz
+		rm -rf hamlib-4.5.5
+        fi
 fi
 
 echo "*************************************************************************"

@@ -3,8 +3,9 @@
 # Simple script to run FreeDATA in Linux
 # Dj Merrill - 25 Apr 2024
 #
-# Run this script in the directory that contains the "FreeDATA" and 
-# "FreeDATA-venv" directories created by the install-freedata.sh script
+# Run this script in the directory that contains the "FreeDATA", 
+# "FreeDATA-venv", and "FreeDATA-hamlib" directories 
+# created by the install-freedata-linux.sh script
 #
 # Two log files are created in this directory:
 # FreeDATA-server.log: debug output from the server process
@@ -13,7 +14,22 @@
 # We expect the config.ini file to be at $HOME/.config/FreeDATA/config.ini
 # If it isn't found, we copy config.ini.example there
 #
+# 1.3:  02 May 2024
+#	Add support for hamlib installed by FreeDATA install script
+# 1.2:  30 Apr 2024
+# 1.1:  26 Apr 2024
+# 1.0:	25 Apr 2024 Initial release
 #
+
+# Set path to find our hamlib install
+export PATH=./FreeDATA-hamlib/bin:$PATH
+export LD_LIBRARY_PATH=./FreeDATA-hamlib/lib:$LD_LIBRARY_PATH
+
+if [ ! -f "FreeDATA-hamlib/bin/rigctl" ];
+then
+	echo "Something went wrong.  FreeDATA-hamlib/bin/rigctl not found."
+	exit 1
+fi
 
 # Activate the Python Virtual Environment
 source ./FreeDATA-venv/bin/activate
