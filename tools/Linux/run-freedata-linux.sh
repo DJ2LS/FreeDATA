@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Simple script to run FreeDATA in Linux
-# Dj Merrill - 25 Apr 2024
+# Dj Merrill - N1JOV
 #
 # Run this script in the directory that contains the "FreeDATA", 
 # "FreeDATA-venv", and "FreeDATA-hamlib" directories 
