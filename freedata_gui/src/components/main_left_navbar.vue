@@ -109,6 +109,7 @@ function toggleTextVisibility() {
     data-bs-toggle="modal"
     data-bs-target="#stationInfoModal"
     title="Set station info"
+    disabled
   >
     <i class="bi bi-person-circle h3"></i>
     <span class="ms-2" v-if="isTextVisible">Station</span>
