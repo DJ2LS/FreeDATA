@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import main_modem_healthcheck from "./main_modem_healthcheck.vue";
+
 import { getOverallHealth } from "../js/eventHandler.js";
 import { getFreedataMessages } from "../js/api";
 import { getRemote } from "../store/settingsStore.js";
@@ -101,4 +102,16 @@ function toggleTextVisibility() {
       <span class="ms-2" v-if="isTextVisible">Settings</span>
     </a>
   </div>
+
+ <button
+    class="btn btn-outline-secondary border-0 left-bottom-btn position-fixed bottom-0 mb-3 rounded-3 ms-1"
+    data-bs-html="false"
+    data-bs-toggle="modal"
+    data-bs-target="#stationInfoModal"
+    title="Set station info"
+  >
+    <i class="bi bi-person-circle h3"></i>
+    <span class="ms-2" v-if="isTextVisible">Station</span>
+  </button>
+
 </template>

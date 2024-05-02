@@ -1,6 +1,8 @@
 <script setup lang="ts">
 // @ts-nocheck
 // reason for no check is, that we have some mixing of typescript and chart js which seems to be not to be fixed that easy
+import { ref, onMounted } from 'vue';
+
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
@@ -8,8 +10,13 @@ setActivePinia(pinia);
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
 
+import { useStateStore } from "../store/stateStore.js";
+const state = useStateStore(pinia);
+
+import { settingsStore } from "../store/settingsStore.js";
+
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
-import { sendModemTestFrame } from "../js/api";
+import { sendModemTestFrame, setStationInfo, getStationInfo } from "../js/api";
 import main_startup_check from "./main_startup_check.vue";
 import { newMessage, deleteCallsignFromDB } from "../js/messagesHandler.ts";
 
@@ -110,6 +117,78 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
     },
   ],
 }));
+
+
+
+
+
+
+const stationInfoData = ref({
+  name: '',
+  city: '',
+  age: '',
+  radio: '',
+  antenna: '',
+  email: '',
+  website: '',
+  socialMedia: {
+    facebook: '',
+    'twitter-x': '', // Use twitter-x to correspond to the Twitter X icon
+    mastodon: '',
+    instagram: '',
+    linkedin: '',
+    youtube: '',
+    tiktok: ''
+  },
+  comments: ''
+});
+
+// Function to handle updates and save changes
+function updateStationInfo() {
+  console.log('Updating station info:', stationInfoData.value);
+  let mycall = settingsStore.remote.STATION.mycall;
+  let myssid = settingsStore.remote.STATION.myssid;
+  let fullCall = `${mycall}-${myssid}`;
+  setStationInfo(fullCall, stationInfoData.value)
+}
+
+
+// Fixme: this is a dirty hack. Can we make this more VueJS like?
+onMounted(() => {
+  const modalElement = document.getElementById('stationInfoModal');
+  modalElement.addEventListener('show.bs.modal', fetchStationInfo);
+});
+
+async function fetchStationInfo(){
+    let mycall = settingsStore.remote.STATION.mycall;
+      let myssid = settingsStore.remote.STATION.myssid;
+      let fullCall = `${mycall}-${myssid}`;
+let result = await getStationInfo(fullCall);
+let info = result.info;
+    stationInfoData.value = {
+      name: info.name || '',
+      city: info.city || '',
+      age: info.age || '',
+      radio: info.radio || '',
+      antenna: info.antenna || '',
+      email: info.email || '',
+      website: info.website || '',
+      socialMedia: {
+        facebook: info.socialMedia.facebook || '',
+        'twitter-x': info.socialMedia['twitter-x'] || '',
+        mastodon: info.socialMedia.mastodon || '',
+        instagram: info.socialMedia.instagram || '',
+        linkedin: info.socialMedia.linkedin || '',
+        youtube: info.socialMedia.youtube || '',
+        tiktok: info.socialMedia.tiktok || ''
+      },
+      comments: info.comments || ''
+    };
+
+}
+
+
+
 </script>
 
 <template>
@@ -1234,6 +1313,8 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
     </div>
   </div>
 
+
+
   <!-- AUDIO MODAL -->
   <div
     class="modal fade"
@@ -1306,4 +1387,95 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
       </div>
     </div>
   </div>
+
+  <!-- STATION INFO MODAL -->
+<div class="modal fade" id="stationInfoModal" tabindex="-1" aria-labelledby="stationInfoModal" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5 ">
+            {{ settingsStore.remote.STATION.mycall }}
+                -
+            {{settingsStore.remote.STATION.myssid }}
+        </h1>
+
+        <span class="badge text-bg-secondary ms-3">{{settingsStore.remote.STATION.mygrid }}</span>
+
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+      <div class="alert alert-primary" role="alert">
+  <strong> Please note:</strong> This is a preview to show you the direction, FreeDATA is going somewhen. For now you can save only your personal data, so we can optimize and improve the database.  In future this data can be requested by a remote station.
+</div>
+
+
+        <!-- Name -->
+          <div class="input-group mb-1">
+            <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+            <input type="text" class="form-control" placeholder="Name" v-model="stationInfoData.name" >
+          </div>
+
+          <!-- City -->
+          <div class="input-group mb-1">
+            <span class="input-group-text"><i class="bi bi-geo-alt-fill"></i></span>
+            <input type="text" class="form-control" placeholder="City" v-model="stationInfoData.city" >
+          </div>
+
+            <!-- Age -->
+          <div class="input-group mb-3">
+            <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+            <input type="text" class="form-control" placeholder="Age" v-model="stationInfoData.age" >
+          </div>
+
+          <!-- Radio -->
+          <div class="input-group mb-1">
+            <span class="input-group-text"><i class="bi bi-broadcast-pin"></i></span>
+            <input type="text" class="form-control" placeholder="Radio" v-model="stationInfoData.radio" >
+          </div>
+
+          <!-- Antenna -->
+          <div class="input-group mb-3">
+            <span class="input-group-text"><i class="bi bi-cone-striped"></i></span>
+            <input type="text" class="form-control" placeholder="Antenna" v-model="stationInfoData.antenna" >
+          </div>
+
+          <!-- Website -->
+          <div class="input-group mb-1">
+            <span class="input-group-text"><i class="bi bi-globe"></i></span>
+            <input type="url" class="form-control" placeholder="Website" v-model="stationInfoData.website" >
+          </div>
+
+          <!-- Email -->
+          <div class="input-group mb-3">
+            <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
+            <input type="email" class="form-control" placeholder="Email" v-model="stationInfoData.email" >
+          </div>
+
+          <!-- Social Media Inputs -->
+          <div class="mb-3">
+            <div v-for="(url, platform) in stationInfoData.socialMedia">
+              <div class="input-group mb-1" :key="platform">
+                <span class="input-group-text"><i :class="`bi bi-${platform}`"></i></span>
+                <input type="url" class="form-control" :placeholder="`${platform.charAt(0).toUpperCase() + platform.slice(1)} URL`" v-model="stationInfoData.socialMedia[platform]" >
+              </div>
+            </div>
+          </div>
+
+          <!-- Comments -->
+          <div class="mb-3">
+            <label class="input-group-text" for="comments"><i class="bi bi-textarea-resize"></i> Comments</label>
+            <textarea class="form-control" rows="3" v-model="stationInfoData.comments" ></textarea>
+          </div>
+
+      </div>
+      <div class="modal-footer">
+
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" @click="updateStationInfo">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </template>

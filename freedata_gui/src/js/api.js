@@ -204,3 +204,6 @@ export async function getBeaconDataByCallsign(callsign) {
 export async function getStationInfo(callsign) {
   return await apiGet(`/freedata/station/${callsign}`);
 }
+export async function setStationInfo(callsign, info) {
+  return await apiPost(`/freedata/station/${callsign}`, info);
+}

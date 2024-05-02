@@ -32,3 +32,31 @@ class DatabaseManagerStations(DatabaseManager):
 
         finally:
             session.remove()
+
+    def update_station(self, callsign, new_info):
+        """
+        Updates the information of a station identified by its callsign.
+
+        Args:
+            callsign (str): The callsign of the station to update.
+            new_info (str): The new information to store in the 'info' column.
+
+        Returns:
+            bool: True if the update was successful, False otherwise.
+        """
+        session = self.get_thread_scoped_session()
+        try:
+            station = session.query(Station).filter_by(callsign=callsign).first()
+            if station:
+                station.info = new_info
+                session.commit()
+                return True
+            else:
+                self.log(f"No station found with callsign {callsign}", isWarning=True)
+                return False
+        except SQLAlchemyError as e:
+            session.rollback()
+            self.log(f"Failed to update station {callsign} with error: {e}", isError=True)
+            return False
+        finally:
+            session.remove()

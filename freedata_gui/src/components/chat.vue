@@ -145,7 +145,7 @@ async function getStationInfoByCallsign() {
   <div
     class="modal fade"
     ref="modalEle"
-    id="stationInfoModal"
+    id="dxStationInfoModal"
     tabindex="-1"
     aria-hidden="true"
   >
@@ -200,7 +200,7 @@ async function getStationInfoByCallsign() {
         <nav class="navbar sticky-top z-0 bg-body-tertiary border-bottom p-1">
           <button
             class="btn btn-sm btn-outline-secondary ms-2 border-0"
-            data-bs-target="#stationInfoModal"
+            data-bs-target="#dxStationInfoModal"
             data-bs-toggle="modal"
             @click="getStationInfoByCallsign()"
           >

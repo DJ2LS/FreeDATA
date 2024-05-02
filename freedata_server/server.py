@@ -272,11 +272,11 @@ def get_post_freedata_message():
     if request.method in ['GET']:
         result = DatabaseManagerMessages(app.event_manager).get_all_messages_json()
         return api_response(result)
-    if request.method in ['POST']:
+    elif request.method in ['POST']:
         enqueue_tx_command(command_message_send.SendMessageCommand, request.json)
         return api_response(request.json)
-
-    api_abort('Error executing command...', 500)
+    else:
+        api_abort('Error executing command...', 500)
 
 @app.route('/freedata/messages/<string:message_id>', methods=['GET', 'POST', 'PATCH', 'DELETE'])
 def handle_freedata_message(message_id):
@@ -317,11 +317,16 @@ def get_beacons_by_callsign(callsign):
     beacons = DatabaseManagerBeacon(app.event_manager).get_beacons_by_callsign(callsign)
     return api_response(beacons)
 
-@app.route('/freedata/station/<string:callsign>', methods=['GET'])
-def get_station_info_by_callsign(callsign):
-    station = DatabaseManagerStations(app.event_manager).get_station(callsign)
-    print(station)
-    return api_response(station)
+@app.route('/freedata/station/<string:callsign>', methods=['GET', 'POST'])
+def get_set_station_info_by_callsign(callsign):
+    if request.method in ['GET']:
+        station = DatabaseManagerStations(app.event_manager).get_station(callsign)
+        return api_response(station)
+    elif request.method in ['POST']:
+        result = DatabaseManagerStations(app.event_manager).update_station(callsign, new_info=request.json)
+        return api_response(result)
+    else:
+        api_abort('Error using endpoint...', 500)
 
 # Event websocket
 @sock.route('/events')

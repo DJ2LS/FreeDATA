@@ -19,6 +19,7 @@ import { settingsStore as settings } from "../store/settingsStore.js";
           id="enableMeshSwitch"
           @change="setConfig"
           v-model="settings.remote.MESH.enable_protocol"
+          disabled
         />
         <label class="form-check-label" for="enableMeshSwitch"
           >experimental! REALLY!</label
