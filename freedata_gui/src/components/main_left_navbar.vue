@@ -103,7 +103,7 @@ function toggleTextVisibility() {
     </a>
   </div>
 
- <button
+  <button
     class="btn btn-outline-secondary border-0 left-bottom-btn position-fixed bottom-0 mb-3 rounded-3 ms-1"
     data-bs-html="false"
     data-bs-toggle="modal"
@@ -114,5 +114,4 @@ function toggleTextVisibility() {
     <i class="bi bi-person-circle h3"></i>
     <span class="ms-2" v-if="isTextVisible">Station</span>
   </button>
-
 </template>
