@@ -22,11 +22,7 @@ function startStopBeacon() {
 }
 
 function setAwayFromKey(){
- if (state.away_from_key === true) {
-    setModemBeacon(state.beacon_state, false);
-  } else {
-    setModemBeacon(state.beacon_state, true);
-  }
+ setModemBeacon(state.beacon_state, state.away_from_key);
 
 }
 
