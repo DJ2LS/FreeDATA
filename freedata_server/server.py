@@ -165,6 +165,7 @@ def post_beacon():
         app.state_manager.set('is_beacon_running', request.json['enabled'])
         app.state_manager.set('is_away_from_key', request.json['away_from_key'])
 
+    return api_ok()
 
 @app.route('/modem/ping_ping', methods=['POST'])
 def post_ping():
