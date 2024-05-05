@@ -1,6 +1,5 @@
 import numpy as np
 #from scipy.signal import freqz
-import matplotlib.pyplot as plt
 import ctypes
 
 testFilter = (ctypes.c_float * 3)(1.000000,1.000000,1.000000)
