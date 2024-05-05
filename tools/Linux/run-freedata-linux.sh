@@ -15,6 +15,8 @@
 # We expect the config.ini file to be at $HOME/.config/FreeDATA/config.ini
 # If it isn't found, we copy config.ini.example there
 #
+# 1.5:  05 May 2024
+#	Check for rigctld at exit and stop it if needed
 # 1.4:  05 May 2024
 #	Added comments on how to view log outputs in realtime
 # 1.3:  02 May 2024
@@ -119,6 +121,17 @@ echo "*************************************************************************"
 echo "Stopping the server component"
 echo "*************************************************************************"
 kill $serverpid
+
+# If rigctld is still running, stop it
+checkrigctld=`ps auxw | grep -i rigctld | grep -v grep`
+if [ ! -z "$checkrigctld" ];
+then
+	echo "*************************************************************************"
+	echo "Stopping rigctld"
+	echo "*************************************************************************"
+	rigpid=`echo $checkrigctld | cut -f2 -d" "`
+	kill $rigpid
+fi
 
 # Return to the directory we started in
 cd ..
