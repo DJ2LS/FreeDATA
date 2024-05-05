@@ -152,10 +152,14 @@ class ARQSessionIRS(arq_session.ARQSession):
         if frame['offset'] != self.received_bytes:
             # TODO: IF WE HAVE AN OFFSET BECAUSE OF A SPEED LEVEL CHANGE FOR EXAMPLE,
             # TODO: WE HAVE TO DISCARD THE LAST BYTES, BUT NOT returning False!!
-            self.log(f"Discarding data offset {frame['offset']} vs {self.received_bytes}", isWarning=True)
+            # CASE: ACK is going lost.
+            self.log(f"Discarding data offset: Offset = {frame['offset']} | Already received: {self.received_bytes}", isWarning=True)
+            self.received_bytes = frame['offset']
+
             #return False
 
         remaining_data_length = self.total_length - self.received_bytes
+        self.log(f"Remaining data: {remaining_data_length}", isWarning=True)
         # Is this the last data part?
         if remaining_data_length <= len(frame['data']):
             # we only want the remaining length, not the entire frame data
