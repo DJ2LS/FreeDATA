@@ -10,10 +10,13 @@
 # Two log files are created in this directory:
 # FreeDATA-server.log: debug output from the server process
 # FreeDATA-client.log: debug output from the GUI front end
+# To view live, "tail -f FreeDATA-server.log" or "tail -f FreeDATA-client.log"
 #
 # We expect the config.ini file to be at $HOME/.config/FreeDATA/config.ini
 # If it isn't found, we copy config.ini.example there
 #
+# 1.4:  05 May 2024
+#	Added comments on how to view log outputs in realtime
 # 1.3:  02 May 2024
 #	Add support for hamlib installed by FreeDATA install script
 # 1.2:  30 Apr 2024

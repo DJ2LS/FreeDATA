@@ -15,7 +15,16 @@
 # FreeDATA-venv: Contains the Python virtual environment
 # FreeDATA-hamlib: Contains the hamlib libraries
 #
+# FreeDATA config file is stored in $HOME/.config/FreeDATA/config.ini
+# See the run-freedata-linux.sh for more details
+#
+#
 # Changelog:
+# 1.4:	05 May 2024
+#	Change to "dr-freedata-001" branch of codec2 for develop mode
+#	Added comments in scripts and README.txt for config file location
+#	If hamlib 4.5.5 is already in FreeDATA-hamlib, don't reinstall
+#
 # 1.3:	02 May 2024
 #	Remove dependency on distro supplied hamlib library which can be old
 #	Download and install hamlib 4.5.5 into ./FreeDATA-hamlib
@@ -128,7 +137,7 @@ else
 fi
 
 echo "*************************************************************************"
-echo "Installing hamlib into FreeDATA-hamlib"
+echo "Checking for hamlib 4.5.5 in FreeDATA-hamlib"
 echo "*************************************************************************"
 
 if [ -d "FreeDATA-hamlib.old" ];
@@ -138,11 +147,23 @@ fi
 
 if [ -d "FreeDATA-hamlib" ];
 then
-	mv FreeDATA-hamlib FreeDATA-hamlib.old
+	if [ -f "./FreeDATA-hamlib/bin/rigctl" ];
+	then
+		checkhamlibver=`./FreeDATA-hamlib/bin/rigctl --version | cut -f3 -d" "`
+		if [ "$checkhamlibver" != "4.5.5" ];
+		then
+			mv FreeDATA-hamlib FreeDATA-hamlib.old
+		else
+			echo "Hamlib 4.5.5 found, no installation needed."
+		fi
+	else
+		mv FreeDATA-hamlib FreeDATA-hamlib.old
+	fi
 fi
 
 if [ ! -d "FreeDATA-hamlib" ];
 then
+	echo "Installing hamlib 4.5.5 into FreeDATA-hamlib"
 	curdir=`pwd`
 	wget https://github.com/Hamlib/Hamlib/releases/download/4.5.5/hamlib-4.5.5.tar.gz
 	if [ -f "hamlib-4.5.5.tar.gz" ];
