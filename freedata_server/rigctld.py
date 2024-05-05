@@ -295,8 +295,8 @@ class radio:
 
     def get_strength(self):
         try:
-            strength_response = int(self.send_command('l STRENGTH'))
-            self.parameters['strength'] = strength_response if strength_response is not None else 'err'
+            strength_response = self.send_command('l STRENGTH')
+            self.parameters['strength'] = int(strength_response) if strength_response is not None else 'err'
         except Exception as e:
             self.log.warning(f"Error getting strength: {e}")
             self.parameters['strength'] = 'err'
