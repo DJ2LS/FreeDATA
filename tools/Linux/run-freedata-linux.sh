@@ -15,6 +15,9 @@
 # We expect the config.ini file to be at $HOME/.config/FreeDATA/config.ini
 # If it isn't found, we copy config.ini.example there
 #
+# 1.6:  05 May 2024
+#	Don't stop rigctld if it was started separate from FreeDATA
+#	We only want to clean up FreeDATA initiated processes
 # 1.5:  05 May 2024
 #	Check for rigctld at exit and stop it if needed
 # 1.4:  05 May 2024
@@ -51,6 +54,11 @@ then
 	kill $oldserverpid
 	sleep 7s
 fi
+
+# Check for an already running rigctld process
+# This was probably started by other means so we should leave this 
+# alone when we exit
+checkrigexist=`ps auxw | grep -i rigctld | grep -v grep`
 
 echo "*************************************************************************"
 echo "Running the FreeDATA server component"
@@ -122,15 +130,21 @@ echo "Stopping the server component"
 echo "*************************************************************************"
 kill $serverpid
 
-# If rigctld is still running, stop it
-checkrigctld=`ps auxw | grep -i rigctld | grep -v grep`
-if [ ! -z "$checkrigctld" ];
+# If rigctld was already running before starting FreeDATA, leave it alone
+# otherwise we should clean it up
+if [ -z "$checkrigexist" ];
 then
-	echo "*************************************************************************"
-	echo "Stopping rigctld"
-	echo "*************************************************************************"
-	rigpid=`echo $checkrigctld | cut -f2 -d" "`
-	kill $rigpid
+	# rigctld was started by FreeDATA and should have stoppped when the 
+	# server exited.  If it didn't, stop it now.
+	checkrigctld=`ps auxw | grep -i rigctld | grep -v grep`
+	if [ ! -z "$checkrigctld" ];
+	then
+		echo "*************************************************************************"
+		echo "Stopping rigctld"
+		echo "*************************************************************************"
+		rigpid=`echo $checkrigctld | cut -f2 -d" "`
+		kill $rigpid
+	fi
 fi
 
 # Return to the directory we started in
