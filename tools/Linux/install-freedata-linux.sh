@@ -277,7 +277,7 @@ fi
 	
 if [ "$args" == "develop" ];
 then
-	git checkout dr-qam16-cport
+	git checkout dr-freedata-001
 fi
 
 echo "*************************************************************************"
