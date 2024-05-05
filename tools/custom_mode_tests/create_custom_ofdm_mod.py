@@ -21,10 +21,10 @@ import modulator as modulator
 import demodulator as demodulator
 import config as config
 
-
+MODE = FREEDV_MODE.datac1
 def demod(txbuffer):
-    c2instance = open_instance(FREEDV_MODE.datac3.value)
-
+    c2instance = open_instance(MODE.value)
+    print(f"DEMOD: {MODE}")
     # get bytes per frame
     bytes_per_frame = int(
         api.freedv_get_bits_per_modem_frame(c2instance) / 8
@@ -57,7 +57,7 @@ def demod(txbuffer):
         # 6 decoded
         # 10 error decoding == NACK
         rx_status = api.freedv_get_rx_status(freedv)
-        print(rx_status)
+        #print(rx_status)
 
         # decrement codec traffic counter for making state smoother
 
@@ -65,6 +65,8 @@ def demod(txbuffer):
         nin = api.freedv_nin(freedv)
         if nbytes == bytes_per_frame:
             print("DECODED!!!!")
+
+    print("---------------------------------")
     print("ENDED")
     print(nin)
     print(audiobuffer.nbuffer)
@@ -74,12 +76,13 @@ modulator = modulator.Modulator(config.read())
 #freedv = open_instance(FREEDV_MODE.data_ofdm_2438.value)
 #freedv = open_instance(FREEDV_MODE.datac14.value)
 #freedv = open_instance(FREEDV_MODE.datac1.value)
-freedv = open_instance(FREEDV_MODE.datac3.value)
+freedv = open_instance(MODE.value)
+print(f"MODULATE: {MODE}")
 #freedv = open_instance(FREEDV_MODE.data_ofdm_500.value)
 #freedv = open_instance(FREEDV_MODE.qam16c2.value)
 
 
-frames = 2
+frames = 1
 txbuffer = bytearray()
 
 for frame in range(0,frames):
