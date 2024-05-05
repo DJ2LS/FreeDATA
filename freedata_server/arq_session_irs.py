@@ -213,7 +213,7 @@ class ARQSessionIRS(arq_session.ARQSession):
                                                          self.speed_level,
                                                          flag_final=True,
                                                          flag_checksum=False)
-            self.transmit_frame(ack, mode=FREEDV_MODE.signalling)
+            self.transmit_frame(ack, mode=FREEDV_MODE.signalling_ack)
             self.log("CRC fail at the end of transmission!")
             return self.transmission_failed()
 
@@ -272,7 +272,7 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     def send_stop_ack(self, stop_frame):
         stop_ack = self.frame_factory.build_arq_stop_ack(self.id)
-        self.launch_transmit_and_wait(stop_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
+        self.launch_transmit_and_wait(stop_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling_ack)
         self.set_state(IRS_State.ABORTED)
         self.states.setARQ(False)
         self.event_manager.send_arq_session_finished(
