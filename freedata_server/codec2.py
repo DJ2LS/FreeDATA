@@ -561,14 +561,14 @@ data_ofdm_2438_config.config.contents.nuwbits = 24
 data_ofdm_2438_config.config.contents.timing_mx_thresh = 0.10
 data_ofdm_2438_config.config.contents.bad_uw_errors = 8
 data_ofdm_2438_config.config.contents.amp_est_mode = 0
-data_ofdm_2438_config.config.contents.amp_scale = 135E3
+data_ofdm_2438_config.config.contents.amp_scale = 110E3
 data_ofdm_2438_config.config.contents.codename = "H_16200_9720".encode('utf-8')
-data_ofdm_2438_config.config.contents.clip_gain1 = 2.7
-data_ofdm_2438_config.config.contents.clip_gain2 = 0.8
+data_ofdm_2438_config.config.contents.clip_gain1 = 3.2
+data_ofdm_2438_config.config.contents.clip_gain2 = 0.9
 data_ofdm_2438_config.config.contents.timing_mx_thresh = 0.10
 data_ofdm_2438_config.config.contents.tx_uw = create_tx_uw(24, [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1])
-data_ofdm_2438_config.config.contents.tx_bpf_en = False
-data_ofdm_2438_config.config.contents.tx_bpf_proto = codec2_filter_coeff.generate_filter_coefficients(8000, 2438, 100)
+data_ofdm_2438_config.config.contents.tx_bpf_en = True
+data_ofdm_2438_config.config.contents.tx_bpf_proto = codec2_filter_coeff.generate_filter_coefficients(8000, 2500, 100)
 data_ofdm_2438_config.config.contents.tx_bpf_proto_n = 100
 
 # ---------------- QAM 2438 Hz Bandwidth ---------------#
