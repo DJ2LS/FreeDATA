@@ -21,6 +21,9 @@ class ISS_State(Enum):
 class ARQSessionISS(arq_session.ARQSession):
 
     RETRIES_CONNECT = 5
+    RETRIES_INFO = 10
+    RETRIES_DATA = 15
+    RETRIES_STOP = 5
 
     # DJ2LS: 3 seconds seems to be too small for radios with a too slow PTT toggle time
     # DJ2LS: 3.5 seconds is working well WITHOUT a channel busy detection delay
@@ -147,7 +150,7 @@ class ARQSessionISS(arq_session.ARQSession):
                                                                helpers.get_crc_32(self.data), 
                                                                self.snr, self.type_byte)
 
-        self.launch_twr(info_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
+        self.launch_twr(info_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_INFO, mode=FREEDV_MODE.signalling)
         self.set_state(ISS_State.INFO_SENT)
 
         return None, None
@@ -198,7 +201,7 @@ class ARQSessionISS(arq_session.ARQSession):
                 self.SPEED_LEVEL_DICT[self.speed_level]["mode"],
                 self.id, offset, payload, self.speed_level)
             burst.append(data_frame)
-        self.launch_twr(burst, self.TIMEOUT_TRANSFER, self.RETRIES_CONNECT, mode='auto', isARQBurst=True)
+        self.launch_twr(burst, self.TIMEOUT_TRANSFER, self.RETRIES_DATA, mode='auto', isARQBurst=True)
         self.set_state(ISS_State.BURST_SENT)
         return None, None
 
@@ -251,7 +254,7 @@ class ARQSessionISS(arq_session.ARQSession):
 
     def send_stop(self):
         stop_frame = self.frame_factory.build_arq_stop(self.id)
-        self.launch_twr(stop_frame, self.TIMEOUT_STOP_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
+        self.launch_twr(stop_frame, self.TIMEOUT_STOP_ACK, self.RETRIES_STOP, mode=FREEDV_MODE.signalling)
 
     def transmission_aborted(self, irs_frame):
         self.log("session aborted")
