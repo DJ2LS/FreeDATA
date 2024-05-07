@@ -95,7 +95,7 @@ class ARQSessionISS(arq_session.ARQSession):
             retries = retries - 1
 
             # TODO TEMPORARY TEST FOR SENDING IN LOWER SPEED LEVEL IF WE HAVE TWO FAILED TRANSMISSIONS!!!
-            if retries == 8 and isARQBurst and self.speed_level > 0 and self.state not in [ISS_State.ABORTED, ISS_State.ABORTING]:
+            if retries == self.RETRIES_DATA - 2  and isARQBurst and self.speed_level > 0 and self.state not in [ISS_State.ABORTED, ISS_State.ABORTING]:
                 self.log("SENDING IN FALLBACK SPEED LEVEL", isWarning=True)
                 self.speed_level = 0
                 print(f" CONFIRMED BYTES: {self.confirmed_bytes}")
