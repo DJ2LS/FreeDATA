@@ -6,6 +6,8 @@ import settings_rigcontrol from "./settings_rigcontrol.vue";
 import settings_modem from "./settings_modem.vue";
 import settings_web from "./settings_web.vue";
 import settings_exp from "./settings_exp.vue";
+import settings_earl from "./settings_url.vue";
+
 </script>
 <template>
   <div
@@ -118,6 +120,20 @@ import settings_exp from "./settings_exp.vue";
                 Exp
               </button>
             </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
+                id="experiments-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#url"
+                type="button"
+                role="tab"
+                aria-controls="settings"
+                aria-selected="false"
+              >
+                Links
+              </button>
+            </li>
           </ul>
         </div>
         <div
@@ -195,6 +211,15 @@ import settings_exp from "./settings_exp.vue";
               tabindex="0"
             >
               <settings_exp />
+            </div>
+            <div
+              class="tab-pane"
+              id="url"
+              role="tabpanel"
+              aria-labelledby="url-tab"
+              tabindex="0"
+            >
+              <settings_earl />
             </div>
           </div>
         </div>
