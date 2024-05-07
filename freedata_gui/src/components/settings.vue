@@ -7,7 +7,6 @@ import settings_modem from "./settings_modem.vue";
 import settings_web from "./settings_web.vue";
 import settings_exp from "./settings_exp.vue";
 import settings_earl from "./settings_url.vue";
-
 </script>
 <template>
   <div
