@@ -18,7 +18,7 @@ class TestIntegration(unittest.TestCase):
         my_env = os.environ.copy()
         my_env["FREEDATA_CONFIG"] = "freedata_server/config.ini.example"
         cls.process = Popen(shlex.split(cmd), stdin=PIPE, env=my_env)
-        time.sleep(1)
+        time.sleep(5)
 
     @classmethod
     def tearDownClass(cls):
