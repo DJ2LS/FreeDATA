@@ -14,6 +14,6 @@ export async function processRadioStatus() {
   let result = await getRadioStatus();
   stateStore.mode = result.radio_mode;
   stateStore.frequency = result.radio_frequency;
-  stateStore.rf_level = result.radio_rf_level;
+  stateStore.rf_level = Math.round(result.radio_rf_level / 5) * 5; // round to 5er steps
   stateStore.tuner = result.radio_tuner;
 }

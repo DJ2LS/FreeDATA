@@ -89,6 +89,7 @@ export function stateDispatcher(data) {
     stateStore.mode = data["radio_mode"];
     stateStore.swr = data["radio_swr"];
     stateStore.tuner = data["radio_tuner"];
+    stateStore.rf_level = data["radio_rf_level"]
   }
 }
 
