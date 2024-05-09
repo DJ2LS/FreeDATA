@@ -15,9 +15,10 @@ const station = useStationStore(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { getStationInfoByCallsign, setStationInfoByCallsign } from "../js/stationHandler.js";
-
-
+import {
+  getStationInfoByCallsign,
+  setStationInfoByCallsign,
+} from "../js/stationHandler.js";
 
 import { settingsStore } from "../store/settingsStore.js";
 
@@ -124,8 +125,6 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
   ],
 }));
 
-
-
 /*
 const stationInfoData = ref({
   name: "",
@@ -164,23 +163,18 @@ onMounted(() => {
   modalElement.addEventListener("show.bs.modal", fetchMyStationInfo);
 });
 
-
-function fetchMyStationInfo(){
-
+function fetchMyStationInfo() {
   let mycall = settingsStore.remote.STATION.mycall;
   let myssid = settingsStore.remote.STATION.myssid;
   let fullCall = `${mycall}-${myssid}`;
-  getStationInfoByCallsign(fullCall)
+  getStationInfoByCallsign(fullCall);
 }
-
-
-
 </script>
 
 <template>
   <main_startup_check />
 
-<!-- Station Info Modal -->
+  <!-- Station Info Modal -->
   <div
     class="modal fade"
     ref="modalEle"
@@ -191,7 +185,6 @@ function fetchMyStationInfo(){
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-
           <h4 class="p-0 m-0">{{ station.stationInfo.callsign }}</h4>
           <button
             type="button"
@@ -201,19 +194,18 @@ function fetchMyStationInfo(){
           ></button>
         </div>
         <div class="modal-body">
-
-<div class="alert alert-primary" role="alert">
+          <div class="alert alert-primary" role="alert">
             <strong> Please note:</strong> This is a preview to show you the
             direction, FreeDATA is going somewhen. For now you can save only
             your personal data, so we can optimize and improve the database. In
             future this data can be requested by a remote station.
           </div>
 
- <ul>
-        <li v-for="(value, key) in station.stationInfo.info" :key="key">
-          <strong>{{ key }}:</strong> {{ value }}
-        </li>
-      </ul>
+          <ul>
+            <li v-for="(value, key) in station.stationInfo.info" :key="key">
+              <strong>{{ key }}:</strong> {{ value }}
+            </li>
+          </ul>
         </div>
 
         <div class="modal-footer">
@@ -454,7 +446,7 @@ function fetchMyStationInfo(){
             2. Enter a first message
             <br />
             3. Click "START NEW CHAT"
-             <br />
+            <br />
             4. Check the chat tab on left side for messages
           </div>
 
@@ -1550,7 +1542,9 @@ function fetchMyStationInfo(){
 
           <!-- Social Media Inputs -->
           <div class="mb-3">
-            <div v-for="(url, platform) in station.stationInfo.info.socialMedia">
+            <div
+              v-for="(url, platform) in station.stationInfo.info.socialMedia"
+            >
               <div class="input-group mb-1" :key="platform">
                 <span class="input-group-text"
                   ><i :class="`bi bi-${platform}`"></i

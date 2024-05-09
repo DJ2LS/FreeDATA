@@ -8,8 +8,6 @@ import chat_new_message from "./chat_new_message.vue";
 
 import { getStationInfoByCallsign } from "./../js/stationHandler";
 
-
-
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
@@ -119,12 +117,9 @@ watch(
     });
   },
 );
-
 </script>
 
 <template>
-
-
   <div class="container-fluid d-flex p-0">
     <!-- Chat Conversations -->
     <div class="bg-light p-0" style="width: 250px">
