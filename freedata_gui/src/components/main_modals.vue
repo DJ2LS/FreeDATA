@@ -10,13 +10,19 @@ setActivePinia(pinia);
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
 
+import { useStationStore } from "../store/stationStore.js";
+const station = useStationStore(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
+
+import { getStationInfoByCallsign, setStationInfoByCallsign } from "../js/stationHandler.js";
+
+
 
 import { settingsStore } from "../store/settingsStore.js";
 
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
-import { sendModemTestFrame, setStationInfo, getStationInfo } from "../js/api";
+import { sendModemTestFrame } from "../js/api";
 import main_startup_check from "./main_startup_check.vue";
 import { newMessage, deleteCallsignFromDB } from "../js/messagesHandler.ts";
 
@@ -118,6 +124,9 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
   ],
 }));
 
+
+
+/*
 const stationInfoData = ref({
   name: "",
   city: "",
@@ -137,52 +146,88 @@ const stationInfoData = ref({
   },
   comments: "",
 });
+*/
 
 // Function to handle updates and save changes
 function updateStationInfo() {
-  console.log("Updating station info:", stationInfoData.value);
   let mycall = settingsStore.remote.STATION.mycall;
   let myssid = settingsStore.remote.STATION.myssid;
   let fullCall = `${mycall}-${myssid}`;
-  setStationInfo(fullCall, stationInfoData.value);
+  console.log("Updating station info:", fullCall);
+
+  setStationInfoByCallsign(fullCall, station.stationInfo.value);
 }
 
 // Fixme: this is a dirty hack. Can we make this more VueJS like?
 onMounted(() => {
   const modalElement = document.getElementById("stationInfoModal");
-  modalElement.addEventListener("show.bs.modal", fetchStationInfo);
+  modalElement.addEventListener("show.bs.modal", fetchMyStationInfo);
 });
 
-async function fetchStationInfo() {
+
+function fetchMyStationInfo(){
+
   let mycall = settingsStore.remote.STATION.mycall;
   let myssid = settingsStore.remote.STATION.myssid;
   let fullCall = `${mycall}-${myssid}`;
-  let result = await getStationInfo(fullCall);
-  let info = result.info;
-  stationInfoData.value = {
-    name: info.name || "",
-    city: info.city || "",
-    age: info.age || "",
-    radio: info.radio || "",
-    antenna: info.antenna || "",
-    email: info.email || "",
-    website: info.website || "",
-    socialMedia: {
-      facebook: info.socialMedia.facebook || "",
-      "twitter-x": info.socialMedia["twitter-x"] || "",
-      mastodon: info.socialMedia.mastodon || "",
-      instagram: info.socialMedia.instagram || "",
-      linkedin: info.socialMedia.linkedin || "",
-      youtube: info.socialMedia.youtube || "",
-      tiktok: info.socialMedia.tiktok || "",
-    },
-    comments: info.comments || "",
-  };
+  getStationInfoByCallsign(fullCall)
 }
+
+
+
 </script>
 
 <template>
   <main_startup_check />
+
+<!-- Station Info Modal -->
+  <div
+    class="modal fade"
+    ref="modalEle"
+    id="dxStationInfoModal"
+    tabindex="-1"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+
+          <h4 class="p-0 m-0">{{ station.stationInfo.callsign }}</h4>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+
+<div class="alert alert-primary" role="alert">
+            <strong> Please note:</strong> This is a preview to show you the
+            direction, FreeDATA is going somewhen. For now you can save only
+            your personal data, so we can optimize and improve the database. In
+            future this data can be requested by a remote station.
+          </div>
+
+ <ul>
+        <li v-for="(value, key) in station.stationInfo.info" :key="key">
+          <strong>{{ key }}:</strong> {{ value }}
+        </li>
+      </ul>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- updater release notes-->
   <div
@@ -408,7 +453,9 @@ async function fetchStationInfo() {
             <br />
             2. Enter a first message
             <br />
-            3. Pressing "START NEW CHAT"
+            3. Click "START NEW CHAT"
+             <br />
+            4. Check the chat tab on left side for messages
           </div>
 
           <div class="form-floating mb-3">
@@ -1421,7 +1468,7 @@ async function fetchStationInfo() {
               type="text"
               class="form-control"
               placeholder="Name"
-              v-model="stationInfoData.name"
+              v-model="station.stationInfo.info.name"
             />
           </div>
 
@@ -1434,7 +1481,7 @@ async function fetchStationInfo() {
               type="text"
               class="form-control"
               placeholder="City"
-              v-model="stationInfoData.city"
+              v-model="station.stationInfo.info.city"
             />
           </div>
 
@@ -1447,7 +1494,7 @@ async function fetchStationInfo() {
               type="text"
               class="form-control"
               placeholder="Age"
-              v-model="stationInfoData.age"
+              v-model="station.stationInfo.info.age"
             />
           </div>
 
@@ -1460,7 +1507,7 @@ async function fetchStationInfo() {
               type="text"
               class="form-control"
               placeholder="Radio"
-              v-model="stationInfoData.radio"
+              v-model="station.stationInfo.info.radio"
             />
           </div>
 
@@ -1473,7 +1520,7 @@ async function fetchStationInfo() {
               type="text"
               class="form-control"
               placeholder="Antenna"
-              v-model="stationInfoData.antenna"
+              v-model="station.stationInfo.info.antenna"
             />
           </div>
 
@@ -1484,7 +1531,7 @@ async function fetchStationInfo() {
               type="url"
               class="form-control"
               placeholder="Website"
-              v-model="stationInfoData.website"
+              v-model="station.stationInfo.info.website"
             />
           </div>
 
@@ -1497,13 +1544,13 @@ async function fetchStationInfo() {
               type="email"
               class="form-control"
               placeholder="Email"
-              v-model="stationInfoData.email"
+              v-model="station.stationInfo.info.email"
             />
           </div>
 
           <!-- Social Media Inputs -->
           <div class="mb-3">
-            <div v-for="(url, platform) in stationInfoData.socialMedia">
+            <div v-for="(url, platform) in station.stationInfo.info.socialMedia">
               <div class="input-group mb-1" :key="platform">
                 <span class="input-group-text"
                   ><i :class="`bi bi-${platform}`"></i
@@ -1512,7 +1559,7 @@ async function fetchStationInfo() {
                   type="url"
                   class="form-control"
                   :placeholder="`${platform.charAt(0).toUpperCase() + platform.slice(1)} URL`"
-                  v-model="stationInfoData.socialMedia[platform]"
+                  v-model="station.stationInfo.info.socialMedia[platform]"
                 />
               </div>
             </div>
@@ -1526,7 +1573,7 @@ async function fetchStationInfo() {
             <textarea
               class="form-control"
               rows="3"
-              v-model="stationInfoData.comments"
+              v-model="station.stationInfo.info.comments"
             ></textarea>
           </div>
         </div>

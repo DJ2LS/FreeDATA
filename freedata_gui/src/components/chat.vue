@@ -6,7 +6,9 @@ import chat_conversations from "./chat_conversations.vue";
 import chat_messages from "./chat_messages.vue";
 import chat_new_message from "./chat_new_message.vue";
 
-import { getStationInfo } from "./../js/api";
+import { getStationInfoByCallsign } from "./../js/stationHandler";
+
+
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -118,67 +120,10 @@ watch(
   },
 );
 
-const stationInfo = ref({
-  callsign: "N/A", // Default value for callsign
-  location: {
-    gridsquare: "N/A", // Default value for gridsquare
-  },
-});
-
-async function getStationInfoByCallsign() {
-  try {
-    const data = await getStationInfo(chat.selectedCallsign);
-    stationInfo.value = {
-      callsign: data.callsign || "N/A", // Default if not present
-      location: {
-        gridsquare: data.location?.gridsquare || "N/A", // Default if not present
-      },
-    };
-  } catch (error) {
-    console.error("Error fetching station info:", error);
-  }
-}
 </script>
 
 <template>
-  <!-- Station Info Modal -->
-  <div
-    class="modal fade"
-    ref="modalEle"
-    id="dxStationInfoModal"
-    tabindex="-1"
-    aria-hidden="true"
-  >
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h4 class="p-0 m-0">{{ stationInfo.callsign }}</h4>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="modal-body">
-          <p>
-            <strong>Location:</strong> {{ stationInfo.location.gridsquare }}
-          </p>
-          <p><strong>Details:</strong> {{ stationInfo.details }}</p>
-        </div>
 
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <div class="container-fluid d-flex p-0">
     <!-- Chat Conversations -->
@@ -202,7 +147,8 @@ async function getStationInfoByCallsign() {
             class="btn btn-sm btn-outline-secondary ms-2 border-0"
             data-bs-target="#dxStationInfoModal"
             data-bs-toggle="modal"
-            @click="getStationInfoByCallsign()"
+            @click="getStationInfoByCallsign(chat.selectedCallsign)"
+            disabled
           >
             <h4 class="p-0 m-0">{{ chat.selectedCallsign }}</h4>
           </button>

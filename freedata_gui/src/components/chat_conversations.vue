@@ -35,6 +35,13 @@ function newChat() {
   if (callsign === "") return;
   this.newChatCall.value = "";
 }
+function startNewChat(){
+      chat.newChatCallsign = "";
+      chat.newChatMessage = "Hi there! Nice to meet you!"
+
+}
+
+
 </script>
 
 <template>
@@ -43,6 +50,7 @@ function newChat() {
       class="btn btn-outline-primary w-100"
       data-bs-target="#newChatModal"
       data-bs-toggle="modal"
+      @click="startNewChat()"
     >
       <i class="bi bi-pencil-square"> Start a new chat</i>
     </button>

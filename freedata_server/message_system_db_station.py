@@ -33,7 +33,7 @@ class DatabaseManagerStations(DatabaseManager):
         finally:
             session.remove()
 
-    def update_station(self, callsign, new_info):
+    def update_station_info(self, callsign, new_info):
         """
         Updates the information of a station identified by its callsign.
 
