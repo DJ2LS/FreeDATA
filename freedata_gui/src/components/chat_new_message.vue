@@ -136,9 +136,6 @@ function resetFile(event){
 
 
 
-
-
-
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -263,7 +260,7 @@ const speedChartData = computed(() => ({
 
                                         <!-- trigger file selection modal -->
 
-                           <button type="button" class="btn btn-outline-secondary border-0 rounded-pill me-1" @click="triggerFileInput">
+                           <button type="button" class="btn btn-outline-secondary border-0 rounded-pill me-1" @click="triggerFileInput(), $event.target.blur()">
                               <i class="bi bi-paperclip" style="font-size: 1.2rem"></i>
 
                             </button>
@@ -274,7 +271,7 @@ const speedChartData = computed(() => ({
                             ref="chatModuleMessage"
                             placeholder="Message - Send with [Enter]"
                             v-model="chat.inputText"
-                            @keyup.enter.exact="transmitNewMessage()"
+                            @keyup.enter="transmitNewMessage()"
                           ></textarea>
 
 
