@@ -536,17 +536,17 @@ def create_tx_uw(nuwbits, uw_sequence):
 # ---------------- OFDM 500 Hz Bandwidth ---------------#
 data_ofdm_500_config = create_default_ofdm_config()
 data_ofdm_500_config.config.contents.ns = 5
-data_ofdm_500_config.config.contents.np = 38
+data_ofdm_500_config.config.contents.np = 32
 data_ofdm_500_config.config.contents.tcp = 0.006
 data_ofdm_500_config.config.contents.ts = 0.016
 data_ofdm_500_config.config.contents.rs = 1.0 / data_ofdm_500_config.config.contents.ts
-data_ofdm_500_config.config.contents.nc = 27
-data_ofdm_500_config.config.contents.nuwbits = 16
+data_ofdm_500_config.config.contents.nc = 8
+data_ofdm_500_config.config.contents.nuwbits = 40
 data_ofdm_500_config.config.contents.timing_mx_thresh = 0.10
-data_ofdm_500_config.config.contents.bad_uw_errors = 6
+data_ofdm_500_config.config.contents.bad_uw_errors = 10
 data_ofdm_500_config.config.contents.codename = "H_4096_8192_3d".encode('utf-8')
 data_ofdm_500_config.config.contents.amp_scale = 145E3
-data_ofdm_500_config.config.contents.tx_uw = create_tx_uw(16, [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0])
+data_ofdm_500_config.config.contents.tx_uw = create_tx_uw(40, [0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1])
 
 
 # ---------------- OFDM 2438 Hz Bandwidth 16200,9720 ---------------#
