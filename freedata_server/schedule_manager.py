@@ -19,8 +19,8 @@ class ScheduleManager:
 
         self.scheduler = sched.scheduler(time.time, time.sleep)
         self.events = {
-            'check_for_queued_messages': {'function': self.check_for_queued_messages, 'interval': 10},
-            'explorer_publishing': {'function': self.push_to_explorer, 'interval': 60},
+            'check_for_queued_messages': {'function': self.check_for_queued_messages, 'interval': 5},
+            'explorer_publishing': {'function': self.push_to_explorer, 'interval': 6},
             'transmitting_beacon': {'function': self.transmit_beacon, 'interval': 600},
             'beacon_cleanup': {'function': self.delete_beacons, 'interval': 600},
         }

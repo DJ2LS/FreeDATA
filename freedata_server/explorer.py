@@ -39,7 +39,7 @@ class explorer():
         away_from_key = str(self.states.is_away_from_key)
 
         # stop pushing if default callsign
-        if callsign in ['XX1XXX-6']:
+        if callsign in ['AA1AAA-1', 'XX1XXX-6']:
             return
 
         # disabled this one
@@ -65,6 +65,5 @@ class explorer():
         station_data = json.dumps(station_data)
         try:
             response = requests.post(self.explorer_url, json=station_data, headers=headers)
-
         except Exception as e:
             log.warning("[EXPLORER] connection lost")
