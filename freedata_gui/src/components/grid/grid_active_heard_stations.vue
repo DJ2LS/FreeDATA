@@ -18,9 +18,6 @@ import { getStationInfoByCallsign } from "./../../js/stationHandler";
 
 import { sendModemPing } from "../../js/api.js";
 
-
-
-
 function getDateTime(timestampRaw) {
   var datetime = new Date(timestampRaw * 1000).toLocaleString(
     navigator.language,
@@ -80,9 +77,6 @@ function startNewChat(callsign) {
 function transmitPing(callsign) {
   sendModemPing(callsign.toUpperCase());
 }
-
-
-
 </script>
 <template>
   <div class="card h-100">
@@ -136,8 +130,8 @@ function transmitPing(callsign) {
                   data-bs-target="#newChatModal"
                   data-bs-toggle="modal"
                   type="button"
-                    data-bs-trigger="hover"
-                    data-bs-title="Start new chat"
+                  data-bs-trigger="hover"
+                  data-bs-title="Start new chat"
                   @click="startNewChat(item.origin)"
                 >
                   <i class="bi bi-pencil-square"></i>
@@ -147,17 +141,13 @@ function transmitPing(callsign) {
                   class="btn btn-sm border-0 btn-outline-primary"
                   data-bs-placement="top"
                   type="button"
-                    data-bs-toggle="tooltip"
-                    data-bs-trigger="hover"
-                    data-bs-title="Transmit ping"
+                  data-bs-toggle="tooltip"
+                  data-bs-trigger="hover"
+                  data-bs-title="Transmit ping"
                   @click="transmitPing(item.origin)"
                 >
                   <i class="bi bi-arrow-left-right"></i>
                 </button>
-
-
-
-
               </td>
               <td>
                 {{ item.gridsquare }}
