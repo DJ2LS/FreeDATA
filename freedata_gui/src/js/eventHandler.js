@@ -170,6 +170,10 @@ export function eventDispatcher(data) {
 
     case "arq":
       if (data["arq-transfer-outbound"]) {
+
+        stateStore.arq_is_receiving = false;
+        console.log(data)
+
         switch (data["arq-transfer-outbound"].state) {
           case "NEW":
             message = `Type: ${data.type}, Session ID: ${data["arq-transfer-outbound"].session_id}, DXCall: ${data["arq-transfer-outbound"].dxcall}, Total Bytes: ${data["arq-transfer-outbound"].total_bytes}, State: ${data["arq-transfer-outbound"].state}`;
@@ -205,6 +209,7 @@ export function eventDispatcher(data) {
               data["arq-transfer-outbound"].statistics.snr_histogram,
             );
             //console.log(toRaw(stateStore.arq_speed_list_timestamp.value));
+            stateStore.speed_level =  data["arq-transfer-outbound"].speed_level;
             return;
 
           case "ABORTING":
@@ -240,6 +245,7 @@ export function eventDispatcher(data) {
       }
 
       if (data["arq-transfer-inbound"]) {
+        stateStore.arq_is_receiving = true;
         switch (data["arq-transfer-inbound"].state) {
           case "NEW":
             message = `Type: ${data.type}, Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, State: ${data["arq-transfer-inbound"].state}`;
@@ -296,9 +302,7 @@ export function eventDispatcher(data) {
             stateStore.arq_speed_list_snr.value = toRaw(
               data["arq-transfer-inbound"].statistics.snr_histogram,
             );
-            console.log(stateStore.arq_speed_list_timestamp.value);
-            console.log(stateStore.arq_speed_list_bpm.value);
-            console.log(stateStore.arq_speed_list_snr.value);
+            stateStore.speed_level =  data["arq-transfer-inbound"].speed_level;
             return;
 
           case "ENDED":

@@ -58,6 +58,8 @@ export const useStateStore = defineStore("stateStore", () => {
   var arq_speed_list_bpm = ref([]);
   var arq_speed_list_snr = ref([]);
 
+  var arq_is_receiving = ref(false)
+
   /* TODO Those 3 can be removed I guess , DJ2LS*/
   var arq_seconds_until_finish = ref();
   var arq_seconds_until_timeout = ref();
@@ -115,6 +117,7 @@ export const useStateStore = defineStore("stateStore", () => {
     arq_seconds_until_finish,
     arq_seconds_until_timeout,
     arq_seconds_until_timeout_percent,
+    arq_is_receiving,
     modem_connection,
     is_modem_running,
     arq_session_state,

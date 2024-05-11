@@ -44,7 +44,7 @@ class EventManager:
         }
         self.broadcast(event)
 
-    def send_arq_session_progress(self, outbound: bool, session_id, dxcall, received_bytes, total_bytes, state, statistics=None):
+    def send_arq_session_progress(self, outbound: bool, session_id, dxcall, received_bytes, total_bytes, state, speed_level, statistics=None):
         if statistics is None:
             statistics = {}
 
@@ -57,6 +57,7 @@ class EventManager:
                 'received_bytes': received_bytes,
                 'total_bytes': total_bytes,
                 'state': state,
+                'speed_level': speed_level,
                 'statistics': statistics,
             }
         }
