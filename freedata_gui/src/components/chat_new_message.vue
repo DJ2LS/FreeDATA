@@ -248,6 +248,7 @@ const speedChartData = computed(() => ({
                             <button type="button" class="btn btn-outline-secondary border-0 rounded-pill me-1"
                             data-bs-toggle="modal" data-bs-target="#emojiPickerModal"
                             data-bs-backdrop="false"
+                            @click="$refs.chatModuleMessage.focus()"
                             >
                                 <i
                                   id="emojipickerbutton"
@@ -260,7 +261,7 @@ const speedChartData = computed(() => ({
 
                                         <!-- trigger file selection modal -->
 
-                           <button type="button" class="btn btn-outline-secondary border-0 rounded-pill me-1" @click="triggerFileInput(), $event.target.blur()">
+                           <button type="button" class="btn btn-outline-secondary border-0 rounded-pill me-1" @click="triggerFileInput(), $event.target.blur(), $refs.chatModuleMessage.focus()">
                               <i class="bi bi-paperclip" style="font-size: 1.2rem"></i>
 
                             </button>
