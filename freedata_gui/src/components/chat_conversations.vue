@@ -35,13 +35,10 @@ function newChat() {
   if (callsign === "") return;
   this.newChatCall.value = "";
 }
-function startNewChat(){
-      chat.newChatCallsign = "";
-      chat.newChatMessage = "Hi there! Nice to meet you!"
-
+function startNewChat() {
+  chat.newChatCallsign = "";
+  chat.newChatMessage = "Hi there! Nice to meet you!";
 }
-
-
 </script>
 
 <template>

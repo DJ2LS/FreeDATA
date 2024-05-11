@@ -16,7 +16,6 @@ const chat = useChatStore(pinia);
 
 import { getStationInfoByCallsign } from "./../../js/stationHandler";
 
-
 function getDateTime(timestampRaw) {
   var datetime = new Date(timestampRaw * 1000).toLocaleString(
     navigator.language,
@@ -68,10 +67,9 @@ function getActivityInfo(activityType) {
   }
 }
 
-function startNewChat(callsign){
-      chat.newChatCallsign = callsign;
-      chat.newChatMessage = "Hi there! Nice to meet you!"
-
+function startNewChat(callsign) {
+  chat.newChatCallsign = callsign;
+  chat.newChatMessage = "Hi there! Nice to meet you!";
 }
 </script>
 <template>
@@ -111,26 +109,24 @@ function startNewChat(callsign){
               </td>
               <td>{{ item.frequency / 1000 }} kHz</td>
               <td>
+                <button
+                  class="btn btn-sm btn-outline-secondary ms-2 border-0"
+                  data-bs-target="#dxStationInfoModal"
+                  data-bs-toggle="modal"
+                  @click="getStationInfoByCallsign(item.origin)"
+                  disabled
+                >
+                  <h6 class="p-0 m-0">{{ item.origin }}</h6>
+                </button>
 
                 <button
-            class="btn btn-sm btn-outline-secondary ms-2 border-0"
-            data-bs-target="#dxStationInfoModal"
-            data-bs-toggle="modal"
-            @click="getStationInfoByCallsign(item.origin)"
-            disabled
-          >
-            <h6 class="p-0 m-0">{{ item.origin }}</h6>
-          </button>
-
-          <button
-      class="btn btn-sm border-0 btn-outline-primary"
-      data-bs-target="#newChatModal"
-      data-bs-toggle="modal"
-      @click="startNewChat(item.origin)"
-
-    >
-      <i class="bi bi-pencil-square"></i>
-    </button>
+                  class="btn btn-sm border-0 btn-outline-primary"
+                  data-bs-target="#newChatModal"
+                  data-bs-toggle="modal"
+                  @click="startNewChat(item.origin)"
+                >
+                  <i class="bi bi-pencil-square"></i>
+                </button>
               </td>
               <td>
                 {{ item.gridsquare }}
