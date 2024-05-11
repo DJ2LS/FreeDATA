@@ -79,7 +79,7 @@ const state = useStateStore(pinia);
             data-bs-toggle="tooltip"
             data-bs-trigger="hover"
             data-bs-html="true"
-            data-bs-titel="speed level"
+            data-bs-title="speed level"
           >
             <i
               class="bi"
