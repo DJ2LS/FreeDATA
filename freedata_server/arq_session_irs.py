@@ -173,7 +173,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.received_bytes = len(self.received_data)
         self.log(f"Received {self.received_bytes}/{self.total_length} bytes")
         self.event_manager.send_arq_session_progress(
-            False, self.id, self.dxcall, self.received_bytes, self.total_length, self.state.name, self.calculate_session_statistics(self.received_bytes, self.total_length))
+            False, self.id, self.dxcall, self.received_bytes, self.total_length, self.state.name, self.speed_level, self.calculate_session_statistics(self.received_bytes, self.total_length))
 
         return True
 
@@ -192,7 +192,7 @@ class ARQSessionIRS(arq_session.ARQSession):
 
             self.set_state(IRS_State.BURST_REPLY_SENT)
             self.event_manager.send_arq_session_progress(False, self.id, self.dxcall, self.received_bytes,
-                                                         self.total_length, self.state.name,
+                                                         self.total_length, self.state.name, self.speed_level,
                                                          statistics=self.calculate_session_statistics(
                                                              self.received_bytes, self.total_length))
 

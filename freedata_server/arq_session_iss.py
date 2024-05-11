@@ -173,7 +173,7 @@ class ARQSessionISS(arq_session.ARQSession):
             self.confirmed_bytes = self.expected_byte_offset
 
         self.log(f"IRS confirmed {self.confirmed_bytes}/{self.total_length} bytes")
-        self.event_manager.send_arq_session_progress(True, self.id, self.dxcall, self.confirmed_bytes, self.total_length, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
+        self.event_manager.send_arq_session_progress(True, self.id, self.dxcall, self.confirmed_bytes, self.total_length, self.state.name, self.speed_level, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
 
         # check if we received an abort flag
         if irs_frame["flag"]["ABORT"]:
