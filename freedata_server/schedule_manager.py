@@ -65,7 +65,7 @@ class ScheduleManager:
 
     def transmit_beacon(self):
         try:
-            if not self.state_manager.getARQ() and self.state_manager.is_beacon_running:
+            if not self.state_manager.getARQ() and self.state_manager.is_beacon_running and self.state_manager.is_modem_running:
                     cmd = command_beacon.BeaconCommand(self.config, self.state_manager, self.event_manager)
                     cmd.run(self.event_manager, self.modem)
         except Exception as e:
@@ -79,14 +79,14 @@ class ScheduleManager:
 
     def push_to_explorer(self):
         self.config = self.config_manager.read()
-        if self.config['STATION']['enable_explorer']:
+        if self.config['STATION']['enable_explorer'] and self.state_manager.is_modem_running:
             try:
                 explorer.explorer(self.modem_version, self.config_manager, self.state_manager).push()
             except Exception as e:
                 print(e)
 
     def check_for_queued_messages(self):
-        if not self.state_manager.getARQ():
+        if not self.state_manager.getARQ() and not self.state_manager.is_receiving_codec2_signal() and self.state_manager.is_modem_running:
             try:
                 if first_queued_message := DatabaseManagerMessages(
                     self.event_manager

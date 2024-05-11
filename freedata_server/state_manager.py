@@ -100,6 +100,7 @@ class StateManager:
             "is_away_from_key": self.is_away_from_key,
             "radio_status": self.radio_status,
             "channel_busy_slot": self.channel_busy_slot,
+            "is_codec2_traffic": self.is_receiving_codec2_signal(),
             "audio_dbfs": self.audio_dbfs,
             "activities": self.activities_list,
             "is_modem_busy" : self.getARQ()
@@ -232,6 +233,9 @@ class StateManager:
         else:
             self.channel_busy_condition_codec2 = threading.Event()
         self.calculate_channel_busy_state()
+
+    def is_receiving_codec2_signal(self):
+        return not self.channel_busy_condition_codec2.is_set()
 
     def get_radio_status(self):
         return {
