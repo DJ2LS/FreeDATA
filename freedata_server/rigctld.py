@@ -258,8 +258,8 @@ class radio:
 
     def get_frequency(self):
         try:
-            frequency_response = int(self.send_command('f'))
-            self.parameters['frequency'] = frequency_response if frequency_response is not None else 'err'
+            frequency_response = self.send_command('f')
+            self.parameters['frequency'] = int(frequency_response) if frequency_response is not None else 'err'
         except Exception as e:
             self.log.warning(f"Error getting frequency: {e}")
             self.parameters['frequency'] = 'err'
