@@ -131,6 +131,20 @@ const state = useStateStore(pinia);
           </button>
 
           <button
+            class="btn btn-sm btn-secondary disabled"
+            type="button"
+            data-bs-placement="top"
+            data-bs-toggle="tooltip"
+            data-bs-trigger="hover"
+            data-bs-html="true"
+            data-bs-title="the dxcallsign of the connected station"
+          >
+
+<span v-if="state.arq_is_receiving">from</span>
+<span v-else>to</span>
+          </button>
+
+          <button
             class="btn btn-sm btn-secondary disabled me-1"
             type="button"
             data-bs-placement="top"
