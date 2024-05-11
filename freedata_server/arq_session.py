@@ -19,10 +19,10 @@ class ARQSession:
             'bandwidth': 250,
         },
         1: {
-            'mode': codec2.FREEDV_MODE.datac3,
+            'mode': codec2.FREEDV_MODE.data_ofdm_500,
             'min_snr': 0,
             'duration_per_frame': 3.19,
-            'bandwidth': 563,
+            'bandwidth': 500,
         },
         2: {
             'mode': codec2.FREEDV_MODE.datac1,
