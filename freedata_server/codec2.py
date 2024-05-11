@@ -545,9 +545,13 @@ data_ofdm_500_config.config.contents.nuwbits = 40
 data_ofdm_500_config.config.contents.timing_mx_thresh = 0.10
 data_ofdm_500_config.config.contents.bad_uw_errors = 10
 data_ofdm_500_config.config.contents.codename = "H_4096_8192_3d".encode('utf-8')
-data_ofdm_500_config.config.contents.amp_scale = 145E3
+data_ofdm_500_config.config.contents.amp_scale = 305E3
 data_ofdm_500_config.config.contents.tx_uw = create_tx_uw(40, [0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1])
-
+data_ofdm_500_config.config.contents.clip_gain1 = 2.4
+data_ofdm_500_config.config.contents.clip_gain2 = 0.9
+data_ofdm_500_config.config.contents.tx_bpf_en = True
+data_ofdm_500_config.config.contents.tx_bpf_proto = codec2_filter_coeff.generate_filter_coefficients(8000, 600, 100)
+data_ofdm_500_config.config.contents.tx_bpf_proto_n = 100
 
 # ---------------- OFDM 2438 Hz Bandwidth 16200,9720 ---------------#
 data_ofdm_2438_config = create_default_ofdm_config()
