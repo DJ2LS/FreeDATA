@@ -8,7 +8,7 @@ export const useStateStore = defineStore("stateStore", () => {
   var frequency = ref(0);
   var new_frequency = ref(14093000);
   var mode = ref("-");
-  var rf_level = ref("10");
+  var rf_level = ref(10);
   var bandwidth = ref("-");
 
   var swr = ref(0);
