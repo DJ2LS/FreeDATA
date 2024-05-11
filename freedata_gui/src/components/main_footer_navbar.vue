@@ -139,9 +139,8 @@ const state = useStateStore(pinia);
             data-bs-html="true"
             data-bs-title="the dxcallsign of the connected station"
           >
-
-<span v-if="state.arq_is_receiving">from</span>
-<span v-else>to</span>
+            <span v-if="state.arq_is_receiving">from</span>
+            <span v-else>to</span>
           </button>
 
           <button

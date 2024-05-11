@@ -170,9 +170,8 @@ export function eventDispatcher(data) {
 
     case "arq":
       if (data["arq-transfer-outbound"]) {
-
         stateStore.arq_is_receiving = false;
-        console.log(data)
+        console.log(data);
 
         switch (data["arq-transfer-outbound"].state) {
           case "NEW":
@@ -209,7 +208,7 @@ export function eventDispatcher(data) {
               data["arq-transfer-outbound"].statistics.snr_histogram,
             );
             //console.log(toRaw(stateStore.arq_speed_list_timestamp.value));
-            stateStore.speed_level =  data["arq-transfer-outbound"].speed_level;
+            stateStore.speed_level = data["arq-transfer-outbound"].speed_level;
             return;
 
           case "ABORTING":
@@ -302,7 +301,7 @@ export function eventDispatcher(data) {
             stateStore.arq_speed_list_snr.value = toRaw(
               data["arq-transfer-inbound"].statistics.snr_histogram,
             );
-            stateStore.speed_level =  data["arq-transfer-inbound"].speed_level;
+            stateStore.speed_level = data["arq-transfer-inbound"].speed_level;
             return;
 
           case "ENDED":
