@@ -173,7 +173,7 @@ const audioStore = useAudioStore();
       v-model.number="settings.remote.MODEM.maximum_bandwidth"
     >
       <option value="250">250 Hz</option>
-      <option value="563">563 Hz</option>
+      <option value="500">500 Hz</option>
       <option value="1700">1700 Hz</option>
       <option value="2438">2438 Hz</option>
     </select>
