@@ -20,6 +20,9 @@
 #
 #
 # Changelog:
+# 1.5:	12 May 2024
+#	"dr-freedata-001" branch of codec2 merged to main so we don't
+#	need to checkout that branch specifically
 # 1.4:	05 May 2024
 #	Change to "dr-freedata-001" branch of codec2 for develop mode
 #	Added comments in scripts and README.txt for config file location
@@ -296,10 +299,11 @@ else
 	exit 1
 fi
 	
-if [ "$args" == "develop" ];
-then
-	git checkout dr-freedata-001
-fi
+# Not currently needed
+# if [ "$args" == "develop" ];
+# then
+# 	git checkout dr-freedata-001
+# fi
 
 echo "*************************************************************************"
 echo "Setting up the codec2 build"
