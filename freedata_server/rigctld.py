@@ -228,14 +228,8 @@ class radio:
         if self.connected:
             try:
                 result = self.send_command('u TUNER')
-                if result is not None:
-                    if int(result) == 1:
-                        state = True
-                    else:
-                        state = False
-                else:
-                    state = False
-                    self.parameters['tuner'] = state  # Update TUNER state in parameters
+                state = result not in [None, ''] and int(result) == 1
+                self.parameters['tuner'] = state
                 return True
             except Exception as err:
                 self.log.warning(f"[RIGCTLD] Error getting TUNER state: {err}")
@@ -259,7 +253,11 @@ class radio:
     def get_frequency(self):
         try:
             frequency_response = self.send_command('f')
-            self.parameters['frequency'] = int(frequency_response) if frequency_response is not None else 'err'
+            if frequency_response not in [None, '']:
+                self.parameters['frequency'] = int(frequency_response)
+            else:
+                self.parameters['frequency'] = 'err'
+
         except Exception as e:
             self.log.warning(f"Error getting frequency: {e}")
             self.parameters['frequency'] = 'err'
@@ -267,7 +265,7 @@ class radio:
     def get_mode_bandwidth(self):
         try:
             response = self.send_command('m')
-            if response is not None:
+            if response not in [None, '']:
                 response = response.strip()
                 mode, bandwidth = response.split('\n', 1)
                 bandwidth = int(bandwidth)
@@ -288,7 +286,12 @@ class radio:
     def get_alc(self):
         try:
             alc_response = self.send_command('l ALC')
-            self.parameters['alc'] = alc_response if alc_response is not None else 'err'
+            if alc_response not in [None, '']:
+                self.parameters['alc'] = int(alc_response)
+            else:
+                self.parameters['alc'] = 'err'
+            
+            
         except Exception as e:
             self.log.warning(f"Error getting ALC: {e}")
             self.parameters['alc'] = 'err'
@@ -296,7 +299,10 @@ class radio:
     def get_strength(self):
         try:
             strength_response = self.send_command('l STRENGTH')
-            self.parameters['strength'] = int(strength_response) if strength_response is not None else 'err'
+            if strength_response not in [None, '']:
+                self.parameters['strength'] = int(strength_response)
+            else:
+                self.parameters['strength'] = 'err'
         except Exception as e:
             self.log.warning(f"Error getting strength: {e}")
             self.parameters['strength'] = 'err'
@@ -304,7 +310,7 @@ class radio:
     def get_rf(self):
         try:
             rf_response = self.send_command('l RFPOWER')
-            if rf_response is not None:
+            if rf_response not in [None, '']:
                 self.parameters['rf'] = int(float(rf_response) * 100)
             else:
                 self.parameters['rf'] = 'err'
@@ -317,7 +323,7 @@ class radio:
     def get_swr(self):
         try:
             rf_response = self.send_command('l SWR')
-            if rf_response is not None:
+            if rf_response not in [None, '']:
                 self.parameters['swr'] = rf_response
             else:
                 self.parameters['swr'] = 'err'
