@@ -287,7 +287,7 @@ class radio:
         try:
             alc_response = self.send_command('l ALC')
             if alc_response not in [None, '']:
-                self.parameters['alc'] = int(alc_response)
+                self.parameters['alc'] = float(alc_response)
             else:
                 self.parameters['alc'] = 'err'
             
