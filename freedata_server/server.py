@@ -26,6 +26,7 @@ import command_arq_raw
 import command_message_send
 import event_manager
 import atexit
+import threading
 
 from message_system_db_manager import DatabaseManager
 from message_system_db_messages import DatabaseManagerMessages
@@ -345,14 +346,17 @@ def sock_states(sock):
 def stop_server():
     print("------------------------------------------")
     # TODO This is causing problems for some reasons.
-    #if "service_manager" :
-    #    app.service_manager.modem_service.put("stop")
-    #    if app.socket_interface_manager:
-    #        app.socket_interface_manager.stop_servers()
+    if hasattr(app, 'service_manager'):
+        if hasattr(app, 'socket_interface_manager') and app.socket_interface_manager:
+            app.socket_interface_manager.stop_servers()
 
-    #    if app.service_manager.modem:
-    #        app.service_manager.modem.sd_input_stream.stop
-    #time.sleep(1)
+        if hasattr(app.service_manager, 'modem_service') and app.service_manager.modem_service:
+            app.service_manager.modem_service.put("stop")
+
+        if hasattr(app.service_manager, 'modem') and app.service_manager.modem:
+            app.service_manager.modem.sd_input_stream.stop
+
+    threading.Event().wait(2)
 
 def main():
     app.config['SOCK_SERVER_OPTIONS'] = {'ping_interval': 10}
@@ -394,6 +398,7 @@ def main():
         modemport = 5000
 
     app.run(modemaddress, modemport, debug=False)
+
 
 if __name__ == "__main__":
     main()

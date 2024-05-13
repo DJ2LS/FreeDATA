@@ -7,6 +7,8 @@ from message_system_db_messages import DatabaseManagerMessages
 from message_system_db_beacon import DatabaseManagerBeacon
 import explorer
 import command_beacon
+import atexit
+
 
 
 class ScheduleManager:
@@ -39,7 +41,7 @@ class ScheduleManager:
         """Start scheduling events and run the scheduler in a separate thread."""
 
         # wait some time
-        threading.Event().wait(timeout=10)
+        #threading.Event().wait(timeout=10)
 
         # get actual freedata_server instance
         self.modem = modem
