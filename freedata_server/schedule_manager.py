@@ -8,7 +8,7 @@ from message_system_db_beacon import DatabaseManagerBeacon
 import explorer
 import command_beacon
 import atexit
-
+import numpy as np
 
 
 class ScheduleManager:
@@ -22,7 +22,7 @@ class ScheduleManager:
         self.scheduler = sched.scheduler(time.time, time.sleep)
         self.events = {
             'check_for_queued_messages': {'function': self.check_for_queued_messages, 'interval': 5},
-            'explorer_publishing': {'function': self.push_to_explorer, 'interval': 6},
+            'explorer_publishing': {'function': self.push_to_explorer, 'interval': 60},
             'transmitting_beacon': {'function': self.transmit_beacon, 'interval': 600},
             'beacon_cleanup': {'function': self.delete_beacons, 'interval': 600},
         }
@@ -40,8 +40,8 @@ class ScheduleManager:
     def start(self, modem):
         """Start scheduling events and run the scheduler in a separate thread."""
 
-        # wait some time
-        #threading.Event().wait(timeout=10)
+        # wait some time for the modem to be ready
+        threading.Event().wait(timeout=5)
 
         # get actual freedata_server instance
         self.modem = modem
@@ -97,5 +97,9 @@ class ScheduleManager:
                     command.transmit(self.modem)
             except Exception as e:
                 print(e)
+
+        # let's wait some random time for decreasing chance of packet colission.
+        threading.Event().wait(np.random.randint(3,10))
+
         return
 
