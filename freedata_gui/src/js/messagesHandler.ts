@@ -34,7 +34,8 @@ export async function processFreedataMessages(data) {
     chatStore.callsign_list = createCallsignListFromAPI(data);
     chatStore.sorted_chat_list = createSortedMessagesList(data);
 
-    console.log(chatStore.sorted_chat_list);
+    //console.log(chatStore.sorted_chat_list);
+    //console.log(chatStore.callsign_list);
     // also update the selectedCallsign - if its undefined, then we select the first available callsign
     if (typeof chatStore.selectedCallsign == "undefined") {
       chatStore.selectedCallsign = Object.keys(chatStore.sorted_chat_list)[0];
@@ -49,17 +50,30 @@ function createCallsignListFromAPI(data: {
   const callsignList: { [key: string]: { timestamp: string; body: string } } =
     {};
 
-  data.messages.forEach((message) => {
-    let callsign =
-      message.direction === "receive" ? message.origin : message.destination;
 
-    if (
-      !callsignList[callsign] ||
-      callsignList[callsign].timestamp < message.timestamp
-    ) {
+  //console.log(data)
+
+  data.messages.forEach((message) => {
+    let callsign = message.direction === "receive" ? message.origin : message.destination;
+
+    if (!callsignList[callsign] || callsignList[callsign].timestamp < message.timestamp ) {
+
+let unreadCounter = 0;
+
+    if (typeof callsignList[callsign] !== 'undefined') {
+      // If callsign already exists, get its current unread count
+      unreadCounter = callsignList[callsign].unread_messages;
+    }
+
+  // Increment the unread counter if the message is not read
+    if (!message.is_read) {
+      unreadCounter++;
+    }
+
       callsignList[callsign] = {
         timestamp: message.timestamp,
         body: message.body,
+        unread_messages: unreadCounter,
       };
     }
   });

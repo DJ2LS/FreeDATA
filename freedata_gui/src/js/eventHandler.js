@@ -171,7 +171,7 @@ export function eventDispatcher(data) {
     case "arq":
       if (data["arq-transfer-outbound"]) {
         stateStore.arq_is_receiving = false;
-        console.log(data);
+        //console.log(data);
 
         switch (data["arq-transfer-outbound"].state) {
           case "NEW":

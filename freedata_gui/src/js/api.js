@@ -44,6 +44,27 @@ export async function apiPost(endpoint, payload = {}) {
   }
 }
 
+export async function apiPatch(endpoint, payload = {}) {
+  try {
+    const response = await fetch(buildURL(settings.local, endpoint), {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error(`REST response not ok: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error patching to REST:", error);
+  }
+}
+
 export async function apiDelete(endpoint, payload = {}) {
   try {
     const response = await fetch(buildURL(settings.local, endpoint), {
@@ -191,6 +212,10 @@ export async function sendFreedataMessage(destination, body, attachments) {
 
 export async function retransmitFreedataMessage(id) {
   return await apiPost(`/freedata/messages/${id}`);
+}
+
+export async function setFreedataMessageAsUnread(id) {
+  return await apiPatch(`/freedata/messages/${id}`);
 }
 
 export async function deleteFreedataMessage(id) {
