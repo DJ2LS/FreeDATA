@@ -23,6 +23,7 @@ interface Message {
   attachments: any[];
   status: any;
   statistics: any;
+  is_read: any;
 }
 
 export async function processFreedataMessages(data) {
@@ -46,8 +47,8 @@ export async function processFreedataMessages(data) {
 function createCallsignListFromAPI(data: {
   total_messages: number;
   messages: Message[];
-}): { [key: string]: { timestamp: string; body: string } } {
-  const callsignList: { [key: string]: { timestamp: string; body: string } } =
+}): { [key: string]: { timestamp: string; body: string, unread_messages: number } } {
+  const callsignList: { [key: string]: { timestamp: string; body: string, unread_messages: number } } =
     {};
 
 
