@@ -342,8 +342,6 @@ function fetchMyStationInfo() {
         <div class="modal-body">
           <div class="container">
             <div class="d-flex flex-row justify-content-between">
-
-
               <div class="input-group mb-3">
                 <span class="input-group-text" id="basic-addon1">Attempts</span>
                 <span class="input-group-text" id="basic-addon1">...</span>
