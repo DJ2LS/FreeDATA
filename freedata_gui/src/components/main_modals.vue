@@ -330,7 +330,7 @@ function fetchMyStationInfo() {
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="messageInfoModalLabel">
-            {{ chat.selectedMessageObject["uuid"] }}
+            {{ chat.selectedCallsign }}
           </h1>
           <button
             type="button"
@@ -342,18 +342,11 @@ function fetchMyStationInfo() {
         <div class="modal-body">
           <div class="container">
             <div class="d-flex flex-row justify-content-between">
-              <div class="input-group mb-3">
-                <span class="input-group-text" id="basic-addon1">Status</span>
-                <span class="input-group-text" id="basic-addon1">{{
-                  chat.selectedMessageObject["status"]
-                }}</span>
-              </div>
+
 
               <div class="input-group mb-3">
                 <span class="input-group-text" id="basic-addon1">Attempts</span>
-                <span class="input-group-text" id="basic-addon1">{{
-                  chat.selectedMessageObject["attempt"]
-                }}</span>
+                <span class="input-group-text" id="basic-addon1">...</span>
               </div>
             </div>
           </div>
@@ -361,16 +354,8 @@ function fetchMyStationInfo() {
           <div class="container">
             <div class="d-flex flex-row justify-content-between">
               <div class="input-group mb-3">
-                <span class="input-group-text" id="basic-addon1">nacks</span>
-                <span class="input-group-text">{{
-                  chat.selectedMessageObject["nacks"]
-                }}</span>
-              </div>
-              <div class="input-group mb-3">
                 <span class="input-group-text" id="basic-addon1">hmack</span>
-                <span class="input-group-text">{{
-                  chat.selectedMessageObject["hmac_signed"]
-                }}</span>
+                <span class="input-group-text">...</span>
               </div>
             </div>
           </div>
@@ -381,17 +366,13 @@ function fetchMyStationInfo() {
                 <span class="input-group-text" id="basic-addon1"
                   >Bytes per Minute</span
                 >
-                <span class="input-group-text" id="basic-addon1">{{
-                  chat.selectedMessageObject["bytesperminute"]
-                }}</span>
+                <span class="input-group-text" id="basic-addon1">...</span>
               </div>
               <div class="input-group mb-3">
                 <span class="input-group-text" id="basic-addon1"
                   >Duration [s]</span
                 >
-                <span class="input-group-text">{{
-                  parseInt(chat.selectedMessageObject["duration"])
-                }}</span>
+                <span class="input-group-text">...</span>
               </div>
             </div>
           </div>
