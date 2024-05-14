@@ -139,6 +139,8 @@ class DatabaseManagerMessages(DatabaseManager):
                     message.status = self.get_or_create_status(session, update_data['status'])
                 if 'statistics' in update_data:
                     message.statistics = update_data['statistics']
+                if 'is_read' in update_data:
+                    message.is_read = update_data['is_read']
 
                 session.commit()
                 self.log(f"Updated: {message_id}")
