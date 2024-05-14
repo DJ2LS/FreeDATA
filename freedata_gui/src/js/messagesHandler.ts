@@ -50,25 +50,27 @@ function createCallsignListFromAPI(data: {
   const callsignList: { [key: string]: { timestamp: string; body: string } } =
     {};
 
-
   //console.log(data)
 
   data.messages.forEach((message) => {
-    let callsign = message.direction === "receive" ? message.origin : message.destination;
+    let callsign =
+      message.direction === "receive" ? message.origin : message.destination;
 
-    if (!callsignList[callsign] || callsignList[callsign].timestamp < message.timestamp ) {
+    if (
+      !callsignList[callsign] ||
+      callsignList[callsign].timestamp < message.timestamp
+    ) {
+      let unreadCounter = 0;
 
-let unreadCounter = 0;
+      if (typeof callsignList[callsign] !== "undefined") {
+        // If callsign already exists, get its current unread count
+        unreadCounter = callsignList[callsign].unread_messages;
+      }
 
-    if (typeof callsignList[callsign] !== 'undefined') {
-      // If callsign already exists, get its current unread count
-      unreadCounter = callsignList[callsign].unread_messages;
-    }
-
-  // Increment the unread counter if the message is not read
-    if (!message.is_read) {
-      unreadCounter++;
-    }
+      // Increment the unread counter if the message is not read
+      if (!message.is_read) {
+        unreadCounter++;
+      }
 
       callsignList[callsign] = {
         timestamp: message.timestamp,

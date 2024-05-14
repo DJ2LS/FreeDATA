@@ -15,7 +15,6 @@ export const useChatStore = defineStore("chatStore", () => {
     scrollTrigger.value++;
   }
 
-
   var selectedCallsign = ref();
 
   // we need a default value in our ref because of our message info modal

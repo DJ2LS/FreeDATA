@@ -2,7 +2,11 @@
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 import { useChatStore } from "../store/chatStore.js";
-import { getBeaconDataByCallsign, setFreedataMessageAsUnread, getFreedataMessages } from "../js/api.js";
+import {
+  getBeaconDataByCallsign,
+  setFreedataMessageAsUnread,
+  getFreedataMessages,
+} from "../js/api.js";
 import { ref } from "vue";
 
 setActivePinia(pinia);
@@ -14,28 +18,24 @@ function chatSelected(callsign) {
   chat.triggerScrollToBottom();
   processBeaconData(callsign);
   setMessagesAsRead(callsign);
-
 }
 
-async function setMessagesAsRead(callsign){
-  let messages = chat.sorted_chat_list[callsign]
-  if (typeof messages !== 'undefined'){
-  messages.forEach(message => {
+async function setMessagesAsRead(callsign) {
+  let messages = chat.sorted_chat_list[callsign];
+  if (typeof messages !== "undefined") {
+    messages.forEach((message) => {
+      if (typeof message.is_read !== "undefined" && !message.is_read) {
+        setFreedataMessageAsUnread(message.id);
+        message.is_read = true;
+      }
+    });
 
-    if (typeof message.is_read !== 'undefined' && !message.is_read) {
-        setFreedataMessageAsUnread(message.id)
-        message.is_read = true
-    }
-  });
-
-// Delay the execution of getFreedataMessages by 5 mseconds
-// its just a visual thing...
+    // Delay the execution of getFreedataMessages by 5 mseconds
+    // its just a visual thing...
     setTimeout(() => {
       getFreedataMessages();
     }, 500);
-
-
-}
+  }
 }
 
 async function processBeaconData(callsign) {
@@ -98,7 +98,12 @@ function startNewChat() {
         <div class="row">
           <div class="col-9 text-truncate">
             <strong>{{ callsign }}</strong>
-            <span v-if="details.unread_messages > 0" class="ms-1 badge bg-danger"> {{ details.unread_messages }} new </span>
+            <span
+              v-if="details.unread_messages > 0"
+              class="ms-1 badge bg-danger"
+            >
+              {{ details.unread_messages }} new
+            </span>
             <br />
             <small> {{ details.body }} </small>
           </div>
