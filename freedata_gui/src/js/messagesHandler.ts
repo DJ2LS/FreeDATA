@@ -47,9 +47,12 @@ export async function processFreedataMessages(data) {
 function createCallsignListFromAPI(data: {
   total_messages: number;
   messages: Message[];
-}): { [key: string]: { timestamp: string; body: string, unread_messages: number } } {
-  const callsignList: { [key: string]: { timestamp: string; body: string, unread_messages: number } } =
-    {};
+}): {
+  [key: string]: { timestamp: string; body: string; unread_messages: number };
+} {
+  const callsignList: {
+    [key: string]: { timestamp: string; body: string; unread_messages: number };
+  } = {};
 
   //console.log(data)
 
