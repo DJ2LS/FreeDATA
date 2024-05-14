@@ -141,6 +141,11 @@ class DatabaseManagerMessages(DatabaseManager):
                     message.statistics = update_data['statistics']
                 if 'is_read' in update_data:
                     message.is_read = update_data['is_read']
+                if 'attempt' in update_data:
+                    message.attempt = update_data['attempt']
+                if 'priority' in update_data:
+                    message.priority = update_data['priority']
+
 
                 session.commit()
                 self.log(f"Updated: {message_id}")
