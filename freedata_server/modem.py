@@ -163,7 +163,7 @@ class RF:
                 callback=self.sd_output_audio_callback,
                 device=out_dev_index,
                 samplerate=self.AUDIO_SAMPLE_RATE,
-                blocksize=1200,
+                blocksize=2400,
             )
             self.sd_output_stream.start()
 
