@@ -51,6 +51,8 @@ if (!fs.existsSync(configFolder)) {
 
 // create config file if not exists with defaults
 const configDefaultSettings = `{
+    "screen_height": 670,
+    "screen_width": 1200,
     "modem_host": "127.0.0.1",
     "modem_port": 5000,
     "spectrum": "waterfall",

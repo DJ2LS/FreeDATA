@@ -1,7 +1,7 @@
 import { app, BrowserWindow, shell, ipcMain } from "electron";
 import { release, platform } from "os";
 import { join, dirname } from "path";
-import { existsSync } from "fs";
+import { existsSync, writeFileSync } from "fs";
 import { spawn } from "child_process";
 
 // The built directory structure
@@ -45,11 +45,30 @@ const preload = join(__dirname, "../preload/index.js");
 const url = process.env.VITE_DEV_SERVER_URL;
 const indexHtml = join(process.env.DIST, "index.html");
 
+/*------load screen hdimension from conig ------*/
+let appDataFolder =
+  process.env.APPDATA ||
+  (process.platform == "darwin"
+    ? process.env.HOME + "/Library/Application Support"
+    : process.env.HOME + "/.config");
+let configFolder = join(appDataFolder, "FreeDATA");
+let configPath = join(configFolder, "config.json");
+let config = null;
+let screen_width = 1200;
+let screen_height = 670;
+if (existsSync(configPath)) {
+    config = require(configPath);
+    screen_width = config.screen_width || screen_width;
+    screen_height = config.screen_height || screen_height;
+}
+
+// load settings
+
 async function createWindow() {
   win = new BrowserWindow({
     title: "FreeDATA",
-    width: 1200,
-    height: 670,
+    width: screen_width,
+    height: screen_height,
     icon: join(process.env.VITE_PUBLIC, "icon_cube_border.png"),
     autoHideMenuBar: true,
     webPreferences: {
@@ -67,10 +86,19 @@ async function createWindow() {
     // electron-vite-vue#298
     win.loadURL(url);
     // Open devTool if the app is not packaged
-    win.webContents.openDevTools();
+    //win.webContents.openDevTools();
   } else {
     win.loadFile(indexHtml);
   }
+
+  win.on('resize', () => {
+      if (existsSync(configPath)) {
+        let { width, height } = win.getBounds();
+        config.screen_width = width;
+        config.screen_height = height;
+        writeFileSync(configPath, JSON.stringify(config, null, 2));
+        }
+    });
 
   // Test actively push message to the Electron-Renderer
   //win.webContents.on("did-finish-load", () => {
