@@ -28,6 +28,8 @@ class Demodulator():
     def __init__(self, config, audio_rx_q, data_q_rx, states, event_manager, service_queue, fft_queue):
         self.log = structlog.get_logger("Demodulator")
 
+        self.shutdown_flag = threading.Event()
+
         self.service_queue = service_queue
         self.AUDIO_FRAMES_PER_BUFFER_RX = 4800
         self.buffer_overflow_counter = [0, 0, 0, 0, 0, 0, 0, 0]
@@ -119,10 +121,9 @@ class Demodulator():
         for mode in self.MODE_DICT:
             # Start decoder threads
             self.MODE_DICT[mode]['decoding_thread'] = threading.Thread(
-                target=self.demodulate_audio,args=[mode], name=self.MODE_DICT[mode]['name'], daemon=False
+                target=self.demodulate_audio,args=[mode], name=self.MODE_DICT[mode]['name'], daemon=True
             )
             self.MODE_DICT[mode]['decoding_thread'].start()
-
 
     def get_frequency_offset(self, freedv: ctypes.c_void_p) -> float:
         """
@@ -152,9 +153,9 @@ class Demodulator():
         state_buffer = self.MODE_DICT[mode]["state_buffer"]
         mode_name = self.MODE_DICT[mode]["name"]
         try:
-            while self.stream and self.stream.active:
+            while self.stream and self.stream.active and not self.shutdown_flag.is_set():
                 threading.Event().wait(0.01)
-                while audiobuffer.nbuffer >= nin:
+                while audiobuffer.nbuffer >= nin and not self.shutdown_flag.is_set():
                     # demodulate audio
                     nbytes = codec2.api.freedv_rawdatarx(
                         freedv, bytes_out, audiobuffer.buffer.ctypes
@@ -224,7 +225,7 @@ class Demodulator():
 
         """
 
-        while True:
+        while True and not self.shutdown_flag.is_set():
 
             audio_48k = self.audio_received_queue.get()
             audio_48k = np.frombuffer(audio_48k, dtype=np.int16)
@@ -359,3 +360,8 @@ class Demodulator():
             for mode, decode in modes_to_decode.items():
                 if mode in self.MODE_DICT:
                     self.MODE_DICT[mode]["decode"] = decode
+
+    def shutdown(self):
+        self.shutdown_flag.set()
+        for mode in self.MODE_DICT:
+            self.MODE_DICT[mode]['decoding_thread'].join()

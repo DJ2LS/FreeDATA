@@ -356,3 +356,7 @@ def calculate_fft(data, fft_queue, states) -> None:
 
     except Exception as err:
         print(f"[MDM] calculate_fft: Exception: {err}")
+
+def terminate():
+    if sd._initialized:
+        sd._terminate()

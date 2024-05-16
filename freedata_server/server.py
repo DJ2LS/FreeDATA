@@ -3,7 +3,7 @@ import os
 script_directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(script_directory)
 
-
+import signal
 import time
 from flask import Flask, request, jsonify, make_response, abort, Response
 from flask_sock import Sock
@@ -342,23 +342,41 @@ def sock_fft(sock):
 def sock_states(sock):
     wsm.handle_connection(sock, wsm.states_client_list, app.state_queue)
 
-@atexit.register
+
+
+
+def signal_handler(sig, frame):
+    print("\n------------------------------------------")
+    print("Received SIGINT......")
+    stop_server()
+
 def stop_server():
-    print("------------------------------------------")
-    # TODO This is causing problems for some reasons.
+    if hasattr(app, 'schedule_manager'):
+        app.schedule_manager.stop()
+
     if hasattr(app, 'service_manager'):
+
         if hasattr(app, 'socket_interface_manager') and app.socket_interface_manager:
             app.socket_interface_manager.stop_servers()
 
         if hasattr(app.service_manager, 'modem_service') and app.service_manager.modem_service:
-            app.service_manager.modem_service.put("stop")
+            app.service_manager.shutdown()
 
         if hasattr(app.service_manager, 'modem') and app.service_manager.modem:
-            app.service_manager.modem.sd_input_stream.stop
+            #    app.service_manager.modem.sd_input_stream.stop
+            app.service_manager.modem.demodulator.shutdown()
 
-    threading.Event().wait(2)
+        audio.terminate()
+
+
+    print("Shutdown completed")
+    print(".........................")
+    sys.exit(0)
 
 def main():
+    # Register the signal handler for SIGINT
+    signal.signal(signal.SIGINT, signal_handler)
+
     app.config['SOCK_SERVER_OPTIONS'] = {'ping_interval': 10}
     # define global MODEM_VERSION
     app.MODEM_VERSION = MODEM_VERSION
@@ -398,7 +416,6 @@ def main():
         modemport = 5000
 
     app.run(modemaddress, modemport, debug=False)
-
 
 if __name__ == "__main__":
     main()

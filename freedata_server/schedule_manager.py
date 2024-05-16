@@ -41,7 +41,7 @@ class ScheduleManager:
         """Start scheduling events and run the scheduler in a separate thread."""
 
         # wait some time for the modem to be ready
-        threading.Event().wait(timeout=5)
+        threading.Event().wait(timeout=0.5)
 
         # get actual freedata_server instance
         self.modem = modem
@@ -57,14 +57,16 @@ class ScheduleManager:
 
     def stop(self):
         """Stop scheduling new events and terminate the scheduler thread."""
+        print("stopping schedule manager....")
         self.running = False  # Clear the running flag to stop scheduling new events
         # Clear scheduled events to break the scheduler out of its waiting state
         for event in list(self.scheduler.queue):
             self.scheduler.cancel(event)
+
         # Wait for the scheduler thread to finish
         if self.scheduler_thread:
             self.scheduler_thread.join()
-
+        print("done")
     def transmit_beacon(self):
         try:
             if not self.state_manager.getARQ() and self.state_manager.is_beacon_running and self.state_manager.is_modem_running:

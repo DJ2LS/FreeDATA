@@ -65,7 +65,7 @@ class Modulator:
         # Get number of bytes per frame for mode
         bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv) / 8)
         payload_bytes_per_frame = bytes_per_frame - 2
-
+        #print(payload_bytes_per_frame)
         # Init buffer for data
         n_tx_modem_samples = codec2.api.freedv_get_n_tx_modem_samples(freedv)
         mod_out = ctypes.create_string_buffer(n_tx_modem_samples * 2)
@@ -73,7 +73,7 @@ class Modulator:
         # Create buffer for data
         # Use this if CRC16 checksum is required (DATAc1-3)
         buffer = bytearray(payload_bytes_per_frame)
-        # Set buffersize to length of data which will be send
+        # Set buffersize to length of data which will be sent
         buffer[: len(frame)] = frame  # type: ignore
 
         # Create crc for data frame -
@@ -139,6 +139,7 @@ class Modulator:
         )
 
         txbuffer = bytes()
+
 
         # Add empty data to handle ptt toggle time
         if self.tx_delay > 0:
