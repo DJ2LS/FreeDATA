@@ -41,7 +41,7 @@ export async function loadAllData() {
   //console.log(stateData);
 
   let radioData = await getRadioStatus();
-  //console.log(stateData);
+  //console.log(radioData);
 
   getRemote();
   getOverallHealth();
@@ -80,6 +80,10 @@ export function stateDispatcher(data) {
   }
 
   if (data["type"] == "radio-change" || data["type"] == "radio") {
+
+    console.log(data);
+
+
     stateStore.s_meter_strength_raw = Math.round(data["s_meter_strength"]);
     stateStore.s_meter_strength_percent = Math.round(
       Math.pow(10, data["s_meter_strength"] / 20) * 100,
@@ -89,7 +93,7 @@ export function stateDispatcher(data) {
     stateStore.mode = data["radio_mode"];
     stateStore.swr = data["radio_swr"];
     stateStore.tuner = data["radio_tuner"];
-    stateStore.rf_level = data["radio_rf_level"];
+    stateStore.rf_level = Math.round(data["radio_rf_level"] / 5) * 5;
   }
 }
 
