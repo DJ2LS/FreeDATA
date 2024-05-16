@@ -57,9 +57,9 @@ let config = null;
 let screen_width = 1200;
 let screen_height = 670;
 if (existsSync(configPath)) {
-    config = require(configPath);
-    screen_width = config.screen_width || screen_width;
-    screen_height = config.screen_height || screen_height;
+  config = require(configPath);
+  screen_width = config.screen_width || screen_width;
+  screen_height = config.screen_height || screen_height;
 }
 
 // load settings
@@ -91,14 +91,14 @@ async function createWindow() {
     win.loadFile(indexHtml);
   }
 
-  win.on('resize', () => {
-      if (existsSync(configPath)) {
-        let { width, height } = win.getBounds();
-        config.screen_width = width;
-        config.screen_height = height;
-        writeFileSync(configPath, JSON.stringify(config, null, 2));
-        }
-    });
+  win.on("resize", () => {
+    if (existsSync(configPath)) {
+      let { width, height } = win.getBounds();
+      config.screen_width = width;
+      config.screen_height = height;
+      writeFileSync(configPath, JSON.stringify(config, null, 2));
+    }
+  });
 
   // Test actively push message to the Electron-Renderer
   //win.webContents.on("did-finish-load", () => {
