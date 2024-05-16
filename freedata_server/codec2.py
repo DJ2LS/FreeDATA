@@ -469,7 +469,7 @@ def create_default_ofdm_config():
 
     ofdm_default_config = OFDM_CONFIG(
         tx_centre=1500.0,
-        rx_centre=1500.0,
+        rx_centre=2500.0,
         fs=8000.0,
         rs=62.5,
         ts=0.016,
@@ -545,8 +545,8 @@ data_ofdm_500_config.config.contents.timing_mx_thresh = 0.10
 data_ofdm_500_config.config.contents.bad_uw_errors = 18
 data_ofdm_500_config.config.contents.codename = "H_1024_2048_4f".encode('utf-8')
 data_ofdm_500_config.config.contents.amp_scale = 290E3
-data_ofdm_500_config.config.contents.nuwbits = 54
-data_ofdm_500_config.config.contents.tx_uw = create_tx_uw(54, [0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1])
+data_ofdm_500_config.config.contents.nuwbits = 56
+data_ofdm_500_config.config.contents.tx_uw = create_tx_uw(56, [0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1])
 data_ofdm_500_config.config.contents.clip_gain1 = 2.8
 data_ofdm_500_config.config.contents.clip_gain2 = 0.9
 data_ofdm_500_config.config.contents.tx_bpf_en = True
