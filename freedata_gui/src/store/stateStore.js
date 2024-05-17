@@ -75,7 +75,6 @@ export const useStateStore = defineStore("stateStore", () => {
 
   var rx_buffer_length = ref();
 
-
   return {
     dxcallsign,
     busy_state,
