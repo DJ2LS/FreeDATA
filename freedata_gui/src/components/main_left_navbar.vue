@@ -14,7 +14,6 @@ setActivePinia(pinia);
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
 
-
 const isTextVisible = ref(false); // Initially, the text is invisible
 function toggleTextVisibility() {
   isTextVisible.value = !isTextVisible.value; // Toggle the visibility
@@ -83,15 +82,12 @@ function toggleTextVisibility() {
       <i class="bi bi-chat-text h3"></i>
       <span class="ms-2" v-if="isTextVisible">RF Chat</span>
       <span
-    v-if="chat.totalUnreadMessages > 0"
-    class="badge bg-danger position-absolute top-0 end-0 mt-1 me-1"
->
-    {{ chat.totalUnreadMessages }}
-  </span>
+        v-if="chat.totalUnreadMessages > 0"
+        class="badge bg-danger position-absolute top-0 end-0 mt-1 me-1"
+      >
+        {{ chat.totalUnreadMessages }}
+      </span>
     </a>
-
-
-
 
     <a
       class="list-group-item list-group-item-dark list-group-item-action d-none border-0 rounded-3 mb-2"
