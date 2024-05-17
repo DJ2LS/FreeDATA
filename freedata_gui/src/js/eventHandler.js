@@ -80,9 +80,7 @@ export function stateDispatcher(data) {
   }
 
   if (data["type"] == "radio-change" || data["type"] == "radio") {
-
     console.log(data);
-
 
     stateStore.s_meter_strength_raw = Math.round(data["s_meter_strength"]);
     stateStore.s_meter_strength_percent = Math.round(
