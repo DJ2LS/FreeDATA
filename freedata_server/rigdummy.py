@@ -140,3 +140,6 @@ class radio:
 
     def get_parameters(self):
         return self.parameters
+
+    def stop_service(self):
+        pass

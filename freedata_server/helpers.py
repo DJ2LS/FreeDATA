@@ -759,3 +759,11 @@ def kill_and_execute(binary_path, additional_args=None):
     # Execute the binary with additional arguments non-blocking
     command = [binary_path] + (additional_args if additional_args else [])
     return subprocess.Popen(command)
+
+def kill_process(proc):
+    try:
+        ps_proc = psutil.Process(proc.pid)
+        ps_proc.kill()
+        print(f"Killed running instance with PID: {proc.pid}")
+    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess) as e:
+        print(f"Failed to kill process: {e}")

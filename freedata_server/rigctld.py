@@ -8,12 +8,14 @@ class radio:
 
     log = structlog.get_logger("radio (rigctld)")
 
-    def __init__(self, config, states, hostname="localhost", port=4532, timeout=5):
+    def __init__(self, config, states, hostname="localhost", port=4532, timeout=3):
         self.hostname = hostname
         self.port = port
         self.timeout = timeout
         self.states = states
         self.config = config
+
+        self.rigctld_process = None
 
         self.connection = None
         self.connected = False
@@ -40,6 +42,7 @@ class radio:
         self.connect()
 
     def connect(self):
+
         try:
             self.connection = socket.create_connection((self.hostname, self.port), timeout=self.timeout)
             self.connected = True
@@ -342,7 +345,7 @@ class radio:
             for binary_path in binary_paths:
                 try:
                     self.log.info(f"Attempting to start rigctld using binary found at: {binary_path}")
-                    helpers.kill_and_execute(binary_path, additional_args)
+                    self.rigctld_process = helpers.kill_and_execute(binary_path, additional_args)
                     self.log.info("Successfully executed rigctld.")
                     break  # Exit the loop after successful execution
                 except Exception as e:
@@ -353,6 +356,9 @@ class radio:
                 self.log.warning("Failed to start rigctld with all found binaries.", binaries=binary_paths)
         else:
             self.log.warning("Rigctld binary not found.")
+
+    def stop_service(self):
+        helpers.kill_process(self.rigctld_process)
 
 
     def format_rigctld_args(self):

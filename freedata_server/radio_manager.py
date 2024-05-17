@@ -68,6 +68,8 @@ class RadioManager:
 
             self.state_manager.set_radio("s_meter_strength", parameters['strength'])
             time.sleep(self.refresh_rate)
+
     def stop(self):
         self.radio.disconnect()
         self.stop_event.set()
+        self.radio.stop_service()
