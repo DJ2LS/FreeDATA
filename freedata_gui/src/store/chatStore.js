@@ -42,6 +42,7 @@ export const useChatStore = defineStore("chatStore", () => {
     selectedCallsign,
     newChatCallsign,
     newChatMessage,
+    totalUnreadMessages,
     inputText,
     callsign_list,
     sorted_chat_list,
