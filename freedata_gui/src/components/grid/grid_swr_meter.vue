@@ -25,7 +25,6 @@ const state = useStateStore(pinia);
     </p>
   </div>
   <div class="progress mb-0 rounded-0 rounded-bottom" style="height: 8px">
-
     <div
       class="progress-bar bg-success"
       role="progressbar"
