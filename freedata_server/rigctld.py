@@ -7,6 +7,12 @@ class radio:
     """rigctld (hamlib) communication class"""
 
     log = structlog.get_logger("radio (rigctld)")
+    shutdown = False
+    
+    def signal_handler(self):
+        print("\n------------------------------------------")
+        print("Received rigctld SIGINT......")
+        self.shutdown = True
 
     def __init__(self, config, states, hostname="localhost", port=4532, timeout=5):
         self.hostname = hostname
@@ -40,6 +46,8 @@ class radio:
         self.connect()
 
     def connect(self):
+        if (self.shutdown):
+            return
         try:
             self.connection = socket.create_connection((self.hostname, self.port), timeout=self.timeout)
             self.connected = True
