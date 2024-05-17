@@ -31,6 +31,9 @@ class RadioManager:
 
     def set_ptt(self, state):
         self.radio.set_ptt(state)
+        # set disabled ptt twice for reducing chance of stuck PTT
+        if not state:
+            self.radio.set_ptt(state)
 
 
     def set_tuner(self, state):
