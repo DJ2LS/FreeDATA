@@ -37,7 +37,7 @@ function set_radio_parameter_auto_tuner() {
       <strong>Radio control</strong>
     </div>
 
-    <div class="card-body overflow-auto p-0">
+    <div class="card-body overflow-auto p-2">
       <div class="input-group input-group-sm bottom-0 m-0">
         <div class="me-2">
           <div class="input-group input-group-sm">

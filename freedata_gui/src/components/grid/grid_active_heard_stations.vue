@@ -64,6 +64,8 @@ function getActivityInfo(activityType) {
       return { iconClass: "bi bi-megaphone", description: activityType };
     case "BEACON":
       return { iconClass: "bi bi-globe", description: activityType };
+    case "PING_ACK":
+      return { iconClass: "bi bi-check-square", description: activityType };
     default:
       return { iconClass: "", description: activityType };
   }
