@@ -6,6 +6,7 @@ export const useChatStore = defineStore("chatStore", () => {
   var sorted_chat_list = ref();
   var newChatCallsign = ref();
   var newChatMessage = ref();
+  var totalUnreadMessages = ref(0);
 
   /* ------------------------------------------------ */
   // Scroll to bottom functions

@@ -75,14 +75,6 @@ export const useStateStore = defineStore("stateStore", () => {
 
   var rx_buffer_length = ref();
 
-  function updateTncState(state) {
-    modem_connection.value = state;
-
-    if (modem_connection.value == "open") {
-      //GUI will auto connect to TNC if already running, if that is the case increment start count if 0
-      if (modemStartCount.value == 0) modemStartCount.value++;
-    }
-  }
 
   return {
     dxcallsign,
@@ -112,7 +104,6 @@ export const useStateStore = defineStore("stateStore", () => {
     tx_audio_level,
     rx_audio_level,
     alc,
-    updateTncState,
     arq_transmission_percent,
     arq_speed_list_bpm,
     arq_speed_list_timestamp,

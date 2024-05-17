@@ -55,6 +55,7 @@ function createCallsignListFromAPI(data: {
   } = {};
 
   //console.log(data)
+  chatStore.totalUnreadMessages = 0 // Reset the global counter
 
   data.messages.forEach((message) => {
     let callsign =
@@ -74,6 +75,7 @@ function createCallsignListFromAPI(data: {
       // Increment the unread counter if the message is not read
       if (!message.is_read) {
         unreadCounter++;
+        chatStore.totalUnreadMessages++; // Increment the global counter
       }
 
       callsignList[callsign] = {
@@ -81,7 +83,12 @@ function createCallsignListFromAPI(data: {
         body: message.body,
         unread_messages: unreadCounter,
       };
+    } else if (!message.is_read) {
+      // If the message is not read and the callsign exists but with an older message
+      totalUnreadMessages++; // Increment the global counter
     }
+
+
   });
 
   return callsignList;
