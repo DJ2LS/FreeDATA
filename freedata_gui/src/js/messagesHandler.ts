@@ -85,7 +85,7 @@ function createCallsignListFromAPI(data: {
       };
     } else if (!message.is_read) {
       // If the message is not read and the callsign exists but with an older message
-      totalUnreadMessages++; // Increment the global counter
+      chatStore.totalUnreadMessages++; // Increment the global counter
     }
   });
 
