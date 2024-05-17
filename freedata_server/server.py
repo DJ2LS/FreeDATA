@@ -354,6 +354,10 @@ def stop_server():
     if hasattr(app, 'schedule_manager'):
         app.schedule_manager.stop()
 
+    if hasattr(app, 'radio_manager'):
+        app.radio_manager.stop()
+
+
     if hasattr(app, 'service_manager'):
 
         if hasattr(app, 'socket_interface_manager') and app.socket_interface_manager:
@@ -416,6 +420,7 @@ def main():
         modemport = 5000
 
     app.run(modemaddress, modemport, debug=False)
+
 
 if __name__ == "__main__":
     main()
