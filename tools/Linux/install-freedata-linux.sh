@@ -5,10 +5,9 @@
 #
 # Currently supports Debian [11, 12], Ubuntu [22.04, 24.04]
 # 
-# Run this script by typing "bash install-freedata-linux.sh" in the terminal
-#
-# args: nothing or "main" (use main branch of FreeDATA)
-# 	"develop" (use develop branch of FreeDATA)
+# Run this script by typing in the terminal (without the quotes):
+# "bash install-freedata-linux.sh" to install from the main branch 
+# "bash install-freedata-linux.sh develop" to install from the develop branch
 #
 # This script creates three subdirectories in the directory it is run
 # FreeDATA: Contains the FreeDATA software
