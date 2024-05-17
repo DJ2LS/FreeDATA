@@ -91,7 +91,18 @@ export function stateDispatcher(data) {
     stateStore.radio_status = data["radio_status"];
     stateStore.frequency = data["radio_frequency"];
     stateStore.mode = data["radio_mode"];
-    stateStore.swr = data["radio_swr"];
+
+    let swr = data["radio_swr"];
+    stateStore.swr_raw = parseFloat(data["radio_swr"]).toFixed(2);
+    if (swr >= 0.0 && swr <= 6.0) {
+        swr = (swr / 6.0) * 100;
+        stateStore.swr_percent = swr.toFixed(2);
+    } else {
+        stateStore.swr_percent = 0.00;
+    }
+
+
+
     stateStore.tuner = data["radio_tuner"];
     stateStore.rf_level = Math.round(data["radio_rf_level"] / 5) * 5;
   }

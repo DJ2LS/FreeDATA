@@ -11,7 +11,9 @@ export const useStateStore = defineStore("stateStore", () => {
   var rf_level = ref(10);
   var bandwidth = ref("-");
 
-  var swr = ref(0);
+  var swr_raw = ref(0);
+  var swr_percent = ref(0);
+
   var tuner = ref();
 
   var dbfs_level_percent = ref(0);
@@ -91,7 +93,8 @@ export const useStateStore = defineStore("stateStore", () => {
     mode,
     bandwidth,
     tuner,
-    swr,
+    swr_raw,
+    swr_percent,
     tuner,
     dbfs_level,
     dbfs_level_percent,
