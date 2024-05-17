@@ -358,7 +358,9 @@ class radio:
             self.log.warning("Rigctld binary not found.")
 
     def stop_service(self):
-        helpers.kill_process(self.rigctld_process)
+        if self.rigctld_process:
+            print("Killing rigctld process")
+            helpers.kill_process(self.rigctld_process)
 
 
     def format_rigctld_args(self):
