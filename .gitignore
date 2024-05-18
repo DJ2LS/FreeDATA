@@ -1,5 +1,5 @@
-# possible installation of codec2 within modem
-modem/codec2
+# possible installation of codec2 within freedata_server
+freedata_server/codec2
 
 # temporary test artifacts
 **/build
@@ -24,12 +24,12 @@ coverage.sh
 coverage.xml
 
 #ignore node_modules
-/gui/node_modules/
+/freedata_gui/node_modules/
 
-#Ignore gui build items
-/gui/dist
-/gui/release
-/gui/dist-electron
+#Ignore freedata_gui build items
+/freedata_gui/dist
+/freedata_gui/release
+/freedata_gui/dist-electron
 
 #Ignore GUI config
-/gui/config/config.json
+/freedata_gui/config/config.json

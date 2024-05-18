@@ -1,0 +1,129 @@
+name: Build and Release APPIMAGE Installer
+on: [push]
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Electron Builder
+        working-directory: freedata_gui
+        run: |
+          npm i
+          npm run build
+
+      - name: LIST ALL FILES
+        run: ls -R
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2 patchelf desktop-file-utils
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build binaries
+        working-directory: freedata_server
+        run: |
+          python3 -m nuitka  --remove-output --assume-yes-for-downloads --follow-imports --include-data-dir=lib=lib --include-data-files=lib/codec2/*=lib/codec2/ --include-data-files=config.ini.example=config.ini --standalone server.py --output-filename=freedata-server
+
+      - name: Prepare AppImage folder
+        run: |
+          mkdir -p $HOME/freedata-appimage
+          mkdir -p $HOME/freedata-appimage/gui
+          mkdir -p $HOME/freedata-appimage/server
+
+
+      - name: Copy GUI
+        run: |
+          cp -r freedata_gui/release/linux-unpacked/* $HOME/freedata-appimage/gui
+
+
+      - name: Copy server
+        run: |
+          cp -r freedata_server/server.dist/* $HOME/freedata-appimage/server
+
+      - name: Copy Icon
+        run: |
+          cp freedata_gui/build/icon.png $HOME/freedata-appimage/icon.png
+
+      - name: Create Desktop shortcut
+        run: |
+          echo "[Desktop Entry]" > $HOME/freedata-appimage/FreeDATA.desktop
+          echo "Type=Application" >> $HOME/freedata-appimage/FreeDATA.desktop
+          echo "Name=FreeDATA" >> $HOME/freedata-appimage/FreeDATA.desktop
+          echo "Icon=icon" >> $HOME/freedata-appimage/FreeDATA.desktop
+          echo "Exec=AppRun" >> $HOME/freedata-appimage/FreeDATA.desktop
+          echo "Categories=Utility" >> $HOME/freedata-appimage/FreeDATA.desktop
+      
+
+      - name: Create AppImage build script
+        run: |
+          echo '#!/bin/bash
+          # Navigate to the AppDir root; this ensures relative paths work as expected
+          cd "$(dirname "$(readlink -f "${0}")")"
+          
+          # check if config exists in ~/.config/FreeDATA/config.ini else create it
+          SERVER_CONFIG_FILE=~/.config/FreeDATA/config.ini
+          if test -f "$SERVER_CONFIG_FILE"; then
+              echo "$SERVER_CONFIG_FILE exists."
+          else 
+              echo "$SERVER_CONFIG_FILE does not exist. Copying the default one"
+              mkdir ~/.config/FreeDATA
+              cp ./server/config.ini $SERVER_CONFIG_FILE
+          fi
+
+          echo "Setting server config variable"
+          export FREEDATA_CONFIG=$SERVER_CONFIG_FILE
+          # ./server/freedata-server
+          
+          # Launch the gui
+          echo "Starting gui"
+          ./gui/freedata
+          
+          ' > $HOME/freedata-appimage/AppRun
+          chmod +x $HOME/freedata-appimage/AppRun
+
+      - name: Download AppImage
+        run: |
+          wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+
+      - name: Execute AppImage
+        run: |
+          ./appimagetool-x86_64.AppImage $HOME/freedata-appimage/
+
+      - name: LIST ALL FILES
+        run: ls -R
+
+
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 'FreeDATA-x86_64.AppImage'
+          path: FreeDATA-x86_64.AppImage
+
+      - name: Upload Installer to Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          draft: true
+          files: FreeDATA-x86_64.AppImage
+          tag_name: ${{ github.ref_name }}
+          name: 'FreeDATA-x86_64.AppImage'

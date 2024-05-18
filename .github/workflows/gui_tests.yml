@@ -28,11 +28,11 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
-        working-directory: gui
+        working-directory: freedata_gui
         run: |
           npm i
 
       - name: GUI Test
-        working-directory: gui
+        working-directory: freedata_gui
         run: |
           npm run test
