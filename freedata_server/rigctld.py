@@ -19,6 +19,7 @@ class radio:
 
         self.connection = None
         self.connected = False
+        self.shutdown = False
         self.await_response = threading.Event()
         self.await_response.set()
 
@@ -42,7 +43,8 @@ class radio:
         self.connect()
 
     def connect(self):
-
+        if self.shutdown:
+            return
         try:
             self.connection = socket.create_connection((self.hostname, self.port), timeout=self.timeout)
             self.connected = True
@@ -54,6 +56,7 @@ class radio:
             self.states.set_radio("radio_status", False)
 
     def disconnect(self):
+        self.shutdown = True
         self.connected = False
         if self.connection:
             self.connection.close()
