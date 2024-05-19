@@ -145,6 +145,7 @@ class SM:
         del self.app.radio_manager
 
     def shutdown(self):
+        print("shutting down service manager...")
         self.modem_service.put("stop")
         self.shutdown_flag.set()
         self.runner_thread.join()

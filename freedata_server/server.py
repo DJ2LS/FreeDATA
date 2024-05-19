@@ -350,6 +350,7 @@ def signal_handler(sig, frame):
     print("Received SIGINT......")
     stop_server()
 
+
 def stop_server():
     if hasattr(app, 'schedule_manager'):
         app.schedule_manager.stop()
@@ -357,11 +358,7 @@ def stop_server():
     if hasattr(app, 'radio_manager'):
         app.radio_manager.stop()
 
-
     if hasattr(app, 'service_manager'):
-
-        if hasattr(app, 'socket_interface_manager') and app.socket_interface_manager:
-            app.socket_interface_manager.stop_servers()
 
         if hasattr(app.service_manager, 'modem_service') and app.service_manager.modem_service:
             app.service_manager.shutdown()
@@ -370,12 +367,15 @@ def stop_server():
             #    app.service_manager.modem.sd_input_stream.stop
             app.service_manager.modem.demodulator.shutdown()
 
-        audio.terminate()
+    if hasattr(app, 'socket_interface_manager') and app.socket_interface_manager:
+        app.socket_interface_manager.stop_servers()
 
+    audio.terminate()
 
     print("Shutdown completed")
     print(".........................")
     sys.exit(0)
+
 
 def main():
     # Register the signal handler for SIGINT

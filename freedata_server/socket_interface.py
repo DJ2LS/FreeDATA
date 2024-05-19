@@ -193,4 +193,4 @@ class SocketInterfaceHandler:
             self.data_server_thread.join()
             del self.data_server
 
-        self.log(f"Interfaces stopped")
+        self.log(f"socket interfaces stopped")

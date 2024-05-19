@@ -358,5 +358,6 @@ def calculate_fft(data, fft_queue, states) -> None:
         print(f"[MDM] calculate_fft: Exception: {err}")
 
 def terminate():
+    print("terminating audio instance...")
     if sd._initialized:
         sd._terminate()
