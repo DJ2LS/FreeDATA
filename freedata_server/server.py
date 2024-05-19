@@ -374,8 +374,10 @@ def stop_server():
 
     print("Shutdown completed")
     print(".........................")
-    sys.exit(0)
-
+    try:
+        sys.exit(0)
+    except Exception as e:
+        print(e)
 
 def main():
     # Register the signal handler for SIGINT
