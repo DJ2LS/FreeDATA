@@ -31,8 +31,7 @@ class ARQRawCommand(TxCommand):
             # on our channel. This should prevent some packet collision
             random_delay = np.random.randint(0, 6)
             threading.Event().wait(random_delay)
-            while self.state_manager.is_receiving_codec2_signal():
-                threading.Event().wait(0.1)
+            self.state_manager.channel_busy_condition_codec2.wait(5)
 
             prepared_data, type_byte = self.arq_data_type_handler.prepare(self.data, self.type)
 

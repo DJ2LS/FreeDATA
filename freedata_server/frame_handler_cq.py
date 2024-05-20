@@ -33,8 +33,7 @@ class CQFrameHandler(frame_handler.FrameHandler):
         # on our channel. This should prevent some packet collision
         random_delay = np.random.randint(0, 6)
         threading.Event().wait(random_delay)
-        while self.states.is_receiving_codec2_signal():
-            threading.Event().wait(0.1)
+        self.states.channel_busy_condition_codec2.wait(5)
 
         self.transmit(qrv_frame)
 
