@@ -365,4 +365,4 @@ class Demodulator():
         print("shutting down demodulators...")
         self.shutdown_flag.set()
         for mode in self.MODE_DICT:
-            self.MODE_DICT[mode]['decoding_thread'].join()
+            self.MODE_DICT[mode]['decoding_thread'].join(3)

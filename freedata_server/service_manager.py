@@ -148,4 +148,4 @@ class SM:
         print("shutting down service manager...")
         self.modem_service.put("stop")
         self.shutdown_flag.set()
-        self.runner_thread.join()
+        self.runner_thread.join(3)

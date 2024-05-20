@@ -38,7 +38,7 @@ def get_audio_devices():
             target=fetch_audio_devices, args=(proxy_input_devices, proxy_output_devices)
         )
         proc.start()
-        proc.join()
+        proc.join(3)
 
         # additional logging for audio devices
         # log.debug("[AUD] get_audio_devices: input_devices:", list=f"{proxy_input_devices}")

@@ -185,12 +185,12 @@ class SocketInterfaceHandler:
         # Gracefully shutdown the server
         if self.command_server:
             self.command_server.shutdown()
-            self.command_server_thread.join()
+            self.command_server_thread.join(3)
 
             del self.command_server
         if self.data_server:
             self.data_server.shutdown()
-            self.data_server_thread.join()
+            self.data_server_thread.join(3)
             del self.data_server
 
         self.log(f"socket interfaces stopped")

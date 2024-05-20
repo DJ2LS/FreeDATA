@@ -43,6 +43,8 @@ class radio:
         self.connect()
 
     def connect(self):
+        print(self.hostname)
+        print(self.port)
         if self.shutdown:
             return
         try:
@@ -350,6 +352,9 @@ class radio:
                     self.log.info(f"Attempting to start rigctld using binary found at: {binary_path}")
                     self.rigctld_process = helpers.kill_and_execute(binary_path, additional_args)
                     self.log.info("Successfully executed rigctld.")
+                    print(self.rigctld_process)
+                    print(additional_args)
+                    print(binary_paths)
                     break  # Exit the loop after successful execution
                 except Exception as e:
                     pass

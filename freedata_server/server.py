@@ -355,10 +355,11 @@ def stop_server():
 
     if hasattr(app, 'radio_manager'):
         app.radio_manager.stop()
-
+    import time
+    start_time = time.time()
     if hasattr(app, 'schedule_manager'):
         app.schedule_manager.stop()
-
+    print(time.time()-start_time)
     if hasattr(app, 'service_manager'):
 
         if hasattr(app.service_manager, 'modem_service') and app.service_manager.modem_service:

@@ -19,7 +19,7 @@ class ScheduleManager:
         self.event_manager = event_manager
         self.config = self.config_manager.read()
 
-        self.scheduler = sched.scheduler(time.time, time.sleep)
+        self.scheduler = sched.scheduler(time.time, threading.Event().wait)
         self.events = {
             'check_for_queued_messages': {'function': self.check_for_queued_messages, 'interval': 5},
             'explorer_publishing': {'function': self.push_to_explorer, 'interval': 60},
@@ -65,7 +65,7 @@ class ScheduleManager:
 
         # Wait for the scheduler thread to finish
         if self.scheduler_thread:
-            self.scheduler_thread.join()
+            self.scheduler_thread.join(3)
         print("done")
     def transmit_beacon(self):
         try:
@@ -99,9 +99,6 @@ class ScheduleManager:
                     command.transmit(self.modem)
             except Exception as e:
                 print(e)
-
-        # let's wait some random time for decreasing chance of packet colission.
-        threading.Event().wait(np.random.randint(3,10))
 
         return
 
