@@ -352,11 +352,12 @@ def signal_handler(sig, frame):
 
 
 def stop_server():
-    if hasattr(app, 'schedule_manager'):
-        app.schedule_manager.stop()
 
     if hasattr(app, 'radio_manager'):
         app.radio_manager.stop()
+
+    if hasattr(app, 'schedule_manager'):
+        app.schedule_manager.stop()
 
     if hasattr(app, 'service_manager'):
 
