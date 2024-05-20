@@ -41,7 +41,7 @@ class ScheduleManager:
         """Start scheduling events and run the scheduler in a separate thread."""
 
         # wait some time for the modem to be ready
-        threading.Event().wait(timeout=0.5)
+        threading.Event().wait(timeout=0.1)
 
         # get actual freedata_server instance
         self.modem = modem
