@@ -38,7 +38,7 @@ def get_audio_devices():
             target=fetch_audio_devices, args=(proxy_input_devices, proxy_output_devices)
         )
         proc.start()
-        proc.join()
+        proc.join(3)
 
         # additional logging for audio devices
         # log.debug("[AUD] get_audio_devices: input_devices:", list=f"{proxy_input_devices}")
@@ -358,5 +358,6 @@ def calculate_fft(data, fft_queue, states) -> None:
         print(f"[MDM] calculate_fft: Exception: {err}")
 
 def terminate():
+    print("terminating audio instance...")
     if sd._initialized:
         sd._terminate()

@@ -65,6 +65,8 @@ class TestARQSession(unittest.TestCase):
 
         # ISS
         cls.iss_state_manager = StateManager(queue.Queue())
+        cls.iss_state_manager.set_channel_busy_condition_codec2(False)
+
         cls.iss_event_manager = EventManager([queue.Queue()])
         cls.iss_event_queue = queue.Queue()
         cls.iss_state_queue = queue.Queue()
@@ -76,6 +78,8 @@ class TestARQSession(unittest.TestCase):
 
         # IRS
         cls.irs_state_manager = StateManager(queue.Queue())
+        cls.iss_state_manager.set_channel_busy_condition_codec2(False)
+
         cls.irs_event_manager = EventManager([queue.Queue()])
         cls.irs_event_queue = queue.Queue()
         cls.irs_state_queue = queue.Queue()

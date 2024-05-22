@@ -19,6 +19,7 @@ class radio:
 
         self.connection = None
         self.connected = False
+        self.shutdown = False
         self.await_response = threading.Event()
         self.await_response.set()
 
@@ -42,7 +43,10 @@ class radio:
         self.connect()
 
     def connect(self):
-
+        print(self.hostname)
+        print(self.port)
+        if self.shutdown:
+            return
         try:
             self.connection = socket.create_connection((self.hostname, self.port), timeout=self.timeout)
             self.connected = True
@@ -54,6 +58,7 @@ class radio:
             self.states.set_radio("radio_status", False)
 
     def disconnect(self):
+        self.shutdown = True
         self.connected = False
         if self.connection:
             self.connection.close()
@@ -347,6 +352,9 @@ class radio:
                     self.log.info(f"Attempting to start rigctld using binary found at: {binary_path}")
                     self.rigctld_process = helpers.kill_and_execute(binary_path, additional_args)
                     self.log.info("Successfully executed rigctld.")
+                    print(self.rigctld_process)
+                    print(additional_args)
+                    print(binary_paths)
                     break  # Exit the loop after successful execution
                 except Exception as e:
                     pass

@@ -38,7 +38,7 @@ from schedule_manager import ScheduleManager
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
-MODEM_VERSION = "0.15.8-alpha"
+MODEM_VERSION = "0.15.9-alpha"
 
 # set config file to use
 def set_config():
@@ -350,18 +350,17 @@ def signal_handler(sig, frame):
     print("Received SIGINT......")
     stop_server()
 
+
 def stop_server():
-    if hasattr(app, 'schedule_manager'):
-        app.schedule_manager.stop()
 
     if hasattr(app, 'radio_manager'):
         app.radio_manager.stop()
-
-
+    import time
+    start_time = time.time()
+    if hasattr(app, 'schedule_manager'):
+        app.schedule_manager.stop()
+    print(time.time()-start_time)
     if hasattr(app, 'service_manager'):
-
-        if hasattr(app, 'socket_interface_manager') and app.socket_interface_manager:
-            app.socket_interface_manager.stop_servers()
 
         if hasattr(app.service_manager, 'modem_service') and app.service_manager.modem_service:
             app.service_manager.shutdown()
@@ -370,12 +369,17 @@ def stop_server():
             #    app.service_manager.modem.sd_input_stream.stop
             app.service_manager.modem.demodulator.shutdown()
 
-        audio.terminate()
+    if hasattr(app, 'socket_interface_manager') and app.socket_interface_manager:
+        app.socket_interface_manager.stop_servers()
 
+    audio.terminate()
 
     print("Shutdown completed")
     print(".........................")
-    sys.exit(0)
+    try:
+        sys.exit(0)
+    except Exception as e:
+        print(e)
 
 def main():
     # Register the signal handler for SIGINT

@@ -158,6 +158,9 @@ class FrameHandler():
             distance = maidenhead.distance_between_locators(self.config['STATION']['mygrid'], self.details['frame']['gridsquare'])
             event['distance_kilometers'] = distance['kilometers']
             event['distance_miles'] = distance['miles']
+            
+        if "flag" in self.details['frame'] and "AWAY_FROM_KEY" in self.details['frame']["flag"]:
+            event['away_from_key'] = self.details['frame']["flag"]["AWAY_FROM_KEY"]
 
         return event
 

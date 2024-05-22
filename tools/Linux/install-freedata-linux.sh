@@ -19,9 +19,13 @@
 #
 #
 # Changelog:
+# 1.6:	22 May 2024
+#	Reflect directory name changes in prep for merging develop to main
+#
 # 1.5:	12 May 2024
 #	"dr-freedata-001" branch of codec2 merged to main so we don't
 #	need to checkout that branch specifically
+#
 # 1.4:	05 May 2024
 #	Change to "dr-freedata-001" branch of codec2 for develop mode
 #	Added comments in scripts and README.txt for config file location
@@ -267,12 +271,7 @@ pip install --upgrade -r requirements.txt
 echo "*************************************************************************"
 echo "Changing into the server directory"
 echo "*************************************************************************"
-if [ "$args" == "develop" ];
-then
-	cd freedata_server/lib
-else
-	cd modem/lib
-fi
+cd freedata_server/lib
 
 echo "*************************************************************************"
 echo "Checking and removing any old codec2 libraries"
@@ -298,12 +297,6 @@ else
 	exit 1
 fi
 	
-# Not currently needed
-# if [ "$args" == "develop" ];
-# then
-# 	git checkout dr-freedata-001
-# fi
-
 echo "*************************************************************************"
 echo "Setting up the codec2 build"
 echo "*************************************************************************"
@@ -326,12 +319,7 @@ echo "*************************************************************************"
 echo "Building the FreeDATA GUI frontend"
 echo "*************************************************************************"
 cd ../../../..
-if [ "$args" == "develop" ];
-then
-	cd freedata_gui
-else
-	cd gui
-fi
+cd freedata_gui
 npm i
 npm audit fix --force
 npm i

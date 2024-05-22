@@ -57,6 +57,7 @@ export function connectionFailed(endpoint, event) {
 }
 export function stateDispatcher(data) {
   data = JSON.parse(data);
+
   //Leave commented when not needed, otherwise can lead to heap overflows due to the amount of data logged
   //console.log(data);
   if (data["type"] == "state-change" || data["type"] == "state") {
@@ -69,7 +70,9 @@ export function stateDispatcher(data) {
     stateStore.dbfs_level_percent = Math.round(
       Math.pow(10, data["audio_dbfs"] / 20) * 100,
     );
-
+    //Accept radio status from here as well, saves us from having to wait for an update from the radio manager
+    //Fixes the health rigctl being offline on startup
+    stateStore.radio_status = data["radio_status"];
     stateStore.channel_busy_slot = data["channel_busy_slot"];
     stateStore.beacon_state = data["is_beacon_running"];
     stateStore.away_from_key = data["is_away_from_key"];
@@ -80,8 +83,6 @@ export function stateDispatcher(data) {
   }
 
   if (data["type"] == "radio-change" || data["type"] == "radio") {
-    console.log(data);
-
     stateStore.s_meter_strength_raw = Math.round(data["s_meter_strength"]);
     stateStore.s_meter_strength_percent = Math.round(
       Math.pow(10, data["s_meter_strength"] / 20) * 100,

@@ -66,6 +66,8 @@ class TestMessageProtocol(unittest.TestCase):
 
         # ISS
         cls.iss_state_manager = StateManager(queue.Queue())
+        cls.iss_state_manager.set_channel_busy_condition_codec2(False)
+
         cls.iss_event_manager = EventManager([queue.Queue()])
         cls.iss_event_queue = queue.Queue()
         cls.iss_state_queue = queue.Queue()

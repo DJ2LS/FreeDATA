@@ -7,6 +7,9 @@ from message_p2p import MessageP2P
 from arq_data_type_handler import ARQ_SESSION_TYPES
 from message_system_db_manager import DatabaseManager
 from message_system_db_messages import DatabaseManagerMessages
+import threading
+import numpy as np
+
 
 class SendMessageCommand(TxCommand):
     """Command to send a P2P message using an ARQ transfer session
@@ -37,6 +40,13 @@ class SendMessageCommand(TxCommand):
             DatabaseManagerMessages(self.event_manager).update_message(first_queued_message["id"], update_data={'status': 'transmitting'})
             message_dict = DatabaseManagerMessages(self.event_manager).get_message_by_id(first_queued_message["id"])
             message = MessageP2P.from_api_params(message_dict['origin'], message_dict)
+
+            # wait some random time and wait if we have an ongoing codec2 transmission
+            # on our channel. This should prevent some packet collision
+            random_delay = np.random.randint(0, 6)
+            threading.Event().wait(random_delay)
+            while self.state_manager.is_receiving_codec2_signal():
+                threading.Event().wait(0.1)
 
             # Convert JSON string to bytes (using UTF-8 encoding)
             payload = message.to_payload().encode('utf-8')

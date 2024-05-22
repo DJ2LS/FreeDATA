@@ -7,8 +7,8 @@ mycall = AA1AAA
 mygrid = JN48ea
 myssid = 1
 ssid_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-enable_explorer = True
-enable_stats = True
+enable_explorer = False
+enable_stats = False
 
 [AUDIO]
 input_device = 5a1c
@@ -48,7 +48,7 @@ enable_hmac = False
 enable_morse_identifier = False
 respond_to_cq = True
 tx_delay = 50
-maximum_bandwidth = 2375
+maximum_bandwidth = 2438
 enable_socket_interface = False
 
 [SOCKET_INTERFACE]

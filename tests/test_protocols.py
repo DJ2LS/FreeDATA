@@ -64,8 +64,10 @@ class TestProtocols(unittest.TestCase):
         self.shortcutTransmission(event_frame)
         self.assertEventReceivedType('PING_ACK')
         print("PING/PING ACK CHECK SUCCESSFULLY")
+
     def testCQWithQRV(self):
         self.config['MODEM']['respond_to_cq'] = True
+        self.state_manager.set_channel_busy_condition_codec2(False)
 
         api_params = {}
         cmd = CQCommand(self.config, self.state_manager, self.event_manager, api_params)
