@@ -57,6 +57,7 @@ export function connectionFailed(endpoint, event) {
 }
 export function stateDispatcher(data) {
   data = JSON.parse(data);
+
   //Leave commented when not needed, otherwise can lead to heap overflows due to the amount of data logged
   //console.log(data);
   if (data["type"] == "state-change" || data["type"] == "state") {
@@ -82,8 +83,6 @@ export function stateDispatcher(data) {
   }
 
   if (data["type"] == "radio-change" || data["type"] == "radio") {
-    console.log(data);
-
     stateStore.s_meter_strength_raw = Math.round(data["s_meter_strength"]);
     stateStore.s_meter_strength_percent = Math.round(
       Math.pow(10, data["s_meter_strength"] / 20) * 100,
