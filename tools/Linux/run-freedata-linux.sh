@@ -15,6 +15,8 @@
 # We expect the config.ini file to be at $HOME/.config/FreeDATA/config.ini
 # If it isn't found, we copy config.ini.example there
 #
+# 1.7:  22 May 2024
+#	Slightly change the way we shutdown the server
 # 1.6:  05 May 2024
 #	Don't stop rigctld if it was started separate from FreeDATA
 #	We only want to clean up FreeDATA initiated processes
@@ -128,13 +130,16 @@ npm start > ../../FreeDATA-client.log 2>&1
 echo "*************************************************************************"
 echo "Stopping the server component"
 echo "*************************************************************************"
-kill $serverpid
+kill -INT $serverpid
+
+# Give time for the server to clean up rigctld if needed
+sleep 5s
 
 # If rigctld was already running before starting FreeDATA, leave it alone
 # otherwise we should clean it up
 if [ -z "$checkrigexist" ];
 then
-	# rigctld was started by FreeDATA and should have stoppped when the 
+	# rigctld was started by FreeDATA and should have stopped when the 
 	# server exited.  If it didn't, stop it now.
 	checkrigctld=`ps auxw | grep -i rigctld | grep -v grep`
 	if [ ! -z "$checkrigctld" ];
