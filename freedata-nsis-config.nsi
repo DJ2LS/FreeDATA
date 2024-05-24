@@ -93,7 +93,7 @@ Section "FreeData x64 GUI" SEC02
   SetOutPath $INSTDIR\freedata-gui
 
   ; Add GUI files here
-  File /r "freedata-gui\release\win-unpacked\*"
+  File /r "freedata_gui\release\win-unpacked\*"
 
   ; Create a shortcut on the desktop for the GUI
   CreateShortCut "$DESKTOP\FreeDATA GUI.lnk" "$INSTDIR\freedata-gui\freedata.exe"
