@@ -53,7 +53,7 @@ class DatabaseManagerMessages(DatabaseManager):
 
             session.commit()
             self.log(f"Added data to database: {new_message.id}")
-            self.event_manager.freedata_message_db_change()
+            self.event_manager.freedata_message_db_change(message_id=new_message.id)
             return new_message.id
         except IntegrityError as e:
             session.rollback()  # Roll back the session to a clean state
@@ -134,7 +134,7 @@ class DatabaseManagerMessages(DatabaseManager):
                 session.delete(message)
                 session.commit()
                 self.log(f"Deleted: {message_id}")
-                self.event_manager.freedata_message_db_change()
+                self.event_manager.freedata_message_db_change(message_id=message_id)
                 return {'status': 'success', 'message': f'Message {message_id} deleted'}
             else:
                 return {'status': 'failure', 'message': 'Message not found'}
@@ -169,7 +169,7 @@ class DatabaseManagerMessages(DatabaseManager):
 
                 session.commit()
                 self.log(f"Updated: {message_id}")
-                self.event_manager.freedata_message_db_change()
+                self.event_manager.freedata_message_db_change(message_id=message_id)
                 return {'status': 'success', 'message': f'Message {message_id} updated'}
             else:
                 return {'status': 'failure', 'message': 'Message not found'}
