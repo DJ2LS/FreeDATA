@@ -67,11 +67,31 @@ class DatabaseManagerMessages(DatabaseManager):
         finally:
             session.remove()
 
-
-    def get_all_messages(self):
+    def get_all_messages(self, filters=None):
         session = self.get_thread_scoped_session()
         try:
-            messages = session.query(P2PMessage).all()
+            query = session.query(P2PMessage)
+
+            if filters:
+                if 'id' in filters:
+                    query = query.filter(P2PMessage.id == filters['id'])
+                if 'callsign' in filters:
+                    callsign_filter = filters['callsign']
+                    query = query.filter(
+                        (P2PMessage.origin_callsign.contains(callsign_filter)) |
+                        (P2PMessage.via_callsign.contains(callsign_filter)) |
+                        (P2PMessage.destination_callsign.contains(callsign_filter))
+                    )
+                if 'origin_callsign' in filters:
+                    query = query.filter(P2PMessage.origin_callsign.contains(filters['origin_callsign']))
+                if 'via_callsign' in filters:
+                    query = query.filter(P2PMessage.via_callsign.contains(filters['via_callsign']))
+                if 'destination_callsign' in filters:
+                    query = query.filter(P2PMessage.destination_callsign.contains(filters['destination_callsign']))
+                if 'direction' in filters:
+                    query = query.filter(P2PMessage.direction.contains(filters['direction']))
+
+            messages = query.all()
             return [message.to_dict() for message in messages]
 
         except Exception as e:
@@ -83,9 +103,9 @@ class DatabaseManagerMessages(DatabaseManager):
         finally:
             session.remove()
 
-    def get_all_messages_json(self):
-        messages_dict = self.get_all_messages()
-        messages_with_header = {'total_messages' : len(messages_dict), 'messages' : messages_dict}
+    def get_all_messages_json(self, filters=None):
+        messages_dict = self.get_all_messages(filters)
+        messages_with_header = {'total_messages': len(messages_dict), 'messages': messages_dict}
         return messages_with_header
 
     def get_message_by_id(self, message_id):

@@ -270,9 +270,24 @@ def get_post_radio():
 
 @app.route('/freedata/messages', methods=['POST', 'GET'])
 def get_post_freedata_message():
-    if request.method in ['GET']:
-        result = DatabaseManagerMessages(app.event_manager).get_all_messages_json()
+    if request.method == 'GET':
+        # Get filter parameters from the query string
+        filters = {
+            'id': request.args.get('id', default=None, type=str),
+            'callsign': request.args.get('callsign', default=None, type=str),
+            'origin_callsign': request.args.get('origin_callsign', default=None, type=str),
+            'via_callsign': request.args.get('via_callsign', default=None, type=str),
+            'destination_callsign': request.args.get('destination_callsign', default=None, type=str),
+            'direction': request.args.get('direction', default=None, type=str)
+        }
+
+        # Remove filters that are None
+        filters = {k: v for k, v in filters.items() if v is not None}
+
+        # Fetch filtered messages from the database
+        result = DatabaseManagerMessages(app.event_manager).get_all_messages_json(filters=filters)
         return api_response(result)
+
     elif request.method in ['POST']:
         enqueue_tx_command(command_message_send.SendMessageCommand, request.json)
         return api_response(request.json)
