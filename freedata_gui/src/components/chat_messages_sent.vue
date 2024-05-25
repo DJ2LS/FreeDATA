@@ -52,7 +52,13 @@
 
         <div class="card-footer p-0 bg-secondary border-top-0">
           <p class="text p-0 m-0 me-1 text-end">
-            {{ message.status }} | {{ getDateTime }}
+          <span class="badge badge-primary mr-2" v-bind:class="{
+              'bg-danger': message.status == 'failed',
+              'bg-primary': message.status == 'transmitting',
+              'bg-secondary': message.status == 'transmitted',
+            }"
+            >{{ message.status }}</span>
+              | attempt: {{ message.attempt + 1 }} | {{ getDateTime }}
           </p>
           <!-- Display formatted timestamp in card-footer -->
         </div>
