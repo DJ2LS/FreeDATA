@@ -432,6 +432,7 @@ def main():
     # initialize database default values
 
     DatabaseManager(app.event_manager).initialize_default_values()
+    DatabaseManager(app.event_manager).database_repair_and_cleanup()
     wsm.startThreads(app)
 
     conf = app.config_manager.read()
