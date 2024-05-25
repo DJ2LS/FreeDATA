@@ -211,11 +211,11 @@ export async function sendFreedataMessage(destination, body, attachments) {
 }
 
 export async function retransmitFreedataMessage(id) {
-  return await apiPost(`/freedata/messages/${id}`);
+  return await apiPatch(`/freedata/messages/${id}/retransmit`);
 }
 
 export async function setFreedataMessageAsUnread(id) {
-  return await apiPatch(`/freedata/messages/${id}`);
+  return await apiPatch(`/freedata/messages/${id}`, {is_read: True});
 }
 
 export async function deleteFreedataMessage(id) {

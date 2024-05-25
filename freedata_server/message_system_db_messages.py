@@ -58,8 +58,7 @@ class DatabaseManagerMessages(DatabaseManager):
         except IntegrityError as e:
             session.rollback()  # Roll back the session to a clean state
             self.log(f"Message with ID {message_data['id']} already exists in the database.", isWarning=True)
-            return None  # or you might return the existing message's ID or details
-
+            return None
 
         except Exception as e:
             session.rollback()
@@ -166,7 +165,6 @@ class DatabaseManagerMessages(DatabaseManager):
                 if 'priority' in update_data:
                     message.priority = update_data['priority']
 
-
                 session.commit()
                 self.log(f"Updated: {message_id}")
                 self.event_manager.freedata_message_db_change(message_id=message_id)
@@ -229,21 +227,6 @@ class DatabaseManagerMessages(DatabaseManager):
             if own_session:
                 session.remove()
 
-    def mark_message_as_read(self, message_id):
-        session = self.get_thread_scoped_session()
-        try:
-            message = session.query(P2PMessage).filter_by(id=message_id).first()
-            if message:
-                message.is_read = True
-                session.commit()
-                self.log(f"Marked message {message_id} as read")
-            else:
-                self.log(f"Message with ID {message_id} not found")
-        except Exception as e:
-            session.rollback()
-            self.log(f"An error occurred while marking message {message_id} as read: {e}")
-        finally:
-            session.remove()
 
     def set_message_to_queued_for_callsign(self, callsign):
         session = self.get_thread_scoped_session()
