@@ -214,7 +214,7 @@ export async function retransmitFreedataMessage(id) {
   return await apiPatch(`/freedata/messages/${id}/retransmit`);
 }
 
-export async function setFreedataMessageAsUnread(id) {
+export async function setFreedataMessageAsRead(id) {
   return await apiPatch(`/freedata/messages/${id}`, {is_read: true});
 }
 
