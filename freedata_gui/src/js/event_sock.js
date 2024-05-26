@@ -19,7 +19,7 @@ function connect(endpoint, dispatcher) {
 
   // handle opening
   socket.addEventListener("open", function (event) {
-    //console.log("Connected to the WebSocket server: " + endpoint);
+    console.log("Connected to the WebSocket server: " + endpoint);
   });
 
   // handle data

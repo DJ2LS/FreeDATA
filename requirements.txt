@@ -12,9 +12,8 @@ ordered-set
 nuitka
 pyinstaller
 websocket-client
-flask
-flask-sock
-flask-cors
+fastapi
+uvicorn
 
 # Development and test dependencies
 autopep8
