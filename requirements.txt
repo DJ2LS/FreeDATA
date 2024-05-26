@@ -6,6 +6,7 @@ pyserial
 sounddevice
 structlog
 requests
+asyncio
 chardet
 colorama
 ordered-set
