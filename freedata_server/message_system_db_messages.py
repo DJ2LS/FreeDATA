@@ -141,7 +141,7 @@ class DatabaseManagerMessages(DatabaseManager):
         except Exception as e:
             session.rollback()
             self.log(f"Error deleting message with ID {message_id}: {e}", isWarning=True)
-            return {'status': 'failure', 'message': str(e)}
+            return {'status': 'failure', 'message': 'error deleting message'}
 
         finally:
             session.remove()
@@ -175,7 +175,7 @@ class DatabaseManagerMessages(DatabaseManager):
         except Exception as e:
             session.rollback()
             self.log(f"Error updating message with ID {message_id}: {e}", isWarning=True)
-            return {'status': 'failure', 'message': str(e)}
+            return {'status': 'failure', 'message': 'error updating message'}
 
         finally:
             session.remove()
@@ -262,6 +262,6 @@ class DatabaseManagerMessages(DatabaseManager):
         except Exception as e:
             session.rollback()
             self.log(f"An error occurred while setting messages to queued: {e}", isWarning=True)
-            return {'status': 'failure', 'message': str(e)}
+            return {'status': 'failure', 'message': 'error setting message to queued'}
         finally:
             session.remove()
