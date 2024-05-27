@@ -2,6 +2,10 @@
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 import settings_hamlib from "./settings_hamlib.vue";
 import settings_tci from "./settings_tci.vue";
+import settings_serial_ptt from "./settings_serial_ptt.vue";
+
+
+
 </script>
 
 <template>
@@ -15,9 +19,8 @@ import settings_tci from "./settings_tci.vue";
       @change="onChange"
       v-model="settings.remote.RADIO.control"
     >
-      <option selected value="disabled">
-        Disabled / VOX (no rig control - use with VOX)
-      </option>
+      <option selected value="disabled">Disabled / VOX (no rig control - use with VOX)</option>
+      <option selected value="serial_ptt">Serial PTT via DTR/RTS</option>
       <option selected value="rigctld">Rigctld (external Hamlib)</option>
       <option selected value="rigctld_bundle">Rigctld (internal Hamlib)</option>
       <option selected value="tci">TCI</option>
@@ -52,6 +55,18 @@ import settings_tci from "./settings_tci.vue";
       >
         TCI
       </button>
+      <button
+        class="nav-link"
+        id="nav-profile-tab"
+        data-bs-toggle="tab"
+        data-bs-target="#nav-serial"
+        type="button"
+        role="tab"
+        aria-controls="nav-serial"
+        aria-selected="false"
+      >
+        Serial
+      </button>
     </div>
   </nav>
   <div class="tab-content" id="nav-tabContent">
@@ -72,6 +87,15 @@ import settings_tci from "./settings_tci.vue";
       tabindex="0"
     >
       <settings_tci />
+    </div>
+    <div
+      class="tab-pane fade"
+      id="nav-serial"
+      role="tabpanel"
+      aria-labelledby="nav-serial-tab"
+      tabindex="0"
+    >
+      <settings_serial_ptt />
     </div>
   </div>
 

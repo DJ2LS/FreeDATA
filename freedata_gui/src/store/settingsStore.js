@@ -72,6 +72,7 @@ const defaultConfig = {
       ptt_type: "",
       serial_dcd: "",
       serial_dtr: "",
+      serial_rts: "",
     },
     RIGCTLD: {
       ip: "127.0.0.1",
