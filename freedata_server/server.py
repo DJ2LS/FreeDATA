@@ -270,18 +270,18 @@ async def get_freedata_message(message_id: str):
 @app.patch("/freedata/messages/{message_id}")
 async def patch_freedata_message(message_id: str, request: Request):
     data = await request.json()
-    result = DatabaseManagerMessages(app.event_manager).update_message(message_id, update_data=data)
+
+    if data.get("action") == "retransmit":
+        result = DatabaseManagerMessages(app.event_manager).update_message(message_id, update_data={'status': 'queued'})
+        DatabaseManagerMessages(app.event_manager).increment_message_attempts(message_id)
+    else:
+        result = DatabaseManagerMessages(app.event_manager).update_message(message_id, update_data=data)
+
     return api_response(result)
 
 @app.delete("/freedata/messages/{message_id}")
 async def delete_freedata_message(message_id: str):
     result = DatabaseManagerMessages(app.event_manager).delete_message(message_id)
-    return api_response(result)
-
-@app.patch("/freedata/messages/{message_id}/retransmit")
-async def retransmit_freedata_message(message_id: str):
-    result = DatabaseManagerMessages(app.event_manager).update_message(message_id, update_data={'status': 'queued'})
-    DatabaseManagerMessages(app.event_manager).increment_message_attempts(message_id)
     return api_response(result)
 
 @app.get("/freedata/messages/{message_id}/attachments")
