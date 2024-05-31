@@ -39,6 +39,7 @@ class CONFIG:
             'ptt_type': str,
             'serial_dcd': str,
             'serial_dtr': str,
+            'serial_rts': str,
         },
         'RIGCTLD': {
             'ip': str,

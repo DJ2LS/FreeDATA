@@ -35,6 +35,7 @@ ptt_port = ignore
 ptt_type = USB
 serial_dcd = NONE
 serial_dtr = OFF
+serial_rts = OFF
 
 [TCI]
 tci_ip = 127.0.0.1
