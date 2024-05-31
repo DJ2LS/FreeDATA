@@ -32,7 +32,8 @@ class radio:
             'rf': '---',
             'ptt': False,  # Initial PTT state is set to False,
             'tuner': False,
-            'swr': '---'
+            'swr': '---',
+            'vfo': False,
         }
 
         # start rigctld...
@@ -43,8 +44,6 @@ class radio:
         self.connect()
 
     def connect(self):
-        print(self.hostname)
-        print(self.port)
         if self.shutdown:
             return
         try:
@@ -85,6 +84,7 @@ class radio:
 
             try:
                 self.await_response = threading.Event()
+
                 self.connection.sendall(command.encode('utf-8') + b"\n")
                 response = self.connection.recv(1024)
                 self.await_response.set()
@@ -98,6 +98,12 @@ class radio:
                 self.connected = False
         return ""
 
+    def insert_vfo(self, command):
+        if self.parameters['vfo']:
+            return command[:1] + f" {self.parameters['vfo']} " + command[1:]
+        return command
+
+
     def set_ptt(self, state):
         """Set the PTT (Push-to-Talk) state.
 
@@ -109,10 +115,16 @@ class radio:
         """
         if self.connected:
             try:
+
                 if state:
-                    self.send_command('T 1')  # Enable PTT
+                    command = 'T 1'
                 else:
-                    self.send_command('T 0')  # Disable PTT
+                    command = 'T 0'
+
+                command = self.insert_vfo(command)
+                self.send_command(command)
+
+
                 self.parameters['ptt'] = state  # Update PTT state in parameters
                 return True
             except Exception as err:
@@ -132,6 +144,8 @@ class radio:
         if self.connected:
             try:
                 command = f"M {mode} 0"
+                command = self.insert_vfo(command)
+
                 self.send_command(command)
                 self.parameters['mode'] = mode
                 return True
@@ -152,6 +166,7 @@ class radio:
         if self.connected:
             try:
                 command = f"F {frequency}"
+                command = self.insert_vfo(command)
                 self.send_command(command)
                 self.parameters['frequency'] = frequency
                 return True
@@ -172,6 +187,7 @@ class radio:
         if self.connected:
             try:
                 command = f"M {self.parameters['mode']} {bandwidth}"
+                command = self.insert_vfo(command)
                 self.send_command(command)
                 self.parameters['bandwidth'] = bandwidth
                 return True
@@ -194,6 +210,7 @@ class radio:
         if self.connected:
             try:
                 command = f"L RFPOWER {rf/100}" #RF RFPOWER --> RFPOWER == IC705
+                command = self.insert_vfo(command)
                 self.send_command(command)
                 self.parameters['rf'] = rf
                 return True
@@ -213,10 +230,15 @@ class radio:
         """
         if self.connected:
             try:
+
                 if state:
-                    self.send_command('U TUNER 1')  # Enable PTT
+                    command = 'U TUNER 1'
                 else:
-                    self.send_command('U TUNER 0')  # Disable PTT
+                    command = 'U TUNER 0'
+
+                command = self.insert_vfo(command)
+                self.send_command(command)
+
                 self.parameters['tuner'] = state  # Update PTT state in parameters
                 return True
             except Exception as err:
@@ -235,7 +257,10 @@ class radio:
         """
         if self.connected:
             try:
-                result = self.send_command('u TUNER')
+
+                command = self.insert_vfo('u TUNER')
+                result = self.send_command(command)
+
                 state = result not in [None, ''] and int(result) == 1
                 self.parameters['tuner'] = state
                 return True
@@ -249,6 +274,7 @@ class radio:
             self.connect()
 
         if self.connected:
+            self.get_vfo()
             self.get_frequency()
             self.get_mode_bandwidth()
             self.get_alc()
@@ -258,9 +284,24 @@ class radio:
             self.get_swr()
         return self.parameters
 
+
+    def get_vfo(self):
+        try:
+            vfo_response = self.send_command('v')
+            if vfo_response not in [None, '']:
+                self.parameters['vfo'] = vfo_response
+            else:
+                self.parameters['vfo'] = False
+
+        except Exception as e:
+            self.log.warning(f"Error getting vfo: {e}")
+            self.parameters['vfo'] = 'err'
+
     def get_frequency(self):
         try:
-            frequency_response = self.send_command('f')
+            command = self.insert_vfo('f')
+            frequency_response = self.send_command(command)
+
             if frequency_response not in [None, '']:
                 self.parameters['frequency'] = int(frequency_response)
             else:
@@ -272,7 +313,9 @@ class radio:
 
     def get_mode_bandwidth(self):
         try:
-            response = self.send_command('m')
+            command = self.insert_vfo('m')
+            response = self.send_command(command)
+
             if response not in [None, '']:
                 response = response.strip()
                 mode, bandwidth = response.split('\n', 1)
@@ -293,7 +336,8 @@ class radio:
 
     def get_alc(self):
         try:
-            alc_response = self.send_command('l ALC')
+            command = self.insert_vfo('l ALC')
+            alc_response = self.send_command(command)
             if alc_response not in [None, '']:
                 self.parameters['alc'] = float(alc_response)
             else:
@@ -306,7 +350,8 @@ class radio:
 
     def get_strength(self):
         try:
-            strength_response = self.send_command('l STRENGTH')
+            command = self.insert_vfo('l STRENGTH')
+            strength_response = self.send_command(command)
             if strength_response not in [None, '']:
                 self.parameters['strength'] = int(strength_response)
             else:
@@ -317,7 +362,8 @@ class radio:
 
     def get_rf(self):
         try:
-            rf_response = self.send_command('l RFPOWER')
+            command = self.insert_vfo('l RFPOWER')
+            rf_response = self.send_command(command)
             if rf_response not in [None, '']:
                 self.parameters['rf'] = int(float(rf_response) * 100)
             else:
@@ -330,7 +376,8 @@ class radio:
 
     def get_swr(self):
         try:
-            rf_response = self.send_command('l SWR')
+            command = self.insert_vfo('l SWR')
+            rf_response = self.send_command(command)
             if rf_response not in [None, '']:
                 self.parameters['swr'] = rf_response
             else:
