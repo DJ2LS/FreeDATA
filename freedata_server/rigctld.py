@@ -99,8 +99,8 @@ class radio:
         return ""
 
     def insert_vfo(self, command):
-        if self.parameters['vfo']:
-            return command[:1] + f" {self.parameters['vfo']} " + command[1:]
+        if self.parameters['vfo'] and self.parameters['vfo'] not in [None, False]:
+            return f"{command[:1].strip()} {self.parameters['vfo']} {command[1:].strip()}"
         return command
 
 
@@ -288,8 +288,8 @@ class radio:
     def get_vfo(self):
         try:
             vfo_response = self.send_command('v')
-            if vfo_response not in [None, '']:
-                self.parameters['vfo'] = vfo_response
+            if vfo_response not in [None, 'None', '']:
+                self.parameters['vfo'] = vfo_response.strip('')
             else:
                 self.parameters['vfo'] = False
 
@@ -338,7 +338,7 @@ class radio:
         try:
             command = self.insert_vfo('l ALC')
             alc_response = self.send_command(command)
-            if alc_response not in [None, '']:
+            if alc_response not in [False, None, '']:
                 self.parameters['alc'] = float(alc_response)
             else:
                 self.parameters['alc'] = 'err'
