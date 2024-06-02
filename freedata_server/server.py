@@ -134,7 +134,9 @@ async def post_config(request: Request):
 
 @app.get("/devices/audio")
 async def get_audio_devices():
-    dev_in, dev_out = audio.get_audio_devices()
+    #dev_in, dev_out = audio.get_audio_devices()
+    dev_in, dev_out = audio.fetch_audio_devices([], [])
+
     return {'in': dev_in, 'out': dev_out}
 
 @app.get("/devices/serial")

@@ -2,6 +2,7 @@ import {
   eventDispatcher,
   stateDispatcher,
   connectionFailed,
+  loadAllData,
 } from "../js/eventHandler.js";
 import { addDataToWaterfall } from "../js/waterfallHandler.js";
 
@@ -20,6 +21,8 @@ function connect(endpoint, dispatcher) {
   // handle opening
   socket.addEventListener("open", function (event) {
     console.log("Connected to the WebSocket server: " + endpoint);
+    // when connected again, initially load all data from server
+    loadAllData()
   });
 
   // handle data

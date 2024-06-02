@@ -104,6 +104,8 @@ def fetch_audio_devices(input_devices, output_devices):
             if new_output_device not in output_devices:
                 output_devices.append(new_output_device)
 
+    return input_devices, output_devices
+
 
 # FreeData uses the crc as id inside the configuration
 # SD lib uses a numerical id which is essentially an 
