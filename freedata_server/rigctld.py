@@ -91,6 +91,10 @@ class radio:
                 stripped_result = response.decode('utf-8').strip()
                 if 'RPRT' in stripped_result:
                     return None
+
+                if 'None' in stripped_result:
+                    return None
+
                 return stripped_result
 
             except Exception as err:
@@ -99,7 +103,8 @@ class radio:
         return ""
 
     def insert_vfo(self, command):
-        if self.parameters['vfo'] and self.parameters['vfo'] not in [None, False]:
+        self.get_vfo()
+        if self.parameters['vfo'] and self.parameters['vfo'] not in [None, False, 'err', 0] and self.parameters['vfo'].startswith('VFO'):
             return f"{command[:1].strip()} {self.parameters['vfo']} {command[1:].strip()}"
         return command
 
@@ -338,13 +343,15 @@ class radio:
         try:
             command = self.insert_vfo('l ALC')
             alc_response = self.send_command(command)
-            if alc_response not in [False, None, '']:
+            if alc_response not in [False, None, '', 'None', 0]:
                 self.parameters['alc'] = float(alc_response)
             else:
                 self.parameters['alc'] = 'err'
-            
-            
+
         except Exception as e:
+            print(command)
+            print(alc_response)
+            print(self.parameters['vfo'])
             self.log.warning(f"Error getting ALC: {e}")
             self.parameters['alc'] = 'err'
 
