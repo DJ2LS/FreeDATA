@@ -340,6 +340,9 @@ def signal_handler(sig, frame):
     stop_server()
 
 def stop_server():
+    if hasattr(app, 'wsm'):
+        app.wsm.shutdown()
+
     if hasattr(app, 'radio_manager'):
         app.radio_manager.stop()
     if hasattr(app, 'schedule_manager'):
@@ -352,7 +355,6 @@ def stop_server():
     if hasattr(app, 'socket_interface_manager') and app.socket_interface_manager:
         app.socket_interface_manager.stop_servers()
     audio.terminate()
-    app.wsm.shutdown()
     print("Shutdown completed")
     try:
         sys.exit(0)

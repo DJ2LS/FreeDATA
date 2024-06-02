@@ -46,6 +46,7 @@ function connect(endpoint, dispatcher) {
       setTimeout(() => {
         //console.log("Reconnecting to websocket");
         connect(endpoint, dispatcher);
+        //initConnections()
       }, 1000);
     }
   });
