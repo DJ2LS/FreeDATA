@@ -11,7 +11,7 @@ from config import CONFIG
 import audio
 import service_manager
 import state_manager
-import websocket_manager as wsm
+import websocket_manager
 import api_validations as validations
 import command_cq
 import command_beacon
@@ -319,17 +319,17 @@ async def set_station_info(callsign: str, request: Request):
 @app.websocket("/events")
 async def websocket_events(websocket: WebSocket):
     await websocket.accept()
-    await wsm.handle_connection(websocket, wsm.events_client_list, app.modem_events)
+    await app.wsm.handle_connection(websocket, app.wsm.events_client_list, app.modem_events)
 
 @app.websocket("/fft")
 async def websocket_fft(websocket: WebSocket):
     await websocket.accept()
-    await wsm.handle_connection(websocket, wsm.fft_client_list, app.modem_fft)
+    await app.wsm.handle_connection(websocket, app.wsm.fft_client_list, app.modem_fft)
 
 @app.websocket("/states")
 async def websocket_states(websocket: WebSocket):
     await websocket.accept()
-    await wsm.handle_connection(websocket, wsm.states_client_list, app.state_queue)
+    await app.wsm.handle_connection(websocket, app.wsm.states_client_list, app.state_queue)
 
 # Signal Handler
 def signal_handler(sig, frame):
@@ -350,6 +350,7 @@ def stop_server():
     if hasattr(app, 'socket_interface_manager') and app.socket_interface_manager:
         app.socket_interface_manager.stop_servers()
     audio.terminate()
+    app.wsm.shutdown()
     print("Shutdown completed")
     try:
         sys.exit(0)
@@ -373,7 +374,8 @@ def main():
     app.modem_service.put("start")
     DatabaseManager(app.event_manager).initialize_default_values()
     DatabaseManager(app.event_manager).database_repair_and_cleanup()
-    wsm.startWorkerThreads(app)
+    app.wsm = websocket_manager.wsm()
+    app.wsm.startWorkerThreads(app)
 
     conf = app.config_manager.read()
     modemaddress = conf['NETWORK'].get('modemaddress', '127.0.0.1')
