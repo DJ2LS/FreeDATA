@@ -32,7 +32,7 @@ from schedule_manager import ScheduleManager
 # Constants
 CONFIG_ENV_VAR = 'FREEDATA_CONFIG'
 DEFAULT_CONFIG_FILE = 'config.ini'
-MODEM_VERSION = "0.15.9-alpha.1"
+MODEM_VERSION = "0.16.0-alpha"
 API_VERSION = 2
 LICENSE = 'GPL3.0'
 DOCUMENTATION_URL = 'https://wiki.freedata.app'
