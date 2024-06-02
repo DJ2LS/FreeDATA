@@ -22,7 +22,7 @@ function connect(endpoint, dispatcher) {
   socket.addEventListener("open", function (event) {
     console.log("Connected to the WebSocket server: " + endpoint);
     // when connected again, initially load all data from server
-    loadAllData()
+    loadAllData();
   });
 
   // handle data
