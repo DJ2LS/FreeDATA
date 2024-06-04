@@ -233,10 +233,8 @@ class P2PConnection:
         if not self.p2p_data_tx_queue.empty():
             print("processing data....")
 
-            self.set_state(States.PAYLOAD_SENT)
             data = self.p2p_data_tx_queue.get()
             sequence_id = random.randint(0,255)
-            data = data.encode('utf-8')
 
             if len(data) <= 11:
                 mode = FREEDV_MODE.signalling
@@ -248,6 +246,8 @@ class P2PConnection:
 
             payload = self.frame_factory.build_p2p_connection_payload(mode, self.session_id, sequence_id, data)
             self.launch_twr(payload, self.TIMEOUT_DATA, self.RETRIES_DATA,mode=mode)
+            self.set_state(States.PAYLOAD_SENT)
+
             return
 
     def prepare_data_chunk(self, data, mode):
@@ -258,7 +258,7 @@ class P2PConnection:
         self.p2p_data_rx_queue.put(frame['data'])
 
         ack_data = self.frame_factory.build_p2p_connection_payload_ack(self.session_id, 0)
-        self.launch_twr_irs(ack_data, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
+        self.launch_twr_irs(ack_data, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling_ack)
 
     def transmit_data_ack(self, frame):
         print(frame)
@@ -297,7 +297,7 @@ class P2PConnection:
         print(self.state_manager.p2p_connection_sessions)
 
         prepared_data, type_byte = self.arq_data_type_handler.prepare(data, ARQ_SESSION_TYPES.p2p_connection)
-        iss = ARQSessionISS(self.config, self.modem, 'AA1AAA-1', self.state_manager, prepared_data, type_byte)
+        iss = ARQSessionISS(self.config, self.modem, self.destination, self.state_manager, prepared_data, type_byte)
         iss.id = self.session_id
         if iss.id:
             self.state_manager.register_arq_iss_session(iss)

@@ -100,16 +100,24 @@ class DataSocket(socketserver.BaseRequestHandler):
                     except Exception:
                         self.log(f"Data received from {self.client_address}: [{len(self.data)}] - {self.data}")
 
-                    for session in self.state_manager.p2p_connection_sessions:
-                        print(f"sessions: {session}")
+                    for session_id in self.state_manager.p2p_connection_sessions:
+                        session = self.state_manager.p2p_connection_sessions[session_id]
+
+                        print(f"sessions: {self.state_manager.p2p_connection_sessions}")
+                        print(f"session_id: {session_id}")
+                        print(f"session: {session}")
+                        print(f"data to send: {self.data}")
+
+                        print(session.p2p_data_tx_queue.empty())
                         session.p2p_data_tx_queue.put(self.data)
+                        print(session.p2p_data_tx_queue.empty())
 
                 # Check if there's something to send from the queue, without blocking
 
                 for session_id in self.state_manager.p2p_connection_sessions:
                     session = self.state_manager.get_p2p_connection_session(session_id)
-                    if not session.p2p_data_tx_queue.empty():
-                        data_to_send = session.p2p_data_tx_queue.get_nowait()  # Use get_nowait to avoid blocking
+                    if not session.p2p_data_rx_queue.empty():
+                        data_to_send = session.p2p_data_rx_queue.get_nowait()  # Use get_nowait to avoid blocking
                         self.request.sendall(data_to_send)
                         self.log(f"Sent data to {self.client_address}")
 

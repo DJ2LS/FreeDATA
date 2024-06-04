@@ -24,7 +24,7 @@ class SocketCommandHandler:
         }
         cmd = P2PConnectionCommand(self.config_manager.read(), self.state_manager, self.event_manager, params, self)
         self.session = cmd.run(self.event_manager.queues, self.modem)
-
+        print(self.session.session_id)
         #if self.session.session_id:
         #    self.state_manager.register_p2p_connection_session(self.session)
         #    self.send_response("OK")
@@ -38,6 +38,7 @@ class SocketCommandHandler:
 
     def handle_mycall(self, data):
         # Logic for handling MYCALL command
+        print(data)
         self.send_response("OK")
 
     def handle_bw(self, data):

@@ -110,7 +110,7 @@ class TestP2PConnectionSession(unittest.TestCase):
                     continue
 
                 frame_bytes = transmission['bytes']
-                frame_dispatcher.new_process_data(frame_bytes, None, len(frame_bytes), 0, 0)
+                frame_dispatcher.process_data(frame_bytes, None, len(frame_bytes), 0, 0, "test")
             except queue.Empty:
                 continue
         self.logger.info(f"[{threading.current_thread().name}] Channel closed.")
@@ -167,12 +167,10 @@ class TestP2PConnectionSession(unittest.TestCase):
             for _ in range(3):
                 min_length = (30 * _ ) + 1
                 max_length = (30 * _ ) + 1
-                print(min_length)
-                print(max_length)
                 random_entry = self.generate_random_string(min_length, max_length)
-                session.p2p_data_tx_queue.put(random_entry)
+                session.p2p_data_tx_queue.put(bytes(random_entry, 'utf-8'))
 
-            session.p2p_data_tx_queue.put('12345')
+            session.p2p_data_tx_queue.put(b'12345')
         self.waitAndCloseChannels()
 
 
