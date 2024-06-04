@@ -52,9 +52,8 @@ function connect(endpoint, dispatcher) {
     }*/
 
     setTimeout(() => {
-        connect(endpoint, dispatcher);
-      }, 1000);
-
+      connect(endpoint, dispatcher);
+    }, 1000);
   });
 }
 
