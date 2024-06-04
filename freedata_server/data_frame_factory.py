@@ -188,7 +188,7 @@ class DataFrameFactory:
 
         # p2p payload frame ack
         self.template_list[FR_TYPE.P2P_CONNECTION_PAYLOAD_ACK.value] = {
-            "frame_length": self.LENGTH_SIG1_FRAME,
+            "frame_length": self.LENGTH_ACK_FRAME,
             "session_id": 1,
             "sequence_id": 1,
         }
@@ -239,7 +239,7 @@ class DataFrameFactory:
         buffer_position = 1
         # Handle the case where the frame type is not recognized
         #raise ValueError(f"Unknown frame type: {frametype}")
-        if mode_name in ["SIGNALLING_ACK"]:
+        if mode_name in ["SIGNALLING_ACK"] and int.from_bytes(frame[:1], "big") not in [FR_TYPE.P2P_CONNECTION_PAYLOAD_ACK.value]:
             frametype = FR_TYPE.ARQ_BURST_ACK.value
             frame_template = self.template_list.get(frametype)
             frame = bytes([frametype]) + frame
@@ -505,8 +505,8 @@ class DataFrameFactory:
     
     def build_p2p_connection_connect_ack(self, destination, origin, session_id):
         payload = {
-            #"destination_crc": helpers.get_crc_24(destination),
-            #"origin": helpers.callsign_to_bytes(origin),
+            "destination_crc": helpers.get_crc_24(destination),
+            "origin": helpers.callsign_to_bytes(origin),
             "session_id": session_id.to_bytes(1, 'big'),
         }
         return self.construct(FR_TYPE.P2P_CONNECTION_CONNECT_ACK, payload)
