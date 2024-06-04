@@ -36,7 +36,7 @@
     "@electron/notarize": "2.3.2",
     "@electron/universal": "2.0.1",
     "@popperjs/core": "2.11.8",
-    "@vueuse/electron": "10.7.2",
+    "@vueuse/electron": "10.10.0",
     "blob-util": "2.0.2",
     "bootstrap": "5.3.2",
     "bootstrap-icons": "1.11.3",
