@@ -32,6 +32,25 @@ const serialStore = useSerialStore();
     />
   </div>
 
+
+
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50">rigctld VFO parameter</label>
+    <label class="input-group-text w-50">
+      <div class="form-check form-switch form-check-inline">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="enableVFOSwitch"
+          v-model="settings.remote.RIGCTLD.enable_vfo"
+          @change="onChange"
+        />
+        <label class="form-check-label" for="enableVFOSwitch">VFO</label>
+      </div>
+    </label>
+  </div>
+
+
   <hr class="m-2" />
   <div
     :class="settings.remote.RADIO.control == 'rigctld_bundle' ? '' : 'd-none'"

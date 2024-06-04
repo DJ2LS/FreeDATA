@@ -47,6 +47,7 @@ class CONFIG:
             'path': str,
             'command': str,
             'arguments': str,
+            'enable_vfo': bool,
         },
         'TCI': {
             'tci_ip': str,

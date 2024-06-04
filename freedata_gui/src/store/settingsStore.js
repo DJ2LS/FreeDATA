@@ -80,6 +80,7 @@ const defaultConfig = {
       path: "",
       command: "",
       arguments: "",
+      enable_vfo: false,
     },
     STATION: {
       enable_explorer: false,
