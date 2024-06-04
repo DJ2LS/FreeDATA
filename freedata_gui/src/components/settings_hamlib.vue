@@ -32,8 +32,6 @@ const serialStore = useSerialStore();
     />
   </div>
 
-
-
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50">rigctld VFO parameter</label>
     <label class="input-group-text w-50">
@@ -49,7 +47,6 @@ const serialStore = useSerialStore();
       </div>
     </label>
   </div>
-
 
   <hr class="m-2" />
   <div
