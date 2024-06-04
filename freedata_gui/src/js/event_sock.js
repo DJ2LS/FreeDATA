@@ -39,16 +39,22 @@ function connect(endpoint, dispatcher) {
 
   // handle closing and reconnect
   socket.addEventListener("close", function (event) {
-    //console.log("WebSocket connection closed:", event.code);
+    console.log("WebSocket connection closed:", event.code);
 
+    // It might be possble, the "wasClean" check causes a problem with reconnecting
     // Reconnect handler
-    if (!event.wasClean) {
+    /*if (!event.wasClean) {
       setTimeout(() => {
         //console.log("Reconnecting to websocket");
         connect(endpoint, dispatcher);
         //initConnections()
       }, 1000);
-    }
+    }*/
+
+    setTimeout(() => {
+        connect(endpoint, dispatcher);
+      }, 1000);
+
   });
 }
 
