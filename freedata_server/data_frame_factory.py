@@ -505,8 +505,8 @@ class DataFrameFactory:
     
     def build_p2p_connection_connect_ack(self, destination, origin, session_id):
         payload = {
-            "destination_crc": helpers.get_crc_24(destination),
-            "origin": helpers.callsign_to_bytes(origin),
+            #"destination_crc": helpers.get_crc_24(destination),
+            #"origin": helpers.callsign_to_bytes(origin),
             "session_id": session_id.to_bytes(1, 'big'),
         }
         return self.construct(FR_TYPE.P2P_CONNECTION_CONNECT_ACK, payload)
