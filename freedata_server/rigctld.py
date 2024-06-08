@@ -48,6 +48,7 @@ class radio:
             return
         try:
             self.connection = socket.create_connection((self.hostname, self.port), timeout=self.timeout)
+            self.connection.settimeout(self.timeout)
             self.connected = True
             self.states.set_radio("radio_status", True)
             self.log.info(f"[RIGCTLD] Connected to rigctld at {self.hostname}:{self.port}")
@@ -99,7 +100,11 @@ class radio:
 
                 return stripped_result
 
+            except socket.timeout:
+                self.await_response.set()
+                raise TimeoutError(f"[RIGCTLD] Timeout waiting for response from rigctld: [{command}]")
             except Exception as err:
+                self.await_response.set()
                 self.log.warning(f"[RIGCTLD] Error sending command [{command}] to rigctld: {err}")
                 self.connected = False
         return ""
