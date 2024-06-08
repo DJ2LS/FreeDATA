@@ -141,8 +141,9 @@ class SM:
         self.app.radio_manager = radio_manager.RadioManager(self.config, self.state_manager, self.event_manager)
 
     def stop_radio_manager(self):
-        self.app.radio_manager.stop()
-        del self.app.radio_manager
+        if hasattr(self.app, 'radio_manager'):
+            self.app.radio_manager.stop()
+            del self.app.radio_manager
 
     def shutdown(self):
         print("shutting down service manager...")

@@ -13,7 +13,6 @@ class TestIntegration(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        #cmd = "flask --app freedata_server/server run"
         cmd = "python3 freedata_server/server.py"
         my_env = os.environ.copy()
         my_env["FREEDATA_CONFIG"] = "freedata_server/config.ini.example"
@@ -31,7 +30,7 @@ class TestIntegration(unittest.TestCase):
         self.assertEqual(r.status_code, 200)
 
         data = r.json()
-        self.assertEqual(data['api_version'], 1)
+        self.assertEqual(data['api_version'], 2)
 
     def test_config_get(self):
         r = requests.get(self.url + '/config')

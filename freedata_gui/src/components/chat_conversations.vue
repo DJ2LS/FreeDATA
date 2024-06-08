@@ -4,7 +4,7 @@ import pinia from "../store/index";
 import { useChatStore } from "../store/chatStore.js";
 import {
   getBeaconDataByCallsign,
-  setFreedataMessageAsUnread,
+  setFreedataMessageAsRead,
   getFreedataMessages,
 } from "../js/api.js";
 import { ref } from "vue";
@@ -25,7 +25,7 @@ async function setMessagesAsRead(callsign) {
   if (typeof messages !== "undefined") {
     messages.forEach((message) => {
       if (typeof message.is_read !== "undefined" && !message.is_read) {
-        setFreedataMessageAsUnread(message.id);
+        setFreedataMessageAsRead(message.id);
         message.is_read = true;
       }
     });

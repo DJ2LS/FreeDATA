@@ -39,6 +39,7 @@ class CONFIG:
             'ptt_type': str,
             'serial_dcd': str,
             'serial_dtr': str,
+            'serial_rts': str,
         },
         'RIGCTLD': {
             'ip': str,
@@ -46,6 +47,7 @@ class CONFIG:
             'path': str,
             'command': str,
             'arguments': str,
+            'enable_vfo': bool,
         },
         'TCI': {
             'tci_ip': str,

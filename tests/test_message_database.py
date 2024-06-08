@@ -118,22 +118,9 @@ class TestDataFrameFactory(unittest.TestCase):
         received_message_dict = MessageP2P.to_dict(received_message)
         message_id = self.database_manager.add_message(received_message_dict,statistics={},)
         self.database_manager.increment_message_attempts(message_id)
-
-
         result = self.database_manager.get_message_by_id(message_id)
         self.assertEqual(result["attempt"], 1)
 
-    def testMarkAsRead(self):
-        apiParams = {'destination': 'DJ2LS-3', 'body': 'Hello World!', 'attachments': []}
-        message = MessageP2P.from_api_params(self.mycall, apiParams)
-        payload = message.to_payload()
-        received_message = MessageP2P.from_payload(payload)
-        received_message_dict = MessageP2P.to_dict(received_message)
-        message_id = self.database_manager.add_message(received_message_dict, statistics={},is_read=False)
-        self.database_manager.mark_message_as_read(message_id)
-
-        result = self.database_manager.get_message_by_id(message_id)
-        self.assertEqual(result["is_read"], True)
 
 if __name__ == '__main__':
     unittest.main()

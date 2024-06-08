@@ -50,6 +50,7 @@ function getRigControlStuff() {
   switch (settings.remote.RADIO.control) {
     case "disabled":
       return true;
+    case "serial_ptt":
     case "rigctld":
     case "rigctld_bundle":
     case "tci":
@@ -289,6 +290,7 @@ function testHamlib() {
                       <option selected value="disabled">
                         Disabled (no rig control; use with VOX)
                       </option>
+                      <option selected value="serial_ptt">Serial PTT via DTR/RTS</option>
                       <option selected value="rigctld">
                         Rigctld (external Hamlib)
                       </option>
