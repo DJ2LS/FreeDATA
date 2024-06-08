@@ -374,8 +374,6 @@ def stop_server():
 
 def main():
     signal.signal(signal.SIGINT, signal_handler)
-    if sys.platform in ["win32", "win64"]:
-        signal.signal(signal.CTRL_C_EVENT, signal_handler)
 
     app.MODEM_VERSION = MODEM_VERSION
     config_file = set_config()
