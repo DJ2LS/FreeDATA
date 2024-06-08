@@ -52,7 +52,9 @@ class wsm:
         self.fft_thread.start()
         
     def shutdown(self):
+        print("closing websockets...")
         self.shutdown_flag.set()
         self.events_thread.join(1)
         self.states_thread.join(1)
         self.fft_thread.join(1)
+        print("websockets closed")

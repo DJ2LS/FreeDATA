@@ -333,6 +333,13 @@ async def websocket_states(websocket: WebSocket):
     await websocket.accept()
     await app.wsm.handle_connection(websocket, app.wsm.states_client_list, app.state_queue)
 
+
+# Shutdown Handler
+@app.on_event("shutdown")
+def shutdown_event():
+    print("shutdown via fastapi")
+    stop_server()
+
 # Signal Handler
 def signal_handler(sig, frame):
     print("\n------------------------------------------")
@@ -357,12 +364,19 @@ def stop_server():
     audio.terminate()
     print("Shutdown completed")
     try:
-        sys.exit(0)
+        # it seems sys.exit causes problems since we are using fastapi
+        # fastapi seems to close the application
+        #sys.exit(0)
+        pass
     except Exception as e:
         print(e)
+        print("shutdown down with exception")
 
 def main():
     signal.signal(signal.SIGINT, signal_handler)
+    if sys.platform in ["win32", "win64"]:
+        signal.signal(signal.CTRL_C_EVENT, signal_handler)
+
     app.MODEM_VERSION = MODEM_VERSION
     config_file = set_config()
     app.config_manager = CONFIG(config_file)
