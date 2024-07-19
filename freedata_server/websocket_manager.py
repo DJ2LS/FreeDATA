@@ -32,15 +32,20 @@ class wsm:
 
     def transmit_sock_data_worker(self, client_list, event_queue):
         while self.shutdown_flag and not self.shutdown_flag.is_set():
-            event = event_queue.get()
-            json_event = json.dumps(event)
-            clients = client_list.copy()
-            for client in clients:
-                try:
-                    asyncio.run(client.send_text(json_event))
-                except Exception:
-                    client_list.remove(client)
-    
+            try:
+                event = event_queue.get(timeout=1)
+
+                if event:
+                    json_event = json.dumps(event)
+                    clients = client_list.copy()
+                    for client in clients:
+                        try:
+                            asyncio.run(client.send_text(json_event))
+                        except Exception:
+                            client_list.remove(client)
+            except Exception:
+                continue
+
     def startWorkerThreads(self, app):
         self.events_thread = threading.Thread(target=self.transmit_sock_data_worker, daemon=True, args=(self.events_client_list, app.modem_events))
         self.events_thread.start()

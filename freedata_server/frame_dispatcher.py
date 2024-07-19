@@ -78,15 +78,19 @@ class DISPATCHER():
     def worker_receive(self) -> None:
         """Queue received data for processing"""
         while True:
-            data = self.data_queue_received.get()
-            self.process_data(
-                data['payload'],
-                data['freedv'],
-                data['bytes_per_frame'],
-                data['snr'],
-                data['frequency_offset'],
-                data['mode_name'],
-            )
+            try:
+                data = self.data_queue_received.get(timeout=1)
+                if data:
+                    self.process_data(
+                        data['payload'],
+                        data['freedv'],
+                        data['bytes_per_frame'],
+                        data['snr'],
+                        data['frequency_offset'],
+                        data['mode_name'],
+                    )
+            except Exception:
+                continue
 
     def process_data(self, bytes_out, freedv, bytes_per_frame: int, snr, frequency_offset, mode_name) -> None:
         # get frame as dictionary
