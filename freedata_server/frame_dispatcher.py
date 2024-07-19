@@ -59,12 +59,15 @@ class DISPATCHER():
         self.states = states
         self.event_manager = event_manager
 
+        self.stop_event = threading.Event()
+
         self._initialize_handlers(config, states)
 
         self.modem = modem
         self.data_queue_received = modem.data_queue_received
 
         self.arq_sessions = []
+
 
     def _initialize_handlers(self, config, states):
         """Initializes various data handlers."""
@@ -75,9 +78,12 @@ class DISPATCHER():
         """Starts worker threads for transmit and receive operations."""
         threading.Thread(target=self.worker_receive, name="Receive Worker", daemon=True).start()
 
+    def stop(self):
+        self.stop_event.set()
+
     def worker_receive(self) -> None:
         """Queue received data for processing"""
-        while True:
+        while not self.stop_event.is_set():
             try:
                 data = self.data_queue_received.get(timeout=1)
                 if data:
