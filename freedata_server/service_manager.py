@@ -149,5 +149,6 @@ class SM:
     def shutdown(self):
         print("shutting down service manager...")
         self.modem_service.put("stop")
+        threading.Event().wait(3) # we need some time before processing with the shutdown_event_flag
         self.shutdown_flag.set()
         self.runner_thread.join(3)
