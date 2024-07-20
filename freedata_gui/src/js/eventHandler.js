@@ -38,7 +38,7 @@ import {
 export async function loadAllData() {
   // TODO: Make this working
   let stateData = await getModemState();
-  //console.log(stateData);
+  console.log(stateData);
 
   let radioData = await getRadioStatus();
   //console.log(radioData);

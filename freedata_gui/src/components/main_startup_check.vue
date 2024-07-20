@@ -66,6 +66,11 @@ function getRigControlStuff() {
 function testHamlib() {
   sendModemCQ();
 }
+
+function reloadGUI(){
+    location.reload();
+}
+
 </script>
 
 <template>
@@ -81,6 +86,13 @@ function testHamlib() {
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5">Modem check</h1>
+          <button
+            type="button"
+            class="ms-5 btn btn-secondary"
+            aria-label="Reload GUI"
+            @click="reloadGUI"
+          >GUI problems? Reload it!</button>
+
           <button
             type="button"
             class="btn-close"
