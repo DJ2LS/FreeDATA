@@ -334,13 +334,6 @@ async def websocket_states(websocket: WebSocket):
     await websocket.accept()
     await app.wsm.handle_connection(websocket, app.wsm.states_client_list, app.state_queue)
 
-
-# Shutdown Handler
-@app.on_event("shutdown")
-def shutdown_event():
-    print("shutdown via fastapi")
-    stop_server()
-
 # Signal Handler
 def signal_handler(sig, frame):
     print("\n------------------------------------------")
