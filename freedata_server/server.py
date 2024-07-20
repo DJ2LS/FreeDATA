@@ -4,6 +4,8 @@ import signal
 import queue
 import asyncio
 
+
+
 from fastapi import FastAPI, Request, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,6 +24,8 @@ import command_test
 import command_arq_raw
 import command_message_send
 import event_manager
+import structlog
+from log_handler import setup_logging
 
 from message_system_db_manager import DatabaseManager
 from message_system_db_messages import DatabaseManagerMessages
@@ -41,7 +45,23 @@ DOCUMENTATION_URL = 'https://wiki.freedata.app'
 script_directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(script_directory)
 
+# adjust asyncio for windows usage for avoiding a Assertion Error
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+
 app = FastAPI()
+
+# custom logger for fastapi
+setup_logging()
+logger = structlog.get_logger()
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    response = await call_next(request)
+    logger.info(f"[API] {request.method}", url=str(request.url), response_code=response.status_code)
+    return response
+
 
 # CORS
 origins = ["*"]
@@ -337,14 +357,12 @@ async def websocket_states(websocket: WebSocket):
 # Signal Handler
 def signal_handler(sig, frame):
     print("\n------------------------------------------")
-    print("Received SIGINT...")
+    logger.warning("Received SIGINT....")
     stop_server()
 
 def stop_server():
     if hasattr(app, 'wsm'):
         app.wsm.shutdown()
-
-
     if hasattr(app, 'radio_manager'):
         app.radio_manager.stop()
     if hasattr(app, 'schedule_manager'):
@@ -357,13 +375,10 @@ def stop_server():
         app.service_manager.stop_modem()
     if hasattr(app, 'socket_interface_manager') and app.socket_interface_manager:
         app.socket_interface_manager.stop_servers()
-
     if hasattr(app, 'socket_interface_manager') and app.socket_interface_manager:
         app.socket_interface_manager.stop_servers()
     audio.terminate()
-
-
-    print("Shutdown completed")
+    logger.warning("Shutdown completed")
     try:
         # it seems sys.exit causes problems since we are using fastapi
         # fastapi seems to close the application
@@ -372,8 +387,10 @@ def stop_server():
 
         pass
     except Exception as e:
-        print(e)
-        print("shutdown down with exception")
+        logger.warning("Shutdown completed", error=e)
+
+
+
 
 def main():
     signal.signal(signal.SIGINT, signal_handler)
@@ -401,7 +418,7 @@ def main():
     modemport = int(conf['NETWORK'].get('modemport', 5000))
 
     import uvicorn
-    uvicorn.run(app, host=modemaddress, port=modemport, log_level="info")
+    uvicorn.run(app, host=modemaddress, port=modemport, log_config=None)
 
 if __name__ == "__main__":
     main()
