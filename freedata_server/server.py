@@ -53,7 +53,7 @@ if sys.platform == 'win32':
 app = FastAPI()
 
 # custom logger for fastapi
-setup_logging()
+#setup_logging()
 logger = structlog.get_logger()
 
 @app.middleware("http")
@@ -418,7 +418,7 @@ def main():
     modemport = int(conf['NETWORK'].get('modemport', 5000))
 
     import uvicorn
-    uvicorn.run(app, host=modemaddress, port=modemport, log_config=None)
+    uvicorn.run(app, host=modemaddress, port=modemport, log_config=None, log_level="info")
 
 if __name__ == "__main__":
     main()
