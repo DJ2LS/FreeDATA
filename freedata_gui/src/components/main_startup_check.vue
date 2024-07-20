@@ -67,10 +67,9 @@ function testHamlib() {
   sendModemCQ();
 }
 
-function reloadGUI(){
-    location.reload();
+function reloadGUI() {
+  location.reload();
 }
-
 </script>
 
 <template>
@@ -91,7 +90,9 @@ function reloadGUI(){
             class="ms-5 btn btn-secondary"
             aria-label="Reload GUI"
             @click="reloadGUI"
-          >GUI problems? Reload it!</button>
+          >
+            GUI problems? Reload it!
+          </button>
 
           <button
             type="button"
@@ -302,7 +303,9 @@ function reloadGUI(){
                       <option selected value="disabled">
                         Disabled (no rig control; use with VOX)
                       </option>
-                      <option selected value="serial_ptt">Serial PTT via DTR/RTS</option>
+                      <option selected value="serial_ptt">
+                        Serial PTT via DTR/RTS
+                      </option>
                       <option selected value="rigctld">
                         Rigctld (external Hamlib)
                       </option>
