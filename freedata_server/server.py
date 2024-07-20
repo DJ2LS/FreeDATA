@@ -357,7 +357,7 @@ async def websocket_states(websocket: WebSocket):
 # Signal Handler
 def signal_handler(sig, frame):
     print("\n------------------------------------------")
-    logger.warning("Received SIGINT....")
+    logger.warning("[SHUTDOWN] Received SIGINT....")
     stop_server()
 
 def stop_server():
@@ -378,7 +378,7 @@ def stop_server():
     if hasattr(app, 'socket_interface_manager') and app.socket_interface_manager:
         app.socket_interface_manager.stop_servers()
     audio.terminate()
-    logger.warning("Shutdown completed")
+    logger.warning("[SHUTDOWN] Shutdown completed")
     try:
         # it seems sys.exit causes problems since we are using fastapi
         # fastapi seems to close the application
@@ -387,7 +387,7 @@ def stop_server():
 
         pass
     except Exception as e:
-        logger.warning("Shutdown completed", error=e)
+        logger.warning("[SHUTDOWN] Shutdown completed", error=e)
 
 
 

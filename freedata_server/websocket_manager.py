@@ -1,11 +1,12 @@
 import threading
 import json
 import asyncio
-
+import structlog
 
 
 class wsm:
     def __init__(self):
+        self.log = structlog.get_logger("WEBSOCKET_MANAGER")
         self.shutdown_flag = threading.Event()
 
         # WebSocket client sets
@@ -23,11 +24,11 @@ class wsm:
             try:
                 await websocket.receive_text()
             except Exception as e:
-                print(f"Client connection lost: {e}")
+                self.log.warning(f"Client connection lost", e=e)
                 try:
                     client_list.remove(websocket)
                 except Exception as err:
-                    print(f"Error removing client from list: {e} | {err}")
+                    self.log.error(f"Error removing client from list", e=e, err=err)
                 break
 
     def transmit_sock_data_worker(self, client_list, event_queue):
@@ -59,9 +60,9 @@ class wsm:
         self.fft_thread.start()
         
     def shutdown(self):
-        print("closing websockets...")
+        self.log.warning("[SHUTDOWN] closing websockets...")
         self.shutdown_flag.set()
-        self.events_thread.join(1)
-        self.states_thread.join(1)
-        self.fft_thread.join(1)
-        print("websockets closed")
+        self.events_thread.join(0.5)
+        self.states_thread.join(0.5)
+        self.fft_thread.join(0.5)
+        self.log.warning("[SHUTDOWN] websockets closed")

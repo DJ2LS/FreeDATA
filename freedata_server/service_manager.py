@@ -9,7 +9,7 @@ import queue
 
 class SM:
     def __init__(self, app):
-        self.log = structlog.get_logger("service")
+        self.log = structlog.get_logger("service manager")
         self.app = app
         self.modem = False
         self.app.radio_manager = False
@@ -118,7 +118,7 @@ class SM:
         return True
         
     def stop_modem(self):
-        self.log.info("stopping modem....")
+        self.log.warning("stopping modem....")
         if self.modem:
             self.modem.stop_modem()
             del self.modem
@@ -147,8 +147,8 @@ class SM:
             del self.app.radio_manager
 
     def shutdown(self):
-        print("shutting down service manager...")
+        self.log.warning("[SHUTDOWN] stopping service manager....")
         self.modem_service.put("stop")
-        threading.Event().wait(3) # we need some time before processing with the shutdown_event_flag
+        threading.Event().wait(2) # we need some time before processing with the shutdown_event_flag
         self.shutdown_flag.set()
-        self.runner_thread.join(3)
+        self.runner_thread.join(0.5)
