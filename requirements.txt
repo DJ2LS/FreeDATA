@@ -1,4 +1,3 @@
-crcengine
 numpy
 psutil
 PyAudio
