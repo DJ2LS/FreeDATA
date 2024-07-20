@@ -31,7 +31,7 @@ class wsm:
                 break
 
     def transmit_sock_data_worker(self, client_list, event_queue):
-        while self.shutdown_flag and not self.shutdown_flag.is_set():
+        while not self.shutdown_flag.is_set():
             try:
                 event = event_queue.get(timeout=1)
 
@@ -45,6 +45,8 @@ class wsm:
                             client_list.remove(client)
             except Exception:
                 continue
+
+
 
     def startWorkerThreads(self, app):
         self.events_thread = threading.Thread(target=self.transmit_sock_data_worker, daemon=True, args=(self.events_client_list, app.modem_events))

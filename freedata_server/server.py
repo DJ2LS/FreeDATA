@@ -3,6 +3,7 @@ import sys
 import signal
 import queue
 import asyncio
+
 from fastapi import FastAPI, Request, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -350,23 +351,32 @@ def stop_server():
     if hasattr(app, 'wsm'):
         app.wsm.shutdown()
 
+
     if hasattr(app, 'radio_manager'):
         app.radio_manager.stop()
     if hasattr(app, 'schedule_manager'):
         app.schedule_manager.stop()
-    if hasattr(app, 'service_manager'):
-        if hasattr(app.service_manager, 'modem_service') and app.service_manager.modem_service:
-            app.service_manager.shutdown()
-        if hasattr(app.service_manager, 'modem') and app.service_manager.modem:
-            app.service_manager.modem.demodulator.shutdown()
+    if hasattr(app.service_manager, 'modem_service') and app.service_manager.modem_service:
+        app.service_manager.shutdown()
+    if hasattr(app.service_manager, 'modem') and app.service_manager.modem:
+        app.service_manager.modem.demodulator.shutdown()
+    if hasattr(app.service_manager, 'modem_service'):
+        app.service_manager.stop_modem()
+    if hasattr(app, 'socket_interface_manager') and app.socket_interface_manager:
+        app.socket_interface_manager.stop_servers()
+
     if hasattr(app, 'socket_interface_manager') and app.socket_interface_manager:
         app.socket_interface_manager.stop_servers()
     audio.terminate()
+
+
     print("Shutdown completed")
     try:
         # it seems sys.exit causes problems since we are using fastapi
         # fastapi seems to close the application
         #sys.exit(0)
+        os._exit(0)
+
         pass
     except Exception as e:
         print(e)
