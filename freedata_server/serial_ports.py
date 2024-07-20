@@ -7,7 +7,6 @@ def get_ports():
     for port, desc, hwid in ports:
         # calculate hex of hwid if we have unique names
         crc_hwid = helpers.get_crc_16(bytes(hwid, encoding="utf-8"))
-        crc_hwid = crc_hwid.to_bytes(2, byteorder="big")
         crc_hwid = crc_hwid.hex()
         description = f"{desc} [{crc_hwid}]"
         serial_devices.append(

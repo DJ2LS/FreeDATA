@@ -45,7 +45,6 @@ def get_audio_devices():
 
 def device_crc(device) -> str:
     crc_hwid = helpers.get_crc_16(bytes(f"{device['name']}.{device['hostapi']}", encoding="utf-8"))
-    crc_hwid = crc_hwid.to_bytes(2, byteorder="big")
     crc_hwid = crc_hwid.hex()
     return crc_hwid
 
