@@ -61,7 +61,7 @@ logger = structlog.get_logger()
 
 
 # Mount static files from Vue.js build directory under /gui
-app.mount("/gui", StaticFiles(directory="../freedata_gui/dist", html=True), name="static")
+app.mount("/gui", StaticFiles(directory="../freedata_gui_web/dist", html=True), name="static")
 
 
 
