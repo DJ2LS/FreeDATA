@@ -3,12 +3,15 @@ import sys
 import signal
 import queue
 import asyncio
+import webbrowser
 
 
 
 from fastapi import FastAPI, Request, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
 import serial_ports
 from config import CONFIG
 import audio
@@ -55,6 +58,12 @@ app = FastAPI()
 # custom logger for fastapi
 #setup_logging()
 logger = structlog.get_logger()
+
+
+# Mount static files from Vue.js build directory under /gui
+app.mount("/gui", StaticFiles(directory="../freedata_gui/dist", html=True), name="static")
+
+
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
@@ -417,8 +426,19 @@ def main():
     modemaddress = conf['NETWORK'].get('modemaddress', '127.0.0.1')
     modemport = int(conf['NETWORK'].get('modemport', 5000))
 
+    logger.info("---------------------------------------------------")
+    logger.info("                                                   ")
+    logger.info(f"[GUI] AVAILABLE ON http://{modemaddress}:{modemport}/gui")
+    logger.info("just open it in your browser")
+    logger.info("                                                   ")
+    logger.info("---------------------------------------------------")
+    url = f"http://{modemaddress}:{modemport}/gui"
+    webbrowser.open(url, new=0, autoraise=True)
+
+
     import uvicorn
     uvicorn.run(app, host=modemaddress, port=modemport, log_config=None, log_level="info")
+
 
 if __name__ == "__main__":
     main()
