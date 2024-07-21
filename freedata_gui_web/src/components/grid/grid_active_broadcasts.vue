@@ -1,0 +1,100 @@
+<script setup>
+import { ref } from "vue";
+import { setActivePinia } from "pinia";
+import pinia from "../../store/index";
+import { useStateStore } from "../../store/stateStore.js";
+import { sendModemCQ, sendModemPing, setModemBeacon } from "../../js/api.js";
+
+// Set the active Pinia store
+setActivePinia(pinia);
+const state = useStateStore(pinia);
+
+// Reactive reference for DX Call
+const dxcallPing = ref("");
+
+// Function to transmit a ping
+function transmitPing() {
+  sendModemPing(dxcallPing.value.toUpperCase());
+}
+
+// Function to start or stop the beacon
+function startStopBeacon() {
+  if (state.beacon_state) {
+    setModemBeacon(false);
+  } else {
+    setModemBeacon(true);
+  }
+}
+
+// Listen for the stationSelected event and update dxcallPing
+window.addEventListener(
+  "stationSelected",
+  function (eventdata) {
+    const evt = eventdata;
+    dxcallPing.value = evt.detail;
+  },
+  false
+);
+</script>
+
+<template>
+  <div class="card h-100">
+    <div class="card-header p-0">
+      <i class="bi bi-broadcast" style="font-size: 1.2rem"></i>&nbsp;
+      <strong>Broadcasts</strong>
+    </div>
+    <div class="card-body overflow-auto p-0">
+      <div class="input-group input-group-sm mb-0">
+        <input
+          type="text"
+          class="form-control"
+          style="max-width: 6rem; min-width: 3rem; text-transform: uppercase"
+          placeholder="DXcall"
+          pattern="[A-Z]*"
+          maxlength="11"
+          aria-label="Input group"
+          aria-describedby="btnGroupAddon"
+          v-model="dxcallPing"
+        />
+        <button
+          class="btn btn-sm btn-outline-secondary"
+          id="sendPing"
+          type="button"
+          data-bs-placement="bottom"
+          data-bs-toggle="tooltip"
+          data-bs-trigger="hover"
+          data-bs-html="false"
+          title="Send a ping request to a remote station"
+          @click="transmitPing"
+        >
+          Ping
+        </button>
+
+        <button
+          class="btn btn-sm btn-outline-secondary ms-1"
+          id="sendCQ"
+          type="button"
+          title="Send a CQ to the world"
+          @click="sendModemCQ"
+        >
+          Call CQ
+        </button>
+
+        <button
+          type="button"
+          id="startBeacon"
+          class="btn btn-sm ms-1"
+          @click="startStopBeacon"
+          :class="{
+            'btn-success': state.beacon_state,
+            'btn-outline-secondary': !state.beacon_state,
+          }"
+          title="Toggle beacon mode. The interval can be set in settings. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses."
+        >
+          Toggle beacon
+        </button>
+      </div>
+      <!-- end of row-->
+    </div>
+  </div>
+</template>
