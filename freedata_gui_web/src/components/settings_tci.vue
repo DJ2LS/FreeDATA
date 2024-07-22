@@ -33,7 +33,6 @@
 </template>
 
 <script>
-import { settingsStore } from "../store/settingsStore.js";
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 
 export default {

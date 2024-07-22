@@ -74,7 +74,7 @@
       id="nav-tci"
       role="tabpanel"
       aria-labelledby="nav-tci-tab"
-      tabindex="0"
+      tabindex="1"
     >
       <settings_tci />
     </div>
@@ -83,9 +83,10 @@
       id="nav-serial"
       role="tabpanel"
       aria-labelledby="nav-serial-tab"
-      tabindex="0"
+      tabindex="2"
     >
       <settings_serial_ptt />
+
     </div>
   </div>
 
@@ -93,15 +94,15 @@
 </template>
 <script>
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
-//import settings_hamlib from "./settings_hamlib.vue";
-//import settings_tci from "./settings_tci.vue";
-//import settings_serial_ptt from "./settings_serial_ptt.vue";
+import settings_hamlib from "./settings_hamlib.vue";
+import settings_tci from "./settings_tci.vue";
+import settings_serial_ptt from "./settings_serial_ptt.vue";
 
 export default {
   components: {
-    //settings_hamlib,
-    //settings_tci,
-    //settings_serial_ptt
+    settings_hamlib,
+    settings_tci,
+    settings_serial_ptt
   },
   methods: {
     onChange

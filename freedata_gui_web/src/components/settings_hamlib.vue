@@ -1,3 +1,25 @@
+<script setup>
+import { settingsStore as settings, onChange } from "../store/settingsStore.js";
+import { useSerialStore } from "../store/serialStore.js";
+
+const serialStore = useSerialStore();
+/*
+const settings = ref({
+  remote: {
+    RIGCTLD: {
+      ip: '',
+      port: 0,
+      enable_vfo: false
+    },
+    RADIO: {
+      control: '',
+      model_id: 0
+    }
+  }
+});
+*/
+
+</script>
 
 <template>
   <hr class="m-2" />
@@ -540,34 +562,3 @@
     </div>
   </div>
 </template>
-
-<script>
-
-
-
-export default {
-  data() {
-    return {
-      settings: {
-        remote: {
-          RIGCTLD: {
-            ip: '',
-            port: 0,
-            enable_vfo: false
-          },
-          RADIO: {
-            control: '',
-            model_id: 0
-          }
-        }
-      }
-    };
-  },
-  methods: {
-    onChange(event) {
-      // Handle the change event
-      console.log(event.target.value);
-    }
-  }
-};
-</script>
