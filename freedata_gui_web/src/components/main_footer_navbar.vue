@@ -1,13 +1,13 @@
 <script setup>
 import { setActivePinia } from 'pinia';
-import pinia from '../store/index'; // Adjust the path to your Pinia store
-import { useStateStore } from '../store/stateStore'; // Adjust the path to your state store
+import pinia from '../store/index';
+import { useStateStore } from '../store/stateStore.js';
 
 // Set the active Pinia store
 setActivePinia(pinia);
 
 // Create an instance of the store
-const state = useStateStore();
+const state = useStateStore(pinia);
 </script>
 
 <template>
@@ -31,7 +31,6 @@ const state = useStateStore();
           >
             <i class="bi bi-broadcast-pin" style="font-size: 0.8rem"></i>
           </button>
-
           <button
             class="btn btn-sm btn-secondary me-1"
             id="busy_state"
