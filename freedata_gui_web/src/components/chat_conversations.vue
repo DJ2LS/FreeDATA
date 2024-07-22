@@ -94,12 +94,21 @@ async function processBeaconData(callsign) {
   chat.beaconDataArray = beacons.map((entry) => entry.snr);
 }
 
-function getDateTime(timestamp) {
-  const date = new Date(timestamp * 1000); // Assuming timestamp is in seconds
+function getDateTime(input) {
+  let date;
+  if (typeof input === 'number') {
+    // Assuming input is a Unix timestamp in seconds
+    date = new Date(input * 1000);
+  } else {
+    // Assuming input is an ISO 8601 formatted string
+    date = new Date(input);
+  }
+
   const hours = date.getHours().toString().padStart(2, '0');
   const minutes = date.getMinutes().toString().padStart(2, '0');
   return `${hours}:${minutes}`;
 }
+
 
 function newChat() {
   let callsign = newChatCall.value;
