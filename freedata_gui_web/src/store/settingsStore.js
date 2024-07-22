@@ -1,16 +1,6 @@
 import { reactive, watch } from "vue";
 import { getConfig, setConfig } from "../js/api";
-import { getAppDataPath } from "../js/freedata";
 
-// Paths and config file initialization
-const appDataPath = getAppDataPath();
-const configFolder = appDataPath; // Adjusted for browser environment
-const configFile = process.env.GITHUB_ACTIONS === "true" ? "example.json" : "config.json";
-const configPath = `${configFolder}/${configFile}`; // Adjusted for browser environment
-
-console.log("AppData Path:", appDataPath);
-console.log(configFolder);
-console.log(configPath);
 
 // Default configuration
 const defaultConfig = {
@@ -85,6 +75,9 @@ const defaultConfig = {
 
 // Initialize local settings from browser storage
 const localConfig = JSON.parse(localStorage.getItem("localConfig")) || defaultConfig.local;
+console.log("--------- LOCAL CONFIG -----------")
+console.log(localConfig)
+
 export const settingsStore = reactive({ ...defaultConfig, local: localConfig });
 // Function to handle remote configuration changes
 
