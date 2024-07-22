@@ -11,6 +11,9 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
+import { useStateStore } from "../store/stateStore.js";
+const state = useStateStore(pinia);
+
 function connect(endpoint, dispatcher) {
   const { protocol, hostname, port } = window.location;
   const wsProtocol = protocol === "https:" ? "wss:" : "ws:";
@@ -24,6 +27,7 @@ function connect(endpoint, dispatcher) {
     console.log(`Connected to the WebSocket server: ${endpoint}`);
     // when connected again, initially load all data from server
     loadAllData();
+    state.modem_connection = 'connected';
   });
 
   // handle data
