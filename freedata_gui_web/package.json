@@ -1,12 +1,29 @@
 {
-  "name": "freedata_gui",
-  "version": "0.1.0",
+  "name": "FreeDATA",
+  "version": "0.16.0-alpha",
+  "description": "FreeDATA Client application for connecting to FreeDATA server",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DJ2LS/FreeDATA.git"
+  },
+  "keywords": [
+    "Modem",
+    "GUI",
+    "FreeDATA",
+    "codec2"
+  ],
+  "author": "DJ2LS",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/DJ2LS/FreeDATA/issues"
+  },
+  "homepage": "https://freedata.app",
   "dependencies": {
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.3",
