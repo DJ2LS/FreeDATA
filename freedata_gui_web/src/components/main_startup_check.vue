@@ -25,6 +25,11 @@ import {
 const state = useStateStore(pinia);
 const audioStore = useAudioStore();
 
+
+// Get the full API URL
+const apiUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+
+
 // Initialize modal on mount
 onMounted(() => {
   getVersion().then((res) => {
@@ -121,26 +126,12 @@ function reloadGUI() {
               <div id="networkStatusCollapse" class="accordion-collapse collapse">
                 <div class="accordion-body">
                   <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text w-25">Modem port</span>
+                    <span class="input-group-text w-25">API URL</span>
                     <input
                       type="text"
                       class="form-control"
-                      placeholder="modem port (default 5000)"
-                      maxlength="5"
-                      max="65534"
-                      min="1025"
-                      v-model="settings.local.port"
-                      @change="onChange"
-                    />
-                  </div>
-                  <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text w-25">Modem host</span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="modem host (default 127.0.0.1)"
-                      v-model="settings.local.host"
-                      @change="onChange"
+                      :value="apiUrl"
+                      disabled
                     />
                   </div>
                 </div>

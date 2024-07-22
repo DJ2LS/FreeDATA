@@ -11,11 +11,12 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { settingsStore as settings } from "../store/settingsStore.js";
-
 function connect(endpoint, dispatcher) {
-  let socket = new WebSocket(
-    `ws://${settings.local.host}:${settings.local.port}/${endpoint}`
+  const { protocol, hostname, port } = window.location;
+  const wsProtocol = protocol === "https:" ? "wss:" : "ws:";
+  const adjustedPort = port === '8080' ? '5000' : port;
+  const socket = new WebSocket(
+    `${wsProtocol}//${hostname}:${adjustedPort}/${endpoint}`
   );
 
   // handle opening
