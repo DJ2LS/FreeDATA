@@ -59,9 +59,13 @@ app = FastAPI()
 #setup_logging()
 logger = structlog.get_logger()
 
+gui_dir = "../freedata_gui_web/dist"
+if os.path.isdir(gui_dir):
+    app.mount("/gui", StaticFiles(directory=gui_dir, html=True), name="static")
+else:
+    logger.warning("GUI directory not found. Please run `npm i && npm run build` inside `freedata_gui_web`.")
 
-# Mount static files from Vue.js build directory under /gui
-app.mount("/gui", StaticFiles(directory="../freedata_gui_web/dist", html=True), name="static")
+
 
 
 
@@ -425,15 +429,15 @@ def main():
     conf = app.config_manager.read()
     modemaddress = conf['NETWORK'].get('modemaddress', '127.0.0.1')
     modemport = int(conf['NETWORK'].get('modemport', 5000))
-
-    logger.info("---------------------------------------------------")
-    logger.info("                                                   ")
-    logger.info(f"[GUI] AVAILABLE ON http://{modemaddress}:{modemport}/gui")
-    logger.info("just open it in your browser")
-    logger.info("                                                   ")
-    logger.info("---------------------------------------------------")
-    url = f"http://{modemaddress}:{modemport}/gui"
-    webbrowser.open(url, new=0, autoraise=True)
+    if os.path.isdir(gui_dir):
+        logger.info("---------------------------------------------------")
+        logger.info("                                                   ")
+        logger.info(f"[GUI] AVAILABLE ON http://{modemaddress}:{modemport}/gui")
+        logger.info("just open it in your browser")
+        logger.info("                                                   ")
+        logger.info("---------------------------------------------------")
+        url = f"http://{modemaddress}:{modemport}/gui"
+        webbrowser.open(url, new=0, autoraise=True)
 
 
     import uvicorn
