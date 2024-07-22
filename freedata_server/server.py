@@ -59,8 +59,19 @@ app = FastAPI()
 #setup_logging()
 logger = structlog.get_logger()
 
-gui_dir = "../freedata_gui_web/dist"
-if os.path.isdir(gui_dir):
+source_gui_dir = "../freedata_gui_web/dist"
+bundled_gui_dir = os.path.join(os.path.dirname(__file__), "gui")
+
+# Check which directory exists and set gui_dir accordingly
+if os.path.isdir(source_gui_dir):
+    gui_dir = source_gui_dir
+elif os.path.isdir(bundled_gui_dir):
+    gui_dir = bundled_gui_dir
+else:
+    gui_dir = None
+    logger.warning("GUI directory not found. ")
+
+if gui_dir and os.path.isdir(gui_dir):
     app.mount("/gui", StaticFiles(directory=gui_dir, html=True), name="static")
 else:
     logger.warning("GUI directory not found. Please run `npm i && npm run build` inside `freedata_gui_web`.")
@@ -429,6 +440,7 @@ def main():
     conf = app.config_manager.read()
     modemaddress = conf['NETWORK'].get('modemaddress', '127.0.0.1')
     modemport = int(conf['NETWORK'].get('modemport', 5000))
+
     if os.path.isdir(gui_dir):
         logger.info("---------------------------------------------------")
         logger.info("                                                   ")
