@@ -531,7 +531,7 @@ onMounted(() => {
             aria-labelledby="headingHeardStations"
             data-bs-parent="#accordionExample"
           >
-            <div class="accordion-body" id="actBody"></div>
+            <div class="accordion-body" id="activityBody"></div>
           </div>
         </div>
 
@@ -578,7 +578,7 @@ onMounted(() => {
             aria-labelledby="headingBroadcasts"
             data-bs-parent="#accordionExample"
           >
-            <div class="accordion-body" id="bcBody"></div>
+            <div class="accordion-body" id="broadcastsBody"></div>
           </div>
         </div>
         <!-- Radio Control -->
@@ -649,7 +649,7 @@ onMounted(() => {
             aria-labelledby="headingStatistics"
             data-bs-parent="#accordionExample"
           >
-            <div class="accordion-body" id="otherBod"></div>
+            <div class="accordion-body" id="otherBody"></div>
           </div>
         </div>
       </div>
