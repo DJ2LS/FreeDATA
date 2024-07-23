@@ -1,18 +1,14 @@
-import path from "node:path";
-import fs from "fs";
-import { setColormap } from "./waterfallHandler";
+//import { setColormap } from "./waterfallHandler";
 // pinia store setup
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { settingsStore as settings, onChange } from "../store/settingsStore.js";
-
-import { useStateStore } from "../store/stateStore";
-const stateStore = useStateStore(pinia);
+import { settingsStore as settings } from "../store/settingsStore.js";
 
 
 
+/*
 // create config file if not exists with defaults
 const configDefaultSettings = `{
     "screen_height": 670,
@@ -28,7 +24,7 @@ var parsedConfig = JSON.parse(configDefaultSettings);
 
 export function loadSettings() {
   // load settings
-  var config = require(configPath);
+  var config = JSON.parse(localStorage.getItem("localConfig")) || defaultConfig.local;
 
   //config validation
   // check running config against default config.
@@ -58,7 +54,7 @@ export function loadSettings() {
     }
   }
 }
-
+*/
 //No longer used...
 //export function saveSettingsToFile() {
 //  console.log("save settings to file...");
@@ -74,9 +70,9 @@ export function processModemConfig(data) {
 
   console.log(data);
   for (const category in data) {
-    if (data.hasOwnProperty(category)) {
+    if (Object.prototype.hasOwnProperty.call(data, category)) {
       for (const setting in data[category]) {
-        if (data[category].hasOwnProperty(setting)) {
+        if (Object.prototype.hasOwnProperty.call(data[category], setting)) {
           // Create a variable name combining the category and setting name
           const variableName = setting;
           // Assign the value to the variable
