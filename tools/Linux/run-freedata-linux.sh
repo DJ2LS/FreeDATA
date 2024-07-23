@@ -15,6 +15,8 @@
 # We expect the config.ini file to be at $HOME/.config/FreeDATA/config.ini
 # If it isn't found, we copy config.ini.example there
 #
+# 1.8:  22 May 2024 (DJ2LS)
+#	add support for browser based gui
 # 1.7:  22 May 2024
 #	Slightly change the way we shutdown the server
 # 1.6:  05 May 2024
@@ -90,40 +92,6 @@ fi
 FREEDATA_CONFIG=$HOME/.config/FreeDATA/config.ini python3 $serverdir/server.py > FreeDATA-server.log 2>&1 &
 serverpid=$!
 echo "Process ID of FreeDATA server is" $serverpid
-
-# Run the GUI front end
-echo "*************************************************************************"
-echo "Running the FreeDATA GUI front end"
-echo "*************************************************************************"
-
-# New versions use "freedata_gui", old versions use "gui"
-if [ -d "FreeDATA/freedata_gui" ];
-then
-	guidir="FreeDATA/freedata_gui"
-else
-	guidir="FreeDATA/gui"
-fi
-
-cd $guidir
-
-if [ -f "$HOME/.nvm/bash_completion" ];
-then
-	export NVM_DIR="$HOME/.nvm"
-	[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-	[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-else
-	echo "Something went wrong.  $HOME/.nvm environment not created properly."
-	exit 1
-fi
-
-checknpm=`which npm`
-if [ -z "$checknpm" ];
-then
-	echo "Something went wrong.  npm not found."
-	exit 1
-fi
-
-npm start > ../../FreeDATA-client.log 2>&1
 
 # If we are this far, then we have just quit the GUI, so let's clean up the
 # server
