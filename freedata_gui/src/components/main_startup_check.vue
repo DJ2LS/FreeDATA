@@ -23,7 +23,7 @@ import {
 
 // Reactive state
 const state = useStateStore(pinia);
-const audioStore = useAudioStore();
+const audioStore = useAudioStore(pinia);
 
 
 // Get the full API URL
@@ -137,7 +137,6 @@ function reloadGUI() {
                 </div>
               </div>
             </div>
-
             <!-- Modem Section -->
             <div class="accordion-item">
               <h2 class="accordion-header">

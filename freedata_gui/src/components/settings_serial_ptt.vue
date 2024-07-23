@@ -11,7 +11,7 @@
         class="form-select form-select-sm"
       >
         <option
-          v-for="device in serialDevices"
+          v-for="device in serialStore.serialDevices"
           :value="device.port"
           :key="device.port"
         >
@@ -56,21 +56,12 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 import { useSerialStore } from "../store/serialStore";
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
 
-export default {
-  data() {
-    return {
-      settings,
-      serialDevices: useSerialStore().serialDevices
-    };
-  },
-  methods: {
-    onChange(event) {
-      onChange(event);
-    }
-  }
-};
+setActivePinia(pinia);
+const serialStore = useSerialStore(pinia);
 </script>
