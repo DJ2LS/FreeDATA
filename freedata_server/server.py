@@ -59,24 +59,25 @@ app = FastAPI()
 #setup_logging()
 logger = structlog.get_logger()
 
-source_gui_dir = "freedata_gui/dist"
-bundled_gui_dir = os.path.join(os.path.dirname(__file__), "gui")
+potential_gui_dirs = [
+    "../freedata_gui/dist", # running server with "python3 server.py
+    "freedata_gui/dist", # running sever with ./tools/run-server.py
+    "FreeDATA/freedata_gui/dist", # running server with bash run-server...
+    os.path.join(os.path.dirname(__file__), "gui") # running server as nuitka bundle
+]
 
 # Check which directory exists and set gui_dir accordingly
-if os.path.isdir(source_gui_dir):
-    gui_dir = source_gui_dir
-elif os.path.isdir(bundled_gui_dir):
-    gui_dir = bundled_gui_dir
-else:
-    gui_dir = None
-    logger.warning("GUI directory not found. ")
+gui_dir = None
+for dir_path in potential_gui_dirs:
+    if os.path.isdir(dir_path):
+        gui_dir = dir_path
+        break
 
-if gui_dir and os.path.isdir(gui_dir):
+# Configure app to serve static files if gui_dir is found
+if gui_dir:
     app.mount("/gui", StaticFiles(directory=gui_dir, html=True), name="static")
 else:
     logger.warning("GUI directory not found. Please run `npm i && npm run build` inside `freedata_gui`.")
-
-
 
 
 
