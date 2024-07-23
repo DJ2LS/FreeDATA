@@ -1,35 +1,42 @@
-<script setup lang="ts">
+<script setup>
 import { ref } from "vue";
 import { setActivePinia } from "pinia";
 import pinia from "../../store/index";
-setActivePinia(pinia);
-
 import { useStateStore } from "../../store/stateStore.js";
-const state = useStateStore(pinia);
-
 import { sendModemCQ, sendModemPing, setModemBeacon } from "../../js/api.js";
 
+// Set the active Pinia store
+setActivePinia(pinia);
+const state = useStateStore(pinia);
+
+// Reactive reference for DX Call
+const dxcallPing = ref("");
+
+// Function to transmit a ping
 function transmitPing() {
   sendModemPing(dxcallPing.value.toUpperCase());
 }
 
+// Function to start or stop the beacon
 function startStopBeacon() {
-  if (state.beacon_state === true) {
+  if (state.beacon_state) {
     setModemBeacon(false);
   } else {
     setModemBeacon(true);
   }
 }
-var dxcallPing = ref("");
+
+// Listen for the stationSelected event and update dxcallPing
 window.addEventListener(
-      "stationSelected",
-      function (eventdata) {
-        let evt = <CustomEvent>eventdata;
-        dxcallPing.value = evt.detail;
-      },
-      false,
-    );
+  "stationSelected",
+  function (eventdata) {
+    const evt = eventdata;
+    dxcallPing.value = evt.detail;
+  },
+  false
+);
 </script>
+
 <template>
   <div class="card h-100">
     <div class="card-header p-0">
@@ -58,7 +65,7 @@ window.addEventListener(
           data-bs-trigger="hover"
           data-bs-html="false"
           title="Send a ping request to a remote station"
-          @click="transmitPing()"
+          @click="transmitPing"
         >
           Ping
         </button>
@@ -68,7 +75,7 @@ window.addEventListener(
           id="sendCQ"
           type="button"
           title="Send a CQ to the world"
-          @click="sendModemCQ()"
+          @click="sendModemCQ"
         >
           Call CQ
         </button>
@@ -77,10 +84,10 @@ window.addEventListener(
           type="button"
           id="startBeacon"
           class="btn btn-sm ms-1"
-          @click="startStopBeacon()"
-          v-bind:class="{
-            'btn-success': state.beacon_state === true,
-            'btn-outline-secondary': state.beacon_state === false,
+          @click="startStopBeacon"
+          :class="{
+            'btn-success': state.beacon_state,
+            'btn-outline-secondary': !state.beacon_state,
           }"
           title="Toggle beacon mode. The interval can be set in settings. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses."
         >

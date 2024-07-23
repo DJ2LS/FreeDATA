@@ -12,7 +12,7 @@ export async function getStationInfoByCallsign(callsign) {
     station.stationInfo.location.gridsquare =
       result.location?.gridsquare || "N/A";
     // Check if info is null and assign default values if it is
-    if (result.info === null) {
+if (result == null || result.info == null) {
       station.stationInfo.info = {
         name: "",
         city: "",

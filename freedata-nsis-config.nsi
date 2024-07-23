@@ -84,26 +84,6 @@ restoreConfig:
   Delete $INSTDIR\freedata-server\config.ini
   Rename $INSTDIR\freedata-server\config.ini.bak $INSTDIR\freedata-server\config.ini
 
-
-
-SectionEnd
-
-Section "FreeData x64 GUI" SEC02
-  ; Set output path to the GUI installation directory
-  SetOutPath $INSTDIR\freedata-gui
-
-  ; Add GUI files here
-  File /r "freedata_gui\release\win-unpacked\*"
-
-  ; Create a shortcut on the desktop for the GUI
-  CreateShortCut "$DESKTOP\FreeDATA GUI.lnk" "$INSTDIR\freedata-gui\freedata.exe"
-
-  ; Create a start menu shortcut
-  CreateShortCut "$SMPROGRAMS\FreeDATA\FreeDATA GUI.lnk" "$INSTDIR\freedata-gui\freedata.exe"
-
-  ; Create an Uninstall shortcut
-  CreateShortCut "$SMPROGRAMS\FreeDATA\Uninstall FreeDATA.lnk" "$INSTDIR\Uninstall.exe"
-
 SectionEnd
 
 ; Uninstaller Section
@@ -112,13 +92,8 @@ Section "Uninstall"
   Delete $INSTDIR\freedata-server\*.*
   RMDir /r $INSTDIR\freedata-server
 
-  ; Delete files and directories for the GUI
-  Delete $INSTDIR\freedata-gui\*.*
-  RMDir /r $INSTDIR\freedata-gui
-
   ; Remove the desktop shortcuts
   Delete "$DESKTOP\FreeDATA Server.lnk"
-  Delete "$DESKTOP\FreeDATA GUI.lnk"
 
 ; Remove Start Menu shortcuts
   Delete "$SMPROGRAMS\FreeDATA\*.*"

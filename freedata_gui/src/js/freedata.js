@@ -1,5 +1,3 @@
-const os = require("os");
-const path = require("path");
 
 /**
  * Binary to ASCII replacement
@@ -59,72 +57,66 @@ export function sortByPropertyDesc(property) {
 }
 
 /**
- * Validate a call sign with ssid
+ * Validate a call sign with SSID
  * @param {string} callsign callsign to check
  * @returns true or false if callsign appears to be valid with an SSID
  */
-export function validateCallsignWithSSID(callsign: string) {
-  var patt = new RegExp("^[A-Za-z0-9]{1,7}-[0-9]{1,3}$");
-  callsign = callsign;
-  if (
-    callsign === undefined ||
-    callsign === "" ||
-    patt.test(callsign) === false
-  ) {
-    console.error(
-      "Call sign given is not in correct format or missing; callsign passed is:  " +
-        callsign,
-    );
+export function validateCallsignWithSSID(callsign) {
+  const patt = new RegExp("^[A-Za-z0-9]{1,7}-[0-9]{1,3}$");
+  if (!callsign || !patt.test(callsign)) {
+    console.error(`Call sign given is not in correct format or missing; callsign passed is: ${callsign}`);
     return false;
   }
   return true;
 }
+
 /**
- * Validate/check if a call sign has an SSID
+ * Validate a call sign without SSID
  * @param {string} callsign callsign to check
  * @returns true or false if callsign appears to be valid without an SSID
  */
-export function validateCallsignWithoutSSID(callsign: string) {
-  var patt = new RegExp("^[A-Za-z0-9]{1,7}$");
-
-  if (
-    callsign === undefined ||
-    callsign === "" ||
-    patt.test(callsign) === false
-  ) {
-    console.error(
-      "Call sign given is not in correct format or missing; callsign passed is:  " +
-        callsign,
-    );
+export function validateCallsignWithoutSSID(callsign) {
+  const patt = new RegExp("^[A-Za-z0-9]{1,7}$");
+  if (!callsign || !patt.test(callsign)) {
+    console.error(`Call sign given is not in correct format or missing; callsign passed is: ${callsign}`);
     return false;
   }
   return true;
 }
 
+
+/**
+ * Get application data path based on the environment.
+ * In a browser environment, this function now returns a fixed path or directory name.
+ * @returns {string} path for storage
+ */
 export function getAppDataPath() {
-  const platform = os.platform();
-  let appDataPath;
+  // For browser environments, return the fixed path or directory name "FreeDATA".
+  return "FreeDATA"; // Adjust this value as needed for your application.
+}
 
-  // Check if running in GitHub Actions
-  const isGitHubActions = process.env.GITHUB_ACTIONS === "true";
-  if (isGitHubActions) {
-    return "/home/runner/work/FreeDATA/FreeDATA/freedata_gui/config";
+/**
+ * Retrieve data from localStorage.
+ * @param {string} key - The key of the data to retrieve.
+ * @returns {string|null} The retrieved value or null if not found.
+ */
+export function getFromLocalStorage(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch (error) {
+    console.error("Failed to retrieve data from localStorage:", error);
+    return null;
   }
+}
 
-  switch (platform) {
-    case "darwin": // macOS
-      appDataPath = path.join(os.homedir(), "Library", "Application Support");
-      break;
-    case "win32": // Windows
-      appDataPath =
-        process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming");
-      break;
-    case "linux": // Linux
-      appDataPath = path.join(os.homedir(), ".config");
-      break;
-    default:
-      throw new Error("Unsupported platform");
+/**
+ * Remove data from localStorage.
+ * @param {string} key - The key of the data to remove.
+ */
+export function removeFromLocalStorage(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch (error) {
+    console.error("Failed to remove data from localStorage:", error);
   }
-
-  return appDataPath;
 }

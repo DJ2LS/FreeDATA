@@ -52,15 +52,16 @@
 
         <div class="card-footer p-0 bg-secondary border-top-0">
           <p class="text p-0 m-0 me-1 text-end">
-          <span class="badge badge-primary mr-2" v-bind:class="{
-              'bg-danger': message.status == 'failed',
-              'bg-primary': message.status == 'transmitting',
-              'bg-secondary': message.status == 'transmitted',
-            }"
-            >{{ message.status }}</span>
-              | attempt: {{ message.attempt + 1 }} | {{ getDateTime }}
+            <span class="badge badge-primary mr-2" :class="{
+                'bg-danger': message.status == 'failed',
+                'bg-primary': message.status == 'transmitting',
+                'bg-secondary': message.status == 'transmitted',
+              }"
+            >
+              {{ message.status }}
+            </span>
+            | attempt: {{ message.attempt + 1 }} | {{ getDateTime }}
           </p>
-          <!-- Display formatted timestamp in card-footer -->
         </div>
 
         <div
@@ -70,8 +71,7 @@
           <div
             class="progress rounded-0 rounded-bottom"
             hidden
-            :style="{ height: '10px' }"
-            v-bind:class="{
+            :class="{
               'bg-danger': message.status == 'failed',
               'bg-primary': message.status == 'transmitting',
               'bg-secondary': message.status == 'transmitted',
@@ -96,8 +96,6 @@
 </template>
 
 <script>
-import { atob_FD } from "../js/freedata";
-
 import {
   repeatMessageTransmission,
   deleteMessageFromDB,
@@ -109,9 +107,6 @@ import {
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
-
-import { useChatStore } from "../store/chatStore.js";
-const chat = useChatStore(pinia);
 
 export default {
   props: {
@@ -126,6 +121,7 @@ export default {
     deleteMessage() {
       deleteMessageFromDB(this.message.id);
     },
+
     showMessageInfo() {
       console.log("requesting message info.....");
       requestMessageInfo(this.message.id);
@@ -133,6 +129,7 @@ export default {
       //console.log(this.infoModal)
       //this.infoModal.show()
     },
+
     async downloadAttachment(hash_sha512, fileName) {
       try {
         const jsondata = await getMessageAttachment(hash_sha512);
@@ -167,6 +164,7 @@ export default {
       }
     },
   },
+
   computed: {
     messageWidthClass() {
       // Calculate a Bootstrap grid class based on message length

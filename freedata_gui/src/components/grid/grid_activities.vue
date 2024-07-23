@@ -1,27 +1,27 @@
-<script setup lang="ts">
-import { setActivePinia } from "pinia";
-import pinia from "../../store/index";
+<script setup>
+import { setActivePinia } from 'pinia';
+import pinia from '../../store/index';
 setActivePinia(pinia);
 
-import { useStateStore } from "../../store/stateStore.js";
+import { useStateStore } from '../../store/stateStore.js';
 const state = useStateStore(pinia);
 
 function getDateTime(timestampRaw) {
   var datetime = new Date(timestampRaw * 1000).toLocaleString(
     navigator.language,
     {
-      hourCycle: "h23",
-
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    },
+      hourCycle: 'h23',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    }
   );
   return datetime;
 }
 </script>
+
 <template>
   <div class="card h-100">
     <div class="card-header p-0">

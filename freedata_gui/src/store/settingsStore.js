@@ -1,39 +1,12 @@
-import { reactive, ref, watch } from "vue";
+import { reactive, watch } from "vue";
 import { getConfig, setConfig } from "../js/api";
-import { getAppDataPath } from "../js/freedata";
-import fs from "fs";
-const path = require("path");
-const nconf = require("nconf");
 
-var appDataPath = getAppDataPath();
-var configFolder = path.join(appDataPath, "FreeDATA");
-let configFile = "config.json";
 
-const isGitHubActions = process.env.GITHUB_ACTIONS === "true";
-if (isGitHubActions) {
-  configFile = "example.json";
-  configFolder = appDataPath;
-}
-
-var configPath = path.join(configFolder, configFile);
-
-console.log("AppData Path:", appDataPath);
-console.log(configFolder);
-console.log(configPath);
-
-nconf.file({ file: configPath });
-
-// +++
-//GUI DEFAULT SETTINGS........
-//Set GUI defaults here, they will be used if not found in config/config.json
-//They should be an exact mirror (variable wise) of settingsStore.local
-//Nothing else should be needed aslong as components are using v-bind
-// +++
-
+// Default configuration
 const defaultConfig = {
   local: {
     host: "127.0.0.1",
-    port: "5000",
+    port: "5001",
     spectrum: "waterfall",
     wf_theme: 2,
     update_channel: "alpha",
@@ -100,14 +73,13 @@ const defaultConfig = {
   },
 };
 
-nconf.defaults(defaultConfig);
-nconf.required(["local:host", "local:port"]);
+// Initialize local settings from browser storage
+const localConfig = JSON.parse(localStorage.getItem("localConfig")) || defaultConfig.local;
+console.log("--------- LOCAL CONFIG -----------")
+console.log(localConfig)
 
-export const settingsStore = reactive(defaultConfig);
-
-//Save settings for GUI to config file
-settingsStore.local = nconf.get("local");
-saveLocalSettingsToConfig();
+export const settingsStore = reactive({ ...defaultConfig, local: localConfig });
+// Function to handle remote configuration changes
 
 export function onChange() {
   setConfig(settingsStore.remote).then((conf) => {
@@ -115,9 +87,10 @@ export function onChange() {
   });
 }
 
+// Function to fetch remote configuration
 export function getRemote() {
   return getConfig().then((conf) => {
-    if (typeof conf !== "undefined") {
+    if (conf !== undefined) {
       settingsStore.remote = conf;
       onChange();
     } else {
@@ -127,13 +100,13 @@ export function getRemote() {
   });
 }
 
-watch(settingsStore.local, (oldValue, newValue) => {
-  //This function watches for changes, and triggers a save of local settings
+// Watcher to save local settings on change
+watch(() => settingsStore.local, () => {
   saveLocalSettingsToConfig();
-});
+}, { deep: true });
 
+// Function to save local settings to browser storage
 export function saveLocalSettingsToConfig() {
-  nconf.set("local", settingsStore.local);
-  nconf.save();
-  //console.log("Settings saved!");
+  localStorage.setItem("localConfig", JSON.stringify(settingsStore.local));
+  console.log("Settings saved!");
 }

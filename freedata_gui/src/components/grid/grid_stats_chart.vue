@@ -1,7 +1,5 @@
-<script setup lang="ts">
-// @ts-nocheck
-// reason for no check is, that we have some mixing of typescript and chart js which seems to be not to be fixed that easy
-import { ref, computed, onMounted, nextTick, toRaw } from "vue";
+<script setup>
+import { computed } from "vue";
 import { setActivePinia } from "pinia";
 import pinia from "../../store/index";
 setActivePinia(pinia);
@@ -19,7 +17,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { Line, Scatter } from "vue-chartjs";
+import { Line } from "vue-chartjs";
 
 ChartJS.register(
   CategoryScale,
@@ -68,7 +66,7 @@ const transmissionSpeedChartData = computed(() => ({
     {
       type: "line",
       label: "SNR[dB]",
-      data: state.arq_speed_list_snr.value,
+      data: state.arq_speed_list_snr,
       borderColor: "rgb(75, 192, 192, 1.0)",
       pointRadius: 1,
       segment: {
@@ -85,7 +83,7 @@ const transmissionSpeedChartData = computed(() => ({
     {
       type: "bar",
       label: "Speed[bpm]",
-      data: state.arq_speed_list_bpm.value,
+      data: state.arq_speed_list_bpm,
       borderColor: "rgb(120, 100, 120, 1.0)",
       backgroundColor: "rgba(120, 100, 120, 0.2)",
       order: 0,

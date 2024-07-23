@@ -1,22 +1,3 @@
-<script setup lang="ts">
-import { setActivePinia } from "pinia";
-import pinia from "../store/index";
-setActivePinia(pinia);
-
-import main_modals from "./main_modals.vue";
-import main_top_navbar from "./main_top_navbar.vue";
-import settings_view from "./settings.vue";
-import main_footer_navbar from "./main_footer_navbar.vue";
-import main_left_navbar from "./main_left_navbar.vue";
-import mesh from "./mesh.vue";
-import chat from "./chat.vue";
-import Dynamic_components from "./dynamic_components.vue";
-
-import { getFreedataMessages } from "../js/api";
-import { getRemote } from "../store/settingsStore.js";
-import { loadAllData } from "../js/eventHandler";
-</script>
-
 <template>
   <div aria-live="polite" aria-atomic="true" class="position-relative z-3">
     <div
@@ -83,3 +64,37 @@ import { loadAllData } from "../js/eventHandler";
 
   <main_modals />
 </template>
+
+<script>
+import { setActivePinia } from 'pinia';
+import pinia from '../store/index';
+
+import main_modals from './main_modals.vue';
+//TODO WIRD DAS HIER BENÖTIGT??? import main_top_navbar from './main_top_navbar.vue';
+import settings_view from './settings_screen.vue';
+import main_footer_navbar from './main_footer_navbar.vue';
+import main_left_navbar from './main_left_navbar.vue';
+//import mesh from './mesh.vue';
+import chat from './chat_screen.vue';
+import Dynamic_components from './dynamic_components.vue';
+
+//import { getFreedataMessages } from '../js/api';
+// TODO NOT USED YET import { getRemote } from '../store/settingsStore.js';
+//import { loadAllData } from '../js/eventHandler';
+
+// Set the active Pinia store
+setActivePinia(pinia);
+
+export default {
+  components: {
+    main_modals,
+    //main_top_navbar,
+    settings_view,
+    main_footer_navbar,
+    main_left_navbar,
+    //mesh,
+    chat,
+    Dynamic_components
+  }
+};
+</script>

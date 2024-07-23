@@ -9,10 +9,12 @@ import explorer
 import command_beacon
 import atexit
 import numpy as np
-
+import structlog
 
 class ScheduleManager:
     def __init__(self, modem_version, config_manager, state_manger, event_manager):
+        self.log = structlog.get_logger("SCHEDULE_MANAGER")
+
         self.modem_version = modem_version
         self.config_manager = config_manager
         self.state_manager = state_manger
@@ -57,7 +59,7 @@ class ScheduleManager:
 
     def stop(self):
         """Stop scheduling new events and terminate the scheduler thread."""
-        print("stopping schedule manager....")
+        self.log.warning("[SHUTDOWN] stopping schedule manager....")
         self.running = False  # Clear the running flag to stop scheduling new events
         # Clear scheduled events to break the scheduler out of its waiting state
         for event in list(self.scheduler.queue):
@@ -65,8 +67,8 @@ class ScheduleManager:
 
         # Wait for the scheduler thread to finish
         if self.scheduler_thread:
-            self.scheduler_thread.join(3)
-        print("done")
+            self.scheduler_thread.join(1)
+        self.log.warning("[SHUTDOWN] schedule manager stopped")
     def transmit_beacon(self):
         try:
             if not self.state_manager.getARQ() and self.state_manager.is_beacon_running and self.state_manager.is_modem_running:

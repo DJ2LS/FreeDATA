@@ -1,7 +1,24 @@
-<script setup lang="ts">
+<script setup>
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
-import { useSerialStore } from "../store/serialStore";
+import { useSerialStore } from "../store/serialStore.js";
+
 const serialStore = useSerialStore();
+/*
+const settings = ref({
+  remote: {
+    RIGCTLD: {
+      ip: '',
+      port: 0,
+      enable_vfo: false
+    },
+    RADIO: {
+      control: '',
+      model_id: 0
+    }
+  }
+});
+*/
+
 </script>
 
 <template>

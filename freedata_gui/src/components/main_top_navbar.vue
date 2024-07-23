@@ -1,12 +1,13 @@
-<script setup lang="ts">
-import { setActivePinia } from "pinia";
-import pinia from "../store/index";
+<script setup>
+// Import necessary modules and store
+import { setActivePinia } from 'pinia';
+import pinia from '../store/index';
+import { useStateStore } from '../store/stateStore.js';
+import { settingsStore as settings } from '../store/settingsStore.js';
+
+// Initialize Pinia and state store
 setActivePinia(pinia);
-
-import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
-
-import { settingsStore as settings } from "../store/settingsStore.js";
 </script>
 
 <template>

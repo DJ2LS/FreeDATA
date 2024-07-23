@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import * as bootstrap from "bootstrap";
+//import * as bootstrap from "bootstrap";
 
 export const useStateStore = defineStore("stateStore", () => {
   var busy_state = ref();
@@ -42,7 +42,6 @@ export const useStateStore = defineStore("stateStore", () => {
   var dxcallsign = ref("");
 
   var arq_session_state = ref("");
-  var arq_state = ref("");
   var beacon_state = ref(false);
   var away_from_key = ref(false);
 
@@ -86,7 +85,6 @@ export const useStateStore = defineStore("stateStore", () => {
     tuner,
     swr_raw,
     swr_percent,
-    tuner,
     dbfs_level,
     dbfs_level_percent,
     speed_level,
@@ -103,6 +101,7 @@ export const useStateStore = defineStore("stateStore", () => {
     tx_audio_level,
     rx_audio_level,
     alc,
+    modemStartCount,
     arq_transmission_percent,
     arq_speed_list_bpm,
     arq_speed_list_timestamp,

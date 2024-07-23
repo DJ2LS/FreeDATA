@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script>
 import settings_station from "./settings_station.vue";
 import settings_gui from "./settings_gui.vue";
 import settings_chat from "./settings_chat.vue";
@@ -6,7 +6,21 @@ import settings_rigcontrol from "./settings_rigcontrol.vue";
 import settings_modem from "./settings_modem.vue";
 import settings_web from "./settings_web.vue";
 import settings_exp from "./settings_exp.vue";
-import settings_earl from "./settings_url.vue";
+import settings_url from "./settings_url.vue";
+
+export default {
+  components: {
+    settings_station,
+    settings_gui,
+    settings_chat,
+    settings_rigcontrol,
+    settings_modem,
+    settings_web,
+    settings_exp,
+    settings_url
+  }
+};
+
 </script>
 <template>
   <div
@@ -122,7 +136,7 @@ import settings_earl from "./settings_url.vue";
             <li class="nav-item" role="presentation">
               <button
                 class="nav-link"
-                id="experiments-tab"
+                id="links-tab"
                 data-bs-toggle="tab"
                 data-bs-target="#url"
                 type="button"
@@ -218,7 +232,7 @@ import settings_earl from "./settings_url.vue";
               aria-labelledby="url-tab"
               tabindex="0"
             >
-              <settings_earl />
+              <settings_url />
             </div>
           </div>
         </div>

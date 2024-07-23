@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import * as bootstrap from "bootstrap";
 export const useStationStore = defineStore("stationStore", () => {
   const stationInfo = ref({
     callsign: "N/A", // Default value for callsign

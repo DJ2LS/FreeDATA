@@ -64,7 +64,7 @@ jobs:
       - name: Build binaries
         working-directory: freedata_server
         run: |
-          python3 -m nuitka  --remove-output --assume-yes-for-downloads --follow-imports --include-data-dir=lib=lib --include-data-files=lib/codec2/*=lib/codec2/ --include-data-files=config.ini.example=config.ini --standalone server.py --output-filename=freedata-server
+          python3 -m nuitka  --remove-output --assume-yes-for-downloads --follow-imports --include-data-dir=lib=lib --include-data-dir=../freedata_gui_web/dist=gui --include-data-files=lib/codec2/*=lib/codec2/ --include-data-files=config.ini.example=config.ini --standalone server.py --output-filename=freedata-server
 
       #- name: Download Portaudio binaries Linux macOS
       #  if: ${{!startsWith(matrix.os, 'windows')}}

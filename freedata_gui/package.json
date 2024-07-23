@@ -1,20 +1,12 @@
 {
   "name": "FreeDATA",
+  "version": "0.16.0-alpha",
   "description": "FreeDATA Client application for connecting to FreeDATA server",
   "private": true,
-  "version": "0.16.0-alpha",
-  "main": "dist-electron/main/index.js",
   "scripts": {
-    "start": "vite",
-    "dev": "vite",
-    "test": "vitest --run",
-    "check": "vue-tsc --noEmit",
-    "build": "vue-tsc --noEmit && vite build && electron-builder -p never",
-    "release": "vue-tsc --noEmit && vite build && electron-builder -p onTag",
-    "preview": "vite preview",
-    "lint": "eslint --ext .js,.vue src",
-    "lint-fix": "eslint --ext .js,.vue --fix src",
-    "install-deps": "npm install && npm update"
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
   },
   "repository": {
     "type": "git",
@@ -33,52 +25,47 @@
   },
   "homepage": "https://freedata.app",
   "dependencies": {
-    "@electron/notarize": "2.3.2",
-    "@electron/universal": "2.0.1",
-    "@popperjs/core": "2.11.8",
-    "@vueuse/electron": "10.7.2",
-    "blob-util": "2.0.2",
-    "bootstrap": "5.3.2",
-    "bootstrap-icons": "1.11.3",
-    "browser-image-compression": "2.0.2",
-    "chart.js": "4.4.3",
-    "chartjs-plugin-annotation": "3.0.1",
-    "electron-log": "5.1.2",
-    "emoji-picker-element": "1.21.3",
-    "emoji-picker-element-data": "1.6.0",
-    "file-saver": "2.0.5",
-    "gridstack": "10.0.1",
-    "mime": "4.0.1",
-    "nconf": "^0.12.1",
-    "noto-color-emoji": "^1.0.1",
-    "pinia": "2.1.7",
-    "qth-locator": "2.1.0",
-    "socket.io": "4.7.4",
-    "uuid": "^9.0.1",
-    "vue": "3.4.21",
-    "vue-chartjs": "5.3.0",
-    "vuemoji-picker": "0.2.1"
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^5.3.3",
+    "bootstrap-icons": "^1.11.3",
+    "bootstrap-vue-next": "^0.24.2",
+    "chart.js": "^4.4.3",
+    "chartjs-plugin-annotation": "^3.0.1",
+    "core-js": "^3.8.3",
+    "gridstack": "^10.3.0",
+    "pinia": "^2.1.7",
+    "qth-locator": "^2.1.0",
+    "vue": "^3.2.13",
+    "vue-chartjs": "^5.3.1",
+    "vuemoji-picker": "^0.2.1"
   },
   "devDependencies": {
-    "@types/nconf": "^0.10.6",
-    "@typescript-eslint/eslint-plugin": "6.21.0",
-    "@vitejs/plugin-vue": "5.0.4",
-    "electron": "28.2.6",
-    "electron-builder": "24.13.3",
-    "eslint": "8.56.0",
-    "eslint-config-prettier": "9.1.0",
-    "eslint-config-standard-with-typescript": "43.0.1",
-    "eslint-plugin-import": "2.29.1",
-    "eslint-plugin-n": "16.6.2",
-    "eslint-plugin-prettier": "5.1.3",
-    "eslint-plugin-promise": "6.1.1",
-    "eslint-plugin-vue": "9.22.0",
-    "typescript": "5.4.5",
-    "vite": "5.1.7",
-    "vite-plugin-electron": "0.28.2",
-    "vite-plugin-electron-renderer": "0.14.5",
-    "vitest": "1.4.0",
-    "vue": "3.4.21",
-    "vue-tsc": "2.0.19"
-  }
+    "@babel/core": "^7.12.16",
+    "@babel/eslint-parser": "^7.12.16",
+    "@vue/cli-plugin-babel": "~5.0.0",
+    "@vue/cli-plugin-eslint": "~5.0.0",
+    "@vue/cli-service": "~5.0.0",
+    "eslint": "^7.32.0",
+    "eslint-plugin-vue": "^8.0.3"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/vue3-essential",
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "parser": "@babel/eslint-parser"
+    },
+    "rules": {}
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ]
 }
