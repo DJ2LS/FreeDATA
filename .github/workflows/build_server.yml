@@ -31,6 +31,17 @@ jobs:
         with:
           repository: DJ2LS/FreeDATA
 
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Vue Builder
+        working-directory: freedata_gui
+        run: |
+          npm i
+          npm run build
+
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
