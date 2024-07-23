@@ -93,32 +93,48 @@ FREEDATA_CONFIG=$HOME/.config/FreeDATA/config.ini python3 $serverdir/server.py >
 serverpid=$!
 echo "Process ID of FreeDATA server is" $serverpid
 
-# If we are this far, then we have just quit the GUI, so let's clean up the
-# server
-echo "*************************************************************************"
-echo "Stopping the server component"
-echo "*************************************************************************"
-kill -INT $serverpid
 
-# Give time for the server to clean up rigctld if needed
-sleep 5s
 
-# If rigctld was already running before starting FreeDATA, leave it alone
-# otherwise we should clean it up
-if [ -z "$checkrigexist" ];
-then
-	# rigctld was started by FreeDATA and should have stopped when the 
-	# server exited.  If it didn't, stop it now.
-	checkrigctld=`ps auxw | grep -i rigctld | grep -v grep`
-	if [ ! -z "$checkrigctld" ];
-	then
-		echo "*************************************************************************"
-		echo "Stopping rigctld"
-		echo "*************************************************************************"
-		rigpid=`echo $checkrigctld | cut -f2 -d" "`
-		kill $rigpid
-	fi
-fi
 
-# Return to the directory we started in
-cd ..
+# Function to handle Ctrl-C
+function ctrl_c() {
+    echo "*************************************************************************"
+    echo "Stopping the server component"
+    echo "*************************************************************************"
+    kill -INT $serverpid
+
+    # Give time for the server to clean up rigctld if needed
+    sleep 5s
+
+    # If rigctld was already running before starting FreeDATA, leave it alone
+    # otherwise we should clean it up
+    if [ -z "$checkrigexist" ]; then
+        # rigctld was started by FreeDATA and should have stopped when the
+        # server exited.  If it didn't, stop it now.
+        checkrigctld=$(ps auxw | grep -i rigctld | grep -v grep)
+        if [ ! -z "$checkrigctld" ]; then
+            echo "*************************************************************************"
+            echo "Stopping rigctld"
+            echo "*************************************************************************"
+            rigpid=$(echo $checkrigctld | awk '{print $2}')
+            kill $rigpid
+        fi
+    fi
+
+    # Return to the directory we started in
+    cd ..
+
+    # Exit the script
+    exit 0
+}
+
+
+# Trap Ctrl-C (SIGINT) and call the ctrl_c function
+trap ctrl_c SIGINT
+
+# Wait indefinitely for Ctrl-C
+echo "Server started with PID $serverpid. Press Ctrl-C to stop."
+while true; do
+    sleep 1
+done
+
