@@ -338,8 +338,8 @@ echo "*************************************************************************"
 cd ../../../..
 cd freedata_gui
 npm i
-npm audit fix --force
-npm i
+#npm audit fix --force
+#npm i
 npm run build
 
 # Return to the directory we started in
