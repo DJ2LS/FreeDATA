@@ -1,10 +1,10 @@
-<script setup lang="ts">
+<script setup>
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-function openWebExternal(url:string) {
-  open(url);
+function openWebExternal(url) {
+  window.open(url, "_blank");
 }
 </script>
 

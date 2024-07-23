@@ -1,7 +1,13 @@
-<script setup lang="ts">
-import FreeDATAMain from "./components/main.vue";
-</script>
-
 <template>
   <FreeDATAMain />
 </template>
+
+<script>
+import FreeDATAMain from './components/main_screen.vue';
+
+export default {
+  components: {
+    FreeDATAMain
+  }
+};
+</script>

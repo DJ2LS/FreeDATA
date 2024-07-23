@@ -1,4 +1,5 @@
-<script setup lang="ts">
+<script setup>
+
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 import pinia from "../store/index";
 
@@ -76,7 +77,7 @@ const audioStore = useAudioStore();
       @change="onChange"
       v-model="settings.remote.AUDIO.input_device"
     >
-      <option v-for="device in audioStore.audioInputs" :value="device.id">
+      <option v-for="device in audioStore.audioInputs" :key="device.id" :value="device.id">
         {{ device.name }} [{{ device.api }}]
       </option>
     </select>
@@ -91,7 +92,7 @@ const audioStore = useAudioStore();
       @change="onChange"
       v-model="settings.remote.AUDIO.output_device"
     >
-      <option v-for="device in audioStore.audioOutputs" :value="device.id">
+      <option v-for="device in audioStore.audioOutputs" :key="device.id" :value="device.id">
         {{ device.name }} [{{ device.api }}]
       </option>
     </select>
@@ -113,7 +114,8 @@ const audioStore = useAudioStore();
         id="audioLevelRX"
         @change="onChange"
         v-model.number="settings.remote.AUDIO.rx_audio_level"
-    /></span>
+      />
+    </span>
   </div>
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-25">TX Audio Level</span>
@@ -130,7 +132,8 @@ const audioStore = useAudioStore();
         id="audioLevelTX"
         @change="onChange"
         v-model.number="settings.remote.AUDIO.tx_audio_level"
-    /></span>
+      />
+    </span>
   </div>
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50">TX delay in ms</label>

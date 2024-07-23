@@ -1,23 +1,17 @@
 import logging.config
-
 import structlog
-
 
 # https://www.structlog.org/en/stable/standard-library.html
 def setup_logging(filename: str = "", level: str = "DEBUG"):
     """
-
     Args:
       filename:
       level:str: Log level to output, possible values are:
         "CRITICAL", "FATAL", "ERROR", "WARNING", "WARN", "INFO", "DEBUG"
-
     """
 
     timestamper = structlog.processors.TimeStamper(fmt="iso")
     pre_chain = [
-        # Add the log level and a timestamp to the event_dict if the log entry
-        # is not from structlog.
         structlog.stdlib.add_log_level,
         timestamper,
     ]

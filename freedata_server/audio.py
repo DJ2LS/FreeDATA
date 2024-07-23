@@ -2,16 +2,13 @@
 Gather information about audio devices.
 """
 import multiprocessing
-import crcengine
 import sounddevice as sd
 import structlog
 import numpy as np
 import queue
+import helpers
 
 log = structlog.get_logger("audio")
-
-# crc algorithm for unique audio device names
-crc_algorithm = crcengine.new("crc16-ccitt-false")  # load crc16 library
 
 
 def get_audio_devices():
@@ -47,8 +44,7 @@ def get_audio_devices():
 
 
 def device_crc(device) -> str:
-    crc_hwid = crc_algorithm(bytes(f"{device['name']}.{device['hostapi']}", encoding="utf-8"))
-    crc_hwid = crc_hwid.to_bytes(2, byteorder="big")
+    crc_hwid = helpers.get_crc_16(bytes(f"{device['name']}.{device['hostapi']}", encoding="utf-8"))
     crc_hwid = crc_hwid.hex()
     return crc_hwid
 
@@ -360,6 +356,6 @@ def calculate_fft(data, fft_queue, states) -> None:
         print(f"[MDM] calculate_fft: Exception: {err}")
 
 def terminate():
-    print("terminating audio instance...")
+    log.warning("[SHUTDOWN] terminating audio instance...")
     if sd._initialized:
         sd._terminate()

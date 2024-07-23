@@ -11,63 +11,20 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 import { useStateStore } from "../store/stateStore";
 const stateStore = useStateStore(pinia);
 
-// ---------------------------------
 
-console.log(process.env);
-var appDataFolder = "undefined";
-if (typeof process.env["APPDATA"] !== "undefined") {
-  appDataFolder = process.env["APPDATA"];
-  console.log(appDataFolder);
-} else {
-  switch (process.platform) {
-    case "darwin":
-      appDataFolder = process.env["HOME"] + "/Library/Application Support";
-      console.log(appDataFolder);
-      break;
-    case "linux":
-      appDataFolder = process.env["HOME"] + "/.config";
-      console.log(appDataFolder);
-      break;
-    case "win32":
-      appDataFolder = "undefined";
-      break;
-    default:
-      appDataFolder = "undefined";
-      break;
-  }
-}
-
-var configFolder = path.join(appDataFolder, "FreeDATA");
-var configPath = path.join(configFolder, "config.json");
-
-console.log(appDataFolder);
-console.log(configFolder);
-console.log(configPath);
-
-// create config folder if not exists
-if (!fs.existsSync(configFolder)) {
-  fs.mkdirSync(configFolder);
-}
 
 // create config file if not exists with defaults
 const configDefaultSettings = `{
     "screen_height": 670,
     "screen_width": 1200,
-    "modem_host": "127.0.0.1",
-    "modem_port": 5000,
     "spectrum": "waterfall",
-    "theme": "default",
     "screen_height": 430,
     "screen_width": 1050,
-    "update_channel": "latest",
     "wftheme": 2,
     "enable_sys_notification": 1
 }`;
 var parsedConfig = JSON.parse(configDefaultSettings);
 
-if (!fs.existsSync(configPath)) {
-  fs.writeFileSync(configPath, configDefaultSettings);
-}
 
 export function loadSettings() {
   // load settings

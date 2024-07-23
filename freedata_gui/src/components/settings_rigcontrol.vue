@@ -1,13 +1,3 @@
-<script setup lang="ts">
-import { settingsStore as settings, onChange } from "../store/settingsStore.js";
-import settings_hamlib from "./settings_hamlib.vue";
-import settings_tci from "./settings_tci.vue";
-import settings_serial_ptt from "./settings_serial_ptt.vue";
-
-
-
-</script>
-
 <template>
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text" style="width: 180px">Rig Control</span>
@@ -19,11 +9,11 @@ import settings_serial_ptt from "./settings_serial_ptt.vue";
       @change="onChange"
       v-model="settings.remote.RADIO.control"
     >
-      <option selected value="disabled">Disabled / VOX (no rig control - use with VOX)</option>
-      <option selected value="serial_ptt">Serial PTT via DTR/RTS</option>
-      <option selected value="rigctld">Rigctld (external Hamlib)</option>
-      <option selected value="rigctld_bundle">Rigctld (internal Hamlib)</option>
-      <option selected value="tci">TCI</option>
+      <option value="disabled">Disabled / VOX (no rig control - use with VOX)</option>
+      <option value="serial_ptt">Serial PTT via DTR/RTS</option>
+      <option value="rigctld">Rigctld (external Hamlib)</option>
+      <option value="rigctld_bundle">Rigctld (internal Hamlib)</option>
+      <option value="tci">TCI</option>
     </select>
   </div>
 
@@ -84,7 +74,7 @@ import settings_serial_ptt from "./settings_serial_ptt.vue";
       id="nav-tci"
       role="tabpanel"
       aria-labelledby="nav-tci-tab"
-      tabindex="0"
+      tabindex="1"
     >
       <settings_tci />
     </div>
@@ -93,11 +83,34 @@ import settings_serial_ptt from "./settings_serial_ptt.vue";
       id="nav-serial"
       role="tabpanel"
       aria-labelledby="nav-serial-tab"
-      tabindex="0"
+      tabindex="2"
     >
       <settings_serial_ptt />
+
     </div>
   </div>
 
   <hr class="m-2" />
 </template>
+<script>
+import { settingsStore as settings, onChange } from "../store/settingsStore.js";
+import settings_hamlib from "./settings_hamlib.vue";
+import settings_tci from "./settings_tci.vue";
+import settings_serial_ptt from "./settings_serial_ptt.vue";
+
+export default {
+  components: {
+    settings_hamlib,
+    settings_tci,
+    settings_serial_ptt
+  },
+  methods: {
+    onChange
+  },
+  computed: {
+    settings() {
+      return settings;
+    }
+  }
+};
+</script>

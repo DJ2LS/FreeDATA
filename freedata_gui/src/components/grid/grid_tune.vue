@@ -1,8 +1,11 @@
-<script setup lang="ts">
-import { setActivePinia } from "pinia";
-import pinia from "../../store/index";
+<script setup>
+import { setActivePinia } from 'pinia';
+import pinia from '../../store/index';
+
+// Initialize Pinia with the imported store
 setActivePinia(pinia);
 </script>
+
 <template>
   <div class="fill h-100">
     <a
@@ -12,7 +15,8 @@ setActivePinia(pinia);
       data-bs-toggle="modal"
       data-bs-target="#audioModal"
       title="Tune"
-      >Tune</a
     >
+      Tune
+    </a>
   </div>
 </template>

@@ -219,7 +219,7 @@ Spectrum.prototype.updateAxes = function () {
   }
 
   this.ctx_axes.textBaseline = "bottom";
-  for (var i = 0; i < 11; i++) {
+  for (let i = 0; i < 11; i++) {
     var x = Math.round(width / 10) * i;
 
     if (this.spanHz > 0) {
@@ -284,7 +284,7 @@ Spectrum.prototype.resize = function () {
   var height =this.parent.clientHeight;
   // little helper for setting height of clientHeight is not working as expected
   if (height == 0){
-    var height = 250
+    height = 250
 
   }
   if (width == 0){

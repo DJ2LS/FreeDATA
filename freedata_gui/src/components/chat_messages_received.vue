@@ -58,20 +58,17 @@ import {
   requestMessageInfo,
   getMessageAttachment,
 } from "../js/messagesHandler";
-import { atob_FD } from "../js/freedata";
 
-// pinia store setup
+// Pinia store setup
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
-
-import { useChatStore } from "../store/chatStore.js";
-const chat = useChatStore(pinia);
 
 export default {
   props: {
     message: Object,
   },
+
   methods: {
     showMessageInfo() {
       requestMessageInfo(this.message.id);
@@ -79,9 +76,11 @@ export default {
       //console.log(this.infoModal)
       //this.infoModal.show()
     },
+
     deleteMessage() {
       deleteMessageFromDB(this.message.id);
     },
+
     async downloadAttachment(hash_sha512, fileName) {
       try {
         const jsondata = await getMessageAttachment(hash_sha512);
@@ -116,10 +115,10 @@ export default {
       }
     },
   },
+
   computed: {
     messageWidthClass() {
       // Calculate a Bootstrap grid class based on message length
-      // Adjust the logic as needed to fit your requirements
       if (this.message.body.length <= 50) {
         return "col-4";
       } else if (this.message.body.length <= 100) {

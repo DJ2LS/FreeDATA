@@ -1,17 +1,3 @@
-<script setup lang="ts">
-import { setColormap } from "../js/waterfallHandler";
-
-import { setActivePinia } from "pinia";
-import pinia from "../store/index";
-setActivePinia(pinia);
-
-import { settingsStore as settings } from "../store/settingsStore.js";
-
-function saveSettings() {
-  //saveSettingsToFile();
-  setColormap();
-}
-</script>
 <template>
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-50">Waterfall theme</span>
@@ -54,10 +40,36 @@ function saveSettings() {
           @change="saveSettings"
           v-model="settings.local.enable_sys_notification"
         />
-        <label class="form-check-label" for="NotificationSwitch"
-          >Show system pop-ups</label
-        >
+        <label class="form-check-label" for="NotificationSwitch">Show system pop-ups</label>
       </div>
     </label>
   </div>
 </template>
+
+<script>
+import { setColormap } from "../js/waterfallHandler";
+import { settingsStore as settings } from "../store/settingsStore.js";
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
+
+// Set the active Pinia store
+setActivePinia(pinia);
+
+// Function to save settings and update colormap
+function saveSettings() {
+  // Save settings to file if needed
+  setColormap();
+}
+
+// Export methods for use in the template
+export default {
+  methods: {
+    saveSettings,
+  },
+  computed: {
+    settings() {
+      return settings;
+    },
+  },
+};
+</script>

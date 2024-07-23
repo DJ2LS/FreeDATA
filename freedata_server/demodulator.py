@@ -27,6 +27,7 @@ class Demodulator():
 
     def __init__(self, config, audio_rx_q, data_q_rx, states, event_manager, service_queue, fft_queue):
         self.log = structlog.get_logger("Demodulator")
+        self.config = config
 
         self.shutdown_flag = threading.Event()
 
@@ -51,22 +52,26 @@ class Demodulator():
         self.resampler = codec2.resampler()
 
         self.init_codec2()
+        self.init_tci()
 
         # enable decoding of signalling modes
         self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
         self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
 
-        tci_rx_callback_thread = threading.Thread(
-            target=self.tci_rx_callback,
-            name="TCI RX CALLBACK THREAD",
-            daemon=True,
-        )
-        tci_rx_callback_thread.start()
 
     def init_codec2(self):
         # Open codec2 instances
         for mode in codec2.FREEDV_MODE:
             self.init_codec2_mode(mode.value)
+
+    def init_tci(self):
+        if self.config['RADIO']['control'] == "tci":
+            tci_rx_callback_thread = threading.Thread(
+                target=self.tci_rx_callback,
+                name="TCI RX CALLBACK THREAD",
+                daemon=True,
+            )
+            tci_rx_callback_thread.start()
 
 
     def init_codec2_mode(self, mode):

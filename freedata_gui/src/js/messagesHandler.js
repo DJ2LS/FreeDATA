@@ -1,4 +1,3 @@
-// pinia store setup
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
@@ -13,49 +12,33 @@ import {
   getFreedataAttachmentBySha512,
 } from "./api";
 
-interface Message {
-  id: string;
-  timestamp: string;
-  origin: string;
-  destination: string;
-  direction: string;
-  body: string;
-  attachments: any[];
-  status: any;
-  statistics: any;
-  is_read: any;
-}
-
+/**
+ * Process FreeDATA messages and update chat store.
+ * @param {Object} data - The data object containing messages.
+ */
 export async function processFreedataMessages(data) {
   if (
-    typeof data !== "undefined" &&
-    typeof data.messages !== "undefined" &&
+    data &&
     Array.isArray(data.messages)
   ) {
     chatStore.callsign_list = createCallsignListFromAPI(data);
     chatStore.sorted_chat_list = createSortedMessagesList(data);
 
-    //console.log(chatStore.sorted_chat_list);
-    //console.log(chatStore.callsign_list);
-    // also update the selectedCallsign - if its undefined, then we select the first available callsign
-    if (typeof chatStore.selectedCallsign == "undefined") {
+    if (!chatStore.selectedCallsign) {
       chatStore.selectedCallsign = Object.keys(chatStore.sorted_chat_list)[0];
     }
   }
 }
 
-function createCallsignListFromAPI(data: {
-  total_messages: number;
-  messages: Message[];
-}): {
-  [key: string]: { timestamp: string; body: string; unread_messages: number };
-} {
-  const callsignList: {
-    [key: string]: { timestamp: string; body: string; unread_messages: number };
-  } = {};
+/**
+ * Create a list of callsigns from the API data.
+ * @param {Object} data - The data object containing messages.
+ * @returns {Object} - The callsign list.
+ */
+function createCallsignListFromAPI(data) {
+  const callsignList = {};
 
-  //console.log(data)
-  chatStore.totalUnreadMessages = 0; // Reset the global counter
+  chatStore.totalUnreadMessages = 0;
 
   data.messages.forEach((message) => {
     let callsign =
@@ -67,15 +50,13 @@ function createCallsignListFromAPI(data: {
     ) {
       let unreadCounter = 0;
 
-      if (typeof callsignList[callsign] !== "undefined") {
-        // If callsign already exists, get its current unread count
+      if (callsignList[callsign]) {
         unreadCounter = callsignList[callsign].unread_messages;
       }
 
-      // Increment the unread counter if the message is not read
       if (!message.is_read) {
         unreadCounter++;
-        chatStore.totalUnreadMessages++; // Increment the global counter
+        chatStore.totalUnreadMessages++;
       }
 
       callsignList[callsign] = {
@@ -84,19 +65,20 @@ function createCallsignListFromAPI(data: {
         unread_messages: unreadCounter,
       };
     } else if (!message.is_read) {
-      // If the message is not read and the callsign exists but with an older message
-      chatStore.totalUnreadMessages++; // Increment the global counter
+      chatStore.totalUnreadMessages++;
     }
   });
 
   return callsignList;
 }
 
-function createSortedMessagesList(data: {
-  total_messages: number;
-  messages: Message[];
-}): { [key: string]: Message[] } {
-  const callsignMessages: { [key: string]: Message[] } = {};
+/**
+ * Create a sorted list of messages by callsign.
+ * @param {Object} data - The data object containing messages.
+ * @returns {Object} - The sorted messages list.
+ */
+function createSortedMessagesList(data) {
+  const callsignMessages = {};
 
   data.messages.forEach((message) => {
     let callsign =
@@ -112,30 +94,57 @@ function createSortedMessagesList(data: {
   return callsignMessages;
 }
 
+/**
+ * Send a new FreeDATA message.
+ * @param {string} dxcall - The callsign to send the message to.
+ * @param {string} body - The message body.
+ * @param {Array} attachments - The message attachments.
+ */
 export function newMessage(dxcall, body, attachments) {
   sendFreedataMessage(dxcall, body, attachments);
   chatStore.triggerScrollToBottom();
 }
 
-/* ------ TEMPORARY DUMMY FUNCTIONS --- */
+/**
+ * Repeat the transmission of a message by its ID.
+ * @param {string} id - The ID of the message.
+ */
 export function repeatMessageTransmission(id) {
   retransmitFreedataMessage(id);
 }
 
+/**
+ * Delete all messages associated with a callsign from the database.
+ * @param {string} callsign - The callsign to delete messages for.
+ */
 export function deleteCallsignFromDB(callsign) {
-  for (var message of chatStore.sorted_chat_list[callsign]) {
-    deleteFreedataMessage(message["id"]);
+  for (const message of chatStore.sorted_chat_list[callsign]) {
+    deleteFreedataMessage(message.id);
   }
 }
 
+/**
+ * Delete a specific message by its ID from the database.
+ * @param {string} id - The ID of the message.
+ */
 export function deleteMessageFromDB(id) {
   deleteFreedataMessage(id);
 }
 
+/**
+ * Request information about a message by its ID (currently a placeholder).
+ * @param {string} id - The ID of the message.
+ */
 export function requestMessageInfo(id) {
-  return;
+  // Placeholder function
+  return id;
 }
 
+/**
+ * Retrieve an attachment by its SHA-512 hash.
+ * @param {string} data_sha512 - The SHA-512 hash of the attachment.
+ * @returns {Promise<Object>} - The attachment data.
+ */
 export async function getMessageAttachment(data_sha512) {
   return await getFreedataAttachmentBySha512(data_sha512);
 }

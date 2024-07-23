@@ -1,42 +1,47 @@
-<script setup lang="ts">
+<script setup>
 import { ref } from "vue";
 import { setActivePinia } from "pinia";
 import pinia from "../../store/index";
-setActivePinia(pinia);
-
 import { useStateStore } from "../../store/stateStore.js";
-const state = useStateStore(pinia);
-
 import { sendModemCQ, sendModemPing, setModemBeacon } from "../../js/api.js";
 
+// Set the active Pinia store
+setActivePinia(pinia);
+const state = useStateStore(pinia);
+
+// Define the reactive reference for DX Call
+const dxcallPing = ref("");
+
+// Function to transmit a ping
 function transmitPing() {
   sendModemPing(dxcallPing.value.toUpperCase());
 }
 
+// Function to start or stop the beacon
 function startStopBeacon() {
-  if (state.beacon_state === true) {
+  if (state.beacon_state) {
     setModemBeacon(false, state.away_from_key);
   } else {
     setModemBeacon(true, state.away_from_key);
   }
 }
 
-function setAwayFromKey(){
- setModemBeacon(state.beacon_state, state.away_from_key);
-
+// Function to set away from key state
+function setAwayFromKey() {
+  setModemBeacon(state.beacon_state, state.away_from_key);
 }
 
-
-var dxcallPing = ref("");
+// Listen for the stationSelected event and update dxcallPing
 window.addEventListener(
-      "stationSelected",
-      function (eventdata) {
-        let evt = <CustomEvent>eventdata;
-        dxcallPing.value = evt.detail;
-      },
-      false,
-    );
+  "stationSelected",
+  function (eventdata) {
+    const evt = eventdata;
+    dxcallPing.value = evt.detail;
+  },
+  false
+);
 </script>
+
 <template>
   <div class="card h-100">
     <div class="card-header p-0">
@@ -70,7 +75,7 @@ window.addEventListener(
                 data-bs-trigger="hover"
                 data-bs-html="false"
                 title="Send a ping request to a remote station"
-                @click="transmitPing()"
+                @click="transmitPing"
               >
                 <strong>PING Station</strong>
               </button>
@@ -85,7 +90,7 @@ window.addEventListener(
               id="sendCQ"
               type="button"
               title="Send a CQ to the world"
-              @click="sendModemCQ()"
+              @click="sendModemCQ"
             >
               <h3>CQ CQ CQ</h3>
             </button>
@@ -93,7 +98,7 @@ window.addEventListener(
         </div>
 
         <div class="row">
-        <div class="col">
+          <div class="col">
             <div class="form-check form-switch">
               <input
                 class="form-check-input"
@@ -101,11 +106,9 @@ window.addEventListener(
                 role="switch"
                 id="flexSwitchBeacon"
                 v-model="state.beacon_state"
-                @click="startStopBeacon()"
+                @click="startStopBeacon"
               />
-              <label class="form-check-label" for="flexSwitchBeacon"
-                >Enable Beacon</label
-              >
+              <label class="form-check-label" for="flexSwitchBeacon">Enable Beacon</label>
             </div>
           </div>
 
@@ -117,15 +120,12 @@ window.addEventListener(
                 role="switch"
                 id="flexSwitchAFK"
                 v-model="state.away_from_key"
-                @change="setAwayFromKey()"
+                @change="setAwayFromKey"
               />
-              <label class="form-check-label" for="flexSwitchAFK"
-                >Away From Key</label
-              >
+              <label class="form-check-label" for="flexSwitchAFK">Away From Key</label>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </div>

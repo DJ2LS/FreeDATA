@@ -1,5 +1,4 @@
-<script setup lang="ts">
-import { setConfig } from "../js/api";
+<script setup>
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -36,9 +35,7 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
           v-model="settings.remote.STATION.enable_stats"
           disabled
         />
-        <label class="form-check-label" for="ExplorerStatsSwitch"
-          >Publish stats</label
-        >
+        <label class="form-check-label" for="ExplorerStatsSwitch">Publish stats</label>
       </div>
     </label>
   </div>

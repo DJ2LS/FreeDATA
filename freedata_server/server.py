@@ -3,9 +3,15 @@ import sys
 import signal
 import queue
 import asyncio
+import webbrowser
+
+
+
 from fastapi import FastAPI, Request, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
 import serial_ports
 from config import CONFIG
 import audio
@@ -21,6 +27,8 @@ import command_test
 import command_arq_raw
 import command_message_send
 import event_manager
+import structlog
+from log_handler import setup_logging
 
 from message_system_db_manager import DatabaseManager
 from message_system_db_messages import DatabaseManagerMessages
@@ -40,7 +48,44 @@ DOCUMENTATION_URL = 'https://wiki.freedata.app'
 script_directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(script_directory)
 
+# adjust asyncio for windows usage for avoiding a Assertion Error
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+
 app = FastAPI()
+
+# custom logger for fastapi
+#setup_logging()
+logger = structlog.get_logger()
+
+source_gui_dir = "../freedata_gui/dist"
+bundled_gui_dir = os.path.join(os.path.dirname(__file__), "gui")
+
+# Check which directory exists and set gui_dir accordingly
+if os.path.isdir(source_gui_dir):
+    gui_dir = source_gui_dir
+elif os.path.isdir(bundled_gui_dir):
+    gui_dir = bundled_gui_dir
+else:
+    gui_dir = None
+    logger.warning("GUI directory not found. ")
+
+if gui_dir and os.path.isdir(gui_dir):
+    app.mount("/gui", StaticFiles(directory=gui_dir, html=True), name="static")
+else:
+    logger.warning("GUI directory not found. Please run `npm i && npm run build` inside `freedata_gui`.")
+
+
+
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    response = await call_next(request)
+    logger.info(f"[API] {request.method}", url=str(request.url), response_code=response.status_code)
+    return response
+
 
 # CORS
 origins = ["*"]
@@ -333,44 +378,43 @@ async def websocket_states(websocket: WebSocket):
     await websocket.accept()
     await app.wsm.handle_connection(websocket, app.wsm.states_client_list, app.state_queue)
 
-
-# Shutdown Handler
-@app.on_event("shutdown")
-def shutdown_event():
-    print("shutdown via fastapi")
-    stop_server()
-
 # Signal Handler
 def signal_handler(sig, frame):
     print("\n------------------------------------------")
-    print("Received SIGINT...")
+    logger.warning("[SHUTDOWN] Received SIGINT....")
     stop_server()
 
 def stop_server():
     if hasattr(app, 'wsm'):
         app.wsm.shutdown()
-
     if hasattr(app, 'radio_manager'):
         app.radio_manager.stop()
     if hasattr(app, 'schedule_manager'):
         app.schedule_manager.stop()
-    if hasattr(app, 'service_manager'):
-        if hasattr(app.service_manager, 'modem_service') and app.service_manager.modem_service:
-            app.service_manager.shutdown()
-        if hasattr(app.service_manager, 'modem') and app.service_manager.modem:
-            app.service_manager.modem.demodulator.shutdown()
+    if hasattr(app.service_manager, 'modem_service') and app.service_manager.modem_service:
+        app.service_manager.shutdown()
+    if hasattr(app.service_manager, 'modem') and app.service_manager.modem:
+        app.service_manager.modem.demodulator.shutdown()
+    if hasattr(app.service_manager, 'modem_service'):
+        app.service_manager.stop_modem()
+    if hasattr(app, 'socket_interface_manager') and app.socket_interface_manager:
+        app.socket_interface_manager.stop_servers()
     if hasattr(app, 'socket_interface_manager') and app.socket_interface_manager:
         app.socket_interface_manager.stop_servers()
     audio.terminate()
-    print("Shutdown completed")
+    logger.warning("[SHUTDOWN] Shutdown completed")
     try:
         # it seems sys.exit causes problems since we are using fastapi
         # fastapi seems to close the application
         #sys.exit(0)
+        os._exit(0)
+
         pass
     except Exception as e:
-        print(e)
-        print("shutdown down with exception")
+        logger.warning("[SHUTDOWN] Shutdown completed", error=e)
+
+
+
 
 def main():
     signal.signal(signal.SIGINT, signal_handler)
@@ -397,8 +441,20 @@ def main():
     modemaddress = conf['NETWORK'].get('modemaddress', '127.0.0.1')
     modemport = int(conf['NETWORK'].get('modemport', 5000))
 
+    if os.path.isdir(gui_dir):
+        logger.info("---------------------------------------------------")
+        logger.info("                                                   ")
+        logger.info(f"[GUI] AVAILABLE ON http://{modemaddress}:{modemport}/gui")
+        logger.info("just open it in your browser")
+        logger.info("                                                   ")
+        logger.info("---------------------------------------------------")
+        url = f"http://{modemaddress}:{modemport}/gui"
+        webbrowser.open(url, new=0, autoraise=True)
+
+
     import uvicorn
-    uvicorn.run(app, host=modemaddress, port=modemport, log_level="info")
+    uvicorn.run(app, host=modemaddress, port=modemport, log_config=None, log_level="info")
+
 
 if __name__ == "__main__":
     main()

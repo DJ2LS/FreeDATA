@@ -1,11 +1,12 @@
-<script setup lang="ts">
-import { setActivePinia } from "pinia";
-import pinia from "../../store/index";
+<script setup>
+import { setActivePinia } from 'pinia';
+import pinia from '../../store/index';
 setActivePinia(pinia);
 
-import { useStateStore } from "../../store/stateStore.js";
+import { useStateStore } from '../../store/stateStore.js';
 const state = useStateStore(pinia);
 </script>
+
 <template>
   <div class="progress mb-0 rounded-0 rounded-top" style="height: 22px">
     <div
@@ -13,7 +14,7 @@ const state = useStateStore(pinia);
       id="noise_level"
       role="progressbar"
       :style="{ width: state.s_meter_strength_percent + '%' }"
-      aria-valuenow="{{state.s_meter_strength_percent}}"
+      :aria-valuenow="state.s_meter_strength_percent"
       aria-valuemin="0"
       aria-valuemax="100"
     ></div>
@@ -37,7 +38,7 @@ const state = useStateStore(pinia);
       class="progress-bar bg-success"
       role="progressbar"
       style="width: 89%"
-      aria-valuenow="50"
+      aria-valuenow="89"
       aria-valuemin="0"
       aria-valuemax="100"
     ></div>

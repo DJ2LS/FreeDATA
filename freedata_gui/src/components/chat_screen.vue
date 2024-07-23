@@ -1,6 +1,6 @@
-<script setup lang="ts">
+<script setup>
 // @ts-nocheck
-// disable typescript check beacuse of error with beacon histogram options
+// disable typescript check because of error with beacon histogram options
 
 import chat_conversations from "./chat_conversations.vue";
 import chat_messages from "./chat_messages.vue";
@@ -8,11 +8,11 @@ import chat_new_message from "./chat_new_message.vue";
 
 import { getStationInfoByCallsign } from "./../js/stationHandler";
 
-import { setActivePinia } from "pinia";
-import pinia from "../store/index";
+import { setActivePinia } from 'pinia';
+import pinia from '../store/index';
 setActivePinia(pinia);
 
-import { useChatStore } from "../store/chatStore.js";
+import { useChatStore } from '../store/chatStore.js';
 const chat = useChatStore(pinia);
 
 import {
@@ -24,11 +24,11 @@ import {
   Tooltip,
   Legend,
   BarElement,
-} from "chart.js";
+} from 'chart.js';
 
-import { Bar } from "vue-chartjs";
-import { watch, nextTick, ref, computed } from "vue";
-import annotationPlugin from "chartjs-plugin-annotation";
+import { Bar } from 'vue-chartjs';
+import { watch, nextTick, ref, computed } from 'vue';
+import annotationPlugin from 'chartjs-plugin-annotation';
 
 ChartJS.register(
   CategoryScale,
@@ -38,16 +38,16 @@ ChartJS.register(
   Tooltip,
   Legend,
   BarElement,
-  annotationPlugin,
+  annotationPlugin
 );
 
-var beaconHistogramOptions = {
-  type: "bar",
-  bezierCurve: false, //remove curves from your plot
-  scaleShowLabels: false, //remove labels
-  tooltipEvents: [], //remove trigger from tooltips so they will'nt be show
-  pointDot: false, //remove the points markers
-  scaleShowGridLines: true, //set to false to remove the grids background
+const beaconHistogramOptions = {
+  type: 'bar',
+  bezierCurve: false, // remove curves from your plot
+  scaleShowLabels: false, // remove labels
+  tooltipEvents: [], // remove trigger from tooltips so they won't be shown
+  pointDot: false, // remove the points markers
+  scaleShowGridLines: true, // set to false to remove the grids background
   maintainAspectRatio: true,
   plugins: {
     legend: {
@@ -56,11 +56,11 @@ var beaconHistogramOptions = {
     annotation: {
       annotations: [
         {
-          type: "line",
-          mode: "horizontal",
-          scaleID: "y",
+          type: 'line',
+          mode: 'horizontal',
+          scaleID: 'y',
           value: 0,
-          borderColor: "darkgrey", // Set the color to dark grey for the zero line
+          borderColor: 'darkgrey', // Set the color to dark grey for the zero line
           borderWidth: 0.5, // Set the line width
         },
       ],
@@ -69,7 +69,7 @@ var beaconHistogramOptions = {
 
   scales: {
     x: {
-      position: "bottom",
+      position: 'bottom',
       display: false,
       min: -10,
       max: 15,
@@ -94,11 +94,11 @@ const beaconHistogramData = computed(() => ({
     {
       data: chat.beaconDataArray,
       tension: 0.1,
-      borderColor: "rgb(0, 255, 0)",
+      borderColor: 'rgb(0, 255, 0)',
 
       backgroundColor: function (context) {
-        var value = context.dataset.data[context.dataIndex];
-        return value >= 0 ? "green" : "red";
+        const value = context.dataset.data[context.dataIndex];
+        return value >= 0 ? 'green' : 'red';
       },
     },
   ],
@@ -108,14 +108,14 @@ const messagesContainer = ref(null);
 watch(
   () => chat.scrollTrigger,
   (newVal, oldVal) => {
-    //console.log("Trigger changed from", oldVal, "to", newVal); // Debugging line
     nextTick(() => {
+    console.log(newVal)
+    console.log(oldVal)
       if (messagesContainer.value) {
-        messagesContainer.value.scrollTop =
-          messagesContainer.value.scrollHeight;
+        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
       }
     });
-  },
+  }
 );
 </script>
 
@@ -126,11 +126,7 @@ watch(
       <div class="container-fluid overflow-auto p-0">
         <chat_conversations />
       </div>
-      <div
-        class="list-group overflow-auto"
-        id="list-tab-chat"
-        role="tablist"
-      ></div>
+      <div class="list-group overflow-auto" id="list-tab-chat" role="tablist"></div>
     </div>
 
     <!-- Chat Messages -->
@@ -152,9 +148,7 @@ watch(
             <button type="button" class="btn btn-outline-secondary" disabled>
               Beacons
             </button>
-            <div
-              class="form-floating border border-secondary-subtle border-1 rounded-end"
-            >
+            <div class="form-floating border border-secondary-subtle border-1 rounded-end">
               <Bar
                 :data="beaconHistogramData"
                 :options="beaconHistogramOptions"
