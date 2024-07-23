@@ -35,5 +35,5 @@ coverage.xml
 /freedata_gui/config/config.json
 
 #GUI_WEB
-/freedata_gui_web/dist
-/freedata_gui_web/node_modules
+/freedata_gui/dist
+/freedata_gui/node_modules

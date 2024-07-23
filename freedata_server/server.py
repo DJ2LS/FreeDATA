@@ -59,7 +59,7 @@ app = FastAPI()
 #setup_logging()
 logger = structlog.get_logger()
 
-source_gui_dir = "../freedata_gui_web/dist"
+source_gui_dir = "../freedata_gui/dist"
 bundled_gui_dir = os.path.join(os.path.dirname(__file__), "gui")
 
 # Check which directory exists and set gui_dir accordingly
@@ -74,7 +74,7 @@ else:
 if gui_dir and os.path.isdir(gui_dir):
     app.mount("/gui", StaticFiles(directory=gui_dir, html=True), name="static")
 else:
-    logger.warning("GUI directory not found. Please run `npm i && npm run build` inside `freedata_gui_web`.")
+    logger.warning("GUI directory not found. Please run `npm i && npm run build` inside `freedata_gui`.")
 
 
 
