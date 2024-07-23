@@ -59,7 +59,7 @@ app = FastAPI()
 #setup_logging()
 logger = structlog.get_logger()
 
-source_gui_dir = "../freedata_gui/dist"
+source_gui_dir = "freedata_gui/dist"
 bundled_gui_dir = os.path.join(os.path.dirname(__file__), "gui")
 
 # Check which directory exists and set gui_dir accordingly
