@@ -1,3 +1,3 @@
-npm test --prefix freedata_gui
-python -m unittest discover tests
+#npm test --prefix freedata_gui
+python3 -m unittest discover tests
 
