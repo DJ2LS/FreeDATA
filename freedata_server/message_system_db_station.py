@@ -6,13 +6,8 @@ import os
 
 
 class DatabaseManagerStations(DatabaseManager):
-    def __init__(self, db_file=None):
-        if not db_file:
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            db_path = os.path.join(script_dir, 'freedata-messages.db')
-            db_file = 'sqlite:///' + db_path
-
-        super().__init__(db_file)
+    def __init__(self, event_manager):
+        super().__init__(event_manager)
 
     def get_station(self, callsign):
         """
