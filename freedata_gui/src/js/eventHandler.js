@@ -9,10 +9,7 @@ import {
 import { processFreedataMessages } from "./messagesHandler";
 import { processRadioStatus } from "./radioHandler";
 
-import { useAudioStore } from "../store/audioStore";
-const audioStore = useAudioStore();
-import { useSerialStore } from "../store/serialStore";
-const serialStore = useSerialStore();
+
 
 // ----------------- init pinia stores -------------
 import { setActivePinia } from "pinia";
@@ -20,7 +17,10 @@ import pinia from "../store/index";
 setActivePinia(pinia);
 import { useStateStore } from "../store/stateStore";
 const stateStore = useStateStore(pinia);
-
+import { useAudioStore } from "../store/audioStore";
+const audioStore = useAudioStore(pinia);
+import { useSerialStore } from "../store/serialStore";
+const serialStore = useSerialStore(pinia);
 import {
   getRemote,
 } from "../store/settingsStore";
@@ -28,12 +28,12 @@ import {
 export async function loadAllData() {
   let stateData = await getModemState();
   console.log(stateData);
-
+  audioStore.loadAudioDevices();
+  serialStore.loadSerialDevices();
+  console.log(audioStore.audioInputs)
   await getRadioStatus();
   getRemote();
   getOverallHealth();
-  audioStore.loadAudioDevices();
-  serialStore.loadSerialDevices();
   getFreedataMessages();
   processFreedataMessages();
   processRadioStatus();

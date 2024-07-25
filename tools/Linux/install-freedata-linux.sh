@@ -19,6 +19,9 @@
 #
 #
 # Changelog:
+# 1.8   23 July 2024 ( DJ2LS )
+# Add support for browser based gui
+#
 # 1.7   31 May 2024 ( DJ2LS )
 # Add support for version specific setup
 #
@@ -335,8 +338,9 @@ echo "*************************************************************************"
 cd ../../../..
 cd freedata_gui
 npm i
-npm audit fix --force
-npm i
+#npm audit fix --force
+#npm i
+npm run build
 
 # Return to the directory we started in
 cd ../..

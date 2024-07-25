@@ -2,7 +2,13 @@
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 import { useSerialStore } from "../store/serialStore.js";
 
-const serialStore = useSerialStore();
+
+// Pinia setup
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
+setActivePinia(pinia);
+
+const serialStore = useSerialStore(pinia);
 /*
 const settings = ref({
   remote: {

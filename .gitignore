@@ -23,14 +23,6 @@ package-lock.json
 coverage.sh
 coverage.xml
 
-#ignore node_modules
-/freedata_gui/node_modules/
-
-#Ignore freedata_gui build items
-/freedata_gui/dist
-/freedata_gui/release
-/freedata_gui/dist-electron
-
 #Ignore GUI config
 /freedata_gui/config/config.json
 
