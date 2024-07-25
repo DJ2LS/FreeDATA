@@ -14,7 +14,8 @@ class DatabaseManager:
     DATABASE_ENV_VAR = 'FREEDATA_DATABASE'
     DEFAULT_DATABASE_FILE = 'freedata-messages.db'
 
-    def __init__(self, event_manger):
+    def __init__(self, event_manager):
+        self.event_manager = event_manager
 
         db_file = self.get_database()
         self.engine = create_engine(db_file, echo=False)
