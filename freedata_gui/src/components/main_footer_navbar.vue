@@ -51,7 +51,8 @@ const state = useStateStore(pinia);
           </button>
         </div>
 
-        <div class="btn-group btn-group-sm me-1" role="group">
+        <div class="btn-group btn-group-sm me-1 d-none d-md-inline-block" role="group">
+
           <button
             class="btn btn-sm btn-secondary me-4 disabled"
             type="button"
@@ -65,7 +66,7 @@ const state = useStateStore(pinia);
           </button>
         </div>
 
-        <div class="btn-group btn-group-sm me-1" role="group">
+        <div class="btn-group btn-group-sm me-1 d-none d-md-inline-block" role="group">
           <button
             class="btn btn-sm btn-secondary me-0"
             type="button"
@@ -97,7 +98,7 @@ const state = useStateStore(pinia);
           </button>
         </div>
 
-        <div class="btn-group btn-group-sm me-1" role="group">
+        <div class="btn-group btn-group-sm me-1 d-none d-md-inline-block" role="group">
           <button
             class="btn btn-sm btn-secondary me-0"
             type="button"
