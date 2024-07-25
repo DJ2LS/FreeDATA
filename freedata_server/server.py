@@ -11,6 +11,8 @@ from fastapi import FastAPI, Request, HTTPException, WebSocket, WebSocketDisconn
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from contextlib import asynccontextmanager
+import uvicorn
 
 import serial_ports
 from config import CONFIG
@@ -52,8 +54,13 @@ sys.path.append(script_directory)
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    #print("startup")
+    yield
+    stop_server()
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 # custom logger for fastapi
 #setup_logging()
@@ -414,9 +421,6 @@ def stop_server():
     except Exception as e:
         logger.warning("[SHUTDOWN] Shutdown completed", error=e)
 
-
-
-
 def main():
     signal.signal(signal.SIGINT, signal_handler)
 
@@ -451,9 +455,6 @@ def main():
         logger.info("---------------------------------------------------")
         url = f"http://{modemaddress}:{modemport}/gui"
         webbrowser.open(url, new=0, autoraise=True)
-
-
-    import uvicorn
     uvicorn.run(app, host=modemaddress, port=modemport, log_config=None, log_level="info")
 
 
