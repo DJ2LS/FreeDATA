@@ -107,11 +107,3 @@ https://stackoverflow.com/a/9622873
 [data-bs-theme="dark"] {
   /* default dark theme mods */
 }
-.modal-backdrop {
-  background-color: transparent;
-}
-
-.modal-backdrop.in {
-  filter: alpha(opacity=10);
-  opacity: 0.1;
-}
