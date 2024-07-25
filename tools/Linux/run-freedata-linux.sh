@@ -89,7 +89,7 @@ then
 	cp $serverdir/config.ini.example $HOME/.config/FreeDATA/config.ini
 fi
 
-FREEDATA_CONFIG=$HOME/.config/FreeDATA/config.ini python3 $serverdir/server.py > FreeDATA-server.log 2>&1 &
+FREEDATA_CONFIG=$HOME/.config/FreeDATA/config.ini FREEDATA_DATABASE=$HOME/.config/FreeDATA/freedata-messages.db python3 $serverdir/server.py > FreeDATA-server.log 2>&1 &
 serverpid=$!
 echo "Process ID of FreeDATA server is" $serverpid
 
