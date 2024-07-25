@@ -1,80 +1,3 @@
-<script setup>
-import { Modal } from 'bootstrap/dist/js/bootstrap.esm.min.js';
-
-import { onMounted } from "vue";
-
-// Pinia setup
-import { setActivePinia } from "pinia";
-import pinia from "../store/index";
-setActivePinia(pinia);
-
-// Store imports
-import { settingsStore as settings, onChange } from "../store/settingsStore.js";
-import { sendModemCQ } from "../js/api.js";
-import { useStateStore } from "../store/stateStore.js";
-import { useAudioStore } from "../store/audioStore";
-
-// API imports
-import {
-  getVersion,
-  startModem,
-  stopModem,
-} from "../js/api";
-
-// Reactive state
-const state = useStateStore(pinia);
-const audioStore = useAudioStore();
-
-
-// Get the full API URL
-const apiUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
-
-
-// Initialize modal on mount
-onMounted(() => {
-  getVersion().then((res) => {
-    state.modem_version = res;
-  });
-  new Modal("#modemCheck", {}).show();
-});
-
-
-
-// Helper functions
-function getModemStateLocal() {
-  return state.is_modem_running ? "Active" : "Inactive";
-}
-
-function getNetworkState() {
-  return state.modem_connection === "connected" ? "Connected" : "Disconnected";
-}
-
-function getRigControlStatus() {
-  switch (settings.remote.RADIO.control) {
-    case "disabled":
-      return true;
-    case "serial_ptt":
-    case "rigctld":
-    case "rigctld_bundle":
-    case "tci":
-      return state.radio_status;
-    default:
-      console.error("Unknown radio control mode " + settings.remote.RADIO.control);
-      return "Unknown control type" + settings.remote.RADIO.control;
-  }
-}
-
-function testHamlib() {
-  sendModemCQ();
-}
-
-function reloadGUI() {
-  location.reload();
-}
-
-
-</script>
-
 <template>
   <div
     class="modal modal-lg fade"
@@ -137,7 +60,6 @@ function reloadGUI() {
                 </div>
               </div>
             </div>
-
             <!-- Modem Section -->
             <div class="accordion-item">
               <h2 class="accordion-header">
@@ -329,3 +251,73 @@ function reloadGUI() {
     </div>
   </div>
 </template>
+
+<script setup>
+import { Modal } from 'bootstrap/dist/js/bootstrap.esm.min.js';
+import { onMounted } from "vue";
+
+// Pinia setup
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
+setActivePinia(pinia);
+
+// Store imports
+import { settingsStore as settings, onChange } from "../store/settingsStore.js";
+import { sendModemCQ } from "../js/api.js";
+import { useStateStore } from "../store/stateStore.js";
+import { useAudioStore } from "../store/audioStore";
+
+// API imports
+import {
+  getVersion,
+  startModem,
+  stopModem,
+} from "../js/api";
+
+// Reactive state
+const state = useStateStore(pinia);
+const audioStore = useAudioStore(pinia);
+
+// Get the full API URL
+const apiUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+
+// Initialize modal on mount
+onMounted(() => {
+  getVersion().then((res) => {
+    state.modem_version = res;
+  });
+  new Modal("#modemCheck", {}).show();
+});
+
+// Helper functions
+function getModemStateLocal() {
+  return state.is_modem_running ? "Active" : "Inactive";
+}
+
+function getNetworkState() {
+  return state.modem_connection === "connected" ? "Connected" : "Disconnected";
+}
+
+function getRigControlStatus() {
+  switch (settings.remote.RADIO.control) {
+    case "disabled":
+      return true;
+    case "serial_ptt":
+    case "rigctld":
+    case "rigctld_bundle":
+    case "tci":
+      return state.radio_status;
+    default:
+      console.error("Unknown radio control mode " + settings.remote.RADIO.control);
+      return "Unknown control type" + settings.remote.RADIO.control;
+  }
+}
+
+function testHamlib() {
+  sendModemCQ();
+}
+
+function reloadGUI() {
+  location.reload();
+}
+</script>

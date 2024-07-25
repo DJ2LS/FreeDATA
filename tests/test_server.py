@@ -17,7 +17,21 @@ class TestIntegration(unittest.TestCase):
         my_env = os.environ.copy()
         my_env["FREEDATA_CONFIG"] = "freedata_server/config.ini.example"
         cls.process = Popen(shlex.split(cmd), stdin=PIPE, env=my_env)
+        cls.wait_for_server(cls.url)
         time.sleep(5)
+
+    @classmethod
+    def wait_for_server(cls, url, timeout=30):
+        """Wait for the server to start"""
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            try:
+                r = requests.get(url)
+                if r.status_code == 200:
+                    return True
+            except requests.exceptions.ConnectionError:
+                time.sleep(1)
+        raise RuntimeError("Server not ready after waiting for 30 seconds")
 
     @classmethod
     def tearDownClass(cls):

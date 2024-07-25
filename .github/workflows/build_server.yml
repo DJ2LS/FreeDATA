@@ -31,6 +31,17 @@ jobs:
         with:
           repository: DJ2LS/FreeDATA
 
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Vue Builder
+        working-directory: freedata_gui
+        run: |
+          npm i
+          npm run build
+
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
@@ -64,7 +75,7 @@ jobs:
       - name: Build binaries
         working-directory: freedata_server
         run: |
-          python3 -m nuitka  --remove-output --assume-yes-for-downloads --follow-imports --include-data-dir=lib=lib --include-data-dir=../freedata_gui_web/dist=gui --include-data-files=lib/codec2/*=lib/codec2/ --include-data-files=config.ini.example=config.ini --standalone server.py --output-filename=freedata-server
+          python3 -m nuitka --remove-output --assume-yes-for-downloads --follow-imports --include-data-dir=lib=lib --include-data-dir=../freedata_gui/dist=gui --include-data-files=lib/codec2/*=lib/codec2/ --include-data-files=config.ini.example=config.ini --standalone server.py --output-filename=freedata-server
 
       #- name: Download Portaudio binaries Linux macOS
       #  if: ${{!startsWith(matrix.os, 'windows')}}

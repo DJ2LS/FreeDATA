@@ -59,7 +59,7 @@ const isNetworkDisconnected = computed(() => state.modem_connection !== "connect
     id="main-list-tab"
     role="tablist"
     style="margin-top: 100px"
-    @click="isNetworkDisconnected ? null : loadAllData"
+    @click="isNetworkDisconnected ? null : loadAllData()"
   >
     <a
       class="list-group-item list-group-item-dark list-group-item-action border-0 rounded-3 mb-2 active"
@@ -117,7 +117,7 @@ const isNetworkDisconnected = computed(() => state.modem_connection !== "connect
       aria-controls="list-settings"
       title="Settings"
       :class="{ disabled: isNetworkDisconnected }"
-      @click="isNetworkDisconnected ? null : loadAllData"
+      @click="isNetworkDisconnected ? null : loadAllData()"
     >
       <i class="bi bi-gear-wide-connected h3"></i>
       <span class="ms-2" v-if="isTextVisible">Settings</span>

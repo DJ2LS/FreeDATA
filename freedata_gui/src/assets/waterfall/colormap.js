@@ -1804,4 +1804,5 @@ var binary = [
   [1, 1, 1],
   [0, 0, 0],
 ];
+// eslint-disable-next-line
 var colormaps = [turbo, fosphor, viridis, inferno, magma, jet, binary];

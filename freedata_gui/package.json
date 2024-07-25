@@ -35,6 +35,7 @@
     "gridstack": "^10.3.0",
     "pinia": "^2.1.7",
     "qth-locator": "^2.1.0",
+    "uuid": "^10.0.0",
     "vue": "^3.2.13",
     "vue-chartjs": "^5.3.1",
     "vuemoji-picker": "^0.2.1"
