@@ -1,6 +1,6 @@
 {
   "name": "FreeDATA",
-  "short_name": "FD",
+  "short_name": "FreeDATA",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
