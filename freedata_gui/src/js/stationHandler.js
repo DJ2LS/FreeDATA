@@ -6,13 +6,12 @@ import { getStationInfo, setStationInfo } from "../js/api";
 export async function getStationInfoByCallsign(callsign) {
   try {
     const result = await getStationInfo(callsign);
-    console.log(result);
 
-    station.stationInfo.callsign = result.callsign || "N/A";
-    station.stationInfo.location.gridsquare =
-      result.location?.gridsquare || "N/A";
     // Check if info is null and assign default values if it is
-if (result == null || result.info == null) {
+if (result == null || typeof(result) === "undefined" || result.info == null) {
+
+          station.stationInfo.callsign =  "N/A";
+    station.stationInfo.location.gridsquare = "N/A";
       station.stationInfo.info = {
         name: "",
         city: "",
@@ -33,6 +32,10 @@ if (result == null || result.info == null) {
         comments: "",
       };
     } else {
+    station.stationInfo.callsign = result.callsign || "N/A";
+    station.stationInfo.location.gridsquare =
+      result.location?.gridsquare || "N/A";
+
       station.stationInfo.info = {
         name: result.info.name || "",
         city: result.info.city || "",
