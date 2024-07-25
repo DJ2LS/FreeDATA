@@ -33,7 +33,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - uses: robinraju/release-downloader@v1.10
+      - uses: robinraju/release-downloader@v1.11
         with:
           repository: "Hamlib/Hamlib"
           fileName: " hamlib-w64-*.zip"
