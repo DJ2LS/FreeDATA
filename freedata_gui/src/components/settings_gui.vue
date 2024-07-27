@@ -17,6 +17,21 @@
     </select>
   </div>
   <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50">Auto launch browser</label>
+    <label class="input-group-text w-50">
+      <div class="form-check form-switch form-check-inline">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="NotificationSwitch"
+          @change="onChange"
+          v-model="settings.remote.GUI.auto_run_browser"
+        />
+        <label class="form-check-label" for="NotificationSwitch">On server statrup, launch a browser to GUI URL</label>
+      </div>
+    </label>
+  </div>
+  <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-50">Update channel</span>
     <select
       class="form-select form-select-sm w-50"
@@ -48,7 +63,7 @@
 
 <script>
 import { setColormap } from "../js/waterfallHandler";
-import { settingsStore as settings } from "../store/settingsStore.js";
+import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 
@@ -65,6 +80,7 @@ function saveSettings() {
 export default {
   methods: {
     saveSettings,
+    onChange,
   },
   computed: {
     settings() {

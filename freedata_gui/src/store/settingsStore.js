@@ -70,6 +70,9 @@ const defaultConfig = {
     MESSAGES: {
       enable_auto_repeat: false,
     },
+    GUI: {
+      auto_run_browser: true,
+    }
   },
 };
 
