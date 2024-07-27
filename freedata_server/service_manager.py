@@ -124,8 +124,10 @@ class SM:
             del self.modem
             self.modem = False
         self.state_manager.set("is_modem_running", False)
-        self.schedule_manager.stop()
-        self.frame_dispatcher.stop()
+        if self.schedule_manager:
+            self.schedule_manager.stop()
+        if self.frame_dispatcher:
+            self.frame_dispatcher.stop()
         self.event_manager.modem_stopped()
     def test_audio(self):
         try:
