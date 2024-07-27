@@ -73,6 +73,9 @@ class CONFIG:
         },
         'MESSAGES': {
             'enable_auto_repeat': bool,
+        },
+        'GUI':{
+            'auto_run_browser': bool,
         }
     }
 

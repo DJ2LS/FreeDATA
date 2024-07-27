@@ -62,3 +62,5 @@ data_port = 8001
 [MESSAGES]
 enable_auto_repeat = False
 
+[GUI]
+auto_run_browser = True
