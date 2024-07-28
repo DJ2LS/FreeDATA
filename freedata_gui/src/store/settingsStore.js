@@ -6,7 +6,7 @@ import { getConfig, setConfig } from "../js/api";
 const defaultConfig = {
   local: {
     host: "127.0.0.1",
-    port: "5001",
+    port: "5000",
     spectrum: "waterfall",
     wf_theme: 2,
     enable_sys_notification: false,
