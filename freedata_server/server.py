@@ -446,10 +446,6 @@ def main():
     modemaddress = conf['NETWORK'].get('modemaddress', '127.0.0.1')
     modemport = int(conf['NETWORK'].get('modemport', 5000))
 
-    if "" in modemaddress:
-        logger.info("Modemaddress is blank, defaulting to 'localhost'")
-        modemaddress = "localhost"
-
     if gui_dir and os.path.isdir(gui_dir):
         logger.info("---------------------------------------------------")
         logger.info("                                                   ")
