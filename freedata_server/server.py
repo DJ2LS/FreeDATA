@@ -421,6 +421,11 @@ def stop_server():
     except Exception as e:
         logger.warning("[SHUTDOWN] Shutdown completed", error=e)
 
+
+async def open_browser_after_delay(url, delay=2):
+    await asyncio.sleep(delay)
+    webbrowser.open(url, new=0, autoraise=True)
+
 def main():
     signal.signal(signal.SIGINT, signal_handler)
 
@@ -446,16 +451,23 @@ def main():
     modemaddress = conf['NETWORK'].get('modemaddress', '127.0.0.1')
     modemport = int(conf['NETWORK'].get('modemport', 5000))
 
+    # check if modemadress is empty - known bug caused by older versions
+    if modemaddress in ['', None]:
+        modemaddress = '127.0.0.1'
+
     if gui_dir and os.path.isdir(gui_dir):
+        url = f"http://{modemaddress}:{modemport}/gui"
+
         logger.info("---------------------------------------------------")
         logger.info("                                                   ")
-        logger.info(f"[GUI] AVAILABLE ON http://{modemaddress}:{modemport}/gui")
+        logger.info(f"[GUI] AVAILABLE ON {url}")
         logger.info("just open it in your browser")
         logger.info("                                                   ")
         logger.info("---------------------------------------------------")
-        url = f"http://{modemaddress}:{modemport}/gui"
+
         if conf['GUI'].get('auto_run_browser', True):
-            webbrowser.open(url, new=0, autoraise=True)
+            asyncio.create_task(open_browser_after_delay(url))
+
     uvicorn.run(app, host=modemaddress, port=modemport, log_config=None, log_level="info")
 
 
