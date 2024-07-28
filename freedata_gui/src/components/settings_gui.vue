@@ -31,19 +31,7 @@
       </div>
     </label>
   </div>
-  <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text w-50">Update channel</span>
-    <select
-      class="form-select form-select-sm w-50"
-      id="update_channel_selector"
-      @change="saveSettings"
-      v-model="settings.local.update_channel"
-    >
-      <option value="latest">Stable</option>
-      <option value="beta">Beta</option>
-      <option value="alpha">Alpha</option>
-    </select>
-  </div>
+
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50">Enable notifications</label>
     <label class="input-group-text w-50">

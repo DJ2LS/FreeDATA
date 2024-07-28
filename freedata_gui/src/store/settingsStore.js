@@ -9,7 +9,6 @@ const defaultConfig = {
     port: "5001",
     spectrum: "waterfall",
     wf_theme: 2,
-    update_channel: "alpha",
     enable_sys_notification: false,
     grid_layout: "[]",
     grid_preset: "[]",
