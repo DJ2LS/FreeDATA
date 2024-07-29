@@ -9,7 +9,7 @@
   </div>
 
   <div class="container-fluid">
-    <div class="row">
+    <div class="row flex-nowrap">
       <!-- Collapsible Left Navbar -->
       <div class="col-auto p-0 bg-body-secondary border-end">
         <div class="flex-shrink-0 p-3">

@@ -72,7 +72,7 @@ const state = useStateStore(pinia);
             type="button"
             title="Speed level"
           >
-            <i class="bi bi-speedometer2" style="font-size: 1rem"></i>
+            <i class="bi bi-speedometer2"></i>
           </button>
 
           <button
@@ -93,7 +93,7 @@ const state = useStateStore(pinia);
                 'bi-reception-3': state.speed_level === 3,
                 'bi-reception-4': state.speed_level === 4,
               }"
-              style="font-size: 1rem"
+
             ></i>
           </button>
         </div>
@@ -104,7 +104,7 @@ const state = useStateStore(pinia);
             type="button"
             title="Bytes transferred"
           >
-            <i class="bi bi-file-earmark-binary" style="font-size: 1rem"></i>
+            <i class="bi bi-file-earmark-binary"></i>
           </button>
 
           <button
@@ -130,7 +130,7 @@ const state = useStateStore(pinia);
             data-bs-html="true"
             data-bs-title="Current or last connected with station"
           >
-            <i class="bi bi-file-earmark-binary" style="font-size: 1rem"></i>
+            <i class="bi bi-file-earmark-binary"></i>
           </button>
 
           <button

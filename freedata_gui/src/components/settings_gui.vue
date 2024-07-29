@@ -27,7 +27,7 @@
           @change="onChange"
           v-model="settings.remote.GUI.auto_run_browser"
         />
-        <label class="form-check-label" for="NotificationSwitch">On server statrup, launch a browser to GUI URL</label>
+        <label class="form-check-label" for="NotificationSwitch">On server startup, launch a browser to GUI URL</label>
       </div>
     </label>
   </div>
