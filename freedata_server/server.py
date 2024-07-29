@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import uvicorn
-
+import threading
 import serial_ports
 from config import CONFIG
 import audio
@@ -422,8 +422,8 @@ def stop_server():
         logger.warning("[SHUTDOWN] Shutdown completed", error=e)
 
 
-async def open_browser_after_delay(url, delay=2):
-    await asyncio.sleep(delay)
+def open_browser_after_delay(url, delay=2):
+    threading.Event().wait(delay)
     webbrowser.open(url, new=0, autoraise=True)
 
 def main():
@@ -466,7 +466,8 @@ def main():
         logger.info("---------------------------------------------------")
 
         if conf['GUI'].get('auto_run_browser', True):
-            asyncio.create_task(open_browser_after_delay(url))
+            threading.Thread(target=open_browser_after_delay, args=(url, 2)).start()
+
 
     uvicorn.run(app, host=modemaddress, port=modemport, log_config=None, log_level="info")
 
