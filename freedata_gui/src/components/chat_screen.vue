@@ -122,7 +122,7 @@ watch(
 <template>
   <div class="container-fluid d-flex p-0">
     <!-- Chat Conversations -->
-    <div class="bg-light p-0 col-sm-4">
+    <div class="bg-light p-0 col-xs-2 col-sm-3 col-md-3 col-lg-4 col-4">
       <div class="container-fluid overflow-auto p-0" style="height: calc(-60px + 100vh);">
         <chat_conversations />
       </div>
