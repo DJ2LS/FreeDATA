@@ -119,16 +119,19 @@ class SM:
         
     def stop_modem(self):
         self.log.warning("stopping modem....")
-        if self.modem:
+        if self.modem and hasattr(self.app, 'modem_service'):
             self.modem.stop_modem()
             del self.modem
             self.modem = False
         self.state_manager.set("is_modem_running", False)
-        if self.schedule_manager:
+
+        if self.schedule_manager and hasattr(self.app, 'schedule_manager'):
             self.schedule_manager.stop()
-        if self.frame_dispatcher:
+        if self.frame_dispatcher and hasattr(self.app, 'frame_dispatcher'):
             self.frame_dispatcher.stop()
+
         self.event_manager.modem_stopped()
+
     def test_audio(self):
         try:
             audio_test = audio.test_audio_devices(self.config['AUDIO']['input_device'],
