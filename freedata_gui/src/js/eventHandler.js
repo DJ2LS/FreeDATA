@@ -31,10 +31,10 @@ export async function loadAllData() {
   console.log(stateData);
   getSysInfo().then((res) => {
     if (res) {
-      state.api_version = res.api_version;
-      state.modem_version = res.modem_version;
-      state.os_info = res.os_info;
-      state.python_info = res.python_info;
+      stateStore.api_version = res.api_version;
+      stateStore.modem_version = res.modem_version;
+      stateStore.os_info = res.os_info;
+      stateStore.python_info = res.python_info;
     }
   });
   audioStore.loadAudioDevices();
