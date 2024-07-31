@@ -115,13 +115,37 @@ export async function apiDelete(endpoint, payload = {}) {
   }
 }
 
-// Example functions using updated apiGet and apiPost
+// functions using updated apiGet and apiPost
 export async function getVersion() {
   let data = await apiGet("/version");
   if (data && data.version) {
     return data.version;
   }
   return 0;
+}
+
+export async function getSysInfo() {
+  let data = await apiGet("/version");
+  return {
+    api_version: data?.api_version || "N/A",
+    modem_version: data?.modem_version || "N/A",
+    os_info: {
+      system: data?.os_info?.system || "N/A",
+      node: data?.os_info?.node || "N/A",
+      release: data?.os_info?.release || "N/A",
+      version: data?.os_info?.version || "N/A",
+      machine: data?.os_info?.machine || "N/A",
+      processor: data?.os_info?.processor || "N/A",
+    },
+    python_info: {
+      build: data?.python_info?.build || ["N/A", "N/A"],
+      compiler: data?.python_info?.compiler || "N/A",
+      branch: data?.python_info?.branch || "N/A",
+      implementation: data?.python_info?.implementation || "N/A",
+      revision: data?.python_info?.revision || "N/A",
+      version: data?.python_info?.version || "N/A",
+    }
+  };
 }
 
 export async function getConfig() {

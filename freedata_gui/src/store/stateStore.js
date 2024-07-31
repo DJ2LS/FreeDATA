@@ -69,7 +69,9 @@ export const useStateStore = defineStore("stateStore", () => {
   var rigctld_started = ref();
   var rigctld_process = ref();
 
-  var python_version = ref();
+  var python_info = ref();
+  var os_info = ref();
+  var api_version = ref();
   var modem_version = ref();
 
   var rx_buffer_length = ref();
@@ -121,8 +123,10 @@ export const useStateStore = defineStore("stateStore", () => {
     away_from_key,
     rigctld_started,
     rigctld_process,
-    python_version,
+    python_info,
     modem_version,
+    api_version,
+    os_info,
     rx_buffer_length,
     radio_status,
   };

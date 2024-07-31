@@ -4,6 +4,7 @@ import signal
 import queue
 import asyncio
 import webbrowser
+import platform
 
 
 
@@ -43,7 +44,7 @@ from schedule_manager import ScheduleManager
 CONFIG_ENV_VAR = 'FREEDATA_CONFIG'
 DEFAULT_CONFIG_FILE = 'config.ini'
 MODEM_VERSION = "0.16.0-alpha"
-API_VERSION = 2
+API_VERSION = 3
 LICENSE = 'GPL3.0'
 DOCUMENTATION_URL = 'https://wiki.freedata.app'
 
@@ -159,13 +160,14 @@ async def enqueue_tx_command(cmd_class, params={}):
 # API Endpoints
 @app.get("/")
 async def index():
+
     return {
         'name': 'FreeDATA API',
-        'description': '',
+        'description': 'A sample API that provides free data services',
         'api_version': API_VERSION,
         'modem_version': MODEM_VERSION,
         'license': LICENSE,
-        'documentation': DOCUMENTATION_URL
+        'documentation': DOCUMENTATION_URL,
     }
 
 @app.get("/config")
@@ -263,7 +265,30 @@ async def post_modem_stop():
 
 @app.get("/version")
 async def get_modem_version():
-    return {"version": MODEM_VERSION}
+    os_info = {
+        'system': platform.system(),
+        'node': platform.node(),
+        'release': platform.release(),
+        'version': platform.version(),
+        'machine': platform.machine(),
+        'processor': platform.processor(),
+    }
+
+    python_info = {
+        'build': platform.python_build(),
+        'compiler': platform.python_compiler(),
+        'branch': platform.python_branch(),
+        'implementation': platform.python_implementation(),
+        'revision': platform.python_revision(),
+        'version': platform.python_version()
+    }
+
+    return {
+        'api_version': API_VERSION,
+        'modem_version': MODEM_VERSION,
+        'os_info': os_info,
+        'python_info': python_info
+    }
 
 @app.post("/modem/send_arq_raw")
 async def post_modem_send_raw(request: Request):

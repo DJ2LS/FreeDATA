@@ -222,6 +222,44 @@
                         </div>
                      </div>
                   </div>
+                  <!-- Info Section -->
+                  <div class="accordion-item">
+                     <h2 class="accordion-header">
+                        <button
+                           class="accordion-button collapsed"
+                           type="button"
+                           data-bs-target="#systemStatusCollapse"
+                           data-bs-toggle="collapse"
+                           >
+                        System Info
+                        <button @click="copyToClipboard">Copy</button>
+                        </button>
+                     </h2>
+                     <div id="systemStatusCollapse" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            <h3>API Information</h3>
+                            <p><strong>API Version:</strong> {{ state.api_version }}</p>
+                            <p><strong>Modem Version:</strong> {{ state.modem_version }}</p>
+
+                            <h3>Operating System Information</h3>
+                            <p><strong>System:</strong> {{ state.os_info.system }}</p>
+                            <p><strong>Node:</strong> {{ state.os_info.node }}</p>
+                            <p><strong>Release:</strong> {{ state.os_info.release }}</p>
+                            <p><strong>Version:</strong> {{ state.os_info.version }}</p>
+                            <p><strong>Machine:</strong> {{ state.os_info.machine }}</p>
+                            <p><strong>Processor:</strong> {{ state.os_info.processor }}</p>
+
+                            <h3>Python Information</h3>
+                            <p><strong>Build:</strong> {{ state.python_info.build.join(' ') }}</p>
+                            <p><strong>Compiler:</strong> {{ state.python_info.compiler }}</p>
+                            <p><strong>Branch:</strong> {{ state.python_info.branch || 'N/A' }}</p>
+                            <p><strong>Implementation:</strong> {{ state.python_info.implementation }}</p>
+                            <p><strong>Revision:</strong> {{ state.python_info.revision || 'N/A' }}</p>
+                            <p><strong>Version:</strong> {{ state.python_info.version }}</p>
+
+                        </div>
+                     </div>
+                  </div>
                </div>
             </div>
          </div>
@@ -231,65 +269,93 @@
 
 <script setup>
 import { Modal } from 'bootstrap/dist/js/bootstrap.esm.min.js';
-import { onMounted } from "vue";
+import { onMounted } from 'vue';
 
 // Pinia setup
-import { setActivePinia } from "pinia";
-import pinia from "../store/index";
+import { setActivePinia } from 'pinia';
+import pinia from '../store/index';
 setActivePinia(pinia);
 
 // Store imports
-import { settingsStore as settings, onChange } from "../store/settingsStore.js";
-import { sendModemCQ } from "../js/api.js";
-import { useStateStore } from "../store/stateStore.js";
-import { useAudioStore } from "../store/audioStore";
-import { useSerialStore } from "../store/serialStore.js";
-
+import { settingsStore as settings } from '../store/settingsStore.js';
+import { sendModemCQ } from '../js/api.js';
+import { useStateStore } from '../store/stateStore.js';
+import { useAudioStore } from '../store/audioStore';
+import { useSerialStore } from '../store/serialStore.js';
 
 // API imports
-import {
-  getVersion,
-  startModem,
-  stopModem,
-} from "../js/api";
+import { getVersion, getSysInfo } from '../js/api';
 
 // Reactive state
 const state = useStateStore(pinia);
 const audioStore = useAudioStore(pinia);
 const serialStore = useSerialStore(pinia);
 
-// Get the full API URL
-const apiUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
-
 // Initialize modal on mount
 onMounted(() => {
+  getSysInfo().then((res) => {
+    if (res) {
+      state.api_version = res.api_version;
+      state.modem_version = res.modem_version;
+      state.os_info = res.os_info;
+      state.python_info = res.python_info;
+    }
+  });
+
   getVersion().then((res) => {
     state.modem_version = res;
   });
-  new Modal("#modemCheck", {}).show();
+
+  new Modal('#modemCheck', {}).show();
 });
+
+const copyToClipboard = () => {
+  const info = `
+    API Version: ${state.api_version}
+    Modem Version: ${state.modem_version}
+
+    Operating System Information:
+    System: ${state.os_info.system}
+    Node: ${state.os_info.node}
+    Release: ${state.os_info.release}
+    Version: ${state.os_info.version}
+    Machine: ${state.os_info.machine}
+    Processor: ${state.os_info.processor}
+
+    Python Information:
+    Build: ${state.python_info.build.join(' ')}
+    Compiler: ${state.python_info.compiler}
+    Branch: ${state.python_info.branch || 'N/A'}
+    Implementation: ${state.python_info.implementation}
+    Revision: ${state.python_info.revision || 'N/A'}
+    Version: ${state.python_info.version}
+  `;
+  navigator.clipboard.writeText(info).then(() => {
+    alert('Information copied to clipboard!');
+  });
+};
 
 // Helper functions
 function getModemStateLocal() {
-  return state.is_modem_running ? "Active" : "Inactive";
+  return state.is_modem_running ? 'Active' : 'Inactive';
 }
 
 function getNetworkState() {
-  return state.modem_connection === "connected" ? "Connected" : "Disconnected";
+  return state.modem_connection === 'connected' ? 'Connected' : 'Disconnected';
 }
 
 function getRigControlStatus() {
   switch (settings.remote.RADIO.control) {
-    case "disabled":
+    case 'disabled':
       return true;
-    case "serial_ptt":
-    case "rigctld":
-    case "rigctld_bundle":
-    case "tci":
+    case 'serial_ptt':
+    case 'rigctld':
+    case 'rigctld_bundle':
+    case 'tci':
       return state.radio_status;
     default:
-      console.error("Unknown radio control mode " + settings.remote.RADIO.control);
-      return "Unknown control type" + settings.remote.RADIO.control;
+      console.error('Unknown radio control mode ' + settings.remote.RADIO.control);
+      return 'Unknown control type' + settings.remote.RADIO.control;
   }
 }
 
