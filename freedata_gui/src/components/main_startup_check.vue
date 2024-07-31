@@ -232,8 +232,10 @@
                            data-bs-toggle="collapse"
                            >
                         System Info
+                        <!--
                         <button type="button" class="btn btn-sm btn-outline-secondary" @click="copyToClipboard">Copy</button>
                         </button>
+                        -->
                      </h2>
                      <div id="systemStatusCollapse" class="accordion-collapse collapse">
                         <div class="accordion-body">
@@ -256,7 +258,6 @@
                             <p><strong>Implementation:</strong> {{ state.python_info.implementation }}</p>
                             <p><strong>Revision:</strong> {{ state.python_info.revision || 'N/A' }}</p>
                             <p><strong>Version:</strong> {{ state.python_info.version }}</p>
-
                         </div>
                      </div>
                   </div>
