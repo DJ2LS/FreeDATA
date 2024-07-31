@@ -5,6 +5,7 @@ import {
   getFreedataMessages,
   getModemState,
   getRadioStatus,
+  getSysInfo,
 } from "./api";
 import { processFreedataMessages } from "./messagesHandler";
 import { processRadioStatus } from "./radioHandler";
@@ -28,6 +29,7 @@ import {
 export async function loadAllData() {
   let stateData = await getModemState();
   console.log(stateData);
+  getSysInfo();
   audioStore.loadAudioDevices();
   serialStore.loadSerialDevices();
   console.log(audioStore.audioInputs)
