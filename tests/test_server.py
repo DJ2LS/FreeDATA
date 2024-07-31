@@ -44,7 +44,7 @@ class TestIntegration(unittest.TestCase):
         self.assertEqual(r.status_code, 200)
 
         data = r.json()
-        self.assertEqual(data['api_version'], 2)
+        self.assertEqual(data['api_version'], 3)
 
     def test_config_get(self):
         r = requests.get(self.url + '/config')

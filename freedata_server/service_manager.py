@@ -119,16 +119,24 @@ class SM:
         
     def stop_modem(self):
         self.log.warning("stopping modem....")
-        if self.modem and hasattr(self.app, 'modem_service'):
-            self.modem.stop_modem()
-            del self.modem
-            self.modem = False
+        try:
+            if self.modem and hasattr(self.app, 'modem_service'):
+                self.modem.stop_modem()
+                del self.modem
+                self.modem = False
+        except AttributeError:
+            pass
         self.state_manager.set("is_modem_running", False)
-
-        if self.schedule_manager and hasattr(self.app, 'schedule_manager'):
-            self.schedule_manager.stop()
-        if self.frame_dispatcher and hasattr(self.app, 'frame_dispatcher'):
-            self.frame_dispatcher.stop()
+        try:
+            if self.schedule_manager and hasattr(self.app, 'schedule_manager'):
+                self.schedule_manager.stop()
+        except AttributeError:
+            pass
+        try:
+            if self.frame_dispatcher and hasattr(self.app, 'frame_dispatcher'):
+                self.frame_dispatcher.stop()
+        except AttributeError:
+            pass
 
         self.event_manager.modem_stopped()
 
