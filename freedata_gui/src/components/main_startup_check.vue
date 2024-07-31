@@ -310,6 +310,7 @@ onMounted(() => {
   new Modal('#modemCheck', {}).show();
 });
 
+/*
 const copyToClipboard = () => {
   const info = `
     API Version: ${state.api_version}
@@ -331,12 +332,13 @@ const copyToClipboard = () => {
     Revision: ${state.python_info.revision || 'N/A'}
     Version: ${state.python_info.version}
   `;
-  /*
+
   navigator.clipboard.writeText(info).then(() => {
     alert('Information copied to clipboard!');
   });
-  */
+
 };
+*/
 
 // Helper functions
 function getModemStateLocal() {
