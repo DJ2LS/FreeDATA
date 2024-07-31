@@ -295,6 +295,9 @@ const state = useStateStore(pinia);
 const audioStore = useAudioStore(pinia);
 const serialStore = useSerialStore(pinia);
 
+// Get the full API URL
+const apiUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+
 // Initialize modal on mount
 onMounted(() => {
   getSysInfo().then((res) => {
