@@ -126,6 +126,7 @@ export async function getVersion() {
 
 export async function getSysInfo() {
   let data = await apiGet("/version");
+  console.log(data);
   return {
     api_version: data?.api_version || "N/A",
     modem_version: data?.modem_version || "N/A",

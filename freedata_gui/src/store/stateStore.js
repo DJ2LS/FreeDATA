@@ -69,10 +69,25 @@ export const useStateStore = defineStore("stateStore", () => {
   var rigctld_started = ref();
   var rigctld_process = ref();
 
-  var python_info = ref();
-  var os_info = ref();
   var api_version = ref();
   var modem_version = ref();
+
+  var os_info = ref({
+    system: '',
+    node: '',
+    release: '',
+    version: '',
+    machine: '',
+    processor: ''
+  });
+  var python_info = ref({
+    build: ['', ''],
+    compiler: '',
+    branch: '',
+    implementation: '',
+    revision: '',
+    version: ''
+  });
 
   var rx_buffer_length = ref();
 
