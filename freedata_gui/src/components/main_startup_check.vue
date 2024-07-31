@@ -331,9 +331,11 @@ const copyToClipboard = () => {
     Revision: ${state.python_info.revision || 'N/A'}
     Version: ${state.python_info.version}
   `;
+  /*
   navigator.clipboard.writeText(info).then(() => {
     alert('Information copied to clipboard!');
   });
+  */
 };
 
 // Helper functions
