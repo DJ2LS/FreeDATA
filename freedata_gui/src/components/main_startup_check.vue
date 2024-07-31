@@ -231,12 +231,14 @@
                            data-bs-target="#systemStatusCollapse"
                            data-bs-toggle="collapse"
                            >
-                        </button>
 
                         System Info
                         <!--
                         <button type="button" class="btn btn-sm btn-outline-secondary" @click="copyToClipboard">Copy</button>
                         -->
+
+                                                </button>
+
                      </h2>
                      <div id="systemStatusCollapse" class="accordion-collapse collapse">
                         <div class="accordion-body">
