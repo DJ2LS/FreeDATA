@@ -29,7 +29,14 @@ import {
 export async function loadAllData() {
   let stateData = await getModemState();
   console.log(stateData);
-  getSysInfo();
+  getSysInfo().then((res) => {
+    if (res) {
+      state.api_version = res.api_version;
+      state.modem_version = res.modem_version;
+      state.os_info = res.os_info;
+      state.python_info = res.python_info;
+    }
+  });
   audioStore.loadAudioDevices();
   serialStore.loadSerialDevices();
   console.log(audioStore.audioInputs)
