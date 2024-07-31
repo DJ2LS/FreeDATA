@@ -7,7 +7,7 @@
       tabindex="-1"
       aria-hidden="true"
       >
-      <div class="modal-dialog">
+      <div class="modal-dialog modal-dialog-scrollable">
          <div class="modal-content">
             <div class="modal-header">
                <h1 class="modal-title fs-5">Modem check</h1>
@@ -46,7 +46,7 @@
                         </span>
                         </button>
                      </h2>
-                     <div id="networkStatusCollapse" class="accordion-collapse collapse">
+                     <div id="networkStatusCollapse" class="accordion-collapse collapse" data-bs-parent="#startupCheckAccordion">
                         <div class="accordion-body">
                            <div class="input-group input-group-sm mb-1">
                               <span class="input-group-text w-25">API URL</span>
@@ -78,7 +78,7 @@
                         </span>
                         </button>
                      </h2>
-                     <div id="modemStatusCollapse" class="accordion-collapse collapse">
+                     <div id="modemStatusCollapse" class="accordion-collapse collapse" data-bs-parent="#startupCheckAccordion">
                         <div class="accordion-body">
                            <div class="input-group input-group-sm mb-1">
                               <label class="input-group-text w-50">Manual modem restart</label>
@@ -160,6 +160,7 @@
                            type="button"
                            data-bs-target="#radioControlCollapse"
                            data-bs-toggle="collapse"
+                           data-bs-parent="#startupCheckAccordion"
                            >
                         Radio control
                         <span
@@ -170,7 +171,7 @@
                         </span>
                         </button>
                      </h2>
-                     <div id="radioControlCollapse" class="accordion-collapse collapse">
+                     <div id="radioControlCollapse" class="accordion-collapse collapse" data-bs-parent="#startupCheckAccordion">
                         <div class="accordion-body">
                            <div class="input-group input-group-sm mb-1">
                               <span class="input-group-text" style="width: 180px">Rig control method</span>
@@ -240,7 +241,7 @@
                                                 </button>
 
                      </h2>
-                     <div id="systemStatusCollapse" class="accordion-collapse collapse">
+                     <div id="systemStatusCollapse" class="accordion-collapse collapse" data-bs-parent="#startupCheckAccordion">
                         <div class="accordion-body">
                             <h3>API Information</h3>
                             <p><strong>API Version:</strong> {{ state.api_version }}</p>
