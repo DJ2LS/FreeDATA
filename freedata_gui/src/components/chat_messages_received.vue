@@ -36,7 +36,7 @@
     <!-- Delete button outside of the card -->
     <div class="col-auto">
       <button
-        disabled
+
         class="btn btn-outline-secondary border-0 me-1"
         @click="showMessageInfo"
         data-bs-target="#messageInfoModal"
@@ -64,6 +64,9 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
+import { useChatStore } from '../store/chatStore.js';
+const chatStore = useChatStore(pinia);
+
 export default {
   props: {
     message: Object,
@@ -71,10 +74,7 @@ export default {
 
   methods: {
     showMessageInfo() {
-      requestMessageInfo(this.message.id);
-      //let infoModal = Modal.getOrCreateInstance(document.getElementById('messageInfoModal'))
-      //console.log(this.infoModal)
-      //this.infoModal.show()
+      chatStore.messageInfoById = requestMessageInfo(this.message.id);
     },
 
     deleteMessage() {
