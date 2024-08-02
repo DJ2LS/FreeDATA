@@ -98,5 +98,5 @@ class EventManager:
         event = {"freedata_server": "failed"}
         self.broadcast(event)
 
-    def freedata_message_db_change(self):
-        self.broadcast({"message-db": "changed"})
+    def freedata_message_db_change(self, message_id=None):
+        self.broadcast({"message-db": "changed", "message_id": message_id})

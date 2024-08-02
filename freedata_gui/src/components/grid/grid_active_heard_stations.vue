@@ -1,35 +1,32 @@
-<script setup lang="ts">
+<script setup>
 // @ts-nocheck
 const { distance } = require("qth-locator");
 
-import { setActivePinia } from "pinia";
-import pinia from "../../store/index";
+import { setActivePinia } from 'pinia';
+import pinia from '../../store/index';
 setActivePinia(pinia);
 
-import { settingsStore as settings } from "../../store/settingsStore.js";
+import { settingsStore as settings } from '../../store/settingsStore.js';
+import { useStateStore } from '../../store/stateStore.js';
+import { useChatStore } from '../../store/chatStore.js';
+import { getStationInfoByCallsign } from './../../js/stationHandler';
+import { sendModemPing } from '../../js/api.js';
 
-import { useStateStore } from "../../store/stateStore.js";
 const state = useStateStore(pinia);
-
-import { useChatStore } from "../../store/chatStore.js";
 const chat = useChatStore(pinia);
-
-import { getStationInfoByCallsign } from "./../../js/stationHandler";
-
-import { sendModemPing } from "../../js/api.js";
 
 function getDateTime(timestampRaw) {
   var datetime = new Date(timestampRaw * 1000).toLocaleString(
     navigator.language,
     {
-      hourCycle: "h23",
-      year: "2-digit",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    },
+      hourCycle: 'h23',
+      year: '2-digit',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    }
   );
   return datetime;
 }
@@ -41,45 +38,43 @@ function getMaidenheadDistance(dxGrid) {
     //
   }
 }
+
 function pushToPing(origin) {
   window.dispatchEvent(
-    new CustomEvent("stationSelected", { bubbles: true, detail: origin }),
+    new CustomEvent('stationSelected', { bubbles: true, detail: origin })
   );
 }
 
 function getActivityInfo(activityType) {
   switch (activityType) {
-    case "ARQ_SESSION_INFO":
-      return { iconClass: "bi bi-info-circle", description: activityType };
-    case "ARQ_SESSION_OPEN":
-      return { iconClass: "bi bi-link", description: activityType };
-    case "ARQ_SESSION_OPEN_ACK":
-      return { iconClass: "bi bi-link", description: activityType };
-    case "QRV":
-      return {
-        iconClass: "bi bi-person-raised-hand",
-        description: activityType,
-      };
-    case "CQ":
-      return { iconClass: "bi bi-megaphone", description: activityType };
-    case "BEACON":
-      return { iconClass: "bi bi-globe", description: activityType };
-    case "PING_ACK":
-      return { iconClass: "bi bi-check-square", description: activityType };
+    case 'ARQ_SESSION_INFO':
+      return { iconClass: 'bi bi-info-circle', description: activityType };
+    case 'ARQ_SESSION_OPEN':
+    case 'ARQ_SESSION_OPEN_ACK':
+      return { iconClass: 'bi bi-link', description: activityType };
+    case 'QRV':
+      return { iconClass: 'bi bi-person-raised-hand', description: activityType };
+    case 'CQ':
+      return { iconClass: 'bi bi-megaphone', description: activityType };
+    case 'BEACON':
+      return { iconClass: 'bi bi-globe', description: activityType };
+    case 'PING_ACK':
+      return { iconClass: 'bi bi-check-square', description: activityType };
     default:
-      return { iconClass: "", description: activityType };
+      return { iconClass: '', description: activityType };
   }
 }
 
 function startNewChat(callsign) {
   chat.newChatCallsign = callsign;
-  chat.newChatMessage = "Hi there! Nice to meet you!";
+  chat.newChatMessage = 'Hi there! Nice to meet you!';
 }
 
 function transmitPing(callsign) {
   sendModemPing(callsign.toUpperCase());
 }
 </script>
+
 <template>
   <div class="card h-100">
     <!--325px-->
@@ -101,7 +96,6 @@ function transmitPing(callsign) {
               <th scope="col" id="thDist">Dist</th>
               <th scope="col" id="thType">Type</th>
               <th scope="col" id="thSnr">SNR</th>
-              <!--<th scope="col">Off</th>-->
               <th scope="col" id="thSnr">AFK?</th>
             </tr>
           </thead>

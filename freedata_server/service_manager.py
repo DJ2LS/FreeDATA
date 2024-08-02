@@ -9,7 +9,7 @@ import queue
 
 class SM:
     def __init__(self, app):
-        self.log = structlog.get_logger("service")
+        self.log = structlog.get_logger("service manager")
         self.app = app
         self.modem = False
         self.app.radio_manager = False
@@ -118,14 +118,28 @@ class SM:
         return True
         
     def stop_modem(self):
-        self.log.info("stopping modem....")
-        if self.modem:
-            self.modem.stop_modem()
-            del self.modem
-            self.modem = False
+        self.log.warning("stopping modem....")
+        try:
+            if self.modem and hasattr(self.app, 'modem_service'):
+                self.modem.stop_modem()
+                del self.modem
+                self.modem = False
+        except AttributeError:
+            pass
         self.state_manager.set("is_modem_running", False)
-        self.schedule_manager.stop()
+        try:
+            if self.schedule_manager and hasattr(self.app, 'schedule_manager'):
+                self.schedule_manager.stop()
+        except AttributeError:
+            pass
+        try:
+            if self.frame_dispatcher and hasattr(self.app, 'frame_dispatcher'):
+                self.frame_dispatcher.stop()
+        except AttributeError:
+            pass
+
         self.event_manager.modem_stopped()
+
     def test_audio(self):
         try:
             audio_test = audio.test_audio_devices(self.config['AUDIO']['input_device'],
@@ -141,11 +155,13 @@ class SM:
         self.app.radio_manager = radio_manager.RadioManager(self.config, self.state_manager, self.event_manager)
 
     def stop_radio_manager(self):
-        self.app.radio_manager.stop()
-        del self.app.radio_manager
+        if hasattr(self.app, 'radio_manager'):
+            self.app.radio_manager.stop()
+            del self.app.radio_manager
 
     def shutdown(self):
-        print("shutting down service manager...")
+        self.log.warning("[SHUTDOWN] stopping service manager....")
         self.modem_service.put("stop")
+        threading.Event().wait(2) # we need some time before processing with the shutdown_event_flag
         self.shutdown_flag.set()
-        self.runner_thread.join(3)
+        self.runner_thread.join(0.5)

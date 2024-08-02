@@ -1,7 +1,8 @@
 import rigctld
 import rigdummy
-import time
+import serial_ptt
 import threading
+
 class RadioManager:
     def __init__(self, config, state_manager, event_manager):
         self.config = config
@@ -21,6 +22,9 @@ class RadioManager:
         # Check how we want to control the radio
         if self.radiocontrol in ["rigctld", "rigctld_bundle"]:
             self.radio = rigctld.radio(self.config, self.state_manager, hostname=self.rigctld_ip,port=self.rigctld_port)
+        elif self.radiocontrol == "serial_ptt":
+            self.radio = serial_ptt.radio(self.config, self.state_manager)
+
         elif self.radiocontrol == "tci":
             raise NotImplementedError
             # self.radio = self.tci_module

@@ -8,14 +8,9 @@ import os
 
 
 class DatabaseManagerMessages(DatabaseManager):
-    def __init__(self, db_file=None):
-        if not db_file:
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            db_path = os.path.join(script_dir, 'freedata-messages.db')
-            db_file = 'sqlite:///' + db_path
-
-        super().__init__(db_file)
-        self.attachments_manager = DatabaseManagerAttachments(db_file)
+    def __init__(self, event_manager):
+        super().__init__(event_manager)
+        self.attachments_manager = DatabaseManagerAttachments(event_manager)
 
     def add_message(self, message_data, statistics, direction='receive', status=None, is_read=True):
         session = self.get_thread_scoped_session()
@@ -53,13 +48,12 @@ class DatabaseManagerMessages(DatabaseManager):
 
             session.commit()
             self.log(f"Added data to database: {new_message.id}")
-            self.event_manager.freedata_message_db_change()
+            self.event_manager.freedata_message_db_change(message_id=new_message.id)
             return new_message.id
         except IntegrityError as e:
             session.rollback()  # Roll back the session to a clean state
             self.log(f"Message with ID {message_data['id']} already exists in the database.", isWarning=True)
-            return None  # or you might return the existing message's ID or details
-
+            return None
 
         except Exception as e:
             session.rollback()
@@ -67,11 +61,31 @@ class DatabaseManagerMessages(DatabaseManager):
         finally:
             session.remove()
 
-
-    def get_all_messages(self):
+    def get_all_messages(self, filters=None):
         session = self.get_thread_scoped_session()
         try:
-            messages = session.query(P2PMessage).all()
+            query = session.query(P2PMessage)
+
+            if filters:
+                if 'id' in filters:
+                    query = query.filter(P2PMessage.id == filters['id'])
+                if 'callsign' in filters:
+                    callsign_filter = filters['callsign']
+                    query = query.filter(
+                        (P2PMessage.origin_callsign.contains(callsign_filter)) |
+                        (P2PMessage.via_callsign.contains(callsign_filter)) |
+                        (P2PMessage.destination_callsign.contains(callsign_filter))
+                    )
+                if 'origin_callsign' in filters:
+                    query = query.filter(P2PMessage.origin_callsign.contains(filters['origin_callsign']))
+                if 'via_callsign' in filters:
+                    query = query.filter(P2PMessage.via_callsign.contains(filters['via_callsign']))
+                if 'destination_callsign' in filters:
+                    query = query.filter(P2PMessage.destination_callsign.contains(filters['destination_callsign']))
+                if 'direction' in filters:
+                    query = query.filter(P2PMessage.direction.contains(filters['direction']))
+
+            messages = query.all()
             return [message.to_dict() for message in messages]
 
         except Exception as e:
@@ -83,9 +97,9 @@ class DatabaseManagerMessages(DatabaseManager):
         finally:
             session.remove()
 
-    def get_all_messages_json(self):
-        messages_dict = self.get_all_messages()
-        messages_with_header = {'total_messages' : len(messages_dict), 'messages' : messages_dict}
+    def get_all_messages_json(self, filters=None):
+        messages_dict = self.get_all_messages(filters)
+        messages_with_header = {'total_messages': len(messages_dict), 'messages': messages_dict}
         return messages_with_header
 
     def get_message_by_id(self, message_id):
@@ -114,7 +128,7 @@ class DatabaseManagerMessages(DatabaseManager):
                 session.delete(message)
                 session.commit()
                 self.log(f"Deleted: {message_id}")
-                self.event_manager.freedata_message_db_change()
+                self.event_manager.freedata_message_db_change(message_id=message_id)
                 return {'status': 'success', 'message': f'Message {message_id} deleted'}
             else:
                 return {'status': 'failure', 'message': 'Message not found'}
@@ -122,7 +136,7 @@ class DatabaseManagerMessages(DatabaseManager):
         except Exception as e:
             session.rollback()
             self.log(f"Error deleting message with ID {message_id}: {e}", isWarning=True)
-            return {'status': 'failure', 'message': str(e)}
+            return {'status': 'failure', 'message': 'error deleting message'}
 
         finally:
             session.remove()
@@ -146,10 +160,9 @@ class DatabaseManagerMessages(DatabaseManager):
                 if 'priority' in update_data:
                     message.priority = update_data['priority']
 
-
                 session.commit()
                 self.log(f"Updated: {message_id}")
-                self.event_manager.freedata_message_db_change()
+                self.event_manager.freedata_message_db_change(message_id=message_id)
                 return {'status': 'success', 'message': f'Message {message_id} updated'}
             else:
                 return {'status': 'failure', 'message': 'Message not found'}
@@ -157,7 +170,7 @@ class DatabaseManagerMessages(DatabaseManager):
         except Exception as e:
             session.rollback()
             self.log(f"Error updating message with ID {message_id}: {e}", isWarning=True)
-            return {'status': 'failure', 'message': str(e)}
+            return {'status': 'failure', 'message': 'error updating message'}
 
         finally:
             session.remove()
@@ -209,21 +222,6 @@ class DatabaseManagerMessages(DatabaseManager):
             if own_session:
                 session.remove()
 
-    def mark_message_as_read(self, message_id):
-        session = self.get_thread_scoped_session()
-        try:
-            message = session.query(P2PMessage).filter_by(id=message_id).first()
-            if message:
-                message.is_read = True
-                session.commit()
-                self.log(f"Marked message {message_id} as read")
-            else:
-                self.log(f"Message with ID {message_id} not found")
-        except Exception as e:
-            session.rollback()
-            self.log(f"An error occurred while marking message {message_id} as read: {e}")
-        finally:
-            session.remove()
 
     def set_message_to_queued_for_callsign(self, callsign):
         session = self.get_thread_scoped_session()
@@ -259,6 +257,6 @@ class DatabaseManagerMessages(DatabaseManager):
         except Exception as e:
             session.rollback()
             self.log(f"An error occurred while setting messages to queued: {e}", isWarning=True)
-            return {'status': 'failure', 'message': str(e)}
+            return {'status': 'failure', 'message': 'error setting message to queued'}
         finally:
             session.remove()

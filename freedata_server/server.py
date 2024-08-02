@@ -1,21 +1,26 @@
-import sys
 import os
-script_directory = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(script_directory)
-
+import sys
 import signal
-import time
-from flask import Flask, request, jsonify, make_response, abort, Response
-from flask_sock import Sock
-from flask_cors import CORS
+import queue
+import asyncio
+import webbrowser
+import platform
+
+
+
+from fastapi import FastAPI, Request, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from contextlib import asynccontextmanager
+import uvicorn
+import threading
 import serial_ports
 from config import CONFIG
 import audio
-import queue
 import service_manager
 import state_manager
-import json
-import websocket_manager as wsm
+import websocket_manager
 import api_validations as validations
 import command_cq
 import command_beacon
@@ -25,8 +30,8 @@ import command_test
 import command_arq_raw
 import command_message_send
 import event_manager
-import atexit
-import threading
+import structlog
+from log_handler import setup_logging
 
 from message_system_db_manager import DatabaseManager
 from message_system_db_messages import DatabaseManagerMessages
@@ -35,19 +40,100 @@ from message_system_db_beacon import DatabaseManagerBeacon
 from message_system_db_station import DatabaseManagerStations
 from schedule_manager import ScheduleManager
 
-app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
-sock = Sock(app)
-MODEM_VERSION = "0.15.9-alpha.1"
+# Constants
+CONFIG_ENV_VAR = 'FREEDATA_CONFIG'
+DEFAULT_CONFIG_FILE = 'config.ini'
+MODEM_VERSION = "0.16.0-alpha"
+API_VERSION = 3
+LICENSE = 'GPL3.0'
+DOCUMENTATION_URL = 'https://wiki.freedata.app'
 
-# set config file to use
+script_directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(script_directory)
+
+# adjust asyncio for windows usage for avoiding a Assertion Error
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    #print("startup")
+    yield
+    stop_server()
+
+app = FastAPI(lifespan=lifespan)
+
+# custom logger for fastapi
+#setup_logging()
+logger = structlog.get_logger()
+
+potential_gui_dirs = [
+    "../freedata_gui/dist", # running server with "python3 server.py
+    "freedata_gui/dist", # running sever with ./tools/run-server.py
+    "FreeDATA/freedata_gui/dist", # running server with bash run-server...
+    os.path.join(os.path.dirname(__file__), "gui") # running server as nuitka bundle
+]
+
+# Check which directory exists and set gui_dir accordingly
+gui_dir = None
+for dir_path in potential_gui_dirs:
+    if os.path.isdir(dir_path):
+        gui_dir = dir_path
+        break
+
+# Configure app to serve static files if gui_dir is found
+if gui_dir:
+    app.mount("/gui", StaticFiles(directory=gui_dir, html=True), name="static")
+else:
+    logger.warning("GUI directory not found. Please run `npm i && npm run build` inside `freedata_gui`.")
+
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    response = await call_next(request)
+    logger.info(f"[API] {request.method}", url=str(request.url), response_code=response.status_code)
+    return response
+
+
+# CORS
+origins = ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# Returns a standard API response
+def api_response(data, status=200):
+    return JSONResponse(content=data, status_code=status)
+
+
+def api_abort(message, code):
+    raise HTTPException(status_code=code, detail={"error": message})
+
+
+def api_ok(message="ok"):
+    return api_response({'message': message})
+
+
+# Validates a parameter
+def validate(req, param, validator, is_required=True):
+    if param not in req:
+        if is_required:
+            api_abort(f"Required parameter '{param}' is missing.", 400)
+        else:
+            return True
+    if not validator(req[param]):
+        api_abort(f"Value of '{param}' is invalid.", 400)
+
+
+# Set config file to use
 def set_config():
-    if 'FREEDATA_CONFIG' in os.environ:
-        config_file = os.environ['FREEDATA_CONFIG']
-    else:
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        config_file = os.path.join(script_dir, 'config.ini')
-
+    config_file = os.getenv(CONFIG_ENV_VAR, os.path.join(script_directory, DEFAULT_CONFIG_FILE))
     if os.path.exists(config_file):
         print(f"Using config from {config_file}")
     else:
@@ -56,374 +142,359 @@ def set_config():
     return config_file
 
 
-
-
-# returns a standard API response
-def api_response(data, status = 200):
-    return make_response(jsonify(data), status)
-
-def api_abort(message, code):
-    jsonError = json.dumps({'error': message})
-    abort(Response(jsonError, code))
-
-def api_ok(message = "ok"):
-    return api_response({'message': message})
-
-# validates a parameter
-def validate(req, param, validator, isRequired = True):
-    if param not in req:
-        if isRequired:
-            api_abort(f"Required parameter '{param}' is missing.", 400)
-        else:
-            return True
-    if not validator(req[param]):
-        api_abort(f"Value of '{param}' is invalid.", 400)
-
-# Takes a transmit command and puts it in the transmit command queue
-def enqueue_tx_command(cmd_class, params={}):
+# Enqueue a transmit command
+async def enqueue_tx_command(cmd_class, params={}):
     try:
-        command = cmd_class(app.config_manager.read(), app.state_manager, app.event_manager,  params)
-        app.logger.info(f"Command {command.get_name()} running...")
-        if command.run(app.modem_events, app.service_manager.modem): # TODO remove the app.modem_event custom queue
+        command = cmd_class(app.config_manager.read(), app.state_manager, app.event_manager, params)
+        print(f"Command {command.get_name()} running...")
+
+        # Run the command in a separate thread to avoid blocking
+        result = await asyncio.to_thread(command.run, app.modem_events, app.service_manager.modem)  # TODO: remove the app.modem_event custom queue
+
+        if result:
             return True
     except Exception as e:
-        app.logger.warning(f"Command {command.get_name()} failed...: {e}")
-        return False
+        print(f"Command {command.get_name()} failed: {e}")
+    return False
 
-## REST API
-@app.route('/', methods=['GET'])
-def index():
-    return api_response({'name': 'FreeDATA API',
-                    'description': '',
-                    'api_version': 1,
-                    'modem_version': MODEM_VERSION,
-                    'license': 'GPL3.0',
-                    'documentation': 'https://wiki.freedata.app',
-                    })
+# API Endpoints
+@app.get("/")
+async def index():
 
-# get and set config
-@app.route('/config', methods=['GET', 'POST'])
-def config():
-    if request.method in ['POST']:
+    return {
+        'name': 'FreeDATA API',
+        'description': 'A sample API that provides free data services',
+        'api_version': API_VERSION,
+        'modem_version': MODEM_VERSION,
+        'license': LICENSE,
+        'documentation': DOCUMENTATION_URL,
+    }
 
-        if not validations.validate_remote_config(request.json):
-            return api_abort("wrong config", 500)
-        # check if config already exists
-        if app.config_manager.read() == request.json:
-            return api_response(request.json)
+@app.get("/config")
+async def get_config():
+    return app.config_manager.read()
 
-        set_config = app.config_manager.write(request.json)
-        if not set_config:
-            response = api_response(None, 'error writing config')
-        else:
-            app.modem_service.put("restart")
-            response = api_response(set_config)
-        return response
-    elif request.method == 'GET':
-        return api_response(app.config_manager.read())
+@app.post("/config")
+async def post_config(request: Request):
+    config = await request.json()
+    if not validations.validate_remote_config(config):
+        api_abort("Invalid config", 400)
+    if app.config_manager.read() == config:
+        return config
+    set_config = app.config_manager.write(config)
+    if not set_config:
+        api_abort("Error writing config", 500)
+    app.modem_service.put("restart")
+    return set_config
 
-@app.route('/devices/audio', methods=['GET'])
-def get_audio_devices():
-    dev_in, dev_out = audio.get_audio_devices()
-    devices = { 'in': dev_in, 'out': dev_out }
-    return api_response(devices)
+@app.get("/devices/audio")
+async def get_audio_devices():
+    #dev_in, dev_out = audio.get_audio_devices()
+    dev_in, dev_out = audio.fetch_audio_devices([], [])
 
-@app.route('/devices/serial', methods=['GET'])
-def get_serial_devices():
+    return {'in': dev_in, 'out': dev_out}
+
+@app.get("/devices/serial")
+async def get_serial_devices():
     devices = serial_ports.get_ports()
-    return api_response(devices)
+    return devices
 
-@app.route('/modem/state', methods=['GET'])
-def get_modem_state():
-    return api_response(app.state_manager.sendState())
+@app.get("/modem/state")
+async def get_modem_state():
+    return app.state_manager.sendState()
 
-@app.route('/modem/cqcqcq', methods=['POST', 'GET'])
-def post_cqcqcq():
-    if request.method not in ['POST']:
-        return api_response({"info": "endpoint for triggering a CQ via POST"})
+@app.post("/modem/cqcqcq")
+async def post_cqcqcq():
     if not app.state_manager.is_modem_running:
-        api_abort('Modem not running', 503)
-    enqueue_tx_command(command_cq.CQCommand)
+        api_abort("Modem not running", 503)
+    await enqueue_tx_command(command_cq.CQCommand)
     return api_ok()
 
-@app.route('/modem/beacon', methods=['POST'])
-def post_beacon():
-    if request.method not in ['POST']:
-        return api_response({"info": "endpoint for controlling BEACON STATE via POST"})
-    if not isinstance(request.json['enabled'], bool) or not isinstance(request.json['away_from_key'], bool):
-        api_abort(f"Incorrect value for 'enabled'. Shoud be bool.")
+@app.post("/modem/beacon")
+async def post_beacon(request: Request):
+    data = await request.json()
+    if not isinstance(data.get('enabled'), bool) or not isinstance(data.get('away_from_key'), bool):
+        api_abort("Incorrect value for 'enabled' or 'away_from_key'. Should be bool.", 400)
     if not app.state_manager.is_modem_running:
-        api_abort('Modem not running', 503)
-
-    if not app.state_manager.is_beacon_running:
-        app.state_manager.set('is_beacon_running', request.json['enabled'])
-        app.state_manager.set('is_away_from_key', request.json['away_from_key'])
-
-        if not app.state_manager.getARQ():
-            enqueue_tx_command(command_beacon.BeaconCommand, request.json)
-    else:
-        app.state_manager.set('is_beacon_running', request.json['enabled'])
-        app.state_manager.set('is_away_from_key', request.json['away_from_key'])
-
+        api_abort("Modem not running", 503)
+    app.state_manager.set('is_beacon_running', data['enabled'])
+    app.state_manager.set('is_away_from_key', data['away_from_key'])
+    if not app.state_manager.getARQ() and data['enabled']:
+        await enqueue_tx_command(command_beacon.BeaconCommand, data)
     return api_ok()
 
-@app.route('/modem/ping_ping', methods=['POST'])
-def post_ping():
-    if request.method not in ['POST']:
-        return api_response({"info": "endpoint for controlling PING via POST"})
+@app.post("/modem/ping_ping")
+async def post_ping(request: Request):
+    data = await request.json()
     if not app.state_manager.is_modem_running:
-        api_abort('Modem not running', 503)
-    validate(request.json, 'dxcall', validations.validate_freedata_callsign)
-    enqueue_tx_command(command_ping.PingCommand, request.json)
+        api_abort("Modem not running", 503)
+    validate(data, 'dxcall', validations.validate_freedata_callsign)
+    await enqueue_tx_command(command_ping.PingCommand, data)
     return api_ok()
 
-@app.route('/modem/send_test_frame', methods=['POST'])
-def post_send_test_frame():
-    if request.method not in ['POST']:
-        return api_response({"info": "endpoint for triggering a TEST_FRAME via POST"})
+@app.post("/modem/send_test_frame")
+async def post_send_test_frame():
     if not app.state_manager.is_modem_running:
-        api_abort('Modem not running', 503)
-    enqueue_tx_command(command_test.TestCommand)
+        api_abort("Modem not running", 503)
+    await enqueue_tx_command(command_test.TestCommand)
     return api_ok()
 
-@app.route('/modem/fec_transmit', methods=['POST'])
-def post_send_fec_frame():
-    if request.method not in ['POST']:
-        return api_response({"info": "endpoint for triggering a FEC frame via POST"})
+@app.post("/modem/fec_transmit")
+async def post_send_fec_frame(request: Request):
+    data = await request.json()
     if not app.state_manager.is_modem_running:
-        api_abort('Modem not running', 503)
-    enqueue_tx_command(command_feq.FecCommand, request.json)
+        api_abort("Modem not running", 503)
+    await enqueue_tx_command(command_feq.FecCommand, data)
     return api_ok()
 
-@app.route('/modem/fec_is_writing', methods=['POST'])
-def post_send_fec_is_writing():
-    if request.method not in ['POST']:
-        return api_response({"info": "endpoint for triggering a IS WRITING frame via POST"})
+@app.post("/modem/fec_is_writing")
+async def post_send_fec_is_writing():
     if not app.state_manager.is_modem_running:
-        api_abort('Modem not running', 503)
-    #server_commands.modem_fec_is_writing(request.json)
-    return 'Not implemented yet'
+        api_abort("Modem not running", 503)
+    return {"info": "Not implemented yet"}
 
-@app.route('/modem/start', methods=['POST'])
-def post_modem_start():
-    if request.method not in ['POST']:
-        return api_response({"info": "endpoint for STARTING freedata_server via POST"})
-    print("start received...")
+@app.post("/modem/start")
+async def post_modem_start():
     app.modem_service.put("start")
-    return api_response(request.json)
+    return api_ok()
 
-@app.route('/modem/stop', methods=['POST'])
-def post_modem_stop():
-    if request.method not in ['POST']:
-        return api_response({"info": "endpoint for STOPPING freedata_server via POST"})
-    print("stop received...")
-
+@app.post("/modem/stop")
+async def post_modem_stop():
     app.modem_service.put("stop")
     return api_ok()
 
-@app.route('/version', methods=['GET'])
-def get_modem_version():
-    return api_response({"version": app.MODEM_VERSION})
+@app.get("/version")
+async def get_modem_version():
+    os_info = {
+        'system': platform.system(),
+        'node': platform.node(),
+        'release': platform.release(),
+        'version': platform.version(),
+        'machine': platform.machine(),
+        'processor': platform.processor(),
+    }
 
-@app.route('/modem/send_arq_raw', methods=['POST'])
-def post_modem_send_raw():
-    if request.method not in ['POST']:
-        return api_response({"info": "endpoint for SENDING RAW DATA via POST"})
+    python_info = {
+        'build': platform.python_build(),
+        'compiler': platform.python_compiler(),
+        'branch': platform.python_branch(),
+        'implementation': platform.python_implementation(),
+        'revision': platform.python_revision(),
+        'version': platform.python_version()
+    }
+
+    return {
+        'api_version': API_VERSION,
+        'modem_version': MODEM_VERSION,
+        'os_info': os_info,
+        'python_info': python_info
+    }
+
+@app.post("/modem/send_arq_raw")
+async def post_modem_send_raw(request: Request):
+    data = await request.json()
     if not app.state_manager.is_modem_running:
-        api_abort('Modem not running', 503)
+        api_abort("Modem not running", 503)
     if app.state_manager.check_if_running_arq_session():
-        api_abort('Modem busy', 503)
-    if enqueue_tx_command(command_arq_raw.ARQRawCommand, request.json):
-        return api_response(request.json)
-    else:
-        api_abort('Error executing command...', 500)
-@app.route('/modem/stop_transmission', methods=['POST'])
-def post_modem_send_raw_stop():
+        api_abort("Modem busy", 503)
+    if await enqueue_tx_command(command_arq_raw.ARQRawCommand, data):
+        return api_response(data)
+    api_abort("Error executing command", 500)
 
-    if request.method not in ['POST']:
-        return api_response({"info": "endpoint for SENDING a STOP command via POST"})
+@app.post("/modem/stop_transmission")
+async def post_modem_send_raw_stop():
     if not app.state_manager.is_modem_running:
-        api_abort('Modem not running', 503)
-
+        api_abort("Modem not running", 503)
     if app.state_manager.getARQ():
-        for id in app.state_manager.arq_irs_sessions:
-            app.state_manager.arq_irs_sessions[id].abort_transmission()
-        for id in app.state_manager.arq_iss_sessions:
-            app.state_manager.arq_iss_sessions[id].abort_transmission()
+        for session in app.state_manager.arq_irs_sessions.values():
+            session.abort_transmission()
+        for session in app.state_manager.arq_iss_sessions.values():
+            session.abort_transmission()
+    return api_ok()
 
-    return api_response(request.json)
+@app.get("/radio")
+async def get_radio():
+    return app.state_manager.get_radio_status()
 
-@app.route('/radio', methods=['GET', 'POST'])
-def get_post_radio():
-    if request.method in ['POST']:
-        if "radio_frequency" in request.json:
-            app.radio_manager.set_frequency(request.json['radio_frequency'])
-        if "radio_mode" in request.json:
-            app.radio_manager.set_mode(request.json['radio_mode'])
-        if "radio_rf_level" in request.json:
-            app.radio_manager.set_rf_level(int(request.json['radio_rf_level']))
-        if "radio_tuner" in request.json:
-            app.radio_manager.set_tuner(request.json['radio_tuner'])
-        return api_response(request.json)
-    elif request.method == 'GET':
-        return api_response(app.state_manager.get_radio_status())
+@app.post("/radio")
+async def post_radio(request: Request):
+    data = await request.json()
+    radio_manager = app.radio_manager
+    if "radio_frequency" in data:
+        radio_manager.set_frequency(data['radio_frequency'])
+    if "radio_mode" in data:
+        radio_manager.set_mode(data['radio_mode'])
+    if "radio_rf_level" in data:
+        radio_manager.set_rf_level(int(data['radio_rf_level']))
+    if "radio_tuner" in data:
+        radio_manager.set_tuner(data['radio_tuner'])
+    return api_response(data)
 
-@app.route('/freedata/messages', methods=['POST', 'GET'])
-def get_post_freedata_message():
-    if request.method in ['GET']:
-        result = DatabaseManagerMessages(app.event_manager).get_all_messages_json()
-        return api_response(result)
-    elif request.method in ['POST']:
-        enqueue_tx_command(command_message_send.SendMessageCommand, request.json)
-        return api_response(request.json)
-    else:
-        api_abort('Error executing command...', 500)
+@app.get("/freedata/messages")
+async def get_freedata_messages(request: Request):
+    filters = {k: v for k, v in request.query_params.items() if v}
+    result = DatabaseManagerMessages(app.event_manager).get_all_messages_json(filters=filters)
+    return api_response(result)
 
-@app.route('/freedata/messages/<string:message_id>', methods=['GET', 'POST', 'PATCH', 'DELETE'])
-def handle_freedata_message(message_id):
-    if request.method == 'GET':
-        message = DatabaseManagerMessages(app.event_manager).get_message_by_id_json(message_id)
-        return message
-    elif request.method == 'POST':
+@app.post("/freedata/messages")
+async def post_freedata_message(request: Request):
+    data = await request.json()
+    await enqueue_tx_command(command_message_send.SendMessageCommand, data)
+    return api_response(data)
+
+@app.get("/freedata/messages/{message_id}")
+async def get_freedata_message(message_id: str):
+    message = DatabaseManagerMessages(app.event_manager).get_message_by_id_json(message_id)
+    return api_response(message)
+
+@app.patch("/freedata/messages/{message_id}")
+async def patch_freedata_message(message_id: str, request: Request):
+    data = await request.json()
+
+    if data.get("action") == "retransmit":
         result = DatabaseManagerMessages(app.event_manager).update_message(message_id, update_data={'status': 'queued'})
         DatabaseManagerMessages(app.event_manager).increment_message_attempts(message_id)
-        return api_response(result)
-    elif request.method == 'PATCH':
-        # Fixme We need to adjust this
-        result = DatabaseManagerMessages(app.event_manager).mark_message_as_read(message_id)
-        return api_response(result)
-    elif request.method == 'DELETE':
-        result = DatabaseManagerMessages(app.event_manager).delete_message(message_id)
-        return api_response(result)
     else:
-        api_abort('Error executing command...', 500)
+        result = DatabaseManagerMessages(app.event_manager).update_message(message_id, update_data=data)
 
-@app.route('/freedata/messages/<string:message_id>/attachments', methods=['GET'])
-def get_message_attachments(message_id):
+    return api_response(result)
+
+@app.delete("/freedata/messages/{message_id}")
+async def delete_freedata_message(message_id: str):
+    result = DatabaseManagerMessages(app.event_manager).delete_message(message_id)
+    return api_response(result)
+
+@app.get("/freedata/messages/{message_id}/attachments")
+async def get_message_attachments(message_id: str):
     attachments = DatabaseManagerAttachments(app.event_manager).get_attachments_by_message_id_json(message_id)
     return api_response(attachments)
 
-@app.route('/freedata/messages/attachment/<string:data_sha512>', methods=['GET'])
-def get_message_attachment(data_sha512):
+@app.get("/freedata/messages/attachment/{data_sha512}")
+async def get_message_attachment(data_sha512: str):
     attachment = DatabaseManagerAttachments(app.event_manager).get_attachment_by_sha512(data_sha512)
     return api_response(attachment)
 
-@app.route('/freedata/beacons', methods=['GET'])
-def get_all_beacons():
+@app.get("/freedata/beacons")
+async def get_all_beacons():
     beacons = DatabaseManagerBeacon(app.event_manager).get_all_beacons()
     return api_response(beacons)
 
-@app.route('/freedata/beacons/<string:callsign>', methods=['GET'])
-def get_beacons_by_callsign(callsign):
+@app.get("/freedata/beacons/{callsign}")
+async def get_beacons_by_callsign(callsign: str):
     beacons = DatabaseManagerBeacon(app.event_manager).get_beacons_by_callsign(callsign)
     return api_response(beacons)
 
-@app.route('/freedata/station/<string:callsign>', methods=['GET', 'POST'])
-def get_set_station_info_by_callsign(callsign):
-    if request.method in ['GET']:
-        station = DatabaseManagerStations(app.event_manager).get_station(callsign)
-        return api_response(station)
-    elif request.method in ['POST'] and "info" in request.json:
-        result = DatabaseManagerStations(app.event_manager).update_station_info(callsign, new_info=request.json["info"])
-        return api_response(result)
-    else:
-        api_abort('Error using endpoint...', 500)
+@app.get("/freedata/station/{callsign}")
+async def get_station_info(callsign: str):
+    station = DatabaseManagerStations(app.event_manager).get_station(callsign)
+    return api_response(station)
 
-# Event websocket
-@sock.route('/events')
-def sock_events(sock):
-    wsm.handle_connection(sock, wsm.events_client_list, app.modem_events) # TODO remove the app.modem_event custom queue
+@app.post("/freedata/station/{callsign}")
+async def set_station_info(callsign: str, request: Request):
+    data = await request.json()
+    result = DatabaseManagerStations(app.event_manager).update_station_info(callsign, new_info=data["info"])
+    return api_response(result)
 
-@sock.route('/fft')
-def sock_fft(sock):
-    wsm.handle_connection(sock, wsm.fft_client_list, app.modem_fft)
+# WebSocket Event Handlers
+@app.websocket("/events")
+async def websocket_events(websocket: WebSocket):
+    await websocket.accept()
+    await app.wsm.handle_connection(websocket, app.wsm.events_client_list, app.modem_events)
 
-@sock.route('/states')
-def sock_states(sock):
-    wsm.handle_connection(sock, wsm.states_client_list, app.state_queue)
+@app.websocket("/fft")
+async def websocket_fft(websocket: WebSocket):
+    await websocket.accept()
+    await app.wsm.handle_connection(websocket, app.wsm.fft_client_list, app.modem_fft)
 
+@app.websocket("/states")
+async def websocket_states(websocket: WebSocket):
+    await websocket.accept()
+    await app.wsm.handle_connection(websocket, app.wsm.states_client_list, app.state_queue)
 
-
-
+# Signal Handler
 def signal_handler(sig, frame):
     print("\n------------------------------------------")
-    print("Received SIGINT......")
+    logger.warning("[SHUTDOWN] Received SIGINT....")
     stop_server()
 
-
 def stop_server():
-
+    if hasattr(app, 'wsm'):
+        app.wsm.shutdown()
     if hasattr(app, 'radio_manager'):
         app.radio_manager.stop()
-    import time
-    start_time = time.time()
     if hasattr(app, 'schedule_manager'):
         app.schedule_manager.stop()
-    print(time.time()-start_time)
-    if hasattr(app, 'service_manager'):
-
-        if hasattr(app.service_manager, 'modem_service') and app.service_manager.modem_service:
-            app.service_manager.shutdown()
-
-        if hasattr(app.service_manager, 'modem') and app.service_manager.modem:
-            #    app.service_manager.modem.sd_input_stream.stop
-            app.service_manager.modem.demodulator.shutdown()
-
+    if hasattr(app.service_manager, 'modem_service') and app.service_manager.modem_service:
+        app.service_manager.shutdown()
+    if hasattr(app.service_manager, 'modem') and app.service_manager.modem:
+        app.service_manager.modem.demodulator.shutdown()
+    if hasattr(app.service_manager, 'modem_service'):
+        app.service_manager.stop_modem()
     if hasattr(app, 'socket_interface_manager') and app.socket_interface_manager:
         app.socket_interface_manager.stop_servers()
-
+    if hasattr(app, 'socket_interface_manager') and app.socket_interface_manager:
+        app.socket_interface_manager.stop_servers()
     audio.terminate()
-
-    print("Shutdown completed")
-    print(".........................")
+    logger.warning("[SHUTDOWN] Shutdown completed")
     try:
-        sys.exit(0)
+        # it seems sys.exit causes problems since we are using fastapi
+        # fastapi seems to close the application
+        #sys.exit(0)
+        os._exit(0)
+
+        pass
     except Exception as e:
-        print(e)
+        logger.warning("[SHUTDOWN] Shutdown completed", error=e)
+
+
+def open_browser_after_delay(url, delay=2):
+    threading.Event().wait(delay)
+    webbrowser.open(url, new=0, autoraise=True)
 
 def main():
-    # Register the signal handler for SIGINT
     signal.signal(signal.SIGINT, signal_handler)
 
-    app.config['SOCK_SERVER_OPTIONS'] = {'ping_interval': 10}
-    # define global MODEM_VERSION
     app.MODEM_VERSION = MODEM_VERSION
-
     config_file = set_config()
     app.config_manager = CONFIG(config_file)
-
-    # start freedata_server
-    app.p2p_data_queue = queue.Queue() # queue which holds processing data of p2p connections
-    app.state_queue = queue.Queue()  # queue which holds latest states
-    app.modem_events = queue.Queue()  # queue which holds latest events
-    app.modem_fft = queue.Queue()  # queue which holds latest fft data
-    app.modem_service = queue.Queue()  # start / stop freedata_server service
-
-    app.event_manager = event_manager.EventManager([app.modem_events])  # TODO remove the app.modem_event custom queue
-    # init state manager
+    app.p2p_data_queue = queue.Queue()
+    app.state_queue = queue.Queue()
+    app.modem_events = queue.Queue()
+    app.modem_fft = queue.Queue()
+    app.modem_service = queue.Queue()
+    app.event_manager = event_manager.EventManager([app.modem_events])
     app.state_manager = state_manager.StateManager(app.state_queue)
-    # initialize message system schedule manager
     app.schedule_manager = ScheduleManager(app.MODEM_VERSION, app.config_manager, app.state_manager, app.event_manager)
-    # start service manager
     app.service_manager = service_manager.SM(app)
-
-    # start freedata_server service
     app.modem_service.put("start")
-    # initialize database default values
-
     DatabaseManager(app.event_manager).initialize_default_values()
-    wsm.startThreads(app)
+    DatabaseManager(app.event_manager).database_repair_and_cleanup()
+    app.wsm = websocket_manager.wsm()
+    app.wsm.startWorkerThreads(app)
 
     conf = app.config_manager.read()
-    modemaddress = conf['NETWORK']['modemaddress']
-    modemport = conf['NETWORK']['modemport']
+    modemaddress = conf['NETWORK'].get('modemaddress', '127.0.0.1')
+    modemport = int(conf['NETWORK'].get('modemport', 5000))
 
-    if not modemaddress:
+    # check if modemadress is empty - known bug caused by older versions
+    if modemaddress in ['', None]:
         modemaddress = '127.0.0.1'
-    if not modemport:
-        modemport = 5000
 
-    app.run(modemaddress, modemport, debug=False)
+    if gui_dir and os.path.isdir(gui_dir):
+        url = f"http://{modemaddress}:{modemport}/gui"
+
+        logger.info("---------------------------------------------------")
+        logger.info("                                                   ")
+        logger.info(f"[GUI] AVAILABLE ON {url}")
+        logger.info("just open it in your browser")
+        logger.info("                                                   ")
+        logger.info("---------------------------------------------------")
+
+        if conf['GUI'].get('auto_run_browser', True):
+            threading.Thread(target=open_browser_after_delay, args=(url, 2)).start()
+
+
+    uvicorn.run(app, host=modemaddress, port=modemport, log_config=None, log_level="info")
 
 
 if __name__ == "__main__":

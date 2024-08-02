@@ -32,7 +32,8 @@ class radio:
             'rf': '---',
             'ptt': False,  # Initial PTT state is set to False,
             'tuner': False,
-            'swr': '---'
+            'swr': '---',
+            'vfo': '---',
         }
 
         # start rigctld...
@@ -43,15 +44,15 @@ class radio:
         self.connect()
 
     def connect(self):
-        print(self.hostname)
-        print(self.port)
         if self.shutdown:
             return
         try:
             self.connection = socket.create_connection((self.hostname, self.port), timeout=self.timeout)
+            self.connection.settimeout(self.timeout)
             self.connected = True
             self.states.set_radio("radio_status", True)
             self.log.info(f"[RIGCTLD] Connected to rigctld at {self.hostname}:{self.port}")
+            self.get_vfo()
         except Exception as err:
             self.log.warning(f"[RIGCTLD] Failed to connect to rigctld: {err}")
             self.connected = False
@@ -74,7 +75,8 @@ class radio:
             'rf': '---',
             'ptt': False,  # Initial PTT state is set to False,
             'tuner': False,
-            'swr': '---'
+            'swr': '---',
+            'vfo': '---'
         }
 
     def send_command(self, command) -> str:
@@ -85,18 +87,35 @@ class radio:
 
             try:
                 self.await_response = threading.Event()
+
                 self.connection.sendall(command.encode('utf-8') + b"\n")
                 response = self.connection.recv(1024)
                 self.await_response.set()
                 stripped_result = response.decode('utf-8').strip()
                 if 'RPRT' in stripped_result:
                     return None
+
+                if 'None' in stripped_result:
+                    return None
+
                 return stripped_result
 
+            except socket.timeout:
+                self.await_response.set()
+                raise TimeoutError(f"[RIGCTLD] Timeout waiting for response from rigctld: [{command}]")
             except Exception as err:
+                self.await_response.set()
                 self.log.warning(f"[RIGCTLD] Error sending command [{command}] to rigctld: {err}")
                 self.connected = False
         return ""
+
+    def insert_vfo(self, command):
+        #self.get_vfo()
+        if self.parameters['vfo'] and self.parameters['vfo'] not in [None, False, 'err', 0] and self.config["RIGCTLD"]["enable_vfo"]:
+            return f"{command[:1].strip()} {self.parameters['vfo']} {command[1:].strip()}"
+
+        return command
+
 
     def set_ptt(self, state):
         """Set the PTT (Push-to-Talk) state.
@@ -109,10 +128,16 @@ class radio:
         """
         if self.connected:
             try:
+
                 if state:
-                    self.send_command('T 1')  # Enable PTT
+                    command = 'T 1'
                 else:
-                    self.send_command('T 0')  # Disable PTT
+                    command = 'T 0'
+
+                command = self.insert_vfo(command)
+                self.send_command(command)
+
+
                 self.parameters['ptt'] = state  # Update PTT state in parameters
                 return True
             except Exception as err:
@@ -132,6 +157,8 @@ class radio:
         if self.connected:
             try:
                 command = f"M {mode} 0"
+                command = self.insert_vfo(command)
+
                 self.send_command(command)
                 self.parameters['mode'] = mode
                 return True
@@ -152,6 +179,7 @@ class radio:
         if self.connected:
             try:
                 command = f"F {frequency}"
+                command = self.insert_vfo(command)
                 self.send_command(command)
                 self.parameters['frequency'] = frequency
                 return True
@@ -172,6 +200,7 @@ class radio:
         if self.connected:
             try:
                 command = f"M {self.parameters['mode']} {bandwidth}"
+                command = self.insert_vfo(command)
                 self.send_command(command)
                 self.parameters['bandwidth'] = bandwidth
                 return True
@@ -194,6 +223,7 @@ class radio:
         if self.connected:
             try:
                 command = f"L RFPOWER {rf/100}" #RF RFPOWER --> RFPOWER == IC705
+                command = self.insert_vfo(command)
                 self.send_command(command)
                 self.parameters['rf'] = rf
                 return True
@@ -213,10 +243,15 @@ class radio:
         """
         if self.connected:
             try:
+
                 if state:
-                    self.send_command('U TUNER 1')  # Enable PTT
+                    command = 'U TUNER 1'
                 else:
-                    self.send_command('U TUNER 0')  # Disable PTT
+                    command = 'U TUNER 0'
+
+                command = self.insert_vfo(command)
+                self.send_command(command)
+
                 self.parameters['tuner'] = state  # Update PTT state in parameters
                 return True
             except Exception as err:
@@ -235,13 +270,17 @@ class radio:
         """
         if self.connected:
             try:
-                result = self.send_command('u TUNER')
+
+                command = self.insert_vfo('u TUNER')
+                result = self.send_command(command)
+
                 state = result not in [None, ''] and int(result) == 1
                 self.parameters['tuner'] = state
                 return True
             except Exception as err:
                 self.log.warning(f"[RIGCTLD] Error getting TUNER state: {err}")
-                self.connected = False
+                self.get_vfo()
+
         return False
 
     def get_parameters(self):
@@ -249,6 +288,7 @@ class radio:
             self.connect()
 
         if self.connected:
+            self.get_vfo()
             self.get_frequency()
             self.get_mode_bandwidth()
             self.get_alc()
@@ -256,11 +296,27 @@ class radio:
             self.get_rf()
             self.get_tuner()
             self.get_swr()
+
         return self.parameters
+
+
+    def get_vfo(self):
+        try:
+            vfo_response = self.send_command('v')
+
+            if vfo_response not in [None, 'None', '']:
+                self.parameters['vfo'] = vfo_response.strip('')
+            else:
+                self.parameters['vfo'] = False
+
+        except Exception as e:
+            self.log.warning(f"Error getting vfo: {e}")
+            self.parameters['vfo'] = 'err'
 
     def get_frequency(self):
         try:
-            frequency_response = self.send_command('f')
+            command = self.insert_vfo('f')
+            frequency_response = self.send_command(command)
             if frequency_response not in [None, '']:
                 self.parameters['frequency'] = int(frequency_response)
             else:
@@ -272,7 +328,9 @@ class radio:
 
     def get_mode_bandwidth(self):
         try:
-            response = self.send_command('m')
+            command = self.insert_vfo('m')
+            response = self.send_command(command)
+
             if response not in [None, '']:
                 response = response.strip()
                 mode, bandwidth = response.split('\n', 1)
@@ -293,20 +351,22 @@ class radio:
 
     def get_alc(self):
         try:
-            alc_response = self.send_command('l ALC')
-            if alc_response not in [None, '']:
+            command = self.insert_vfo('l ALC')
+            alc_response = self.send_command(command)
+            if alc_response not in [False, None, '', 'None', 0]:
                 self.parameters['alc'] = float(alc_response)
             else:
                 self.parameters['alc'] = 'err'
-            
-            
+
         except Exception as e:
             self.log.warning(f"Error getting ALC: {e}")
             self.parameters['alc'] = 'err'
+            self.get_vfo()
 
     def get_strength(self):
         try:
-            strength_response = self.send_command('l STRENGTH')
+            command = self.insert_vfo('l STRENGTH')
+            strength_response = self.send_command(command)
             if strength_response not in [None, '']:
                 self.parameters['strength'] = int(strength_response)
             else:
@@ -314,10 +374,12 @@ class radio:
         except Exception as e:
             self.log.warning(f"Error getting strength: {e}")
             self.parameters['strength'] = 'err'
+            self.get_vfo()
 
     def get_rf(self):
         try:
-            rf_response = self.send_command('l RFPOWER')
+            command = self.insert_vfo('l RFPOWER')
+            rf_response = self.send_command(command)
             if rf_response not in [None, '']:
                 self.parameters['rf'] = int(float(rf_response) * 100)
             else:
@@ -327,10 +389,12 @@ class radio:
         except Exception as e:
             self.log.warning(f"Error getting RF power: {e}")
             self.parameters['rf'] = 'err'
+            self.get_vfo()
 
     def get_swr(self):
         try:
-            rf_response = self.send_command('l SWR')
+            command = self.insert_vfo('l SWR')
+            rf_response = self.send_command(command)
             if rf_response not in [None, '']:
                 self.parameters['swr'] = rf_response
             else:
@@ -340,6 +404,7 @@ class radio:
         except Exception as e:
             self.log.warning(f"Error getting SWR: {e}")
             self.parameters['swr'] = 'err'
+            self.get_vfo()
 
     def start_service(self):
         binary_name = "rigctld"

@@ -1,7 +1,30 @@
-<script setup lang="ts">
+<script setup>
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
-import { useSerialStore } from "../store/serialStore";
-const serialStore = useSerialStore();
+import { useSerialStore } from "../store/serialStore.js";
+
+
+// Pinia setup
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
+setActivePinia(pinia);
+
+const serialStore = useSerialStore(pinia);
+/*
+const settings = ref({
+  remote: {
+    RIGCTLD: {
+      ip: '',
+      port: 0,
+      enable_vfo: false
+    },
+    RADIO: {
+      control: '',
+      model_id: 0
+    }
+  }
+});
+*/
+
 </script>
 
 <template>
@@ -30,6 +53,22 @@ const serialStore = useSerialStore();
       @change="onChange"
       v-model.number="settings.remote.RIGCTLD.port"
     />
+  </div>
+
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50">rigctld VFO parameter</label>
+    <label class="input-group-text w-50">
+      <div class="form-check form-switch form-check-inline">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="enableVFOSwitch"
+          v-model="settings.remote.RIGCTLD.enable_vfo"
+          @change="onChange"
+        />
+        <label class="form-check-label" for="enableVFOSwitch">VFO</label>
+      </div>
+    </label>
   </div>
 
   <hr class="m-2" />

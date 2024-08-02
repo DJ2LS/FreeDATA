@@ -1,83 +1,73 @@
-<script setup lang="ts">
-// @ts-nocheck
-const { distance } = require("qth-locator");
-
+<script setup>
+// Initialize Pinia and state store
 import { setActivePinia } from "pinia";
 import pinia from "../../store/index";
-setActivePinia(pinia);
-
-import { settingsStore as settings } from "../../store/settingsStore.js";
-
 import { useStateStore } from "../../store/stateStore.js";
+
+// Set active Pinia store
+setActivePinia(pinia);
 const state = useStateStore(pinia);
 
+// Format timestamp to human-readable datetime
 function getDateTime(timestampRaw) {
-  var datetime = new Date(timestampRaw * 1000).toLocaleString(
+  if (!timestampRaw) return "N/A"; // Handle invalid timestamps
+  return new Date(timestampRaw * 1000).toLocaleString(
     navigator.language,
     {
       hourCycle: "h23",
-
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
-    },
+    }
   );
-  return datetime;
 }
 
-function getMaidenheadDistance(dxGrid) {
-  try {
-    return parseInt(distance(settings.remote.STATION.mygrid, dxGrid));
-  } catch (e) {
-    //
-  }
-}
+// Dispatch custom event for selected station
 function pushToPing(origin) {
   window.dispatchEvent(
-    new CustomEvent("stationSelected", { bubbles: true, detail: origin }),
+    new CustomEvent("stationSelected", { bubbles: true, detail: origin })
   );
 }
 </script>
+
 <template>
   <div class="card h-100">
     <div class="card-header p-0">
       <i class="bi bi-list-columns-reverse" style="font-size: 1.2rem"></i>&nbsp;
-      <strong>Heard stations</strong>
+      <strong>Heard Stations</strong>
     </div>
 
     <div class="card-body overflow-auto p-0">
       <div class="table-responsive">
-        <!-- START OF TABLE FOR HEARD STATIONS -->
-        <table class="table table-sm table-striped" id="tblHeardStationList">
+        <!-- Table for Heard Stations -->
+        <table class="table table-sm table-striped">
           <thead>
             <tr>
-              <th scope="col" id="thTime">Time</th>
-              <th scope="col" id="thDxcall">DXCall</th>
+              <th scope="col">Time</th>
+              <th scope="col">DX Call</th>
             </tr>
           </thead>
-          <tbody id="miniHeardStations">
-            <!--https://vuejs.org/guide/essentials/list.html-->
+          <tbody>
+            <!-- Iterate over heard stations -->
             <tr
               v-for="item in state.heard_stations"
               :key="item.origin"
               @click="pushToPing(item.origin)"
+              role="row"
+              aria-label="Heard Station"
             >
               <td>
                 <span class="fs-6">{{ getDateTime(item.timestamp) }}</span>
               </td>
-
               <td>
                 <span>{{ item.origin }}</span>
               </td>
-              <!--<td>{{ item.offset }}</td>-->
             </tr>
           </tbody>
         </table>
       </div>
-
-      <!-- END OF HEARD STATIONS TABLE -->
     </div>
   </div>
 </template>

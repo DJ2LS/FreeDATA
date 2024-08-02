@@ -1,4 +1,3 @@
-crcengine
 numpy
 psutil
 PyAudio
@@ -6,15 +5,15 @@ pyserial
 sounddevice
 structlog
 requests
+asyncio
 chardet
 colorama
 ordered-set
-nuitka
+nuitka<=2.4.5
 pyinstaller
 websocket-client
-flask
-flask-sock
-flask-cors
+fastapi
+uvicorn
 
 # Development and test dependencies
 autopep8

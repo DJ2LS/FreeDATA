@@ -1,8 +1,10 @@
-<script setup lang="ts">
+<script setup>
+// reason for no check is, that we have some mixing of typescript and js that could be problematic
+
 import { setActivePinia } from "pinia";
 import pinia from "../../store/index";
 import {
-  setRadioParametersFrequency,
+  //setRadioParametersFrequency,
   setRadioParametersMode,
   setRadioParametersRFLevel,
   setRadioParametersTuner,
@@ -12,19 +14,19 @@ setActivePinia(pinia);
 import { useStateStore } from "../../store/stateStore.js";
 const state = useStateStore(pinia);
 
-function set_radio_parameter_frequency() {
-  setRadioParametersFrequency(state.new_frequency);
-}
+//function setRadioParameterFrequency() {
+//  setRadioParametersFrequency(state.new_frequency);
+//}
 
-function set_radio_parameter_mode() {
+function setRadioParameterMode() {
   setRadioParametersMode(state.mode);
 }
 
-function set_radio_parameter_rflevel() {
+function setRadioParameterRFLevel() {
   setRadioParametersRFLevel(state.rf_level);
 }
 
-function set_radio_parameter_auto_tuner() {
+function setRadioParameterTuner() {
   console.log(state.tuner);
   setRadioParametersTuner(state.tuner);
 }
@@ -42,15 +44,10 @@ function set_radio_parameter_auto_tuner() {
         <div class="me-2">
           <div class="input-group input-group-sm">
             <span class="input-group-text">QRG</span>
-            <span class="input-group-text"
-              >{{ state.frequency / 1000 }} kHz</span
-            >
-
+            <span class="input-group-text">{{ state.frequency / 1000 }} kHz</span>
             <button
               class="btn btn-secondary dropdown-toggle"
-              v-bind:class="{
-                disabled: state.hamlib_status === 'disconnected',
-              }"
+              :class="{ disabled: state.hamlib_status === 'disconnected' }"
               type="button"
               data-bs-toggle="offcanvas"
               data-bs-target="#offcanvasFrequency"
@@ -65,10 +62,8 @@ function set_radio_parameter_auto_tuner() {
             <select
               class="form-control"
               v-model="state.mode"
-              @click="set_radio_parameter_mode()"
-              v-bind:class="{
-                disabled: state.hamlib_status === 'disconnected',
-              }"
+              @change="setRadioParameterMode"
+              :class="{ disabled: state.hamlib_status === 'disconnected' }"
             >
               <option selected value="">---</option>
               <option value="USB">USB</option>
@@ -84,10 +79,8 @@ function set_radio_parameter_auto_tuner() {
             <select
               class="form-control"
               v-model="state.rf_level"
-              @click="set_radio_parameter_rflevel()"
-              v-bind:class="{
-                disabled: state.hamlib_status === 'disconnected',
-              }"
+              @change="setRadioParameterRFLevel"
+              :class="{ disabled: state.hamlib_status === 'disconnected' }"
             >
               <option value="0">-</option>
               <option value="5">5</option>
@@ -121,7 +114,7 @@ function set_radio_parameter_auto_tuner() {
             role="switch"
             id="flexSwitchTuner"
             v-model="state.tuner"
-            @change="set_radio_parameter_auto_tuner()"
+            @change="setRadioParameterTuner"
           />
           <label class="form-check-label" for="flexSwitchTuner">Tuner</label>
         </div>

@@ -3,7 +3,21 @@ body {
   padding-right: 0px !important;
   overflow-y: hidden !important;
   overflow-x: hidden !important;
+  padding-top: calc(env(safe-area-inset-top));
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  margin: 0;
 }
+
+.header {
+  padding-top: calc(env(safe-area-inset-top));
+}
+
+.footer {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+
 
 /*Progress bars with centered text*/
 .progress {
@@ -106,12 +120,4 @@ https://stackoverflow.com/a/9622873
 /* default dark theme mods */
 [data-bs-theme="dark"] {
   /* default dark theme mods */
-}
-.modal-backdrop {
-  background-color: transparent;
-}
-
-.modal-backdrop.in {
-  filter: alpha(opacity=10);
-  opacity: 0.1;
 }

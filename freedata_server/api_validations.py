@@ -7,8 +7,8 @@ def validate_remote_config(config):
 
     mygrid = config["STATION"]["mygrid"]
     if len(mygrid) != 6:
-        raise ValueError(f"Gridsquare must be 6 characters!")
-
+        #raise ValueError(f"Gridsquare must be 6 characters!")
+        print(f"Gridsquare must be 6 characters!")
     return True
 
 def validate_freedata_callsign(callsign):

@@ -19,6 +19,12 @@
 #
 #
 # Changelog:
+# 1.8   23 July 2024 ( DJ2LS )
+# Add support for browser based gui
+#
+# 1.7   31 May 2024 ( DJ2LS )
+# Add support for version specific setup
+#
 # 1.6:	22 May 2024
 #	Reflect directory name changes in prep for merging develop to main
 #
@@ -54,7 +60,10 @@ case $1 in
    "develop")
 	args="develop"
    ;;
-   *)
+  v*)
+  args=$1
+  ;;
+  *)
 	echo "Argument" $1 "not valid.  Exiting."
 	exit 1
    ;;
@@ -245,7 +254,20 @@ pip install --upgrade pip wheel
 echo "*************************************************************************"
 echo "Downloading the FreeDATA software from the git repo"
 echo "*************************************************************************"
-git clone https://github.com/DJ2LS/FreeDATA.git
+if [ "$args" == "develop" ];
+then
+  echo "Downloading development version"
+  git clone https://github.com/DJ2LS/FreeDATA.git -b develop
+	git checkout develop
+elif [[ $args == v* ]];
+then
+    echo "Downloading specific version: $args"
+    git clone https://github.com/DJ2LS/FreeDATA.git -b $args
+else
+    echo "Downloading regular version"
+  git clone https://github.com/DJ2LS/FreeDATA.git
+
+fi
 
 echo "*************************************************************************"
 echo "Changing Directory into FreeDATA"
@@ -256,11 +278,6 @@ then
 else
 	echo "Something went wrong.  FreeDATA software not downloaded from git."
 	exit 1
-fi
-
-if [ "$args" == "develop" ];
-then
-	git checkout develop
 fi
 
 echo "*************************************************************************"
@@ -321,8 +338,9 @@ echo "*************************************************************************"
 cd ../../../..
 cd freedata_gui
 npm i
-npm audit fix --force
-npm i
+#npm audit fix --force
+#npm i
+npm run build
 
 # Return to the directory we started in
 cd ../..

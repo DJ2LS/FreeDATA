@@ -1,17 +1,3 @@
-<script setup lang="ts">
-import { setColormap } from "../js/waterfallHandler";
-
-import { setActivePinia } from "pinia";
-import pinia from "../store/index";
-setActivePinia(pinia);
-
-import { settingsStore as settings } from "../store/settingsStore.js";
-
-function saveSettings() {
-  //saveSettingsToFile();
-  setColormap();
-}
-</script>
 <template>
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-50">Waterfall theme</span>
@@ -31,18 +17,21 @@ function saveSettings() {
     </select>
   </div>
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text w-50">Update channel</span>
-    <select
-      class="form-select form-select-sm w-50"
-      id="update_channel_selector"
-      @change="saveSettings"
-      v-model="settings.local.update_channel"
-    >
-      <option value="latest">Stable</option>
-      <option value="beta">Beta</option>
-      <option value="alpha">Alpha</option>
-    </select>
+    <label class="input-group-text w-50">Auto launch browser</label>
+    <label class="input-group-text w-50">
+      <div class="form-check form-switch form-check-inline">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="NotificationSwitch"
+          @change="onChange"
+          v-model="settings.remote.GUI.auto_run_browser"
+        />
+        <label class="form-check-label" for="NotificationSwitch">On server startup, launch a browser to GUI URL</label>
+      </div>
+    </label>
   </div>
+
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50">Enable notifications</label>
     <label class="input-group-text w-50">
@@ -54,10 +43,37 @@ function saveSettings() {
           @change="saveSettings"
           v-model="settings.local.enable_sys_notification"
         />
-        <label class="form-check-label" for="NotificationSwitch"
-          >Show system pop-ups</label
-        >
+        <label class="form-check-label" for="NotificationSwitch">Show system pop-ups</label>
       </div>
     </label>
   </div>
 </template>
+
+<script>
+import { setColormap } from "../js/waterfallHandler";
+import { settingsStore as settings, onChange } from "../store/settingsStore.js";
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
+
+// Set the active Pinia store
+setActivePinia(pinia);
+
+// Function to save settings and update colormap
+function saveSettings() {
+  // Save settings to file if needed
+  setColormap();
+}
+
+// Export methods for use in the template
+export default {
+  methods: {
+    saveSettings,
+    onChange,
+  },
+  computed: {
+    settings() {
+      return settings;
+    },
+  },
+};
+</script>

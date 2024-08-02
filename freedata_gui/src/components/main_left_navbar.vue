@@ -1,24 +1,30 @@
-<script setup lang="ts">
-import { ref } from "vue";
-import main_modem_healthcheck from "./main_modem_healthcheck.vue";
+<script setup>
+import { ref, computed } from 'vue';
 
-import { getOverallHealth } from "../js/eventHandler.js";
-import { getFreedataMessages } from "../js/api";
-import { getRemote } from "../store/settingsStore.js";
-import { loadAllData } from "../js/eventHandler";
+import { getOverallHealth } from '../js/eventHandler.js';
+import { getFreedataMessages } from '../js/api';
+import { loadAllData } from '../js/eventHandler';
 
-import { setActivePinia } from "pinia";
-import pinia from "../store/index";
+import { setActivePinia } from 'pinia';
+import pinia from '../store/index';
 setActivePinia(pinia);
 
-import { useChatStore } from "../store/chatStore.js";
+import { useChatStore } from '../store/chatStore.js';
 const chat = useChatStore(pinia);
 
 const isTextVisible = ref(false); // Initially, the text is invisible
 function toggleTextVisibility() {
   isTextVisible.value = !isTextVisible.value; // Toggle the visibility
 }
+
+// Network state computation
+import { useStateStore } from '../store/stateStore.js';
+const state = useStateStore(pinia);
+const isNetworkDisconnected = computed(() => state.modem_connection !== "connected");
+
+
 </script>
+
 <template>
   <!-- Button -->
 
@@ -31,7 +37,6 @@ function toggleTextVisibility() {
       <span class="fw-semibold"><i class="bi bi-text-paragraph"></i></span>
     </button>
   </div>
-
   <a
     class="btn border btn-outline-secondary list-group-item rounded-3"
     data-bs-html="false"
@@ -46,7 +51,7 @@ function toggleTextVisibility() {
           : 'bg-warning'
     "
     ><i class="h3 bi bi-activity"></i>
-    <span class="ms-2" v-if="isTextVisible">Healtcheck</span>
+    <span class="ms-2" v-if="isTextVisible">Healthcheck</span>
   </a>
 
   <div
@@ -54,7 +59,7 @@ function toggleTextVisibility() {
     id="main-list-tab"
     role="tablist"
     style="margin-top: 100px"
-    @click="loadAllData"
+    @click="isNetworkDisconnected ? null : loadAllData()"
   >
     <a
       class="list-group-item list-group-item-dark list-group-item-action border-0 rounded-3 mb-2 active"
@@ -64,6 +69,7 @@ function toggleTextVisibility() {
       role="tab"
       aria-controls="list-grid"
       title="Grid"
+      :class="{ disabled: isNetworkDisconnected }"
     >
       <i class="bi bi-grid h3"></i>
       <span class="ms-2" v-if="isTextVisible">Home</span>
@@ -77,7 +83,8 @@ function toggleTextVisibility() {
       role="tab"
       aria-controls="list-chat"
       title="Chat"
-      @click="getFreedataMessages"
+      :class="{ disabled: isNetworkDisconnected }"
+      @click="isNetworkDisconnected ? null : getFreedataMessages"
     >
       <i class="bi bi-chat-text h3"></i>
       <span class="ms-2" v-if="isTextVisible">RF Chat</span>
@@ -109,7 +116,8 @@ function toggleTextVisibility() {
       role="tab"
       aria-controls="list-settings"
       title="Settings"
-      @click="loadAllData"
+      :class="{ disabled: isNetworkDisconnected }"
+      @click="isNetworkDisconnected ? null : loadAllData()"
     >
       <i class="bi bi-gear-wide-connected h3"></i>
       <span class="ms-2" v-if="isTextVisible">Settings</span>
@@ -128,3 +136,4 @@ function toggleTextVisibility() {
     <span class="ms-2" v-if="isTextVisible">Station</span>
   </button>
 </template>
+

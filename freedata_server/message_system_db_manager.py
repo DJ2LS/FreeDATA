@@ -1,30 +1,40 @@
 # database_manager.py
 import sqlite3
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import scoped_session, sessionmaker
 from threading import local
-from message_system_db_model import Base, Station, Status
+from message_system_db_model import Base, Station, Status, P2PMessage
 import structlog
 import helpers
 import os
+import sys
 
 class DatabaseManager:
-    def __init__(self, event_manger, db_file=None):
-        self.event_manager = event_manger
-        if not db_file:
-            #print(os.environ)
+    DATABASE_ENV_VAR = 'FREEDATA_DATABASE'
+    DEFAULT_DATABASE_FILE = 'freedata-messages.db'
 
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            db_path = os.path.join(script_dir, 'freedata-messages.db')
-            db_file = 'sqlite:///' + db_path
+    def __init__(self, event_manager):
+        self.event_manager = event_manager
 
+        db_file = self.get_database()
         self.engine = create_engine(db_file, echo=False)
         self.thread_local = local()
         self.session_factory = sessionmaker(bind=self.engine)
         Base.metadata.create_all(self.engine)
 
         self.logger = structlog.get_logger(type(self).__name__)
+
+    def get_database(self):
+        script_directory = os.path.dirname(os.path.abspath(__file__))
+        sys.path.append(script_directory)
+
+        if self.DATABASE_ENV_VAR in os.environ:
+            #db_path = os.getenv(self.DATABASE_ENV_VAR, os.path.join(script_directory, self.DEFAULT_DATABASE_FILE))
+            db_path = os.getenv(self.DATABASE_ENV_VAR)
+        else:
+            db_path = os.path.join(script_directory, self.DEFAULT_DATABASE_FILE)
+        return 'sqlite:///' + db_path
 
     def initialize_default_values(self):
         session = self.get_thread_scoped_session()
@@ -51,6 +61,49 @@ class DatabaseManager:
         except Exception as e:
             session.rollback()
             self.log(f"An error occurred while initializing default values: {e}", isWarning=True)
+        finally:
+            session.remove()
+
+    def database_repair_and_cleanup(self):
+        session = self.get_thread_scoped_session()
+        try:
+
+            # Fetch the 'failed' status ID
+            failed_status = session.query(Status).filter_by(name="failed").first()
+            if not failed_status:
+                raise ValueError("Failed status not found in the database")
+
+            # Fetch the 'transmitting' status ID
+            transmitting_status = session.query(Status).filter_by(name="transmitting").first()
+            if transmitting_status:
+                # Check if any messages have the status "transmitting" and update them to "failed"
+                messages_to_update = session.query(P2PMessage).filter_by(status_id=transmitting_status.id).all()
+                for message in messages_to_update:
+                    message.status_id = failed_status.id
+
+                session.commit()
+                len_repaired_message = len(messages_to_update)
+                if len_repaired_message > 0:
+                    self.log(f"Repaired {len_repaired_message} messages ('transmitting' to 'failed')")
+
+            # Vacuum the database to reclaim space
+            session.execute(text("VACUUM"))
+            self.log("Database vacuumed successfully")
+
+            # Reindex all tables to improve query performance
+            session.execute(text("REINDEX"))
+            self.log("Database reindexed successfully")
+
+            # Perform an integrity check on the database
+            result = session.execute(text("PRAGMA integrity_check")).fetchone()
+            if result[0] == 'ok':
+                self.log("Database integrity check passed")
+            else:
+                self.log("Database integrity check failed", isWarning=True)
+
+        except Exception as e:
+            session.rollback()
+            self.log(f"An error occurred while checking databse: {e}", isWarning=True)
         finally:
             session.remove()
 

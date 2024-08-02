@@ -1,12 +1,24 @@
-<script setup lang="ts">
-import { setConfig } from "../js/api";
-
+<script>
+import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
+
+// Set the active Pinia store
 setActivePinia(pinia);
 
-import { settingsStore as settings, onChange } from "../store/settingsStore.js";
+// Export methods and computed properties for use in the template
+export default {
+  methods: {
+    onChange,
+  },
+  computed: {
+    settings() {
+      return settings;
+    },
+  },
+};
 </script>
+
 
 <template>
   <div class="input-group input-group-sm mb-1">

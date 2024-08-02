@@ -1,31 +1,7 @@
-<script setup lang="ts">
-import {
-  settingsStore as settings,
-  onChange,
-  getRemote,
-} from "../store/settingsStore.js";
-import {
-  validateCallsignWithSSID,
-  validateCallsignWithoutSSID,
-} from "../js/freedata";
-function validateCall() {
-  //ensure callsign is uppercase:
-  let call = settings.remote.STATION.mycall;
-  settings.remote.STATION.mycall = call.toUpperCase();
-
-  if (validateCallsignWithoutSSID(settings.remote.STATION.mycall))
-    //Send new callsign to modem if valid
-    onChange();
-  //Reload settings from modem as invalid callsign was passed in
-  else getRemote();
-}
-</script>
 <template>
   <!-- station callsign -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px"
-      >Your station callsign</span
-    >
+    <span class="input-group-text" style="width: 180px">Your station callsign</span>
     <input
       type="text"
       class="form-control"
@@ -48,7 +24,7 @@ function validateCall() {
       @change="onChange"
       v-model.number="settings.remote.STATION.myssid"
     >
-      <option selected value="0">0</option>
+      <option value="0">0</option>
       <option value="1">1</option>
       <option value="2">2</option>
       <option value="3">3</option>
@@ -83,3 +59,23 @@ function validateCall() {
     />
   </div>
 </template>
+
+<script setup>
+import { settingsStore as settings, onChange, getRemote } from "../store/settingsStore.js";
+import { validateCallsignWithoutSSID } from "../js/freedata";
+
+// Function to validate and update callsign
+function validateCall() {
+  // Ensure callsign is uppercase
+  let call = settings.remote.STATION.mycall;
+  settings.remote.STATION.mycall = call.toUpperCase();
+
+  if (validateCallsignWithoutSSID(settings.remote.STATION.mycall)) {
+    // Send new callsign to modem if valid
+    onChange();
+  } else {
+    // Reload settings from modem as invalid callsign was passed in
+    getRemote();
+  }
+}
+</script>

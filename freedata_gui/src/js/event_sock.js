@@ -2,6 +2,7 @@ import {
   eventDispatcher,
   stateDispatcher,
   connectionFailed,
+  loadAllData,
 } from "../js/eventHandler.js";
 import { addDataToWaterfall } from "../js/waterfallHandler.js";
 
@@ -10,41 +11,43 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { settingsStore as settings } from "../store/settingsStore.js";
+import { useStateStore } from "../store/stateStore.js";
+const state = useStateStore(pinia);
 
 function connect(endpoint, dispatcher) {
-  let socket = new WebSocket(
-    "ws://" + settings.local.host + ":" + settings.local.port + "/" + endpoint,
+  const { protocol, hostname, port } = window.location;
+  const wsProtocol = protocol === "https:" ? "wss:" : "ws:";
+  const adjustedPort = port === '8080' ? '5000' : port;
+  const socket = new WebSocket(
+    `${wsProtocol}//${hostname}:${adjustedPort}/${endpoint}`
   );
 
   // handle opening
-  socket.addEventListener("open", function (event) {
-    //console.log("Connected to the WebSocket server: " + endpoint);
+  socket.addEventListener("open", function () {
+    console.log(`Connected to the WebSocket server: ${endpoint}`);
+    // when connected again, initially load all data from server
+    loadAllData();
+    state.modem_connection = 'connected';
   });
 
   // handle data
   socket.addEventListener("message", function (event) {
     dispatcher(event.data);
-    return;
   });
 
   // handle errors
   socket.addEventListener("error", function (event) {
-    //console.error("WebSocket error:", event);
     connectionFailed(endpoint, event);
   });
 
   // handle closing and reconnect
   socket.addEventListener("close", function (event) {
-    //console.log("WebSocket connection closed:", event.code);
+    console.log(`WebSocket connection closed: ${event.code}`);
 
     // Reconnect handler
-    if (!event.wasClean) {
-      setTimeout(() => {
-        //console.log("Reconnecting to websocket");
-        connect(endpoint, dispatcher);
-      }, 1000);
-    }
+    setTimeout(() => {
+      connect(endpoint, dispatcher);
+    }, 1000);
   });
 }
 
