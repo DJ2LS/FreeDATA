@@ -287,7 +287,6 @@
       ref=modalElement
       id="messageInfoModal"
       tabindex="-1"
-      aria-labelledby="exampleModalLabel"
       aria-hidden="true"
       >
       <div class="modal-dialog">
@@ -295,6 +294,7 @@
             <div class="modal-header">
                <h1 class="modal-title fs-5" id="messageInfoModalLabel">
                   {{ chat.selectedCallsign }}
+
                </h1>
                <button
                   type="button"
@@ -307,8 +307,16 @@
                <div class="container">
                   <div class="d-flex flex-row justify-content-between">
                      <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon1">Attempts</span>
-                        <span class="input-group-text" id="basic-addon1">...</span>
+                        <span class="input-group-text" id="basic-addon1">Transmission attempts</span>
+  {{ chat.messageInfoById?.attempt ?? 'NaN' }}
+                     </div>
+                  </div>
+               </div>
+              <div class="container">
+                  <div class="d-flex flex-row justify-content-between">
+                     <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Priority</span>
+    {{ chat.messageInfoById?.priority ?? 'NaN' }}
                      </div>
                   </div>
                </div>
@@ -326,13 +334,14 @@
                         <span class="input-group-text" id="basic-addon1"
                            >Bytes per Minute</span
                            >
-                        <span class="input-group-text" id="basic-addon1">...</span>
+                        <span class="input-group-text" id="basic-addon1">    {{ chat.messageInfoById?.statistics?.bytes_per_minute ?? 'NaN' }}
+</span>
                      </div>
                      <div class="input-group mb-3">
                         <span class="input-group-text" id="basic-addon1"
                            >Duration [s]</span
                            >
-                        <span class="input-group-text">...</span>
+                        <span class="input-group-text" id="basic-addon1">{{ chat.messageInfoById?.statistics?.duration ?? 'NaN' }}</span>
                      </div>
                   </div>
                </div>
