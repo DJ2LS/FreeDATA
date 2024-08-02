@@ -1,4 +1,3 @@
-
 /**
  * Binary to ASCII replacement
  * @param {string} data in normal/usual utf-8 format
@@ -64,7 +63,9 @@ export function sortByPropertyDesc(property) {
 export function validateCallsignWithSSID(callsign) {
   const patt = new RegExp("^[A-Za-z0-9]{1,7}-[0-9]{1,3}$");
   if (!callsign || !patt.test(callsign)) {
-    console.error(`Call sign given is not in correct format or missing; callsign passed is: ${callsign}`);
+    console.error(
+      `Call sign given is not in correct format or missing; callsign passed is: ${callsign}`,
+    );
     return false;
   }
   return true;
@@ -78,12 +79,13 @@ export function validateCallsignWithSSID(callsign) {
 export function validateCallsignWithoutSSID(callsign) {
   const patt = new RegExp("^[A-Za-z0-9]{1,7}$");
   if (!callsign || !patt.test(callsign)) {
-    console.error(`Call sign given is not in correct format or missing; callsign passed is: ${callsign}`);
+    console.error(
+      `Call sign given is not in correct format or missing; callsign passed is: ${callsign}`,
+    );
     return false;
   }
   return true;
 }
-
 
 /**
  * Get application data path based on the environment.

@@ -6,8 +6,6 @@ setActivePinia(pinia);
 
 import { settingsStore as settings } from "../store/settingsStore.js";
 
-
-
 /*
 // create config file if not exists with defaults
 const configDefaultSettings = `{

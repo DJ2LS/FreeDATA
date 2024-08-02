@@ -1,7 +1,6 @@
 import { reactive, watch } from "vue";
 import { getConfig, setConfig } from "../js/api";
 
-
 // Default configuration
 const defaultConfig = {
   local: {
@@ -71,14 +70,15 @@ const defaultConfig = {
     },
     GUI: {
       auto_run_browser: true,
-    }
+    },
   },
 };
 
 // Initialize local settings from browser storage
-const localConfig = JSON.parse(localStorage.getItem("localConfig")) || defaultConfig.local;
-console.log("--------- LOCAL CONFIG -----------")
-console.log(localConfig)
+const localConfig =
+  JSON.parse(localStorage.getItem("localConfig")) || defaultConfig.local;
+console.log("--------- LOCAL CONFIG -----------");
+console.log(localConfig);
 
 export const settingsStore = reactive({ ...defaultConfig, local: localConfig });
 // Function to handle remote configuration changes
@@ -103,9 +103,13 @@ export function getRemote() {
 }
 
 // Watcher to save local settings on change
-watch(() => settingsStore.local, () => {
-  saveLocalSettingsToConfig();
-}, { deep: true });
+watch(
+  () => settingsStore.local,
+  () => {
+    saveLocalSettingsToConfig();
+  },
+  { deep: true },
+);
 
 // Function to save local settings to browser storage
 export function saveLocalSettingsToConfig() {

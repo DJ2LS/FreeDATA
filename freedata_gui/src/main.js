@@ -6,7 +6,7 @@ import "./styles.css"; // Import global styles
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 //import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import * as bootstrap from 'bootstrap/dist/js/bootstrap.esm.min.js'
+import * as bootstrap from "bootstrap/dist/js/bootstrap.esm.min.js";
 
 import { Chart, Filler } from "chart.js";
 import { getRemote } from "./store/settingsStore";
@@ -27,9 +27,11 @@ app.use(pinia);
 app.mount("#app");
 
 // Initialize Bootstrap tooltips
-const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+const tooltipTriggerList = document.querySelectorAll(
+  '[data-bs-toggle="tooltip"]',
+);
 [...tooltipTriggerList].map(
-  (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl)
+  (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl),
 );
 
 // Initialize settings and connections

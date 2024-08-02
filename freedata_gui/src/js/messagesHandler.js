@@ -17,10 +17,7 @@ import {
  * @param {Object} data - The data object containing messages.
  */
 export async function processFreedataMessages(data) {
-  if (
-    data &&
-    Array.isArray(data.messages)
-  ) {
+  if (data && Array.isArray(data.messages)) {
     chatStore.callsign_list = createCallsignListFromAPI(data);
     chatStore.sorted_chat_list = createSortedMessagesList(data);
 

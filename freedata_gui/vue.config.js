@@ -1,4 +1,4 @@
 module.exports = {
   transpileDependencies: [],
-  publicPath: '/gui/'
-}
+  publicPath: "/gui/",
+};
