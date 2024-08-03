@@ -88,7 +88,9 @@ class TestARQSession(unittest.TestCase):
                                           cls.irs_event_manager,
                                           cls.irs_state_manager, 
                                           cls.irs_modem)
-        
+
+        # simulate a busy condition
+        cls.irs_state_manager.channel_busy_slot = [True, False, False, False, False]
         # Frame loss probability in %
         cls.loss_probability = 0
 
@@ -110,7 +112,7 @@ class TestARQSession(unittest.TestCase):
                     mode_name = "SIGNALLING_ACK"
                 else:
                     mode_name = None
-                frame_dispatcher.process_data(frame_bytes, None, len(frame_bytes), 5, 0, mode_name=mode_name)
+                frame_dispatcher.process_data(frame_bytes, None, len(frame_bytes), 15, 0, mode_name=mode_name)
             except queue.Empty:
                 continue
         self.logger.info(f"[{threading.current_thread().name}] Channel closed.")
