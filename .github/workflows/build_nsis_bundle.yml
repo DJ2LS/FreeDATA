@@ -71,4 +71,4 @@ jobs:
           draft: true
           files: ./FreeDATA-Installer.exe
           tag_name: ${{ github.ref_name }}
-          name: 'FreeDATA-Installer-${{ github.ref_name }}'
+          name: 'FreeDATA-${{ github.ref_name }}'
