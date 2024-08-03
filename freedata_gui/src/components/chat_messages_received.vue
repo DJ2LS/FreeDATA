@@ -7,6 +7,9 @@
           :key="attachment.id"
           class="card-header"
         >
+
+          <chat_messages_image_preview :attachment="attachment" />
+
           <div class="btn-group w-100" role="group">
             <button class="btn btn-light text-truncate" disabled>
               {{ attachment.name }}
@@ -59,6 +62,9 @@ import {
   getMessageAttachment,
 } from "../js/messagesHandler";
 
+import chat_messages_image_preview from './chat_messages_image_preview.vue';
+
+
 // Pinia store setup
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -68,6 +74,10 @@ import { useChatStore } from '../store/chatStore.js';
 const chatStore = useChatStore(pinia);
 
 export default {
+components: {
+    chat_messages_image_preview,
+  },
+
   props: {
     message: Object,
   },
