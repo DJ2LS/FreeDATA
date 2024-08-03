@@ -347,7 +347,7 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
                         <span class="input-group-text" 
                            >Duration [s]</span
                            >
-                        <span class="input-group-text" >{{ chat.messageInfoById?.statistics?.duration ?? 'NaN' }}</span>
+                        <span class="input-group-text" >{{ Math.round(chat.messageInfoById?.statistics?.duration) ?? 'NaN' }}</span>
                      </div>
                   </div>
                </div>
