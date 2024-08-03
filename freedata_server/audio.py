@@ -207,6 +207,7 @@ def set_audio_volume(datalist: np.ndarray, dB: float) -> np.ndarray:
 
 RMS_COUNTER = 0
 CHANNEL_BUSY_DELAY = 0
+SLOT_DELAY = [0, 0, 0, 0, 0]
 
 
 def prepare_data_for_fft(data, target_length_samples=400):
@@ -308,20 +309,23 @@ def calculate_fft(data, fft_queue, states) -> None:
         # 1500Hz = 148
         # 2700Hz = 266
         # 3200Hz = 315
+        # Initialize slot delay counters
+        DELAY_INCREMENT = 2
+        MAX_DELAY = 200
 
-        # slot
+        # Main logic
         slot = 0
         slot1 = [0, 65]
-        slot2 = [65,120]
+        slot2 = [65, 120]
         slot3 = [120, 176]
         slot4 = [176, 231]
         slot5 = [231, len(dfftlist)]
-        slotbusy = [False,False,False,False,False]
+        slotbusy = [False, False, False, False, False]
 
         # Set to true if we should increment delay count; else false to decrement
-        addDelay=False
-        for range in [slot1, slot2, slot3, slot4, slot5]:
+        addDelay = False
 
+        for range in [slot1, slot2, slot3, slot4, slot5]:
             range_start = range[0]
             range_end = range[1]
             # define the area, we are detecting busy state
@@ -329,28 +333,39 @@ def calculate_fft(data, fft_queue, states) -> None:
             # Check for signals higher than average by checking for "100"
             # If we have a signal, increment our channel_busy delay counter
             # so we have a smoother state toggle
-            if np.sum(slotdfft[slotdfft > avg + 15]) >= 200 and not states.isTransmitting():
-                addDelay=True
-                slotbusy[slot]=True
-                #states.channel_busy_slot[slot] = True
+            if np.sum(slotdfft[slotdfft > avg + 15]) >= 200 and not states.isTransmitting() and not states.is_receiving_codec2_signal():
+                addDelay = True
+                slotbusy[slot] = True
+                SLOT_DELAY[slot] = min(SLOT_DELAY[slot] + DELAY_INCREMENT, MAX_DELAY)
+            else:
+                SLOT_DELAY[slot] = max(SLOT_DELAY[slot] - 1, 0)
+
+                if SLOT_DELAY[slot] == 0:
+                    slotbusy[slot] = False
+                else:
+                    slotbusy[slot] = True
+
             # increment slot
             slot += 1
-            states.set_channel_slot_busy(slotbusy)
+        states.set_channel_slot_busy(slotbusy)
+
         if addDelay:
             # Limit delay counter to a maximum of 200. The higher this value,
             # the longer we will wait until releasing state
             states.set_channel_busy_condition_traffic(True)
-            CHANNEL_BUSY_DELAY = min(CHANNEL_BUSY_DELAY + 10, 200)
+            CHANNEL_BUSY_DELAY = min(CHANNEL_BUSY_DELAY + DELAY_INCREMENT, MAX_DELAY)
         else:
             # Decrement channel busy counter if no signal has been detected.
             CHANNEL_BUSY_DELAY = max(CHANNEL_BUSY_DELAY - 1, 0)
             # When our channel busy counter reaches 0, toggle state to False
             if CHANNEL_BUSY_DELAY == 0:
                 states.set_channel_busy_condition_traffic(False)
-            # erase queue if greater than 3
+
+        # erase queue if greater than 3
         if fft_queue.qsize() >= 1:
             fft_queue = queue.Queue()
-        fft_queue.put(dfftlist[:315]) # 315 --> bandwidth 3200
+
+        fft_queue.put(dfftlist[:315])  # 315 --> bandwidth 3200
 
     except Exception as err:
         print(f"[MDM] calculate_fft: Exception: {err}")
