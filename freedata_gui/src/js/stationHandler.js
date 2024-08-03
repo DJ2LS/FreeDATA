@@ -8,10 +8,13 @@ export async function getStationInfoByCallsign(callsign) {
     const result = await getStationInfo(callsign);
 
     // Check if info is null and assign default values if it is
-if (result == null || typeof(result) === "undefined" || result.info == null) {
-
-          station.stationInfo.callsign =  "N/A";
-    station.stationInfo.location.gridsquare = "N/A";
+    if (
+      result == null ||
+      typeof result === "undefined" ||
+      result.info == null
+    ) {
+      station.stationInfo.callsign = "N/A";
+      station.stationInfo.location.gridsquare = "N/A";
       station.stationInfo.info = {
         name: "",
         city: "",
@@ -32,9 +35,9 @@ if (result == null || typeof(result) === "undefined" || result.info == null) {
         comments: "",
       };
     } else {
-    station.stationInfo.callsign = result.callsign || "N/A";
-    station.stationInfo.location.gridsquare =
-      result.location?.gridsquare || "N/A";
+      station.stationInfo.callsign = result.callsign || "N/A";
+      station.stationInfo.location.gridsquare =
+        result.location?.gridsquare || "N/A";
 
       station.stationInfo.info = {
         name: result.info.name || "",

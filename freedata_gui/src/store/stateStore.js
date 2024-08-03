@@ -73,20 +73,20 @@ export const useStateStore = defineStore("stateStore", () => {
   var modem_version = ref();
 
   var os_info = ref({
-    system: '',
-    node: '',
-    release: '',
-    version: '',
-    machine: '',
-    processor: ''
+    system: "",
+    node: "",
+    release: "",
+    version: "",
+    machine: "",
+    processor: "",
   });
   var python_info = ref({
-    build: ['', ''],
-    compiler: '',
-    branch: '',
-    implementation: '',
-    revision: '',
-    version: ''
+    build: ["", ""],
+    compiler: "",
+    branch: "",
+    implementation: "",
+    revision: "",
+    version: "",
   });
 
   var rx_buffer_length = ref();

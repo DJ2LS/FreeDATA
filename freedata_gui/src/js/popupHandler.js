@@ -1,8 +1,8 @@
-import { v4 as uuidv4 } from 'uuid';
-import * as bootstrap from 'bootstrap';
+import { v4 as uuidv4 } from "uuid";
+import * as bootstrap from "bootstrap";
 
 export function displayToast(type, icon, content, duration) {
-  const mainToastContainer = document.getElementById('mainToastContainer');
+  const mainToastContainer = document.getElementById("mainToastContainer");
 
   const randomID = uuidv4();
   const toastCode = `
@@ -24,7 +24,7 @@ export function displayToast(type, icon, content, duration) {
   `;
 
   // Insert toast to toast container
-  mainToastContainer.insertAdjacentHTML('beforeend', toastCode);
+  mainToastContainer.insertAdjacentHTML("beforeend", toastCode);
 
   // Register toast
   const toastHTMLElement = document.getElementById(randomID);
@@ -35,8 +35,14 @@ export function displayToast(type, icon, content, duration) {
   toast.show();
 
   // Register event listener to remove toast when hidden
-  toastHTMLElement.addEventListener('hidden.bs.toast', function handleToastHidden() {
-    toastHTMLElement.removeEventListener('hidden.bs.toast', handleToastHidden);
-    toastHTMLElement.remove();
-  });
+  toastHTMLElement.addEventListener(
+    "hidden.bs.toast",
+    function handleToastHidden() {
+      toastHTMLElement.removeEventListener(
+        "hidden.bs.toast",
+        handleToastHidden,
+      );
+      toastHTMLElement.remove();
+    },
+  );
 }

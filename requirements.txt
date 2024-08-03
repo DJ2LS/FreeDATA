@@ -12,8 +12,8 @@ ordered-set
 nuitka<=2.4.5
 pyinstaller
 websocket-client
-fastapi
-uvicorn
+fastapi[standard]
+uvicorn[standard]
 
 # Development and test dependencies
 autopep8

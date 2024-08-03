@@ -1,4 +1,3 @@
-
 import { toRaw } from "vue";
 import { displayToast } from "./popupHandler";
 import {
@@ -10,8 +9,6 @@ import {
 import { processFreedataMessages } from "./messagesHandler";
 import { processRadioStatus } from "./radioHandler";
 
-
-
 // ----------------- init pinia stores -------------
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -22,9 +19,7 @@ import { useAudioStore } from "../store/audioStore";
 const audioStore = useAudioStore(pinia);
 import { useSerialStore } from "../store/serialStore";
 const serialStore = useSerialStore(pinia);
-import {
-  getRemote,
-} from "../store/settingsStore";
+import { getRemote } from "../store/settingsStore";
 
 export async function loadAllData() {
   let stateData = await getModemState();
@@ -39,7 +34,7 @@ export async function loadAllData() {
   });
   audioStore.loadAudioDevices();
   serialStore.loadSerialDevices();
-  console.log(audioStore.audioInputs)
+  console.log(audioStore.audioInputs);
   await getRadioStatus();
   getRemote();
   getOverallHealth();
@@ -49,7 +44,7 @@ export async function loadAllData() {
 }
 
 export function connectionFailed(endpoint, event) {
-  console.log(event)
+  console.log(event);
   stateStore.modem_connection = "disconnected";
 }
 
@@ -64,7 +59,7 @@ export function stateDispatcher(data) {
     stateStore.is_modem_running = data.is_modem_running;
     stateStore.dbfs_level = Math.round(data.audio_dbfs);
     stateStore.dbfs_level_percent = Math.round(
-      Math.pow(10, data.audio_dbfs / 20) * 100
+      Math.pow(10, data.audio_dbfs / 20) * 100,
     );
     stateStore.radio_status = data.radio_status;
     stateStore.channel_busy_slot = data.channel_busy_slot;
@@ -78,7 +73,7 @@ export function stateDispatcher(data) {
   if (data.type === "radio-change" || data.type === "radio") {
     stateStore.s_meter_strength_raw = Math.round(data.s_meter_strength);
     stateStore.s_meter_strength_percent = Math.round(
-      Math.pow(10, data.s_meter_strength / 20) * 100
+      Math.pow(10, data.s_meter_strength / 20) * 100,
     );
     stateStore.radio_status = data.radio_status;
     stateStore.frequency = data.radio_frequency;
@@ -141,7 +136,7 @@ export function eventDispatcher(data) {
         "danger",
         "bi-bootstrap-reboot",
         "Modem startup failed | bad config?",
-        5000
+        5000,
       );
       return;
   }
@@ -186,13 +181,13 @@ export function eventDispatcher(data) {
             stateStore.arq_total_bytes =
               data["arq-transfer-outbound"].received_bytes;
             stateStore.arq_speed_list_timestamp.value = toRaw(
-              data["arq-transfer-outbound"].statistics.time_histogram
+              data["arq-transfer-outbound"].statistics.time_histogram,
             );
             stateStore.arq_speed_list_bpm.value = toRaw(
-              data["arq-transfer-outbound"].statistics.bpm_histogram
+              data["arq-transfer-outbound"].statistics.bpm_histogram,
             );
             stateStore.arq_speed_list_snr.value = toRaw(
-              data["arq-transfer-outbound"].statistics.snr_histogram
+              data["arq-transfer-outbound"].statistics.snr_histogram,
             );
             stateStore.speed_level = data["arq-transfer-outbound"].speed_level;
             return;
@@ -281,13 +276,13 @@ export function eventDispatcher(data) {
             stateStore.arq_total_bytes =
               data["arq-transfer-inbound"].received_bytes;
             stateStore.arq_speed_list_timestamp.value = toRaw(
-              data["arq-transfer-inbound"].statistics.time_histogram
+              data["arq-transfer-inbound"].statistics.time_histogram,
             );
             stateStore.arq_speed_list_bpm.value = toRaw(
-              data["arq-transfer-inbound"].statistics.bpm_histogram
+              data["arq-transfer-inbound"].statistics.bpm_histogram,
             );
             stateStore.arq_speed_list_snr.value = toRaw(
-              data["arq-transfer-inbound"].statistics.snr_histogram
+              data["arq-transfer-inbound"].statistics.snr_histogram,
             );
             stateStore.speed_level = data["arq-transfer-inbound"].speed_level;
             return;
