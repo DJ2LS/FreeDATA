@@ -7,6 +7,9 @@
           :key="attachment.id"
           class="card-header"
         >
+
+          <chat_messages_image_preview :attachment="attachment" />
+
           <div class="btn-group w-100" role="group">
             <button class="btn btn-light text-truncate" disabled>
               {{ attachment.name }}
@@ -36,7 +39,7 @@
     <!-- Delete button outside of the card -->
     <div class="col-auto">
       <button
-        disabled
+
         class="btn btn-outline-secondary border-0 me-1"
         @click="showMessageInfo"
         data-bs-target="#messageInfoModal"
@@ -59,22 +62,29 @@ import {
   getMessageAttachment,
 } from "../js/messagesHandler";
 
+import chat_messages_image_preview from './chat_messages_image_preview.vue';
+
+
 // Pinia store setup
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
+import { useChatStore } from '../store/chatStore.js';
+const chatStore = useChatStore(pinia);
+
 export default {
+components: {
+    chat_messages_image_preview,
+  },
+
   props: {
     message: Object,
   },
 
   methods: {
     showMessageInfo() {
-      requestMessageInfo(this.message.id);
-      //let infoModal = Modal.getOrCreateInstance(document.getElementById('messageInfoModal'))
-      //console.log(this.infoModal)
-      //this.infoModal.show()
+      chatStore.messageInfoById = requestMessageInfo(this.message.id);
     },
 
     deleteMessage() {
