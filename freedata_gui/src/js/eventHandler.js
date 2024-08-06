@@ -206,10 +206,10 @@ export function eventDispatcher(data) {
           case "ENDED":
             message = `Type: ${data.type}, Session ID: ${data["arq-transfer-outbound"].session_id}, DXCall: ${data["arq-transfer-outbound"].dxcall}, Total Bytes: ${data["arq-transfer-outbound"].received_bytes}/${data["arq-transfer-outbound"].total_bytes}, State: ${data["arq-transfer-outbound"].state}`;
             displayToast("info", "bi-info-circle", message, 5000);
-            stateStore.arq_transmission_percent =
+            stateStore.arq_transmission_percent = Math.round(
               (data["arq-transfer-outbound"].received_bytes /
                 data["arq-transfer-outbound"].total_bytes) *
-              100;
+              100);
             stateStore.arq_total_bytes =
               data["arq-transfer-outbound"].received_bytes;
 
