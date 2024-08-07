@@ -199,11 +199,36 @@ export function eventDispatcher(data) {
           case "ABORTED":
             message = `Type: ${data.type}, Session ID: ${data["arq-transfer-outbound"].session_id}, DXCall: ${data["arq-transfer-outbound"].dxcall}, Total Bytes: ${data["arq-transfer-outbound"].total_bytes}, Success: ${data["arq-transfer-outbound"].success ? "Yes" : "No"}, State: ${data["arq-transfer-outbound"].state}, Data: ${data["arq-transfer-outbound"].data ? "Available" : "Not Available"}`;
             displayToast("warning", "bi-exclamation-triangle", message, 5000);
+            stateStore.arq_transmission_percent = 0;
+            stateStore.arq_total_bytes = 0;
             return;
 
+          case "ENDED":
+            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-outbound"].session_id}, DXCall: ${data["arq-transfer-outbound"].dxcall}, Total Bytes: ${data["arq-transfer-outbound"].received_bytes}/${data["arq-transfer-outbound"].total_bytes}, State: ${data["arq-transfer-outbound"].state}`;
+            displayToast("info", "bi-info-circle", message, 5000);
+            stateStore.arq_transmission_percent = Math.round(
+              (data["arq-transfer-outbound"].received_bytes /
+                data["arq-transfer-outbound"].total_bytes) *
+              100);
+            stateStore.arq_total_bytes =
+              data["arq-transfer-outbound"].received_bytes;
+
+
+            // Reset progressbar values after a delay
+            setTimeout(() => {
+              stateStore.arq_transmission_percent = 0;
+              stateStore.arq_total_bytes = 0;
+            }, 5000);
+            return;
           case "FAILED":
             message = `Type: ${data.type}, Session ID: ${data["arq-transfer-outbound"].session_id}, DXCall: ${data["arq-transfer-outbound"].dxcall}, Total Bytes: ${data["arq-transfer-outbound"].total_bytes}, Success: ${data["arq-transfer-outbound"].success ? "Yes" : "No"}, State: ${data["arq-transfer-outbound"].state}, Data: ${data["arq-transfer-outbound"].data ? "Available" : "Not Available"}`;
             displayToast("danger", "bi-x-octagon", message, 5000);
+            // Reset progressbar values after a delay
+            setTimeout(() => {
+              stateStore.arq_transmission_percent = 0;
+              stateStore.arq_total_bytes = 0;
+            }, 5000);
+
             return;
         }
       }
@@ -275,15 +300,29 @@ export function eventDispatcher(data) {
               100;
             stateStore.arq_total_bytes =
               data["arq-transfer-inbound"].received_bytes;
+
+
+            // Reset progressbar values after a delay
+            setTimeout(() => {
+              stateStore.arq_transmission_percent = 0;
+              stateStore.arq_total_bytes = 0;
+            }, 5000);
             return;
 
           case "ABORTED":
             console.info("state ABORTED needs to be implemented");
+            stateStore.arq_transmission_percent = 0;
+            stateStore.arq_total_bytes = 0;
             return;
 
           case "FAILED":
             message = `Type: ${data.type}, Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, Received Bytes: ${data["arq-transfer-inbound"].received_bytes}/${data["arq-transfer-inbound"].total_bytes}, State: ${data["arq-transfer-inbound"].state}`;
             displayToast("info", "bi-info-circle", message, 5000);
+            // Reset progressbar values after a delay
+            setTimeout(() => {
+              stateStore.arq_transmission_percent = 0;
+              stateStore.arq_total_bytes = 0;
+            }, 5000);
             return;
         }
       }

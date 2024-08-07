@@ -240,6 +240,11 @@ export async function getFreedataMessages() {
   if (res) processFreedataMessages(res);
 }
 
+export async function getFreedataMessageById(id) {
+  let res = await apiGet(`/freedata/messages/${id}`);
+  return res;
+}
+
 export async function getFreedataAttachmentBySha512(data_sha512) {
   let res = await apiGet(`/freedata/messages/attachment/${data_sha512}`);
   return res;

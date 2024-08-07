@@ -17,7 +17,7 @@ export const useChatStore = defineStore("chatStore", () => {
   }
 
   var selectedCallsign = ref();
-
+  var messageInfoById = ref(); // holds a unique message if requested by id
   // we need a default value in our ref because of our message info modal
 
   var inputText = ref("");
@@ -44,6 +44,7 @@ export const useChatStore = defineStore("chatStore", () => {
     newChatMessage,
     totalUnreadMessages,
     inputText,
+    messageInfoById,
     callsign_list,
     sorted_chat_list,
     chartSpeedPER0,

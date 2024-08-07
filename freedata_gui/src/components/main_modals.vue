@@ -71,12 +71,12 @@
      scales: {
        SNR: {
          type: "linear",
-         ticks: { beginAtZero: false, color: "rgb(255, 99, 132)" },
+         ticks: { beginAtZero: false, color: "rgb(255, 99, 132, 1.0)" },
          position: "right",
        },
        SPEED: {
          type: "linear",
-         ticks: { beginAtZero: false, color: "rgb(120, 100, 120)" },
+         ticks: { beginAtZero: false, color: "rgb(120, 100, 120, 1.0)" },
          position: "left",
          grid: {
            drawOnChartArea: false,
@@ -85,38 +85,44 @@
        x: { ticks: { beginAtZero: true } },
      },
    };
-   
-   const transmissionSpeedChartDataMessageInfo = computed(() => ({
-     labels: chat.arq_speed_list_timestamp,
-     datasets: [
-       {
-         type: "line",
-         label: "SNR[dB]",
-         data: chat.arq_speed_list_snr,
-         borderColor: "rgb(75, 192, 192, 1.0)",
-         pointRadius: 1,
-         segment: {
-           borderColor: (speedCtx) =>
-             skipped(speedCtx, "rgb(0,0,0,0.4)") ||
-             down(speedCtx, "rgb(192,75,75)"),
-           borderDash: (speedCtx) => skipped(speedCtx, [3, 3]),
-         },
-         spanGaps: true,
-         backgroundColor: "rgba(75, 192, 192, 0.2)",
-         order: 1,
-         yAxisID: "SNR",
-       },
-       {
-         type: "bar",
-         label: "Speed[bpm]",
-         data: chat.arq_speed_list_bpm,
-         borderColor: "rgb(120, 100, 120, 1.0)",
-         backgroundColor: "rgba(120, 100, 120, 0.2)",
-         order: 0,
-         yAxisID: "SPEED",
-       },
-     ],
-   }));
+
+// Utility function to format timestamps
+function formatTimestamp(isoTimestamp) {
+  const date = new Date(isoTimestamp);
+  return date.toLocaleTimeString('en-US', { hour12: false });
+}
+
+const transmissionSpeedChartDataMessageInfo = computed(() => ({
+  labels: Object.values(chat.messageInfoById?.statistics?.time_histogram || {}).map(formatTimestamp),
+  datasets: [
+    {
+      type: 'line',
+      label: 'SNR[dB]',
+      data: Object.values(chat.messageInfoById?.statistics?.snr_histogram || {}),
+      borderColor: 'rgb(255, 99, 132)',
+      pointRadius: 1,
+      segment: {
+        borderColor: (speedCtx) =>
+          skipped(speedCtx, 'rgb(0,0,0,0.4)') || down(speedCtx, 'rgb(192,75,75)'),
+        borderDash: (speedCtx) => skipped(speedCtx, [3, 3]),
+      },
+      spanGaps: true,
+      backgroundColor: 'rgb(255, 99, 132)',
+      order: 1,
+      yAxisID: 'SNR',
+    },
+    {
+      type: 'bar',
+      label: 'Speed[bpm]',
+      data: Object.values(chat.messageInfoById?.statistics?.bpm_histogram || {}),
+      borderColor: 'rgb(120, 100, 120, 1.0)',
+      pointRadius: 1,
+      backgroundColor: 'rgba(120, 100, 120, 0.2)',
+      order: 0,
+      yAxisID: 'SPEED',
+    },
+  ],
+}));
    
    // Function to update station info
    function updateStationInfo() {
@@ -251,14 +257,14 @@
             </div>
             <div class="modal-body">
                <div class="input-group mb-3">
-                  <span class="input-group-text" id="basic-addon1"
+                  <span class="input-group-text" 
                      >Total Messages</span
                      >
-                  <span class="input-group-text" id="basic-addon1">...</span>
+                  <span class="input-group-text" >...</span>
                </div>
                <div class="input-group mb-3">
-                  <span class="input-group-text" id="basic-addon1">New Messages</span>
-                  <span class="input-group-text" id="basic-addon1">...</span>
+                  <span class="input-group-text" >New Messages</span>
+                  <span class="input-group-text" >...</span>
                </div>
             </div>
             <div class="modal-footer">
@@ -287,7 +293,6 @@
       ref=modalElement
       id="messageInfoModal"
       tabindex="-1"
-      aria-labelledby="exampleModalLabel"
       aria-hidden="true"
       >
       <div class="modal-dialog">
@@ -295,6 +300,7 @@
             <div class="modal-header">
                <h1 class="modal-title fs-5" id="messageInfoModalLabel">
                   {{ chat.selectedCallsign }}
+
                </h1>
                <button
                   type="button"
@@ -307,15 +313,23 @@
                <div class="container">
                   <div class="d-flex flex-row justify-content-between">
                      <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon1">Attempts</span>
-                        <span class="input-group-text" id="basic-addon1">...</span>
+                        <span class="input-group-text" >Transmission attempts</span>
+  <span class="input-group-text" >{{ chat.messageInfoById?.attempt ?? 'NaN' }}</span>
+                     </div>
+                  </div>
+               </div>
+              <div class="container">
+                  <div class="d-flex flex-row justify-content-between">
+                     <div class="input-group mb-3">
+                        <span class="input-group-text" >Priority</span>
+      <span class="input-group-text" >{{ chat.messageInfoById?.priority ?? 'NaN' }}</span>
                      </div>
                   </div>
                </div>
                <div class="container">
                   <div class="d-flex flex-row justify-content-between">
                      <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon1">hmack</span>
+                        <span class="input-group-text" >hmack</span>
                         <span class="input-group-text">...</span>
                      </div>
                   </div>
@@ -323,16 +337,17 @@
                <div class="container">
                   <div class="d-flex flex-row justify-content-between">
                      <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon1"
+                        <span class="input-group-text" 
                            >Bytes per Minute</span
                            >
-                        <span class="input-group-text" id="basic-addon1">...</span>
+                        <span class="input-group-text" >    {{ chat.messageInfoById?.statistics?.bytes_per_minute ?? 'NaN' }}
+</span>
                      </div>
                      <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon1"
+                        <span class="input-group-text" 
                            >Duration [s]</span
                            >
-                        <span class="input-group-text">...</span>
+                        <span class="input-group-text" >{{ Math.round(chat.messageInfoById?.statistics?.duration) ?? 'NaN' }}</span>
                      </div>
                   </div>
                </div>
