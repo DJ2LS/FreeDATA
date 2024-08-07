@@ -12,17 +12,17 @@ import { processFreedataMessages } from "./messagesHandler";
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-
-
 // Build URL with adjusted port if needed
 function buildURL(endpoint) {
   const { protocol, hostname, port } = window.location;
-  const adjustedPort = port === '8080' ? '5000' : port;
+  const adjustedPort = port === "8080" ? "5000" : port;
   return `${protocol}//${hostname}:${adjustedPort}${endpoint}`;
 }
 
 // Check network connectivity
-const isNetworkConnected = computed(() => state.modem_connection !== "disconnected");
+const isNetworkConnected = computed(
+  () => state.modem_connection !== "disconnected",
+);
 function checkNetworkConnectivity() {
   if (!isNetworkConnected.value) {
     console.warn("Network is disconnected. API call aborted.");
@@ -145,7 +145,7 @@ export async function getSysInfo() {
       implementation: data?.python_info?.implementation || "N/A",
       revision: data?.python_info?.revision || "N/A",
       version: data?.python_info?.version || "N/A",
-    }
+    },
   };
 }
 

@@ -7,41 +7,45 @@ from event_manager import EventManager
 from modem_frametypes import FRAME_TYPE
 import time
 from arq_data_type_handler import ARQDataTypeHandler
-
+from codec2 import FREEDV_MODE_USED_SLOTS, FREEDV_MODE
 
 class ARQSession:
-
     SPEED_LEVEL_DICT = {
         0: {
-            'mode': codec2.FREEDV_MODE.datac4,
+            'mode': FREEDV_MODE.datac4,
             'min_snr': -10,
             'duration_per_frame': 5.17,
             'bandwidth': 250,
+            'slots': FREEDV_MODE_USED_SLOTS.datac4,
         },
         1: {
-            'mode': codec2.FREEDV_MODE.data_ofdm_500,
+            'mode': FREEDV_MODE.data_ofdm_500,
             'min_snr': 0,
             'duration_per_frame': 3.19,
             'bandwidth': 500,
+            'slots': FREEDV_MODE_USED_SLOTS.data_ofdm_500,
         },
         2: {
-            'mode': codec2.FREEDV_MODE.datac1,
+            'mode': FREEDV_MODE.datac1,
             'min_snr': 3,
             'duration_per_frame': 4.18,
             'bandwidth': 1700,
+            'slots': FREEDV_MODE_USED_SLOTS.datac1,
         },
         3: {
-            'mode': codec2.FREEDV_MODE.data_ofdm_2438,
+            'mode': FREEDV_MODE.data_ofdm_2438,
             'min_snr': 8.5,
             'duration_per_frame': 5.5,
             'bandwidth': 2438,
+            'slots': FREEDV_MODE_USED_SLOTS.data_ofdm_2438,
         },
-        #4: {
-        #    'mode': codec2.FREEDV_MODE.qam16c2,
+        # 4: {
+        #    'mode': FREEDV_MODE.qam16c2,
         #    'min_snr': 11,
         #    'duration_per_frame': 2.8,
         #    'bandwidth': 2438,
-        #},
+        #    'slots': FREEDV_MODE_USED_SLOTS.qam16c2,
+        # },
     }
 
     def __init__(self, config: dict, modem, dxcall: str, state_manager):
@@ -179,20 +183,40 @@ class ARQSession:
 
         return stats
 
+    def check_channel_busy(self, channel_busy_slot, mode_slot):
+        for busy, mode in zip(channel_busy_slot, mode_slot):
+            if busy and mode:
+                return False
+        return True
+
     def get_appropriate_speed_level(self, snr, maximum_bandwidth=None):
+        """
+        Determines the appropriate speed level based on the SNR, channel busy slot, and maximum bandwidth.
+
+        Parameters:
+        - snr (float): The signal-to-noise ratio.
+        - channel_busy_slot (list of bool): The busy condition of the channels.
+        - maximum_bandwidth (float, optional): The maximum bandwidth. If None, uses the default from the configuration.
+
+        Returns:
+        - int: The appropriate speed level.
+        """
+        # Use default maximum bandwidth from configuration if not provided
         if maximum_bandwidth is None:
             maximum_bandwidth = self.config['MODEM']['maximum_bandwidth']
 
-        # Adjust maximum_bandwidth based on special conditions or invalid configurations
+        # Adjust maximum_bandwidth if set to 0 (use maximum available bandwidth from speed levels)
         if maximum_bandwidth == 0:
-            # Use the maximum available bandwidth from the speed level dictionary
             maximum_bandwidth = max(details['bandwidth'] for details in self.SPEED_LEVEL_DICT.values())
 
-        # Initialize appropriate_speed_level to the lowest level that meets the minimum criteria
-        appropriate_speed_level = min(self.SPEED_LEVEL_DICT.keys())
+        # Iterate through speed levels in reverse order to find the highest appropriate one
+        for level in sorted(self.SPEED_LEVEL_DICT.keys(), reverse=True):
+            details = self.SPEED_LEVEL_DICT[level]
+            mode_slots = details['slots'].value
+            if (snr >= details['min_snr'] and
+                details['bandwidth'] <= maximum_bandwidth and
+                self.check_channel_busy(self.states.channel_busy_slot, mode_slots)):
+                return level
 
-        for level, details in self.SPEED_LEVEL_DICT.items():
-            if snr >= details['min_snr'] and details['bandwidth'] <= maximum_bandwidth and level > appropriate_speed_level:
-                appropriate_speed_level = level
-
-        return appropriate_speed_level
+        # Return the lowest level if no higher level is found
+        return min(self.SPEED_LEVEL_DICT.keys())

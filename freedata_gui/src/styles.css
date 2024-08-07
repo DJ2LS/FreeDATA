@@ -17,8 +17,6 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-
-
 /*Progress bars with centered text*/
 .progress {
   position: relative;

@@ -247,6 +247,8 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         # Always decode the current mode
         current_mode = self.get_mode_by_speed_level(self.speed_level).value
+        print(current_mode)
+        print(modes_to_decode)
         modes_to_decode[current_mode] = True
 
         # Update previous speed level
