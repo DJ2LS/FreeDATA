@@ -308,9 +308,12 @@ async def post_modem_send_raw_stop():
         api_abort("Modem not running", 503)
     if app.state_manager.getARQ():
         for session in app.state_manager.arq_irs_sessions.values():
-            session.abort_transmission()
+            #session.abort_transmission()
+            session.transmission_aborted()
         for session in app.state_manager.arq_iss_sessions.values():
-            session.abort_transmission()
+            session.abort_transmission(send_stop=False)
+            session.transmission_aborted()
+
     return api_ok()
 
 @app.get("/radio")
