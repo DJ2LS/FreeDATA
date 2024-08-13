@@ -293,3 +293,16 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=self.calculate_session_statistics(self.received_bytes, self.total_length))
         self.states.setARQ(False)
         return None, None
+
+    def transmission_aborted(self):
+        self.log("session aborted")
+        self.session_ended = time.time()
+        self.set_state(IRS_State.ABORTED)
+        # break actual retries
+        self.event_frame_received.set()
+
+        self.event_manager.send_arq_session_finished(
+            True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
+        self.state_manager.remove_arq_irs_session(self.id)
+        self.states.setARQ(False)
+        return None, None
