@@ -20,6 +20,7 @@ import cw
 import audio
 import demodulator
 import modulator
+import mfsk_testing
 
 TESTMODE = False
 
@@ -201,9 +202,10 @@ class RF:
             "[MDM] TRANSMIT", mode="MORSE"
         )
         start_of_transmission = time.time()
+        txbuffer_out = cw.MorseCodePlayer().text_to_signal(frames)
 
-        txbuffer_out = cw.MorseCodePlayer().text_to_signal(self.config['STATION'].mycall)
-
+        #txbuffer_out = cw.MorseCodePlayer().text_to_signal(self.config['STATION'].mycall)
+        print(txbuffer_out)
         # transmit audio
         self.enqueue_audio_out(txbuffer_out)
 
@@ -211,6 +213,21 @@ class RF:
         transmission_time = end_of_transmission - start_of_transmission
         self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
 
+    def transmit_mfsk(self, data):
+        self.states.waitForTransmission()
+        self.states.setTransmitting(True)
+        start_of_transmission = time.time()
+
+        mfsk_instance = mfsk_testing.MFSKModem(fs=48000, baud_rate=25, num_tones=4, tone_spacing=100, center_frequency=1500,
+                          rs_ratio=0.5, expected_data_len=len(data))  # 500Hz, working at -15dB MPG, ca 2.5s (16Bytes)
+
+        encoded_signal = mfsk_instance.encode(data)
+        # transmit audio
+        self.enqueue_audio_out(encoded_signal)
+
+        end_of_transmission = time.time()
+        transmission_time = end_of_transmission - start_of_transmission
+        self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
 
     def transmit(
             self, mode, repeats: int, repeat_delay: int, frames: bytearray
@@ -328,5 +345,10 @@ class RF:
                             self.event_manager.send_buffer_overflow(self.demodulator.buffer_overflow_counter)
                         elif decode:
                             audiobuffer.push(audio_8k_level_adjusted)
+
+
+                self.demodulator.mfsk_instance.add_audio_to_buffer(audio_48k)
+
+
             except Exception as e:
                 self.log.warning("[AUDIO EXCEPTION]", status=status, time=time, frames=frames, e=e)

@@ -5,6 +5,7 @@ import structlog
 import threading
 import audio
 import itertools
+import mfsk_testing
 
 TESTMODE = False
 
@@ -58,6 +59,9 @@ class Demodulator():
         self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
         self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
 
+        self.mfsk_instance = mfsk_testing.MFSKModem(fs=48000, baud_rate=25, num_tones=4, tone_spacing=100, center_frequency=1500,
+                                               rs_ratio=0.5, expected_data_len=5)  # 500Hz, working at -15dB MPG, ca 2.5s (16Bytes)
+        self.mfsk_instance.start_decoding_thread()
 
     def init_codec2(self):
         # Open codec2 instances
@@ -129,6 +133,7 @@ class Demodulator():
                 target=self.demodulate_audio,args=[mode], name=self.MODE_DICT[mode]['name'], daemon=True
             )
             self.MODE_DICT[mode]['decoding_thread'].start()
+
 
     def get_frequency_offset(self, freedv: ctypes.c_void_p) -> float:
         """
