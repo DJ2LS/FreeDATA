@@ -17,10 +17,11 @@ MODEM_VERSION = "0.16.2-alpha"
 
 
 class stats():
-    def __init__(self, config, event_queue, states):
+    def __init__(self, config, event_manager, states):
         self.api_url = "https://api.freedata.app/stats.php"
         self.states = states
-
+        self.config = config
+        self.event_manager = event_manager
     def push(self, status, session_statistics):
         # get avg snr
         try:
