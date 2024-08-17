@@ -7,6 +7,7 @@ import arq_session
 import helpers
 from enum import Enum
 import time
+import stats
 
 class ISS_State(Enum):
     NEW = 0
@@ -214,8 +215,9 @@ class ARQSessionISS(arq_session.ARQSession):
 
         #print(self.state_manager.p2p_connection_sessions)
         #print(self.arq_data_type_handler.state_manager.p2p_connection_sessions)
-
-        self.arq_data_type_handler.transmitted(self.type_byte, self.data, self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
+        session_stats = self.calculate_session_statistics(self.confirmed_bytes, self.total_length)
+        self.arq_data_type_handler.transmitted(self.type_byte, self.data, session_stats)
+        self.statistics.push(self.state.name, session_stats)
         self.state_manager.remove_arq_iss_session(self.id)
         self.states.setARQ(False)
         return None, None
@@ -225,10 +227,13 @@ class ARQSessionISS(arq_session.ARQSession):
         self.session_ended = time.time()
         self.set_state(ISS_State.FAILED)
         self.log("Transmission failed!")
-        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
+        session_stats = statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length)
+        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, session_stats)
+        self.statistics.push(self.state.name, session_stats)
+
         self.states.setARQ(False)
 
-        self.arq_data_type_handler.failed(self.type_byte, self.data, self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
+        self.arq_data_type_handler.failed(self.type_byte, self.data, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
         return None, None
 
     def abort_transmission(self, send_stop=False, irs_frame=None):

@@ -6,7 +6,6 @@ Created on 05.11.23
 """
 # pylint: disable=invalid-name, line-too-long, c-extension-no-member
 # pylint: disable=import-outside-toplevel, attribute-defined-outside-init
-
 import requests
 import json
 import structlog
@@ -16,16 +15,14 @@ log = structlog.get_logger("stats")
 
 class stats():
     def __init__(self, config, event_queue, states):
-        self.explorer_url = "https://api.freedata.app/stats.php"
+        self.api_url = "https://api.freedata.app/stats.php"
         self.states = states
 
-
-    def push(self, frame_nack_counter, status, duration):
-        crcerror = status in ["crc_error", "wrong_crc"]
+    def push(self, status, session_statistics):
         # get avg snr
         try:
             snr_raw = [item["snr"] for item in self.states.arq_speed_list]
-            avg_snr = round(sum(snr_raw) / len(snr_raw), 2 )
+            avg_snr = round(sum(snr_raw) / len(snr_raw), 2)
         except Exception:
             avg_snr = 0
 
@@ -36,27 +33,25 @@ class stats():
             'gridsquare': str(self.states.mygrid, "utf-8"),
             'dxgridsquare': str(self.states.dxgrid, "utf-8"),
             'frequency': 0 if self.states.radio_frequency is None else self.states.radio_frequency,
-            'avgstrength': 0,
             'avgsnr': avg_snr,
-            'bytesperminute': self.states.arq_bytes_per_minute,
-            'filesize': self.states.arq_total_bytes,
-            'compressionfactor': self.states.arq_compression_factor,
-            'nacks': frame_nack_counter,
-            'crcerror': crcerror,
-            'duration': duration,
-            'percentage': self.states.arq_transmission_percent,
+            'bytesperminute': session_statistics['bytes_per_minute'],
+            'filesize': session_statistics['total_bytes'],
+            'duration': session_statistics['duration'],
             'status': status,
-            'version': self.states.modem_version
+            'version': self.states.modem_version,
+            'time_histogram': session_statistics['time_histogram'],  # Adding new histogram data
+            'snr_histogram': session_statistics['snr_histogram'],  # Adding new histogram data
+            'bpm_histogram': session_statistics['bpm_histogram'],  # Adding new histogram data
         }
 
         station_data = json.dumps(station_data)
         print(station_data)
         try:
-            response = requests.post(self.explorer_url, json=station_data, headers=headers)
+            response = requests.post(self.api_url, json=station_data, headers=headers)
             log.info("[STATS] push", code=response.status_code)
 
             # print(response.status_code)
             # print(response.content)
 
         except Exception as e:
-            log.warning("[EXPLORER] connection lost")
+            log.warning("[API] connection lost")

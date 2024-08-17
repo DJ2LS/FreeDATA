@@ -8,7 +8,7 @@ from modem_frametypes import FRAME_TYPE
 import time
 from arq_data_type_handler import ARQDataTypeHandler
 from codec2 import FREEDV_MODE_USED_SLOTS, FREEDV_MODE
-
+import stats
 class ARQSession:
     SPEED_LEVEL_DICT = {
         0: {
@@ -78,6 +78,8 @@ class ARQSession:
         self.session_started = time.time()
         self.session_ended = 0
         self.session_max_age = 500
+
+        self.statistics = stats.stats()
 
         # histogram lists for storing statistics
         self.snr_histogram = []
