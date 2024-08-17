@@ -38,7 +38,7 @@ class stats():
         station_data = {
             'callsign': full_callsign,
             'dxcallsign': str(self.states.dxcallsign, "utf-8"),
-            'gridsquare': str(self.config['STATION']['mygrid'], "utf-8"),
+            'gridsquare': self.config['STATION']['mygrid'],
             'dxgridsquare': str(self.states.dxgrid, "utf-8"),
             'frequency': 0 if self.states.radio_frequency is None else self.states.radio_frequency,
             'avgsnr': avg_snr,
