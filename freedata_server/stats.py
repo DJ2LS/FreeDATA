@@ -36,7 +36,7 @@ class stats():
 
         headers = {"Content-Type": "application/json"}
         station_data = {
-            'callsign': str(full_callsign, "utf-8"),
+            'callsign': full_callsign,
             'dxcallsign': str(self.states.dxcallsign, "utf-8"),
             'gridsquare': str(self.config['STATION']['mygrid'], "utf-8"),
             'dxgridsquare': str(self.states.dxgrid, "utf-8"),
