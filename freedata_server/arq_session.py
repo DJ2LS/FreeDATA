@@ -79,7 +79,7 @@ class ARQSession:
         self.session_ended = 0
         self.session_max_age = 500
 
-        self.statistics = stats.stats()
+        self.statistics = stats.stats(self.config, self.event_manager, self.states)
 
         # histogram lists for storing statistics
         self.snr_histogram = []
