@@ -31,12 +31,12 @@ class stats():
             avg_snr = 0
 
         mycallsign = self.config['STATION']['mycall']
-        ssid = self.config['STATION']['ssid']
+        ssid = self.config['STATION']['myssid']
         full_callsign = f"{mycallsign}-{ssid}"
 
         headers = {"Content-Type": "application/json"}
         station_data = {
-            'callsign': str(full_callsign),
+            'callsign': str(full_callsign, "utf-8"),
             'dxcallsign': str(self.states.dxcallsign, "utf-8"),
             'gridsquare': str(self.config['STATION']['mygrid'], "utf-8"),
             'dxgridsquare': str(self.states.dxgrid, "utf-8"),
