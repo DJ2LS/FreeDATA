@@ -209,10 +209,10 @@ export function eventDispatcher(data) {
             stateStore.arq_transmission_percent = Math.round(
               (data["arq-transfer-outbound"].received_bytes /
                 data["arq-transfer-outbound"].total_bytes) *
-              100);
+                100,
+            );
             stateStore.arq_total_bytes =
               data["arq-transfer-outbound"].received_bytes;
-
 
             // Reset progressbar values after a delay
             setTimeout(() => {
@@ -300,7 +300,6 @@ export function eventDispatcher(data) {
               100;
             stateStore.arq_total_bytes =
               data["arq-transfer-inbound"].received_bytes;
-
 
             // Reset progressbar values after a delay
             setTimeout(() => {
