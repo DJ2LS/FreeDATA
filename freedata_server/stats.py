@@ -12,6 +12,9 @@ import structlog
 
 log = structlog.get_logger("stats")
 
+# we have to move the modem version, its a duplicate
+MODEM_VERSION = "0.16.2-alpha"
+
 
 class stats():
     def __init__(self, config, event_queue, states):
@@ -26,11 +29,15 @@ class stats():
         except Exception:
             avg_snr = 0
 
+        mycallsign = str(self.config['STATION']['mycallsign'], "utf-8")
+        ssid = str(self.config['STATION']['ssid'], "utf-8")
+        full_callsign = f"{mycallsign}-{ssid}"
+
         headers = {"Content-Type": "application/json"}
         station_data = {
-            'callsign': str(self.states.mycallsign, "utf-8"),
+            'callsign': str(full_callsign),
             'dxcallsign': str(self.states.dxcallsign, "utf-8"),
-            'gridsquare': str(self.states.mygrid, "utf-8"),
+            'gridsquare': str(self.config['STATION']['mygrid'], "utf-8"),
             'dxgridsquare': str(self.states.dxgrid, "utf-8"),
             'frequency': 0 if self.states.radio_frequency is None else self.states.radio_frequency,
             'avgsnr': avg_snr,
@@ -38,7 +45,7 @@ class stats():
             'filesize': session_statistics['total_bytes'],
             'duration': session_statistics['duration'],
             'status': status,
-            'version': self.states.modem_version,
+            'version': MODEM_VERSION,
             'time_histogram': session_statistics['time_histogram'],  # Adding new histogram data
             'snr_histogram': session_statistics['snr_histogram'],  # Adding new histogram data
             'bpm_histogram': session_statistics['bpm_histogram'],  # Adding new histogram data
