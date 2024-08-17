@@ -285,7 +285,8 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         self.event_manager.send_arq_session_finished(
                 False, self.id, self.dxcall, False, self.state.name, statistics=session_stats)
-        self.statistics.push(self.state.name, session_stats)
+        if self.config['STATION']['enable_stats']:
+            self.statistics.push(self.state.name, session_stats)
 
         return None, None
 
@@ -297,7 +298,8 @@ class ARQSessionIRS(arq_session.ARQSession):
         session_stats = self.calculate_session_statistics(self.confirmed_bytes, self.total_length)
 
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=session_stats)
-        self.statistics.push(self.state.name, session_stats)
+        if self.config['STATION']['enable_stats']:
+            self.statistics.push(self.state.name, session_stats)
 
         self.states.setARQ(False)
         return None, None
