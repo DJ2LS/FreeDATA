@@ -30,8 +30,8 @@ class stats():
         except Exception:
             avg_snr = 0
 
-        mycallsign = str(self.config['STATION']['mycall'], "utf-8")
-        ssid = str(self.config['STATION']['ssid'], "utf-8")
+        mycallsign = self.config['STATION']['mycall']
+        ssid = self.config['STATION']['ssid']
         full_callsign = f"{mycallsign}-{ssid}"
 
         headers = {"Content-Type": "application/json"}
