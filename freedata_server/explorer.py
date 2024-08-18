@@ -75,7 +75,7 @@ class Explorer:
                 })
             except Exception as e:
                 log.debug("[EXPLORER] not publishing station", e=e)
-
+        station_data = json.dumps(station_data)
         try:
             response = requests.post(self.explorer_url, json=station_data, headers=headers)
             if response.status_code == 200:
