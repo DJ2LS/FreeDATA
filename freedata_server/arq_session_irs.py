@@ -281,7 +281,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.launch_transmit_and_wait(stop_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling_ack)
         self.set_state(IRS_State.ABORTED)
         self.states.setARQ(False)
-        session_stats = self.calculate_session_statistics(self.confirmed_bytes, self.total_length)
+        session_stats = self.calculate_session_statistics(self.received_bytes, self.total_length)
 
         self.event_manager.send_arq_session_finished(
                 False, self.id, self.dxcall, False, self.state.name, statistics=session_stats)
@@ -295,7 +295,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.session_ended = time.time()
         self.set_state(IRS_State.FAILED)
         self.log("Transmission failed!")
-        session_stats = self.calculate_session_statistics(self.confirmed_bytes, self.total_length)
+        session_stats = self.calculate_session_statistics(self.received_bytes, self.total_length)
 
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=session_stats)
         if self.config['STATION']['enable_stats']:
@@ -312,7 +312,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.event_frame_received.set()
 
         self.event_manager.send_arq_session_finished(
-            True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
+            True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.received_bytes, self.total_length))
         self.state_manager.remove_arq_irs_session(self.id)
         self.states.setARQ(False)
         return None, None
