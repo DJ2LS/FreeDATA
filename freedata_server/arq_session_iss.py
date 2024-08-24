@@ -261,6 +261,8 @@ class ARQSessionISS(arq_session.ARQSession):
             threading.Event().wait(self.TIMEOUT_STOP_ACK)
             self.send_stop()
 
+        self.states.setARQ(False)
+
     def send_stop(self):
         stop_frame = self.frame_factory.build_arq_stop(self.id)
         self.launch_twr(stop_frame, self.TIMEOUT_STOP_ACK, self.RETRIES_STOP, mode=FREEDV_MODE.signalling)
