@@ -122,7 +122,7 @@ watch(
 <template>
   <div class="container-fluid d-flex p-0" style="height: calc(100vh - 48px);">
     <!-- Chat Conversations Sidebar -->
-<div class="bg-light p-0 d-flex flex-column" style="min-width: 250px;">
+<div class="bg-light p-0 d-flex flex-column" style="min-width: 250px; max-width: 250px;">
    <div class="container-fluid overflow-auto p-0 flex-grow-1">
       <chat_conversations />
    </div>
