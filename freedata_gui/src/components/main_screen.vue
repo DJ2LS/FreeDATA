@@ -8,7 +8,7 @@
     ></div>
   </div>
 
-  <div class="container-fluid d-flex flex-column" style="min-height: 100vh;">
+  <div class="container-fluid d-flex flex-column min-vh-100">
     <div class="row flex-nowrap flex-grow-1">
       <!-- Collapsible Left Navbar -->
       <div class="col-auto p-0 bg-body-secondary border-end d-flex flex-column">
@@ -23,18 +23,10 @@
       </div>
 
       <!-- Main Content -->
-      <div class="col m-0 p-0 d-flex flex-column" style="min-height: calc(100vh - env(safe-area-inset-top));">
+      <div class="col m-0 p-0 d-flex flex-column">
         <div class="flex-grow-1 d-flex flex-column overflow-auto">
           <div class="tab-content flex-grow-1">
             <!-- Tab Panes -->
-            <div
-              class="tab-pane fade"
-              id="list-home"
-              role="tabpanel"
-              aria-labelledby="list-home-list"
-            >
-              <p>Home Content Here</p>
-            </div>
             <div
               class="tab-pane fade show active"
               id="list-grid"

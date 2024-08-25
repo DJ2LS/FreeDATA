@@ -48,6 +48,14 @@
                      </h2>
                      <div id="networkStatusCollapse" class="accordion-collapse collapse" data-bs-parent="#startupCheckAccordion">
                         <div class="accordion-body">
+
+
+                        <div class="alert alert-info" role="alert">
+  For remote operation, please go to <p class="fw-bold">settings/modem</p>
+ and set the server ip to <p class="fw-bold">0.0.0.0</p>
+
+</div>
+
                            <div class="input-group input-group-sm mb-1">
                               <span class="input-group-text w-25">API URL</span>
                               <input

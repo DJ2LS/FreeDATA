@@ -49,7 +49,8 @@ const audioStore = useAudioStore(pinia);
     </button>
   </div>
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">Modem port</span>
+    <label class="input-group-text w-50">Modem port (server restart required!)</label>
+
     <input
       type="number"
       class="form-control"
@@ -58,19 +59,23 @@ const audioStore = useAudioStore(pinia);
       maxlength="5"
       max="65534"
       min="1025"
-      v-model.number="settings.local.port"
+      @change="onChange"
+      v-model.number="settings.remote.NETWORK.modemport"
     />
   </div>
 
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">Modem host</span>
-    <input
-      type="text"
-      class="form-control"
-      placeholder="modem host"
+    <label class="input-group-text w-50">Modem host (server restart required!)</label>
+    <select
+      class="form-select form-select-sm"
       id="modem_port"
-      v-model="settings.local.host"
-    />
+      v-model="settings.remote.NETWORK.modemaddress"
+      @change="onChange"
+    >
+      <option value="127.0.0.1">127.0.0.1 ( Local operation )</option>
+      <option value="localhost">localhost ( Local operation )</option>
+      <option value="0.0.0.0">0.0.0.0 ( Remote operation )</option>
+    </select>
   </div>
 
   <!-- Audio Input Device -->
