@@ -11,7 +11,7 @@ const state = useStateStore(pinia);
 </script>
 
 <template>
-  <nav class="navbar navbar-expand-xl bg-body-tertiary border-top p-2">
+  <nav class="navbar navbar-expand-xl bg-body-secondary border-top border-1 p-2">
     <div class="col">
       <div class="btn-toolbar" role="toolbar">
         <div class="btn-group btn-group-sm me-1" role="group">
@@ -163,7 +163,7 @@ const state = useStateStore(pinia);
 
     <div class="col-lg-4 col-md-3 col-sm-2 col-xs-1 col-4">
     <div class="mb-2" style="margin-right: 2px;">
-      <div class="progress w-100" style="height: 20px;">
+      <div class="progress w-100 bg-secondary" style="height: 20px;">
         <div
           class="progress-bar progress-bar-striped bg-primary force-gpu"
           id="transmission_progress"
@@ -173,7 +173,7 @@ const state = useStateStore(pinia);
           aria-valuemin="0"
           aria-valuemax="100"
         ></div>
-        <p class="justify-content-center m-0 d-flex position-absolute w-100 text-dark">
+        <p class="justify-content-center m-0 d-flex position-absolute w-100 text-light">
           Message Progress {{state.arq_transmission_percent}}% [ {{ state.arq_speed_list_bpm.length > 0 ? state.arq_speed_list_bpm[state.arq_speed_list_bpm.length - 1] : '---' }}
     bpm ]
         </p>

@@ -1,5 +1,5 @@
 <template>
-  <div class="row justify-content-end mb-2">
+  <div class="row justify-content-end mb-2 me-1">
     <!-- control area -->
     <div class="col-auto p-0 m-0">
       <button
@@ -24,7 +24,7 @@
       </button>
     </div>
     <!-- message area -->
-    <div :class="messageWidthClass">
+    <div :class="messageWidthClass" class="align-items-end">
       <div class="card bg-secondary text-white">
         <div
           v-for="attachment in message.attachments"

@@ -1,4 +1,5 @@
 <template>
+  <!-- Navbar for starting a new chat -->
   <nav class="navbar sticky-top bg-body-tertiary border-bottom p-1">
     <button
       class="btn btn-outline-primary w-100"
@@ -6,19 +7,20 @@
       data-bs-toggle="modal"
       @click="startNewChat"
     >
-      <i class="bi bi-pencil-square"> Start a new chat</i>
+      <i class="bi bi-pencil-square"></i> Start a new chat
     </button>
   </nav>
 
+  <!-- List of chats -->
   <div
     class="list-group bg-body-tertiary m-0 p-1"
     id="chat-list-tab"
-    role="chat-tablist"
+    role="tablist"
   >
-    <template v-for="(details, callsign, key) in chat.callsign_list" :key="callsign">
+    <template v-for="(details, callsign, index) in chat.callsign_list" :key="callsign">
       <a
         class="list-group-item list-group-item-action list-group-item-secondary rounded-2 border-0 mb-2"
-        :class="{ active: key === 0 }"
+        :class="{ active: index === 0 }"
         :id="`list-chat-list-${callsign}`"
         data-bs-toggle="list"
         :href="`#list-${callsign}-messages`"
@@ -33,10 +35,10 @@
               {{ details.unread_messages }} new
             </span>
             <br />
-            <small> {{ details.body }} </small>
+            <small>{{ details.body }}</small>
           </div>
-          <div class="col-3">
-            <small> {{ getDateTime(details.timestamp) }} </small>
+          <div class="col-3 text-end">
+            <small>{{ getDateTime(details.timestamp) }}</small>
             <button
               class="btn btn-sm btn-outline-secondary ms-2 border-0"
               data-bs-target="#deleteChatModal"
