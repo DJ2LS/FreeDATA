@@ -39,14 +39,7 @@
           </div>
           <div class="col-3 text-end">
             <small>{{ getDateTime(details.timestamp) }}</small>
-            <button
-              class="btn btn-sm btn-outline-secondary ms-2 border-0"
-              data-bs-target="#deleteChatModal"
-              data-bs-toggle="modal"
-              @click="chatSelected(callsign)"
-            >
-              <i class="bi bi-three-dots-vertical"></i>
-            </button>
+
           </div>
         </div>
       </a>

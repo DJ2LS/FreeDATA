@@ -61,7 +61,7 @@
             >
               {{ message.status }}
             </span>
-            | attempt: {{ message.attempt + 1 }} | {{ getDateTime }}
+            | <span class="badge badge-primary mr-2" > attempt: {{ message.attempt + 1 }} </span>|<span class="badge badge-primary mr-2"> {{ getDateTime }}</span>
           </p>
         </div>
 
