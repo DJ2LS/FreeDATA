@@ -51,8 +51,7 @@
 
 
                         <div class="alert alert-info" role="alert">
-  For remote operation, please go to <p class="fw-bold">settings/modem</p>
- and set the server ip to <p class="fw-bold">0.0.0.0</p>
+  For remote operation, please go to <strong>settings/modem</strong> and set the server ip to <strong>0.0.0.0</strong>
 
 </div>
 
