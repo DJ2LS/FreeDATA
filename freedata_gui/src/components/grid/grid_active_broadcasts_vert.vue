@@ -12,6 +12,10 @@ const state = useStateStore(pinia);
 // Define the reactive reference for DX Call
 const dxcallPing = ref("");
 
+// Reactive reference to manage CQ button state
+const isCQButtonDisabled = ref(false);
+const isCQButtonLoading = ref(false);
+
 // Function to transmit a ping
 function transmitPing() {
   sendModemPing(dxcallPing.value.toUpperCase());
@@ -29,6 +33,21 @@ function startStopBeacon() {
 // Function to set away from key state
 function setAwayFromKey() {
   setModemBeacon(state.beacon_state, state.away_from_key);
+}
+
+// Function to send CQ and handle button disable and spinner
+async function handleSendCQ() {
+  isCQButtonDisabled.value = true;
+  isCQButtonLoading.value = true;
+
+  // Send CQ message
+  await sendModemCQ();
+
+  // Wait for 3 seconds
+  setTimeout(() => {
+    isCQButtonDisabled.value = false;
+    isCQButtonLoading.value = false;
+  }, 6000);
 }
 
 // Listen for the stationSelected event and update dxcallPing
@@ -83,16 +102,20 @@ window.addEventListener(
           </div>
         </div>
 
-        <div class="row">
+         <div class="row">
           <div class="col">
             <button
               class="btn btn-sm btn-outline-secondary w-100"
               id="sendCQ"
               type="button"
               title="Send a CQ to the world"
-              @click="sendModemCQ"
+              @click="handleSendCQ"
+              :disabled="isCQButtonDisabled"
             >
-              <h3>CQ CQ CQ</h3>
+              <h3>
+                <span v-if="!isCQButtonLoading">CQ CQ CQ</span>
+                <span v-if="isCQButtonLoading" class="sr-only">Cooldown...</span>
+              </h3>
             </button>
           </div>
         </div>
