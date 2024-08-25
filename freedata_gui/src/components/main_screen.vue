@@ -8,8 +8,8 @@
     ></div>
   </div>
 
-  <div class="container-fluid">
-    <div class="row flex-nowrap">
+  <div class="container-fluid d-flex flex-column" style="min-height: 100vh;">
+    <div class="row flex-nowrap flex-grow-1">
       <!-- Collapsible Left Navbar -->
       <div class="col-auto p-0 bg-body-secondary border-end d-flex flex-column">
         <div class="flex-shrink-0 p-3">
@@ -23,7 +23,7 @@
       </div>
 
       <!-- Main Content -->
-      <div class="col min-vh-100 m-0 p-0 d-flex flex-column">
+      <div class="col m-0 p-0 d-flex flex-column" style="min-height: calc(100vh - env(safe-area-inset-top));">
         <div class="flex-grow-1 d-flex flex-column overflow-auto">
           <div class="tab-content flex-grow-1">
             <!-- Tab Panes -->
@@ -32,14 +32,8 @@
               id="list-home"
               role="tabpanel"
               aria-labelledby="list-home-list"
-            ></div>
-            <div
-              class="tab-pane fade d-none"
-              id="list-mesh"
-              role="tabpanel"
-              aria-labelledby="list-mesh-list"
             >
-              <mesh />
+              <p>Home Content Here</p>
             </div>
             <div
               class="tab-pane fade show active"
@@ -57,7 +51,14 @@
             >
               <chat />
             </div>
-            <settings_view />
+            <div
+              class="tab-pane fade"
+              id="list-settings"
+              role="tabpanel"
+              aria-labelledby="list-settings-list"
+            >
+              <settings_view />
+            </div>
           </div>
         </div>
         <!-- Footer Area -->
@@ -66,8 +67,6 @@
     </div>
   </div>
 </template>
-
-
 
 <script>
 import { setActivePinia } from 'pinia';
