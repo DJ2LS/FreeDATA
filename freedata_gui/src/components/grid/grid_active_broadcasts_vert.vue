@@ -12,13 +12,21 @@ const state = useStateStore(pinia);
 // Define the reactive reference for DX Call
 const dxcallPing = ref("");
 
-// Reactive reference to manage CQ button state
+// Reactive references to manage button states
 const isCQButtonDisabled = ref(false);
-const isCQButtonLoading = ref(false);
+const isPingButtonDisabled = ref(false);
 
 // Function to transmit a ping
-function transmitPing() {
-  sendModemPing(dxcallPing.value.toUpperCase());
+async function transmitPing() {
+  isPingButtonDisabled.value = true;
+
+  // Send Ping message
+  await sendModemPing(dxcallPing.value.toUpperCase());
+
+  // Wait for 6 seconds (cooldown period)
+  setTimeout(() => {
+    isPingButtonDisabled.value = false;
+  }, 6000);
 }
 
 // Function to start or stop the beacon
@@ -35,18 +43,16 @@ function setAwayFromKey() {
   setModemBeacon(state.beacon_state, state.away_from_key);
 }
 
-// Function to send CQ and handle button disable and spinner
+// Function to send CQ and handle button disable and cooldown
 async function handleSendCQ() {
   isCQButtonDisabled.value = true;
-  isCQButtonLoading.value = true;
 
   // Send CQ message
   await sendModemCQ();
 
-  // Wait for 3 seconds
+  // Wait for 6 seconds (cooldown period)
   setTimeout(() => {
     isCQButtonDisabled.value = false;
-    isCQButtonLoading.value = false;
   }, 6000);
 }
 
@@ -60,6 +66,7 @@ window.addEventListener(
   false
 );
 </script>
+
 
 <template>
   <div class="card h-100">
@@ -95,14 +102,16 @@ window.addEventListener(
                 data-bs-html="false"
                 title="Send a ping request to a remote station"
                 @click="transmitPing"
+                :disabled="isPingButtonDisabled"
               >
-                <strong>PING Station</strong>
+                <strong v-if="!isPingButtonDisabled">PING Station</strong>
+                <strong v-else>Sending ping...</strong>
               </button>
             </div>
           </div>
         </div>
 
-         <div class="row">
+        <div class="row">
           <div class="col">
             <button
               class="btn btn-sm btn-outline-secondary w-100"
@@ -113,8 +122,8 @@ window.addEventListener(
               :disabled="isCQButtonDisabled"
             >
               <h3>
-                <span v-if="!isCQButtonLoading">CQ CQ CQ</span>
-                <span v-if="isCQButtonLoading" class="sr-only">Cooldown...</span>
+                <span v-if="!isCQButtonDisabled">CQ CQ CQ</span>
+                <span v-else>Sending CQ...</span>
               </h3>
             </button>
           </div>
