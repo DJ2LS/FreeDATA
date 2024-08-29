@@ -305,12 +305,12 @@ class ARQSessionIRS(arq_session.ARQSession):
     def transmission_aborted(self):
         self.log("session aborted")
         self.session_ended = time.time()
-        self.set_state(IRS_State.ABORTED)
         # break actual retries
         self.event_frame_received.set()
+        self.set_state(IRS_State.ABORTED)
+
         self.modem.demodulator.set_decode_mode()
         self.event_manager.send_arq_session_finished(
             True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.received_bytes, self.total_length))
-        self.states.remove_arq_irs_session(self.id)
         self.states.setARQ(False)
         return None, None

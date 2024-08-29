@@ -52,7 +52,6 @@ class SendMessageCommand(TxCommand):
             payload = message.to_payload().encode('utf-8')
             json_bytearray = bytearray(payload)
             data, data_type = self.arq_data_type_handler.prepare(json_bytearray, ARQ_SESSION_TYPES.p2pmsg_zlib)
-
             iss = ARQSessionISS(self.config,
                                 modem,
                                 self.message.destination,
@@ -60,7 +59,6 @@ class SendMessageCommand(TxCommand):
                                 data,
                                 data_type
                                 )
-
             self.state_manager.register_arq_iss_session(iss)
             iss.start()
         except Exception as e:

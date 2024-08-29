@@ -77,18 +77,10 @@ class ARQSessionISS(arq_session.ARQSession):
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
 
     def generate_id(self):
-        while True:
-            random_int = random.randint(1,255)
-            if random_int not in self.state_manager.arq_iss_sessions:
-                return random_int
-            if len(self.state_manager.arq_iss_sessions) >= 255:
-                return False
-
-    def generate_id(self):
 
         # Iterate through existing sessions to find a matching CRC
         for session_id, session_data in self.state_manager.arq_iss_sessions.items():
-            if session_data.get('data_crc') == self.data_crc and session_data.get('state') in [ISS_State.FAILED]:
+            if session_data.data_crc == self.data_crc and session_data.state in [ISS_State.FAILED]:
                 # If a matching CRC is found, use this session ID
                 self.log(f"Matching CRC found, trying to resumign transmission", isWarning=True)
                 return session_id
