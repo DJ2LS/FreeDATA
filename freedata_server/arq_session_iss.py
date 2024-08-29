@@ -302,7 +302,7 @@ class ARQSessionISS(arq_session.ARQSession):
 
         self.event_manager.send_arq_session_finished(
             True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
-        #self.state_manager.remove_arq_iss_session(self.id)
+        self.state_manager.remove_arq_iss_session(self.id)
         self.states.setARQ(False)
         return None, None
 
