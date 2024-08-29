@@ -357,7 +357,7 @@ class Demodulator():
         self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
         self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
 
-        # lowest speed level is alwys true
+        # lowest speed level is always true
         self.MODE_DICT[codec2.FREEDV_MODE.datac4.value]["decode"] = True
 
         # Enable specified modes

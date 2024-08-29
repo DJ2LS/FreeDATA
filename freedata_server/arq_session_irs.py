@@ -101,11 +101,12 @@ class ARQSessionIRS(arq_session.ARQSession):
         thread_wait.start()
     
     def send_open_ack(self, open_frame):
-        self.maximum_bandwidth = open_frame['maximum_bandwidth']
         # check for maximum bandwidth. If ISS bandwidth is higher than own, then use own
         if open_frame['maximum_bandwidth'] > self.config['MODEM']['maximum_bandwidth']:
             self.maximum_bandwidth = self.config['MODEM']['maximum_bandwidth']
-
+        else:
+            self.maximum_bandwidth = open_frame['maximum_bandwidth']
+        self.log(f"Negotiated transmission bandwidth {self.maximum_bandwidth}Hz")
 
         self.event_manager.send_arq_session_new(
             False, self.id, self.dxcall, 0, self.state.name)
@@ -148,7 +149,6 @@ class ARQSessionIRS(arq_session.ARQSession):
         return None, None
 
     def process_incoming_data(self, frame):
-        print(frame)
         if frame['offset'] != self.received_bytes:
             # TODO: IF WE HAVE AN OFFSET BECAUSE OF A SPEED LEVEL CHANGE FOR EXAMPLE,
             # TODO: WE HAVE TO DISCARD THE LAST BYTES, BUT NOT returning False!!
@@ -212,7 +212,6 @@ class ARQSessionIRS(arq_session.ARQSession):
 
             return self.received_data, self.type_byte
         else:
-
             ack = self.frame_factory.build_arq_burst_ack(self.id,
                                                          self.speed_level,
                                                          flag_final=True,
@@ -247,8 +246,6 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         # Always decode the current mode
         current_mode = self.get_mode_by_speed_level(self.speed_level).value
-        print(current_mode)
-        print(modes_to_decode)
         modes_to_decode[current_mode] = True
 
         # Update previous speed level
@@ -295,6 +292,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.session_ended = time.time()
         self.set_state(IRS_State.FAILED)
         self.log("Transmission failed!")
+        self.modem.demodulator.set_decode_mode()
         session_stats = self.calculate_session_statistics(self.received_bytes, self.total_length)
 
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=session_stats)
@@ -310,9 +308,9 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.set_state(IRS_State.ABORTED)
         # break actual retries
         self.event_frame_received.set()
-
+        self.modem.demodulator.set_decode_mode()
         self.event_manager.send_arq_session_finished(
             True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.received_bytes, self.total_length))
-        self.state_manager.remove_arq_irs_session(self.id)
+        self.states.remove_arq_irs_session(self.id)
         self.states.setARQ(False)
         return None, None

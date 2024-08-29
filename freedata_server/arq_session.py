@@ -125,6 +125,7 @@ class ARQSession:
         if self.state in self.STATE_TRANSITION and frame_type in self.STATE_TRANSITION[self.state]:
             action_name = self.STATE_TRANSITION[self.state][frame_type]
             received_data, type_byte = getattr(self, action_name)(frame)
+
             if isinstance(received_data, bytearray) and isinstance(type_byte, int):
                 self.arq_data_type_handler.dispatch(type_byte, received_data, self.update_histograms(len(received_data), len(received_data)))
             return
