@@ -62,7 +62,7 @@ class ARQSessionISS(arq_session.ARQSession):
         self.state_manager = state_manager
         self.data = data
         self.total_length = len(data)
-        self.data_crc = ''
+        self.data_crc = helpers.get_crc_32(self.data)
         self.type_byte = type_byte
         self.confirmed_bytes = 0
         self.expected_byte_offset = 0
@@ -82,6 +82,34 @@ class ARQSessionISS(arq_session.ARQSession):
             if random_int not in self.state_manager.arq_iss_sessions:
                 return random_int
             if len(self.state_manager.arq_iss_sessions) >= 255:
+                return False
+
+    def generate_id(self):
+
+        # Iterate through existing sessions to find a matching CRC
+        for session_id, session_data in self.state_manager.arq_iss_sessions.items():
+            if session_data.get('data_crc') == self.data_crc and session_data.get('state') in [ISS_State.FAILED]:
+                # If a matching CRC is found, use this session ID
+                self.log(f"Matching CRC found, trying to resumign transmission", isWarning=True)
+                return session_id
+        self.log(f"No matching CRC found, creating new session id", isWarning=False)
+
+        # Compute 8-bit integer from the 32-bit CRC
+        # Convert the byte sequence to a 32-bit integer (little-endian)
+        checksum_int = int.from_bytes(self.data_crc, byteorder='little')
+        random_int = checksum_int % 256
+
+        # Check if the generated 8-bit integer can be used
+        if random_int not in self.state_manager.arq_iss_sessions:
+            return random_int
+
+        # If the generated ID is already used, generate a new random ID
+        while True:
+            random_int = random.randint(1, 255)
+            if random_int not in self.state_manager.arq_iss_sessions:
+                return random_int
+            if len(self.state_manager.arq_iss_sessions) >= 255:
+                # Return False if all possible session IDs are exhausted
                 return False
 
     def transmit_wait_and_retry(self, frame_or_burst, timeout, retries, mode, isARQBurst=False):
@@ -151,7 +179,7 @@ class ARQSessionISS(arq_session.ARQSession):
             return self.transmission_aborted(irs_frame=irs_frame)
 
         info_frame = self.frame_factory.build_arq_session_info(self.id, self.total_length,
-                                                               helpers.get_crc_32(self.data), 
+                                                               self.data_crc,
                                                                self.snr, self.type_byte)
 
         self.launch_twr(info_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_INFO, mode=FREEDV_MODE.signalling)
@@ -160,6 +188,9 @@ class ARQSessionISS(arq_session.ARQSession):
         return None, None
 
     def send_data(self, irs_frame, fallback=None):
+        if 'offset' in irs_frame:
+            self.log(f"received data offset: {irs_frame['offset']}", isWarning=True)
+            self.confirmed_bytes = irs_frame['offset']
 
         # interrupt transmission when aborting
         if self.state in [ISS_State.ABORTED, ISS_State.ABORTING]:

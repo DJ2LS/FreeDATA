@@ -5,7 +5,7 @@ from state_manager import StateManager
 from modem_frametypes import FRAME_TYPE as FR
 from arq_session_irs import ARQSessionIRS
 from arq_session_iss import ARQSessionISS
-
+from arq_session_irs import IRS_State
 class ARQFrameHandler(frame_handler.FrameHandler):
 
     def follow_protocol(self):
@@ -20,21 +20,32 @@ class ARQFrameHandler(frame_handler.FrameHandler):
 
         if frame['frame_type_int'] == FR.ARQ_SESSION_OPEN.value:
 
-            # Lost OPEN_ACK case .. ISS will retry opening a session
-            if session_id in self.states.arq_irs_sessions:
-                session = self.states.arq_irs_sessions[session_id]
+            if frame['frame_type_int'] == FR.ARQ_SESSION_OPEN.value:
 
-            # Normal case when receiving a SESSION_OPEN for the first time
-            else:
-                if self.states.check_if_running_arq_session():
-                    self.logger.warning("DISCARDING SESSION OPEN because of ongoing ARQ session ", frame=frame)
-                    return
-                session = ARQSessionIRS(self.config,
-                                        self.modem,
-                                        frame['origin'], 
-                                        session_id,
-                                        self.states)
-                self.states.register_arq_irs_session(session)
+                # Lost OPEN_ACK case .. ISS will retry opening a session
+                if session_id in self.states.arq_irs_sessions and self.states.arq_irs_sessions[session_id].get('state') in [IRS_State.NEW, IRS_State.OPEN_ACK_SENT]:
+                    session = self.states.arq_irs_sessions[session_id]
+
+                elif session_id in self.states.arq_irs_sessions and self.states.arq_irs_sessions[session_id].get('state') in [IRS_State.FAILED, IRS_State.ABORTED]:
+                    session = self.states.arq_irs_sessions[session_id]
+
+                elif session_id in self.states.arq_irs_sessions and self.states.arq_irs_sessions[session_id].get('state') in [IRS_State.ENDED]:
+                    session = self.states.arq_irs_sessions[session_id]
+                    session.reset_session()
+                    session.state = IRS_State.NEW
+
+                # Normal case when receiving a SESSION_OPEN for the first time
+                else:
+                    if self.states.check_if_running_arq_session():
+                        self.logger.warning("DISCARDING SESSION OPEN because of ongoing ARQ session ", frame=frame)
+                        return
+                    session = ARQSessionIRS(self.config,
+                                            self.modem,
+                                            frame['origin'],
+                                            session_id,
+                                            self.states)
+                    self.states.register_arq_irs_session(session)
+
 
         elif frame['frame_type_int'] in [
             FR.ARQ_SESSION_INFO.value,

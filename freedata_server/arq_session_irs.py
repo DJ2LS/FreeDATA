@@ -141,7 +141,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.event_manager.send_arq_session_new(False, self.id, self.dxcall, self.total_length, self.state.name)
 
         info_ack = self.frame_factory.build_arq_session_info_ack(
-            self.id, self.total_crc, self.snr,
+            self.id, self.received_bytes, self.snr,
             self.speed_level, self.frames_per_burst, flag_abort=self.abort)
         self.launch_transmit_and_wait(info_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
         if not self.abort:

@@ -223,3 +223,17 @@ class ARQSession:
 
         # Return the lowest level if no higher level is found
         return min(self.SPEED_LEVEL_DICT.keys())
+    
+    def reset_session(self):
+        self.received_bytes = 0
+        self.snr_histogram = []
+        self.bpm_histogram = []
+        self.time_histogram = []
+        self.type_byte = None
+        self.total_length = 0
+        self.total_crc = ''
+        self.received_data = None
+        self.received_bytes = 0
+        self.received_crc = None
+        self.maximum_bandwidth = 0
+        self.abort = False
