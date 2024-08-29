@@ -33,7 +33,7 @@ class Demodulator():
 
         self.service_queue = service_queue
         self.AUDIO_FRAMES_PER_BUFFER_RX = 4800
-        self.buffer_overflow_counter = [0, 0, 0, 0, 0, 0, 0, 0]
+        self.buffer_overflow_counter = [0] * len(codec2.FREEDV_MODE)
         self.is_codec2_traffic_counter = 0
         self.is_codec2_traffic_cooldown = 5
 
