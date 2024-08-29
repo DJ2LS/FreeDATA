@@ -534,7 +534,7 @@ def create_tx_uw(nuwbits, uw_sequence):
     return tx_uw_array
 
 # ---------------- OFDM 500 Hz Bandwidth ---------------#
-"""
+
 data_ofdm_500_config = create_default_ofdm_config()
 data_ofdm_500_config.config.contents.ns = 5
 data_ofdm_500_config.config.contents.np = 32
@@ -553,9 +553,9 @@ data_ofdm_500_config.config.contents.clip_gain2 = 0.9
 data_ofdm_500_config.config.contents.tx_bpf_en = False
 data_ofdm_500_config.config.contents.tx_bpf_proto = codec2_filter_coeff.generate_filter_coefficients(8000, 600, 100)
 data_ofdm_500_config.config.contents.tx_bpf_proto_n = 100
+
+
 """
-
-
 # DATAC1
 data_ofdm_500_config = create_default_ofdm_config()
 data_ofdm_500_config.config.contents.ns = 5
@@ -574,8 +574,7 @@ data_ofdm_500_config.config.contents.tx_bpf_en = False
 #data_ofdm_500_config.config.contents.tx_bpf_proto = codec2_filter_coeff.generate_filter_coefficients(8000, 2000, 101)
 data_ofdm_500_config.config.contents.tx_bpf_proto_n = 101
 data_ofdm_500_config.config.contents.tx_uw = create_tx_uw(data_ofdm_500_config.config.contents.nuwbits, [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0])
-
-print("....")
+"""
 
 """
 # DATAC3

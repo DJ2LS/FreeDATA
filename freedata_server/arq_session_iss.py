@@ -71,6 +71,9 @@ class ARQSessionISS(arq_session.ARQSession):
         self.state_enum = ISS_State # needed for access State enum from outside
         self.id = self.generate_id()
 
+        # enable decoder for signalling ACK bursts
+        self.modem.demodulator.set_decode_mode(modes_to_decode=None, is_irs=False)
+
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
 
     def generate_id(self):

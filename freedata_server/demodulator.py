@@ -348,14 +348,19 @@ class Demodulator():
         for mode in self.MODE_DICT:
             codec2.api.freedv_set_sync(self.MODE_DICT[mode]["instance"], 0)
 
-    def set_decode_mode(self, modes_to_decode=None):
+    def set_decode_mode(self, modes_to_decode=None, is_irs=False):
         # Reset all modes to not decode
         for m in self.MODE_DICT:
             self.MODE_DICT[m]["decode"] = False
 
         # signalling is always true
         self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
-        self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
+        # we only need to decode signalling ack as ISS
+        if is_irs:
+            self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = False
+        else:
+            self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
+
 
         # lowest speed level is always true
         self.MODE_DICT[codec2.FREEDV_MODE.datac4.value]["decode"] = True
