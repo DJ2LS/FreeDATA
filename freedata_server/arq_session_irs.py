@@ -92,7 +92,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.event_frame_received.clear()
         self.transmit_frame(frame, mode)
         self.log(f"Waiting {timeout} seconds...")
-        if not self.event_frame_received.wait(timeout):
+        if not self.event_frame_received.wait(timeout) and self.state not in [IRS_State.ABORTED, IRS_State.FAILED]:
             self.log("Timeout waiting for ISS. Session failed.")
             self.transmission_failed()
 

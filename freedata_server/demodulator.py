@@ -160,7 +160,7 @@ class Demodulator():
         try:
             while self.stream and self.stream.active and not self.shutdown_flag.is_set():
                 threading.Event().wait(0.01)
-                while audiobuffer.nbuffer >= nin and not self.shutdown_flag.is_set():
+                if audiobuffer.nbuffer >= nin and not self.shutdown_flag.is_set():
                     # demodulate audio
                     nbytes = codec2.api.freedv_rawdatarx(
                         freedv, bytes_out, audiobuffer.buffer.ctypes

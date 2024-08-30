@@ -183,7 +183,7 @@ class ARQSessionISS(arq_session.ARQSession):
     def send_data(self, irs_frame, fallback=None):
         if 'offset' in irs_frame:
             self.log(f"received data offset: {irs_frame['offset']}", isWarning=True)
-            self.confirmed_bytes = irs_frame['offset']
+            self.expected_byte_offset = irs_frame['offset']
 
         # interrupt transmission when aborting
         if self.state in [ISS_State.ABORTED, ISS_State.ABORTING]:
