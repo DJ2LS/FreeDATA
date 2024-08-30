@@ -105,7 +105,7 @@ class ARQSessionISS(arq_session.ARQSession):
                 return False
 
     def transmit_wait_and_retry(self, frame_or_burst, timeout, retries, mode, isARQBurst=False):
-        while retries > 0:
+        while retries > 0 and self.state not in [ISS_State.ABORTED, ISS_State.ABORTING]:
             self.event_frame_received = threading.Event()
             if isinstance(frame_or_burst, list): burst = frame_or_burst
             else: burst = [frame_or_burst]
@@ -255,7 +255,7 @@ class ARQSessionISS(arq_session.ARQSession):
         self.session_ended = time.time()
         self.set_state(ISS_State.FAILED)
         self.log("Transmission failed!")
-        session_stats = statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length)
+        session_stats=self.calculate_session_statistics(self.confirmed_bytes, self.total_length)
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, session_stats)
         if self.config['STATION']['enable_stats']:
             self.statistics.push(self.state.name, session_stats)
@@ -275,6 +275,9 @@ class ARQSessionISS(arq_session.ARQSession):
 
         # clear audio out queue
         self.modem.audio_out_queue.queue.clear()
+
+        # break actual retries
+        self.event_frame_received.set()
 
         # wait for transmit function to be ready before setting event
         while self.states.isTransmitting():
