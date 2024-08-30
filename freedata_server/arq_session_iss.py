@@ -82,7 +82,8 @@ class ARQSessionISS(arq_session.ARQSession):
         for session_id, session_data in self.state_manager.arq_iss_sessions.items():
             if session_data.data_crc == self.data_crc and session_data.state in [ISS_State.FAILED, ISS_State.ABORTED]:
                 # If a matching CRC is found, use this session ID
-                self.log(f"Matching CRC found, trying to resume transmission", isWarning=True)
+                self.log(f"Matching CRC found, deleting existing session and resuming transmission", isWarning=True)
+                self.states.remove_arq_iss_session(session_id)
                 return session_id
         self.log(f"No matching CRC found, creating new session id", isWarning=False)
 
