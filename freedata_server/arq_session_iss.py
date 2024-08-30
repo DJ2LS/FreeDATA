@@ -277,7 +277,8 @@ class ARQSessionISS(arq_session.ARQSession):
         self.modem.audio_out_queue.queue.clear()
 
         # wait for transmit function to be ready before setting event
-        threading.Event().wait(0.100)
+        while self.states.isTransmitting():
+            threading.Event().wait(0.100)
 
         # break actual retries
         self.event_frame_received.set()

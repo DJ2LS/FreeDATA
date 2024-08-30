@@ -6,6 +6,7 @@ from codec2 import FREEDV_MODE
 from enum import Enum
 import time
 
+
 class IRS_State(Enum):
     NEW = 0
     OPEN_ACK_SENT = 1
@@ -53,9 +54,9 @@ class ARQSessionIRS(arq_session.ARQSession):
         },
         IRS_State.ABORTED: {
             FRAME_TYPE.ARQ_STOP.value: 'send_stop_ack',
-            FRAME_TYPE.ARQ_SESSION_OPEN.value: 'send_open_ack',
-            FRAME_TYPE.ARQ_SESSION_INFO.value: 'send_info_ack',
-            FRAME_TYPE.ARQ_BURST_FRAME.value: 'receive_data',
+            #FRAME_TYPE.ARQ_SESSION_OPEN.value: 'send_open_ack',
+            #FRAME_TYPE.ARQ_SESSION_INFO.value: 'send_info_ack',
+            #FRAME_TYPE.ARQ_BURST_FRAME.value: 'receive_data',
         },
     }
 
@@ -129,7 +130,8 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     def send_info_ack(self, info_frame):
         # Get session info from ISS
-        self.received_data = bytearray(info_frame['total_length'])
+        if self.received_bytes == 0:
+            self.received_data = bytearray(info_frame['total_length'])
         self.total_length = info_frame['total_length']
         self.total_crc = info_frame['total_crc']
         self.dx_snr.append(info_frame['snr'])
@@ -137,7 +139,7 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         self.calibrate_speed_settings()
 
-        self.log(f"New transfer of {self.total_length} bytes")
+        self.log(f"New transfer of {self.total_length} bytes, received_bytes: {self.received_bytes}")
         self.event_manager.send_arq_session_new(False, self.id, self.dxcall, self.total_length, self.state.name)
 
         info_ack = self.frame_factory.build_arq_session_info_ack(
