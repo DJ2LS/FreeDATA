@@ -309,4 +309,3 @@ class ARQSessionISS(arq_session.ARQSession):
         #self.state_manager.remove_arq_iss_session(self.id)
         self.states.setARQ(False)
         return None, None
-
