@@ -33,7 +33,7 @@ def message_failed(event_manager, state_manager, data, statistics):
 class MessageP2P:
     def __init__(self, id: str, origin: str, destination: str, body: str, attachments: list) -> None:
         self.id = id
-        self.timestamp = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
+        self.timestamp = datetime.now(timezone.utc).isoformat()
         self.origin = origin
         self.destination = destination
         self.body = body
@@ -57,7 +57,7 @@ class MessageP2P:
                 api_validations.validate_message_attachment(a)
                 attachments.append(cls.__decode_attachment__(a))
 
-        timestamp = datetime.datetime.now().isoformat()
+        timestamp = datetime.now(timezone.utc).isoformat()
         if 'id' not in params:
             msg_id = f"{origin}_{destination}_{timestamp}"
         else:

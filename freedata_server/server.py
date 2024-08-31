@@ -155,7 +155,7 @@ async def enqueue_tx_command(cmd_class, params={}):
         if result:
             return True
     except Exception as e:
-        print(f"Command {command.get_name()} failed: {e}")
+        print(f"Command failed: {e}")
     return False
 
 # API Endpoints
