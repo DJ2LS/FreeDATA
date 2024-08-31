@@ -1,8 +1,6 @@
 import frame_handler
 import helpers
 import data_frame_factory
-import datetime
-from message_system_db_beacon import DatabaseManagerBeacon
 from message_system_db_messages import DatabaseManagerMessages
 
 
