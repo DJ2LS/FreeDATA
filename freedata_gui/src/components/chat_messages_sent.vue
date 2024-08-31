@@ -61,7 +61,7 @@
             >
               {{ message.status }}
             </span>
-            | <span class="badge badge-primary mr-2" > attempt: {{ message.attempt + 1 }} </span>|<span class="badge badge-primary mr-2"> {{ getDateTime }}</span>
+            | <span class="badge badge-primary mr-2" > attempt: {{ message.attempt + 1 }} </span>|<span class="badge badge-primary mr-2"> {{ getDateTime }} UTC</span>
           </p>
         </div>
 
@@ -175,7 +175,7 @@ components: {
     messageWidthClass() {
       // Calculate a Bootstrap grid class based on message length
       if (this.message.body.length <= 50) {
-        return "col-4";
+        return "col-5";
       } else if (this.message.body.length <= 100) {
         return "col-6";
       } else {
