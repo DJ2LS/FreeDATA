@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timezone
 import api_validations
 import base64
 import json
@@ -33,7 +33,7 @@ def message_failed(event_manager, state_manager, data, statistics):
 class MessageP2P:
     def __init__(self, id: str, origin: str, destination: str, body: str, attachments: list) -> None:
         self.id = id
-        self.timestamp = datetime.datetime.now().isoformat()
+        self.timestamp = datetime.now(timezone.utc).isoformat()
         self.origin = origin
         self.destination = destination
         self.body = body
