@@ -33,7 +33,7 @@ def message_failed(event_manager, state_manager, data, statistics):
 class MessageP2P:
     def __init__(self, id: str, origin: str, destination: str, body: str, attachments: list) -> None:
         self.id = id
-        self.timestamp = datetime.now(timezone.utc).isoformat()
+        self.timestamp = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
         self.origin = origin
         self.destination = destination
         self.body = body
