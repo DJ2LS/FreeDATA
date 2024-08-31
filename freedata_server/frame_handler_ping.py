@@ -42,11 +42,6 @@ class PingFrameHandler(frame_handler.FrameHandler):
         self.transmit(ping_ack_frame)
 
     def check_for_queued_message(self):
-        DatabaseManagerBeacon(self.event_manager).add_beacon(datetime.datetime.now(),
-                                                             self.details['frame']["origin"],
-                                                             self.details["snr"],
-                                                             self.details['frame']["gridsquare"]
-                                                             )
 
         # only check for queued messages, if we have enabled this and if we have a minimum snr received
         if self.config["MESSAGES"]["enable_auto_repeat"] and self.details["snr"] >= -2:
