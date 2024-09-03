@@ -424,6 +424,19 @@ def signal_handler(sig, frame):
     stop_server()
 
 def stop_server():
+    # INFO attempt stopping ongoing transmission for reducing chance of stuck PTT
+    if hasattr(app, 'state_manager'):
+        logger.warning("[SHUTDOWN] stopping ongoing transmissions....")
+        try:
+            for session in app.state_manager.arq_irs_sessions.values():
+                #session.abort_transmission()
+                session.transmission_aborted()
+            for session in app.state_manager.arq_iss_sessions.values():
+                session.abort_transmission(send_stop=False)
+                session.transmission_aborted()
+        except Exception as e:
+            print(f"Error during transmission stopping: {e}")
+
     if hasattr(app, 'wsm'):
         app.wsm.shutdown()
     if hasattr(app, 'radio_manager'):
