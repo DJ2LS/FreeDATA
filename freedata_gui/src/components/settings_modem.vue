@@ -192,19 +192,5 @@ const audioStore = useAudioStore(pinia);
     </select>
   </div>
 
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Respond to CQ</label>
-    <label class="input-group-text w-50">
-      <div class="form-check form-switch form-check-inline">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          id="respondCQSwitch"
-          v-model="settings.remote.MODEM.respond_to_cq"
-          @change="onChange"
-        />
-        <label class="form-check-label" for="respondCQSwitch">QRV</label>
-      </div>
-    </label>
-  </div>
+
 </template>

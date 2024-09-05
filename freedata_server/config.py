@@ -20,6 +20,8 @@ class CONFIG:
             'ssid_list': list,
             'enable_explorer': bool,
             'enable_stats': bool,
+            'respond_to_cq': bool,
+
         },
         'AUDIO': {
             'input_device': str,
@@ -60,7 +62,6 @@ class CONFIG:
             'enable_hmac': bool,
             'enable_morse_identifier': bool,
             'maximum_bandwidth': int,
-            'respond_to_cq': bool,
             'tx_delay': int,
             'enable_socket_interface': bool,
         },
