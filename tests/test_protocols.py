@@ -66,7 +66,7 @@ class TestProtocols(unittest.TestCase):
         print("PING/PING ACK CHECK SUCCESSFULLY")
 
     def testCQWithQRV(self):
-        self.config['MODEM']['respond_to_cq'] = True
+        self.config['STATION']['respond_to_cq'] = True
         self.state_manager.set_channel_busy_condition_codec2(False)
 
         api_params = {}

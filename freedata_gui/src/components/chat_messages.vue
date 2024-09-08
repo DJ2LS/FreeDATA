@@ -2,19 +2,23 @@
   <div class="tab-content p-3" id="nav-tabContent-chat-messages">
     <template v-for="(details, callsign, key) in chat.callsign_list" :key="callsign">
       <div
-        class="tab-pane fade show"
-        :class="{ active: key === 0 }"
+        class="tab-pane fade"
+        :class="{ active: key === 0, show: key === 0 }"
         :id="`list-${callsign}-messages`"
         role="tabpanel"
         :aria-labelledby="`list-chat-list-${callsign}`"
       >
-        <template v-for="item in chat.sorted_chat_list[callsign]" :key="item.timestamp">
-          <div v-if="prevChatMessageDay !== getDateTime(item.timestamp)">
-            <div class="separator my-2">
-              {{ (prevChatMessageDay = getDateTime(item.timestamp)) }}
+        <template v-for="(item, index) in chat.sorted_chat_list[callsign]" :key="item.timestamp">
+          <!-- Date Separator -->
+          <div v-if="showDateSeparator(index, item.timestamp, chat.sorted_chat_list[callsign])">
+            <div class="d-flex align-items-center my-3">
+              <hr class="flex-grow-1" />
+              <span class="mx-2 text-muted">{{ getDate(item.timestamp) }}</span>
+              <hr class="flex-grow-1" />
             </div>
           </div>
 
+          <!-- Message Components -->
           <div v-if="item.direction === 'transmit'">
             <SentMessage :message="item" />
           </div>
@@ -22,7 +26,9 @@
           <div v-else-if="item.direction === 'receive'">
             <ReceivedMessage :message="item" />
           </div>
+
         </template>
+
       </div>
     </template>
   </div>
@@ -39,14 +45,20 @@ setActivePinia(pinia);
 
 const chat = useChatStore(pinia);
 
-let prevChatMessageDay = '';
-
-function getDateTime(timestampRaw) {
-  const date = new Date(timestampRaw * 1000); // Assuming timestamp is in seconds
+function getDate(timestampRaw) {
+  // Parsing the timestamp and returning the date part as YYYY-MM-DD
+  const date = new Date(timestampRaw);
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
   const day = date.getDate().toString().padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+function showDateSeparator(index, currentTimestamp, messages) {
+  if (index === 0) return true; // Always show the date for the first message
+
+  const previousTimestamp = messages[index - 1].timestamp;
+  return getDate(currentTimestamp) !== getDate(previousTimestamp);
 }
 
 export default {
@@ -55,31 +67,7 @@ export default {
     ReceivedMessage
   },
   setup() {
-    return { chat, prevChatMessageDay, getDateTime };
+    return { chat, getDate, showDateSeparator };
   }
 };
 </script>
-
-<style>
-.separator {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  color: #6c757d;
-}
-
-.separator::before,
-.separator::after {
-  content: "";
-  flex: 1;
-  border-bottom: 1px solid #adb5bd;
-}
-
-.separator:not(:empty)::before {
-  margin-right: 0.25em;
-}
-
-.separator:not(:empty)::after {
-  margin-left: 0.25em;
-}
-</style>

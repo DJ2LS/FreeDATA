@@ -58,6 +58,61 @@
       v-model="settings.remote.STATION.mygrid"
     />
   </div>
+
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50">Respond to CQ</label>
+    <label class="input-group-text w-50">
+      <div class="form-check form-switch form-check-inline">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="respondCQSwitch"
+          v-model="settings.remote.STATION.respond_to_cq"
+          @change="onChange"
+        />
+        <label class="form-check-label" for="respondCQSwitch">QRV</label>
+      </div>
+    </label>
+  </div>
+
+   <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50">Enable callsign blacklist</label>
+    <label class="input-group-text w-50">
+      <div class="form-check form-switch form-check-inline">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="respondEnableBlacklistSwitch"
+          v-model="settings.remote.STATION.enable_callsign_blacklist"
+          @change="onChange"
+        />
+        <label class="form-check-label" for="respondEnableBlacklistSwitch">Enable</label>
+      </div>
+    </label>
+  </div>
+
+   <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50">Callsign blacklist - one call per line</label>
+    <label class="input-group-text w-50">
+      <div class="form-check form-switch form-check-inline">
+
+        <div class="form-floating">
+  <textarea class="form-control"
+  placeholder="one call per line"
+  id="callsignBlacklistfloatingTextarea"
+  style="height: 150px"
+  v-model="settings.remote.STATION.callsign_blacklist"
+  @change="onChange"
+  ></textarea>
+  <label for="callsignBlacklistfloatingTextarea">One call per line</label>
+</div>
+
+      </div>
+    </label>
+  </div>
+
+
+
 </template>
 
 <script setup>

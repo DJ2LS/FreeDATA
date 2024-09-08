@@ -157,8 +157,18 @@ export function eventDispatcher(data) {
         stateStore.arq_is_receiving = false;
         switch (data["arq-transfer-outbound"].state) {
           case "NEW":
-            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-outbound"].session_id}, DXCall: ${data["arq-transfer-outbound"].dxcall}, Total Bytes: ${data["arq-transfer-outbound"].total_bytes}, State: ${data["arq-transfer-outbound"].state}`;
-            displayToast("success", "bi-check-circle", message, 5000);
+
+            message = `
+              <div>
+                <strong>New transmission to:</strong>
+                <span class="badge bg-info text-dark">${data["arq-transfer-outbound"].dxcall}</span>
+                <div class="mt-2">
+                  <span class="badge bg-secondary">Session ID: ${data["arq-transfer-outbound"].session_id}</span>
+                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].total_bytes}</span>
+                </div>
+              </div>
+            `;
+            displayToast("success", "bi-check-circle", message, 10000);
             stateStore.dxcallsign = data["arq-transfer-outbound"].dxcall;
             stateStore.arq_transmission_percent = 0;
             stateStore.arq_total_bytes = 0;
@@ -172,7 +182,17 @@ export function eventDispatcher(data) {
             return;
 
           case "BURST_SENT":
-            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-outbound"].session_id}, DXCall: ${data["arq-transfer-outbound"].dxcall}, Received Bytes: ${data["arq-transfer-outbound"].received_bytes}/${data["arq-transfer-outbound"].total_bytes}, State: ${data["arq-transfer-outbound"].state}`;
+            message = `
+              <div>
+                <strong>ongoing transmission to:</strong>
+                <span class="badge bg-info text-dark">${data["arq-transfer-outbound"].dxcall}</span>
+                <div class="mt-2">
+                  <span class="badge bg-secondary">Session ID: ${data["arq-transfer-outbound"].session_id}</span>
+                  <span class="badge bg-warning text-dark">Received Bytes: ${data["arq-transfer-outbound"].received_bytes}</span>
+                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].total_bytes}</span>
+                </div>
+              </div>
+            `;
             displayToast("info", "bi-info-circle", message, 5000);
             stateStore.arq_transmission_percent =
               (data["arq-transfer-outbound"].received_bytes /
@@ -209,10 +229,10 @@ export function eventDispatcher(data) {
             stateStore.arq_transmission_percent = Math.round(
               (data["arq-transfer-outbound"].received_bytes /
                 data["arq-transfer-outbound"].total_bytes) *
-              100);
+                100,
+            );
             stateStore.arq_total_bytes =
               data["arq-transfer-outbound"].received_bytes;
-
 
             // Reset progressbar values after a delay
             setTimeout(() => {
@@ -237,8 +257,17 @@ export function eventDispatcher(data) {
         stateStore.arq_is_receiving = true;
         switch (data["arq-transfer-inbound"].state) {
           case "NEW":
-            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, State: ${data["arq-transfer-inbound"].state}`;
-            displayToast("info", "bi-info-circle", message, 5000);
+            message = `
+              <div>
+                <strong>New transmission from:</strong>
+                <span class="badge bg-info text-dark">${data["arq-transfer-outbound"].dxcall}</span>
+                <div class="mt-2">
+                  <span class="badge bg-secondary">Session ID: ${data["arq-transfer-outbound"].session_id}</span>
+                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].total_bytes}</span>
+                </div>
+              </div>
+            `;
+            displayToast("info", "bi-info-circle", message, 10000);
             stateStore.dxcallsign = data["arq-transfer-inbound"].dxcall;
             stateStore.arq_transmission_percent = 0;
             stateStore.arq_total_bytes = 0;
@@ -267,8 +296,17 @@ export function eventDispatcher(data) {
             return;
 
           case "BURST_REPLY_SENT":
-            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, Received Bytes: ${data["arq-transfer-inbound"].received_bytes}/${data["arq-transfer-inbound"].total_bytes}, State: ${data["arq-transfer-inbound"].state}`;
-            displayToast("info", "bi-info-circle", message, 5000);
+message = `
+              <div>
+                <strong>ongoing transmission from:</strong>
+                <span class="badge bg-info text-dark">${data["arq-transfer-outbound"].dxcall}</span>
+                <div class="mt-2">
+                  <span class="badge bg-secondary">Session ID: ${data["arq-transfer-outbound"].session_id}</span>
+                  <span class="badge bg-warning text-dark">Received Bytes: ${data["arq-transfer-outbound"].received_bytes}</span>
+                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].total_bytes}</span>
+                </div>
+              </div>
+            `;            displayToast("info", "bi-info-circle", message, 5000);
             stateStore.arq_transmission_percent =
               (data["arq-transfer-inbound"].received_bytes /
                 data["arq-transfer-inbound"].total_bytes) *
@@ -300,7 +338,6 @@ export function eventDispatcher(data) {
               100;
             stateStore.arq_total_bytes =
               data["arq-transfer-inbound"].received_bytes;
-
 
             // Reset progressbar values after a delay
             setTimeout(() => {

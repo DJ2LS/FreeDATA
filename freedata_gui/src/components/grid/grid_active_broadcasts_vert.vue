@@ -12,9 +12,21 @@ const state = useStateStore(pinia);
 // Define the reactive reference for DX Call
 const dxcallPing = ref("");
 
+// Reactive references to manage button states
+const isCQButtonDisabled = ref(false);
+const isPingButtonDisabled = ref(false);
+
 // Function to transmit a ping
-function transmitPing() {
-  sendModemPing(dxcallPing.value.toUpperCase());
+async function transmitPing() {
+  isPingButtonDisabled.value = true;
+
+  // Send Ping message
+  await sendModemPing(dxcallPing.value.toUpperCase());
+
+  // Wait for 6 seconds (cooldown period)
+  setTimeout(() => {
+    isPingButtonDisabled.value = false;
+  }, 6000);
 }
 
 // Function to start or stop the beacon
@@ -31,6 +43,19 @@ function setAwayFromKey() {
   setModemBeacon(state.beacon_state, state.away_from_key);
 }
 
+// Function to send CQ and handle button disable and cooldown
+async function handleSendCQ() {
+  isCQButtonDisabled.value = true;
+
+  // Send CQ message
+  await sendModemCQ();
+
+  // Wait for 6 seconds (cooldown period)
+  setTimeout(() => {
+    isCQButtonDisabled.value = false;
+  }, 6000);
+}
+
 // Listen for the stationSelected event and update dxcallPing
 window.addEventListener(
   "stationSelected",
@@ -41,6 +66,7 @@ window.addEventListener(
   false
 );
 </script>
+
 
 <template>
   <div class="card h-100">
@@ -76,8 +102,10 @@ window.addEventListener(
                 data-bs-html="false"
                 title="Send a ping request to a remote station"
                 @click="transmitPing"
+                :disabled="isPingButtonDisabled"
               >
-                <strong>PING Station</strong>
+                <strong v-if="!isPingButtonDisabled">PING Station</strong>
+                <strong v-else>Sending ping...</strong>
               </button>
             </div>
           </div>
@@ -90,9 +118,13 @@ window.addEventListener(
               id="sendCQ"
               type="button"
               title="Send a CQ to the world"
-              @click="sendModemCQ"
+              @click="handleSendCQ"
+              :disabled="isCQButtonDisabled"
             >
-              <h3>CQ CQ CQ</h3>
+              <h3>
+                <span v-if="!isCQButtonDisabled">CQ CQ CQ</span>
+                <span v-else>Sending CQ...</span>
+              </h3>
             </button>
           </div>
         </div>

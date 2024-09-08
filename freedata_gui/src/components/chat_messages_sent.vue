@@ -1,5 +1,5 @@
 <template>
-  <div class="row justify-content-end mb-2">
+  <div class="row justify-content-end mb-2 me-1">
     <!-- control area -->
     <div class="col-auto p-0 m-0">
       <button
@@ -24,7 +24,7 @@
       </button>
     </div>
     <!-- message area -->
-    <div :class="messageWidthClass">
+    <div :class="messageWidthClass" class="align-items-end">
       <div class="card bg-secondary text-white">
         <div
           v-for="attachment in message.attachments"
@@ -61,7 +61,7 @@
             >
               {{ message.status }}
             </span>
-            | attempt: {{ message.attempt + 1 }} | {{ getDateTime }}
+            | <span class="badge badge-primary mr-2" > attempt: {{ message.attempt + 1 }} </span>|<span class="badge badge-primary mr-2"> {{ getDateTime }} UTC</span>
           </p>
         </div>
 
@@ -175,7 +175,7 @@ components: {
     messageWidthClass() {
       // Calculate a Bootstrap grid class based on message length
       if (this.message.body.length <= 50) {
-        return "col-4";
+        return "col-5";
       } else if (this.message.body.length <= 100) {
         return "col-6";
       } else {

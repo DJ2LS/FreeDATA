@@ -1,6 +1,6 @@
 {
   "name": "FreeDATA",
-  "version": "0.16.0-alpha",
+  "version": "0.16.2-alpha",
   "description": "FreeDATA Client application for connecting to FreeDATA server",
   "private": true,
   "scripts": {
@@ -33,6 +33,7 @@
     "chartjs-plugin-annotation": "^3.0.1",
     "core-js": "^3.8.3",
     "gridstack": "^10.3.0",
+    "js-image-compressor": "^2.0.0",
     "pinia": "^2.1.7",
     "qth-locator": "^2.1.0",
     "uuid": "^10.0.0",

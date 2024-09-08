@@ -10,7 +10,7 @@ import {
   deleteFreedataMessage,
   retransmitFreedataMessage,
   getFreedataAttachmentBySha512,
-  getFreedataMessageById
+  getFreedataMessageById,
 } from "./api";
 
 /**
@@ -135,20 +135,19 @@ export function deleteMessageFromDB(id) {
  */
 export function requestMessageInfo(id) {
   return getFreedataMessageById(id)
-    .then(result => {
+    .then((result) => {
       console.log(result);
 
-        try {
-      chatStore.messageInfoById = JSON.parse(result);
-
-        } catch (error) {
-            console.error('Error parsing JSON:', error);
-            chatStore.messageInfoById = null
-        }
+      try {
+        chatStore.messageInfoById = JSON.parse(result);
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        chatStore.messageInfoById = null;
+      }
 
       return result;
     })
-    .catch(error => {
+    .catch((error) => {
       console.error("Error fetching message:", error);
     });
 }

@@ -210,7 +210,43 @@ onMounted(() => {
           </a>
         </div>
       </div>
-      <div class="btn-group" role="group" aria-label="Busy indicators">
+
+    </div>
+    <div class="card-body w-100 h-100 overflow-auto p-2">
+      <div class="tab-content h-100 w-100" id="nav-stats-tabContent">
+        <div
+          class="tab-pane fade h-100 w-100"
+          :class="{ 'show active': localSpectrumView == 'waterfall' }"
+          role="stats_tabpanel"
+          aria-labelledby="list-waterfall-list"
+        >
+          <canvas :id="localSpectrumID" class="force-gpu"></canvas>
+        </div>
+        <div
+          class="tab-pane fade h-100 w-100"
+          :class="{ 'show active': localSpectrumView == 'scatter' }"
+          role="tabpanel"
+          aria-labelledby="list-scatter-list"
+        >
+          <Scatter :data="scatterChartData" :options="scatterChartOptions" />
+        </div>
+        <div
+          class="tab-pane fade h-100 w-100"
+          :class="{ 'show active': localSpectrumView == 'chart' }"
+          role="tabpanel"
+          aria-labelledby="list-chart-list"
+        >
+          <Line
+            :data="transmissionSpeedChartData"
+            :options="transmissionSpeedChartOptions"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class=card-footer p-1>
+
+    <div class="btn-group" role="group" aria-label="Busy indicators">
         <button
           class="btn btn-sm ms-1 p-1 disabled"
           type="button"
@@ -308,36 +344,9 @@ onMounted(() => {
         </button>
       </div>
     </div>
-    <div class="card-body w-100 h-100 overflow-auto p-2">
-      <div class="tab-content h-100 w-100" id="nav-stats-tabContent">
-        <div
-          class="tab-pane fade h-100 w-100"
-          :class="{ 'show active': localSpectrumView == 'waterfall' }"
-          role="stats_tabpanel"
-          aria-labelledby="list-waterfall-list"
-        >
-          <canvas :id="localSpectrumID" class="force-gpu"></canvas>
-        </div>
-        <div
-          class="tab-pane fade h-100 w-100"
-          :class="{ 'show active': localSpectrumView == 'scatter' }"
-          role="tabpanel"
-          aria-labelledby="list-scatter-list"
-        >
-          <Scatter :data="scatterChartData" :options="scatterChartOptions" />
-        </div>
-        <div
-          class="tab-pane fade h-100 w-100"
-          :class="{ 'show active': localSpectrumView == 'chart' }"
-          role="tabpanel"
-          aria-labelledby="list-chart-list"
-        >
-          <Line
-            :data="transmissionSpeedChartData"
-            :options="transmissionSpeedChartOptions"
-          />
-        </div>
-      </div>
-    </div>
+
+
+
+
   </div>
 </template>

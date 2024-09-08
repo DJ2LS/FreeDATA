@@ -160,7 +160,8 @@ function transmitPing(callsign) {
                 {{ item.snr }}
               </td>
               <td>
-                {{ item.away_from_key }}
+                <i v-if="item.away_from_key" class="bi bi-house-x"></i>
+                <i v-else class="bi bi-house-check-fill"></i>
               </td>
             </tr>
           </tbody>

@@ -33,7 +33,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
           id="ExplorerStatsSwitch"
           @change="onChange"
           v-model="settings.remote.STATION.enable_stats"
-          disabled
         />
         <label class="form-check-label" for="ExplorerStatsSwitch">Publish stats</label>
       </div>

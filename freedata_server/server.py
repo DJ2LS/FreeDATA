@@ -43,7 +43,7 @@ from schedule_manager import ScheduleManager
 # Constants
 CONFIG_ENV_VAR = 'FREEDATA_CONFIG'
 DEFAULT_CONFIG_FILE = 'config.ini'
-MODEM_VERSION = "0.16.1-alpha"
+MODEM_VERSION = "0.16.2-alpha"
 
 API_VERSION = 3
 LICENSE = 'GPL3.0'
@@ -155,7 +155,7 @@ async def enqueue_tx_command(cmd_class, params={}):
         if result:
             return True
     except Exception as e:
-        print(f"Command {command.get_name()} failed: {e}")
+        print(f"Command failed: {e}")
     return False
 
 # API Endpoints
@@ -178,6 +178,7 @@ async def get_config():
 @app.post("/config")
 async def post_config(request: Request):
     config = await request.json()
+    print(config)
     if not validations.validate_remote_config(config):
         api_abort("Invalid config", 400)
     if app.config_manager.read() == config:
@@ -307,13 +308,15 @@ async def post_modem_send_raw_stop():
     if not app.state_manager.is_modem_running:
         api_abort("Modem not running", 503)
     if app.state_manager.getARQ():
-        for session in app.state_manager.arq_irs_sessions.values():
-            #session.abort_transmission()
-            session.transmission_aborted()
-        for session in app.state_manager.arq_iss_sessions.values():
-            session.abort_transmission(send_stop=False)
-            session.transmission_aborted()
-
+        try:
+            for session in app.state_manager.arq_irs_sessions.values():
+                #session.abort_transmission()
+                session.transmission_aborted()
+            for session in app.state_manager.arq_iss_sessions.values():
+                session.abort_transmission(send_stop=False)
+                session.transmission_aborted()
+        except Exception as e:
+            print(f"Error during transmission stopping: {e}")
     return api_ok()
 
 @app.get("/radio")
@@ -422,6 +425,19 @@ def signal_handler(sig, frame):
     stop_server()
 
 def stop_server():
+    # INFO attempt stopping ongoing transmission for reducing chance of stuck PTT
+    if hasattr(app, 'state_manager'):
+        logger.warning("[SHUTDOWN] stopping ongoing transmissions....")
+        try:
+            for session in app.state_manager.arq_irs_sessions.values():
+                #session.abort_transmission()
+                session.transmission_aborted()
+            for session in app.state_manager.arq_iss_sessions.values():
+                session.abort_transmission(send_stop=False)
+                session.transmission_aborted()
+        except Exception as e:
+            print(f"Error during transmission stopping: {e}")
+
     if hasattr(app, 'wsm'):
         app.wsm.shutdown()
     if hasattr(app, 'radio_manager'):

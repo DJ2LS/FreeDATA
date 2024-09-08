@@ -71,7 +71,7 @@ const isNetworkDisconnected = computed(() => state.modem_connection !== "connect
       title="Grid"
       :class="{ disabled: isNetworkDisconnected }"
     >
-      <i class="bi bi-grid h3"></i>
+      <i class="bi bi-columns-gap h3"></i>
       <span class="ms-2" v-if="isTextVisible">Home</span>
     </a>
 

@@ -7,6 +7,7 @@ import arq_session
 import helpers
 from enum import Enum
 import time
+import stats
 
 class ISS_State(Enum):
     NEW = 0
@@ -61,7 +62,7 @@ class ARQSessionISS(arq_session.ARQSession):
         self.state_manager = state_manager
         self.data = data
         self.total_length = len(data)
-        self.data_crc = ''
+        self.data_crc = helpers.get_crc_32(self.data)
         self.type_byte = type_byte
         self.confirmed_bytes = 0
         self.expected_byte_offset = 0
@@ -70,18 +71,42 @@ class ARQSessionISS(arq_session.ARQSession):
         self.state_enum = ISS_State # needed for access State enum from outside
         self.id = self.generate_id()
 
+        # enable decoder for signalling ACK bursts
+        self.modem.demodulator.set_decode_mode(modes_to_decode=None, is_irs=False)
+
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
 
     def generate_id(self):
+
+        # Iterate through existing sessions to find a matching CRC
+        for session_id, session_data in self.state_manager.arq_iss_sessions.items():
+            if session_data.data_crc == self.data_crc and session_data.state in [ISS_State.FAILED, ISS_State.ABORTED]:
+                # If a matching CRC is found, use this session ID
+                self.log(f"Matching CRC found, deleting existing session and resuming transmission", isWarning=True)
+                self.states.remove_arq_iss_session(session_id)
+                return session_id
+        self.log(f"No matching CRC found, creating new session id", isWarning=False)
+
+        # Compute 8-bit integer from the 32-bit CRC
+        # Convert the byte sequence to a 32-bit integer (little-endian)
+        checksum_int = int.from_bytes(self.data_crc, byteorder='little')
+        random_int = checksum_int % 256
+
+        # Check if the generated 8-bit integer can be used
+        if random_int not in self.state_manager.arq_iss_sessions:
+            return random_int
+
+        # If the generated ID is already used, generate a new random ID
         while True:
-            random_int = random.randint(1,255)
+            random_int = random.randint(1, 255)
             if random_int not in self.state_manager.arq_iss_sessions:
                 return random_int
             if len(self.state_manager.arq_iss_sessions) >= 255:
+                # Return False if all possible session IDs are exhausted
                 return False
 
     def transmit_wait_and_retry(self, frame_or_burst, timeout, retries, mode, isARQBurst=False):
-        while retries > 0:
+        while retries > 0 and self.state not in [ISS_State.ABORTED, ISS_State.ABORTING]:
             self.event_frame_received = threading.Event()
             if isinstance(frame_or_burst, list): burst = frame_or_burst
             else: burst = [frame_or_burst]
@@ -147,7 +172,7 @@ class ARQSessionISS(arq_session.ARQSession):
             return self.transmission_aborted(irs_frame=irs_frame)
 
         info_frame = self.frame_factory.build_arq_session_info(self.id, self.total_length,
-                                                               helpers.get_crc_32(self.data), 
+                                                               self.data_crc,
                                                                self.snr, self.type_byte)
 
         self.launch_twr(info_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_INFO, mode=FREEDV_MODE.signalling)
@@ -156,6 +181,9 @@ class ARQSessionISS(arq_session.ARQSession):
         return None, None
 
     def send_data(self, irs_frame, fallback=None):
+        if 'offset' in irs_frame:
+            self.log(f"received data offset: {irs_frame['offset']}", isWarning=True)
+            self.expected_byte_offset = irs_frame['offset']
 
         # interrupt transmission when aborting
         if self.state in [ISS_State.ABORTED, ISS_State.ABORTING]:
@@ -214,8 +242,11 @@ class ARQSessionISS(arq_session.ARQSession):
 
         #print(self.state_manager.p2p_connection_sessions)
         #print(self.arq_data_type_handler.state_manager.p2p_connection_sessions)
+        session_stats = self.calculate_session_statistics(self.confirmed_bytes, self.total_length)
+        self.arq_data_type_handler.transmitted(self.type_byte, self.data, session_stats)
+        if self.config['STATION']['enable_stats']:
+            self.statistics.push(self.state.name, session_stats)
 
-        self.arq_data_type_handler.transmitted(self.type_byte, self.data, self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
         self.state_manager.remove_arq_iss_session(self.id)
         self.states.setARQ(False)
         return None, None
@@ -225,10 +256,14 @@ class ARQSessionISS(arq_session.ARQSession):
         self.session_ended = time.time()
         self.set_state(ISS_State.FAILED)
         self.log("Transmission failed!")
-        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
+        session_stats=self.calculate_session_statistics(self.confirmed_bytes, self.total_length)
+        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, session_stats)
+        if self.config['STATION']['enable_stats']:
+            self.statistics.push(self.state.name, session_stats)
+
         self.states.setARQ(False)
 
-        self.arq_data_type_handler.failed(self.type_byte, self.data, self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
+        self.arq_data_type_handler.failed(self.type_byte, self.data, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
         return None, None
 
     def abort_transmission(self, send_stop=False, irs_frame=None):
@@ -242,8 +277,12 @@ class ARQSessionISS(arq_session.ARQSession):
         # clear audio out queue
         self.modem.audio_out_queue.queue.clear()
 
+        # break actual retries
+        self.event_frame_received.set()
+
         # wait for transmit function to be ready before setting event
-        threading.Event().wait(0.100)
+        while self.states.isTransmitting():
+            threading.Event().wait(0.100)
 
         # break actual retries
         self.event_frame_received.set()
@@ -252,6 +291,8 @@ class ARQSessionISS(arq_session.ARQSession):
             # sleep some time for avoiding packet collission
             threading.Event().wait(self.TIMEOUT_STOP_ACK)
             self.send_stop()
+
+        self.states.setARQ(False)
 
     def send_stop(self):
         stop_frame = self.frame_factory.build_arq_stop(self.id)
@@ -269,4 +310,3 @@ class ARQSessionISS(arq_session.ARQSession):
         #self.state_manager.remove_arq_iss_session(self.id)
         self.states.setARQ(False)
         return None, None
-

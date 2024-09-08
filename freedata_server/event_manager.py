@@ -67,6 +67,9 @@ class EventManager:
         if statistics is None:
             statistics = {}
         if data:
+            if isinstance(data, dict):
+                data = json.dumps(data).encode('utf-8')
+                # Base64 encode the bytes-like object
             data = base64.b64encode(data).decode("UTF-8")
         direction = 'outbound' if outbound else 'inbound'
         event = {

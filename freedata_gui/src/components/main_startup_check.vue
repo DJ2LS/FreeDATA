@@ -48,6 +48,13 @@
                      </h2>
                      <div id="networkStatusCollapse" class="accordion-collapse collapse" data-bs-parent="#startupCheckAccordion">
                         <div class="accordion-body">
+
+
+                        <div class="alert alert-info" role="alert">
+  For remote operation, please go to <strong>settings/modem</strong> and set the server ip to <strong>0.0.0.0</strong>
+
+</div>
+
                            <div class="input-group input-group-sm mb-1">
                               <span class="input-group-text w-25">API URL</span>
                               <input
@@ -178,7 +185,7 @@
                               <select
                                  class="form-select form-select-sm"
                                  aria-label=".form-select-sm"
-                                 id="rigcontrol_radiocontrol"
+                                 id="rigcontrol_radiocontrol_healthcheck"
                                  @change="onChange"
                                  v-model="settings.remote.RADIO.control"
                                  >
@@ -282,7 +289,7 @@ import pinia from '../store/index';
 setActivePinia(pinia);
 
 // Store imports
-import { settingsStore as settings } from '../store/settingsStore.js';
+import { settingsStore as settings, onChange } from '../store/settingsStore.js';
 import { sendModemCQ } from '../js/api.js';
 import { useStateStore } from '../store/stateStore.js';
 import { useAudioStore } from '../store/audioStore';

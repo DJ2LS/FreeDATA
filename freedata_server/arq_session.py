@@ -8,7 +8,7 @@ from modem_frametypes import FRAME_TYPE
 import time
 from arq_data_type_handler import ARQDataTypeHandler
 from codec2 import FREEDV_MODE_USED_SLOTS, FREEDV_MODE
-
+import stats
 class ARQSession:
     SPEED_LEVEL_DICT = {
         0: {
@@ -79,9 +79,12 @@ class ARQSession:
         self.session_ended = 0
         self.session_max_age = 500
 
+        self.statistics = stats.stats(self.config, self.event_manager, self.states)
+
         # histogram lists for storing statistics
         self.snr_histogram = []
         self.bpm_histogram = []
+        self.bps_histogram = []
         self.time_histogram = []
 
     def log(self, message, isWarning=False):
@@ -123,6 +126,7 @@ class ARQSession:
         if self.state in self.STATE_TRANSITION and frame_type in self.STATE_TRANSITION[self.state]:
             action_name = self.STATE_TRANSITION[self.state][frame_type]
             received_data, type_byte = getattr(self, action_name)(frame)
+
             if isinstance(received_data, bytearray) and isinstance(type_byte, int):
                 self.arq_data_type_handler.dispatch(type_byte, received_data, self.update_histograms(len(received_data), len(received_data)))
             return
@@ -155,18 +159,25 @@ class ARQSession:
         else:
             bytes_per_minute = 0
 
+        # Calculate bits per second
+        bits_per_second = int((confirmed_bytes * 8) / duration)
+
+
         # Convert histograms lists to dictionaries
         time_histogram_dict = dict(enumerate(self.time_histogram))
         snr_histogram_dict = dict(enumerate(self.snr_histogram))
         bpm_histogram_dict = dict(enumerate(self.bpm_histogram))
+        bps_histogram_dict = dict(enumerate(self.bps_histogram))
 
         return {
             'total_bytes': total_bytes,
             'duration': duration,
             'bytes_per_minute': bytes_per_minute,
+            'bits_per_second': bits_per_second,
             'time_histogram': time_histogram_dict,
             'snr_histogram': snr_histogram_dict,
             'bpm_histogram': bpm_histogram_dict,
+            'bps_histogram': bps_histogram_dict,
         }
 
     def update_histograms(self, confirmed_bytes, total_bytes):
@@ -174,11 +185,13 @@ class ARQSession:
         stats = self.calculate_session_statistics(confirmed_bytes, total_bytes)
         self.snr_histogram.append(self.snr)
         self.bpm_histogram.append(stats['bytes_per_minute'])
+        self.bps_histogram.append(stats['bits_per_second'])
         self.time_histogram.append(datetime.datetime.now().isoformat())
 
         # Limit the size of each histogram to the last 20 entries
         self.snr_histogram = self.snr_histogram[-20:]
         self.bpm_histogram = self.bpm_histogram[-20:]
+        self.bps_histogram = self.bps_histogram[-20:]
         self.time_histogram = self.time_histogram[-20:]
 
         return stats
@@ -220,3 +233,18 @@ class ARQSession:
 
         # Return the lowest level if no higher level is found
         return min(self.SPEED_LEVEL_DICT.keys())
+    
+    def reset_session(self):
+        self.received_bytes = 0
+        self.snr_histogram = []
+        self.bpm_histogram = []
+        self.bps_histogram = []
+        self.time_histogram = []
+        self.type_byte = None
+        self.total_length = 0
+        self.total_crc = ''
+        self.received_data = None
+        self.received_bytes = 0
+        self.received_crc = None
+        self.maximum_bandwidth = 0
+        self.abort = False
