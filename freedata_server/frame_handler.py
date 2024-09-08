@@ -35,6 +35,7 @@ class FrameHandler():
         call_with_ssid = self.config['STATION']['mycall'] + "-" + str(self.config['STATION']['myssid'])
         ft = self.details['frame']['frame_type']
         valid = False
+                
         # Check for callsign checksum
         if ft in ['ARQ_SESSION_OPEN', 'ARQ_SESSION_OPEN_ACK', 'PING', 'PING_ACK', 'P2P_CONNECTION_CONNECT']:
             valid, mycallsign = helpers.check_callsign(
@@ -78,6 +79,19 @@ class FrameHandler():
     def should_respond(self):
         return self.is_frame_for_me()
 
+    def is_origin_on_blacklist(self):
+        origin_callsign = self.details["frame"]["origin"]
+
+        # Remove the suffix after the hyphen if it exists
+        if '-' in origin_callsign:
+            origin_callsign = origin_callsign.split('-')[0]
+
+        for blacklist_callsign in self.config["STATION"]["callsign_blacklist"]:
+
+            # Check if both callsigns have the same length and then check for an exact match
+            if len(origin_callsign) == len(blacklist_callsign) and origin_callsign == blacklist_callsign:
+                return True
+        return False
 
 
     def add_to_activity_list(self):
@@ -193,6 +207,13 @@ class FrameHandler():
         # look in database for a full callsign if only crc is present
         if 'origin' not in frame and 'origin_crc' in frame:
             self.details['frame']['origin'] = DatabaseManager(self.event_manager).get_callsign_by_checksum(frame['origin_crc'])
+
+        # check if callsign is blacklisted
+        if self.config["STATION"]["enable_callsign_blacklist"]:
+            if self.is_origin_on_blacklist():
+                self.logger.info(f"[Frame Handler] Callsign blocked: {self.details['frame']['origin']}")
+                return False
+
 
         self.log()
         self.add_to_heard_stations()

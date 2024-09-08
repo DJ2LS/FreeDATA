@@ -10,7 +10,8 @@ ssid_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 enable_explorer = False
 enable_stats = False
 respond_to_cq = True
-
+enable_callsign_blacklist = False
+callsign_blacklist = []
 
 [AUDIO]
 input_device = 5a1c

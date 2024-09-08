@@ -178,6 +178,7 @@ async def get_config():
 @app.post("/config")
 async def post_config(request: Request):
     config = await request.json()
+    print(config)
     if not validations.validate_remote_config(config):
         api_abort("Invalid config", 400)
     if app.config_manager.read() == config:
