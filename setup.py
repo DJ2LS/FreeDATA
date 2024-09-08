@@ -8,8 +8,8 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name='freedata-server',
-    version='0.15.4a5',
+    name='freedata',
+    version='0.16.2a',
     packages=find_packages(where='.'),
     package_dir={'': '.'},
     install_requires=required,
@@ -23,12 +23,14 @@ setup(
     license='GPL3.0',
     entry_points={
         'console_scripts': [
-            'freedata-server=freedata_server.server:main',  # Points to the main() function in server.py
+            'freedata=freedata_server.server:main',  # Points to the main() function in server.py
         ],
     },
     include_package_data=True,  # Ensure non-python files are included if specified
     package_data={
         # Include all files under any directory within the 'freedata_server' package
         'freedata_server': ['lib/**/*'],  # Recursive include for all files in 'lib' and its subdirectories
+        'freedata_gui': ['dist/**/*'],  # gui folder
+
     },
 )
