@@ -30,7 +30,7 @@
         </div>
 
         <div class="card-footer p-0 bg-light border-top-0">
-          <p class="text-muted p-0 m-0 me-1 text-end">{{ getDateTime }}</p>
+          <p class="text-muted p-0 m-0 me-1 text-end">{{ getDateTime }} UTC</p>
           <!-- Display formatted timestamp in card-footer -->
         </div>
       </div>

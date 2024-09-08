@@ -12,10 +12,38 @@ const state = useStateStore(pinia);
 // Reactive reference for DX Call
 const dxcallPing = ref("");
 
+// Reactive references to manage button states
+const isCQButtonDisabled = ref(false);
+const isPingButtonDisabled = ref(false);
+
+
+
 // Function to transmit a ping
-function transmitPing() {
-  sendModemPing(dxcallPing.value.toUpperCase());
+async function transmitPing() {
+  isPingButtonDisabled.value = true;
+
+  // Send Ping message
+  await sendModemPing(dxcallPing.value.toUpperCase());
+
+  // Wait for 6 seconds (cooldown period)
+  setTimeout(() => {
+    isPingButtonDisabled.value = false;
+  }, 6000);
 }
+
+// Function to send CQ and handle button disable and cooldown
+async function handleSendCQ() {
+  isCQButtonDisabled.value = true;
+
+  // Send CQ message
+  await sendModemCQ();
+
+  // Wait for 6 seconds (cooldown period)
+  setTimeout(() => {
+    isCQButtonDisabled.value = false;
+  }, 6000);
+}
+
 
 // Function to start or stop the beacon
 function startStopBeacon() {
@@ -67,7 +95,8 @@ window.addEventListener(
           title="Send a ping request to a remote station"
           @click="transmitPing"
         >
-          Ping
+                          <strong v-if="!isPingButtonDisabled">PING Station</strong>
+                <strong v-else>Sending...</strong>
         </button>
 
         <button
@@ -75,9 +104,10 @@ window.addEventListener(
           id="sendCQ"
           type="button"
           title="Send a CQ to the world"
-          @click="sendModemCQ"
+          @click="handleSendCQ"
         >
-          Call CQ
+          <span v-if="!isCQButtonDisabled">Call CQ</span>
+                <span v-else>Sending CQ...</span>
         </button>
 
         <button

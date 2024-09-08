@@ -33,7 +33,7 @@ class Demodulator():
 
         self.service_queue = service_queue
         self.AUDIO_FRAMES_PER_BUFFER_RX = 4800
-        self.buffer_overflow_counter = [0, 0, 0, 0, 0, 0, 0, 0]
+        self.buffer_overflow_counter = [0] * len(codec2.FREEDV_MODE)
         self.is_codec2_traffic_counter = 0
         self.is_codec2_traffic_cooldown = 5
 
@@ -160,7 +160,7 @@ class Demodulator():
         try:
             while self.stream and self.stream.active and not self.shutdown_flag.is_set():
                 threading.Event().wait(0.01)
-                while audiobuffer.nbuffer >= nin and not self.shutdown_flag.is_set():
+                if audiobuffer.nbuffer >= nin and not self.shutdown_flag.is_set():
                     # demodulate audio
                     nbytes = codec2.api.freedv_rawdatarx(
                         freedv, bytes_out, audiobuffer.buffer.ctypes
@@ -348,16 +348,21 @@ class Demodulator():
         for mode in self.MODE_DICT:
             codec2.api.freedv_set_sync(self.MODE_DICT[mode]["instance"], 0)
 
-    def set_decode_mode(self, modes_to_decode=None):
+    def set_decode_mode(self, modes_to_decode=None, is_irs=False):
         # Reset all modes to not decode
         for m in self.MODE_DICT:
             self.MODE_DICT[m]["decode"] = False
 
         # signalling is always true
         self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
-        self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
+        # we only need to decode signalling ack as ISS
+        if is_irs:
+            self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = False
+        else:
+            self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
 
-        # lowest speed level is alwys true
+
+        # lowest speed level is always true
         self.MODE_DICT[codec2.FREEDV_MODE.datac4.value]["decode"] = True
 
         # Enable specified modes

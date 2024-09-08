@@ -262,10 +262,6 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
                      >
                   <span class="input-group-text" >...</span>
                </div>
-               <div class="input-group mb-3">
-                  <span class="input-group-text" >New Messages</span>
-                  <span class="input-group-text" >...</span>
-               </div>
             </div>
             <div class="modal-footer">
                <button

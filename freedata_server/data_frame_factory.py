@@ -112,7 +112,7 @@ class DataFrameFactory:
         self.template_list[FR_TYPE.ARQ_SESSION_INFO_ACK.value] = {
             "frame_length": self.LENGTH_SIG0_FRAME,
             "session_id": 1,
-            "total_crc": 4,
+            "offset": 4,
             "snr": 1,
             "speed_level": 1,
             "frames_per_burst": 1,
@@ -448,7 +448,7 @@ class DataFrameFactory:
         }
         return self.construct(FR_TYPE.ARQ_STOP_ACK, payload)
 
-    def build_arq_session_info_ack(self, session_id, total_crc, snr, speed_level, frames_per_burst, flag_final=False, flag_abort=False):
+    def build_arq_session_info_ack(self, session_id, offset, snr, speed_level, frames_per_burst, flag_final=False, flag_abort=False):
         flag = 0b00000000
         if flag_final:
             flag = helpers.set_flag(flag, 'FINAL', True, self.ARQ_FLAGS)
@@ -458,7 +458,7 @@ class DataFrameFactory:
         payload = {
             "frame_length": self.LENGTH_SIG0_FRAME,
             "session_id": session_id.to_bytes(1, 'big'),
-            "total_crc": bytes.fromhex(total_crc),
+            "offset": offset.to_bytes(4, 'big'),
             "snr": helpers.snr_to_bytes(1),
             "speed_level": speed_level.to_bytes(1, 'big'),
             "frames_per_burst": frames_per_burst.to_bytes(1, 'big'),
