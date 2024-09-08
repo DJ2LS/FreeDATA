@@ -84,6 +84,7 @@ class ARQSession:
         # histogram lists for storing statistics
         self.snr_histogram = []
         self.bpm_histogram = []
+        self.bps_histogram = []
         self.time_histogram = []
 
     def log(self, message, isWarning=False):
@@ -158,18 +159,25 @@ class ARQSession:
         else:
             bytes_per_minute = 0
 
+        # Calculate bits per second
+        bits_per_second = int((confirmed_bytes * 8) / duration)
+
+
         # Convert histograms lists to dictionaries
         time_histogram_dict = dict(enumerate(self.time_histogram))
         snr_histogram_dict = dict(enumerate(self.snr_histogram))
         bpm_histogram_dict = dict(enumerate(self.bpm_histogram))
+        bps_histogram_dict = dict(enumerate(self.bps_histogram))
 
         return {
             'total_bytes': total_bytes,
             'duration': duration,
             'bytes_per_minute': bytes_per_minute,
+            'bits_per_second': bits_per_second,
             'time_histogram': time_histogram_dict,
             'snr_histogram': snr_histogram_dict,
             'bpm_histogram': bpm_histogram_dict,
+            'bps_histogram': bps_histogram_dict,
         }
 
     def update_histograms(self, confirmed_bytes, total_bytes):
@@ -177,11 +185,13 @@ class ARQSession:
         stats = self.calculate_session_statistics(confirmed_bytes, total_bytes)
         self.snr_histogram.append(self.snr)
         self.bpm_histogram.append(stats['bytes_per_minute'])
+        self.bps_histogram.append(stats['bits_per_second'])
         self.time_histogram.append(datetime.datetime.now().isoformat())
 
         # Limit the size of each histogram to the last 20 entries
         self.snr_histogram = self.snr_histogram[-20:]
         self.bpm_histogram = self.bpm_histogram[-20:]
+        self.bps_histogram = self.bps_histogram[-20:]
         self.time_histogram = self.time_histogram[-20:]
 
         return stats
@@ -228,6 +238,7 @@ class ARQSession:
         self.received_bytes = 0
         self.snr_histogram = []
         self.bpm_histogram = []
+        self.bps_histogram = []
         self.time_histogram = []
         self.type_byte = None
         self.total_length = 0
