@@ -1,9 +1,8 @@
 import helpers
 from event_manager import EventManager
 from state_manager import StateManager
-from queue import Queue
 import structlog
-import time, uuid
+import time
 from codec2 import FREEDV_MODE
 from message_system_db_manager import DatabaseManager
 import maidenhead
