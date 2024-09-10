@@ -422,7 +422,7 @@ switch (data.received) {
             stateStore.arq_transmission_percent = Math.round(
               (data["arq-transfer-inbound"].received_bytes /
                 data["arq-transfer-inbound"].total_bytes) *
-              100;
+              100);
             stateStore.arq_total_bytes =
               data["arq-transfer-inbound"].received_bytes;
             return;
