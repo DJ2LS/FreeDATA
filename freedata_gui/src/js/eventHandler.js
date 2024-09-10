@@ -439,7 +439,7 @@ message = `
                 </div>
               </div>
             `;            displayToast("info", "bi-info-circle", message, 5000);
-            stateStore.arq_transmission_percent =
+            stateStore.arq_transmission_percent = Math.round(
               (data["arq-transfer-inbound"].received_bytes /
                 data["arq-transfer-inbound"].total_bytes) *
               100);
