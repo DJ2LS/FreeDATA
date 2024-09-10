@@ -212,12 +212,7 @@ switch (data.received) {
     break;
 
   default:
-    message = `
-      <div>
-        <strong>Unknown Data Received</strong>
-      </div>
-    `;
-    displayToast("danger", "bi-x-circle", message, 5000);
+    console.log("unknown event data received: ${data.gridsquare}");
 }
         return;
 
