@@ -227,7 +227,6 @@ switch (data.received) {
         stateStore.arq_is_receiving = false;
         switch (data["arq-transfer-outbound"].state) {
           case "NEW":
-
             message = `
               <div>
                 <strong>New transmission with:</strong>
@@ -428,7 +427,7 @@ switch (data.received) {
             return;
 
           case "BURST_REPLY_SENT":
-message = `
+            message = `
               <div>
                 <strong>ongoing transmission with:</strong>
                 <span class="badge bg-info text-dark">${data["arq-transfer-inbound"].dxcall}</span>
@@ -438,8 +437,10 @@ message = `
                   <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].total_bytes}</span>
                 </div>
               </div>
-            `;            displayToast("info", "bi-info-circle", message, 5000);
-            stateStore.arq_transmission_percent = Math.round(
+            `;            
+            displayToast("info", "bi-info-circle", message, 5000);
+         
+            stateStore.arq_transmission_percent =
               (data["arq-transfer-inbound"].received_bytes /
                 data["arq-transfer-inbound"].total_bytes) *
               100);
