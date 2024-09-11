@@ -62,8 +62,6 @@ const defaultConfig = {
       respond_to_cq: false,
       enable_callsign_blacklist: false,
       callsign_blacklist: [],
-
-
     },
     TCI: {
       tci_ip: "127.0.0.1",
@@ -88,15 +86,15 @@ export const settingsStore = reactive({ ...defaultConfig, local: localConfig });
 // Function to handle remote configuration changes
 
 export function onChange() {
-  let remote_config = settingsStore.remote
+  let remote_config = settingsStore.remote;
   let blacklistContent = remote_config.STATION.callsign_blacklist;
-// Check if the content is a string
-  if (typeof blacklistContent === 'string') {
+  // Check if the content is a string
+  if (typeof blacklistContent === "string") {
     // Split the string by newlines to create an array
     blacklistContent = blacklistContent
-      .split('\n') // Split text by newlines
+      .split("\n") // Split text by newlines
       .map((item) => item.trim()) // Trim whitespace from each line
-      .filter((item) => item !== ''); // Remove empty lines
+      .filter((item) => item !== ""); // Remove empty lines
 
     // Update the settings store with the validated array
     remote_config.STATION.callsign_blacklist = blacklistContent;
@@ -108,10 +106,10 @@ export function onChange() {
     remote_config.STATION.callsign_blacklist = [];
   }
 
-
   setConfig(remote_config).then((conf) => {
     settingsStore.remote = conf;
-    settingsStore.remote.STATION.callsign_blacklist = conf.STATION.callsign_blacklist.join('\n');
+    settingsStore.remote.STATION.callsign_blacklist =
+      conf.STATION.callsign_blacklist.join("\n");
   });
 }
 
@@ -120,9 +118,9 @@ export function getRemote() {
   return getConfig().then((conf) => {
     if (conf !== undefined) {
       settingsStore.remote = conf;
-      settingsStore.remote.STATION.callsign_blacklist = conf.STATION.callsign_blacklist.join('\n');
+      settingsStore.remote.STATION.callsign_blacklist =
+        conf.STATION.callsign_blacklist.join("\n");
       onChange();
-
     } else {
       console.warn("Received undefined configuration, using default!");
       settingsStore.remote = defaultConfig.remote;

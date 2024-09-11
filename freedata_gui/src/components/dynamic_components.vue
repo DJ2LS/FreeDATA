@@ -33,6 +33,7 @@ import grid_mycall_small from "./grid/grid_mycall small.vue";
 import grid_scatter from "./grid/grid_scatter.vue";
 import grid_stats_chart from "./grid/grid_stats_chart.vue";
 import grid_swr_meter from "./grid/grid_swr_meter.vue";
+import grid_stations_map from "./grid/grid_stations_map.vue";
 
 let count = ref(0);
 let grid = null; // DO NOT use ref(null) as proxies GS will break all logic when comparing structures... see https://github.com/gridstack/gridstack.js/issues/2115
@@ -263,8 +264,17 @@ const gridWidgets = [
     true,
     "Rig",
     21
+  ),
+    new gridWidget(
+    grid_stations_map,
+    { x: 16, y: 0, w: 8, h: 100 },
+    "Station Map",
+    true,
+    true,
+    "Other",
+    22
   )
-  //Next new widget ID should be 22
+  //Next new widget ID should be 23
 ];
 
 function updateFrequencyAndApply(frequency) {
