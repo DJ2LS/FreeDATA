@@ -142,7 +142,7 @@ export function eventDispatcher(data) {
   }
 
   var message = "";
-  console.log(data)
+  console.log(data);
   switch (data.type) {
     case "hello-client":
       message = "Connected to server";
@@ -152,12 +152,10 @@ export function eventDispatcher(data) {
       loadAllData();
       return;
 
-
-   case "frame-handler":
-
-switch (data.received) {
-  case "CQ":
-    message = `
+    case "frame-handler":
+      switch (data.received) {
+        case "CQ":
+          message = `
       <div>
         <strong>CQ Received:</strong>
         <span class="badge bg-info text-dark">${data.dxcallsign}</span>
@@ -167,11 +165,11 @@ switch (data.received) {
         </div>
       </div>
     `;
-    displayToast("info", "bi-info-circle", message, 5000);
-    break;
+          displayToast("info", "bi-info-circle", message, 5000);
+          break;
 
-  case "QRV":
-    message = `
+        case "QRV":
+          message = `
       <div>
         <strong>QRV Received:</strong>
         <span class="badge bg-info text-dark">${data.dxcallsign}</span>
@@ -181,11 +179,11 @@ switch (data.received) {
         </div>
       </div>
     `;
-    displayToast("info", "bi-info-circle", message, 5000);
-    break;
+          displayToast("info", "bi-info-circle", message, 5000);
+          break;
 
-  case "PING":
-    message = `
+        case "PING":
+          message = `
       <div>
         <strong>PING Received:</strong>
         <span class="badge bg-info text-dark">${data.dxcallsign}</span>
@@ -194,11 +192,11 @@ switch (data.received) {
         </div>
       </div>
     `;
-    displayToast("warning", "bi-exclamation-circle", message, 5000);
-    break;
+          displayToast("warning", "bi-exclamation-circle", message, 5000);
+          break;
 
-  case "PING_ACK":
-    message = `
+        case "PING_ACK":
+          message = `
       <div>
         <strong>PING_ACK Received:</strong>
         <span class="badge bg-info text-dark">${data.dxcallsign}</span>
@@ -208,19 +206,18 @@ switch (data.received) {
         </div>
       </div>
     `;
-    displayToast("success", "bi-check-circle", message, 5000);
-    break;
+          displayToast("success", "bi-check-circle", message, 5000);
+          break;
 
-  default:
-    message = `
+        default:
+          message = `
       <div>
         <strong>Unknown Data Received</strong>
       </div>
     `;
-    displayToast("danger", "bi-x-circle", message, 5000);
-}
-        return;
-
+          displayToast("danger", "bi-x-circle", message, 5000);
+      }
+      return;
 
     case "arq":
       if (data["arq-transfer-outbound"]) {
@@ -253,7 +250,8 @@ switch (data.received) {
                 </div>
               </div>
             `;
-            displayToast("info", "bi-check-circle", message, 10000);            return;
+            displayToast("info", "bi-check-circle", message, 10000);
+            return;
 
           case "INFO_SENT":
             console.info("state INFO_SENT needs to be implemented");
@@ -275,7 +273,8 @@ switch (data.received) {
             stateStore.arq_transmission_percent = Math.round(
               (data["arq-transfer-outbound"].received_bytes /
                 data["arq-transfer-outbound"].total_bytes) *
-              100);
+                100,
+            );
             stateStore.arq_total_bytes =
               data["arq-transfer-outbound"].received_bytes;
             stateStore.arq_speed_list_timestamp.value = toRaw(
@@ -295,7 +294,7 @@ switch (data.received) {
             return;
 
           case "ABORTED":
-        message = `
+            message = `
               <div>
                 <strong>transmission ABORTED with:</strong>
                 <span class="badge bg-info text-dark">${data["arq-transfer-outbound"].dxcall}</span>
@@ -421,7 +420,8 @@ switch (data.received) {
             stateStore.arq_transmission_percent = Math.round(
               (data["arq-transfer-inbound"].received_bytes /
                 data["arq-transfer-inbound"].total_bytes) *
-              100);
+                100,
+            );
             stateStore.arq_total_bytes =
               data["arq-transfer-inbound"].received_bytes;
             return;
@@ -437,13 +437,14 @@ switch (data.received) {
                   <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].total_bytes}</span>
                 </div>
               </div>
-            `;            
+            `;
             displayToast("info", "bi-info-circle", message, 5000);
-         
+
             stateStore.arq_transmission_percent = Math.round(
               (data["arq-transfer-inbound"].received_bytes /
                 data["arq-transfer-inbound"].total_bytes) *
-              100);
+                100,
+            );
             stateStore.arq_total_bytes =
               data["arq-transfer-inbound"].received_bytes;
             stateStore.arq_speed_list_timestamp.value = toRaw(
