@@ -209,10 +209,10 @@ export function eventDispatcher(data) {
           displayToast("success", "bi-check-circle", message, 5000);
           break;
 
-  default:
-    console.log("unknown event data received: ${data.gridsquare}");
-}
-        return;
+        default:
+          console.log("unknown event data received: ${data.gridsquare}");
+      }
+      return;
 
     case "arq":
       if (data["arq-transfer-outbound"]) {
@@ -394,7 +394,8 @@ export function eventDispatcher(data) {
             stateStore.arq_transmission_percent = Math.round(
               (data["arq-transfer-inbound"].received_bytes /
                 data["arq-transfer-inbound"].total_bytes) *
-              100);
+                100,
+            );
             stateStore.arq_total_bytes =
               data["arq-transfer-inbound"].received_bytes;
             return;
@@ -476,7 +477,8 @@ export function eventDispatcher(data) {
             stateStore.arq_transmission_percent = Math.round(
               (data["arq-transfer-inbound"].received_bytes /
                 data["arq-transfer-inbound"].total_bytes) *
-              100);
+                100,
+            );
             stateStore.arq_total_bytes =
               data["arq-transfer-inbound"].received_bytes;
 
