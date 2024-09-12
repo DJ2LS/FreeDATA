@@ -209,15 +209,10 @@ export function eventDispatcher(data) {
           displayToast("success", "bi-check-circle", message, 5000);
           break;
 
-        default:
-          message = `
-      <div>
-        <strong>Unknown Data Received</strong>
-      </div>
-    `;
-          displayToast("danger", "bi-x-circle", message, 5000);
-      }
-      return;
+  default:
+    console.log("unknown event data received: ${data.gridsquare}");
+}
+        return;
 
     case "arq":
       if (data["arq-transfer-outbound"]) {
@@ -263,9 +258,9 @@ export function eventDispatcher(data) {
                 <strong>ongoing transmission with:</strong>
                 <span class="badge bg-info text-dark">${data["arq-transfer-outbound"].dxcall}</span>
                 <div class="mt-2">
-                  <span class="badge bg-secondary">Session ID: ${data["arq-transfer-inbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">Received Bytes: ${data["arq-transfer-inbound"].received_bytes}</span>
-                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-inbound"].total_bytes}</span>
+                  <span class="badge bg-secondary">Session ID: ${data["arq-transfer-outbound"].session_id}</span>
+                  <span class="badge bg-warning text-dark">Received Bytes: ${data["arq-transfer-outbound"].received_bytes}</span>
+                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].total_bytes}</span>
                 </div>
               </div>
             `;
@@ -301,7 +296,7 @@ export function eventDispatcher(data) {
                 <div class="mt-2">
                   <span class="badge bg-primary">STATE: ${data["arq-transfer-outbound"].state}</span>
                   <span class="badge bg-secondary">Session ID: ${data["arq-transfer-outbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">Received Bytes: ${data["arq-transfer-outbound"].received_bytes}</span>
+                  <span class="badge bg-warning text-dark">Transmitted Bytes: ${data["arq-transfer-outbound"].received_bytes}</span>
                   <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].total_bytes}</span>
                 </div>
               </div>
@@ -319,7 +314,7 @@ export function eventDispatcher(data) {
                 <div class="mt-2">
                   <span class="badge bg-primary">STATE: ${data["arq-transfer-outbound"].state}</span>
                   <span class="badge bg-secondary">Session ID: ${data["arq-transfer-outbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">Received Bytes: ${data["arq-transfer-outbound"].received_bytes}</span>
+                  <span class="badge bg-warning text-dark">Transmitted Bytes: ${data["arq-transfer-outbound"].received_bytes}</span>
                   <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].total_bytes}</span>
                 </div>
               </div>
@@ -347,7 +342,7 @@ export function eventDispatcher(data) {
                 <div class="mt-2">
                   <span class="badge bg-primary">STATE: ${data["arq-transfer-outbound"].state}</span>
                   <span class="badge bg-secondary">Session ID: ${data["arq-transfer-outbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">Received Bytes: ${data["arq-transfer-outbound"].received_bytes}</span>
+                  <span class="badge bg-warning text-dark">Transmitted Bytes: ${data["arq-transfer-outbound"].received_bytes}</span>
                   <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].total_bytes}</span>
                 </div>
               </div>
@@ -396,10 +391,10 @@ export function eventDispatcher(data) {
               </div>
             `;
             displayToast("info", "bi-arrow-left-right", message, 5000);
-            stateStore.arq_transmission_percent =
+            stateStore.arq_transmission_percent = Math.round(
               (data["arq-transfer-inbound"].received_bytes /
                 data["arq-transfer-inbound"].total_bytes) *
-              100;
+              100);
             stateStore.arq_total_bytes =
               data["arq-transfer-inbound"].received_bytes;
             return;
@@ -478,10 +473,10 @@ export function eventDispatcher(data) {
             //  data["arq-transfer-inbound"].data,
             //  data["arq-transfer-inbound"]
             //);
-            stateStore.arq_transmission_percent =
+            stateStore.arq_transmission_percent = Math.round(
               (data["arq-transfer-inbound"].received_bytes /
                 data["arq-transfer-inbound"].total_bytes) *
-              100;
+              100);
             stateStore.arq_total_bytes =
               data["arq-transfer-inbound"].received_bytes;
 
