@@ -33,6 +33,26 @@
       name="apple-mobile-web-app-status-bar-style"
       content="black-translucent"
     />
+
+    <!-- Add custom JavaScript to set the viewport height -->
+    <script>
+      function setAppHeight() {
+        const appHeight = window.innerHeight;
+        document.documentElement.style.setProperty('--app-height', `${appHeight}px`);
+      }
+      window.addEventListener('resize', setAppHeight);
+      window.addEventListener('orientationchange', setAppHeight); // Handle orientation changes
+      document.addEventListener('DOMContentLoaded', setAppHeight); // Set height on initial load
+    </script>
+
+    <!-- Custom styles to use the dynamic height -->
+    <style>
+      #app {
+        position: relative;
+        width: 100%;
+        height: var(--app-height); /* Use the dynamically set height */
+      }
+    </style>
   </head>
 
   <body>
