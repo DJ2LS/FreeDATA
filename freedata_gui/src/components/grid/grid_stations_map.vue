@@ -118,12 +118,13 @@ const updatePinsAndLines = (g) => {
   const points = [];
 
   // Prepare points for heard stations
-  heardStations.forEach(item => {
-    if (item.gridsquare && item.origin) { // Ensure data is valid
-      const [lat, lng] = locatorToLatLng(item.gridsquare); // Convert gridsquare to lat/lng
-      points.push({ lat, lon: lng, origin: item.origin, gridsquare: item.gridsquare }); // Add to the points array
-    }
-  });
+heardStations.forEach(item => {
+  // Ensure data is valid: 'gridsquare' must not be empty, '', or undefined, and 'origin' must be valid
+  if (item.gridsquare && item.gridsquare.trim() !== '' && item.origin) {
+    const [lat, lng] = locatorToLatLng(item.gridsquare); // Convert gridsquare to lat/lng
+    points.push({ lat, lon: lng, origin: item.origin, gridsquare: item.gridsquare }); // Add to the points array
+  }
+});
 
   // Check if 'mygrid' is defined and not empty
   const mygrid = settings.remote.STATION.mygrid;
