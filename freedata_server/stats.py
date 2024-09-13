@@ -22,13 +22,18 @@ class stats():
         self.states = states
         self.config = config
         self.event_manager = event_manager
-    def push(self, status, session_statistics, dxcall):
+    def push(self, status, session_statistics, dxcall, receiving=True):
         # get avg snr
         try:
             snr_raw = [item["snr"] for item in self.states.arq_speed_list]
             avg_snr = round(sum(snr_raw) / len(snr_raw), 2)
         except Exception:
             avg_snr = 0
+
+        if receiving:
+            station = "IRS"
+        else:
+            station = "ISS"
 
         mycallsign = self.config['STATION']['mycall']
         ssid = self.config['STATION']['myssid']
@@ -37,7 +42,7 @@ class stats():
         headers = {"Content-Type": "application/json"}
         station_data = {
             'callsign': full_callsign,
-            'dxcallsign': str(dxcall, "utf-8"),
+            'dxcallsign': dxcall,
             'gridsquare': self.config['STATION']['mygrid'],
             'dxgridsquare': str(self.states.dxgrid, "utf-8"),
             'frequency': 0 if self.states.radio_frequency is None else self.states.radio_frequency,
@@ -46,6 +51,7 @@ class stats():
             'filesize': session_statistics['total_bytes'],
             'duration': session_statistics['duration'],
             'status': status,
+            'direction': station,
             'version': MODEM_VERSION,
             'time_histogram': session_statistics['time_histogram'],  # Adding new histogram data
             'snr_histogram': session_statistics['snr_histogram'],  # Adding new histogram data
