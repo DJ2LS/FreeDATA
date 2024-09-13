@@ -84,6 +84,8 @@ const drawMap = () => {
       actualPinRadius = basePinRadius / event.transform.k
       svg.selectAll('.pin').attr('r', actualPinRadius);
       svg.selectAll('.connection-line').attr('stroke-width', 1 / event.transform.k);
+      svg.selectAll('.country-path').attr('stroke-width', 0.5 / event.transform.k); // Adjust border thickness
+      svg.selectAll('.country-label').attr('font-size', 0.5 / event.transform.k + 'em');
     });
 
   svg.call(zoom);
@@ -101,7 +103,31 @@ const drawMap = () => {
       .append('path')
       .attr('d', path)
       .attr('fill', '#ccc')
-      .attr('stroke', '#333');
+      .attr('stroke', '#333')
+      .attr('stroke-width', 0.5); // Initial border thickness
+
+// Add country name labels
+    g.selectAll('.country-label')
+      .data(countriesGeoJSON.features)
+      .enter()
+      .append('text')
+      .attr('class', 'country-label')
+      .attr('transform', d => {
+        const centroid = d3.geoCentroid(d);
+        const [x, y] = projection(centroid);
+        // Manually adjust positions for specific countries
+        if (d.properties.name === 'United States of America') {
+            return `translate(${x + 0}, ${y + 20})`; // Adjust for the USA
+        } else if (d.properties.name === 'Canada') {
+            return `translate(${x - 40}, ${y + 0})`; // Adjust for Canada
+        }
+        return `translate(${x}, ${y})`; // Default for other countries
+      })
+      .attr('dy', '.35em') // Adjust vertical alignment
+      .attr('font-size', '0.5em') // Initial font size
+      .attr('text-anchor', 'middle') // Center text
+      .text(d => d.properties.name); // Use the country name
+
 
     // Draw initial pins and lines
     updatePinsAndLines(g);
