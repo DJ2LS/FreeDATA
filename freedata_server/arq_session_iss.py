@@ -245,7 +245,7 @@ class ARQSessionISS(arq_session.ARQSession):
         session_stats = self.calculate_session_statistics(self.confirmed_bytes, self.total_length)
         self.arq_data_type_handler.transmitted(self.type_byte, self.data, session_stats)
         if self.config['STATION']['enable_stats']:
-            self.statistics.push(self.state.name, session_stats)
+            self.statistics.push(self.state.name, session_stats, self.dxcall)
 
         self.state_manager.remove_arq_iss_session(self.id)
         self.states.setARQ(False)
@@ -259,7 +259,7 @@ class ARQSessionISS(arq_session.ARQSession):
         session_stats=self.calculate_session_statistics(self.confirmed_bytes, self.total_length)
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, session_stats)
         if self.config['STATION']['enable_stats']:
-            self.statistics.push(self.state.name, session_stats)
+            self.statistics.push(self.state.name, session_stats, self.dxcall)
 
         self.states.setARQ(False)
 

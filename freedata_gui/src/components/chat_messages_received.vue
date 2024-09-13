@@ -29,8 +29,8 @@
           <p class="card-text text-break">{{ message.body }}</p>
         </div>
 
-        <div class="card-footer p-0 bg-light border-top-0">
-          <p class="text-muted p-0 m-0 me-1 text-end">{{ getDateTime }} UTC</p>
+        <div class="card-footer p-0 border-top-0">
+          <p class="p-0 m-0 me-1 text-end text-dark"><span class="badge badge-secondary mr-2 text-dark"> {{ getDateTime }} UTC</span></p>
           <!-- Display formatted timestamp in card-footer -->
         </div>
       </div>

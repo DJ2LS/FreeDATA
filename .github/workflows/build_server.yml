@@ -129,6 +129,8 @@ jobs:
         with:
           draft: true
           files: ./freedata_server/server.dist/${{ matrix.zip_name }}.zip
+          tag_name: ${{ github.ref_name }}
+
 
       - name: LIST ALL FILES
         run: ls -R

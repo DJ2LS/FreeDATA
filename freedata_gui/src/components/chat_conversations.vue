@@ -35,7 +35,7 @@
               {{ details.unread_messages }} new
             </span>
             <br />
-            <small>{{ details.body }}</small>
+            <small>{{ details.body ? details.body : '<file>' }}</small>
           </div>
           <div class="col-3 text-end">
             <small>{{ getDateTime(details.timestamp) }}</small>
