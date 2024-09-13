@@ -22,7 +22,7 @@ class stats():
         self.states = states
         self.config = config
         self.event_manager = event_manager
-    def push(self, status, session_statistics):
+    def push(self, status, session_statistics, dxcall):
         # get avg snr
         try:
             snr_raw = [item["snr"] for item in self.states.arq_speed_list]
@@ -37,7 +37,7 @@ class stats():
         headers = {"Content-Type": "application/json"}
         station_data = {
             'callsign': full_callsign,
-            'dxcallsign': str(self.states.dxcallsign, "utf-8"),
+            'dxcallsign': str(dxcall, "utf-8"),
             'gridsquare': self.config['STATION']['mygrid'],
             'dxgridsquare': str(self.states.dxgrid, "utf-8"),
             'frequency': 0 if self.states.radio_frequency is None else self.states.radio_frequency,
