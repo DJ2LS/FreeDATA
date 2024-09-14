@@ -259,7 +259,7 @@ export function eventDispatcher(data) {
                 <span class="badge bg-info text-dark">${data["arq-transfer-outbound"].dxcall}</span>
                 <div class="mt-2">
                   <span class="badge bg-secondary">Session ID: ${data["arq-transfer-outbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">Received Bytes: ${data["arq-transfer-outbound"].received_bytes}</span>
+                  <span class="badge bg-warning text-dark">Transmitted Bytes: ${data["arq-transfer-outbound"].received_bytes}</span>
                   <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].total_bytes}</span>
                 </div>
               </div>
@@ -427,9 +427,9 @@ export function eventDispatcher(data) {
                 <strong>ongoing transmission with:</strong>
                 <span class="badge bg-info text-dark">${data["arq-transfer-inbound"].dxcall}</span>
                 <div class="mt-2">
-                  <span class="badge bg-secondary">Session ID: ${data["arq-transfer-outbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">Received Bytes: ${data["arq-transfer-outbound"].received_bytes}</span>
-                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].total_bytes}</span>
+                  <span class="badge bg-secondary">Session ID: ${data["arq-transfer-inbound"].session_id}</span>
+                  <span class="badge bg-warning text-dark">Received Bytes: ${data["arq-transfer-inbound"].received_bytes}</span>
+                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-inbound"].total_bytes}</span>
                 </div>
               </div>
             `;
