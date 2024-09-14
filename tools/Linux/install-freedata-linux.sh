@@ -136,7 +136,7 @@ then
 	chmod 750 install.sh
 	./install.sh
 else
-	echo "Something went wrong.  npm install.sh not downloaded."
+	echo "Something went wrong.  nvm install.sh not downloaded."
 	exit 1
 fi
 
@@ -146,7 +146,7 @@ then
 	[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 	[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 	nvm install 20
-	echo "nvm is version" `npm -v`
+	echo "npm is version" `npm -v`
 	echo "node is version" `node -v`
 	rm -f install.sh
 else
