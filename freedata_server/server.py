@@ -1,13 +1,14 @@
 import os
 import sys
+# we need to add script directory to the sys path for avoiding problems with pip package
+script_directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(script_directory)
+
 import signal
 import queue
 import asyncio
 import webbrowser
 import platform
-
-
-
 from fastapi import FastAPI, Request, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -48,9 +49,6 @@ MODEM_VERSION = "0.16.4-alpha"
 API_VERSION = 3
 LICENSE = 'GPL3.0'
 DOCUMENTATION_URL = 'https://wiki.freedata.app'
-
-script_directory = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(script_directory)
 
 # adjust asyncio for windows usage for avoiding a Assertion Error
 if sys.platform == 'win32':
