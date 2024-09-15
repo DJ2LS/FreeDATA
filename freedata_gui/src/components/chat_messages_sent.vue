@@ -10,7 +10,6 @@
       </button>
 
       <button
-
         class="btn btn-outline-secondary border-0 me-1"
         @click="showMessageInfo"
         data-bs-target="#messageInfoModal"
@@ -48,7 +47,8 @@
         </div>
 
         <div class="card-body">
-          <p class="card-text text-break">{{ message.body }}</p>
+          <!-- Render parsed markdown -->
+          <p class="card-text text-break" v-html="parsedMessageBody"></p>
         </div>
 
         <div class="card-footer p-0 bg-secondary border-top-0">
@@ -61,7 +61,7 @@
             >
               {{ message.status }}
             </span>
-            | <span class="badge badge-primary mr-2" > attempt: {{ message.attempt + 1 }} </span>|<span class="badge badge-primary mr-2"> {{ getDateTime }} UTC</span>
+            | <span class="badge badge-primary mr-2"> attempt: {{ message.attempt + 1 }} </span>|<span class="badge badge-primary mr-2"> {{ getDateTime }} UTC</span>
           </p>
         </div>
 
@@ -97,6 +97,8 @@
 </template>
 
 <script>
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 import {
   repeatMessageTransmission,
   deleteMessageFromDB,
@@ -114,7 +116,7 @@ import { useChatStore } from '../store/chatStore.js';
 const chatStore = useChatStore(pinia);
 
 export default {
-components: {
+  components: {
     chat_messages_image_preview,
   },
 
@@ -133,7 +135,6 @@ components: {
 
     showMessageInfo() {
       chatStore.messageInfoById = requestMessageInfo(this.message.id);
-
     },
 
     async downloadAttachment(hash_sha512, fileName) {
@@ -189,6 +190,11 @@ components: {
       let minutes = date.getMinutes().toString().padStart(2, "0");
       let seconds = date.getSeconds().toString().padStart(2, "0");
       return `${hours}:${minutes}:${seconds}`;
+    },
+
+    parsedMessageBody() {
+      // Use marked to parse markdown and DOMPurify to sanitize
+      return DOMPurify.sanitize(marked.parse(this.message.body));
     },
   },
 };

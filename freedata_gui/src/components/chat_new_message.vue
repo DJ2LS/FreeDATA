@@ -9,6 +9,8 @@ const chat = useChatStore(pinia);
 import { newMessage } from '../js/messagesHandler.js';
 import { ref } from 'vue';
 import { VuemojiPicker } from 'vuemoji-picker';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 // Emoji Handling
 const handleEmojiClick = (detail) => {
@@ -67,13 +69,16 @@ function transmitNewMessage() {
     data: file.content,
   }));
 
+  // Sanitize inputText before sending the message
+  const sanitizedInput = DOMPurify.sanitize(marked.parse(chat.inputText));
+
   if (chat.selectedCallsign.startsWith("BC-")) {
     return "new broadcast";
   } else {
     if (attachments.length > 0) {
-      newMessage(chat.selectedCallsign, chat.inputText, attachments);
+      newMessage(chat.selectedCallsign, sanitizedInput, attachments);
     } else {
-      newMessage(chat.selectedCallsign, chat.inputText);
+      newMessage(chat.selectedCallsign, sanitizedInput);
     }
   }
 
@@ -90,6 +95,21 @@ function resetFile() {
   selectedFiles.value = [];
 }
 
+// Apply Markdown Formatting
+function applyMarkdown(formatType) {
+  const textarea = chatModuleMessage.value;
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const selectedText = chat.inputText.substring(start, end);
+
+  if (formatType === 'bold') {
+    chat.inputText = chat.inputText.substring(0, start) + `**${selectedText}**` + chat.inputText.substring(end);
+  } else if (formatType === 'italic') {
+    chat.inputText = chat.inputText.substring(0, start) + `_${selectedText}_` + chat.inputText.substring(end);
+  } else if (formatType === 'underline') {
+    chat.inputText = chat.inputText.substring(0, start) + `<u>${selectedText}</u>` + chat.inputText.substring(end);
+  }
+}
 </script>
 
 <template>
@@ -140,6 +160,15 @@ function resetFile() {
         >
           <i class="bi bi-paperclip" style="font-size: 1.2rem"></i>
         </button>
+
+        <div class="vr mx-2"></div>
+
+        <!-- Markdown Formatting Buttons -->
+        <button class="btn btn-outline-secondary border-0 rounded-pill" @click="applyMarkdown('bold')"><b>B</b></button>
+        <button class="btn btn-outline-secondary border-0 rounded-pill" @click="applyMarkdown('italic')"><i>I</i></button>
+        <button class="btn btn-outline-secondary border-0 rounded-pill" @click="applyMarkdown('underline')"><u>U</u></button>
+
+
 
         <textarea
           class="form-control border rounded-pill"
