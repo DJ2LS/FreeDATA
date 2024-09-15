@@ -166,8 +166,8 @@ const beaconHistogramOptions = {
     },
     y: {
       display: true,
-      min: -5,
-      max: 10,
+      min: -15,
+      max: 15,
       ticks: {
         display: true,
       },
