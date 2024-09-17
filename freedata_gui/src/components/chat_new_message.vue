@@ -29,9 +29,21 @@ function triggerFileInput() {
 
 // Handle file selection and preview
 function handleFileSelection(event) {
+  handleFiles(event.target.files);
+}
+
+// Handle drag and drop files
+function handleDrop(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  handleFiles(event.dataTransfer.files);
+}
+
+// Handle files from file input or drag-and-drop
+function handleFiles(files) {
   selectedFiles.value = [];
 
-  for (let file of event.target.files) {
+  for (let file of files) {
     const reader = new FileReader();
     reader.onload = () => {
       const base64Content = btoa(reader.result);
@@ -113,13 +125,16 @@ function applyMarkdown(formatType) {
 </script>
 
 <template>
-  <nav class="navbar sticky-bottom bg-body-tertiary border-top">
+  <nav class="navbar sticky-bottom bg-body-tertiary border-top" @dragover.prevent @drop="handleDrop">
     <div class="container-fluid p-0">
       <!-- Hidden file input -->
       <input type="file" multiple ref="fileInput" @change="handleFileSelection" style="display: none;" />
 
-      <!-- File Attachment Preview Area -->
-      <div class="container-fluid">
+      <!-- File Attachment Preview Area with Drag-and-Drop -->
+      <div
+        class="container-fluid"
+
+      >
         <div class="d-flex flex-row overflow-auto bg-light">
           <div v-for="(file, index) in selectedFiles" :key="index" class="p-2">
             <div class="card" style="min-width: 10rem; max-width: 10rem;">
@@ -167,8 +182,6 @@ function applyMarkdown(formatType) {
         <button class="btn btn-outline-secondary border-0 rounded-pill" @click="applyMarkdown('bold')"><b>B</b></button>
         <button class="btn btn-outline-secondary border-0 rounded-pill" @click="applyMarkdown('italic')"><i>I</i></button>
         <button class="btn btn-outline-secondary border-0 rounded-pill" @click="applyMarkdown('underline')"><u>U</u></button>
-
-
 
         <textarea
           class="form-control border rounded-pill"
