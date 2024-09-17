@@ -11,6 +11,10 @@ import { ref } from 'vue';
 import { VuemojiPicker } from 'vuemoji-picker';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import ImageCompressor from 'js-image-compressor'; // Import the compressor
+import { displayToast } from "../js/popupHandler";
+
+
 
 // Emoji Handling
 const handleEmojiClick = (detail) => {
@@ -40,21 +44,106 @@ function handleDrop(event) {
 }
 
 // Handle files from file input or drag-and-drop
+// Handle files from file input or drag-and-drop
 function handleFiles(files) {
-  selectedFiles.value = [];
-
   for (let file of files) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64Content = btoa(reader.result);
-      selectedFiles.value.push({
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        content: base64Content,
-      });
-    };
-    reader.readAsBinaryString(file);
+    if (file.type.startsWith('image/')) {
+      // Compress the image if it's an image type
+      const options = {
+        file: file,
+        quality: 0.6,
+        mimeType: 'image/jpeg',
+        maxWidth: 500,  // Set maximum width to 250px
+        maxHeight: 500, // Set maximum height to 250px
+        width: 500,     // Resize width to 250px
+        height: 500,    // Resize height to 250px
+        convertSize: Infinity,
+        loose: true,
+        redressOrientation: true,
+
+        // Callback before compression
+        beforeCompress: function (result) {
+          console.log('Image size before compression:', result.size);
+          console.log('mime type:', result.type);
+        },
+
+        // Compression success callback
+        success: function (compressedFile) {
+          console.log('Image size after compression:', compressedFile.size);
+          console.log('mime type:', compressedFile.type);
+          console.log(
+            'Actual compression ratio:',
+            ((file.size - compressedFile.size) / file.size * 100).toFixed(2) + '%'
+          );
+
+          // toast notification
+          let message = `
+              <div>
+                <strong> Compressed <span class="badge bg-secondary"> ${file.name}</span></strong>
+                <div class="mt-2">
+                                    <span class="badge bg-secondary"> ${file.size} Bytes</span>
+
+                  <i class="bi bi-caret-right-fill"></i>
+
+                  <span class="badge bg-secondary"> ${compressedFile.size} Bytes</span>
+
+
+                  <span class="badge bg-warning text-dark">Ratio:${((file.size - compressedFile.size) / file.size * 100).toFixed(2)}%.</span>
+
+
+
+                </div>
+              </div>
+            `;
+          displayToast(
+            "success",
+            "bi-card-image",
+            message,
+            5000
+          );
+
+          // Convert compressed image to base64
+          const reader = new FileReader();
+          reader.onload = () => {
+            const base64Content = btoa(reader.result);
+            selectedFiles.value.push({
+              name: compressedFile.name,
+              size: compressedFile.size,
+              type: compressedFile.type,
+              content: base64Content,
+            });
+          };
+          reader.readAsBinaryString(compressedFile);
+        },
+
+        // An error occurred
+        error: function (msg) {
+          console.error(msg);
+          displayToast(
+            "danger",
+            "bi-card-image",
+            `Error compressing image`,
+            5000
+          );
+        },
+      };
+
+      // Run image compression
+      new ImageCompressor(options);
+    } else {
+      // Handle non-image files
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64Content = btoa(reader.result);
+        selectedFiles.value.push({
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          content: base64Content,
+        });
+      };
+      reader.readAsBinaryString(file);
+    }
   }
 }
 
@@ -68,14 +157,14 @@ function removeFile(index) {
 
 // Transmit a new message
 function transmitNewMessage() {
-  if (typeof(chat.selectedCallsign) === 'undefined') {
+  if (typeof chat.selectedCallsign === 'undefined') {
     chat.selectedCallsign = Object.keys(chat.callsign_list)[0];
   }
 
   chat.inputText = chat.inputText.trim();
   if (chat.inputText.length === 0 && selectedFiles.value.length === 0) return;
 
-  const attachments = selectedFiles.value.map(file => ({
+  const attachments = selectedFiles.value.map((file) => ({
     name: file.name,
     type: file.type,
     data: file.content,
@@ -84,8 +173,8 @@ function transmitNewMessage() {
   // Sanitize inputText before sending the message
   const sanitizedInput = DOMPurify.sanitize(marked.parse(chat.inputText));
 
-  if (chat.selectedCallsign.startsWith("BC-")) {
-    return "new broadcast";
+  if (chat.selectedCallsign.startsWith('BC-')) {
+    return 'new broadcast';
   } else {
     if (attachments.length > 0) {
       newMessage(chat.selectedCallsign, sanitizedInput, attachments);
@@ -95,7 +184,7 @@ function transmitNewMessage() {
   }
 
   chat.inputText = '';
-  chatModuleMessage.value = "";
+  chatModuleMessage.value = '';
   resetFile();
 }
 
@@ -130,11 +219,8 @@ function applyMarkdown(formatType) {
       <!-- Hidden file input -->
       <input type="file" multiple ref="fileInput" @change="handleFileSelection" style="display: none;" />
 
-      <!-- File Attachment Preview Area with Drag-and-Drop -->
-      <div
-        class="container-fluid"
-
-      >
+      <!-- File Attachment Preview Area -->
+      <div class="container-fluid">
         <div class="d-flex flex-row overflow-auto bg-light">
           <div v-for="(file, index) in selectedFiles" :key="index" class="p-2">
             <div class="card" style="min-width: 10rem; max-width: 10rem;">
