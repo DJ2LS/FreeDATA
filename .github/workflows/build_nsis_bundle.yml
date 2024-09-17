@@ -37,9 +37,10 @@ jobs:
         with:
           repository: "Hamlib/Hamlib"
           fileName: " hamlib-w64-*.zip"
-          latest: true
+          #latest: true
           extract: true
-          out-file-path: "freedata_server/lib/hamlib/"
+          tag: '4.5.5'
+          out-file-path: "freedata_server/lib/hamlib"
 
       - name: Build binaries
         working-directory: freedata_server
