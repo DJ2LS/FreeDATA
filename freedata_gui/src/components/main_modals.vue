@@ -6,11 +6,12 @@
    import { useStationStore } from "../store/stationStore.js";
    import { getStationInfoByCallsign, setStationInfoByCallsign } from "../js/stationHandler.js";
    import { settingsStore } from "../store/settingsStore.js";
-   import { settingsStore as settings } from "../store/settingsStore.js";
+   import { settingsStore as settings, onChange } from "../store/settingsStore.js";
    import { sendModemTestFrame } from "../js/api";
    import { newMessage, deleteCallsignFromDB } from "../js/messagesHandler.js";
    import main_startup_check from "./main_startup_check.vue";
-   
+
+
    // Chart.js imports
    import {
      Chart as ChartJS,
