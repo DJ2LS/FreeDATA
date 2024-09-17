@@ -46,11 +46,13 @@ jobs:
         working-directory: freedata_server
         run: |
           # Find the downloaded folder (handle version numbers dynamically)
-          HAMLIB_DIR=$(find lib/hamlib -type d -name "hamlib-w64*" | head -n 1)
+          $HAMLIB_DIR = Get-ChildItem -Directory -Path lib/hamlib -Filter "hamlib-w64*" | Select-Object -First 1
           # Move all contents from the found directory to the target directory
-          mv "$HAMLIB_DIR"/* lib/hamlib/
+          Move-Item "$($HAMLIB_DIR.FullName)\*" "lib/hamlib" -Force
           # Remove the now empty versioned directory
-          rmdir "$HAMLIB_DIR"
+          Remove-Item "$($HAMLIB_DIR.FullName)" -Recurse -Force
+        shell: pwsh
+
 
       - name: Build binaries
         working-directory: freedata_server
