@@ -51,12 +51,12 @@ function handleFiles(files) {
       // Compress the image if it's an image type
       const options = {
         file: file,
-        quality: 0.6,
-        mimeType: 'image/jpeg',
-        maxWidth: 500,  // Set maximum width to 250px
-        maxHeight: 500, // Set maximum height to 250px
-        width: 500,     // Resize width to 250px
-        height: 500,    // Resize height to 250px
+        quality: 0.5,
+        //mimeType: 'image/jpeg',
+        maxWidth: 750,  // Set maximum width to 750px
+        maxHeight: 750, // Set maximum height to 750px
+        width: 750,     // Resize width to 750px
+        height: 750,    // Resize height to 750px
         convertSize: Infinity,
         loose: true,
         redressOrientation: true,
@@ -79,19 +79,12 @@ function handleFiles(files) {
           // toast notification
           let message = `
               <div>
-                <strong> Compressed <span class="badge bg-secondary"> ${file.name}</span></strong>
+                <strong> Prepared <span class="badge bg-secondary"> ${file.name}</span></strong>
                 <div class="mt-2">
-                                    <span class="badge bg-secondary"> ${file.size} Bytes</span>
-
+                  <span class="badge bg-secondary"> ${file.size} Bytes</span>
                   <i class="bi bi-caret-right-fill"></i>
-
                   <span class="badge bg-secondary"> ${compressedFile.size} Bytes</span>
-
-
                   <span class="badge bg-warning text-dark">Ratio:${((file.size - compressedFile.size) / file.size * 100).toFixed(2)}%.</span>
-
-
-
                 </div>
               </div>
             `;
@@ -99,7 +92,7 @@ function handleFiles(files) {
             "success",
             "bi-card-image",
             message,
-            5000
+            10000
           );
 
           // Convert compressed image to base64
@@ -229,6 +222,18 @@ function applyMarkdown(formatType) {
                 <span class="text-truncate">{{ file.name }}</span>
                 <button class="btn btn-close" @click="removeFile(index)"></button>
               </div>
+
+              <!-- Conditional Image Preview -->
+        <div v-if="file.type.startsWith('image/')" class="p-2">
+          <img
+  :src="`data:${file.type};base64,${file.content}`"
+  class="img-fluid"
+  alt="Image Preview">
+
+
+
+        </div>
+
               <div class="card-footer text-muted">
                 {{ file.type }}
               </div>
