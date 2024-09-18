@@ -39,11 +39,11 @@ class radio:
 
     def get_frequency(self):
         """ """
-        return None
+        return self.parameters['frequency']
 
     def get_mode(self):
         """ """
-        return None
+        return self.parameters['mode']
 
     def get_level(self):
         """ """
@@ -85,6 +85,7 @@ class radio:
         Returns:
 
         """
+        self.parameters['mode'] = mode
         return None
 
     def set_tuner(self, state):
@@ -107,6 +108,8 @@ class radio:
         Returns:
 
         """
+        self.parameters['frequency'] = frequency
+
         return None
     def get_status(self):
         """
