@@ -11,6 +11,10 @@ import { ref } from 'vue';
 import { VuemojiPicker } from 'vuemoji-picker';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import ImageCompressor from 'js-image-compressor'; // Import the compressor
+import { displayToast } from "../js/popupHandler";
+
+
 
 // Emoji Handling
 const handleEmojiClick = (detail) => {
@@ -29,20 +33,117 @@ function triggerFileInput() {
 
 // Handle file selection and preview
 function handleFileSelection(event) {
-  selectedFiles.value = [];
+  handleFiles(event.target.files);
+}
 
-  for (let file of event.target.files) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64Content = btoa(reader.result);
-      selectedFiles.value.push({
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        content: base64Content,
-      });
-    };
-    reader.readAsBinaryString(file);
+// Handle drag and drop files
+function handleDrop(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  handleFiles(event.dataTransfer.files);
+}
+
+// Handle files from file input or drag-and-drop
+// Handle files from file input or drag-and-drop
+function handleFiles(files) {
+  for (let file of files) {
+    if (file.type.startsWith('image/')) {
+      // Compress the image if it's an image type
+      const options = {
+        file: file,
+        quality: 0.6,
+        mimeType: 'image/jpeg',
+        maxWidth: 500,  // Set maximum width to 250px
+        maxHeight: 500, // Set maximum height to 250px
+        width: 500,     // Resize width to 250px
+        height: 500,    // Resize height to 250px
+        convertSize: Infinity,
+        loose: true,
+        redressOrientation: true,
+
+        // Callback before compression
+        beforeCompress: function (result) {
+          console.log('Image size before compression:', result.size);
+          console.log('mime type:', result.type);
+        },
+
+        // Compression success callback
+        success: function (compressedFile) {
+          console.log('Image size after compression:', compressedFile.size);
+          console.log('mime type:', compressedFile.type);
+          console.log(
+            'Actual compression ratio:',
+            ((file.size - compressedFile.size) / file.size * 100).toFixed(2) + '%'
+          );
+
+          // toast notification
+          let message = `
+              <div>
+                <strong> Compressed <span class="badge bg-secondary"> ${file.name}</span></strong>
+                <div class="mt-2">
+                                    <span class="badge bg-secondary"> ${file.size} Bytes</span>
+
+                  <i class="bi bi-caret-right-fill"></i>
+
+                  <span class="badge bg-secondary"> ${compressedFile.size} Bytes</span>
+
+
+                  <span class="badge bg-warning text-dark">Ratio:${((file.size - compressedFile.size) / file.size * 100).toFixed(2)}%.</span>
+
+
+
+                </div>
+              </div>
+            `;
+          displayToast(
+            "success",
+            "bi-card-image",
+            message,
+            5000
+          );
+
+          // Convert compressed image to base64
+          const reader = new FileReader();
+          reader.onload = () => {
+            const base64Content = btoa(reader.result);
+            selectedFiles.value.push({
+              name: compressedFile.name,
+              size: compressedFile.size,
+              type: compressedFile.type,
+              content: base64Content,
+            });
+          };
+          reader.readAsBinaryString(compressedFile);
+        },
+
+        // An error occurred
+        error: function (msg) {
+          console.error(msg);
+          displayToast(
+            "danger",
+            "bi-card-image",
+            `Error compressing image`,
+            5000
+          );
+        },
+      };
+
+      // Run image compression
+      new ImageCompressor(options);
+    } else {
+      // Handle non-image files
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64Content = btoa(reader.result);
+        selectedFiles.value.push({
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          content: base64Content,
+        });
+      };
+      reader.readAsBinaryString(file);
+    }
   }
 }
 
@@ -56,14 +157,14 @@ function removeFile(index) {
 
 // Transmit a new message
 function transmitNewMessage() {
-  if (typeof(chat.selectedCallsign) === 'undefined') {
+  if (typeof chat.selectedCallsign === 'undefined') {
     chat.selectedCallsign = Object.keys(chat.callsign_list)[0];
   }
 
   chat.inputText = chat.inputText.trim();
   if (chat.inputText.length === 0 && selectedFiles.value.length === 0) return;
 
-  const attachments = selectedFiles.value.map(file => ({
+  const attachments = selectedFiles.value.map((file) => ({
     name: file.name,
     type: file.type,
     data: file.content,
@@ -72,8 +173,8 @@ function transmitNewMessage() {
   // Sanitize inputText before sending the message
   const sanitizedInput = DOMPurify.sanitize(marked.parse(chat.inputText));
 
-  if (chat.selectedCallsign.startsWith("BC-")) {
-    return "new broadcast";
+  if (chat.selectedCallsign.startsWith('BC-')) {
+    return 'new broadcast';
   } else {
     if (attachments.length > 0) {
       newMessage(chat.selectedCallsign, sanitizedInput, attachments);
@@ -83,7 +184,7 @@ function transmitNewMessage() {
   }
 
   chat.inputText = '';
-  chatModuleMessage.value = "";
+  chatModuleMessage.value = '';
   resetFile();
 }
 
@@ -113,7 +214,7 @@ function applyMarkdown(formatType) {
 </script>
 
 <template>
-  <nav class="navbar sticky-bottom bg-body-tertiary border-top">
+  <nav class="navbar sticky-bottom bg-body-tertiary border-top" @dragover.prevent @drop="handleDrop">
     <div class="container-fluid p-0">
       <!-- Hidden file input -->
       <input type="file" multiple ref="fileInput" @change="handleFileSelection" style="display: none;" />
@@ -167,8 +268,6 @@ function applyMarkdown(formatType) {
         <button class="btn btn-outline-secondary border-0 rounded-pill" @click="applyMarkdown('bold')"><b>B</b></button>
         <button class="btn btn-outline-secondary border-0 rounded-pill" @click="applyMarkdown('italic')"><i>I</i></button>
         <button class="btn btn-outline-secondary border-0 rounded-pill" @click="applyMarkdown('underline')"><u>U</u></button>
-
-
 
         <textarea
           class="form-control border rounded-pill"

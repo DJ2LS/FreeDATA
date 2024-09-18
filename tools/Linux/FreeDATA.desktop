@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=FreeDATA
+Comment=Amateur Radio Software
+Icon=freedata_icon
+Terminal=true
+Exec=bash -c 'cd ~/freedata; bash ./run-freedata-linux.sh'
+Type=Application
+Categories=AudioVideo;Audio;HamRadio;
+StartupNotify=true

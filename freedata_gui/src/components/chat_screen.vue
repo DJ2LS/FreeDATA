@@ -23,11 +23,9 @@ import {
   Title,
   Tooltip,
   Legend,
-  BarElement,
 } from 'chart.js';
 
-import { Bar } from 'vue-chartjs';
-import { watch, nextTick, ref, computed } from 'vue';
+import { watch, nextTick, ref } from 'vue';
 import annotationPlugin from 'chartjs-plugin-annotation';
 
 ChartJS.register(
@@ -37,72 +35,10 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  BarElement,
   annotationPlugin
 );
 
-const beaconHistogramOptions = {
-  type: 'bar',
-  bezierCurve: false, // remove curves from your plot
-  scaleShowLabels: false, // remove labels
-  tooltipEvents: [], // remove trigger from tooltips so they won't be shown
-  pointDot: false, // remove the points markers
-  scaleShowGridLines: true, // set to false to remove the grids background
-  maintainAspectRatio: true,
-  plugins: {
-    legend: {
-      display: false,
-    },
-    annotation: {
-      annotations: [
-        {
-          type: 'line',
-          mode: 'horizontal',
-          scaleID: 'y',
-          value: 0,
-          borderColor: 'darkgrey', // Set the color to dark grey for the zero line
-          borderWidth: 0.5, // Set the line width
-        },
-      ],
-    },
-  },
 
-  scales: {
-    x: {
-      position: 'bottom',
-      display: false,
-      min: -10,
-      max: 15,
-      ticks: {
-        display: false,
-      },
-    },
-    y: {
-      display: false,
-      min: -5,
-      max: 10,
-      ticks: {
-        display: false,
-      },
-    },
-  },
-};
-
-const beaconHistogramData = computed(() => ({
-  labels: chat.beaconLabelArray,
-  datasets: [
-    {
-      data: chat.beaconDataArray,
-      tension: 0.1,
-      borderColor: 'rgb(0, 255, 0)',
-
-      backgroundColor: function (context) {
-        const value = context.dataset.data[context.dataIndex];
-        return value >= 0 ? 'green' : 'red';
-      },
-    },
-  ],
-}));
 
 const messagesContainer = ref(null);
 watch(
@@ -147,34 +83,18 @@ watch(
     </button>
   </div>
 
-  <!-- Column for the beacons input group -->
-  <div class="col-auto" style="width: 300px;">
-    <div class="input-group mb-0 p-0">
-      <button type="button" class="btn btn-outline-secondary" disabled>
-        Beacons
-      </button>
-      <div class="form-floating border border-secondary-subtle border-1 rounded-end">
-        <Bar
-          :data="beaconHistogramData"
-          :options="beaconHistogramOptions"
-          width="300"
-          height="50"
-        />
-      </div>
-    </div>
-  </div>
 
   <!-- Column for the delete button -->
   <div class="col-auto">
     <div class="input-group mb-0 p-0">
       <button
         style="width: 100px;"
-        class="btn btn-secondary"
+        class="btn btn-outline-secondary ms-2"
         data-bs-target="#deleteChatModal"
         data-bs-toggle="modal"
         @click="chatSelected(callsign)"
       >
-        <i class="bi bi-journal-text h5"></i>
+        <i class="bi bi-graph-up h5"></i>
       </button>
     </div>
   </div>
