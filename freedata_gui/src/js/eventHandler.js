@@ -157,7 +157,7 @@ export function eventDispatcher(data) {
         case "CQ":
           message = `
       <div>
-        <strong>CQ Received:</strong>
+        <strong>CQ received:</strong>
         <span class="badge bg-info text-dark">${data.dxcallsign}</span>
         <div class="mt-2">
           <span class="badge bg-secondary">SNR: ${data.snr}</span>
@@ -171,7 +171,7 @@ export function eventDispatcher(data) {
         case "QRV":
           message = `
       <div>
-        <strong>QRV Received:</strong>
+        <strong>QRV received:</strong>
         <span class="badge bg-info text-dark">${data.dxcallsign}</span>
         <div class="mt-2">
           <span class="badge bg-secondary">SNR: ${data.snr}</span>
@@ -185,7 +185,7 @@ export function eventDispatcher(data) {
         case "PING":
           message = `
       <div>
-        <strong>PING Received:</strong>
+        <strong>PING received:</strong>
         <span class="badge bg-info text-dark">${data.dxcallsign}</span>
         <div class="mt-2">
           <span class="badge bg-secondary">SNR: ${data.snr}</span>
@@ -198,7 +198,7 @@ export function eventDispatcher(data) {
         case "PING_ACK":
           message = `
       <div>
-        <strong>PING_ACK Received:</strong>
+        <strong>PING ACK received:</strong>
         <span class="badge bg-info text-dark">${data.dxcallsign}</span>
         <div class="mt-2">
           <span class="badge bg-secondary">SNR: ${data.snr}</span>
@@ -296,8 +296,6 @@ export function eventDispatcher(data) {
                 <div class="mt-2">
                   <span class="badge bg-primary">STATE: ${data["arq-transfer-outbound"].state}</span>
                   <span class="badge bg-secondary">Session ID: ${data["arq-transfer-outbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">Transmitted Bytes: ${data["arq-transfer-outbound"].received_bytes}</span>
-                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].total_bytes}</span>
                 </div>
               </div>
             `;
@@ -342,8 +340,6 @@ export function eventDispatcher(data) {
                 <div class="mt-2">
                   <span class="badge bg-primary">STATE: ${data["arq-transfer-outbound"].state}</span>
                   <span class="badge bg-secondary">Session ID: ${data["arq-transfer-outbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">Transmitted Bytes: ${data["arq-transfer-outbound"].received_bytes}</span>
-                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].total_bytes}</span>
                 </div>
               </div>
             `;
