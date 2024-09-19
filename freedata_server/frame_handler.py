@@ -134,13 +134,14 @@ class FrameHandler():
             station = DatabaseManagerStations(self.event_manager).get_station(frame['origin'])
             if station and "gridsquare" in station["location"]:
                 dxgrid = station["location"]["gridsquare"]
+
         except Exception:
             pass
 
         # Initialize distance values
         distance_km = None
         distance_miles = None
-        if dxgrid != "------" and frame.get('gridsquare'):
+        if dxgrid != "------":
             distance_dict = maidenhead.distance_between_locators(self.config['STATION']['mygrid'], frame['gridsquare'])
             distance_km = distance_dict['kilometers']
             distance_miles = distance_dict['miles']
