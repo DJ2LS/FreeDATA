@@ -55,8 +55,6 @@ function handleFiles(files) {
         //mimeType: 'image/jpeg',
         maxWidth: 750,  // Set maximum width to 750px
         maxHeight: 750, // Set maximum height to 750px
-        width: 750,     // Resize width to 750px
-        height: 750,    // Resize height to 750px
         convertSize: Infinity,
         loose: true,
         redressOrientation: true,
