@@ -1,7 +1,8 @@
 [Desktop Entry]
 Name=FreeDATA
 Comment=Amateur Radio Software
-Icon=freedata_icon
+# Change USER to your user account name and edjust the path as needed
+Icon=/home/deej/freedata/FreeDATA/freedata_gui/public/favicon-32x32.png
 Terminal=true
 Exec=bash -c 'cd ~/freedata; bash ./run-freedata-linux.sh'
 Type=Application
