@@ -2,6 +2,9 @@ Copy the file "FreeDATA.Desktop" to the "Desktop" directory under your home dire
 
 cp FreeDATA.Desktop ~/Desktop
 
+Edit ~/Desktop/FreeDATA.Desktop and change "USER" in the Icon line 
+to your login account name and adjust the path to the FreeDATA icon as needed.
+
 If you are running on as Raspberry Pi, open the File Browser (the yellow "Folder" icon at the top of the screen).
 
 Go to Edit, Preferences.
