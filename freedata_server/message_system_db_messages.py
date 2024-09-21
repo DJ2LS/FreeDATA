@@ -251,7 +251,7 @@ class DatabaseManagerMessages(DatabaseManager):
                 self.log(f"Set message {message.id} to queued and incremented attempt")
 
                 session.commit()
-                return {'status': 'success', 'message': f'{len(message)} message(s) set to queued'}
+                return {'status': 'success', 'message': f'message(s) set to queued'}
             else:
                 return {'status': 'failure', 'message': 'No eligible messages found'}
         except Exception as e:
