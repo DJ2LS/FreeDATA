@@ -61,7 +61,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         },
         IRS_State.RESUME: {
             FRAME_TYPE.ARQ_SESSION_OPEN.value: 'send_open_ack',
-        },
+        }
 
 
 
