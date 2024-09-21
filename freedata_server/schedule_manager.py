@@ -1,6 +1,10 @@
 import sched
 import time
 import threading
+
+from numpy.ma.core import greater
+from numpy.random import set_state
+
 import command_message_send
 from message_system_db_manager import DatabaseManager
 from message_system_db_messages import DatabaseManagerMessages
@@ -10,6 +14,8 @@ import command_beacon
 import atexit
 import numpy as np
 import structlog
+from arq_session_irs import IRS_State
+from arq_session_iss import ISS_State
 
 class ScheduleManager:
     def __init__(self, modem_version, config_manager, state_manger, event_manager):
@@ -27,6 +33,7 @@ class ScheduleManager:
             'explorer_publishing': {'function': self.push_to_explorer, 'interval': 60},
             'transmitting_beacon': {'function': self.transmit_beacon, 'interval': 600},
             'beacon_cleanup': {'function': self.delete_beacons, 'interval': 600},
+            'update_transmission_state': {'function': self.update_transmission_state, 'interval': 10},
         }
         self.running = False  # Flag to control the running state
         self.scheduler_thread = None  # Reference to the scheduler thread
@@ -103,4 +110,31 @@ class ScheduleManager:
                 print(e)
 
         return
+
+    def update_transmission_state(self):
+
+        session_to_be_deleted = set()
+
+        for session_id in self.state_manager.arq_irs_sessions:
+            session = self.state_manager.arq_irs_sessions[session_id]
+            # set an IRS session to RESUME for being ready getting the data again
+            if session.is_IRS and session.last_state_change_timestamp + 120  < time.time():
+                session.state = set_state(IRS_State.RESUME)
+
+
+        for session_id in self.state_manager.arq_iss_sessions:
+            session = self.state_manager.arq_iss_sessions[session_id]
+            if not session.is_IRS and session.last_state_change_timestamp + 120 < time.time() and session.state in [ISS_State.ABORTED, ISS_State.FAILED]:
+                session_to_be_deleted.add(session)
+
+        # finally delete sessions
+        try:
+            for session in session_to_be_deleted:
+                if session.is_IRS:
+                    self.state_manager.remove_arq_irs_session(session.id)
+                else:
+                    self.state_manager.remove_arq_iss_session(session.id)
+
+        except Exception as e:
+            self.log.warning("[SCHEDULE] error deleting session", error=e)
 
