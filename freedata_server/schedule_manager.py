@@ -2,9 +2,6 @@ import sched
 import time
 import threading
 
-from numpy.ma.core import greater
-from numpy.random import set_state
-
 import command_message_send
 from message_system_db_manager import DatabaseManager
 from message_system_db_messages import DatabaseManagerMessages
@@ -120,7 +117,6 @@ class ScheduleManager:
             # set an IRS session to RESUME for being ready getting the data again
             if session.is_IRS and session.last_state_change_timestamp + 120  < time.time():
                 session.state = set_state(IRS_State.RESUME)
-
 
         for session_id in self.state_manager.arq_iss_sessions:
             session = self.state_manager.arq_iss_sessions[session_id]
