@@ -116,7 +116,7 @@ class ScheduleManager:
             session = self.state_manager.arq_irs_sessions[session_id]
             # set an IRS session to RESUME for being ready getting the data again
             if session.is_IRS and session.last_state_change_timestamp + 120  < time.time():
-                session.state = set_state(IRS_State.RESUME)
+                session.state = session.set_state(IRS_State.RESUME)
 
         for session_id in self.state_manager.arq_iss_sessions:
             session = self.state_manager.arq_iss_sessions[session_id]
