@@ -142,7 +142,7 @@ class FrameHandler():
         distance_km = None
         distance_miles = None
         if dxgrid != "------":
-            distance_dict = maidenhead.distance_between_locators(self.config['STATION']['mygrid'], frame['gridsquare'])
+            distance_dict = maidenhead.distance_between_locators(self.config['STATION']['mygrid'], dxgrid)
             distance_km = distance_dict['kilometers']
             distance_miles = distance_dict['miles']
 
