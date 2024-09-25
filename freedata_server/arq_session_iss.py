@@ -23,7 +23,7 @@ class ARQSessionISS(arq_session.ARQSession):
 
     RETRIES_CONNECT = 5
     RETRIES_INFO = 10
-    RETRIES_DATA = 15
+    RETRIES_DATA = 25
     RETRIES_STOP = 5
 
     # DJ2LS: 3 seconds seems to be too small for radios with a too slow PTT toggle time

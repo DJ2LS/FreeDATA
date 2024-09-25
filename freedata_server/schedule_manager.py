@@ -116,7 +116,7 @@ class ScheduleManager:
             session = self.state_manager.arq_irs_sessions[session_id]
 
             # set an IRS session to RESUME for being ready getting the data again
-            if session.is_IRS and session.last_state_change_timestamp + 120  < time.time():
+            if session.is_IRS and session.last_state_change_timestamp + 90  < time.time():
                 self.log.warning(f"[SCHEDULE] [ARQ={session_id}] Setting state to", old_state=session.state, state=IRS_State.RESUME)
                 try:
                     session.state = session.set_state(session.state_enum.RESUME)
@@ -126,7 +126,7 @@ class ScheduleManager:
 
         for session_id in self.state_manager.arq_iss_sessions:
             session = self.state_manager.arq_iss_sessions[session_id]
-            if not session.is_IRS and session.last_state_change_timestamp + 120 < time.time() and session.state in [ISS_State.ABORTED, ISS_State.FAILED]:
+            if not session.is_IRS and session.last_state_change_timestamp + 90 < time.time() and session.state in [ISS_State.ABORTED, ISS_State.FAILED]:
                 session_to_be_deleted.add(session)
 
         # finally delete sessions
