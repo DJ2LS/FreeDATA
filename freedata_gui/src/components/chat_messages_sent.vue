@@ -21,6 +21,11 @@
       <button class="btn btn-outline-secondary border-0" @click="deleteMessage">
         <i class="bi bi-trash"></i>
       </button>
+
+      <button class="btn btn-outline-secondary border-0" @click="sendADIF">
+        ADIF
+      </button>
+
     </div>
     <!-- message area -->
     <div :class="messageWidthClass" class="align-items-end">
@@ -104,6 +109,7 @@ import {
   deleteMessageFromDB,
   requestMessageInfo,
   getMessageAttachment,
+  sendADIFviaUDP,
 } from "../js/messagesHandler";
 
 // pinia store setup
@@ -131,6 +137,9 @@ export default {
 
     deleteMessage() {
       deleteMessageFromDB(this.message.id);
+    },
+    sendADIF() {
+      sendADIFviaUDP(this.message.id);
     },
 
     showMessageInfo() {

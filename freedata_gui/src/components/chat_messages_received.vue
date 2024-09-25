@@ -50,6 +50,10 @@
         <i class="bi bi-info-circle"></i>
       </button>
 
+      <button class="btn btn-outline-secondary border-0" @click="sendADIF">
+        ADIF
+      </button>
+
       <button class="btn btn-outline-secondary border-0" @click="deleteMessage">
         <i class="bi bi-trash"></i>
       </button>
@@ -63,7 +67,7 @@ import DOMPurify from 'dompurify';
 import {
   deleteMessageFromDB,
   requestMessageInfo,
-  getMessageAttachment,
+  getMessageAttachment, sendADIFviaUDP,
 } from "../js/messagesHandler";
 
 import chat_messages_image_preview from './chat_messages_image_preview.vue';
@@ -88,6 +92,10 @@ export default {
   methods: {
     showMessageInfo() {
       chatStore.messageInfoById = requestMessageInfo(this.message.id);
+    },
+
+    sendADIF() {
+      sendADIFviaUDP(this.message.id);
     },
 
     deleteMessage() {

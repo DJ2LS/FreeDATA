@@ -1,6 +1,5 @@
 <template>
   <div class="message-actions-menu">
-    <!-- Add your action buttons here (e.g., Delete, Copy, Quote) -->
     <button @click="onDelete">Delete</button>
     <button @click="onCopy">Copy</button>
     <button @click="onQuote">Quote</button>
