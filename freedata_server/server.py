@@ -33,6 +33,7 @@ import command_message_send
 import event_manager
 import structlog
 from log_handler import setup_logging
+import adif_udp_logger
 
 from message_system_db_manager import DatabaseManager
 from message_system_db_messages import DatabaseManagerMessages
@@ -346,6 +347,13 @@ async def post_freedata_message(request: Request):
     data = await request.json()
     await enqueue_tx_command(command_message_send.SendMessageCommand, data)
     return api_response(data)
+
+@app.post("/freedata/messages/{message_id}/adif")
+async def post_freedata_message_adif_log(message_id: str):
+    adif_output = DatabaseManagerMessages(app.event_manager).get_message_by_id_adif(message_id)
+    # Send the ADIF data via UDP
+    adif_udp_logger.send_adif_qso_data(app.config_manager.read(), adif_output)
+    return api_response(adif_output)
 
 @app.get("/freedata/messages/{message_id}")
 async def get_freedata_message(message_id: str):
