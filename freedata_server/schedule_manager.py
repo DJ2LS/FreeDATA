@@ -114,9 +114,15 @@ class ScheduleManager:
 
         for session_id in self.state_manager.arq_irs_sessions:
             session = self.state_manager.arq_irs_sessions[session_id]
+
             # set an IRS session to RESUME for being ready getting the data again
             if session.is_IRS and session.last_state_change_timestamp + 120  < time.time():
-                session.state = session.set_state(IRS_State.RESUME)
+                self.log.warning(f"[SCHEDULE] [ARQ={session_id}] Setting state to", old_state=session.state, state=IRS_State.RESUME)
+                try:
+                    session.state = session.set_state(session.state_enum.RESUME)
+                    session.state = session.state_enum.RESUME
+                except Exception as e:
+                    self.log.warning("[SCHEDULE] error setting ARQ state", error=e)
 
         for session_id in self.state_manager.arq_iss_sessions:
             session = self.state_manager.arq_iss_sessions[session_id]
@@ -132,5 +138,5 @@ class ScheduleManager:
                     self.state_manager.remove_arq_iss_session(session.id)
 
         except Exception as e:
-            self.log.warning("[SCHEDULE] error deleting session", error=e)
+            self.log.warning("[SCHEDULE] error deleting ARQ session", error=e)
 
