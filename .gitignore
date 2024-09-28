@@ -34,3 +34,4 @@ coverage.xml
 venv_3.11/
 venv/
 test_venv/
+freedata_server/lib/codec2/codec2/
