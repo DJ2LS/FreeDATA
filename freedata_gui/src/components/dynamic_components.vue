@@ -446,7 +446,13 @@ onMounted(() => {
     data-bs-target="#offcanvasGridItems"
     aria-controls="offcanvasGridItems"
   >
-    <i class="bi bi-grip-vertical h5"></i>
+   <!-- <i class="bi bi-grip-vertical h5">      </i>-->
+
+  <span class="me-4 text-white" style="writing-mode: vertical-rl; transform: rotate(180deg);">
+    screen settings
+  </span>
+
+
   </button>
 
   <div class="grid-container z-0" style="height: calc(100vh - 51px);">

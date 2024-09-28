@@ -24,7 +24,7 @@ function getDateTime(timestampRaw) {
 
 <template>
   <div class="card h-100">
-    <div class="card-header p-0">
+    <div class="card-header">
       <i class="bi bi-card-list" style="font-size: 1.2rem"></i>&nbsp;
       <strong>Activity</strong>
     </div>
