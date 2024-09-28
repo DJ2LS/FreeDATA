@@ -28,12 +28,8 @@ class DatabaseManagerMessages(DatabaseManager):
             # Parse the timestamp from the message ID
             timestamp = datetime.fromisoformat(message_data['id'].split('_')[2])
 
-            print("-------")
-            print(frequency)
             if frequency and frequency not in ['---']:
                 statistics["frequency"] = frequency
-            print(statistics)
-
 
             # Create the P2PMessage instance
             new_message = P2PMessage(

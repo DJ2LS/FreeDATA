@@ -119,8 +119,11 @@ class ScheduleManager:
             if session.is_IRS and session.last_state_change_timestamp + 90  < time.time():
                 self.log.warning(f"[SCHEDULE] [ARQ={session_id}] Setting state to", old_state=session.state, state=IRS_State.RESUME)
                 try:
-                    session.state = session.set_state(session.state_enum.RESUME)
-                    session.state = session.state_enum.RESUME
+                    # if session state is already RESUME, don't set it again for avoiding a flooded cli
+                    if session.state not in [session.state_enum.RESUME]:
+                        session.state = session.set_state(session.state_enum.RESUME)
+                        session.state = session.state_enum.RESUME
+
                 except Exception as e:
                     self.log.warning("[SCHEDULE] error setting ARQ state", error=e)
 
