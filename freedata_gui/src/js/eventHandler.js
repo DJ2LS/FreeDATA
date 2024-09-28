@@ -281,12 +281,8 @@ export function eventDispatcher(data) {
               data["arq-transfer-outbound"].statistics.snr_histogram,
             );
 
-            stateStore.arq_bytes_per_minute.value = toRaw(
-              data["arq-transfer-outbound"].statistics.bytes_per_minute,
-            );
-            stateStore.arq_bits_per_second.value = toRaw(
-              data["arq-transfer-outbound"].statistics.bits_per_second,
-            );
+            stateStore.arq_bytes_per_minute.value = data["arq-transfer-outbound"].statistics.bytes_per_minute;
+            stateStore.arq_bits_per_second.value = data["arq-transfer-outbound"].statistics.bits_per_second;
 
             stateStore.speed_level = data["arq-transfer-outbound"].speed_level;
             return;
@@ -335,12 +331,8 @@ export function eventDispatcher(data) {
             stateStore.arq_total_bytes =
               data["arq-transfer-outbound"].total_bytes;
 
-            stateStore.arq_bytes_per_minute.value = toRaw(
-              data["arq-transfer-outbound"].statistics.bytes_per_minute,
-            );
-            stateStore.arq_bits_per_second.value = toRaw(
-              data["arq-transfer-outbound"].statistics.bits_per_second,
-            );
+            stateStore.arq_bytes_per_minute.value = data["arq-transfer-outbound"].statistics.bytes_per_minute;
+            stateStore.arq_bits_per_second.value = data["arq-transfer-outbound"].statistics.bits_per_second;
 
             // Reset progressbar values after a delay
             setTimeout(() => {
@@ -469,12 +461,8 @@ export function eventDispatcher(data) {
               data["arq-transfer-inbound"].statistics.snr_histogram,
             );
 
-            stateStore.arq_bytes_per_minute.value = toRaw(
-              data["arq-transfer-inbound"].statistics.bytes_per_minute,
-            );
-            stateStore.arq_bits_per_second.value = toRaw(
-              data["arq-transfer-inbound"].statistics.bits_per_second,
-            );
+            stateStore.arq_bytes_per_minute.value = data["arq-transfer-inbound"].statistics.bytes_per_minute;
+            stateStore.arq_bits_per_second.value = data["arq-transfer-inbound"].statistics.bits_per_second;
             stateStore.speed_level = data["arq-transfer-inbound"].speed_level;
             return;
 
@@ -503,12 +491,8 @@ export function eventDispatcher(data) {
                 100,
             );
 
-            stateStore.arq_bytes_per_minute.value = toRaw(
-              data["arq-transfer-inbound"].statistics.bytes_per_minute,
-            );
-            stateStore.arq_bits_per_second.value = toRaw(
-              data["arq-transfer-inbound"].statistics.bits_per_second,
-            );
+            stateStore.arq_bytes_per_minute.value = data["arq-transfer-inbound"].statistics.bytes_per_minute;
+            stateStore.arq_bits_per_second.value = data["arq-transfer-inbound"].statistics.bits_per_second;
 
             stateStore.arq_total_bytes =
               data["arq-transfer-inbound"].total_bytes;
