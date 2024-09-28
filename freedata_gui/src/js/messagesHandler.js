@@ -11,6 +11,7 @@ import {
   retransmitFreedataMessage,
   getFreedataAttachmentBySha512,
   getFreedataMessageById,
+  postFreedataMessageADIF
 } from "./api";
 
 /**
@@ -127,6 +128,14 @@ export function deleteCallsignFromDB(callsign) {
  */
 export function deleteMessageFromDB(id) {
   deleteFreedataMessage(id);
+}
+
+/**
+ * Send a specific message by its ID via ADIF UDP.
+ * @param {string} id - The ID of the message.
+ */
+export function sendADIFviaUDP(id) {
+  postFreedataMessageADIF(id);
 }
 
 /**

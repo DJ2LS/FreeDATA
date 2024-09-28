@@ -1,6 +1,6 @@
 <template>
   <div v-if="isImage">
-    <img :src="imageUrl" alt="Image Preview" class="img-fluid rounded" />
+    <img :src="imageUrl" alt="Image Preview" class="img-fluid rounded w-100" />
   </div>
 </template>
 

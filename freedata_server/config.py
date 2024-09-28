@@ -76,6 +76,8 @@ class CONFIG:
         },
         'MESSAGES': {
             'enable_auto_repeat': bool,
+            'adif_log_host': str,
+            'adif_log_port': int,
         },
         'GUI':{
             'auto_run_browser': bool,

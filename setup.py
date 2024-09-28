@@ -9,14 +9,14 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='freedata',
-    version='0.16.2a',
+    version='0.16.3a',
     packages=find_packages(where='.'),
     package_dir={'': '.'},
     install_requires=required,
     python_requires='>=3.9',
     author='DJ2LS',
     author_email='dj2ls@proton.me',
-    description='A free, open-source, multi-platform application for sending files and messages, using the codec2 HF modems.',
+    description='INFO: THIS PACKAGE IS NOT YET WORKING - PLEASE USE THE OFFICIAL SCRIPT BASED SETUP',
     long_description=long_description,
     long_description_content_type="text/markdown",
     url='https://github.com/DJ2LS/FreeDATA',

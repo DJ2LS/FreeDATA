@@ -24,7 +24,7 @@ ip = 127.0.0.1
 port = 4532
 path = 
 command = 
-arguments =
+arguments = 
 enable_vfo = False
 
 [RADIO]
@@ -63,6 +63,9 @@ data_port = 8001
 
 [MESSAGES]
 enable_auto_repeat = False
+adif_log_host = 127.0.0.1
+adif_log_port = 2237
 
 [GUI]
 auto_run_browser = True
+

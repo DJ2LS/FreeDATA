@@ -1,6 +1,7 @@
 from modem_frametypes import FRAME_TYPE as FR_TYPE
 import helpers
 import codec2
+import maidenhead
 
 class DataFrameFactory:
 
@@ -25,7 +26,7 @@ class DataFrameFactory:
     def __init__(self, config):
 
         self.myfullcall = f"{config['STATION']['mycall']}-{config['STATION']['myssid']}"
-        self.mygrid = config['STATION']['mygrid']
+        self.mygrid = maidenhead.generate_full_maidenhead(config["STATION"]["mygrid"])
 
         # table for holding our frame templates
         self.template_list = {}

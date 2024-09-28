@@ -5,6 +5,8 @@ import structlog
 import time
 from codec2 import FREEDV_MODE
 from message_system_db_manager import DatabaseManager
+from message_system_db_station import DatabaseManagerStations
+
 import maidenhead
 
 TESTMODE = False
@@ -127,11 +129,20 @@ class FrameHandler():
             return
 
         dxgrid = frame.get('gridsquare', "------")
+        #try to find station info in database
+        try:
+            station = DatabaseManagerStations(self.event_manager).get_station(frame['origin'])
+            if station and "gridsquare" in station["location"]:
+                dxgrid = station["location"]["gridsquare"]
+
+        except Exception:
+            pass
+
         # Initialize distance values
         distance_km = None
         distance_miles = None
-        if dxgrid != "------" and frame.get('gridsquare'):
-            distance_dict = maidenhead.distance_between_locators(self.config['STATION']['mygrid'], frame['gridsquare'])
+        if dxgrid != "------":
+            distance_dict = maidenhead.distance_between_locators(self.config['STATION']['mygrid'], dxgrid)
             distance_km = distance_dict['kilometers']
             distance_miles = distance_dict['miles']
 
