@@ -321,8 +321,8 @@ export function eventDispatcher(data) {
                 <div class="mt-2">
                   <span class="badge bg-primary">STATE: ${data["arq-transfer-outbound"].state}</span>
                   <span class="badge bg-secondary">Session ID: ${data["arq-transfer-outbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">Transmitted Bytes: ${data["arq-transfer-outbound"].received_bytes}</span>
-                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].total_bytes}</span>
+                    <span class="badge bg-warning text-dark">Bytes per Minute: ${data["arq-transfer-outbound"].statistics.bytes_per_minute}</span>
+                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].statistics.total_bytes}</span>
                 </div>
               </div>
             `;
@@ -486,8 +486,8 @@ export function eventDispatcher(data) {
                 <div class="mt-2">
                   <span class="badge bg-primary">STATE: ${data["arq-transfer-inbound"].state}</span>
                   <span class="badge bg-secondary">Session ID: ${data["arq-transfer-inbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">Received Bytes: ${data["arq-transfer-inbound"].received_bytes}</span>
-                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-inbound"].total_bytes}</span>
+                  <span class="badge bg-warning text-dark">Bytes per Minute: ${data["arq-transfer-inbound"].statistics.bytes_per_minute}</span>
+                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-inbound"].statistics.total_bytes}</span>
                 </div>
               </div>
             `;
