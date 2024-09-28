@@ -153,9 +153,9 @@ const state = useStateStore(pinia);
             data-bs-toggle="tooltip"
             data-bs-trigger="hover"
             data-bs-html="true"
-            data-bs-title="the dxcallsign of the connected station"
+            :data-bs-title="state.dxcallsign || '-----'"
           >
-            {{ state.dxcallsign }}
+            {{ state.dxcallsign || '-----' }}
           </button>
         </div>
       </div>
