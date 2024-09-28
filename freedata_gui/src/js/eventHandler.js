@@ -280,6 +280,14 @@ export function eventDispatcher(data) {
             stateStore.arq_speed_list_snr.value = toRaw(
               data["arq-transfer-outbound"].statistics.snr_histogram,
             );
+
+            stateStore.arq_bytes_per_minute.value = toRaw(
+              data["arq-transfer-outbound"].statistics.bytes_per_minute,
+            );
+            stateStore.arq_bits_per_second.value = toRaw(
+              data["arq-transfer-outbound"].statistics.bits_per_second,
+            );
+
             stateStore.speed_level = data["arq-transfer-outbound"].speed_level;
             return;
 
@@ -301,6 +309,8 @@ export function eventDispatcher(data) {
             displayToast("warning", "bi-exclamation-triangle", message, 5000);
             stateStore.arq_transmission_percent = 0;
             stateStore.arq_total_bytes = 0;
+            stateStore.arq_bytes_per_minute = 0;
+            stateStore.arq_bits_per_second = 0;
             return;
 
           case "ENDED":
@@ -325,10 +335,19 @@ export function eventDispatcher(data) {
             stateStore.arq_total_bytes =
               data["arq-transfer-outbound"].total_bytes;
 
+            stateStore.arq_bytes_per_minute.value = toRaw(
+              data["arq-transfer-outbound"].statistics.bytes_per_minute,
+            );
+            stateStore.arq_bits_per_second.value = toRaw(
+              data["arq-transfer-outbound"].statistics.bits_per_second,
+            );
+
             // Reset progressbar values after a delay
             setTimeout(() => {
               stateStore.arq_transmission_percent = 0;
               stateStore.arq_total_bytes = 0;
+              stateStore.arq_bytes_per_minute = 0;
+              stateStore.arq_bits_per_second = 0;
             }, 5000);
             return;
           case "FAILED":
@@ -347,6 +366,8 @@ export function eventDispatcher(data) {
             setTimeout(() => {
               stateStore.arq_transmission_percent = 0;
               stateStore.arq_total_bytes = 0;
+              stateStore.arq_bytes_per_minute = 0;
+              stateStore.arq_bits_per_second = 0;
             }, 5000);
 
             return;
@@ -447,6 +468,13 @@ export function eventDispatcher(data) {
             stateStore.arq_speed_list_snr.value = toRaw(
               data["arq-transfer-inbound"].statistics.snr_histogram,
             );
+
+            stateStore.arq_bytes_per_minute.value = toRaw(
+              data["arq-transfer-inbound"].statistics.bytes_per_minute,
+            );
+            stateStore.arq_bits_per_second.value = toRaw(
+              data["arq-transfer-inbound"].statistics.bits_per_second,
+            );
             stateStore.speed_level = data["arq-transfer-inbound"].speed_level;
             return;
 
@@ -474,6 +502,14 @@ export function eventDispatcher(data) {
                 data["arq-transfer-inbound"].total_bytes) *
                 100,
             );
+
+            stateStore.arq_bytes_per_minute.value = toRaw(
+              data["arq-transfer-inbound"].statistics.bytes_per_minute,
+            );
+            stateStore.arq_bits_per_second.value = toRaw(
+              data["arq-transfer-inbound"].statistics.bits_per_second,
+            );
+
             stateStore.arq_total_bytes =
               data["arq-transfer-inbound"].total_bytes;
 
@@ -481,6 +517,8 @@ export function eventDispatcher(data) {
             setTimeout(() => {
               stateStore.arq_transmission_percent = 0;
               stateStore.arq_total_bytes = 0;
+              stateStore.arq_bytes_per_minute = 0;
+              stateStore.arq_bits_per_second = 0;
             }, 5000);
             return;
 
@@ -520,6 +558,8 @@ export function eventDispatcher(data) {
             setTimeout(() => {
               stateStore.arq_transmission_percent = 0;
               stateStore.arq_total_bytes = 0;
+              stateStore.arq_bytes_per_minute = 0;
+              stateStore.arq_bits_per_second = 0;
             }, 5000);
             return;
         }
