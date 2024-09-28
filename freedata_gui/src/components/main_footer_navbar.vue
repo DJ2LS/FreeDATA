@@ -174,8 +174,8 @@ const state = useStateStore(pinia);
           aria-valuemax="100"
         ></div>
         <p class="justify-content-center m-0 d-flex position-absolute w-100 text-light">
-          Message Progress {{state.arq_transmission_percent}}% [ {{ state.arq_bytes_per_minute }}
-    bpm / {{ state.arq_bits_per_second}}
+          Message Progress {{state.arq_transmission_percent}}% [ {{ state.arq_bytes_per_minute || '---' }}
+    bpm / {{ state.arq_bits_per_second || '--' }}
     bps ]
         </p>
       </div>

@@ -58,8 +58,8 @@ export const useStateStore = defineStore("stateStore", () => {
   var arq_speed_list_timestamp = ref([]);
   var arq_speed_list_bpm = ref([]);
   var arq_speed_list_snr = ref([]);
-  var arq_bytes_per_minute = ref([]);
-  var arq_bits_per_second = ref([]);
+  var arq_bytes_per_minute = ref();
+  var arq_bits_per_second = ref();
 
 
   var arq_is_receiving = ref(false);
