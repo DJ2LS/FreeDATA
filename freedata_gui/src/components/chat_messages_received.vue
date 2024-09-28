@@ -26,11 +26,14 @@
         </div>
 
         <div class="card-body">
-          <p class="card-text text-break">{{ message.body }}</p>
+          <!-- Render parsed markdown with v-html -->
+          <p class="card-text text-break" v-html="parsedMessageBody"></p>
         </div>
 
-        <div class="card-footer p-0 bg-light border-top-0">
-          <p class="text-muted p-0 m-0 me-1 text-end">{{ getDateTime }} UTC</p>
+        <div class="card-footer p-0 border-top-0">
+          <p class="p-0 m-0 me-1 text-end text-dark">
+            <span class="badge badge-secondary mr-2 text-dark">{{ getDateTime }} UTC</span>
+          </p>
           <!-- Display formatted timestamp in card-footer -->
         </div>
       </div>
@@ -39,13 +42,16 @@
     <!-- Delete button outside of the card -->
     <div class="col-auto">
       <button
-
         class="btn btn-outline-secondary border-0 me-1"
         @click="showMessageInfo"
         data-bs-target="#messageInfoModal"
         data-bs-toggle="modal"
       >
         <i class="bi bi-info-circle"></i>
+      </button>
+
+      <button class="btn btn-outline-secondary border-0" @click="sendADIF">
+        ADIF
       </button>
 
       <button class="btn btn-outline-secondary border-0" @click="deleteMessage">
@@ -56,14 +62,15 @@
 </template>
 
 <script>
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import {
   deleteMessageFromDB,
   requestMessageInfo,
-  getMessageAttachment,
+  getMessageAttachment, sendADIFviaUDP,
 } from "../js/messagesHandler";
 
 import chat_messages_image_preview from './chat_messages_image_preview.vue';
-
 
 // Pinia store setup
 import { setActivePinia } from "pinia";
@@ -74,7 +81,7 @@ import { useChatStore } from '../store/chatStore.js';
 const chatStore = useChatStore(pinia);
 
 export default {
-components: {
+  components: {
     chat_messages_image_preview,
   },
 
@@ -85,6 +92,10 @@ components: {
   methods: {
     showMessageInfo() {
       chatStore.messageInfoById = requestMessageInfo(this.message.id);
+    },
+
+    sendADIF() {
+      sendADIFviaUDP(this.message.id);
     },
 
     deleteMessage() {
@@ -144,6 +155,11 @@ components: {
       let minutes = date.getMinutes().toString().padStart(2, "0");
       let seconds = date.getSeconds().toString().padStart(2, "0");
       return `${hours}:${minutes}:${seconds}`;
+    },
+
+    parsedMessageBody() {
+      // Use marked to parse markdown and DOMPurify to sanitize
+      return DOMPurify.sanitize(marked.parse(this.message.body));
     },
   },
 };

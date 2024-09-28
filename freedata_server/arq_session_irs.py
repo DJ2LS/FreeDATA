@@ -15,11 +15,12 @@ class IRS_State(Enum):
     ENDED = 4
     FAILED = 5
     ABORTED = 6
+    RESUME = 7 # State, which allows resuming of a transmission - will be set after some waiting time, higher than TIMEOUT_DATA for ensuring clean states
 
 class ARQSessionIRS(arq_session.ARQSession):
 
     TIMEOUT_CONNECT = 55 #14.2
-    TIMEOUT_DATA = 120
+    TIMEOUT_DATA = 90
 
     STATE_TRANSITION = {
         IRS_State.NEW: { 
@@ -50,7 +51,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         },
         IRS_State.FAILED: {
             FRAME_TYPE.ARQ_BURST_FRAME.value: 'receive_data',
-            FRAME_TYPE.ARQ_STOP.value: 'send_stop_ack'
+            #FRAME_TYPE.ARQ_SESSION_OPEN.value: 'send_open_ack',
         },
         IRS_State.ABORTED: {
             FRAME_TYPE.ARQ_STOP.value: 'send_stop_ack',
@@ -58,6 +59,12 @@ class ARQSessionIRS(arq_session.ARQSession):
             #FRAME_TYPE.ARQ_SESSION_INFO.value: 'send_info_ack',
             #FRAME_TYPE.ARQ_BURST_FRAME.value: 'receive_data',
         },
+        IRS_State.RESUME: {
+            FRAME_TYPE.ARQ_SESSION_OPEN.value: 'send_open_ack',
+        }
+
+
+
     }
 
     def __init__(self, config: dict, modem, dxcall: str, session_id: int, state_manager):
@@ -66,6 +73,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.id = session_id
         self.dxcall = dxcall
         self.version = 1
+        self.is_IRS = True
 
         self.state = IRS_State.NEW
         self.state_enum = IRS_State  # needed for access State enum from outside
@@ -285,7 +293,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.event_manager.send_arq_session_finished(
                 False, self.id, self.dxcall, False, self.state.name, statistics=session_stats)
         if self.config['STATION']['enable_stats']:
-            self.statistics.push(self.state.name, session_stats)
+            self.statistics.push(self.state.name, session_stats, self.dxcall)
 
         return None, None
 
@@ -299,7 +307,7 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=session_stats)
         if self.config['STATION']['enable_stats']:
-            self.statistics.push(self.state.name, session_stats)
+            self.statistics.push(self.state.name, session_stats, self.dxcall)
 
         self.states.setARQ(False)
         return None, None

@@ -69,6 +69,8 @@ const defaultConfig = {
     },
     MESSAGES: {
       enable_auto_repeat: false,
+      adif_log_host: "127.0.0.1",
+      adif_log_port: "2237",
     },
     GUI: {
       auto_run_browser: true,

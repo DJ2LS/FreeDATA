@@ -6,11 +6,12 @@
    import { useStationStore } from "../store/stationStore.js";
    import { getStationInfoByCallsign, setStationInfoByCallsign } from "../js/stationHandler.js";
    import { settingsStore } from "../store/settingsStore.js";
-   import { settingsStore as settings } from "../store/settingsStore.js";
+   import { settingsStore as settings, onChange } from "../store/settingsStore.js";
    import { sendModemTestFrame } from "../js/api";
    import { newMessage, deleteCallsignFromDB } from "../js/messagesHandler.js";
    import main_startup_check from "./main_startup_check.vue";
-   
+
+
    // Chart.js imports
    import {
      Chart as ChartJS,
@@ -21,8 +22,9 @@
      Title,
      Tooltip,
      Legend,
+     BarElement,
    } from "chart.js";
-   import { Line } from "vue-chartjs";
+   import { Line, Bar } from "vue-chartjs";
    
    // Register Chart.js components
    ChartJS.register(
@@ -33,6 +35,7 @@
      Title,
      Tooltip,
      Legend,
+     BarElement,
    );
    
    // Initialize Pinia
@@ -123,6 +126,75 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
     },
   ],
 }));
+
+
+const beaconHistogramOptions = {
+  type: 'bar',
+  bezierCurve: false, // remove curves from your plot
+  scaleShowLabels: false, // remove labels
+  tooltipEvents: [], // remove trigger from tooltips so they won't be shown
+  pointDot: false, // remove the points markers
+  scaleShowGridLines: true, // set to false to remove the grids background
+  maintainAspectRatio: true,
+  plugins: {
+    legend: {
+      display: false,
+    },
+    annotation: {
+      annotations: [
+        {
+          type: 'line',
+          mode: 'horizontal',
+          scaleID: 'y',
+          value: 0,
+          borderColor: 'darkgrey', // Set the color to dark grey for the zero line
+          borderWidth: 0.5, // Set the line width
+        },
+      ],
+    },
+  },
+
+  scales: {
+    x: {
+      position: 'bottom',
+      display: true,
+      min: -10,
+      max: 15,
+      ticks: {
+        display: false,
+      },
+      text: 'timestamp',
+    },
+    y: {
+      display: true,
+      min: -15,
+      max: 15,
+      ticks: {
+        display: true,
+      },
+      text: 'SNR',
+    },
+  },
+};
+
+const beaconHistogramData = computed(() => ({
+  labels: chat.beaconLabelArray,
+  datasets: [
+    {
+      data: chat.beaconDataArray,
+      tension: 0.1,
+      borderColor: 'rgb(0, 255, 0)',
+
+      backgroundColor: function (context) {
+        const value = context.dataset.data[context.dataIndex];
+        return value >= 0 ? 'green' : 'red';
+      },
+    },
+  ],
+}));
+
+
+
    
    // Function to update station info
    function updateStationInfo() {
@@ -149,6 +221,11 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
      let fullCall = `${mycall}-${myssid}`;
      getStationInfoByCallsign(fullCall);
    }
+
+
+
+
+
 </script>
 <template>
    <main_startup_check />
@@ -246,7 +323,7 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
          <div class="modal-content">
             <div class="modal-header">
                <h1 class="modal-title fs-5" id="deleteChatModalLabel">
-                  Sub menu for: {{ chat.selectedCallsign }}
+                   {{ chat.selectedCallsign }} Options
                </h1>
                <button
                   type="button"
@@ -256,12 +333,43 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
                   ></button>
             </div>
             <div class="modal-body">
-               <div class="input-group mb-3">
-                  <span class="input-group-text" 
-                     >Total Messages</span
-                     >
-                  <span class="input-group-text" >...</span>
-               </div>
+
+
+
+            <div class="card">
+  <div class="card-header">
+    <strong>Beacon histogram</strong>
+  </div>
+  <div class="card-body">
+    <Bar
+          :data="beaconHistogramData"
+          :options="beaconHistogramOptions"
+          width="300"
+          height="100"
+        />
+  </div>
+</div>
+
+
+            <div class="card mt-3">
+  <div class="card-header">
+    <strong>Further options</strong>
+  </div>
+  <div class="card-body">
+    <button
+                  type="button"
+                  class="btn btn-danger"
+                  @click="deleteChat"
+                  data-bs-dismiss="modal"
+                  >
+               Delete Chat
+               </button>
+  </div>
+</div>
+
+
+
+
             </div>
             <div class="modal-footer">
                <button
@@ -271,14 +379,7 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
                   >
                Close
                </button>
-               <button
-                  type="button"
-                  class="btn btn-danger"
-                  @click="deleteChat"
-                  data-bs-dismiss="modal"
-                  >
-               Delete Chat
-               </button>
+
             </div>
          </div>
       </div>

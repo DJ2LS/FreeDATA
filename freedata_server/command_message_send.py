@@ -18,7 +18,7 @@ class SendMessageCommand(TxCommand):
     def set_params_from_api(self, apiParams):
         origin = f"{self.config['STATION']['mycall']}-{self.config['STATION']['myssid']}"
         self.message = MessageP2P.from_api_params(origin, apiParams)
-        DatabaseManagerMessages(self.event_manager).add_message(self.message.to_dict(), statistics={}, direction='transmit', status='queued')
+        DatabaseManagerMessages(self.event_manager).add_message(self.message.to_dict(), statistics={}, direction='transmit', status='queued', frequency=self.state_manager.radio_frequency)
 
     def transmit(self, modem):
 
@@ -37,7 +37,7 @@ class SendMessageCommand(TxCommand):
             return
         try:
             self.log(f"Queued message found: {first_queued_message['id']}")
-            DatabaseManagerMessages(self.event_manager).update_message(first_queued_message["id"], update_data={'status': 'transmitting'})
+            DatabaseManagerMessages(self.event_manager).update_message(first_queued_message["id"], update_data={'status': 'transmitting'}, frequency=self.state_manager.radio_frequency)
             message_dict = DatabaseManagerMessages(self.event_manager).get_message_by_id(first_queued_message["id"])
             message = MessageP2P.from_api_params(message_dict['origin'], message_dict)
 

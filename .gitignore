@@ -28,4 +28,10 @@ coverage.xml
 
 #GUI_WEB
 /freedata_gui/dist
-/freedata_gui/node_modules
+/freedata_gui/node_modules!/venv/
+
+# venv packages
+venv_3.11/
+venv/
+test_venv/
+freedata_server/lib/codec2/codec2/

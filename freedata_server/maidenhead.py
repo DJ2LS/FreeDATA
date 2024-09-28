@@ -1,4 +1,5 @@
 import math
+import random
 
 def haversine(lat1, lon1, lat2, lon2):
     """
@@ -45,8 +46,8 @@ def maidenhead_to_latlon(grid_square):
     Returns:
     tuple: A tuple containing the latitude and longitude (in that order) of the grid square's center.
     """
-    if len(grid_square) < 4 or len(grid_square) % 2 != 0:
-        raise ValueError("Grid square must be at least 4 characters long and an even length.")
+
+    grid_square = generate_full_maidenhead(grid_square)
 
     grid_square = grid_square.upper()
     lon = -180 + (ord(grid_square[0]) - ord('A')) * 20
@@ -58,11 +59,13 @@ def maidenhead_to_latlon(grid_square):
         lon += (ord(grid_square[4]) - ord('A')) * (5 / 60)
         lat += (ord(grid_square[5]) - ord('A')) * (2.5 / 60)
 
+    # not needed now as we always have 6 digits
     if len(grid_square) == 8:
         lon += int(grid_square[6]) * (5 / 600)
         lat += int(grid_square[7]) * (2.5 / 600)
 
     # Adjust to the center of the grid square
+    # not needed now as we always have 6 digits
     if len(grid_square) <= 4:
         lon += 1
         lat += 0.5
@@ -92,3 +95,57 @@ def distance_between_locators(locator1, locator2):
     km = haversine(lat1, lon1, lat2, lon2)
     miles = km * 0.621371
     return {'kilometers': km, 'miles': miles}
+
+
+import random
+
+
+import random
+import string
+
+def generate_full_maidenhead(grid_square):
+    """
+    Convert a Maidenhead locator of 2 or 4 characters to a 6-character locator
+    by generating random characters for the missing positions, while ensuring the correct format:
+    1-2: Uppercase letters (A-R)
+    3-4: Digits (0-9)
+    5-6: Lowercase letters (a-r)
+
+    Parameters:
+    grid_square (str): A 2, 4, or 6 character Maidenhead locator.
+
+    Returns:
+    str: A 6-character Maidenhead locator.
+    """
+
+    grid_square = grid_square.upper()
+
+    # If the grid square is longer than 6 characters, strip it to 6 characters
+    if len(grid_square) > 6:
+        grid_square = grid_square[:6]
+
+    if len(grid_square) == 2:
+        # Generate random digits for positions 3 and 4
+        grid_square += f"{random.randint(0, 9)}{random.randint(0, 9)}"
+        # Generate random lowercase letters from 'a' to 'r' for positions 5 and 6
+        grid_square += random.choice("abcdefghijklmnopqr")
+        grid_square += random.choice("abcdefghijklmnopqr")
+
+    elif len(grid_square) == 4:
+        # Generate random lowercase letters from 'a' to 'r' for positions 5 and 6
+        grid_square += random.choice("abcdefghijklmnopqr")
+        grid_square += random.choice("abcdefghijklmnopqr")
+
+    elif len(grid_square) == 6:
+        # If grid square is valid and already 6 characters, enforce format
+        grid_square = grid_square[:2].upper() + grid_square[2:4] + grid_square[4:6].lower()
+        return grid_square
+
+    else:
+        raise ValueError("Grid square must be 2, 4, or 6 characters long.")
+
+    # Adjust the case for the last two characters
+    grid_square = grid_square[:4] + grid_square[4:].lower()
+    return grid_square
+
+

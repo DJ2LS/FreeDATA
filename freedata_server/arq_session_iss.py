@@ -23,7 +23,7 @@ class ARQSessionISS(arq_session.ARQSession):
 
     RETRIES_CONNECT = 5
     RETRIES_INFO = 10
-    RETRIES_DATA = 15
+    RETRIES_DATA = 25
     RETRIES_STOP = 5
 
     # DJ2LS: 3 seconds seems to be too small for radios with a too slow PTT toggle time
@@ -70,6 +70,8 @@ class ARQSessionISS(arq_session.ARQSession):
         self.state = ISS_State.NEW
         self.state_enum = ISS_State # needed for access State enum from outside
         self.id = self.generate_id()
+
+        self.is_IRS = False
 
         # enable decoder for signalling ACK bursts
         self.modem.demodulator.set_decode_mode(modes_to_decode=None, is_irs=False)
@@ -244,8 +246,6 @@ class ARQSessionISS(arq_session.ARQSession):
         #print(self.arq_data_type_handler.state_manager.p2p_connection_sessions)
         session_stats = self.calculate_session_statistics(self.confirmed_bytes, self.total_length)
         self.arq_data_type_handler.transmitted(self.type_byte, self.data, session_stats)
-        if self.config['STATION']['enable_stats']:
-            self.statistics.push(self.state.name, session_stats)
 
         self.state_manager.remove_arq_iss_session(self.id)
         self.states.setARQ(False)
@@ -258,8 +258,6 @@ class ARQSessionISS(arq_session.ARQSession):
         self.log("Transmission failed!")
         session_stats=self.calculate_session_statistics(self.confirmed_bytes, self.total_length)
         self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, session_stats)
-        if self.config['STATION']['enable_stats']:
-            self.statistics.push(self.state.name, session_stats)
 
         self.states.setARQ(False)
 

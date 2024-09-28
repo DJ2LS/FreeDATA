@@ -57,6 +57,8 @@ class ARQSession:
         self.states = state_manager
         self.states.setARQ(True)
 
+        self.is_IRS = False # state for easy check "is IRS" or is "ISS"
+
         self.protocol_version = 1
 
         self.snr = []
@@ -78,6 +80,10 @@ class ARQSession:
         self.session_started = time.time()
         self.session_ended = 0
         self.session_max_age = 500
+
+        # this timestamp is updated by "set_state", everytime we have a state change.
+        # we will use the schedule manager, for checking, how old is the state change for deciding, how we continue with the message
+        self.last_state_change_timestamp = time.time()
 
         self.statistics = stats.stats(self.config, self.event_manager, self.states)
 
@@ -106,7 +112,8 @@ class ARQSession:
         if self.state == state:
             self.log(f"{type(self).__name__} state {self.state.name} unchanged.")
         else:
-            self.log(f"{type(self).__name__} state change from {self.state.name} to {state.name}")
+            self.last_state_change_timestamp = time.time()
+            self.log(f"{type(self).__name__} state change from {self.state.name} to {state.name} at {self.last_state_change_timestamp}")
         self.state = state
 
     def get_data_payload_size(self):
