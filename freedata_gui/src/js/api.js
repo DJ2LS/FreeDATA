@@ -258,9 +258,10 @@ export async function sendFreedataMessage(destination, body, attachments) {
   });
 }
 
-
 export async function postFreedataMessageADIF(id) {
-  return await apiPost(`/freedata/messages/${id}/adif`, { action: "retransmit" });
+  return await apiPost(`/freedata/messages/${id}/adif`, {
+    action: "retransmit",
+  });
 }
 
 export async function retransmitFreedataMessage(id) {

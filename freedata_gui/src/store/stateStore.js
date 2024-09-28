@@ -61,7 +61,6 @@ export const useStateStore = defineStore("stateStore", () => {
   var arq_bytes_per_minute = ref();
   var arq_bits_per_second = ref();
 
-
   var arq_is_receiving = ref(false);
 
   /* TODO Those 3 can be removed I guess , DJ2LS*/

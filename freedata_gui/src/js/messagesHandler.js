@@ -11,7 +11,7 @@ import {
   retransmitFreedataMessage,
   getFreedataAttachmentBySha512,
   getFreedataMessageById,
-  postFreedataMessageADIF
+  postFreedataMessageADIF,
 } from "./api";
 
 /**
