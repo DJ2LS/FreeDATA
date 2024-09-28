@@ -270,8 +270,7 @@ export function eventDispatcher(data) {
                 data["arq-transfer-outbound"].total_bytes) *
                 100,
             );
-            stateStore.arq_total_bytes =
-              data["arq-transfer-outbound"].received_bytes;
+            stateStore.arq_total_bytes = data["arq-transfer-outbound"].total_bytes;
             stateStore.arq_speed_list_timestamp.value = toRaw(
               data["arq-transfer-outbound"].statistics.time_histogram,
             );
