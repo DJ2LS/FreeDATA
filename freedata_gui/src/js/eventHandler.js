@@ -232,7 +232,7 @@ export function eventDispatcher(data) {
             displayToast("success", "bi-check-circle", message, 10000);
             stateStore.dxcallsign = data["arq-transfer-outbound"].dxcall;
             stateStore.arq_transmission_percent = 0;
-            stateStore.arq_total_bytes = 0;
+            stateStore.arq_total_bytes = data["arq-transfer-outbound"].total_bytes;
             return;
           case "OPEN_SENT":
             message = `
