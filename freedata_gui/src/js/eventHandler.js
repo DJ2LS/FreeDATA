@@ -323,7 +323,7 @@ export function eventDispatcher(data) {
                 100,
             );
             stateStore.arq_total_bytes =
-              data["arq-transfer-outbound"].received_bytes;
+              data["arq-transfer-outbound"].total_bytes;
 
             // Reset progressbar values after a delay
             setTimeout(() => {
@@ -370,7 +370,7 @@ export function eventDispatcher(data) {
             displayToast("info", "bi-info-circle", message, 10000);
             stateStore.dxcallsign = data["arq-transfer-inbound"].dxcall;
             stateStore.arq_transmission_percent = 0;
-            stateStore.arq_total_bytes = 0;
+            stateStore.arq_total_bytes = data["arq-transfer-inbound"].total_bytes;
             return;
 
           case "OPEN_ACK_SENT":
@@ -392,7 +392,7 @@ export function eventDispatcher(data) {
                 100,
             );
             stateStore.arq_total_bytes =
-              data["arq-transfer-inbound"].received_bytes;
+              data["arq-transfer-inbound"].total_bytes;
             return;
 
           case "INFO_ACK_SENT":
@@ -414,7 +414,7 @@ export function eventDispatcher(data) {
                 100,
             );
             stateStore.arq_total_bytes =
-              data["arq-transfer-inbound"].received_bytes;
+              data["arq-transfer-inbound"].total_bytes;
             return;
 
           case "BURST_REPLY_SENT":
@@ -475,7 +475,7 @@ export function eventDispatcher(data) {
                 100,
             );
             stateStore.arq_total_bytes =
-              data["arq-transfer-inbound"].received_bytes;
+              data["arq-transfer-inbound"].total_bytes;
 
             // Reset progressbar values after a delay
             setTimeout(() => {
