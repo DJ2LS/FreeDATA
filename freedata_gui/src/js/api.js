@@ -223,6 +223,10 @@ export async function sendModemTestFrame() {
   return await apiPost("/modem/send_test_frame");
 }
 
+export async function sendSineTone(state) {
+  return await apiPost("/radio/tune", {enable_tuning: state});
+}
+
 export async function startModem() {
   return await apiPost("/modem/start");
 }

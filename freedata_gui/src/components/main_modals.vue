@@ -7,7 +7,7 @@
    import { getStationInfoByCallsign, setStationInfoByCallsign } from "../js/stationHandler.js";
    import { settingsStore } from "../store/settingsStore.js";
    import { settingsStore as settings, onChange } from "../store/settingsStore.js";
-   import { sendModemTestFrame } from "../js/api";
+   import { sendModemTestFrame, sendSineTone } from "../js/api";
    import { newMessage, deleteCallsignFromDB } from "../js/messagesHandler.js";
    import main_startup_check from "./main_startup_check.vue";
 
@@ -579,7 +579,7 @@ const beaconHistogramData = computed(() => ({
                      @click="sendModemTestFrame()"
                      class="btn btn-danger"
                      >
-                  Transmit
+                  Transmit ( 5s )
                   </button>
                </div>
                <div class="input-group input-group-sm mb-1">
@@ -616,6 +616,33 @@ const beaconHistogramData = computed(() => ({
                      v-model.number="settings.remote.AUDIO.tx_audio_level"
                      /></span>
                </div>
+
+
+              <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text">Transmit sine</span>
+                  <button
+                     type="button"
+                     id="sendTestFrame"
+                     @click="sendSineTone(true)"
+                     class="btn btn-success"
+                     >
+                  Transmit ( max 30s )
+                  </button>
+
+                                <button
+                     type="button"
+                     id="sendTestFrame"
+                     @click="sendSineTone(false)"
+                     class="btn btn-danger"
+                     >
+                  Stop
+                  </button>
+
+               </div>
+
+
+
+
             </div>
          </div>
       </div>
