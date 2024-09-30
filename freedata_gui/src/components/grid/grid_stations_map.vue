@@ -20,7 +20,7 @@
 
 <script setup>
 import { settingsStore as settings } from '../../store/settingsStore.js';
-import { ref, onMounted, onBeforeUnmount, nextTick, watch, toRaw } from 'vue';
+import { ref, onMounted, onBeforeUnmount, nextTick, toRaw } from 'vue';
 import * as d3 from 'd3';
 import { feature } from 'topojson-client';
 import { locatorToLatLng, distance } from 'qth-locator';
@@ -81,11 +81,23 @@ const drawMap = () => {
       svg.selectAll('g').attr('transform', event.transform);
 
       // Adjust pin size and line width with zoom
-      actualPinRadius = basePinRadius / event.transform.k
+      actualPinRadius = basePinRadius / event.transform.k;
       svg.selectAll('.pin').attr('r', actualPinRadius);
       svg.selectAll('.connection-line').attr('stroke-width', 1 / event.transform.k);
-      svg.selectAll('.country-path').attr('stroke-width', 0.5 / event.transform.k); // Adjust border thickness
-      svg.selectAll('.country-label').attr('font-size', 0.5 / event.transform.k + 'em');
+      svg.selectAll('.country-path').attr('stroke-width', 0.5 / event.transform.k);
+
+      // Handle visibility of country labels based on zoom level
+      if (event.transform.k < 3) {
+        // Show only the largest country labels when zoomed out, hide regular labels
+        svg.selectAll('.country-label').style('display', 'none');
+        svg.selectAll('.largest-country-label').style('display', 'block');
+      } else {
+        // Show regular labels and hide largest country labels when zoomed in
+        svg.selectAll('.country-label')
+          .style('display', 'block')
+          .attr('font-size', `${0.5 / event.transform.k}em`); // Smaller font size
+        svg.selectAll('.largest-country-label').style('display', 'none');
+      }
     });
 
   svg.call(zoom);
@@ -94,8 +106,36 @@ const drawMap = () => {
   import('@/assets/countries-50m.json').then(worldData => {
     const countriesGeoJSON = feature(worldData, worldData.objects.countries);
 
+    // Sort countries by area and select the top 10 largest
+    const largestCountries = countriesGeoJSON.features
+      .sort((a, b) => d3.geoArea(b) - d3.geoArea(a))
+      .slice(0, 10);
+
     // Draw country paths
     const g = svg.append('g');
+
+
+      // Add your own station's pin if mygrid is defined
+  let mygrid = settings.remote.STATION.mygrid;
+  if (mygrid) {
+    const [myLat, myLng] = locatorToLatLng(mygrid);
+    const [myX, myY] = projection([myLng, myLat]); // Correct projection for your location
+
+    // Draw the pin for your station
+    g.append('circle')
+        .attr('class', 'pin my-pin')
+        .attr('r', actualPinRadius + 2)
+        .attr('fill', 'blue')
+        .attr('cx', myX)
+        .attr('cy', myY)
+        .on('mouseover', () => {
+          infoText.value = `Your Station - ${mygrid}`;
+        })
+        .on('mouseout', () => {
+          infoText.value = '';
+        });
+  }
+
 
     g.selectAll('path')
       .data(countriesGeoJSON.features)
@@ -104,9 +144,9 @@ const drawMap = () => {
       .attr('d', path)
       .attr('fill', '#ccc')
       .attr('stroke', '#333')
-      .attr('stroke-width', 0.5); // Initial border thickness
+      .attr('stroke-width', 0.5);
 
-// Add country name labels
+    // Add labels for all countries
     g.selectAll('.country-label')
       .data(countriesGeoJSON.features)
       .enter()
@@ -115,22 +155,33 @@ const drawMap = () => {
       .attr('transform', d => {
         const centroid = d3.geoCentroid(d);
         const [x, y] = projection(centroid);
-        // Manually adjust positions for specific countries
-        if (d.properties.name === 'United States of America') {
-            return `translate(${x + 0}, ${y + 20})`; // Adjust for the USA
-        } else if (d.properties.name === 'Canada') {
-            return `translate(${x - 40}, ${y + 0})`; // Adjust for Canada
-        }
-        return `translate(${x}, ${y})`; // Default for other countries
+        return `translate(${x}, ${y})`;
       })
-      .attr('dy', '.35em') // Adjust vertical alignment
-      .attr('font-size', '0.5em') // Initial font size
-      .attr('text-anchor', 'middle') // Center text
-      .text(d => d.properties.name); // Use the country name
+      .attr('dy', '.35em')
+      .attr('font-size', '0.4em') // Smaller initial font size
+      .attr('text-anchor', 'middle')
+      .text(d => d.properties.name)
+      .style('display', 'none'); // Hide initially (will be shown when zoomed in)
 
+    // Add labels for the largest countries
+    g.selectAll('.largest-country-label')
+      .data(largestCountries)
+      .enter()
+      .append('text')
+      .attr('class', 'largest-country-label')
+      .attr('transform', d => {
+        const centroid = d3.geoCentroid(d);
+        const [x, y] = projection(centroid);
+        return `translate(${x}, ${y})`;
+      })
+      .attr('dy', '.35em')
+      .attr('font-size', '0.6em') // Slightly smaller font size for visibility
+      .attr('text-anchor', 'middle')
+      .attr('fill', 'black')
+      .text(d => d.properties.name);
 
-    // Draw initial pins and lines
-    updatePinsAndLines(g);
+    // Call the function to update pins and lines (including own location)
+    updatePinsAndLines(g); // Use the g group element here
   });
 };
 
@@ -144,69 +195,65 @@ const updatePinsAndLines = (g) => {
   const points = [];
 
   // Prepare points for heard stations
-heardStations.forEach(item => {
-  // Ensure data is valid: 'gridsquare' must not be empty, '', or undefined, and 'origin' must be valid
-  if (item.gridsquare && item.gridsquare.trim() !== '' && item.origin) {
-    const [lat, lng] = locatorToLatLng(item.gridsquare); // Convert gridsquare to lat/lng
-    points.push({ lat, lon: lng, origin: item.origin, gridsquare: item.gridsquare }); // Add to the points array
-  }
-});
+  heardStations.forEach(item => {
+    if (item.gridsquare && item.gridsquare.trim() !== '' && item.origin) {
+      const [lat, lng] = locatorToLatLng(item.gridsquare);
+      points.push({ lat, lon: lng, origin: item.origin, gridsquare: item.gridsquare });
+    }
+  });
 
-  // Check if 'mygrid' is defined and not empty
-  const mygrid = settings.remote.STATION.mygrid;
+  // Add your own station's pin if mygrid is defined
+  let mygrid = settings.remote.STATION.mygrid;
   if (mygrid) {
-    // Your station's coordinates
     const [myLat, myLng] = locatorToLatLng(mygrid);
-    const [myX, myY] = projection([myLng, myLat]); // Project your station's coordinates
+    const [myX, myY] = projection([myLng, myLat]); // Correct projection for your location
+
+    // Draw the pin for your station
+    g.append('circle')
+        .attr('class', 'pin my-pin')
+        .attr('r', actualPinRadius + 2)
+        .attr('fill', 'blue')
+        .attr('cx', myX)
+        .attr('cy', myY)
+        .on('mouseover', () => {
+          infoText.value = `Your Station - ${mygrid}`;
+        })
+        .on('mouseout', () => {
+          infoText.value = '';
+        });
 
     // Draw lines from your station to each heard station
     g.selectAll('.connection-line')
-      .data(points)
-      .enter()
-      .append('line')
-      .attr('class', 'connection-line')
-      .attr('x1', myX)
-      .attr('y1', myY)
-      .attr('x2', d => projection([d.lon, d.lat])[0])
-      .attr('y2', d => projection([d.lon, d.lat])[1])
-      .attr('stroke', 'blue')
-      .attr('stroke-width', 1)
-      .attr('stroke-opacity', 0.5);
-  } else {
-    console.error('Error: Station grid square (mygrid) is not defined. Lines will not be drawn.');
+        .data(points)
+        .enter()
+        .append('line')
+        .attr('class', 'connection-line')
+        .attr('x1', myX)
+        .attr('y1', myY)
+        .attr('x2', d => projection([d.lon, d.lat])[0])
+        .attr('y2', d => projection([d.lon, d.lat])[1])
+        .attr('stroke', 'blue')
+        .attr('stroke-width', 1)
+        .attr('stroke-opacity', 0.5);
   }
 
-  // Add pins
+  // Add pins for heard stations
   g.selectAll('.pin')
-    .data(points)
-    .enter()
-    .append('circle')
-    .attr('class', 'pin')
-    .attr('r', actualPinRadius) // Set initial radius
-    .attr('fill', 'red')
-    .attr('cx', d => projection([d.lon, d.lat])[0])
-    .attr('cy', d => projection([d.lon, d.lat])[1])
-    .on('mouseover', (event, d) => {
-      // Show info with station details
-      infoText.value = `${d.origin} - ${d.gridsquare} (${getMaidenheadDistance(d.gridsquare)} km)`;
-    })
-    .on('mouseout', () => {
-      infoText.value = '';
-    });
+      .data(points)
+      .enter()
+      .append('circle')
+      .attr('class', 'pin')
+      .attr('r', actualPinRadius)
+      .attr('fill', 'red')
+      .attr('cx', d => projection([d.lon, d.lat])[0])
+      .attr('cy', d => projection([d.lon, d.lat])[1])
+      .on('mouseover', (event, d) => {
+        infoText.value = `${d.origin} - ${d.gridsquare} (${getMaidenheadDistance(d.gridsquare)} km)`;
+      })
+      .on('mouseout', () => {
+        infoText.value = '';
+      });
 };
-
-
-// Handle window resize
-const handleResize = () => {
-  drawMap();
-};
-
-// Watch for changes in heard_stations and update pins accordingly
-watch(state.heard_stations, (changedHeardStations) => {
-  console.log('Heard stations updated:', toRaw(changedHeardStations));
-  const g = svg.select('g');
-  updatePinsAndLines(g);
-});
 
 // Zoom in function
 const zoomIn = () => {
@@ -220,34 +267,37 @@ const zoomOut = () => {
 
 // Center the map
 const centerMap = () => {
-  const mygrid = settings.remote.STATION.mygrid; // Get the grid square value
+  let mygrid = settings.remote.STATION.mygrid;
   if (!mygrid) {
     console.error('Error: Station grid square (mygrid) is not defined.');
-    return; // Exit if 'mygrid' is not defined
+    return;
   }
 
-  const [lat, lng] = locatorToLatLng(mygrid); // Convert gridsquare to lat/lng
-
-  // Project the geographic coordinates to SVG coordinates
+  const [lat, lng] = locatorToLatLng(mygrid);
   const [x, y] = projection([lng, lat]);
 
-  // Center the map at the calculated coordinates
+  // Ensure 'g' is selected before updating pins and lines
+  const g = svg.select('g');
+  updatePinsAndLines(g); // Update pins and lines based on the current state
+
+  // Center the map to the station's coordinates
   svg.transition().duration(750).call(
-    zoom.translateTo,
-    x,
-    y
+      zoom.translateTo,
+      x,
+      y
   );
 };
+
 
 // Lifecycle hooks
 onMounted(async () => {
   await nextTick();
   drawMap();
-  window.addEventListener('resize', handleResize);
+  window.addEventListener('resize', drawMap);
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', handleResize);
+  window.removeEventListener('resize', drawMap);
 });
 </script>
 
@@ -281,7 +331,7 @@ onBeforeUnmount(() => {
   padding: 5px;
   position: absolute;
   display: none;
-  z-index: 10; /* Ensure the popup is above other elements */
-  pointer-events: none; /* Prevent mouse events on the popup */
+  z-index: 10;
+  pointer-events: none;
 }
 </style>
