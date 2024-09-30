@@ -12,7 +12,7 @@ import structlog
 
 log = structlog.get_logger("stats")
 
-# TODO: we have to move the modem version, its a duplicate
+#  we have to move the modem version, its a duplicate
 MODEM_VERSION = "0.16.7-alpha"
 
 
