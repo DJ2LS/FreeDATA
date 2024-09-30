@@ -82,7 +82,9 @@ const drawMap = () => {
 
       // Adjust pin size and line width with zoom
       actualPinRadius = basePinRadius / event.transform.k;
-      svg.selectAll('.pin').attr('r', actualPinRadius);
+      svg.selectAll('.my-pin').attr('r', actualPinRadius);
+      svg.selectAll('.heard-pin').attr('r', actualPinRadius);
+
       svg.selectAll('.connection-line').attr('stroke-width', 1 / event.transform.k);
       svg.selectAll('.country-path').attr('stroke-width', 0.5 / event.transform.k);
 
@@ -123,7 +125,7 @@ const drawMap = () => {
 
     // Draw the pin for your station
     g.append('circle')
-        .attr('class', 'pin my-pin')
+        .attr('class', 'my-pin')
         .attr('r', actualPinRadius + 2)
         .attr('fill', 'blue')
         .attr('cx', myX)
@@ -186,9 +188,11 @@ const drawMap = () => {
 };
 
 // Function to update pins and draw lines
+// Function to update pins and draw lines
 const updatePinsAndLines = (g) => {
   // Remove existing pins and lines
-  g.selectAll('.pin').remove();
+  g.selectAll('.my-pin').remove();
+  g.selectAll('.heard-pin').remove();
   g.selectAll('.connection-line').remove();
 
   const heardStations = toRaw(state.heard_stations); // Ensure it's the raw data
@@ -210,7 +214,7 @@ const updatePinsAndLines = (g) => {
 
     // Draw the pin for your station
     g.append('circle')
-        .attr('class', 'pin my-pin')
+        .attr('class', 'my-pin')
         .attr('r', actualPinRadius + 2)
         .attr('fill', 'blue')
         .attr('cx', myX)
@@ -238,11 +242,11 @@ const updatePinsAndLines = (g) => {
   }
 
   // Add pins for heard stations
-  g.selectAll('.pin')
+  g.selectAll('.heard-pin')
       .data(points)
       .enter()
       .append('circle')
-      .attr('class', 'pin')
+      .attr('class', 'heard-pin')
       .attr('r', actualPinRadius)
       .attr('fill', 'red')
       .attr('cx', d => projection([d.lon, d.lat])[0])
@@ -253,16 +257,6 @@ const updatePinsAndLines = (g) => {
       .on('mouseout', () => {
         infoText.value = '';
       });
-};
-
-// Zoom in function
-const zoomIn = () => {
-  svg.transition().call(zoom.scaleBy, 1.2);
-};
-
-// Zoom out function
-const zoomOut = () => {
-  svg.transition().call(zoom.scaleBy, 0.8);
 };
 
 // Center the map
@@ -288,6 +282,15 @@ const centerMap = () => {
   );
 };
 
+// Zoom in function
+const zoomIn = () => {
+  svg.transition().call(zoom.scaleBy, 1.2);
+};
+
+// Zoom out function
+const zoomOut = () => {
+  svg.transition().call(zoom.scaleBy, 0.8);
+};
 
 // Lifecycle hooks
 onMounted(async () => {
@@ -308,7 +311,13 @@ onBeforeUnmount(() => {
   height: 400px;
 }
 
-.pin {
+.my-pin {
+  fill: blue;
+  stroke: black;
+  stroke-width: 1px;
+}
+
+.heard-pin {
   fill: red;
   stroke: black;
   stroke-width: 1px;
@@ -320,7 +329,7 @@ onBeforeUnmount(() => {
 }
 
 .connection-line {
-  stroke: blue;
+  stroke: red;
   stroke-width: 1;
   stroke-opacity: 0.5;
 }
