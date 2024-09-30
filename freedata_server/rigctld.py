@@ -113,7 +113,7 @@ class radio:
 
     def insert_vfo(self, command):
         #self.get_vfo()
-        if self.parameters['vfo'] and self.parameters['vfo'] not in [None, False, 'err', 0] and self.config["RIGCTLD"]["enable_vfo"]:
+        if self.parameters['chk_vfo'] and self.parameters['vfo'] and self.parameters['vfo'] not in [None, False, 'err', 0] and self.config["RIGCTLD"]["enable_vfo"]:
             return f"{command[:1].strip()} {self.parameters['vfo']} {command[1:].strip()}"
 
         return command
