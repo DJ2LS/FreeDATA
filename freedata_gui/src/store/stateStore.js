@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-//import * as bootstrap from "bootstrap";
 
 export const useStateStore = defineStore("stateStore", () => {
   var busy_state = ref();
@@ -93,6 +92,9 @@ export const useStateStore = defineStore("stateStore", () => {
 
   var rx_buffer_length = ref();
 
+  // New state for network traffic
+  var is_network_traffic = ref(false);
+
   return {
     dxcallsign,
     busy_state,
@@ -148,5 +150,6 @@ export const useStateStore = defineStore("stateStore", () => {
     os_info,
     rx_buffer_length,
     radio_status,
+    is_network_traffic,
   };
 });
