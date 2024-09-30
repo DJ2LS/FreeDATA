@@ -57,7 +57,7 @@ const isNetworkTraffic = computed(() => state.is_network_traffic);
     >
       <!-- Show spinner if network traffic is ongoing -->
       <template v-if="isNetworkTraffic">
-        <div class="h3 spinner-grow text-light p-0 m-0 me-1" role="status">
+        <div class="h3 spinner-grow text-secondary p-0 m-0 me-1" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
       </template>
