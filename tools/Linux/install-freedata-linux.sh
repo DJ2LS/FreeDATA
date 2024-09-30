@@ -117,6 +117,21 @@ case $osname in
 	esac
    ;;
 
+   "Fedora Linux")
+	case $osversion in
+	   "VERSION_ID=40" )
+		sudo dnf install -y git cmake make automake gcc gcc-c++ kernel-devel wget portaudio-devel python3-pyaudio python3-pip python3-colorama python3-virtualenv google-noto-emoji-fonts
+	   ;;
+
+	   *)
+	   	echo "*************************************************************************"
+	   	echo "This version of Linux is not yet supported by this script."
+	   	echo $osname $osversion
+	   	echo "*************************************************************************"
+		exit 1
+	   ;;
+	esac
+   ;;
    *)
 	echo "*************************************************************************"
 	echo "This version of Linux is not yet supported by this script."
