@@ -407,49 +407,39 @@ const beaconHistogramData = computed(() => ({
                   ></button>
             </div>
             <div class="modal-body">
-               <div class="container">
-                  <div class="d-flex flex-row justify-content-between">
-                     <div class="input-group mb-3">
-                        <span class="input-group-text" >Transmission attempts</span>
-  <span class="input-group-text" >{{ chat.messageInfoById?.attempt ?? 'NaN' }}</span>
-                     </div>
-                  </div>
-               </div>
-              <div class="container">
-                  <div class="d-flex flex-row justify-content-between">
-                     <div class="input-group mb-3">
-                        <span class="input-group-text" >Priority</span>
-      <span class="input-group-text" >{{ chat.messageInfoById?.priority ?? 'NaN' }}</span>
-                     </div>
-                  </div>
-               </div>
-               <div class="container">
-                  <div class="d-flex flex-row justify-content-between">
-                     <div class="input-group mb-3">
-                        <span class="input-group-text" >hmack</span>
-                        <span class="input-group-text">...</span>
-                     </div>
-                  </div>
-               </div>
-               <div class="container">
-                  <div class="d-flex flex-row justify-content-between">
-                     <div class="input-group mb-3">
-                        <span class="input-group-text" 
-                           >Bytes per Minute</span
-                           >
-                        <span class="input-group-text" >    {{ chat.messageInfoById?.statistics?.bytes_per_minute ?? 'NaN' }}
-</span>
-                     </div>
-                     <div class="input-group mb-3">
-                        <span class="input-group-text" 
-                           >Duration [s]</span
-                           >
-                        <span class="input-group-text" >{{ Math.round(chat.messageInfoById?.statistics?.duration) ?? 'NaN' }}</span>
-                     </div>
-                  </div>
-               </div>
-               <div class="card mt-2">
+
+              <div class="card mt-2">
                   <div class="card-header">Statistics</div>
+<div class="card-body">
+  <div class="container">
+    <div class="row">
+      <!-- Bytes per Minute -->
+      <div class="auto mb-2">
+        <div class="input-group">
+          <span class="input-group-text">Speed</span>
+          <span class="input-group-text">{{ chat.messageInfoById?.statistics?.bytes_per_minute ?? 'NaN' }} bpm / {{ chat.messageInfoById?.statistics?.bits_per_second ?? 'NaN' }} bps</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+
+      <!-- Duration [s] -->
+      <div class="col-auto mb-2">
+        <div class="input-group">
+          <span class="input-group-text">Duration [s]</span>
+          <span class="input-group-text">{{ Math.round(chat.messageInfoById?.statistics?.duration) ?? 'NaN' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+               </div>
+
+
+                              <div class="card mt-2">
+                  <div class="card-header">Chart</div>
                   <div class="card-body">
                      <Line
                         :data="transmissionSpeedChartDataMessageInfo"
