@@ -50,9 +50,12 @@ class radio:
         try:
             self.connection = socket.create_connection((self.hostname, self.port), timeout=self.timeout)
             self.connection.settimeout(self.timeout)
+            # wait some time for hopefully solving the hamlib warmup problems
+            threading.Event().wait(2)
             self.connected = True
             self.states.set_radio("radio_status", True)
             self.log.info(f"[RIGCTLD] Connected to rigctld at {self.hostname}:{self.port}")
+            self.dump_caps()
             self.check_vfo()
             self.get_vfo()
         except Exception as err:
@@ -302,10 +305,18 @@ class radio:
 
         return self.parameters
 
+    def dump_caps(self):
+        try:
+            vfo_response = self.send_command(r'\dump_caps')
+            print(vfo_response)
+
+        except Exception as e:
+            self.log.warning(f"Error getting dump_caps: {e}")
+
     def check_vfo(self):
         try:
-            vfo_response = self.send_command('chk_vfo')
-
+            vfo_response = self.send_command(r'\chk_vfo')
+            print(vfo_response)
             if vfo_response in [1, "1"]:
                 self.parameters['chk_vfo'] = True
             else:
