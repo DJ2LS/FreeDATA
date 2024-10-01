@@ -28,6 +28,7 @@ import command_beacon
 import command_ping
 import command_feq
 import command_test
+import command_transmit_sine
 import command_arq_raw
 import command_message_send
 import event_manager
@@ -46,7 +47,7 @@ from schedule_manager import ScheduleManager
 CONFIG_ENV_VAR = 'FREEDATA_CONFIG'
 DEFAULT_CONFIG_FILE = 'config.ini'
 
-MODEM_VERSION = "0.16.7-alpha"
+MODEM_VERSION = "0.16.8-alpha"
 
 API_VERSION = 3
 LICENSE = 'GPL3.0'
@@ -335,6 +336,23 @@ async def post_radio(request: Request):
         radio_manager.set_rf_level(int(data['radio_rf_level']))
     if "radio_tuner" in data:
         radio_manager.set_tuner(data['radio_tuner'])
+    return api_response(data)
+
+@app.post("/radio/tune")
+async def post_radio(request: Request):
+    data = await request.json()
+    print(data)
+    if "enable_tuning" in data:
+        if data['enable_tuning']:
+            if not app.state_manager.is_modem_running:
+                api_abort("Modem not running", 503)
+            await enqueue_tx_command(command_transmit_sine.TransmitSine)
+        else:
+            app.service_manager.modem.stop_sine()
+    else:
+        app.service_manager.modem.stop_sine()
+
+
     return api_response(data)
 
 @app.get("/freedata/messages")
