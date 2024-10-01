@@ -33,7 +33,7 @@ class radio:
             'ptt': False,  # Initial PTT state is set to False,
             'tuner': False,
             'swr': '---',
-            'chk_vfo': '---',
+            'chk_vfo': False,
             'vfo': '---',
         }
 
