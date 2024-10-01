@@ -55,7 +55,7 @@ class radio:
             self.connected = True
             self.states.set_radio("radio_status", True)
             self.log.info(f"[RIGCTLD] Connected to rigctld at {self.hostname}:{self.port}")
-            self.dump_caps()
+            #self.dump_caps()
             self.check_vfo()
             self.get_vfo()
         except Exception as err:
@@ -293,7 +293,7 @@ class radio:
             self.connect()
 
         if self.connected:
-            self.check_vfo()
+            #self.check_vfo()
             self.get_vfo()
             self.get_frequency()
             self.get_mode_bandwidth()
