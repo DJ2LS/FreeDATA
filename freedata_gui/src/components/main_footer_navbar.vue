@@ -162,8 +162,7 @@ const state = useStateStore(pinia);
     </div>
 
     <div class="col-lg-4 col-md-3 col-sm-2 col-xs-1 col-4">
-    <div class="mb-2" style="margin-right: 2px;">
-      <div class="progress w-100 bg-secondary" style="height: 20px;">
+      <div class="progress w-100 bg-secondary me-2" style="height: 30px;">
         <div
           class="progress-bar progress-bar-striped bg-primary force-gpu"
           id="transmission_progress"
@@ -173,7 +172,7 @@ const state = useStateStore(pinia);
           aria-valuemin="0"
           aria-valuemax="100"
         ></div>
-        <p class="justify-content-center m-0 d-flex position-absolute w-100 text-light">
+        <p class="justify-content-center m-0 d-flex position-absolute w-100 mt-1 text-light">
           Message Progress {{state.arq_transmission_percent}}% [ {{ state.arq_bytes_per_minute || '---' }}
     bpm / {{ state.arq_bits_per_second || '--' }}
     bps ]
@@ -195,7 +194,6 @@ const state = useStateStore(pinia);
           </p>
         </div>
       </div>
-    </div>
   </div>
 
 
