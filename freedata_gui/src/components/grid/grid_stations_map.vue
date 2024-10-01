@@ -11,7 +11,7 @@
         <input type="text" class="form-control w-100" placeholder="Station" aria-label="Username" aria-describedby="basic-addon1" v-model="infoText" disabled>
       </div>
     </div>
-    <div class="card-body">
+    <div class="card-body p-0">
       <div ref="mapContainer" class="map-container"></div>
       <div :style="popupStyle" class="popup">{{ infoText }}</div>
     </div>
