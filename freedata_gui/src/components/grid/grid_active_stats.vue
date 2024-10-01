@@ -171,7 +171,7 @@ onMounted(() => {
 
 <template>
   <div class="card h-100">
-    <div class="card-header p-1">
+    <div class="card-header">
       <div class="btn-group" role="group">
         <div
           class="list-group bg-body-tertiary list-group-horizontal"

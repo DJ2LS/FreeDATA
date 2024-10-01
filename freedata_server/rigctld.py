@@ -33,6 +33,7 @@ class radio:
             'ptt': False,  # Initial PTT state is set to False,
             'tuner': False,
             'swr': '---',
+            'chk_vfo': False,
             'vfo': '---',
         }
 
@@ -49,9 +50,13 @@ class radio:
         try:
             self.connection = socket.create_connection((self.hostname, self.port), timeout=self.timeout)
             self.connection.settimeout(self.timeout)
+            # wait some time for hopefully solving the hamlib warmup problems
+            threading.Event().wait(2)
             self.connected = True
             self.states.set_radio("radio_status", True)
             self.log.info(f"[RIGCTLD] Connected to rigctld at {self.hostname}:{self.port}")
+            #self.dump_caps()
+            self.check_vfo()
             self.get_vfo()
         except Exception as err:
             self.log.warning(f"[RIGCTLD] Failed to connect to rigctld: {err}")
@@ -111,7 +116,7 @@ class radio:
 
     def insert_vfo(self, command):
         #self.get_vfo()
-        if self.parameters['vfo'] and self.parameters['vfo'] not in [None, False, 'err', 0] and self.config["RIGCTLD"]["enable_vfo"]:
+        if self.parameters['chk_vfo'] and self.parameters['vfo'] and self.parameters['vfo'] not in [None, False, 'err', 0]:
             return f"{command[:1].strip()} {self.parameters['vfo']} {command[1:].strip()}"
 
         return command
@@ -288,6 +293,7 @@ class radio:
             self.connect()
 
         if self.connected:
+            #self.check_vfo()
             self.get_vfo()
             self.get_frequency()
             self.get_mode_bandwidth()
@@ -299,13 +305,39 @@ class radio:
 
         return self.parameters
 
+    def dump_caps(self):
+        try:
+            vfo_response = self.send_command(r'\dump_caps')
+            print(vfo_response)
+
+        except Exception as e:
+            self.log.warning(f"Error getting dump_caps: {e}")
+
+    def check_vfo(self):
+        try:
+            vfo_response = self.send_command(r'\chk_vfo')
+            print(vfo_response)
+            if vfo_response in [1, "1"]:
+                self.parameters['chk_vfo'] = True
+            else:
+                self.parameters['chk_vfo'] = False
+
+        except Exception as e:
+            self.log.warning(f"Error getting chk_vfo: {e}")
+            self.parameters['chk_vfo'] = False
 
     def get_vfo(self):
         try:
-            vfo_response = self.send_command('v')
+            if self.parameters['chk_vfo']:
 
-            if vfo_response not in [None, 'None', '']:
-                self.parameters['vfo'] = vfo_response.strip('')
+                vfo_response = self.send_command('v')
+
+                if vfo_response not in [None, 'None', '']:
+                    self.parameters['vfo'] = vfo_response.strip('')
+                else:
+                    self.parameters['vfo'] = 'currVFO'
+
+
             else:
                 self.parameters['vfo'] = False
 

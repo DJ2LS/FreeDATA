@@ -116,20 +116,26 @@ class ScheduleManager:
             session = self.state_manager.arq_irs_sessions[session_id]
 
             # set an IRS session to RESUME for being ready getting the data again
-            if session.is_IRS and session.last_state_change_timestamp + 90  < time.time():
-                self.log.warning(f"[SCHEDULE] [ARQ={session_id}] Setting state to", old_state=session.state, state=IRS_State.RESUME)
+            if session.is_IRS and session.last_state_change_timestamp + 90 < time.time():
                 try:
                     # if session state is already RESUME, don't set it again for avoiding a flooded cli
                     if session.state not in [session.state_enum.RESUME]:
+                        self.log.info(f"[SCHEDULE] [ARQ={session_id}] Setting state to", old_state=session.state,
+                                      state=IRS_State.RESUME)
                         session.state = session.set_state(session.state_enum.RESUME)
                         session.state = session.state_enum.RESUME
+
+                    # if session is received successfully, indiciated by ENDED state, delete it
+                    if session.state in [session.state_enum.ENDED]:
+                        session_to_be_deleted.add(session)
 
                 except Exception as e:
                     self.log.warning("[SCHEDULE] error setting ARQ state", error=e)
 
         for session_id in self.state_manager.arq_iss_sessions:
             session = self.state_manager.arq_iss_sessions[session_id]
-            if not session.is_IRS and session.last_state_change_timestamp + 90 < time.time() and session.state in [ISS_State.ABORTED, ISS_State.FAILED]:
+            if not session.is_IRS and session.last_state_change_timestamp + 90 < time.time() and session.state in [
+                ISS_State.ABORTED, ISS_State.FAILED]:
                 session_to_be_deleted.add(session)
 
         # finally delete sessions
@@ -142,4 +148,3 @@ class ScheduleManager:
 
         except Exception as e:
             self.log.warning("[SCHEDULE] error deleting ARQ session", error=e)
-

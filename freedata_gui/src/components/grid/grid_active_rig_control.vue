@@ -34,7 +34,7 @@ function setRadioParameterTuner() {
 
 <template>
   <div class="card h-100">
-    <div class="card-header p-0">
+    <div class="card-header">
       <i class="bi bi-house-door" style="font-size: 1.2rem"></i>&nbsp;
       <strong>Radio control</strong>
     </div>

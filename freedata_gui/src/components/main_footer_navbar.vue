@@ -153,17 +153,16 @@ const state = useStateStore(pinia);
             data-bs-toggle="tooltip"
             data-bs-trigger="hover"
             data-bs-html="true"
-            data-bs-title="the dxcallsign of the connected station"
+            :data-bs-title="state.dxcallsign || '-----'"
           >
-            {{ state.dxcallsign }}
+            {{ state.dxcallsign || '-----' }}
           </button>
         </div>
       </div>
     </div>
 
     <div class="col-lg-4 col-md-3 col-sm-2 col-xs-1 col-4">
-    <div class="mb-2" style="margin-right: 2px;">
-      <div class="progress w-100 bg-secondary" style="height: 20px;">
+      <div class="progress w-100 bg-secondary me-2" style="height: 30px;">
         <div
           class="progress-bar progress-bar-striped bg-primary force-gpu"
           id="transmission_progress"
@@ -173,9 +172,10 @@ const state = useStateStore(pinia);
           aria-valuemin="0"
           aria-valuemax="100"
         ></div>
-        <p class="justify-content-center m-0 d-flex position-absolute w-100 text-light">
-          Message Progress {{state.arq_transmission_percent}}% [ {{ state.arq_speed_list_bpm.length > 0 ? state.arq_speed_list_bpm[state.arq_speed_list_bpm.length - 1] : '---' }}
-    bpm ]
+        <p class="justify-content-center m-0 d-flex position-absolute w-100 mt-1 text-light">
+          Message Progress {{state.arq_transmission_percent}}% [ {{ state.arq_bytes_per_minute || '---' }}
+    bpm / {{ state.arq_bits_per_second || '--' }}
+    bps ]
         </p>
       </div>
 
@@ -194,7 +194,6 @@ const state = useStateStore(pinia);
           </p>
         </div>
       </div>
-    </div>
   </div>
 
 

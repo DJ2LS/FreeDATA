@@ -191,7 +191,42 @@ class RF:
 
         return True
 
+    def transmit_sine(self):
+        """ Transmit a sine wave for audio tuning """
+        self.states.setTransmitting(True)
+        self.log.info("[MDM] TRANSMIT", mode="SINE")
+        start_of_transmission = time.time()
 
+        f0 = 1500  # Frequency of sine wave in Hz
+        fs = 48000  # Sample rate in Hz
+        max_duration = 30  # Maximum duration in seconds
+
+        # Create sine wave signal
+        t = np.linspace(0, max_duration, int(fs * max_duration), endpoint=False)
+        s = 0.5 * np.sin(2 * np.pi * f0 * t)
+        signal = np.int16(s * 32767)  # Convert to 16-bit integer PCM format
+
+        # Increase audio level by 2 ( + 3dB )
+        increased_audio_level = self.tx_audio_level + 3
+
+        # Set audio volume and prepare buffer for transmission
+        txbuffer_out = audio.set_audio_volume(signal, increased_audio_level)
+
+        # Transmit audio
+        self.enqueue_audio_out(txbuffer_out)
+
+        end_of_transmission = time.time()
+        transmission_time = end_of_transmission - start_of_transmission
+        self.states.setTransmitting(False)
+
+        self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
+
+    def stop_sine(self):
+        """ Stop transmitting sine wave"""
+        # clear audio out queue
+        self.audio_out_queue.queue.clear()
+        self.states.setTransmitting(False)
+        self.log.debug("[MDM] Stopped transmitting sine")
 
     def transmit_morse(self, repeats, repeat_delay, frames):
         self.states.waitForTransmission()

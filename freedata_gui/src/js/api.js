@@ -30,10 +30,16 @@ function checkNetworkConnectivity() {
   }
   return true;
 }
+// Set network traffic state
+function setNetworkTrafficBusy(isBusy) {
+  state.is_network_traffic = isBusy;
+}
 
 // Fetch GET request
 async function apiGet(endpoint) {
   if (!checkNetworkConnectivity()) return;
+
+  setNetworkTrafficBusy(true); // Set the network busy state to true
 
   try {
     const response = await fetch(buildURL(endpoint));
@@ -43,12 +49,16 @@ async function apiGet(endpoint) {
     return await response.json();
   } catch (error) {
     console.error("Error getting from REST:", error);
+  } finally {
+    setNetworkTrafficBusy(false); // Set the network busy state back to false
   }
 }
 
 // Fetch POST request
 export async function apiPost(endpoint, payload = {}) {
   if (!checkNetworkConnectivity()) return;
+
+  setNetworkTrafficBusy(true); // Set the network busy state to true
 
   try {
     const response = await fetch(buildURL(endpoint), {
@@ -66,12 +76,16 @@ export async function apiPost(endpoint, payload = {}) {
     return await response.json();
   } catch (error) {
     console.error("Error posting to REST:", error);
+  } finally {
+    setNetworkTrafficBusy(false); // Set the network busy state back to false
   }
 }
 
 // Fetch PATCH request
 export async function apiPatch(endpoint, payload = {}) {
   if (!checkNetworkConnectivity()) return;
+
+  setNetworkTrafficBusy(true); // Set the network busy state to true
 
   try {
     const response = await fetch(buildURL(endpoint), {
@@ -89,12 +103,16 @@ export async function apiPatch(endpoint, payload = {}) {
     return await response.json();
   } catch (error) {
     console.error("Error patching to REST:", error);
+  } finally {
+    setNetworkTrafficBusy(false); // Set the network busy state back to false
   }
 }
 
 // Fetch DELETE request
 export async function apiDelete(endpoint, payload = {}) {
   if (!checkNetworkConnectivity()) return;
+
+  setNetworkTrafficBusy(true); // Set the network busy state to true
 
   try {
     const response = await fetch(buildURL(endpoint), {
@@ -112,6 +130,8 @@ export async function apiDelete(endpoint, payload = {}) {
     return await response.json();
   } catch (error) {
     console.error("Error deleting from REST:", error);
+  } finally {
+    setNetworkTrafficBusy(false); // Set the network busy state back to false
   }
 }
 
@@ -203,6 +223,10 @@ export async function sendModemTestFrame() {
   return await apiPost("/modem/send_test_frame");
 }
 
+export async function sendSineTone(state) {
+  return await apiPost("/radio/tune", {enable_tuning: state});
+}
+
 export async function startModem() {
   return await apiPost("/modem/start");
 }
@@ -258,9 +282,10 @@ export async function sendFreedataMessage(destination, body, attachments) {
   });
 }
 
-
 export async function postFreedataMessageADIF(id) {
-  return await apiPost(`/freedata/messages/${id}/adif`, { action: "retransmit" });
+  return await apiPost(`/freedata/messages/${id}/adif`, {
+    action: "retransmit",
+  });
 }
 
 export async function retransmitFreedataMessage(id) {

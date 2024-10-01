@@ -109,10 +109,10 @@ class ARQSession:
         self.modem.transmit(mode, 1, 1, frame)
 
     def set_state(self, state):
+        self.last_state_change_timestamp = time.time()
         if self.state == state:
             self.log(f"{type(self).__name__} state {self.state.name} unchanged.")
         else:
-            self.last_state_change_timestamp = time.time()
             self.log(f"{type(self).__name__} state change from {self.state.name} to {state.name} at {self.last_state_change_timestamp}")
         self.state = state
 

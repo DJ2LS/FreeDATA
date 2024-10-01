@@ -38,11 +38,14 @@
     <script>
       function setAppHeight() {
         const appHeight = window.innerHeight;
-        document.documentElement.style.setProperty('--app-height', `${appHeight}px`);
+        document.documentElement.style.setProperty(
+          "--app-height",
+          `${appHeight}px`,
+        );
       }
-      window.addEventListener('resize', setAppHeight);
-      window.addEventListener('orientationchange', setAppHeight); // Handle orientation changes
-      document.addEventListener('DOMContentLoaded', setAppHeight); // Set height on initial load
+      window.addEventListener("resize", setAppHeight);
+      window.addEventListener("orientationchange", setAppHeight); // Handle orientation changes
+      document.addEventListener("DOMContentLoaded", setAppHeight); // Set height on initial load
     </script>
 
     <!-- Custom styles to use the dynamic height -->

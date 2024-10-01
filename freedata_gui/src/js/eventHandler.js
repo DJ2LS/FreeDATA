@@ -232,7 +232,8 @@ export function eventDispatcher(data) {
             displayToast("success", "bi-check-circle", message, 10000);
             stateStore.dxcallsign = data["arq-transfer-outbound"].dxcall;
             stateStore.arq_transmission_percent = 0;
-            stateStore.arq_total_bytes = 0;
+            stateStore.arq_total_bytes =
+              data["arq-transfer-outbound"].total_bytes;
             return;
           case "OPEN_SENT":
             message = `
@@ -271,7 +272,7 @@ export function eventDispatcher(data) {
                 100,
             );
             stateStore.arq_total_bytes =
-              data["arq-transfer-outbound"].received_bytes;
+              data["arq-transfer-outbound"].total_bytes;
             stateStore.arq_speed_list_timestamp.value = toRaw(
               data["arq-transfer-outbound"].statistics.time_histogram,
             );
@@ -281,6 +282,12 @@ export function eventDispatcher(data) {
             stateStore.arq_speed_list_snr.value = toRaw(
               data["arq-transfer-outbound"].statistics.snr_histogram,
             );
+
+            stateStore.arq_bytes_per_minute =
+              data["arq-transfer-outbound"].statistics.bytes_per_minute;
+            stateStore.arq_bits_per_second =
+              data["arq-transfer-outbound"].statistics.bits_per_second;
+
             stateStore.speed_level = data["arq-transfer-outbound"].speed_level;
             return;
 
@@ -302,6 +309,8 @@ export function eventDispatcher(data) {
             displayToast("warning", "bi-exclamation-triangle", message, 5000);
             stateStore.arq_transmission_percent = 0;
             stateStore.arq_total_bytes = 0;
+            stateStore.arq_bytes_per_minute = 0;
+            stateStore.arq_bits_per_second = 0;
             return;
 
           case "ENDED":
@@ -312,8 +321,8 @@ export function eventDispatcher(data) {
                 <div class="mt-2">
                   <span class="badge bg-primary">STATE: ${data["arq-transfer-outbound"].state}</span>
                   <span class="badge bg-secondary">Session ID: ${data["arq-transfer-outbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">Transmitted Bytes: ${data["arq-transfer-outbound"].received_bytes}</span>
-                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].total_bytes}</span>
+                    <span class="badge bg-warning text-dark">Bytes per Minute: ${data["arq-transfer-outbound"].statistics.bytes_per_minute}</span>
+                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].statistics.total_bytes}</span>
                 </div>
               </div>
             `;
@@ -324,12 +333,19 @@ export function eventDispatcher(data) {
                 100,
             );
             stateStore.arq_total_bytes =
-              data["arq-transfer-outbound"].received_bytes;
+              data["arq-transfer-outbound"].total_bytes;
+
+            stateStore.arq_bytes_per_minute =
+              data["arq-transfer-outbound"].statistics.bytes_per_minute;
+            stateStore.arq_bits_per_second =
+              data["arq-transfer-outbound"].statistics.bits_per_second;
 
             // Reset progressbar values after a delay
             setTimeout(() => {
               stateStore.arq_transmission_percent = 0;
               stateStore.arq_total_bytes = 0;
+              stateStore.arq_bytes_per_minute = 0;
+              stateStore.arq_bits_per_second = 0;
             }, 5000);
             return;
           case "FAILED":
@@ -348,6 +364,8 @@ export function eventDispatcher(data) {
             setTimeout(() => {
               stateStore.arq_transmission_percent = 0;
               stateStore.arq_total_bytes = 0;
+              stateStore.arq_bytes_per_minute = 0;
+              stateStore.arq_bits_per_second = 0;
             }, 5000);
 
             return;
@@ -371,7 +389,8 @@ export function eventDispatcher(data) {
             displayToast("info", "bi-info-circle", message, 10000);
             stateStore.dxcallsign = data["arq-transfer-inbound"].dxcall;
             stateStore.arq_transmission_percent = 0;
-            stateStore.arq_total_bytes = 0;
+            stateStore.arq_total_bytes =
+              data["arq-transfer-inbound"].total_bytes;
             return;
 
           case "OPEN_ACK_SENT":
@@ -393,7 +412,7 @@ export function eventDispatcher(data) {
                 100,
             );
             stateStore.arq_total_bytes =
-              data["arq-transfer-inbound"].received_bytes;
+              data["arq-transfer-inbound"].total_bytes;
             return;
 
           case "INFO_ACK_SENT":
@@ -415,7 +434,7 @@ export function eventDispatcher(data) {
                 100,
             );
             stateStore.arq_total_bytes =
-              data["arq-transfer-inbound"].received_bytes;
+              data["arq-transfer-inbound"].total_bytes;
             return;
 
           case "BURST_REPLY_SENT":
@@ -448,6 +467,11 @@ export function eventDispatcher(data) {
             stateStore.arq_speed_list_snr.value = toRaw(
               data["arq-transfer-inbound"].statistics.snr_histogram,
             );
+
+            stateStore.arq_bytes_per_minute =
+              data["arq-transfer-inbound"].statistics.bytes_per_minute;
+            stateStore.arq_bits_per_second =
+              data["arq-transfer-inbound"].statistics.bits_per_second;
             stateStore.speed_level = data["arq-transfer-inbound"].speed_level;
             return;
 
@@ -459,8 +483,8 @@ export function eventDispatcher(data) {
                 <div class="mt-2">
                   <span class="badge bg-primary">STATE: ${data["arq-transfer-inbound"].state}</span>
                   <span class="badge bg-secondary">Session ID: ${data["arq-transfer-inbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">Received Bytes: ${data["arq-transfer-inbound"].received_bytes}</span>
-                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-inbound"].total_bytes}</span>
+                  <span class="badge bg-warning text-dark">Bytes per Minute: ${data["arq-transfer-inbound"].statistics.bytes_per_minute}</span>
+                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-inbound"].statistics.total_bytes}</span>
                 </div>
               </div>
             `;
@@ -471,17 +495,25 @@ export function eventDispatcher(data) {
             //  data["arq-transfer-inbound"]
             //);
             stateStore.arq_transmission_percent = Math.round(
-              (data["arq-transfer-inbound"].received_bytes /
-                data["arq-transfer-inbound"].total_bytes) *
+              (data["arq-transfer-inbound"].statistics.received_bytes /
+                data["arq-transfer-inbound"].statistics.total_bytes) *
                 100,
             );
+
+            stateStore.arq_bytes_per_minute =
+              data["arq-transfer-inbound"].statistics.bytes_per_minute;
+            stateStore.arq_bits_per_second =
+              data["arq-transfer-inbound"].statistics.bits_per_second;
+
             stateStore.arq_total_bytes =
-              data["arq-transfer-inbound"].received_bytes;
+              data["arq-transfer-inbound"].total_bytes;
 
             // Reset progressbar values after a delay
             setTimeout(() => {
               stateStore.arq_transmission_percent = 0;
               stateStore.arq_total_bytes = 0;
+              stateStore.arq_bytes_per_minute = 0;
+              stateStore.arq_bits_per_second = 0;
             }, 5000);
             return;
 
@@ -521,6 +553,8 @@ export function eventDispatcher(data) {
             setTimeout(() => {
               stateStore.arq_transmission_percent = 0;
               stateStore.arq_total_bytes = 0;
+              stateStore.arq_bytes_per_minute = 0;
+              stateStore.arq_bits_per_second = 0;
             }, 5000);
             return;
         }

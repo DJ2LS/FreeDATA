@@ -35,7 +35,7 @@
               {{ details.unread_messages }} new
             </span>
             <br />
-            <small>{{ details.body ? details.body : '<file>' }}</small>
+            <small>{{ sanitizeBody(details.body) || '<file>' }}</small>
           </div>
           <div class="col-3 text-end">
             <small>{{ getDateTime(details.timestamp) }}</small>
@@ -48,6 +48,7 @@
 </template>
 
 <script>
+import DOMPurify from 'dompurify';
 import { setActivePinia } from 'pinia';
 import pinia from '../store/index';
 import { useChatStore } from '../store/chatStore.js';
@@ -117,9 +118,13 @@ function startNewChat() {
   chat.newChatMessage = "Hi there! Nice to meet you!";
 }
 
+function sanitizeBody(body) {
+  return body ? DOMPurify.sanitize(body, { ALLOWED_TAGS: [] }) : null;
+}
+
 export default {
   setup() {
-    return { chat, newChatCall, chatSelected, setMessagesAsRead, processBeaconData, getDateTime, newChat, startNewChat };
+    return { chat, newChatCall, chatSelected, setMessagesAsRead, processBeaconData, getDateTime, newChat, startNewChat, sanitizeBody };
   }
 };
 </script>

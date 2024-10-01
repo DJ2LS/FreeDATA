@@ -78,7 +78,7 @@ function transmitPing(callsign) {
 <template>
   <div class="card h-100">
     <!--325px-->
-    <div class="card-header p-0">
+    <div class="card-header">
       <i class="bi bi-list-columns-reverse" style="font-size: 1.2rem"></i>&nbsp;
       <strong>Heard stations</strong>
     </div>
@@ -107,9 +107,9 @@ function transmitPing(callsign) {
               @click="pushToPing(item.origin)"
             >
               <td>
-                {{ getDateTime(item.timestamp) }}
+                <small>{{ getDateTime(item.timestamp) }}</small>
               </td>
-              <td>{{ item.frequency / 1000 }} kHz</td>
+              <td><small>{{ item.frequency / 1000 }} kHz</small></td>
               <td>
                 <button
                   class="btn btn-sm btn-outline-secondary ms-2 border-0"
@@ -118,7 +118,7 @@ function transmitPing(callsign) {
                   @click="getStationInfoByCallsign(item.origin)"
                   disabled
                 >
-                  <h6 class="p-0 m-0">{{ item.origin }}</h6>
+                  <h6 class="p-0 m-0"><span class="badge text-bg-primary">{{ item.origin }}</span></h6>
                 </button>
 
                 <button
@@ -146,9 +146,9 @@ function transmitPing(callsign) {
                 </button>
               </td>
               <td>
-                {{ item.gridsquare }}
+                <small>{{ item.gridsquare }}</small>
               </td>
-              <td>{{ getMaidenheadDistance(item.gridsquare) }} km</td>
+              <td><small>{{ getMaidenheadDistance(item.gridsquare) }} km</small></td>
               <td>
                 <i
                   :class="getActivityInfo(item.activity_type).iconClass"
@@ -157,7 +157,7 @@ function transmitPing(callsign) {
                 ></i>
               </td>
               <td>
-                {{ item.snr }}
+                <small>{{ item.snr }}</small>
               </td>
               <td>
                 <i v-if="item.away_from_key" class="bi bi-house-x"></i>
