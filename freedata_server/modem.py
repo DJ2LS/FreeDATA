@@ -192,22 +192,27 @@ class RF:
         return True
 
     def transmit_sine(self):
-        """ Transmit a sine wave for audio tuning"""
+        """ Transmit a sine wave for audio tuning """
         self.states.setTransmitting(True)
-        self.log.info(
-            "[MDM] TRANSMIT", mode="SINE"
-        )
+        self.log.info("[MDM] TRANSMIT", mode="SINE")
         start_of_transmission = time.time()
 
-        f0 = 1500
-        fs = 48000
-        max_duration = 30
-        signal = np.array([], dtype=np.int16)
+        f0 = 1500  # Frequency of sine wave in Hz
+        fs = 48000  # Sample rate in Hz
+        max_duration = 30  # Maximum duration in seconds
+
+        # Create sine wave signal
         t = np.linspace(0, max_duration, int(fs * max_duration), endpoint=False)
         s = 0.5 * np.sin(2 * np.pi * f0 * t)
-        txbuffer_out = np.concatenate((signal, np.int16(s * 32767)))
+        signal = np.int16(s * 32767)  # Convert to 16-bit integer PCM format
 
-        # transmit audio
+        # Increase audio level by 2 ( + 3dB )
+        increased_audio_level = self.tx_audio_level + 3
+
+        # Set audio volume and prepare buffer for transmission
+        txbuffer_out = audio.set_audio_volume(signal, increased_audio_level)
+
+        # Transmit audio
         self.enqueue_audio_out(txbuffer_out)
 
         end_of_transmission = time.time()
