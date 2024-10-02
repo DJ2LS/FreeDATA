@@ -41,7 +41,8 @@ class DatabaseManagerStations(DatabaseManager):
         """
         session = self.get_thread_scoped_session()
         try:
-            station = session.query(Station).filter_by(callsign=callsign).first()
+            station = self.get_or_create_station(callsign, session)
+
             if station:
                 station.info = new_info
                 session.commit()
