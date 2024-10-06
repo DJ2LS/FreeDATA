@@ -1559,57 +1559,6 @@ async def post_radio_tune(request: Request):
     return api_response(data)
 
 
-@app.get("/freedata/messages", summary="Get All Messages", tags=["FreeDATA"], responses={
-    200: {
-        "description": "List of all messages.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "total_messages": 1,
-                    "messages": [
-                        {
-                            "id": "N0CALL-3_XX1XXX-6_2024-02-02T13:53:37.795251",
-                            "timestamp": "2024-02-02T13:53:37.795251",
-                            "origin": "N0CALL-3",
-                            "via": None,
-                            "destination": "XX1XXX-6",
-                            "direction": "transmit",
-                            "body": "Hello FreeDATA",
-                            "attachments": [],
-                            "status": "transmitting",
-                            "statistics": None
-                        }
-                    ]
-                }
-            }
-        }
-    },
-    404: {
-        "description": "The requested resource was not found.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "Resource not found."
-                }
-            }
-        }
-    },
-    503: {
-        "description": "Modem not running.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "Modem not running."
-                }
-            }
-        }
-    }
-})
-async def get_freedata_messages(request: Request):
-    filters = {k: v for k, v in request.query_params.items() if v}
-    result = DatabaseManagerMessages(app.event_manager).get_all_messages_json(filters=filters)
-    return api_response(result)
-
 
 @app.post("/freedata/messages", summary="Transmit Message", tags=["FreeDATA"], responses={
     200: {
@@ -1705,74 +1654,6 @@ async def post_freedata_message_adif_log(message_id: str):
     # Send the ADIF data via UDP
     adif_udp_logger.send_adif_qso_data(app.config_manager.read(), adif_output)
     return api_response(adif_output)
-
-@app.get("/freedata/messages/{message_id}", summary="Get Message by ID", tags=["FreeDATA"], responses={
-    200: {
-        "description": "Retrieve a specific message by its ID.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "id": "DXCALL-6_MYCALL-0_2024-04-12T20:39:05.302479",
-                    "timestamp": "2024-04-12T20:39:05.302479",
-                    "attempt": 0,
-                    "origin": "DXCALL-6",
-                    "via": None,
-                    "destination": "MYCALL-0",
-                    "direction": "receive",
-                    "body": "Hello !",
-                    "attachments": [],
-                    "status": "received",
-                    "priority": 10,
-                    "is_read": False,
-                    "statistics": {
-                        "total_bytes": 120,
-                        "duration": 29.76698660850525,
-                        "bytes_per_minute": 241,
-                        "time_histogram": {
-                            "0": "2024-04-12T20:39:23.423169",
-                            "1": "2024-04-12T20:39:30.504638",
-                            "2": "2024-04-12T20:39:37.745075"
-                        },
-                        "snr_histogram": {
-                            "0": -6,
-                            "1": -6,
-                            "2": -6
-                        },
-                        "bpm_histogram": {
-                            "0": 198,
-                            "1": 265,
-                            "2": 252
-                        }
-                    }
-                }
-            }
-        }
-    },
-    404: {
-        "description": "The requested resource was not found.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "Resource not found."
-                }
-            }
-        }
-    },
-    503: {
-        "description": "Modem not running.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "Modem not running."
-                }
-            }
-        }
-    }
-})
-async def get_freedata_message(message_id: str):
-    message = DatabaseManagerMessages(app.event_manager).get_message_by_id_json(message_id)
-    return api_response(message)
-
 
 @app.patch("/freedata/messages/{message_id}", summary="Update Message by ID", tags=["FreeDATA"], responses={
     200: {
@@ -1929,62 +1810,6 @@ async def post_freedata_message(request: Request):
     return api_response(data)
 
 
-@app.get("/freedata/messages/{message_id}", summary="Get Message by ID", tags=["FreeDATA"], responses={
-    200: {
-        "description": "Retrieve a specific message by its ID.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "id": "DXCALL-6_MYCALL-0_2024-04-12T20:39:05.302479",
-                    "timestamp": "2024-04-12T20:39:05.302479",
-                    "origin": "DXCALL-6",
-                    "via": None,
-                    "destination": "MYCALL-0",
-                    "direction": "receive",
-                    "body": "Hello !",
-                    "attachments": [],
-                    "status": "received",
-                    "priority": 10,
-                    "is_read": False,
-                    "statistics": {
-                        "total_bytes": 120,
-                        "duration": 29.76698660850525,
-                        "bytes_per_minute": 241,
-                        "time_histogram": {
-                            "0": "2024-04-12T20:39:23.423169",
-                            "1": "2024-04-12T20:39:30.504638",
-                            "2": "2024-04-12T20:39:37.745075"
-                        },
-                        "snr_histogram": {
-                            "0": -6,
-                            "1": -6,
-                            "2": -6
-                        },
-                        "bpm_histogram": {
-                            "0": 198,
-                            "1": 265,
-                            "2": 252
-                        }
-                    }
-                }
-            }
-        }
-    },
-    404: {
-        "description": "The requested resource was not found.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "Resource not found."
-                }
-            }
-        }
-    }
-})
-async def get_freedata_message(message_id: str):
-    message = DatabaseManagerMessages(app.event_manager).get_message_by_id_json(message_id)
-    return api_response(message)
-
 
 @app.delete("/freedata/messages/{message_id}", summary="Delete Message by ID", tags=["FreeDATA"], responses={
     200: {
@@ -2016,60 +1841,6 @@ async def delete_freedata_message(message_id: str):
         return api_response({"message": f"{message_id} deleted", "status": "success"})
     else:
         return api_response({"message": "Message not found", "status": "failure"}, status_code=404)
-
-
-@app.patch("/freedata/messages/{message_id}", summary="Update Message by ID", tags=["FreeDATA"], responses={
-    200: {
-        "description": "Message updated successfully.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "is_read": True
-                }
-            }
-        }
-    },
-    400: {
-        "description": "Bad Request: The request was malformed or missing required parameters.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "Invalid parameters."
-                }
-            }
-        }
-    },
-    404: {
-        "description": "Message not found.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "Message not found."
-                }
-            }
-        }
-    }
-})
-async def patch_freedata_message(message_id: str, request: Request):
-    """
-    Update a FreeDATA message by its ID.
-
-    Parameters:
-        message_id (str): The ID of the message to update.
-        request (Request): The HTTP request containing the update data in JSON format.
-
-    Returns:
-        dict: A JSON object containing the updated message details.
-    """
-    data = await request.json()
-
-    if data.get("action") == "retransmit":
-        result = DatabaseManagerMessages(app.event_manager).update_message(message_id, update_data={'status': 'queued'})
-        DatabaseManagerMessages(app.event_manager).increment_message_attempts(message_id)
-    else:
-        result = DatabaseManagerMessages(app.event_manager).update_message(message_id, update_data=data)
-
-    return api_response(result)
 
 
 @app.get("/freedata/messages/{message_id}/attachments", summary="Get Attachments by Message ID", tags=["FreeDATA"], responses={
