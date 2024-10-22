@@ -1560,6 +1560,15 @@ async def post_radio_tune(request: Request):
 
 
 
+@app.get("/freedata/messages/{message_id}", summary="Get Message by ID", tags=["FreeDATA"], responses={
+    200: {"description": "Message found and returned."},
+    404: {"description": "Message not found."}
+})
+async def get_freedata_message(message_id: str):
+    message = DatabaseManagerMessages(app.event_manager).get_message_by_id_json(message_id)
+    return api_response(message)
+
+
 @app.post("/freedata/messages", summary="Transmit Message", tags=["FreeDATA"], responses={
     200: {
         "description": "Message transmitted successfully.",
