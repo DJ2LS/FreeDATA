@@ -1,7 +1,13 @@
 <template>
+
+  <div class="alert alert-info" role="alert">
+  <strong><i class="bi bi-gear-wide-connected me-1"></i>Station</strong> related settings, like changing your <strong>callsign</strong>, <strong>location</strong> and <strong>general behaviour</strong>.
+  </div>
+
   <!-- station callsign -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">Your station callsign</span>
+    <span class="input-group-text w-50 text-wrap">Callsign <div class="ms-2 badge text-bg-secondary text-wrap">
+maximum 7 characters are allowed. No special characters. No SSID </div> </span>
     <input
       type="text"
       class="form-control"
@@ -17,7 +23,8 @@
 
   <!-- station ssid -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">Call SSID</span>
+    <span class="input-group-text w-50 text-wrap" >Callsign SSID <div class="ms-2 badge text-bg-secondary text-wrap">
+Set the SSID of your callsign. This allows running several stations with one callsign, but different SSID </div></span>
     <select
       class="form-select form-select-sm w-50"
       id="myCallSSID"
@@ -45,7 +52,8 @@
 
   <!-- station grid locator -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">Grid Locator</span>
+    <span class="input-group-text w-50 text-wrap">Grid Locator / Maidenhead <div class="ms-2 badge text-bg-secondary text-wrap">
+max 6 characters of precision, less (2, 4) will be randomized</div> </span>
     <input
       type="text"
       class="form-control"
@@ -60,7 +68,8 @@
   </div>
 
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Respond to CQ</label>
+    <label class="input-group-text w-50 text-wrap">Respond to CQ callings with a QRV reply <div class="ms-2 badge text-bg-secondary text-wrap">
+The QRV reply will be sent with a random delay. </div> </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
         <input
@@ -70,13 +79,14 @@
           v-model="settings.remote.STATION.respond_to_cq"
           @change="onChange"
         />
-        <label class="form-check-label" for="respondCQSwitch">QRV</label>
+        <label class="form-check-label" for="respondCQSwitch">Enable</label>
       </div>
     </label>
   </div>
 
    <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Enable callsign blacklist</label>
+    <label class="input-group-text w-50 text-wrap">Enable callsign blacklist <div class="ms-2 badge text-bg-secondary text-wrap">
+This allows ignoring requests from blacklisted callsigns. </div></label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
         <input
@@ -92,7 +102,8 @@
   </div>
 
    <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Callsign blacklist - one call per line</label>
+    <label class="input-group-text w-50 text-wrap">Callsign blacklist <div class="ms-2 badge text-bg-secondary text-wrap">
+One callsign per line </div></label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
 
