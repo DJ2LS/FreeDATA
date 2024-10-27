@@ -10,7 +10,7 @@
       <div class="modal-dialog modal-dialog-scrollable">
          <div class="modal-content">
             <div class="modal-header">
-               <h1 class="modal-title fs-5">Modem check</h1>
+               <h1 class="modal-title fs-5">System check</h1>
                <button
                   type="button"
                   class="ms-5 btn btn-secondary"
@@ -51,7 +51,7 @@
 
 
                         <div class="alert alert-info" role="alert">
-  For remote operation, please go to <strong>settings/modem</strong> and set the server ip to <strong>0.0.0.0</strong>
+  For remote operation, please go to <strong>settings<i class="bi bi-gear-wide-connected ms-1"></i>/modem</strong> and set the server ip to <strong>0.0.0.0</strong>
 
 </div>
 
@@ -87,39 +87,13 @@
                      </h2>
                      <div id="modemStatusCollapse" class="accordion-collapse collapse" data-bs-parent="#startupCheckAccordion">
                         <div class="accordion-body">
-                           <div class="input-group input-group-sm mb-1">
-                              <label class="input-group-text w-50">Manual modem restart</label>
-                              <label class="input-group-text">
-                              <button
-                                 type="button"
-                                 id="startModem"
-                                 class="btn btn-sm btn-outline-success"
-                                 data-bs-toggle="tooltip"
-                                 data-bs-trigger="hover"
-                                 data-bs-html="false"
-                                 title="Start the Modem. Please set your audio and radio settings first!"
-                                 @click="startModem"
-                                 :class="{ disabled: state.is_modem_running }"
-                                 >
-                              <i class="bi bi-play-fill"></i>
-                              </button>
-                              </label>
-                              <label class="input-group-text">
-                              <button
-                                 type="button"
-                                 id="stopModem"
-                                 class="btn btn-sm btn-outline-danger"
-                                 data-bs-toggle="tooltip"
-                                 data-bs-trigger="hover"
-                                 data-bs-html="false"
-                                 title="Stop the Modem."
-                                 @click="stopModem"
-                                 :class="{ disabled: !state.is_modem_running }"
-                                 >
-                              <i class="bi bi-stop-fill"></i>
-                              </button>
-                              </label>
-                           </div>
+
+                          <div class="alert alert-info" role="alert">
+                            For further settings please go to <strong>settings<i class="bi bi-gear-wide-connected ms-1"></i>/modem</strong>
+
+</div>
+
+
                            <!-- Audio Input Device -->
                            <div class="input-group input-group-sm mb-1">
                               <label class="input-group-text w-50">Audio Input device</label>
@@ -156,6 +130,47 @@
                                  </option>
                               </select>
                            </div>
+
+
+                          <div class="alert alert-warning mt-3" role="alert">
+ In case of unusual problems, you can stop and reload the internal modem manually.
+
+</div>
+                          <div class="input-group input-group-sm">
+                              <label class="input-group-text w-50">Manual modem restart</label>
+                              <label class="input-group-text">
+                              <button
+                                 type="button"
+                                 id="startModem"
+                                 class="btn btn-sm btn-outline-success"
+                                 data-bs-toggle="tooltip"
+                                 data-bs-trigger="hover"
+                                 data-bs-html="false"
+                                 title="Start the Modem. Please set your audio and radio settings first!"
+                                 @click="startModem"
+                                 :class="{ disabled: state.is_modem_running }"
+                                 >
+                              <i class="bi bi-play-fill"></i>
+                              </button>
+                              </label>
+                              <label class="input-group-text">
+                              <button
+                                 type="button"
+                                 id="stopModem"
+                                 class="btn btn-sm btn-outline-danger"
+                                 data-bs-toggle="tooltip"
+                                 data-bs-trigger="hover"
+                                 data-bs-html="false"
+                                 title="Stop the Modem."
+                                 @click="stopModem"
+                                 :class="{ disabled: !state.is_modem_running }"
+                                 >
+                              <i class="bi bi-stop-fill"></i>
+                              </button>
+                              </label>
+                           </div>
+
+
                         </div>
                      </div>
                   </div>
@@ -180,6 +195,11 @@
                      </h2>
                      <div id="radioControlCollapse" class="accordion-collapse collapse" data-bs-parent="#startupCheckAccordion">
                         <div class="accordion-body">
+
+                           <div class="alert alert-info" role="alert">
+  This is just a quick setting! For further options, please go to <strong>settings<i class="bi bi-gear-wide-connected ms-1"></i>/rig control</strong>
+</div>
+
                            <div class="input-group input-group-sm mb-1">
                               <span class="input-group-text" style="width: 180px">Rig control method</span>
                               <select
@@ -250,6 +270,12 @@
                      </h2>
                      <div id="systemStatusCollapse" class="accordion-collapse collapse" data-bs-parent="#startupCheckAccordion">
                         <div class="accordion-body">
+
+                           <div class="alert alert-info" role="alert">
+  Please share this information when opening an issue
+
+</div>
+
                             <h3>API Information</h3>
                             <p><strong>API Version:</strong> {{ state.api_version }}</p>
                             <p><strong>Modem Version:</strong> {{ state.modem_version }}</p>
