@@ -21,7 +21,7 @@
                </button>
                <button
                   type="button"
-                  class="btn-close"
+                  class="btn-close me-2"
                   data-bs-dismiss="modal"
                   aria-label="Close"
                   ></button>
