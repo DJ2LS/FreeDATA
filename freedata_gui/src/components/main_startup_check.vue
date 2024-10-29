@@ -17,7 +17,7 @@
                   aria-label="Reload GUI"
                   @click="reloadGUI"
                   >
-               GUI problems? Reload it!
+               Reload GUI
                </button>
                <button
                   type="button"
