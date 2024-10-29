@@ -1,13 +1,17 @@
 <template>
 
   <div class="alert alert-info" role="alert">
-  <strong><i class="bi bi-gear-wide-connected me-1"></i>Station</strong> related settings, like changing your <strong>callsign</strong>, <strong>location</strong> and <strong>general behaviour</strong>.
+    <strong><i class="bi bi-gear-wide-connected me-1"></i>Station</strong> related settings, like changing your <strong>callsign</strong>, <strong>location</strong>, and <strong>general behaviour</strong>.
   </div>
 
-  <!-- station callsign -->
+  <!-- Station Callsign -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text w-50 text-wrap">Callsign <div class="ms-2 badge text-bg-secondary text-wrap">
-maximum 7 characters are allowed. No special characters. No SSID </div> </span>
+    <span class="input-group-text w-50 text-wrap">
+      Callsign
+      <span id="myCallHelp" class="ms-2 badge bg-secondary text-wrap">
+        Max 7 chars. No special chars.
+      </span>
+    </span>
     <input
       type="text"
       class="form-control"
@@ -15,19 +19,24 @@ maximum 7 characters are allowed. No special characters. No SSID </div> </span>
       placeholder="Enter your callsign and save it"
       id="myCall"
       aria-label="Station Callsign"
-      aria-describedby="basic-addon1"
+      aria-describedby="myCallHelp"
       v-model="settings.remote.STATION.mycall"
       @change="validateCall"
     />
   </div>
 
-  <!-- station ssid -->
+  <!-- Station SSID -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text w-50 text-wrap" >Callsign SSID <div class="ms-2 badge text-bg-secondary text-wrap">
-Set the SSID of your callsign. This allows running several stations with one callsign, but different SSID </div></span>
+    <span class="input-group-text w-50 text-wrap">
+      Callsign SSID
+      <span id="myCallSSIDHelp" class="ms-2 badge bg-secondary text-wrap">
+        Set the SSID for multiple stations
+      </span>
+    </span>
     <select
       class="form-select form-select-sm w-50"
       id="myCallSSID"
+      aria-describedby="myCallSSIDHelp"
       @change="onChange"
       v-model.number="settings.remote.STATION.myssid"
     >
@@ -50,10 +59,14 @@ Set the SSID of your callsign. This allows running several stations with one cal
     </select>
   </div>
 
-  <!-- station grid locator -->
+  <!-- Station Grid Locator -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text w-50 text-wrap">Grid Locator / Maidenhead <div class="ms-2 badge text-bg-secondary text-wrap">
-max 6 characters of precision, less (2, 4) will be randomized</div> </span>
+    <span class="input-group-text w-50 text-wrap">
+      Grid Locator / Maidenhead
+      <span id="myGridHelp" class="ms-2 badge bg-secondary text-wrap">
+        Max 6 chars; shorter will randomize
+      </span>
+    </span>
     <input
       type="text"
       class="form-control"
@@ -61,21 +74,27 @@ max 6 characters of precision, less (2, 4) will be randomized</div> </span>
       id="myGrid"
       maxlength="6"
       aria-label="Station Grid Locator"
-      aria-describedby="basic-addon1"
+      aria-describedby="myGridHelp"
       @change="onChange"
       v-model="settings.remote.STATION.mygrid"
     />
   </div>
 
+  <!-- Respond to CQ Callings -->
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50 text-wrap">Respond to CQ callings with a QRV reply <div class="ms-2 badge text-bg-secondary text-wrap">
-The QRV reply will be sent with a random delay. </div> </label>
+    <label class="input-group-text w-50 text-wrap">
+      Respond to CQ callings with a QRV reply
+      <span id="respondCQHelp" class="ms-2 badge bg-secondary text-wrap">
+        QRV reply sent with random delay.
+      </span>
+    </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
         <input
           class="form-check-input"
           type="checkbox"
           id="respondCQSwitch"
+          aria-describedby="respondCQHelp"
           v-model="settings.remote.STATION.respond_to_cq"
           @change="onChange"
         />
@@ -84,15 +103,21 @@ The QRV reply will be sent with a random delay. </div> </label>
     </label>
   </div>
 
-   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50 text-wrap">Enable callsign blacklist <div class="ms-2 badge text-bg-secondary text-wrap">
-This allows ignoring requests from blacklisted callsigns. </div></label>
+  <!-- Enable Callsign Blacklist -->
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50 text-wrap">
+      Enable callsign blacklist
+      <span id="enableBlacklistHelp" class="ms-2 badge bg-secondary text-wrap">
+        Ignore requests from blacklisted callsigns.
+      </span>
+    </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
         <input
           class="form-check-input"
           type="checkbox"
           id="respondEnableBlacklistSwitch"
+          aria-describedby="enableBlacklistHelp"
           v-model="settings.remote.STATION.enable_callsign_blacklist"
           @change="onChange"
         />
@@ -101,30 +126,32 @@ This allows ignoring requests from blacklisted callsigns. </div></label>
     </label>
   </div>
 
-   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50 text-wrap">Callsign blacklist <div class="ms-2 badge text-bg-secondary text-wrap">
-One callsign per line </div></label>
-    <label class="input-group-text w-50">
-      <div class="form-check form-switch form-check-inline">
-
-        <div class="form-floating">
-  <textarea class="form-control"
-  placeholder="one call per line"
-  id="callsignBlacklistfloatingTextarea"
-  style="height: 150px"
-  v-model="settings.remote.STATION.callsign_blacklist"
-  @change="onChange"
-  ></textarea>
-  <label for="callsignBlacklistfloatingTextarea">One call per line</label>
-</div>
-
-      </div>
+  <!-- Callsign Blacklist Textarea -->
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50 text-wrap">
+      Callsign blacklist
+      <span id="callsignBlacklistHelp" class="ms-2 badge bg-secondary text-wrap">
+        One callsign per line
+      </span>
     </label>
+    <div class="w-50">
+      <div class="form-floating">
+        <textarea
+          class="form-control"
+          placeholder="One call per line"
+          id="callsignBlacklistfloatingTextarea"
+          style="height: 150px"
+          aria-describedby="callsignBlacklistHelp"
+          v-model="settings.remote.STATION.callsign_blacklist"
+          @change="onChange"
+        ></textarea>
+        <label for="callsignBlacklistfloatingTextarea">One call per line</label>
+      </div>
+    </div>
   </div>
 
-
-
 </template>
+
 
 <script setup>
 import { settingsStore as settings, onChange, getRemote } from "../store/settingsStore.js";

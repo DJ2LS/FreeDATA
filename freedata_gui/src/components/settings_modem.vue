@@ -18,7 +18,13 @@ const audioStore = useAudioStore(pinia);
 </script>
 
 <template>
-  <div>
+  <!-- Top Info Area for Modem and Audio Settings -->
+  <div class="alert alert-info" role="alert">
+    <strong><i class="bi bi-gear-wide-connected me-1"></i>Modem and Audio</strong> related settings, including starting/stopping the modem, configuring audio devices, and adjusting audio levels.
+  </div>
+
+  <!-- Start and Stop Modem Buttons -->
+  <div class="mb-2">
     <button
       type="button"
       id="startModem"
@@ -28,10 +34,10 @@ const audioStore = useAudioStore(pinia);
       data-bs-html="false"
       title="Start the Modem. Please set your audio and radio settings first!"
       @click="startModem"
-      v-bind:class="{ disabled: state.is_modem_running === true }"
+      :class="{ disabled: state.is_modem_running === true }"
     >
       <i class="bi bi-play-fill"></i>
-      <span class="ms-2">start modem</span>
+      <span class="ms-2">Start Modem</span>
     </button>
     <button
       type="button"
@@ -42,48 +48,67 @@ const audioStore = useAudioStore(pinia);
       data-bs-html="false"
       title="Stop the Modem."
       @click="stopModem"
-      v-bind:class="{ disabled: state.is_modem_running === false }"
+      :class="{ disabled: state.is_modem_running === false }"
     >
       <i class="bi bi-stop-fill"></i>
-      <span class="ms-2">stop modem</span>
+      <span class="ms-2">Stop Modem</span>
     </button>
   </div>
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Modem port (server restart required!)</label>
 
+  <!-- Modem Port -->
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50 text-wrap">
+      Modem port
+      <span id="modemPortHelp" class="ms-2 badge bg-secondary text-wrap">
+        Server restart required
+      </span>
+    </label>
     <input
       type="number"
       class="form-control"
-      placeholder="modem port"
+      placeholder="Enter modem port"
       id="modem_port"
       maxlength="5"
       max="65534"
       min="1025"
+      aria-describedby="modemPortHelp"
       @change="onChange"
       v-model.number="settings.remote.NETWORK.modemport"
     />
   </div>
 
+  <!-- Modem Host -->
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Modem host (server restart required!)</label>
+    <label class="input-group-text w-50 text-wrap">
+      Modem host
+      <span id="modemHostHelp" class="ms-2 badge bg-secondary text-wrap">
+        Server restart required
+      </span>
+    </label>
     <select
-      class="form-select form-select-sm"
-      id="modem_port"
-      v-model="settings.remote.NETWORK.modemaddress"
+      class="form-select form-select-sm w-50"
+      id="modem_host"
+      aria-describedby="modemHostHelp"
       @change="onChange"
+      v-model="settings.remote.NETWORK.modemaddress"
     >
-      <option value="127.0.0.1">127.0.0.1 ( Local operation )</option>
-      <option value="localhost">localhost ( Local operation )</option>
-      <option value="0.0.0.0">0.0.0.0 ( Remote operation )</option>
+      <option value="127.0.0.1">127.0.0.1 (Local operation)</option>
+      <option value="localhost">localhost (Local operation)</option>
+      <option value="0.0.0.0">0.0.0.0 (Remote operation)</option>
     </select>
   </div>
 
   <!-- Audio Input Device -->
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Audio Input device</label>
+    <label class="input-group-text w-50 text-wrap">
+      Audio Input device
+      <span id="audioInputHelp" class="ms-2 badge bg-secondary text-wrap">
+        Select your microphone or line-in device
+      </span>
+    </label>
     <select
-      class="form-select form-select-sm"
-      aria-label=".form-select-sm"
+      class="form-select form-select-sm w-50"
+      aria-describedby="audioInputHelp"
       @change="onChange"
       v-model="settings.remote.AUDIO.input_device"
     >
@@ -95,10 +120,15 @@ const audioStore = useAudioStore(pinia);
 
   <!-- Audio Output Device -->
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Audio Output device</label>
+    <label class="input-group-text w-50 text-wrap">
+      Audio Output device
+      <span id="audioOutputHelp" class="ms-2 badge bg-secondary text-wrap">
+        Select your speakers or output device
+      </span>
+    </label>
     <select
-      class="form-select form-select-sm"
-      aria-label=".form-select-sm"
+      class="form-select form-select-sm w-50"
+      aria-describedby="audioOutputHelp"
       @change="onChange"
       v-model="settings.remote.AUDIO.output_device"
     >
@@ -108,13 +138,18 @@ const audioStore = useAudioStore(pinia);
     </select>
   </div>
 
-  <!-- Audio rx level-->
+  <!-- RX Audio Level -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text w-25">RX Audio Level</span>
-    <span class="input-group-text w-25">{{
-      settings.remote.AUDIO.rx_audio_level
-    }}</span>
-    <span class="input-group-text w-50">
+    <label class="input-group-text w-50 text-wrap">
+      RX Audio Level
+      <span id="rxAudioLevelHelp" class="ms-2 badge bg-secondary text-wrap">
+        Adjust to set the receive audio gain
+      </span>
+    </label>
+    <div class="input-group-text w-25">
+      {{ settings.remote.AUDIO.rx_audio_level }}
+    </div>
+    <div class="w-25">
       <input
         type="range"
         class="form-range"
@@ -122,17 +157,25 @@ const audioStore = useAudioStore(pinia);
         max="20"
         step="1"
         id="audioLevelRX"
+        aria-describedby="rxAudioLevelHelp"
         @change="onChange"
         v-model.number="settings.remote.AUDIO.rx_audio_level"
       />
-    </span>
+    </div>
   </div>
+
+  <!-- TX Audio Level -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text w-25">TX Audio Level</span>
-    <span class="input-group-text w-25">{{
-      settings.remote.AUDIO.tx_audio_level
-    }}</span>
-    <span class="input-group-text w-50">
+    <label class="input-group-text w-50 text-wrap">
+      TX Audio Level
+      <span id="txAudioLevelHelp" class="ms-2 badge bg-secondary text-wrap">
+        Adjust to set the transmit audio gain
+      </span>
+    </label>
+    <div class="input-group-text w-25">
+      {{ settings.remote.AUDIO.tx_audio_level }}
+    </div>
+    <div class="w-25">
       <input
         type="range"
         class="form-range"
@@ -140,16 +183,25 @@ const audioStore = useAudioStore(pinia);
         max="20"
         step="1"
         id="audioLevelTX"
+        aria-describedby="txAudioLevelHelp"
         @change="onChange"
         v-model.number="settings.remote.AUDIO.tx_audio_level"
       />
-    </span>
+    </div>
   </div>
+
+  <!-- TX Delay -->
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">TX delay in ms</label>
+    <label class="input-group-text w-50 text-wrap">
+      TX delay in ms
+      <span id="txDelayHelp" class="ms-2 badge bg-secondary text-wrap">
+        Delay before transmitting, in milliseconds
+      </span>
+    </label>
     <select
-      class="form-select form-select-sm"
+      class="form-select form-select-sm w-50"
       id="tx_delay"
+      aria-describedby="txDelayHelp"
       @change="onChange"
       v-model.number="settings.remote.MODEM.tx_delay"
     >
@@ -177,11 +229,18 @@ const audioStore = useAudioStore(pinia);
     </select>
   </div>
 
+  <!-- Maximum Used Bandwidth -->
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Maximum used bandwidth</label>
+    <label class="input-group-text w-50 text-wrap">
+      Maximum used bandwidth
+      <span id="maxBandwidthHelp" class="ms-2 badge bg-secondary text-wrap">
+        Select the maximum bandwidth the modem will use
+      </span>
+    </label>
     <select
-      class="form-select form-select-sm"
+      class="form-select form-select-sm w-50"
       id="maximum_bandwidth"
+      aria-describedby="maxBandwidthHelp"
       @change="onChange"
       v-model.number="settings.remote.MODEM.maximum_bandwidth"
     >
@@ -191,6 +250,5 @@ const audioStore = useAudioStore(pinia);
       <option value="2438">2438 Hz</option>
     </select>
   </div>
-
-
 </template>
+
