@@ -1,11 +1,11 @@
 {
   "name": "FreeDATA",
-  "version": "0.16.8-alpha",
+  "version": "0.16.9-alpha",
   "description": "FreeDATA Client application for connecting to FreeDATA server",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "build": "npm i && vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
   "repository": {
@@ -28,22 +28,22 @@
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
-    "bootstrap-vue-next": "^0.24.2",
+    "bootstrap-vue-next": "^0.25.12",
     "chart.js": "^4.4.3",
     "chartjs-plugin-annotation": "^3.0.1",
     "core-js": "^3.8.3",
     "d3": "^7.9.0",
     "dompurify": "^3.1.6",
-    "gridstack": "^10.3.0",
+    "gridstack": "^11.0.1",
     "js-image-compressor": "^2.0.0",
     "marked": "^14.1.2",
     "pinia": "^2.1.7",
     "qth-locator": "^2.1.0",
     "topojson-client": "^3.1.0",
-    "uuid": "^10.0.0",
+    "uuid": "^11.0.2",
     "vue": "^3.2.13",
     "vue-chartjs": "^5.3.1",
-    "vuemoji-picker": "^0.2.1"
+    "vuemoji-picker": "^0.3.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

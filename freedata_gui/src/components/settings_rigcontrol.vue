@@ -1,53 +1,74 @@
 <template>
-  <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">Rig Control</span>
-
-    <select
-      class="form-select form-select-sm"
-      aria-label=".form-select-sm"
-      id="rigcontrol_radiocontrol"
-      @change="onChange"
-      v-model="settings.remote.RADIO.control"
-    >
-      <option value="disabled">Disabled / VOX (no rig control - use with VOX)</option>
-      <option value="serial_ptt">Serial PTT via DTR/RTS</option>
-      <option value="rigctld">Rigctld (external Hamlib)</option>
-      <option value="rigctld_bundle">Rigctld (internal Hamlib)</option>
-      <option value="tci">TCI</option>
-    </select>
+  <!-- Top Info Area for Rig Control Settings -->
+  <div class="alert alert-info" role="alert">
+    <strong><i class="bi bi-gear-wide-connected me-1"></i>Rig Control</strong> related settings, including selecting your rig control method and configuring specific settings.
   </div>
+
+    <div class="alert alert-warning" role="alert">
+    Please select <strong>Rig Control</strong> first.
+  </div>
+
+
+  <!-- Rig Control Selection -->
+<div class="input-group mb-1">
+  <label class="input-group-text w-50 text-wrap">
+    Rig Control
+    <button
+      type="button"
+      class="btn btn-link p-0 ms-2"
+      data-bs-toggle="tooltip"
+      title="Choose how the software controls your radio"
+    >
+      <i class="bi bi-question-circle"></i>
+    </button>
+  </label>
+  <select
+    class="form-select form-select-sm w-50"
+    id="rigcontrol_radiocontrol"
+    @change="onChange"
+    v-model="settings.remote.RADIO.control"
+  >
+    <option value="disabled">Disabled / VOX (no rig control - use with VOX)</option>
+    <option value="serial_ptt">Serial PTT via DTR/RTS</option>
+    <option value="rigctld">Rigctld (external Hamlib)</option>
+    <option value="rigctld_bundle">Rigctld (internal Hamlib)</option>
+    <option value="tci">TCI</option>
+  </select>
+</div>
+
 
   <hr class="m-2" />
 
+  <!-- Tab Navigation -->
   <nav>
     <div class="nav nav-tabs" id="nav-tab" role="tablist">
       <button
         class="nav-link active"
-        id="nav-home-tab"
+        id="nav-hamlib-tab"
         data-bs-toggle="tab"
         data-bs-target="#nav-hamlib"
         type="button"
         role="tab"
-        aria-controls="nav-home"
+        aria-controls="nav-hamlib"
         aria-selected="true"
       >
         Hamlib
       </button>
       <button
         class="nav-link"
-        id="nav-profile-tab"
+        id="nav-tci-tab"
         data-bs-toggle="tab"
         data-bs-target="#nav-tci"
         type="button"
         role="tab"
-        aria-controls="nav-profile"
+        aria-controls="nav-tci"
         aria-selected="false"
       >
         TCI
       </button>
       <button
         class="nav-link"
-        id="nav-profile-tab"
+        id="nav-serial-tab"
         data-bs-toggle="tab"
         data-bs-target="#nav-serial"
         type="button"
@@ -59,7 +80,10 @@
       </button>
     </div>
   </nav>
-  <div class="tab-content" id="nav-tabContent">
+
+  <!-- Tab Content -->
+  <div class="tab-content mt-2" id="nav-tabContent">
+    <!-- Hamlib Settings -->
     <div
       class="tab-pane fade show active"
       id="nav-hamlib"
@@ -69,6 +93,8 @@
     >
       <settings_hamlib />
     </div>
+
+    <!-- TCI Settings -->
     <div
       class="tab-pane fade"
       id="nav-tci"
@@ -78,6 +104,8 @@
     >
       <settings_tci />
     </div>
+
+    <!-- Serial PTT Settings -->
     <div
       class="tab-pane fade"
       id="nav-serial"
@@ -86,12 +114,12 @@
       tabindex="2"
     >
       <settings_serial_ptt />
-
     </div>
   </div>
 
   <hr class="m-2" />
 </template>
+
 <script>
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 import settings_hamlib from "./settings_hamlib.vue";

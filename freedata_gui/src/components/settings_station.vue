@@ -1,7 +1,21 @@
 <template>
-  <!-- station callsign -->
+  <div class="alert alert-info" role="alert">
+    <strong><i class="bi bi-gear-wide-connected me-1"></i>Station</strong> related settings, like changing your <strong>callsign</strong>, <strong>location</strong>, and <strong>general behaviour</strong>.
+  </div>
+
+  <!-- Station Callsign -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">Your station callsign</span>
+    <span class="input-group-text w-50 text-wrap">
+      Callsign
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Enter a valid callsign (Max 7 chars, no special chars)"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </span>
     <input
       type="text"
       class="form-control"
@@ -9,15 +23,24 @@
       placeholder="Enter your callsign and save it"
       id="myCall"
       aria-label="Station Callsign"
-      aria-describedby="basic-addon1"
       v-model="settings.remote.STATION.mycall"
       @change="validateCall"
     />
   </div>
 
-  <!-- station ssid -->
+  <!-- Station SSID -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">Call SSID</span>
+    <span class="input-group-text w-50 text-wrap">
+      Callsign SSID
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Set a unique SSID for this station"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </span>
     <select
       class="form-select form-select-sm w-50"
       id="myCallSSID"
@@ -43,9 +66,19 @@
     </select>
   </div>
 
-  <!-- station grid locator -->
+  <!-- Station Grid Locator -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">Grid Locator</span>
+    <span class="input-group-text w-50 text-wrap">
+      Grid Locator / Maidenhead
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Enter a grid locator (Max 6 chars; shorter will randomize)"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </span>
     <input
       type="text"
       class="form-control"
@@ -53,14 +86,24 @@
       id="myGrid"
       maxlength="6"
       aria-label="Station Grid Locator"
-      aria-describedby="basic-addon1"
       @change="onChange"
       v-model="settings.remote.STATION.mygrid"
     />
   </div>
 
+  <!-- Respond to CQ Callings -->
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Respond to CQ</label>
+    <label class="input-group-text w-50 text-wrap">
+      Respond to CQ callings with a QRV reply
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="QRV reply sent with random delay"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
         <input
@@ -70,13 +113,24 @@
           v-model="settings.remote.STATION.respond_to_cq"
           @change="onChange"
         />
-        <label class="form-check-label" for="respondCQSwitch">QRV</label>
+        <label class="form-check-label" for="respondCQSwitch">Enable</label>
       </div>
     </label>
   </div>
 
-   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Enable callsign blacklist</label>
+  <!-- Enable Callsign Blacklist -->
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50 text-wrap">
+      Enable callsign blacklist
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Ignore requests from blacklisted callsigns"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
         <input
@@ -91,45 +145,55 @@
     </label>
   </div>
 
-   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Callsign blacklist - one call per line</label>
-    <label class="input-group-text w-50">
-      <div class="form-check form-switch form-check-inline">
-
-        <div class="form-floating">
-  <textarea class="form-control"
-  placeholder="one call per line"
-  id="callsignBlacklistfloatingTextarea"
-  style="height: 150px"
-  v-model="settings.remote.STATION.callsign_blacklist"
-  @change="onChange"
-  ></textarea>
-  <label for="callsignBlacklistfloatingTextarea">One call per line</label>
-</div>
-
-      </div>
+  <!-- Callsign Blacklist Textarea -->
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50 text-wrap">
+      Callsign blacklist
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="One callsign per line"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
     </label>
+    <div class="w-50">
+      <div class="form-floating">
+        <textarea
+          class="form-control"
+          placeholder="One call per line"
+          id="callsignBlacklistfloatingTextarea"
+          style="height: 150px"
+          v-model="settings.remote.STATION.callsign_blacklist"
+          @change="onChange"
+        ></textarea>
+        <label for="callsignBlacklistfloatingTextarea">One call per line</label>
+      </div>
+    </div>
   </div>
-
-
-
 </template>
 
 <script setup>
+import { onMounted } from "vue";
 import { settingsStore as settings, onChange, getRemote } from "../store/settingsStore.js";
 import { validateCallsignWithoutSSID } from "../js/freedata";
+import * as bootstrap from "bootstrap";
+
+// Initialize Bootstrap tooltips
+onMounted(() => {
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  [...tooltipTriggerList].forEach(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+});
 
 // Function to validate and update callsign
 function validateCall() {
-  // Ensure callsign is uppercase
   let call = settings.remote.STATION.mycall;
   settings.remote.STATION.mycall = call.toUpperCase();
 
   if (validateCallsignWithoutSSID(settings.remote.STATION.mycall)) {
-    // Send new callsign to modem if valid
     onChange();
   } else {
-    // Reload settings from modem as invalid callsign was passed in
     getRemote();
   }
 }

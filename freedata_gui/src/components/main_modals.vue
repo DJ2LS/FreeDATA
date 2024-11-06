@@ -201,9 +201,9 @@ const beaconHistogramData = computed(() => ({
      let mycall = settingsStore.remote.STATION.mycall;
      let myssid = settingsStore.remote.STATION.myssid;
      let fullCall = `${mycall}-${myssid}`;
-     console.log("Updating station info:", fullCall);
-   
-     setStationInfoByCallsign(fullCall, station.stationInfo.value);
+     console.log("Updating station info:", fullCall, station.stationInfo);
+
+     setStationInfoByCallsign(fullCall, station.stationInfo);
    }
    
    // Fix for modal interaction
@@ -219,6 +219,7 @@ const beaconHistogramData = computed(() => ({
      let mycall = settingsStore.remote.STATION.mycall;
      let myssid = settingsStore.remote.STATION.myssid;
      let fullCall = `${mycall}-${myssid}`;
+     console.log("fetching my station info:", fullCall)
      getStationInfoByCallsign(fullCall);
    }
 
