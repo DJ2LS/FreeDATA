@@ -29,9 +29,14 @@ export default {
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
       Enable message auto repeat
-      <span id="enableAutoRepeatHelp" class="ms-2 badge bg-secondary text-wrap">
-        Re-send message on beacon
-      </span>
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Re-send message on beacon"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
     </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline ms-2">
@@ -39,7 +44,6 @@ export default {
           class="form-check-input"
           type="checkbox"
           id="enableMessagesAutoRepeatSwitch"
-          aria-describedby="enableAutoRepeatHelp"
           @change="onChange"
           v-model="settings.remote.MESSAGES.enable_auto_repeat"
         />
@@ -52,16 +56,20 @@ export default {
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
       ADIF Log Host
-      <span id="adifLogHostHelp" class="ms-2 badge bg-secondary text-wrap">
-        ADIF server host, e.g., 127.0.0.1
-      </span>
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="ADIF server host, e.g., 127.0.0.1"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
     </label>
     <input
       type="text"
       class="form-control"
       placeholder="Enter ADIF server host"
       id="adifLogHost"
-      aria-describedby="adifLogHostHelp"
       @change="onChange"
       v-model="settings.remote.MESSAGES.adif_log_host"
     />
@@ -71,9 +79,14 @@ export default {
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
       ADIF Log Port
-      <span id="adifLogPortHelp" class="ms-2 badge bg-secondary text-wrap">
-        ADIF server port, e.g., 2237
-      </span>
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="ADIF server port, e.g., 2237"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
     </label>
     <input
       type="number"
@@ -82,7 +95,6 @@ export default {
       id="adifLogPort"
       max="65534"
       min="1025"
-      aria-describedby="adifLogPortHelp"
       @change="onChange"
       v-model.number="settings.remote.MESSAGES.adif_log_port"
     />

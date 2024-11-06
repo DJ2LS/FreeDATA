@@ -18,9 +18,14 @@ import { settingsStore as settings } from "../store/settingsStore.js";
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
       Enable MESH protocol
-      <span id="enableMeshHelp" class="ms-2 badge bg-secondary text-wrap">
-        Experimental feature
-      </span>
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Experimental feature"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
     </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline ms-2">
@@ -28,7 +33,6 @@ import { settingsStore as settings } from "../store/settingsStore.js";
           class="form-check-input"
           type="checkbox"
           id="enableMeshSwitch"
-          aria-describedby="enableMeshHelp"
           @change="setConfig"
           v-model="settings.remote.MESH.enable_protocol"
           disabled

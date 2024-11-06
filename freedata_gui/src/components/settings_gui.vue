@@ -8,14 +8,18 @@
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-50 text-wrap">
       Waterfall theme
-      <span id="wfThemeHelp" class="ms-2 badge bg-secondary text-wrap">
-        Select color theme for waterfall display
-      </span>
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Select color theme for waterfall display"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
     </span>
     <select
       class="form-select form-select-sm w-50"
       id="wftheme_selector"
-      aria-describedby="wfThemeHelp"
       @change="saveSettings"
       v-model="settings.local.wf_theme"
     >
@@ -33,9 +37,14 @@
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
       Auto launch browser
-      <span id="autoLaunchBrowserHelp" class="ms-2 badge bg-secondary text-wrap">
-        Launch browser to GUI URL on server startup
-      </span>
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Launch browser to GUI URL on server startup"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
     </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
@@ -43,7 +52,6 @@
           class="form-check-input"
           type="checkbox"
           id="autoLaunchBrowserSwitch"
-          aria-describedby="autoLaunchBrowserHelp"
           @change="onChange"
           v-model="settings.remote.GUI.auto_run_browser"
         />
@@ -56,9 +64,14 @@
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
       Enable notifications
-      <span id="enableNotificationsHelp" class="ms-2 badge bg-secondary text-wrap">
-        Show system pop-ups
-      </span>
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Show system pop-ups"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
     </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
@@ -66,7 +79,6 @@
           class="form-check-input"
           type="checkbox"
           id="enableNotificationsSwitch"
-          aria-describedby="enableNotificationsHelp"
           @change="saveSettings"
           v-model="settings.local.enable_sys_notification"
         />
@@ -75,7 +87,6 @@
     </label>
   </div>
 </template>
-
 
 <script>
 import { setColormap } from "../js/waterfallHandler";

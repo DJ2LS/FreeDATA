@@ -10,27 +10,32 @@
 
 
   <!-- Rig Control Selection -->
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50 text-wrap">
-      Rig Control
-      <span id="rigControlHelp" class="ms-2 badge bg-secondary text-wrap">
-        Choose how the software controls your radio
-      </span>
-    </label>
-    <select
-      class="form-select form-select-sm w-50"
-      aria-describedby="rigControlHelp"
-      id="rigcontrol_radiocontrol"
-      @change="onChange"
-      v-model="settings.remote.RADIO.control"
+<div class="input-group mb-1">
+  <label class="input-group-text w-50 text-wrap">
+    Rig Control
+    <button
+      type="button"
+      class="btn btn-link p-0 ms-2"
+      data-bs-toggle="tooltip"
+      title="Choose how the software controls your radio"
     >
-      <option value="disabled">Disabled / VOX (no rig control - use with VOX)</option>
-      <option value="serial_ptt">Serial PTT via DTR/RTS</option>
-      <option value="rigctld">Rigctld (external Hamlib)</option>
-      <option value="rigctld_bundle">Rigctld (internal Hamlib)</option>
-      <option value="tci">TCI</option>
-    </select>
-  </div>
+      <i class="bi bi-question-circle"></i>
+    </button>
+  </label>
+  <select
+    class="form-select form-select-sm w-50"
+    id="rigcontrol_radiocontrol"
+    @change="onChange"
+    v-model="settings.remote.RADIO.control"
+  >
+    <option value="disabled">Disabled / VOX (no rig control - use with VOX)</option>
+    <option value="serial_ptt">Serial PTT via DTR/RTS</option>
+    <option value="rigctld">Rigctld (external Hamlib)</option>
+    <option value="rigctld_bundle">Rigctld (internal Hamlib)</option>
+    <option value="tci">TCI</option>
+  </select>
+</div>
+
 
   <hr class="m-2" />
 
@@ -77,7 +82,7 @@
   </nav>
 
   <!-- Tab Content -->
-  <div class="tab-content" id="nav-tabContent">
+  <div class="tab-content mt-2" id="nav-tabContent">
     <!-- Hamlib Settings -->
     <div
       class="tab-pane fade show active"

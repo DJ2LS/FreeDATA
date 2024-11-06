@@ -17,9 +17,14 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
       Explorer publishing
-      <span id="explorerPublishingHelp" class="ms-2 badge bg-secondary text-wrap">
-        Share your station's data with the Explorer network
-      </span>
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Share your station's data with the Explorer network"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
     </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
@@ -27,7 +32,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
           class="form-check-input"
           type="checkbox"
           id="ExplorerSwitch"
-          aria-describedby="explorerPublishingHelp"
           @change="onChange"
           v-model="settings.remote.STATION.enable_explorer"
         />
@@ -40,9 +44,14 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
       Explorer stats publishing
-      <span id="explorerStatsPublishingHelp" class="ms-2 badge bg-secondary text-wrap">
-        Share your station's statistics with the Explorer network
-      </span>
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Share your station's statistics with the Explorer network"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
     </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
@@ -50,7 +59,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
           class="form-check-input"
           type="checkbox"
           id="ExplorerStatsSwitch"
-          aria-describedby="explorerStatsPublishingHelp"
           @change="onChange"
           v-model="settings.remote.STATION.enable_stats"
         />
@@ -59,4 +67,5 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
     </label>
   </div>
 </template>
+
 
