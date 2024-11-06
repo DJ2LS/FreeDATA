@@ -1,5 +1,4 @@
 <template>
-
   <div class="alert alert-info" role="alert">
     <strong><i class="bi bi-gear-wide-connected me-1"></i>Station</strong> related settings, like changing your <strong>callsign</strong>, <strong>location</strong>, and <strong>general behaviour</strong>.
   </div>
@@ -8,9 +7,14 @@
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-50 text-wrap">
       Callsign
-      <span id="myCallHelp" class="ms-2 badge bg-secondary text-wrap">
-        Max 7 chars. No special chars.
-      </span>
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Enter a valid callsign (Max 7 chars, no special chars)"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
     </span>
     <input
       type="text"
@@ -19,7 +23,6 @@
       placeholder="Enter your callsign and save it"
       id="myCall"
       aria-label="Station Callsign"
-      aria-describedby="myCallHelp"
       v-model="settings.remote.STATION.mycall"
       @change="validateCall"
     />
@@ -29,14 +32,18 @@
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-50 text-wrap">
       Callsign SSID
-      <span id="myCallSSIDHelp" class="ms-2 badge bg-secondary text-wrap">
-        Set the SSID for multiple stations
-      </span>
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Set a unique SSID for this station"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
     </span>
     <select
       class="form-select form-select-sm w-50"
       id="myCallSSID"
-      aria-describedby="myCallSSIDHelp"
       @change="onChange"
       v-model.number="settings.remote.STATION.myssid"
     >
@@ -63,9 +70,14 @@
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-50 text-wrap">
       Grid Locator / Maidenhead
-      <span id="myGridHelp" class="ms-2 badge bg-secondary text-wrap">
-        Max 6 chars; shorter will randomize
-      </span>
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Enter a grid locator (Max 6 chars; shorter will randomize)"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
     </span>
     <input
       type="text"
@@ -74,7 +86,6 @@
       id="myGrid"
       maxlength="6"
       aria-label="Station Grid Locator"
-      aria-describedby="myGridHelp"
       @change="onChange"
       v-model="settings.remote.STATION.mygrid"
     />
@@ -84,9 +95,14 @@
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
       Respond to CQ callings with a QRV reply
-      <span id="respondCQHelp" class="ms-2 badge bg-secondary text-wrap">
-        QRV reply sent with random delay.
-      </span>
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="QRV reply sent with random delay"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
     </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
@@ -94,7 +110,6 @@
           class="form-check-input"
           type="checkbox"
           id="respondCQSwitch"
-          aria-describedby="respondCQHelp"
           v-model="settings.remote.STATION.respond_to_cq"
           @change="onChange"
         />
@@ -107,9 +122,14 @@
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
       Enable callsign blacklist
-      <span id="enableBlacklistHelp" class="ms-2 badge bg-secondary text-wrap">
-        Ignore requests from blacklisted callsigns.
-      </span>
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Ignore requests from blacklisted callsigns"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
     </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
@@ -117,7 +137,6 @@
           class="form-check-input"
           type="checkbox"
           id="respondEnableBlacklistSwitch"
-          aria-describedby="enableBlacklistHelp"
           v-model="settings.remote.STATION.enable_callsign_blacklist"
           @change="onChange"
         />
@@ -130,9 +149,14 @@
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
       Callsign blacklist
-      <span id="callsignBlacklistHelp" class="ms-2 badge bg-secondary text-wrap">
-        One callsign per line
-      </span>
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="One callsign per line"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
     </label>
     <div class="w-50">
       <div class="form-floating">
@@ -141,7 +165,6 @@
           placeholder="One call per line"
           id="callsignBlacklistfloatingTextarea"
           style="height: 150px"
-          aria-describedby="callsignBlacklistHelp"
           v-model="settings.remote.STATION.callsign_blacklist"
           @change="onChange"
         ></textarea>
@@ -149,25 +172,28 @@
       </div>
     </div>
   </div>
-
 </template>
 
-
 <script setup>
+import { onMounted } from "vue";
 import { settingsStore as settings, onChange, getRemote } from "../store/settingsStore.js";
 import { validateCallsignWithoutSSID } from "../js/freedata";
+import * as bootstrap from "bootstrap";
+
+// Initialize Bootstrap tooltips
+onMounted(() => {
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  [...tooltipTriggerList].forEach(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+});
 
 // Function to validate and update callsign
 function validateCall() {
-  // Ensure callsign is uppercase
   let call = settings.remote.STATION.mycall;
   settings.remote.STATION.mycall = call.toUpperCase();
 
   if (validateCallsignWithoutSSID(settings.remote.STATION.mycall)) {
-    // Send new callsign to modem if valid
     onChange();
   } else {
-    // Reload settings from modem as invalid callsign was passed in
     getRemote();
   }
 }
