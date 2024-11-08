@@ -41,7 +41,7 @@ async function handleSendCQ() {
   // Wait for 6 seconds (cooldown period)
   setTimeout(() => {
     isCQButtonDisabled.value = false;
-  }, 6000);
+  }, 10000);
 }
 
 
