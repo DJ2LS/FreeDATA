@@ -214,7 +214,7 @@ class FrameHandler():
         print(self.details)
 
         if 'origin' not in frame and 'session_id' in frame:
-            dxcall = self.states.get_dxcall_by_session_id(frame['session_id'])
+            dxcall = self.states.get_dxcall_by_session_id(self.details['frame']['session_id'])
             if dxcall:
                 self.details['origin'] = dxcall
 
