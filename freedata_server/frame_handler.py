@@ -168,6 +168,7 @@ class FrameHandler():
         }
         if 'origin' in self.details['frame']:
             event['dxcallsign'] = self.details['frame']['origin']
+
         if 'gridsquare' in self.details['frame']:
             event['gridsquare'] = self.details['frame']['gridsquare']
             if event['gridsquare'] != "------":
@@ -211,6 +212,11 @@ class FrameHandler():
         self.details['bytes_per_frame'] = bytes_per_frame
 
         print(self.details)
+
+        if 'origin' not in frame and 'session_id' in frame:
+            dxcall = self.states.get_dxcall_by_session_id(frame['session_id'])
+            if dxcall:
+                self.details['origin'] = dxcall
 
         # look in database for a full callsign if only crc is present
         if 'origin' not in frame and 'origin_crc' in frame:
