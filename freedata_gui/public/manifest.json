@@ -1,6 +1,8 @@
 {
   "name": "FreeDATA",
   "short_name": "FreeDATA",
+  "description": "FreeDATA is a communication platform for transferring data over radio.",
+  "categories": ["utilities", "communication", "productivity"],
   "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
