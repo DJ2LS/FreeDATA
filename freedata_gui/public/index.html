@@ -20,8 +20,18 @@
       sizes="16x16"
       href="<%= BASE_URL %>favicon-16x16.png"
     />
-      <link rel="icon" type="image/png" sizes="192x192" href="<%= BASE_URL %>android-chrome-192x192.png" />
-    <link rel="icon" type="image/png" sizes="512x512" href="<%= BASE_URL %>android-chrome-512x512.png" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="<%= BASE_URL %>android-chrome-192x192.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="512x512"
+      href="<%= BASE_URL %>android-chrome-512x512.png"
+    />
 
     <!-- Apple touch icon -->
     <link rel="apple-touch-icon" href="<%= BASE_URL %>apple-touch-icon.png" />
@@ -38,15 +48,16 @@
 
     <!-- Add custom JavaScript to set the viewport height -->
     <script>
-function setAppHeight() {
-  const appHeight =
-    window.visualViewport?.height || window.innerHeight;
-  document.documentElement.style.setProperty("--app-height", `${appHeight}px`);
-}
-window.addEventListener("resize", setAppHeight);
-window.addEventListener("orientationchange", setAppHeight);
-document.addEventListener("DOMContentLoaded", setAppHeight);
-
+      function setAppHeight() {
+        const appHeight = window.visualViewport?.height || window.innerHeight;
+        document.documentElement.style.setProperty(
+          "--app-height",
+          `${appHeight}px`,
+        );
+      }
+      window.addEventListener("resize", setAppHeight);
+      window.addEventListener("orientationchange", setAppHeight);
+      document.addEventListener("DOMContentLoaded", setAppHeight);
     </script>
 
     <!-- Custom styles to use the dynamic height -->
