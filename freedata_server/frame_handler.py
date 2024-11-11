@@ -129,14 +129,7 @@ class FrameHandler():
             return
 
         dxgrid = frame.get('gridsquare', "------")
-        #try to find station info in database
-        try:
-            station = DatabaseManagerStations(self.event_manager).get_station(frame['origin'])
-            if station and "gridsquare" in station["location"]:
-                dxgrid = station["location"]["gridsquare"]
 
-        except Exception:
-            pass
 
         # Initialize distance values
         distance_km = None
@@ -178,11 +171,14 @@ class FrameHandler():
 
         if 'gridsquare' in self.details['frame']:
             event['gridsquare'] = self.details['frame']['gridsquare']
+            if event['gridsquare'] != "------":
+                distance = maidenhead.distance_between_locators(self.config['STATION']['mygrid'], self.details['frame']['gridsquare'])
+                event['distance_kilometers'] = distance['kilometers']
+                event['distance_miles'] = distance['miles']
+            else:
+                event['distance_kilometers'] = 0
+                event['distance_miles'] = 0
 
-            distance = maidenhead.distance_between_locators(self.config['STATION']['mygrid'], self.details['frame']['gridsquare'])
-            event['distance_kilometers'] = distance['kilometers']
-            event['distance_miles'] = distance['miles']
-            
         if "flag" in self.details['frame'] and "AWAY_FROM_KEY" in self.details['frame']["flag"]:
             event['away_from_key'] = self.details['frame']["flag"]["AWAY_FROM_KEY"]
 
@@ -190,6 +186,7 @@ class FrameHandler():
 
     def emit_event(self):
         event_data = self.make_event()
+        print(event_data)
         self.event_manager.broadcast(event_data)
 
     def get_tx_mode(self):
@@ -214,16 +211,42 @@ class FrameHandler():
         self.details['freedv_inst'] = freedv_inst
         self.details['bytes_per_frame'] = bytes_per_frame
 
+        print(self.details)
+
+        if 'origin' not in self.details['frame'] and 'session_id' in self.details['frame']:
+            dxcall = self.states.get_dxcall_by_session_id(self.details['frame']['session_id'])
+            if dxcall:
+                self.details['frame']['origin'] = dxcall
+
         # look in database for a full callsign if only crc is present
-        if 'origin' not in frame and 'origin_crc' in frame:
+        if 'origin' not in self.details['frame'] and 'origin_crc' in self.details['frame']:
             self.details['frame']['origin'] = DatabaseManager(self.event_manager).get_callsign_by_checksum(frame['origin_crc'])
+
+        if "location" in self.details['frame'] and "gridsquare" in self.details['frame']['location']:
+            DatabaseManagerStations(self.event_manager).update_station_location(self.details['frame']['origin'], frame['gridsquare'])
+
+
+        if 'origin' in self.details['frame']:
+            # try to find station info in database
+            try:
+                station = DatabaseManagerStations(self.event_manager).get_station(self.details['frame']['origin'])
+                if station and station["location"] and "gridsquare" in station["location"]:
+                    dxgrid = station["location"]["gridsquare"]
+                else:
+                    dxgrid = "------"
+
+                # overwrite gridsquare only if not provided by frame
+                if "gridsquare" not in self.details['frame']:
+                    self.details['frame']['gridsquare'] = dxgrid
+
+            except Exception as e:
+                self.logger.info(f"[Frame Handler] Error getting gridsquare from callsign info: {e}")
 
         # check if callsign is blacklisted
         if self.config["STATION"]["enable_callsign_blacklist"]:
             if self.is_origin_on_blacklist():
                 self.logger.info(f"[Frame Handler] Callsign blocked: {self.details['frame']['origin']}")
                 return False
-
 
         self.log()
         self.add_to_heard_stations()
