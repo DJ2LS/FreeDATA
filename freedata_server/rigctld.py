@@ -504,6 +504,9 @@ class radio:
         if not should_ignore(config.get('stop_bits')):
             args += ['--set-conf', f'stop_bits={config["stop_bits"]}']
 
+        if self.config['RIGCTLD']['enable_vfo']:
+            args += ['--vfo']
+
         # Fixme        #rts_state
         # if not should_ignore(config.get('rts_state')):
         #    args += ['--set-conf', f'stop_bits={config["rts_state"]}']

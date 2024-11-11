@@ -3,7 +3,7 @@
 # Simple script to install FreeDATA in Linux
 # Dj Merrill - N1JOV
 #
-# Currently supports Debian [11, 12], Ubuntu [22.04, 24.04]
+# Currently supports Debian [11, 12], Ubuntu [22.04, 24.04], Fedora [40]
 # 
 # Run this script by typing in the terminal (without the quotes):
 # "bash install-freedata-linux.sh" to install from the main branch 
@@ -19,9 +19,12 @@
 #
 #
 # Changelog:
+# 2.0:	04 Oct 2024 (deej)
+# 	Add support for Fedora 40
+#
 # 1.9:	14 Sep 2024 (deej)
 # 	Tweak OS version checking section to handle minor OS revisions better
-
+#
 # 1.8:	23 July 2024 ( DJ2LS )
 # 	Add support for browser based gui
 #
@@ -113,6 +116,13 @@ case $osname in
 	   	echo $osname $osversion
 	   	echo "*************************************************************************"
 		exit 1
+	   ;;
+	esac
+   ;;
+   "Fedora Linux")
+	case $osversion in
+	   "VERSION_ID=40")
+		sudo dnf install -y git cmake make automake gcc gcc-c++ kernel-devel wget portaudio-devel python3-pyaudio python3-pip python3-colorama python3-virtualenv google-noto-emoji-fonts python3-devel
 	   ;;
 	esac
    ;;

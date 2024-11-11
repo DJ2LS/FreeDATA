@@ -28,56 +28,98 @@ const settings = ref({
 </script>
 
 <template>
-  <hr class="m-2" />
+
+  <!-- Rigctld IP -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">Rigctld IP</span>
+    <label class="input-group-text w-50 text-wrap">
+      Rigctld IP
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Enter the IP address of the rigctld server"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
     <input
       type="text"
       class="form-control"
-      placeholder="rigctld IP"
-      id="hamlib_rigctld_ip"
-      aria-label="Device IP"
+      placeholder="Enter Rigctld IP"
+      id="rigctldIp"
+      aria-label="Rigctld IP"
       @change="onChange"
       v-model="settings.remote.RIGCTLD.ip"
     />
   </div>
 
+  <!-- Rigctld Port -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">Rigctld port</span>
+    <label class="input-group-text w-50 text-wrap">
+      Rigctld Port
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Enter the port number of the rigctld server"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
     <input
       type="number"
       class="form-control"
-      placeholder="rigctld port"
-      id="hamlib_rigctld_port"
-      aria-label="Device Port"
+      placeholder="Enter Rigctld port"
+      id="rigctldPort"
+      aria-label="Rigctld Port"
       @change="onChange"
       v-model.number="settings.remote.RIGCTLD.port"
     />
   </div>
 
+  <!-- Rigctld VFO Parameter -->
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">rigctld VFO parameter</label>
+    <label class="input-group-text w-50 text-wrap">
+      Rigctld VFO parameter
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Enable VFO support in rigctld"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
         <input
           class="form-check-input"
           type="checkbox"
-          id="enableVFOSwitch"
+          id="enableVfoSwitch"
           v-model="settings.remote.RIGCTLD.enable_vfo"
           @change="onChange"
         />
-        <label class="form-check-label" for="enableVFOSwitch">VFO</label>
+        <label class="form-check-label" for="enableVfoSwitch">Enable</label>
       </div>
     </label>
   </div>
 
-  <hr class="m-2" />
-  <div
-    :class="settings.remote.RADIO.control == 'rigctld_bundle' ? '' : 'd-none'"
-  >
+  <!-- Conditional Section for Rigctld Bundle -->
+  <div :class="settings.remote.RADIO.control == 'rigctld_bundle' ? '' : 'd-none'">
+    <!-- Radio Model -->
     <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">Radio model</span>
-      <select
+      <label class="input-group-text w-50 text-wrap">
+        Radio model
+        <button
+          type="button"
+          class="btn btn-link p-0 ms-2"
+          data-bs-toggle="tooltip"
+          title="Select your radio model for rig control"
+        >
+          <i class="bi bi-question-circle"></i>
+        </button>
+      </label>
+    <select
         class="form-select form-select-sm"
         aria-label=".form-select-sm"
         id="hamlib_deviceid"
@@ -370,13 +412,23 @@ const settings = ref({
       </select>
     </div>
 
+    <!-- Radio Port -->
     <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">Radio port</span>
-
+      <label class="input-group-text w-50 text-wrap">
+        Radio port
+        <button
+          type="button"
+          class="btn btn-link p-0 ms-2"
+          data-bs-toggle="tooltip"
+          title="Select the serial port connected to your radio"
+        >
+          <i class="bi bi-question-circle"></i>
+        </button>
+      </label>
       <select
+        class="form-select form-select-sm w-50"
         @change="onChange"
         v-model="settings.remote.RADIO.serial_port"
-        class="form-select form-select-sm"
       >
         <option
           v-for="device in serialStore.serialDevices"
@@ -388,183 +440,32 @@ const settings = ref({
       </select>
     </div>
 
+    <!-- Serial Speed -->
     <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">Serial speed</span>
-
+      <label class="input-group-text w-50 text-wrap">
+        Serial speed
+        <button
+          type="button"
+          class="btn btn-link p-0 ms-2"
+          data-bs-toggle="tooltip"
+          title="Set the baud rate for serial communication"
+        >
+          <i class="bi bi-question-circle"></i>
+        </button>
+      </label>
       <select
-        class="form-select form-select-sm"
-        aria-label=".form-select-sm"
-        id="hamlib_serialspeed"
+        class="form-select form-select-sm w-50"
+        id="serialSpeedSelect"
         @change="onChange"
         v-model.number="settings.remote.RADIO.serial_speed"
       >
         <option selected value="0">-- ignore --</option>
-        <option value="1200">1200</option>
-        <option value="2400">2400</option>
-        <option value="4800">4800</option>
         <option value="9600">9600</option>
-        <option value="14400">14400</option>
         <option value="19200">19200</option>
-        <option value="28800">28800</option>
-        <option value="38400">38400</option>
-        <option value="57600">57600</option>
         <option value="115200">115200</option>
       </select>
     </div>
-    <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">Data bits</span>
-
-      <select
-        class="form-select form-select-sm"
-        aria-label=".form-select-sm"
-        id="hamlib_data_bits"
-        @change="onChange"
-        v-model.number="settings.remote.RADIO.data_bits"
-      >
-        <option selected value="0">-- ignore --</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-      </select>
-    </div>
-    <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">Stop bits</span>
-
-      <select
-        class="form-select form-select-sm"
-        aria-label=".form-select-sm"
-        id="hamlib_stop_bits"
-        @change="onChange"
-        v-model.number="settings.remote.RADIO.stop_bits"
-      >
-        <option selected value="0">-- ignore --</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-      </select>
-    </div>
-    <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px"
-        >Serial handshake</span
-      >
-
-      <select
-        class="form-select form-select-sm"
-        aria-label=".form-select-sm"
-        id="hamlib_handshake"
-        @change="onChange"
-        v-model="settings.remote.RADIO.serial_handshake"
-      >
-        <option selected value="ignore">-- ignore --</option>
-        <option value="None">None (Default)</option>
-      </select>
-    </div>
-
-    <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">PTT device port</span>
-
-      <select
-        @change="onChange"
-        v-model="settings.remote.RADIO.ptt_port"
-        class="form-select form-select-sm"
-      >
-        <option
-          v-for="device in serialStore.serialDevices"
-          :value="device.port"
-          :key="device.port"
-        >
-          {{ device.description }}
-        </option>
-      </select>
-    </div>
-    <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">PTT type</span>
-
-      <select
-        class="form-select form-select-sm"
-        aria-label=".form-select-sm"
-        id="hamlib_pttprotocol"
-        style="width: 0.5rem"
-        @change="onChange"
-        v-model="settings.remote.RADIO.ptt_type"
-      >
-        <option selected value="ignore">-- ignore --</option>
-        <option value="NONE">NONE</option>
-        <option value="RIG">RIG</option>
-        <option value="USB">USB</option>
-        <option value="RTS">Serial RTS</option>
-        <option value="PARALLEL">Rig PARALLEL</option>
-        <option value="MICDATA">Rig MICDATA</option>
-        <option value="CM108">Rig CM108</option>
-      </select>
-    </div>
-    <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">DCD</span>
-
-      <select
-        class="form-select form-select-sm"
-        aria-label=".form-select-sm"
-        id="hamlib_dcd"
-        style="width: 0.5rem"
-        @change="onChange"
-        v-model="settings.remote.RADIO.serial_dcd"
-      >
-        <option selected value="ignore">-- ignore --</option>
-        <option value="NONE">NONE</option>
-        <option value="RIG">RIG/CAT</option>
-        <option value="DSR">DSR</option>
-        <option value="CTS">CTS</option>
-        <option value="CD">CD</option>
-        <option value="PARALLEL">PARALLEL</option>
-      </select>
-    </div>
-    <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">DTR</span>
-
-      <select
-        class="form-select form-select-sm"
-        aria-label=".form-select-sm"
-        id="hamlib_dtrstate"
-        style="width: 0.5rem"
-        @change="onChange"
-        v-model="settings.remote.RADIO.serial_dtr"
-      >
-        <option selected value="ignore">-- ignore --</option>
-        <option value="OFF">OFF</option>
-        <option value="ON">ON</option>
-      </select>
-    </div>
-    <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">Rigctld command</span>
-      <input
-        type="text"
-        class="form-control"
-        id="hamlib_rigctld_command"
-        aria-label="Device Port"
-        aria-describedby="basic-addon1"
-        disabled
-        placeholder="auto populated from above settings"
-      />
-      <button
-        class="btn btn-outline-secondary"
-        type="button"
-        id="btnHamlibCopyCommand"
-      >
-        <i id="btnHamlibCopyCommandBi" class="bi bi-clipboard"></i>
-      </button>
-    </div>
-    <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px"
-        >Rigctld custom arguments</span
-      >
-      <input
-        type="text"
-        class="form-control"
-        placeholder="not typically needed"
-        id="hamlib_rigctld_custom_args"
-        aria-label="Custom arguments"
-        aria-describedby="basic-addon1"
-        @change="onChange"
-        v-model="settings.remote.RIGCTLD.arguments"
-      />
-    </div>
   </div>
 </template>
+
+

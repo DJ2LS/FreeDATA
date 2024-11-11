@@ -20,7 +20,6 @@ function getDateTime(timestampRaw) {
     navigator.language,
     {
       hourCycle: 'h23',
-      year: '2-digit',
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
@@ -107,7 +106,8 @@ function transmitPing(callsign) {
               @click="pushToPing(item.origin)"
             >
               <td>
-                <small>{{ getDateTime(item.timestamp) }}</small>
+                                  <span class="badge text-bg-secondary">{{ getDateTime(item.timestamp) }}</span>
+
               </td>
               <td><small>{{ item.frequency / 1000 }} kHz</small></td>
               <td>
@@ -118,7 +118,7 @@ function transmitPing(callsign) {
                   @click="getStationInfoByCallsign(item.origin)"
                   disabled
                 >
-                  <h6 class="p-0 m-0"><span class="badge text-bg-primary">{{ item.origin }}</span></h6>
+                  <span class="badge text-bg-primary">{{ item.origin }}</span>
                 </button>
 
                 <button
