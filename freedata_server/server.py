@@ -92,8 +92,15 @@ else:
 
 
 @app.middleware("http")
-async def log_requests(request: Request, call_next):
+async def http_middleware(request: Request, call_next):
     response = await call_next(request)
+
+    # Disable caching
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private"
+    response.headers["Pragma"] = "no-cache"  # For HTTP/1.0 backward compatibility
+    response.headers["Expires"] = "0"  # Forces immediate expiration
+
+    # Log requests
     logger.info(f"[API] {request.method}", url=str(request.url), response_code=response.status_code)
     return response
 
