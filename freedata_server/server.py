@@ -237,7 +237,6 @@ async def index():
                         "enable_morse_identifier": False,
                         "enable_socket_interface": False,
                         "maximum_bandwidth": 2438,
-                        "respond_to_cq": True,
                         "tx_delay": 200
                     },
                     "NETWORK": {
@@ -276,7 +275,8 @@ async def index():
                         "mycall": "LA3QMA",
                         "mygrid": "JP20ql",
                         "myssid": 0,
-                        "ssid_list": [0,1,2,3,4,5,6,7,8,9]
+                        "ssid_list": [0,1,2,3,4,5,6,7,8,9],
+                        "respond_to_cq": True,
                     },
                     "TCI": {
                         "tci_ip": "127.0.0.1",
