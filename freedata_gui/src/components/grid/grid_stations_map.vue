@@ -5,6 +5,7 @@
         <button @click="zoomIn" class="btn btn-sm btn-outline-secondary"><i class="bi bi-plus-square"></i></button>
         <button @click="centerMap" class="btn btn-sm btn-secondary"><i class="bi bi-house-door"></i></button>
         <button @click="zoomOut" class="btn btn-sm btn-outline-secondary"><i class="bi bi-dash-square"></i></button>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
       </div>
 
       <div class="input-group input-group-sm ms-2">
