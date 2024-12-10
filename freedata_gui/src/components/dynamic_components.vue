@@ -580,22 +580,18 @@ onMounted(() => {
     </div>
     <div class="offcanvas-body">
       <p>
-        Grid widgets allow you to customize the display for your own usage. Here
-        you may add additional widgets to fit your needs. You can move and
-        resize the individual widgets!
+        Grid widgets allow you to customize the display. You may add additional widgets to fit your needs. You can move and resize the individual widgets!
       </p>
       <div>
         <button
-          class="btn btn-sm btn-outline-primary"
+          class="btn btn-outline-primary mb-2"
           type="button"
           @click="quickfill"
         >
           Fill grid with common widgets
         </button>
-      </div>
-      <div>
         <button
-          class="btn btn-sm btn-outline-primary"
+          class="btn btn-outline-primary"
           type="button"
           @click="quickfillSM"
         >
