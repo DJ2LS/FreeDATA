@@ -1,8 +1,8 @@
-name: Build and push docker image
+name: Build and push docker image when tagged
 on:
   push:
-    # tags:
-    #   - "*"
+    tags:
+      - "*"
 
 jobs:
   build-and-release:
