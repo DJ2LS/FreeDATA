@@ -40,8 +40,8 @@ ADD https://github.com/DJ2LS/FreeDATA.git#v0.16.10-alpha ./
 RUN python3 -m venv /app/FreeDATA/venv
 ENV PATH="/app/FreeDATA/venv/bin:$PATH"
 
-RUN pip install --upgrade pip wheel && \
-  pip install -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip wheel && \
+  pip install --no-cache-dir -r requirements.txt
 
 WORKDIR /app/FreeDATA/freedata_server/lib
 
