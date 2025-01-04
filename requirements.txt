@@ -9,7 +9,7 @@ asyncio
 chardet
 colorama
 ordered-set
-nuitka<=2.5.4
+nuitka<=2.5.9
 pyinstaller
 websocket-client
 fastapi[standard]
