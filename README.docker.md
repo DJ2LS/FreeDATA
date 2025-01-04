@@ -50,7 +50,7 @@ Any updates to sources can be triggered with:
 pacmd set-default-source 1
 ```
 
-## FreeDATA Image
+### FreeDATA Image
 
 This can be run in one of two ways. By running the docker image with a long command line or via `docker compose`. Lets start with the long command line.
 
@@ -71,7 +71,7 @@ docker run --rm -it \
     -v /$HOME/.config/pulse:/home/freedata/.config/pulse \
     -p 5050:5050 \
     --name freedata \
-    ghcr.io/g7ufo/freedata:latest
+    ghcr.io/dj2ls/freedata:latest
 ```
 
 If you'd like to start a `rigctld` instance in the container (see [the wiki](https://wiki.freedata.app/en/usage/radio-control#hamlib-rigctld-commands)), the arguments can be provided with the `RIGCTL_ARGS` environment variable eg:
@@ -84,7 +84,7 @@ docker run --rm -it \
     -v /$HOME/.config/pulse:/home/freedata/.config/pulse \
     -p 5050:5050 \
     --name freedata \
-    ghcr.io/g7ufo/freedata:latest
+    ghcr.io/dj2ls/freedata:latest
 ```
 
 A slightly more tidy method of provding the same config is via `docker compose`. Create a `docker-compose.yml` file with the following content:
@@ -93,7 +93,7 @@ A slightly more tidy method of provding the same config is via `docker compose`.
 services:
   freedata:
     container_name: freedata
-    image: ghcr.io/g7ufo/freedata:latest
+    image: ghcr.io/dj2ls/freedata:latest
     pull_policy: always
     volumes:
       - ./freedata-data:/data
@@ -116,3 +116,9 @@ And its logs viewed with:
 ```bash
 docker-compose logs -f
 ```
+
+## Usage
+
+Once the server is running, you can access the GUI by visiting `http://localhost:5050/gui` in your browser.
+
+You will need to set up your audio device and radio config.
