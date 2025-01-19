@@ -204,7 +204,6 @@ def set_audio_volume(datalist: np.ndarray, dB: float) -> np.ndarray:
     # Clip values to int16 range and convert data type
     return np.clip(scaled_data, -32768, 32767).astype(np.int16)
 
-import numpy as np
 
 def normalize_audio(datalist: np.ndarray) -> np.ndarray:
     """
