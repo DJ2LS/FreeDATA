@@ -262,6 +262,7 @@ class RF:
 
         # Re-sample back up to 48k (resampler works on np.int16)
         x = np.frombuffer(txbuffer, dtype=np.int16)
+        #x = audio.normalize_audio(x) # This is an experiment, only enable it for testing and development
         x = audio.set_audio_volume(x, self.tx_audio_level)
 
         if self.radiocontrol not in ["tci"]:
