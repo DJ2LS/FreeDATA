@@ -1,42 +1,13 @@
-import { reactive, ref, watch } from "vue";
+import { reactive, watch } from "vue";
 import { getConfig, setConfig } from "../js/api";
-import { getAppDataPath } from "../js/freedata";
-import fs from "fs";
-const path = require("path");
-const nconf = require("nconf");
 
-var appDataPath = getAppDataPath();
-var configFolder = path.join(appDataPath, "FreeDATA");
-let configFile = "config.json";
-
-const isGitHubActions = process.env.GITHUB_ACTIONS === "true";
-if (isGitHubActions) {
-  configFile = "example.json";
-  configFolder = appDataPath;
-}
-
-var configPath = path.join(configFolder, configFile);
-
-console.log("AppData Path:", appDataPath);
-console.log(configFolder);
-console.log(configPath);
-
-nconf.file({ file: configPath });
-
-// +++
-//GUI DEFAULT SETTINGS........
-//Set GUI defaults here, they will be used if not found in config/config.json
-//They should be an exact mirror (variable wise) of settingsStore.local
-//Nothing else should be needed aslong as components are using v-bind
-// +++
-
+// Default configuration
 const defaultConfig = {
   local: {
     host: "127.0.0.1",
     port: "5000",
     spectrum: "waterfall",
     wf_theme: 2,
-    update_channel: "alpha",
     enable_sys_notification: false,
     grid_layout: "[]",
     grid_preset: "[]",
@@ -54,7 +25,6 @@ const defaultConfig = {
       enable_protocol: false,
     },
     MODEM: {
-      respond_to_cq: false,
       tx_delay: 0,
       enable_hamc: false,
       enable_morse_identifier: false,
@@ -89,6 +59,9 @@ const defaultConfig = {
       myssid: 0,
       mygrid: "",
       ssid_list: [],
+      respond_to_cq: false,
+      enable_callsign_blacklist: false,
+      callsign_blacklist: [],
     },
     TCI: {
       tci_ip: "127.0.0.1",
@@ -96,29 +69,59 @@ const defaultConfig = {
     },
     MESSAGES: {
       enable_auto_repeat: false,
+      adif_log_host: "127.0.0.1",
+      adif_log_port: "2237",
+    },
+    GUI: {
+      auto_run_browser: true,
     },
   },
 };
 
-nconf.defaults(defaultConfig);
-nconf.required(["local:host", "local:port"]);
+// Initialize local settings from browser storage
+const localConfig =
+  JSON.parse(localStorage.getItem("localConfig")) || defaultConfig.local;
+console.log("--------- LOCAL CONFIG -----------");
+console.log(localConfig);
 
-export const settingsStore = reactive(defaultConfig);
-
-//Save settings for GUI to config file
-settingsStore.local = nconf.get("local");
-saveLocalSettingsToConfig();
+export const settingsStore = reactive({ ...defaultConfig, local: localConfig });
+// Function to handle remote configuration changes
 
 export function onChange() {
-  setConfig(settingsStore.remote).then((conf) => {
+  let remote_config = settingsStore.remote;
+  let blacklistContent = remote_config.STATION.callsign_blacklist;
+  // Check if the content is a string
+  if (typeof blacklistContent === "string") {
+    // Split the string by newlines to create an array
+    blacklistContent = blacklistContent
+      .split("\n") // Split text by newlines
+      .map((item) => item.trim()) // Trim whitespace from each line
+      .filter((item) => item !== ""); // Remove empty lines
+
+    // Update the settings store with the validated array
+    remote_config.STATION.callsign_blacklist = blacklistContent;
+  }
+
+  // Ensure it's an array, even if the data comes in incorrectly formatted
+  if (!Array.isArray(blacklistContent)) {
+    // Convert any other data types to an empty array as a fallback
+    remote_config.STATION.callsign_blacklist = [];
+  }
+
+  setConfig(remote_config).then((conf) => {
     settingsStore.remote = conf;
+    settingsStore.remote.STATION.callsign_blacklist =
+      conf.STATION.callsign_blacklist.join("\n");
   });
 }
 
+// Function to fetch remote configuration
 export function getRemote() {
   return getConfig().then((conf) => {
-    if (typeof conf !== "undefined") {
+    if (conf !== undefined) {
       settingsStore.remote = conf;
+      settingsStore.remote.STATION.callsign_blacklist =
+        conf.STATION.callsign_blacklist.join("\n");
       onChange();
     } else {
       console.warn("Received undefined configuration, using default!");
@@ -127,13 +130,17 @@ export function getRemote() {
   });
 }
 
-watch(settingsStore.local, (oldValue, newValue) => {
-  //This function watches for changes, and triggers a save of local settings
-  saveLocalSettingsToConfig();
-});
+// Watcher to save local settings on change
+watch(
+  () => settingsStore.local,
+  () => {
+    saveLocalSettingsToConfig();
+  },
+  { deep: true },
+);
 
+// Function to save local settings to browser storage
 export function saveLocalSettingsToConfig() {
-  nconf.set("local", settingsStore.local);
-  nconf.save();
-  //console.log("Settings saved!");
+  localStorage.setItem("localConfig", JSON.stringify(settingsStore.local));
+  console.log("Settings saved!");
 }

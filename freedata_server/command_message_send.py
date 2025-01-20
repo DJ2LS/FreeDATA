@@ -18,7 +18,7 @@ class SendMessageCommand(TxCommand):
     def set_params_from_api(self, apiParams):
         origin = f"{self.config['STATION']['mycall']}-{self.config['STATION']['myssid']}"
         self.message = MessageP2P.from_api_params(origin, apiParams)
-        DatabaseManagerMessages(self.event_manager).add_message(self.message.to_dict(), statistics={}, direction='transmit', status='queued')
+        DatabaseManagerMessages(self.event_manager).add_message(self.message.to_dict(), statistics={}, direction='transmit', status='queued', frequency=self.state_manager.radio_frequency)
 
     def transmit(self, modem):
 
@@ -37,7 +37,7 @@ class SendMessageCommand(TxCommand):
             return
         try:
             self.log(f"Queued message found: {first_queued_message['id']}")
-            DatabaseManagerMessages(self.event_manager).update_message(first_queued_message["id"], update_data={'status': 'transmitting'})
+            DatabaseManagerMessages(self.event_manager).update_message(first_queued_message["id"], update_data={'status': 'transmitting'}, frequency=self.state_manager.radio_frequency)
             message_dict = DatabaseManagerMessages(self.event_manager).get_message_by_id(first_queued_message["id"])
             message = MessageP2P.from_api_params(message_dict['origin'], message_dict)
 
@@ -52,7 +52,6 @@ class SendMessageCommand(TxCommand):
             payload = message.to_payload().encode('utf-8')
             json_bytearray = bytearray(payload)
             data, data_type = self.arq_data_type_handler.prepare(json_bytearray, ARQ_SESSION_TYPES.p2pmsg_zlib)
-
             iss = ARQSessionISS(self.config,
                                 modem,
                                 self.message.destination,
@@ -60,7 +59,6 @@ class SendMessageCommand(TxCommand):
                                 data,
                                 data_type
                                 )
-
             self.state_manager.register_arq_iss_session(iss)
             iss.start()
         except Exception as e:

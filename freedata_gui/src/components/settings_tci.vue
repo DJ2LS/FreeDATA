@@ -1,33 +1,69 @@
-<script setup lang="ts">
-import { settingsStore as settings, onChange } from "../store/settingsStore.js";
-</script>
-
 <template>
-  <hr class="m-2" />
-
+  <!-- TCI IP Address Input -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">TCI IP Address</span>
+    <label class="input-group-text w-50 text-wrap">
+      TCI IP Address
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Enter the IP address of your TCI device"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
     <input
       type="text"
       class="form-control"
-      placeholder="TCI IP"
-      id="rigcontrol_tci_ip"
-      aria-label="Device IP"
+      placeholder="Enter TCI IP Address"
+      id="tciIpAddress"
+      aria-label="TCI IP Address"
       @change="onChange"
       v-model="settings.remote.TCI.tci_ip"
     />
   </div>
 
+  <!-- TCI Port Input -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">TCI port</span>
+    <label class="input-group-text w-50 text-wrap">
+      TCI Port
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Enter the port number for TCI communication"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
     <input
       type="text"
       class="form-control"
-      placeholder="TCI port"
-      id="rigcontrol_tci_port"
-      aria-label="Device Port"
+      placeholder="Enter TCI Port"
+      id="tciPort"
+      aria-label="TCI Port"
       @change="onChange"
       v-model="settings.remote.TCI.tci_port"
     />
   </div>
 </template>
+
+
+
+<script>
+import { settingsStore as settings, onChange } from "../store/settingsStore.js";
+
+export default {
+  data() {
+    return {
+      settings
+    };
+  },
+  methods: {
+    onChange(event) {
+      // Handle the change event here
+      onChange(event);
+    }
+  }
+};
+</script>

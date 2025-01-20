@@ -8,23 +8,33 @@ from message_system_db_model import Base, Station, Status, P2PMessage
 import structlog
 import helpers
 import os
+import sys
 
 class DatabaseManager:
-    def __init__(self, event_manger, db_file=None):
-        self.event_manager = event_manger
-        if not db_file:
-            #print(os.environ)
+    DATABASE_ENV_VAR = 'FREEDATA_DATABASE'
+    DEFAULT_DATABASE_FILE = 'freedata-messages.db'
 
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            db_path = os.path.join(script_dir, 'freedata-messages.db')
-            db_file = 'sqlite:///' + db_path
+    def __init__(self, event_manager):
+        self.event_manager = event_manager
 
+        db_file = self.get_database()
         self.engine = create_engine(db_file, echo=False)
         self.thread_local = local()
         self.session_factory = sessionmaker(bind=self.engine)
         Base.metadata.create_all(self.engine)
 
         self.logger = structlog.get_logger(type(self).__name__)
+
+    def get_database(self):
+        script_directory = os.path.dirname(os.path.abspath(__file__))
+        sys.path.append(script_directory)
+
+        if self.DATABASE_ENV_VAR in os.environ:
+            #db_path = os.getenv(self.DATABASE_ENV_VAR, os.path.join(script_directory, self.DEFAULT_DATABASE_FILE))
+            db_path = os.getenv(self.DATABASE_ENV_VAR)
+        else:
+            db_path = os.path.join(script_directory, self.DEFAULT_DATABASE_FILE)
+        return 'sqlite:///' + db_path
 
     def initialize_default_values(self):
         session = self.get_thread_scoped_session()

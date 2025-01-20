@@ -1,31 +1,67 @@
-import { settingsStore as settings } from "../store/settingsStore.js";
+// Pinia setup
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
+setActivePinia(pinia);
+import { computed } from "vue";
+
 import {
   validateCallsignWithSSID,
   validateCallsignWithoutSSID,
 } from "./freedata";
-
 import { processFreedataMessages } from "./messagesHandler";
+import { useStateStore } from "../store/stateStore.js";
+const state = useStateStore(pinia);
 
-function buildURL(params, endpoint) {
-  const url = "http://" + params.host + ":" + params.port + endpoint;
-  return url;
+// Build URL with adjusted port if needed
+function buildURL(endpoint) {
+  const { protocol, hostname, port } = window.location;
+  const adjustedPort = port === "8080" ? "5000" : port;
+  return `${protocol}//${hostname}:${adjustedPort}${endpoint}`;
 }
 
+// Check network connectivity
+const isNetworkConnected = computed(
+  () => state.modem_connection !== "disconnected",
+);
+function checkNetworkConnectivity() {
+  if (!isNetworkConnected.value) {
+    console.warn("Network is disconnected. API call aborted.");
+    return false;
+  }
+  return true;
+}
+// Set network traffic state
+function setNetworkTrafficBusy(isBusy) {
+  state.is_network_traffic = isBusy;
+}
+
+// Fetch GET request
 async function apiGet(endpoint) {
+  if (!checkNetworkConnectivity()) return;
+
+  setNetworkTrafficBusy(true); // Set the network busy state to true
+
   try {
-    const response = await fetch(buildURL(settings.local, endpoint));
+    const response = await fetch(buildURL(endpoint));
     if (!response.ok) {
       throw new Error(`REST response not ok: ${response.statusText}`);
     }
     return await response.json();
   } catch (error) {
-    //console.error("Error getting from REST:", error);
+    console.error("Error getting from REST:", error);
+  } finally {
+    setNetworkTrafficBusy(false); // Set the network busy state back to false
   }
 }
 
+// Fetch POST request
 export async function apiPost(endpoint, payload = {}) {
+  if (!checkNetworkConnectivity()) return;
+
+  setNetworkTrafficBusy(true); // Set the network busy state to true
+
   try {
-    const response = await fetch(buildURL(settings.local, endpoint), {
+    const response = await fetch(buildURL(endpoint), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -37,16 +73,22 @@ export async function apiPost(endpoint, payload = {}) {
       throw new Error(`REST response not ok: ${response.statusText}`);
     }
 
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error("Error posting to REST:", error);
+  } finally {
+    setNetworkTrafficBusy(false); // Set the network busy state back to false
   }
 }
 
+// Fetch PATCH request
 export async function apiPatch(endpoint, payload = {}) {
+  if (!checkNetworkConnectivity()) return;
+
+  setNetworkTrafficBusy(true); // Set the network busy state to true
+
   try {
-    const response = await fetch(buildURL(settings.local, endpoint), {
+    const response = await fetch(buildURL(endpoint), {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -58,16 +100,22 @@ export async function apiPatch(endpoint, payload = {}) {
       throw new Error(`REST response not ok: ${response.statusText}`);
     }
 
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error("Error patching to REST:", error);
+  } finally {
+    setNetworkTrafficBusy(false); // Set the network busy state back to false
   }
 }
 
+// Fetch DELETE request
 export async function apiDelete(endpoint, payload = {}) {
+  if (!checkNetworkConnectivity()) return;
+
+  setNetworkTrafficBusy(true); // Set the network busy state to true
+
   try {
-    const response = await fetch(buildURL(settings.local, endpoint), {
+    const response = await fetch(buildURL(endpoint), {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -79,22 +127,46 @@ export async function apiDelete(endpoint, payload = {}) {
       throw new Error(`REST response not ok: ${response.statusText}`);
     }
 
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error("Error deleting from REST:", error);
+  } finally {
+    setNetworkTrafficBusy(false); // Set the network busy state back to false
   }
 }
 
+// functions using updated apiGet and apiPost
 export async function getVersion() {
-  let data = await apiGet("/version").then((res) => {
-    return res;
-  });
-
-  if (typeof data !== "undefined" && typeof data.version !== "undefined") {
+  let data = await apiGet("/version");
+  if (data && data.version) {
     return data.version;
   }
   return 0;
+}
+
+export async function getSysInfo() {
+  let data = await apiGet("/version");
+  console.log(data);
+  return {
+    api_version: data?.api_version || "N/A",
+    modem_version: data?.modem_version || "N/A",
+    os_info: {
+      system: data?.os_info?.system || "N/A",
+      node: data?.os_info?.node || "N/A",
+      release: data?.os_info?.release || "N/A",
+      version: data?.os_info?.version || "N/A",
+      machine: data?.os_info?.machine || "N/A",
+      processor: data?.os_info?.processor || "N/A",
+    },
+    python_info: {
+      build: data?.python_info?.build || ["N/A", "N/A"],
+      compiler: data?.python_info?.compiler || "N/A",
+      branch: data?.python_info?.branch || "N/A",
+      implementation: data?.python_info?.implementation || "N/A",
+      revision: data?.python_info?.revision || "N/A",
+      version: data?.python_info?.version || "N/A",
+    },
+  };
 }
 
 export async function getConfig() {
@@ -114,10 +186,7 @@ export async function getSerialDevices() {
 }
 
 export async function setModemBeacon(enabled = false, away_from_key = false) {
-  return await apiPost("/modem/beacon", {
-    enabled: enabled,
-    away_from_key: away_from_key,
-  });
+  return await apiPost("/modem/beacon", { enabled, away_from_key });
 }
 
 export async function sendModemCQ() {
@@ -129,20 +198,20 @@ export async function sendModemPing(dxcall) {
     validateCallsignWithSSID(dxcall) === false &&
     validateCallsignWithoutSSID(dxcall) === true
   ) {
-    dxcall = String(dxcall).toUpperCase().trim();
-    dxcall = dxcall + "-0";
+    dxcall = String(dxcall).toUpperCase().trim() + "-0";
   }
   dxcall = String(dxcall).toUpperCase().trim();
-  if (validateCallsignWithSSID(dxcall))
-    return await apiPost("/modem/ping_ping", { dxcall: dxcall });
+  if (validateCallsignWithSSID(dxcall)) {
+    return await apiPost("/modem/ping_ping", { dxcall });
+  }
 }
 
 export async function sendModemARQRaw(mycall, dxcall, data, uuid) {
   return await apiPost("/modem/send_arq_raw", {
     mycallsign: mycall,
-    dxcall: dxcall,
-    data: data,
-    uuid: uuid,
+    dxcall,
+    data,
+    uuid,
   });
 }
 
@@ -152,6 +221,10 @@ export async function stopTransmission() {
 
 export async function sendModemTestFrame() {
   return await apiPost("/modem/send_test_frame");
+}
+
+export async function sendSineTone(state) {
+  return await apiPost("/radio/tune", { enable_tuning: state });
 }
 
 export async function startModem() {
@@ -167,25 +240,19 @@ export async function getModemState() {
 }
 
 export async function setRadioParametersFrequency(frequency) {
-  return await apiPost("/radio", {
-    radio_frequency: frequency,
-  });
+  return await apiPost("/radio", { radio_frequency: frequency });
 }
+
 export async function setRadioParametersMode(mode) {
-  return await apiPost("/radio", {
-    radio_mode: mode,
-  });
+  return await apiPost("/radio", { radio_mode: mode });
 }
+
 export async function setRadioParametersRFLevel(rf_level) {
-  return await apiPost("/radio", {
-    radio_rf_level: rf_level,
-  });
+  return await apiPost("/radio", { radio_rf_level: rf_level });
 }
 
 export async function setRadioParametersTuner(state) {
-  return await apiPost("/radio", {
-    radio_tuner: state,
-  });
+  return await apiPost("/radio", { radio_tuner: state });
 }
 
 export async function getRadioStatus() {
@@ -194,7 +261,12 @@ export async function getRadioStatus() {
 
 export async function getFreedataMessages() {
   let res = await apiGet("/freedata/messages");
-  processFreedataMessages(res);
+  if (res) processFreedataMessages(res);
+}
+
+export async function getFreedataMessageById(id) {
+  let res = await apiGet(`/freedata/messages/${id}`);
+  return res;
 }
 
 export async function getFreedataAttachmentBySha512(data_sha512) {
@@ -204,9 +276,15 @@ export async function getFreedataAttachmentBySha512(data_sha512) {
 
 export async function sendFreedataMessage(destination, body, attachments) {
   return await apiPost("/freedata/messages", {
-    destination: destination,
-    body: body,
-    attachments: attachments,
+    destination,
+    body,
+    attachments,
+  });
+}
+
+export async function postFreedataMessageADIF(id) {
+  return await apiPost(`/freedata/messages/${id}/adif`, {
+    action: "retransmit",
   });
 }
 
@@ -229,6 +307,7 @@ export async function getBeaconDataByCallsign(callsign) {
 export async function getStationInfo(callsign) {
   return await apiGet(`/freedata/station/${callsign}`);
 }
+
 export async function setStationInfo(callsign, info) {
   return await apiPost(`/freedata/station/${callsign}`, info);
 }

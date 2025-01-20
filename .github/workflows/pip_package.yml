@@ -12,6 +12,11 @@ jobs:
       with:
         python-version: "3.11"
 
+    - name: Install Node.js, NPM and Yarn
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
     - name: Install Linux dependencies
       run: |
         sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2 patchelf
@@ -22,12 +27,19 @@ jobs:
         pip install -r requirements.txt
         pip install wheel
 
+    - name: Build GUI
+      working-directory: freedata_gui
+      run: |
+        npm i
+        npm run build
+
     - name: Build package
       run: |
         python setup.py sdist bdist_wheel
 
     - name: Publish to PyPI
-      uses: pypa/gh-action-pypi-publish@v1.8.14
+      uses: pypa/gh-action-pypi-publish@v1.12.3
+      if: startsWith(github.ref, 'refs/tags/v')
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}

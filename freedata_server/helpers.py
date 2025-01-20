@@ -6,7 +6,6 @@ Created on Fri Dec 25 21:25:14 2020
 """
 import time
 from datetime import datetime,timezone
-import crcengine
 import structlog
 import numpy as np
 import threading
@@ -40,85 +39,146 @@ def wait(seconds: float) -> bool:
 
 
 def get_crc_8(data: str) -> bytes:
-    """Author: DJ2LS
-
-    Get the CRC8 of a byte string
-
-    param: data = bytes()
+    """
+    Calculate CRC-8-CCITT checksum for the given data using the ITU I.432.1 specification.
 
     Args:
-        data:
+        data (str): Input data as a string.
 
     Returns:
-        CRC-8 (CCITT) of the provided data as bytes
+        bytes: CRC-8-CCITT checksum of the provided data.
     """
-    if not isinstance(data, (bytes)) or isinstance(data, (bytearray)):
-        data = bytes(data,"utf-8")
+    crc = 0x00
+    polynomial = 0x07
+    xor_out = 0x55
 
-    crc_algorithm = crcengine.new("crc8-ccitt")  # load crc8 library
-    crc_data = crc_algorithm(data)
-    crc_data = crc_data.to_bytes(1, byteorder="big")
-    return crc_data
+    if not isinstance(data, (bytes, bytearray)):
+        data = bytes(data, "utf-8")
+
+    for byte in data:
+        crc ^= byte
+        for _ in range(8):
+            if crc & 0x80:
+                crc = (crc << 1) ^ polynomial
+            else:
+                crc <<= 1
+            crc &= 0xFF
+
+    # Final XOR value
+    crc ^= xor_out
+    return crc.to_bytes(1, byteorder="big")
 
 
 def get_crc_16(data: str) -> bytes:
-    """Author: DJ2LS
-
-    Get the CRC16 of a byte string
-
-    param: data = bytes()
+    """
+    Calculate CRC-16-CCITT-FALSE checksum for the given data using the provided specification.
 
     Args:
-        data:
+        data (str): Input data as a string.
 
     Returns:
-        CRC-16 (CCITT) of the provided data as bytes
+        bytes: CRC-16-CCITT-FALSE checksum of the provided data.
     """
-    if not isinstance(data, (bytes)) or isinstance(data, (bytearray)):
-        data = bytes(data,"utf-8")
-    
-    crc_algorithm = crcengine.new("crc16-ccitt-false")  # load crc16 library
-    return crc_algorithm(data).to_bytes(2, byteorder="big")
+    crc = 0xFFFF
+    polynomial = 0x1021
+    xor_out = 0
+    if not isinstance(data, (bytes, bytearray)):
+        data = bytes(data, "utf-8")
+
+    for byte in data:
+        crc ^= byte << 8
+        for _ in range(8):
+            if crc & 0x8000:
+                crc = (crc << 1) ^ polynomial
+            else:
+                crc <<= 1
+            crc &= 0xFFFF
+
+    # Final XOR value
+    crc ^= xor_out
+    return crc.to_bytes(2, byteorder="big")
+
 
 def get_crc_24(data: str) -> bytes:
-    """Author: DJ2LS
-
-    Get the CRC24-OPENPGP of a byte string
-    https://github.com/GardenTools/CrcEngine#examples
-
-    param: data = bytes()
+    """
+    Calculate CRC-24-OPENPGP checksum for the given data using the provided specification.
 
     Args:
-        data:
+        data (str): Input data as a string.
 
     Returns:
-        CRC-24 (OpenPGP) of the provided data as bytes
+        bytes: CRC-24-OPENPGP checksum of the provided data.
     """
-    if not isinstance(data, (bytes)) or isinstance(data, (bytearray)):
-        data = bytes(data,'utf-8')
+    crc = 0xB704CE
+    polynomial = 0x864CFB
+    xor_out = 0
 
-    params = crcengine.CrcParams(0x864cfb, 24, 0xb704ce, reflect_in=False, reflect_out=False, xor_out=0)
-    crc_algorithm = crcengine.create(params=params)
-    return crc_algorithm(data).to_bytes(3,byteorder="big")
+    if not isinstance(data, (bytes, bytearray)):
+        data = bytes(data, "utf-8")
+
+    for byte in data:
+        crc ^= byte << 16
+        for _ in range(8):
+            if crc & 0x800000:
+                crc = (crc << 1) ^ polynomial
+            else:
+                crc <<= 1
+            crc &= 0xFFFFFF
+
+    # Final XOR value
+    crc ^= xor_out
+    return crc.to_bytes(3, byteorder="big")
 
 
 def get_crc_32(data: str) -> bytes:
-    """Author: DJ2LS
-
-    Get the CRC32 of a byte string
-
-    param: data = bytes()
+    """
+    Calculate CRC-32 checksum for the given data using the Ethernet specification.
 
     Args:
-      data:
+        data (str): Input data as a string.
 
     Returns:
-        CRC-32 of the provided data as bytes
+        bytes: CRC-32 checksum of the provided data.
     """
-    if not isinstance(data, (bytes)) or isinstance(data, (bytearray)):
+
+    def reflect(data, width):
+        """
+        Reflects the bits in the given data.
+
+        Args:
+            data (int): The data to reflect.
+            width (int): The bit width of the data.
+
+        Returns:
+            int: The reflected data.
+        """
+        reflected_data = 0
+        for i in range(width):
+            if data & (1 << i):
+                reflected_data |= (1 << (width - 1 - i))
+        return reflected_data
+
+    crc = 0xFFFFFFFF
+    polynomial = 0x04C11DB7
+    xor_out = 0
+
+    if not isinstance(data, (bytes, bytearray)):
         data = bytes(data, "utf-8")
-    crc_algorithm = crcengine.new("crc32")  # load crc32 library
-    return crc_algorithm(data).to_bytes(4, byteorder="big")
+
+    for byte in data:
+        byte = reflect(byte, 8)
+        crc ^= byte << 24
+        for _ in range(8):
+            if crc & 0x80000000:
+                crc = (crc << 1) ^ polynomial
+            else:
+                crc <<= 1
+            crc &= 0xFFFFFFFF
+
+    crc = reflect(crc, 32)
+    crc ^= 0xFFFFFFFF
+    crc ^= xor_out
+    return crc.to_bytes(4, byteorder="big")
 
 
 from datetime import datetime, timezone

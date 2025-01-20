@@ -6,6 +6,7 @@ from codec2 import FREEDV_MODE
 from enum import Enum
 import time
 
+
 class IRS_State(Enum):
     NEW = 0
     OPEN_ACK_SENT = 1
@@ -14,11 +15,12 @@ class IRS_State(Enum):
     ENDED = 4
     FAILED = 5
     ABORTED = 6
+    RESUME = 7 # State, which allows resuming of a transmission - will be set after some waiting time, higher than TIMEOUT_DATA for ensuring clean states
 
 class ARQSessionIRS(arq_session.ARQSession):
 
     TIMEOUT_CONNECT = 55 #14.2
-    TIMEOUT_DATA = 120
+    TIMEOUT_DATA = 90
 
     STATE_TRANSITION = {
         IRS_State.NEW: { 
@@ -49,14 +51,20 @@ class ARQSessionIRS(arq_session.ARQSession):
         },
         IRS_State.FAILED: {
             FRAME_TYPE.ARQ_BURST_FRAME.value: 'receive_data',
-            FRAME_TYPE.ARQ_STOP.value: 'send_stop_ack'
+            #FRAME_TYPE.ARQ_SESSION_OPEN.value: 'send_open_ack',
         },
         IRS_State.ABORTED: {
             FRAME_TYPE.ARQ_STOP.value: 'send_stop_ack',
-            FRAME_TYPE.ARQ_SESSION_OPEN.value: 'send_open_ack',
-            FRAME_TYPE.ARQ_SESSION_INFO.value: 'send_info_ack',
-            FRAME_TYPE.ARQ_BURST_FRAME.value: 'receive_data',
+            #FRAME_TYPE.ARQ_SESSION_OPEN.value: 'send_open_ack',
+            #FRAME_TYPE.ARQ_SESSION_INFO.value: 'send_info_ack',
+            #FRAME_TYPE.ARQ_BURST_FRAME.value: 'receive_data',
         },
+        IRS_State.RESUME: {
+            FRAME_TYPE.ARQ_SESSION_OPEN.value: 'send_open_ack',
+        }
+
+
+
     }
 
     def __init__(self, config: dict, modem, dxcall: str, session_id: int, state_manager):
@@ -65,6 +73,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.id = session_id
         self.dxcall = dxcall
         self.version = 1
+        self.is_IRS = True
 
         self.state = IRS_State.NEW
         self.state_enum = IRS_State  # needed for access State enum from outside
@@ -91,7 +100,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.event_frame_received.clear()
         self.transmit_frame(frame, mode)
         self.log(f"Waiting {timeout} seconds...")
-        if not self.event_frame_received.wait(timeout):
+        if not self.event_frame_received.wait(timeout) and self.state not in [IRS_State.ABORTED, IRS_State.FAILED]:
             self.log("Timeout waiting for ISS. Session failed.")
             self.transmission_failed()
 
@@ -101,11 +110,12 @@ class ARQSessionIRS(arq_session.ARQSession):
         thread_wait.start()
     
     def send_open_ack(self, open_frame):
-        self.maximum_bandwidth = open_frame['maximum_bandwidth']
         # check for maximum bandwidth. If ISS bandwidth is higher than own, then use own
         if open_frame['maximum_bandwidth'] > self.config['MODEM']['maximum_bandwidth']:
             self.maximum_bandwidth = self.config['MODEM']['maximum_bandwidth']
-
+        else:
+            self.maximum_bandwidth = open_frame['maximum_bandwidth']
+        self.log(f"Negotiated transmission bandwidth {self.maximum_bandwidth}Hz")
 
         self.event_manager.send_arq_session_new(
             False, self.id, self.dxcall, 0, self.state.name)
@@ -128,7 +138,8 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     def send_info_ack(self, info_frame):
         # Get session info from ISS
-        self.received_data = bytearray(info_frame['total_length'])
+        if self.received_bytes == 0:
+            self.received_data = bytearray(info_frame['total_length'])
         self.total_length = info_frame['total_length']
         self.total_crc = info_frame['total_crc']
         self.dx_snr.append(info_frame['snr'])
@@ -136,11 +147,11 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         self.calibrate_speed_settings()
 
-        self.log(f"New transfer of {self.total_length} bytes")
+        self.log(f"New transfer of {self.total_length} bytes, received_bytes: {self.received_bytes}")
         self.event_manager.send_arq_session_new(False, self.id, self.dxcall, self.total_length, self.state.name)
 
         info_ack = self.frame_factory.build_arq_session_info_ack(
-            self.id, self.total_crc, self.snr,
+            self.id, self.received_bytes, self.snr,
             self.speed_level, self.frames_per_burst, flag_abort=self.abort)
         self.launch_transmit_and_wait(info_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling)
         if not self.abort:
@@ -148,7 +159,6 @@ class ARQSessionIRS(arq_session.ARQSession):
         return None, None
 
     def process_incoming_data(self, frame):
-        print(frame)
         if frame['offset'] != self.received_bytes:
             # TODO: IF WE HAVE AN OFFSET BECAUSE OF A SPEED LEVEL CHANGE FOR EXAMPLE,
             # TODO: WE HAVE TO DISCARD THE LAST BYTES, BUT NOT returning False!!
@@ -212,7 +222,6 @@ class ARQSessionIRS(arq_session.ARQSession):
 
             return self.received_data, self.type_byte
         else:
-
             ack = self.frame_factory.build_arq_burst_ack(self.id,
                                                          self.speed_level,
                                                          flag_final=True,
@@ -279,8 +288,13 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.launch_transmit_and_wait(stop_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling_ack)
         self.set_state(IRS_State.ABORTED)
         self.states.setARQ(False)
+        session_stats = self.calculate_session_statistics(self.received_bytes, self.total_length)
+
         self.event_manager.send_arq_session_finished(
-                False, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.received_bytes, self.total_length))
+                False, self.id, self.dxcall, False, self.state.name, statistics=session_stats)
+        if self.config['STATION']['enable_stats']:
+            self.statistics.push(self.state.name, session_stats, self.dxcall)
+
         return None, None
 
     def transmission_failed(self, irs_frame=None):
@@ -288,6 +302,26 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.session_ended = time.time()
         self.set_state(IRS_State.FAILED)
         self.log("Transmission failed!")
-        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=self.calculate_session_statistics(self.received_bytes, self.total_length))
+        #self.modem.demodulator.set_decode_mode()
+        session_stats = self.calculate_session_statistics(self.received_bytes, self.total_length)
+
+        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=session_stats)
+        if self.config['STATION']['enable_stats']:
+            self.statistics.push(self.state.name, session_stats, self.dxcall)
+
+        self.states.setARQ(False)
+        return None, None
+
+    def transmission_aborted(self):
+        self.log("session aborted")
+        self.session_ended = time.time()
+        self.set_state(IRS_State.ABORTED)
+        # break actual retries
+        self.event_frame_received.set()
+
+
+        #self.modem.demodulator.set_decode_mode()
+        self.event_manager.send_arq_session_finished(
+            True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.received_bytes, self.total_length))
         self.states.setARQ(False)
         return None, None

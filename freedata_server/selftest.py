@@ -41,7 +41,6 @@ class TEST():
             import threading
             import time
             import structlog
-            import crcengine
             import ctypes
             import glob
             import enum

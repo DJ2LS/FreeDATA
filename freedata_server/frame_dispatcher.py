@@ -59,12 +59,15 @@ class DISPATCHER():
         self.states = states
         self.event_manager = event_manager
 
+        self.stop_event = threading.Event()
+
         self._initialize_handlers(config, states)
 
         self.modem = modem
         self.data_queue_received = modem.data_queue_received
 
         self.arq_sessions = []
+
 
     def _initialize_handlers(self, config, states):
         """Initializes various data handlers."""
@@ -75,24 +78,30 @@ class DISPATCHER():
         """Starts worker threads for transmit and receive operations."""
         threading.Thread(target=self.worker_receive, name="Receive Worker", daemon=True).start()
 
+    def stop(self):
+        self.stop_event.set()
+
     def worker_receive(self) -> None:
         """Queue received data for processing"""
-        while True:
-            data = self.data_queue_received.get()
-            self.process_data(
-                data['payload'],
-                data['freedv'],
-                data['bytes_per_frame'],
-                data['snr'],
-                data['frequency_offset'],
-                data['mode_name'],
-            )
+        while not self.stop_event.is_set():
+            try:
+                data = self.data_queue_received.get(timeout=1)
+                if data:
+                    self.process_data(
+                        data['payload'],
+                        data['freedv'],
+                        data['bytes_per_frame'],
+                        data['snr'],
+                        data['frequency_offset'],
+                        data['mode_name'],
+                    )
+            except Exception:
+                continue
 
     def process_data(self, bytes_out, freedv, bytes_per_frame: int, snr, frequency_offset, mode_name) -> None:
         # get frame as dictionary
         deconstructed_frame = self.frame_factory.deconstruct(bytes_out, mode_name=mode_name)
         frametype = deconstructed_frame["frame_type_int"]
-
         if frametype not in self.FRAME_HANDLER:
             self.log.warning(
                 "[DISPATCHER] ARQ - other frame type", frametype=FR_TYPE(frametype).name)

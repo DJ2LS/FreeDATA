@@ -1,20 +1,22 @@
-<script setup lang="ts">
-import { setColormap } from "../js/waterfallHandler";
-
-import { setActivePinia } from "pinia";
-import pinia from "../store/index";
-setActivePinia(pinia);
-
-import { settingsStore as settings } from "../store/settingsStore.js";
-
-function saveSettings() {
-  //saveSettingsToFile();
-  setColormap();
-}
-</script>
 <template>
+  <!-- Top Info Area for GUI Settings -->
+  <div class="alert alert-info" role="alert">
+    <strong><i class="bi bi-gear-wide-connected me-1"></i>GUI</strong> related settings, like customizing your <strong>waterfall theme</strong>, <strong>notifications</strong>, and <strong>browser behavior</strong>.
+  </div>
+
+  <!-- Waterfall Theme Selection -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text w-50">Waterfall theme</span>
+    <span class="input-group-text w-50 text-wrap">
+      Waterfall theme
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Select color theme for waterfall display"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </span>
     <select
       class="form-select form-select-sm w-50"
       id="wftheme_selector"
@@ -30,34 +32,87 @@ function saveSettings() {
       <option value="6">Binary</option>
     </select>
   </div>
+
+  <!-- Auto Launch Browser Toggle -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text w-50">Update channel</span>
-    <select
-      class="form-select form-select-sm w-50"
-      id="update_channel_selector"
-      @change="saveSettings"
-      v-model="settings.local.update_channel"
-    >
-      <option value="latest">Stable</option>
-      <option value="beta">Beta</option>
-      <option value="alpha">Alpha</option>
-    </select>
-  </div>
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Enable notifications</label>
+    <label class="input-group-text w-50 text-wrap">
+      Auto launch browser
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Launch browser to GUI URL on server startup"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
         <input
           class="form-check-input"
           type="checkbox"
-          id="NotificationSwitch"
+          id="autoLaunchBrowserSwitch"
+          @change="onChange"
+          v-model="settings.remote.GUI.auto_run_browser"
+        />
+        <label class="form-check-label" for="autoLaunchBrowserSwitch">Enable</label>
+      </div>
+    </label>
+  </div>
+
+  <!-- Enable Notifications Toggle -->
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50 text-wrap">
+      Enable notifications
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Show system pop-ups"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
+    <label class="input-group-text w-50">
+      <div class="form-check form-switch form-check-inline">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="enableNotificationsSwitch"
           @change="saveSettings"
           v-model="settings.local.enable_sys_notification"
         />
-        <label class="form-check-label" for="NotificationSwitch"
-          >Show system pop-ups</label
-        >
+        <label class="form-check-label" for="enableNotificationsSwitch">Enable</label>
       </div>
     </label>
   </div>
 </template>
+
+<script>
+import { setColormap } from "../js/waterfallHandler";
+import { settingsStore as settings, onChange } from "../store/settingsStore.js";
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
+
+// Set the active Pinia store
+setActivePinia(pinia);
+
+// Function to save settings and update colormap
+function saveSettings() {
+  // Save settings to file if needed
+  setColormap();
+}
+
+// Export methods for use in the template
+export default {
+  methods: {
+    saveSettings,
+    onChange,
+  },
+  computed: {
+    settings() {
+      return settings;
+    },
+  },
+};
+</script>

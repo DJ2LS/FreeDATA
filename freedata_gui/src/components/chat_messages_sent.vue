@@ -1,5 +1,5 @@
 <template>
-  <div class="row justify-content-end mb-2">
+  <div class="row justify-content-end mb-2 me-1">
     <!-- control area -->
     <div class="col-auto p-0 m-0">
       <button
@@ -10,7 +10,6 @@
       </button>
 
       <button
-        disabled
         class="btn btn-outline-secondary border-0 me-1"
         @click="showMessageInfo"
         data-bs-target="#messageInfoModal"
@@ -22,15 +21,21 @@
       <button class="btn btn-outline-secondary border-0" @click="deleteMessage">
         <i class="bi bi-trash"></i>
       </button>
+
+      <button class="btn btn-outline-secondary border-0" @click="sendADIF">
+        ADIF
+      </button>
+
     </div>
     <!-- message area -->
-    <div :class="messageWidthClass">
+    <div :class="messageWidthClass" class="align-items-end">
       <div class="card bg-secondary text-white">
         <div
           v-for="attachment in message.attachments"
           :key="attachment.id"
           class="card-header"
         >
+          <chat_messages_image_preview :attachment="attachment" />
           <div class="btn-group w-100" role="group">
             <button class="btn btn-light text-truncate" disabled>
               {{ attachment.name }}
@@ -47,20 +52,22 @@
         </div>
 
         <div class="card-body">
-          <p class="card-text text-break">{{ message.body }}</p>
+          <!-- Render parsed markdown -->
+          <p class="card-text text-break" v-html="parsedMessageBody"></p>
         </div>
 
         <div class="card-footer p-0 bg-secondary border-top-0">
           <p class="text p-0 m-0 me-1 text-end">
-          <span class="badge badge-primary mr-2" v-bind:class="{
-              'bg-danger': message.status == 'failed',
-              'bg-primary': message.status == 'transmitting',
-              'bg-secondary': message.status == 'transmitted',
-            }"
-            >{{ message.status }}</span>
-              | attempt: {{ message.attempt + 1 }} | {{ getDateTime }}
+            <span class="badge badge-primary mr-2" :class="{
+                'bg-danger': message.status == 'failed',
+                'bg-primary': message.status == 'transmitting',
+                'bg-secondary': message.status == 'transmitted',
+              }"
+            >
+              {{ message.status }}
+            </span>
+            | <span class="badge badge-primary mr-2"> attempt: {{ message.attempt + 1 }} </span>|<span class="badge badge-primary mr-2"> {{ getDateTime }} UTC</span>
           </p>
-          <!-- Display formatted timestamp in card-footer -->
         </div>
 
         <div
@@ -70,8 +77,7 @@
           <div
             class="progress rounded-0 rounded-bottom"
             hidden
-            :style="{ height: '10px' }"
-            v-bind:class="{
+            :class="{
               'bg-danger': message.status == 'failed',
               'bg-primary': message.status == 'transmitting',
               'bg-secondary': message.status == 'transmitted',
@@ -96,24 +102,30 @@
 </template>
 
 <script>
-import { atob_FD } from "../js/freedata";
-
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 import {
   repeatMessageTransmission,
   deleteMessageFromDB,
   requestMessageInfo,
   getMessageAttachment,
+  sendADIFviaUDP,
 } from "../js/messagesHandler";
 
 // pinia store setup
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
+import chat_messages_image_preview from './chat_messages_image_preview.vue';
 
-import { useChatStore } from "../store/chatStore.js";
-const chat = useChatStore(pinia);
+import { useChatStore } from '../store/chatStore.js';
+const chatStore = useChatStore(pinia);
 
 export default {
+  components: {
+    chat_messages_image_preview,
+  },
+
   props: {
     message: Object,
   },
@@ -126,13 +138,14 @@ export default {
     deleteMessage() {
       deleteMessageFromDB(this.message.id);
     },
-    showMessageInfo() {
-      console.log("requesting message info.....");
-      requestMessageInfo(this.message.id);
-      //let infoModal = Modal.getOrCreateInstance(document.getElementById('messageInfoModal'))
-      //console.log(this.infoModal)
-      //this.infoModal.show()
+    sendADIF() {
+      sendADIFviaUDP(this.message.id);
     },
+
+    showMessageInfo() {
+      chatStore.messageInfoById = requestMessageInfo(this.message.id);
+    },
+
     async downloadAttachment(hash_sha512, fileName) {
       try {
         const jsondata = await getMessageAttachment(hash_sha512);
@@ -167,11 +180,12 @@ export default {
       }
     },
   },
+
   computed: {
     messageWidthClass() {
       // Calculate a Bootstrap grid class based on message length
       if (this.message.body.length <= 50) {
-        return "col-4";
+        return "col-5";
       } else if (this.message.body.length <= 100) {
         return "col-6";
       } else {
@@ -185,6 +199,11 @@ export default {
       let minutes = date.getMinutes().toString().padStart(2, "0");
       let seconds = date.getSeconds().toString().padStart(2, "0");
       return `${hours}:${minutes}:${seconds}`;
+    },
+
+    parsedMessageBody() {
+      // Use marked to parse markdown and DOMPurify to sanitize
+      return DOMPurify.sanitize(marked.parse(this.message.body));
     },
   },
 };

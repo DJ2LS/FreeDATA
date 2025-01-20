@@ -1,98 +1,86 @@
-/*
-import {
-  newMessageReceived,
-  newBeaconReceived,
-  updateTransmissionStatus,
-  setStateSuccess,
-  setStateFailed,
-} from "./chatHandler";
-*/
 import { toRaw } from "vue";
 import { displayToast } from "./popupHandler";
 import {
   getFreedataMessages,
   getModemState,
-  getAudioDevices,
   getRadioStatus,
+  getSysInfo,
 } from "./api";
-import { processFreedataMessages } from "./messagesHandler.ts";
-import { processRadioStatus } from "./radioHandler.ts";
-
-import { useAudioStore } from "../store/audioStore";
-const audioStore = useAudioStore();
-import { useSerialStore } from "../store/serialStore";
-const serialStore = useSerialStore();
+import { processFreedataMessages } from "./messagesHandler";
+import { processRadioStatus } from "./radioHandler";
 
 // ----------------- init pinia stores -------------
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
-import { useStateStore } from "../store/stateStore.js";
+import { useStateStore } from "../store/stateStore";
 const stateStore = useStateStore(pinia);
-
-import {
-  settingsStore as settings,
-  getRemote,
-} from "../store/settingsStore.js";
+import { useAudioStore } from "../store/audioStore";
+const audioStore = useAudioStore(pinia);
+import { useSerialStore } from "../store/serialStore";
+const serialStore = useSerialStore(pinia);
+import { getRemote } from "../store/settingsStore";
 
 export async function loadAllData() {
-  // TODO: Make this working
   let stateData = await getModemState();
-  //console.log(stateData);
-
-  let radioData = await getRadioStatus();
-  //console.log(radioData);
-
-  getRemote();
-  getOverallHealth();
+  console.log(stateData);
+  getSysInfo().then((res) => {
+    if (res) {
+      stateStore.api_version = res.api_version;
+      stateStore.modem_version = res.modem_version;
+      stateStore.os_info = res.os_info;
+      stateStore.python_info = res.python_info;
+    }
+  });
   audioStore.loadAudioDevices();
   serialStore.loadSerialDevices();
+  console.log(audioStore.audioInputs);
+  await getRadioStatus();
+  getRemote();
+  getOverallHealth();
   getFreedataMessages();
   processFreedataMessages();
   processRadioStatus();
 }
 
 export function connectionFailed(endpoint, event) {
+  console.log(event);
   stateStore.modem_connection = "disconnected";
 }
+
 export function stateDispatcher(data) {
   data = JSON.parse(data);
 
-  //Leave commented when not needed, otherwise can lead to heap overflows due to the amount of data logged
-  //console.log(data);
-  if (data["type"] == "state-change" || data["type"] == "state") {
+  if (data.type === "state-change" || data.type === "state") {
     stateStore.modem_connection = "connected";
-    stateStore.busy_state = data["is_modem_busy"];
-    stateStore.channel_busy = data["channel_busy"];
-    stateStore.is_codec2_traffic = data["is_codec2_traffic"];
-    stateStore.is_modem_running = data["is_modem_running"];
-    stateStore.dbfs_level = Math.round(data["audio_dbfs"]);
+    stateStore.busy_state = data.is_modem_busy;
+    stateStore.channel_busy = data.channel_busy;
+    stateStore.is_codec2_traffic = data.is_codec2_traffic;
+    stateStore.is_modem_running = data.is_modem_running;
+    stateStore.dbfs_level = Math.round(data.audio_dbfs);
     stateStore.dbfs_level_percent = Math.round(
-      Math.pow(10, data["audio_dbfs"] / 20) * 100,
+      Math.pow(10, data.audio_dbfs / 20) * 100,
     );
-    //Accept radio status from here as well, saves us from having to wait for an update from the radio manager
-    //Fixes the health rigctl being offline on startup
-    stateStore.radio_status = data["radio_status"];
-    stateStore.channel_busy_slot = data["channel_busy_slot"];
-    stateStore.beacon_state = data["is_beacon_running"];
-    stateStore.away_from_key = data["is_away_from_key"];
+    stateStore.radio_status = data.radio_status;
+    stateStore.channel_busy_slot = data.channel_busy_slot;
+    stateStore.beacon_state = data.is_beacon_running;
+    stateStore.away_from_key = data.is_away_from_key;
 
-    //Reverse entries so most recent is first
-    stateStore.activities = Object.entries(data["activities"]).reverse();
+    stateStore.activities = Object.entries(data.activities).reverse();
     build_HSL();
   }
 
-  if (data["type"] == "radio-change" || data["type"] == "radio") {
-    stateStore.s_meter_strength_raw = Math.round(data["s_meter_strength"]);
+  if (data.type === "radio-change" || data.type === "radio") {
+    stateStore.s_meter_strength_raw = Math.round(data.s_meter_strength);
     stateStore.s_meter_strength_percent = Math.round(
-      Math.pow(10, data["s_meter_strength"] / 20) * 100,
+      Math.pow(10, data.s_meter_strength / 20) * 100,
     );
-    stateStore.radio_status = data["radio_status"];
-    stateStore.frequency = data["radio_frequency"];
-    stateStore.mode = data["radio_mode"];
+    stateStore.radio_status = data.radio_status;
+    stateStore.frequency = data.radio_frequency;
+    stateStore.mode = data.radio_mode;
 
-    let swr = data["radio_swr"];
-    stateStore.swr_raw = parseFloat(data["radio_swr"]).toFixed(2);
+    let swr = data.radio_swr;
+    stateStore.swr_raw = parseFloat(data.radio_swr).toFixed(2);
     if (swr >= 0.0 && swr <= 6.0) {
       swr = (swr / 6.0) * 100;
       stateStore.swr_percent = swr.toFixed(2);
@@ -100,17 +88,16 @@ export function stateDispatcher(data) {
       stateStore.swr_percent = 0.0;
     }
 
-    stateStore.tuner = data["radio_tuner"];
-    stateStore.rf_level = Math.round(data["radio_rf_level"] / 5) * 5;
+    stateStore.tuner = data.radio_tuner;
+    stateStore.rf_level = Math.round(data.radio_rf_level / 5) * 5;
   }
 }
 
 export function eventDispatcher(data) {
   data = JSON.parse(data);
-  //console.debug(data);
 
-  if (data["scatter"] !== undefined) {
-    stateStore.scatter = JSON.parse(data["scatter"]);
+  if (data.scatter !== undefined) {
+    stateStore.scatter = JSON.parse(data.scatter);
     return;
   }
 
@@ -122,16 +109,14 @@ export function eventDispatcher(data) {
       return;
   }
 
-  switch (data["ptt"]) {
+  switch (data.ptt) {
     case true:
     case false:
-      // get ptt state as a first test
-      //console.warn("PTT state true")
       stateStore.ptt_state = data.ptt;
       return;
   }
 
-  switch (data["modem"]) {
+  switch (data.modem) {
     case "started":
       displayToast("success", "bi-arrow-left-right", "Modem started", 5000);
       loadAllData();
@@ -157,44 +142,111 @@ export function eventDispatcher(data) {
   }
 
   var message = "";
-
-  switch (data["type"]) {
+  console.log(data);
+  switch (data.type) {
     case "hello-client":
       message = "Connected to server";
       displayToast("success", "bi-ethernet", message, 5000);
       stateStore.modem_connection = "connected";
 
       loadAllData();
-
       return;
 
-      switch (data["received"]) {
+    case "frame-handler":
+      switch (data.received) {
+        case "CQ":
+          message = `
+      <div>
+        <strong>CQ received:</strong>
+        <span class="badge bg-info text-dark">${data.dxcallsign}</span>
+        <div class="mt-2">
+          <span class="badge bg-secondary">SNR: ${data.snr}</span>
+          <span class="badge bg-warning text-dark">Grid Square: ${data.gridsquare}</span>
+        </div>
+      </div>
+    `;
+          displayToast("info", "bi-info-circle", message, 5000);
+          break;
+
+        case "QRV":
+          message = `
+      <div>
+        <strong>QRV received:</strong>
+        <span class="badge bg-info text-dark">${data.dxcallsign}</span>
+        <div class="mt-2">
+          <span class="badge bg-secondary">SNR: ${data.snr}</span>
+          <span class="badge bg-warning text-dark">Grid Square: ${data.gridsquare}</span>
+        </div>
+      </div>
+    `;
+          displayToast("info", "bi-info-circle", message, 5000);
+          break;
+
         case "PING":
-          message = `Ping request from: ${data.dxcallsign}, SNR: ${data.snr}`;
-          displayToast("success", "bi-check-circle", message, 5000);
-          return;
+          message = `
+      <div>
+        <strong>PING received:</strong>
+        <span class="badge bg-info text-dark">${data.dxcallsign}</span>
+        <div class="mt-2">
+          <span class="badge bg-secondary">SNR: ${data.snr}</span>
+        </div>
+      </div>
+    `;
+          displayToast("warning", "bi-exclamation-circle", message, 5000);
+          break;
 
         case "PING_ACK":
-          message = `Ping acknowledged from: ${data.dxcallsign}, SNR: ${data.snr}`;
+          message = `
+      <div>
+        <strong>PING ACK received:</strong>
+        <span class="badge bg-info text-dark">${data.dxcallsign}</span>
+        <div class="mt-2">
+          <span class="badge bg-secondary">SNR: ${data.snr}</span>
+          <span class="badge bg-warning text-dark">Grid Square: ${data.gridsquare}</span>
+        </div>
+      </div>
+    `;
           displayToast("success", "bi-check-circle", message, 5000);
-          return;
+          break;
+
+        default:
+          console.log("unknown event data received: ${data.gridsquare}");
       }
+      return;
 
     case "arq":
       if (data["arq-transfer-outbound"]) {
         stateStore.arq_is_receiving = false;
-        //console.log(data);
-
         switch (data["arq-transfer-outbound"].state) {
           case "NEW":
-            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-outbound"].session_id}, DXCall: ${data["arq-transfer-outbound"].dxcall}, Total Bytes: ${data["arq-transfer-outbound"].total_bytes}, State: ${data["arq-transfer-outbound"].state}`;
-            displayToast("success", "bi-check-circle", message, 5000);
+            message = `
+              <div>
+                <strong>New transmission with:</strong>
+                <span class="badge bg-info text-dark">${data["arq-transfer-outbound"].dxcall}</span>
+                <div class="mt-2">
+                  <span class="badge bg-secondary">Session ID: ${data["arq-transfer-outbound"].session_id}</span>
+                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].total_bytes}</span>
+                </div>
+              </div>
+            `;
+            displayToast("success", "bi-check-circle", message, 10000);
             stateStore.dxcallsign = data["arq-transfer-outbound"].dxcall;
             stateStore.arq_transmission_percent = 0;
-            stateStore.arq_total_bytes = 0;
+            stateStore.arq_total_bytes =
+              data["arq-transfer-outbound"].total_bytes;
             return;
           case "OPEN_SENT":
-            console.info("state OPEN_SENT needs to be implemented");
+            message = `
+              <div>
+                <strong>Opening transmission with:</strong>
+                <span class="badge bg-info text-dark">${data["arq-transfer-outbound"].dxcall}</span>
+                <div class="mt-2">
+                  <span class="badge bg-secondary">Session ID: ${data["arq-transfer-outbound"].session_id}</span>
+                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].total_bytes}</span>
+                </div>
+              </div>
+            `;
+            displayToast("info", "bi-check-circle", message, 10000);
             return;
 
           case "INFO_SENT":
@@ -202,14 +254,25 @@ export function eventDispatcher(data) {
             return;
 
           case "BURST_SENT":
-            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-outbound"].session_id}, DXCall: ${data["arq-transfer-outbound"].dxcall}, Received Bytes: ${data["arq-transfer-outbound"].received_bytes}/${data["arq-transfer-outbound"].total_bytes}, State: ${data["arq-transfer-outbound"].state}`;
+            message = `
+              <div>
+                <strong>ongoing transmission with:</strong>
+                <span class="badge bg-info text-dark">${data["arq-transfer-outbound"].dxcall}</span>
+                <div class="mt-2">
+                  <span class="badge bg-secondary">Session ID: ${data["arq-transfer-outbound"].session_id}</span>
+                  <span class="badge bg-warning text-dark">Transmitted Bytes: ${data["arq-transfer-outbound"].received_bytes}</span>
+                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].total_bytes}</span>
+                </div>
+              </div>
+            `;
             displayToast("info", "bi-info-circle", message, 5000);
-            stateStore.arq_transmission_percent =
+            stateStore.arq_transmission_percent = Math.round(
               (data["arq-transfer-outbound"].received_bytes /
                 data["arq-transfer-outbound"].total_bytes) *
-              100;
+                100,
+            );
             stateStore.arq_total_bytes =
-              data["arq-transfer-outbound"].received_bytes;
+              data["arq-transfer-outbound"].total_bytes;
             stateStore.arq_speed_list_timestamp.value = toRaw(
               data["arq-transfer-outbound"].statistics.time_histogram,
             );
@@ -219,7 +282,12 @@ export function eventDispatcher(data) {
             stateStore.arq_speed_list_snr.value = toRaw(
               data["arq-transfer-outbound"].statistics.snr_histogram,
             );
-            //console.log(toRaw(stateStore.arq_speed_list_timestamp.value));
+
+            stateStore.arq_bytes_per_minute =
+              data["arq-transfer-outbound"].statistics.bytes_per_minute;
+            stateStore.arq_bits_per_second =
+              data["arq-transfer-outbound"].statistics.bits_per_second;
+
             stateStore.speed_level = data["arq-transfer-outbound"].speed_level;
             return;
 
@@ -228,29 +296,78 @@ export function eventDispatcher(data) {
             return;
 
           case "ABORTED":
-            message = `Type: ${data.type}, Session ID: ${
-              data["arq-transfer-outbound"].session_id
-            }, DXCall: ${data["arq-transfer-outbound"].dxcall}, Total Bytes: ${
-              data["arq-transfer-outbound"].total_bytes
-            }, Success: ${
-              data["arq-transfer-outbound"].success ? "Yes" : "No"
-            }, State: ${data["arq-transfer-outbound"].state}, Data: ${
-              data["arq-transfer-outbound"].data ? "Available" : "Not Available"
-            }`;
+            message = `
+              <div>
+                <strong>transmission ABORTED with:</strong>
+                <span class="badge bg-info text-dark">${data["arq-transfer-outbound"].dxcall}</span>
+                <div class="mt-2">
+                  <span class="badge bg-primary">STATE: ${data["arq-transfer-outbound"].state}</span>
+                  <span class="badge bg-secondary">Session ID: ${data["arq-transfer-outbound"].session_id}</span>
+                </div>
+              </div>
+            `;
             displayToast("warning", "bi-exclamation-triangle", message, 5000);
+            stateStore.arq_transmission_percent = 0;
+            stateStore.arq_total_bytes = 0;
+            stateStore.arq_bytes_per_minute = 0;
+            stateStore.arq_bits_per_second = 0;
             return;
 
+          case "ENDED":
+            message = `
+              <div>
+                <strong>transmission ENDED with:</strong>
+                <span class="badge bg-info text-dark">${data["arq-transfer-outbound"].dxcall}</span>
+                <div class="mt-2">
+                  <span class="badge bg-primary">STATE: ${data["arq-transfer-outbound"].state}</span>
+                  <span class="badge bg-secondary">Session ID: ${data["arq-transfer-outbound"].session_id}</span>
+                    <span class="badge bg-warning text-dark">Bytes per Minute: ${data["arq-transfer-outbound"].statistics.bytes_per_minute}</span>
+                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-outbound"].statistics.total_bytes}</span>
+                </div>
+              </div>
+            `;
+            displayToast("success", "bi-info-circle", message, 5000);
+            stateStore.arq_transmission_percent = Math.round(
+              (data["arq-transfer-outbound"].received_bytes /
+                data["arq-transfer-outbound"].total_bytes) *
+                100,
+            );
+            stateStore.arq_total_bytes =
+              data["arq-transfer-outbound"].total_bytes;
+
+            stateStore.arq_bytes_per_minute =
+              data["arq-transfer-outbound"].statistics.bytes_per_minute;
+            stateStore.arq_bits_per_second =
+              data["arq-transfer-outbound"].statistics.bits_per_second;
+
+            // Reset progressbar values after a delay
+            setTimeout(() => {
+              stateStore.arq_transmission_percent = 0;
+              stateStore.arq_total_bytes = 0;
+              stateStore.arq_bytes_per_minute = 0;
+              stateStore.arq_bits_per_second = 0;
+            }, 5000);
+            return;
           case "FAILED":
-            message = `Type: ${data.type}, Session ID: ${
-              data["arq-transfer-outbound"].session_id
-            }, DXCall: ${data["arq-transfer-outbound"].dxcall}, Total Bytes: ${
-              data["arq-transfer-outbound"].total_bytes
-            }, Success: ${
-              data["arq-transfer-outbound"].success ? "Yes" : "No"
-            }, State: ${data["arq-transfer-outbound"].state}, Data: ${
-              data["arq-transfer-outbound"].data ? "Available" : "Not Available"
-            }`;
+            message = `
+              <div>
+                <strong>transmission FAILED with:</strong>
+                <span class="badge bg-info text-dark">${data["arq-transfer-outbound"].dxcall}</span>
+                <div class="mt-2">
+                  <span class="badge bg-primary">STATE: ${data["arq-transfer-outbound"].state}</span>
+                  <span class="badge bg-secondary">Session ID: ${data["arq-transfer-outbound"].session_id}</span>
+                </div>
+              </div>
+            `;
             displayToast("danger", "bi-x-octagon", message, 5000);
+            // Reset progressbar values after a delay
+            setTimeout(() => {
+              stateStore.arq_transmission_percent = 0;
+              stateStore.arq_total_bytes = 0;
+              stateStore.arq_bytes_per_minute = 0;
+              stateStore.arq_bits_per_second = 0;
+            }, 5000);
+
             return;
         }
       }
@@ -259,51 +376,88 @@ export function eventDispatcher(data) {
         stateStore.arq_is_receiving = true;
         switch (data["arq-transfer-inbound"].state) {
           case "NEW":
-            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, State: ${data["arq-transfer-inbound"].state}`;
-            displayToast("info", "bi-info-circle", message, 5000);
+            message = `
+              <div>
+                <strong>New transmission with:</strong>
+                <span class="badge bg-info text-dark">${data["arq-transfer-inbound"].dxcall}</span>
+                <div class="mt-2">
+                  <span class="badge bg-secondary">Session ID: ${data["arq-transfer-inbound"].session_id}</span>
+                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-inbound"].total_bytes}</span>
+                </div>
+              </div>
+            `;
+            displayToast("info", "bi-info-circle", message, 10000);
             stateStore.dxcallsign = data["arq-transfer-inbound"].dxcall;
             stateStore.arq_transmission_percent = 0;
-            stateStore.arq_total_bytes = 0;
-            //stateStore.arq_speed_list_timestamp =
-            //  [];
-            //stateStore.arq_speed_list_bpm =
-            //  [];
-            //stateStore.arq_speed_list_snr =
-            //  [];
+            stateStore.arq_total_bytes =
+              data["arq-transfer-inbound"].total_bytes;
             return;
 
           case "OPEN_ACK_SENT":
-            message = `Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, Total Bytes: ${data["arq-transfer-inbound"].total_bytes}, State: ${data["arq-transfer-inbound"].state}`;
+            message = `
+              <div>
+                <strong>Confirming transmission with:${data["arq-transfer-inbound"].dxcall}</strong>
+                <span class="badge bg-info text-dark">${data["arq-transfer-inbound"].dxcall}</span>
+                <div class="mt-2">
+                  <span class="badge bg-secondary">Session ID: ${data["arq-transfer-inbound"].session_id}</span>
+                  <span class="badge bg-warning text-dark">Received Bytes: ${data["arq-transfer-inbound"].received_bytes}</span>
+                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-inbound"].total_bytes}</span>
+                </div>
+              </div>
+            `;
             displayToast("info", "bi-arrow-left-right", message, 5000);
-            stateStore.arq_transmission_percent =
+            stateStore.arq_transmission_percent = Math.round(
               (data["arq-transfer-inbound"].received_bytes /
                 data["arq-transfer-inbound"].total_bytes) *
-              100;
+                100,
+            );
             stateStore.arq_total_bytes =
-              data["arq-transfer-inbound"].received_bytes;
+              data["arq-transfer-inbound"].total_bytes;
             return;
 
           case "INFO_ACK_SENT":
-            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, Received Bytes: ${data["arq-transfer-inbound"].received_bytes}/${data["arq-transfer-inbound"].total_bytes}, State: ${data["arq-transfer-inbound"].state}`;
+            message = `
+              <div>
+                <strong>opening transmission with:${data["arq-transfer-inbound"].dxcall}</strong>
+                <span class="badge bg-info text-dark">${data["arq-transfer-inbound"].dxcall}</span>
+                <div class="mt-2">
+                  <span class="badge bg-secondary">Session ID: ${data["arq-transfer-inbound"].session_id}</span>
+                  <span class="badge bg-warning text-dark">Received Bytes: ${data["arq-transfer-inbound"].received_bytes}</span>
+                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-inbound"].total_bytes}</span>
+                </div>
+              </div>
+            `;
             displayToast("info", "bi-info-circle", message, 5000);
-            stateStore.arq_transmission_percent =
+            stateStore.arq_transmission_percent = Math.round(
               (data["arq-transfer-inbound"].received_bytes /
                 data["arq-transfer-inbound"].total_bytes) *
-              100;
+                100,
+            );
             stateStore.arq_total_bytes =
-              data["arq-transfer-inbound"].received_bytes;
+              data["arq-transfer-inbound"].total_bytes;
             return;
 
           case "BURST_REPLY_SENT":
-            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, Received Bytes: ${data["arq-transfer-inbound"].received_bytes}/${data["arq-transfer-inbound"].total_bytes}, State: ${data["arq-transfer-inbound"].state}`;
+            message = `
+              <div>
+                <strong>ongoing transmission with:</strong>
+                <span class="badge bg-info text-dark">${data["arq-transfer-inbound"].dxcall}</span>
+                <div class="mt-2">
+                  <span class="badge bg-secondary">Session ID: ${data["arq-transfer-inbound"].session_id}</span>
+                  <span class="badge bg-warning text-dark">Received Bytes: ${data["arq-transfer-inbound"].received_bytes}</span>
+                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-inbound"].total_bytes}</span>
+                </div>
+              </div>
+            `;
             displayToast("info", "bi-info-circle", message, 5000);
-            stateStore.arq_transmission_percent =
+
+            stateStore.arq_transmission_percent = Math.round(
               (data["arq-transfer-inbound"].received_bytes /
                 data["arq-transfer-inbound"].total_bytes) *
-              100;
+                100,
+            );
             stateStore.arq_total_bytes =
               data["arq-transfer-inbound"].received_bytes;
-            //console.log(data["arq-transfer-inbound"].statistics.time_histogram);
             stateStore.arq_speed_list_timestamp.value = toRaw(
               data["arq-transfer-inbound"].statistics.time_histogram,
             );
@@ -313,32 +467,95 @@ export function eventDispatcher(data) {
             stateStore.arq_speed_list_snr.value = toRaw(
               data["arq-transfer-inbound"].statistics.snr_histogram,
             );
+
+            stateStore.arq_bytes_per_minute =
+              data["arq-transfer-inbound"].statistics.bytes_per_minute;
+            stateStore.arq_bits_per_second =
+              data["arq-transfer-inbound"].statistics.bits_per_second;
             stateStore.speed_level = data["arq-transfer-inbound"].speed_level;
             return;
 
           case "ENDED":
-            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-inbound"].session_id}, DXCall: ${data["arq-transfer-inbound"].dxcall}, Received Bytes: ${data["arq-transfer-inbound"].received_bytes}/${data["arq-transfer-inbound"].total_bytes}, State: ${data["arq-transfer-inbound"].state}`;
+            message = `
+              <div>
+                <strong>transmission ENDED with:</strong>
+                <span class="badge bg-info text-dark">${data["arq-transfer-inbound"].dxcall}</span>
+                <div class="mt-2">
+                  <span class="badge bg-primary">STATE: ${data["arq-transfer-inbound"].state}</span>
+                  <span class="badge bg-secondary">Session ID: ${data["arq-transfer-inbound"].session_id}</span>
+                  <span class="badge bg-warning text-dark">Bytes per Minute: ${data["arq-transfer-inbound"].statistics.bytes_per_minute}</span>
+                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-inbound"].statistics.total_bytes}</span>
+                </div>
+              </div>
+            `;
+
             displayToast("info", "bi-info-circle", message, 5000);
-            // Forward data to chat module
-            newMessageReceived(
-              data["arq-transfer-inbound"].data,
-              data["arq-transfer-inbound"],
+            //newMessageReceived(
+            //  data["arq-transfer-inbound"].data,
+            //  data["arq-transfer-inbound"]
+            //);
+            stateStore.arq_transmission_percent = Math.round(
+              (data["arq-transfer-inbound"].statistics.received_bytes /
+                data["arq-transfer-inbound"].statistics.total_bytes) *
+                100,
             );
-            stateStore.arq_transmission_percent =
-              (data["arq-transfer-inbound"].received_bytes /
-                data["arq-transfer-inbound"].total_bytes) *
-              100;
+
+            stateStore.arq_bytes_per_minute =
+              data["arq-transfer-inbound"].statistics.bytes_per_minute;
+            stateStore.arq_bits_per_second =
+              data["arq-transfer-inbound"].statistics.bits_per_second;
+
             stateStore.arq_total_bytes =
-              data["arq-transfer-inbound"].received_bytes;
+              data["arq-transfer-inbound"].total_bytes;
+
+            // Reset progressbar values after a delay
+            setTimeout(() => {
+              stateStore.arq_transmission_percent = 0;
+              stateStore.arq_total_bytes = 0;
+              stateStore.arq_bytes_per_minute = 0;
+              stateStore.arq_bits_per_second = 0;
+            }, 5000);
             return;
 
           case "ABORTED":
-            console.info("state ABORTED needs to be implemented");
+            message = `
+              <div>
+                <strong>transmission ABORTED with:</strong>
+                <span class="badge bg-info text-dark">${data["arq-transfer-inbound"].dxcall}</span>
+                <div class="mt-2">
+                  <span class="badge bg-primary">STATE: ${data["arq-transfer-inbound"].state}</span>
+                  <span class="badge bg-secondary">Session ID: ${data["arq-transfer-inbound"].session_id}</span>
+                  <span class="badge bg-warning text-dark">Received Bytes: ${data["arq-transfer-inbound"].received_bytes}</span>
+                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-inbound"].total_bytes}</span>
+                </div>
+              </div>
+            `;
+            displayToast("danger", "bi-x-octagon", message, 5000);
+            stateStore.arq_transmission_percent = 0;
+            stateStore.arq_total_bytes = 0;
             return;
 
           case "FAILED":
-            message = `Type: ${data.type}, Session ID: ${data["arq-transfer-outbound"].session_id}, DXCall: ${data["arq-transfer-outbound"].dxcall}, Received Bytes: ${data["arq-transfer-outbound"].received_bytes}/${data["arq-transfer-outbound"].total_bytes}, State: ${data["arq-transfer-outbound"].state}`;
-            displayToast("info", "bi-info-circle", message, 5000);
+            message = `
+              <div>
+                <strong>transmission FAILED with:</strong>
+                <span class="badge bg-info text-dark">${data["arq-transfer-inbound"].dxcall}</span>
+                <div class="mt-2">
+                  <span class="badge bg-primary">STATE: ${data["arq-transfer-inbound"].state}</span>
+                  <span class="badge bg-secondary">Session ID: ${data["arq-transfer-inbound"].session_id}</span>
+                  <span class="badge bg-warning text-dark">Received Bytes: ${data["arq-transfer-inbound"].received_bytes}</span>
+                  <span class="badge bg-warning text-dark">Total Bytes: ${data["arq-transfer-inbound"].total_bytes}</span>
+                </div>
+              </div>
+            `;
+            displayToast("danger", "bi-x-octagon", message, 5000);
+            // Reset progressbar values after a delay
+            setTimeout(() => {
+              stateStore.arq_transmission_percent = 0;
+              stateStore.arq_total_bytes = 0;
+              stateStore.arq_bytes_per_minute = 0;
+              stateStore.arq_bits_per_second = 0;
+            }, 5000);
             return;
         }
       }
@@ -347,43 +564,36 @@ export function eventDispatcher(data) {
 }
 
 function build_HSL() {
-  //Use data from activities to build HSL list
   for (let i = 0; i < stateStore.activities.length; i++) {
     if (
-      stateStore.activities[i][1].direction != "received" ||
-      stateStore.activities[i][1].origin == undefined
+      stateStore.activities[i][1].direction !== "received" ||
+      stateStore.activities[i][1].origin === undefined
     ) {
-      //Ignore stations without origin and not received type
-      //console.warn("HSL: Ignoring " + stateStore.activities[i][0]);
       continue;
     }
     let found = false;
     for (let ii = 0; ii < stateStore.heard_stations.length; ii++) {
       if (
-        stateStore.heard_stations[ii].origin ==
+        stateStore.heard_stations[ii].origin ===
         stateStore.activities[i][1].origin
       ) {
-        //Station already in HSL, check if newer than one in HSL
         found = true;
         if (
           stateStore.heard_stations[ii].timestamp <
           stateStore.activities[i][1].timestamp
         ) {
-          //Update existing entry in HSL
           stateStore.heard_stations[ii] = stateStore.activities[i][1];
         }
       }
     }
-    if (found == false) {
-      //Station not in HSL, let us add it
+    if (!found) {
       stateStore.heard_stations.push(stateStore.activities[i][1]);
     }
   }
-  stateStore.heard_stations.sort((a, b) => b.timestamp - a.timestamp); // b - a for reverse sort
+  stateStore.heard_stations.sort((a, b) => b.timestamp - a.timestamp);
 }
 
 export function getOverallHealth() {
-  //Return a number indicating health for icon bg color; lower the number the healthier
   let health = 0;
   if (stateStore.modem_connection !== "connected") {
     health += 5;

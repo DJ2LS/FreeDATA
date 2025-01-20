@@ -1,7 +1,6 @@
-<script setup lang="ts">
-// @ts-nocheck
+<script setup>
 // reason for no check is, that we have some mixing of typescript and chart js which seems to be not to be fixed that easy
-import { computed, onMounted } from "vue";
+import { computed } from "vue";
 import { setActivePinia } from "pinia";
 import pinia from "../../store/index";
 setActivePinia(pinia);

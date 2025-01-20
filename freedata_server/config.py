@@ -20,6 +20,10 @@ class CONFIG:
             'ssid_list': list,
             'enable_explorer': bool,
             'enable_stats': bool,
+            'respond_to_cq': bool,
+            'enable_callsign_blacklist': bool,
+            'callsign_blacklist': list
+
         },
         'AUDIO': {
             'input_device': str,
@@ -60,7 +64,6 @@ class CONFIG:
             'enable_hmac': bool,
             'enable_morse_identifier': bool,
             'maximum_bandwidth': int,
-            'respond_to_cq': bool,
             'tx_delay': int,
             'enable_socket_interface': bool,
         },
@@ -73,6 +76,11 @@ class CONFIG:
         },
         'MESSAGES': {
             'enable_auto_repeat': bool,
+            'adif_log_host': str,
+            'adif_log_port': int,
+        },
+        'GUI':{
+            'auto_run_browser': bool,
         }
     }
 
@@ -162,10 +170,18 @@ class CONFIG:
     def handle_setting(self, section, setting, value, is_writing = False):
         try:
             if self.config_types[section][setting] == list:
-                if (is_writing):
-                    return json.dumps(value)
+                if is_writing:
+                    # When writing, ensure the value is a list and then convert it to JSON
+                    if isinstance(value, str):
+                        value = json.loads(value)  # Convert JSON string to list
+                    return json.dumps(value)  # Convert list to JSON string
                 else:
-                    return json.loads(value)
+                    # When reading, convert the JSON string back to a list
+                    if isinstance(value, str):
+                        return json.loads(value)
+                    return value  # Return as-is if already a list
+
+
 
             elif self.config_types[section][setting] == bool and not is_writing:
                 return self.parser.getboolean(section, setting)
@@ -181,6 +197,7 @@ class CONFIG:
     # Sets and writes config data from a dict containing data settings
     def write(self, data):
         # Validate config data before writing
+        print(data)
         self.validate_data(data)
         for section in data:
             # init section if it doesn't exist yet

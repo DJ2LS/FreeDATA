@@ -260,3 +260,29 @@ class StateManager:
         if id not in self.p2p_connection_sessions:
             pass
         return self.p2p_connection_sessions[id]
+
+    def get_dxcall_by_session_id(self, session_id):
+        """
+        Retrieves the dxcall associated with a given session ID by checking both ISS and IRS sessions.
+
+        Args:
+            session_id (str): The ID of the session.
+
+        Returns:
+            str: The dxcall associated with the session ID, or None if not found.
+        """
+        try:
+            # Check ISS sessions
+            if session_id in self.arq_iss_sessions:
+                return self.arq_iss_sessions[session_id].dxcall
+
+            # Check IRS sessions
+            if session_id in self.arq_irs_sessions:
+                return self.arq_irs_sessions[session_id].dxcall
+
+            # If not found in either session dictionary
+            self.log(f"Session ID {session_id} not found in ISS or IRS sessions", isWarning=True)
+            return None
+        except KeyError:
+            self.log(f"Error retrieving session ID {session_id}", isError=True)
+            return None

@@ -1,4 +1,3 @@
-crcengine
 numpy
 psutil
 PyAudio
@@ -10,11 +9,11 @@ asyncio
 chardet
 colorama
 ordered-set
-nuitka
+nuitka<=2.5.9
 pyinstaller
 websocket-client
-fastapi
-uvicorn
+fastapi[standard]
+uvicorn[standard]
 
 # Development and test dependencies
 autopep8

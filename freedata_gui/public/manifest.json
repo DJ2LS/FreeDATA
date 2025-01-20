@@ -1,0 +1,22 @@
+{
+  "name": "FreeDATA",
+  "short_name": "FreeDATA",
+  "description": "FreeDATA is a communication platform for transferring data over radio.",
+  "categories": ["utilities", "communication", "productivity"],
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

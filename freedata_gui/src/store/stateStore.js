@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import * as bootstrap from "bootstrap";
 
 export const useStateStore = defineStore("stateStore", () => {
   var busy_state = ref();
@@ -42,7 +41,6 @@ export const useStateStore = defineStore("stateStore", () => {
   var dxcallsign = ref("");
 
   var arq_session_state = ref("");
-  var arq_state = ref("");
   var beacon_state = ref(false);
   var away_from_key = ref(false);
 
@@ -59,6 +57,8 @@ export const useStateStore = defineStore("stateStore", () => {
   var arq_speed_list_timestamp = ref([]);
   var arq_speed_list_bpm = ref([]);
   var arq_speed_list_snr = ref([]);
+  var arq_bytes_per_minute = ref();
+  var arq_bits_per_second = ref();
 
   var arq_is_receiving = ref(false);
 
@@ -70,10 +70,30 @@ export const useStateStore = defineStore("stateStore", () => {
   var rigctld_started = ref();
   var rigctld_process = ref();
 
-  var python_version = ref();
+  var api_version = ref();
   var modem_version = ref();
 
+  var os_info = ref({
+    system: "",
+    node: "",
+    release: "",
+    version: "",
+    machine: "",
+    processor: "",
+  });
+  var python_info = ref({
+    build: ["", ""],
+    compiler: "",
+    branch: "",
+    implementation: "",
+    revision: "",
+    version: "",
+  });
+
   var rx_buffer_length = ref();
+
+  // New state for network traffic
+  var is_network_traffic = ref(false);
 
   return {
     dxcallsign,
@@ -86,7 +106,6 @@ export const useStateStore = defineStore("stateStore", () => {
     tuner,
     swr_raw,
     swr_percent,
-    tuner,
     dbfs_level,
     dbfs_level_percent,
     speed_level,
@@ -103,10 +122,13 @@ export const useStateStore = defineStore("stateStore", () => {
     tx_audio_level,
     rx_audio_level,
     alc,
+    modemStartCount,
     arq_transmission_percent,
     arq_speed_list_bpm,
     arq_speed_list_timestamp,
     arq_speed_list_snr,
+    arq_bytes_per_minute,
+    arq_bits_per_second,
     arq_seconds_until_finish,
     arq_seconds_until_timeout,
     arq_seconds_until_timeout_percent,
@@ -122,9 +144,12 @@ export const useStateStore = defineStore("stateStore", () => {
     away_from_key,
     rigctld_started,
     rigctld_process,
-    python_version,
+    python_info,
     modem_version,
+    api_version,
+    os_info,
     rx_buffer_length,
     radio_status,
+    is_network_traffic,
   };
 });

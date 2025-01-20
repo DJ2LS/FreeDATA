@@ -23,13 +23,16 @@ package-lock.json
 coverage.sh
 coverage.xml
 
-#ignore node_modules
-/freedata_gui/node_modules/
-
-#Ignore freedata_gui build items
-/freedata_gui/dist
-/freedata_gui/release
-/freedata_gui/dist-electron
-
 #Ignore GUI config
 /freedata_gui/config/config.json
+
+#GUI_WEB
+/freedata_gui/dist
+/freedata_gui/node_modules/
+/freedata_gui/node_modules!/venv/
+
+# venv packages
+venv_3.11/
+venv/
+test_venv/
+freedata_server/lib/codec2/codec2/

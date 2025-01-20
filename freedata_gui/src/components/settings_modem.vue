@@ -1,6 +1,12 @@
-<script setup lang="ts">
+<script setup>
+
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
+
+
+// Pinia setup
+import { setActivePinia } from "pinia";
 import pinia from "../store/index";
+setActivePinia(pinia);
 
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
@@ -8,75 +14,125 @@ const state = useStateStore(pinia);
 import { startModem, stopModem } from "../js/api.js";
 
 import { useAudioStore } from "../store/audioStore";
-const audioStore = useAudioStore();
+const audioStore = useAudioStore(pinia);
 </script>
 
 <template>
-  <div>
-    <button
-      type="button"
-      id="startModem"
-      class="btn btn-sm btn-outline-success"
-      data-bs-toggle="tooltip"
-      data-bs-trigger="hover"
-      data-bs-html="false"
-      title="Start the Modem. Please set your audio and radio settings first!"
-      @click="startModem"
-      v-bind:class="{ disabled: state.is_modem_running === true }"
-    >
-      <i class="bi bi-play-fill"></i>
-      <span class="ms-2">start modem</span>
-    </button>
-    <button
-      type="button"
-      id="stopModem"
-      class="btn btn-sm btn-outline-danger"
-      data-bs-toggle="tooltip"
-      data-bs-trigger="hover"
-      data-bs-html="false"
-      title="Stop the Modem."
-      @click="stopModem"
-      v-bind:class="{ disabled: state.is_modem_running === false }"
-    >
-      <i class="bi bi-stop-fill"></i>
-      <span class="ms-2">stop modem</span>
-    </button>
+  <!-- Top Info Area for Modem and Audio Settings -->
+  <div class="alert alert-info" role="alert">
+    <strong><i class="bi bi-gear-wide-connected me-1"></i>Modem and Audio</strong> related settings, including starting/stopping the modem, configuring audio devices, and adjusting audio levels.
   </div>
+
+  <!-- Start and Stop Modem Buttons -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">Modem port</span>
+    <label class="input-group-text w-50 text-wrap">
+      Manual modem control
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Start or stop the modem. Ensure your audio and radio settings are configured first."
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
+    <div class="w-50 d-flex justify-content-between">
+      <button
+        type="button"
+        id="startModem"
+        class="btn btn-outline-success btn-sm w-50 me-1"
+        data-bs-toggle="tooltip"
+        title="Start the Modem"
+        @click="startModem"
+        :disabled="state.is_modem_running"
+      >
+        <i class="bi bi-play-fill"></i>
+        Start
+      </button>
+      <button
+        type="button"
+        id="stopModem"
+        class="btn btn-outline-danger btn-sm w-50 ms-1"
+        data-bs-toggle="tooltip"
+        title="Stop the Modem"
+        @click="stopModem"
+        :disabled="!state.is_modem_running"
+      >
+        <i class="bi bi-stop-fill"></i>
+        Stop
+      </button>
+    </div>
+  </div>
+  <!-- Modem Port -->
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50 text-wrap">
+      Modem port
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Server restart required"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
     <input
       type="number"
       class="form-control"
-      placeholder="modem port"
+      placeholder="Enter modem port"
       id="modem_port"
       maxlength="5"
       max="65534"
       min="1025"
-      v-model.number="settings.local.port"
+      @change="onChange"
+      v-model.number="settings.remote.NETWORK.modemport"
     />
   </div>
 
+  <!-- Modem Host -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">Modem host</span>
-    <input
-      type="text"
-      class="form-control"
-      placeholder="modem host"
-      id="modem_port"
-      v-model="settings.local.host"
-    />
+    <label class="input-group-text w-50 text-wrap">
+      Modem host
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Server restart required"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
+    <select
+      class="form-select form-select-sm w-50"
+      id="modem_host"
+      @change="onChange"
+      v-model="settings.remote.NETWORK.modemaddress"
+    >
+      <option value="127.0.0.1">127.0.0.1 (Local operation)</option>
+      <option value="localhost">localhost (Local operation)</option>
+      <option value="0.0.0.0">0.0.0.0 (Remote operation)</option>
+    </select>
   </div>
 
   <!-- Audio Input Device -->
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Audio Input device</label>
+    <label class="input-group-text w-50 text-wrap">
+      Audio Input device
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Select your microphone or line-in device"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
     <select
-      class="form-select form-select-sm"
-      aria-label=".form-select-sm"
+      class="form-select form-select-sm w-50"
       @change="onChange"
       v-model="settings.remote.AUDIO.input_device"
     >
-      <option v-for="device in audioStore.audioInputs" :value="device.id">
+      <option v-for="device in audioStore.audioInputs" :key="device.id" :value="device.id">
         {{ device.name }} [{{ device.api }}]
       </option>
     </select>
@@ -84,26 +140,45 @@ const audioStore = useAudioStore();
 
   <!-- Audio Output Device -->
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Audio Output device</label>
+    <label class="input-group-text w-50 text-wrap">
+      Audio Output device
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Select your speakers or output device"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
     <select
-      class="form-select form-select-sm"
-      aria-label=".form-select-sm"
+      class="form-select form-select-sm w-50"
       @change="onChange"
       v-model="settings.remote.AUDIO.output_device"
     >
-      <option v-for="device in audioStore.audioOutputs" :value="device.id">
+      <option v-for="device in audioStore.audioOutputs" :key="device.id" :value="device.id">
         {{ device.name }} [{{ device.api }}]
       </option>
     </select>
   </div>
 
-  <!-- Audio rx level-->
+  <!-- RX Audio Level -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text w-25">RX Audio Level</span>
-    <span class="input-group-text w-25">{{
-      settings.remote.AUDIO.rx_audio_level
-    }}</span>
-    <span class="input-group-text w-50">
+    <label class="input-group-text w-50 text-wrap">
+      RX Audio Level
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Adjust to set the receive audio gain"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
+    <div class="input-group-text w-25">
+      {{ settings.remote.AUDIO.rx_audio_level }}
+    </div>
+    <div class="w-25">
       <input
         type="range"
         class="form-range"
@@ -113,14 +188,27 @@ const audioStore = useAudioStore();
         id="audioLevelRX"
         @change="onChange"
         v-model.number="settings.remote.AUDIO.rx_audio_level"
-    /></span>
+      />
+    </div>
   </div>
+
+  <!-- TX Audio Level -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text w-25">TX Audio Level</span>
-    <span class="input-group-text w-25">{{
-      settings.remote.AUDIO.tx_audio_level
-    }}</span>
-    <span class="input-group-text w-50">
+    <label class="input-group-text w-50 text-wrap">
+      TX Audio Level
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Adjust to set the transmit audio gain"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
+    <div class="input-group-text w-25">
+      {{ settings.remote.AUDIO.tx_audio_level }}
+    </div>
+    <div class="w-25">
       <input
         type="range"
         class="form-range"
@@ -130,12 +218,25 @@ const audioStore = useAudioStore();
         id="audioLevelTX"
         @change="onChange"
         v-model.number="settings.remote.AUDIO.tx_audio_level"
-    /></span>
+      />
+    </div>
   </div>
+
+  <!-- TX Delay -->
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">TX delay in ms</label>
+    <label class="input-group-text w-50 text-wrap">
+      TX delay in ms
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Delay before transmitting, in milliseconds"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
     <select
-      class="form-select form-select-sm"
+      class="form-select form-select-sm w-50"
       id="tx_delay"
       @change="onChange"
       v-model.number="settings.remote.MODEM.tx_delay"
@@ -164,10 +265,21 @@ const audioStore = useAudioStore();
     </select>
   </div>
 
+  <!-- Maximum Used Bandwidth -->
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Maximum used bandwidth</label>
+    <label class="input-group-text w-50 text-wrap">
+      Maximum used bandwidth
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Select the maximum bandwidth the modem will use"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
     <select
-      class="form-select form-select-sm"
+      class="form-select form-select-sm w-50"
       id="maximum_bandwidth"
       @change="onChange"
       v-model.number="settings.remote.MODEM.maximum_bandwidth"
@@ -178,20 +290,6 @@ const audioStore = useAudioStore();
       <option value="2438">2438 Hz</option>
     </select>
   </div>
-
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Respond to CQ</label>
-    <label class="input-group-text w-50">
-      <div class="form-check form-switch form-check-inline">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          id="respondCQSwitch"
-          v-model="settings.remote.MODEM.respond_to_cq"
-          @change="onChange"
-        />
-        <label class="form-check-label" for="respondCQSwitch">QRV</label>
-      </div>
-    </label>
-  </div>
 </template>
+
+

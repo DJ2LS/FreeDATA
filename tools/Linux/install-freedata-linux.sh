@@ -3,7 +3,7 @@
 # Simple script to install FreeDATA in Linux
 # Dj Merrill - N1JOV
 #
-# Currently supports Debian [11, 12], Ubuntu [22.04, 24.04]
+# Currently supports Debian [11, 12], Ubuntu [22.04, 24.04], Fedora [40]
 # 
 # Run this script by typing in the terminal (without the quotes):
 # "bash install-freedata-linux.sh" to install from the main branch 
@@ -19,8 +19,17 @@
 #
 #
 # Changelog:
-# 1.7   31 May 2024 ( DJ2LS )
-# Add support for version specific setup
+# 2.0:	04 Oct 2024 (deej)
+# 	Add support for Fedora 40
+#
+# 1.9:	14 Sep 2024 (deej)
+# 	Tweak OS version checking section to handle minor OS revisions better
+#
+# 1.8:	23 July 2024 ( DJ2LS )
+# 	Add support for browser based gui
+#
+# 1.7:	31 May 2024 ( DJ2LS )
+# 	Add support for version specific setup
 #
 # 1.6:	22 May 2024
 #	Reflect directory name changes in prep for merging develop to main
@@ -67,7 +76,7 @@ case $1 in
 esac
 
 osname=`grep -E '^(NAME)=' /etc/os-release | cut -d\" -f2`
-osversion=`grep -E '^(VERSION)=' /etc/os-release | cut -d\" -f2`
+osversion=`grep -E '^(VERSION_ID)=' /etc/os-release | cut -d\" -f2`
 
 echo "Running on" $osname "version" $osversion
 
@@ -79,7 +88,7 @@ echo "*************************************************************************"
 case $osname in
    "Debian GNU/Linux")
 	case $osversion in
-	   "11 (bullseye)" | "12 (bookworm)")
+	   "11" | "12")
 		sudo apt install --upgrade -y fonts-noto-color-emoji git build-essential cmake python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama python3-venv wget
 	   ;;
 
@@ -97,7 +106,7 @@ case $osname in
 
    "Ubuntu")
 	case $osversion in
-	   "22.04.4 LTS (Jammy Jellyfish)" | "24.04 LTS (Noble Numbat)")
+	   "22.04" | "24.04")
 		sudo apt install --upgrade -y fonts-noto-color-emoji git build-essential cmake python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama python3-venv wget
 	   ;;
 
@@ -107,6 +116,13 @@ case $osname in
 	   	echo $osname $osversion
 	   	echo "*************************************************************************"
 		exit 1
+	   ;;
+	esac
+   ;;
+   "Fedora Linux")
+	case $osversion in
+	   "VERSION_ID=40")
+		sudo dnf install -y git cmake make automake gcc gcc-c++ kernel-devel wget portaudio-devel python3-pyaudio python3-pip python3-colorama python3-virtualenv google-noto-emoji-fonts python3-devel
 	   ;;
 	esac
    ;;
@@ -130,7 +146,7 @@ then
 	chmod 750 install.sh
 	./install.sh
 else
-	echo "Something went wrong.  npm install.sh not downloaded."
+	echo "Something went wrong.  nvm install.sh not downloaded."
 	exit 1
 fi
 
@@ -140,7 +156,7 @@ then
 	[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 	[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 	nvm install 20
-	echo "nvm is version" `npm -v`
+	echo "npm is version" `npm -v`
 	echo "node is version" `node -v`
 	rm -f install.sh
 else
@@ -335,8 +351,9 @@ echo "*************************************************************************"
 cd ../../../..
 cd freedata_gui
 npm i
-npm audit fix --force
-npm i
+#npm audit fix --force
+#npm i
+npm run build
 
 # Return to the directory we started in
 cd ../..

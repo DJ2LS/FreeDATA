@@ -7,6 +7,9 @@
           :key="attachment.id"
           class="card-header"
         >
+
+          <chat_messages_image_preview :attachment="attachment" />
+
           <div class="btn-group w-100" role="group">
             <button class="btn btn-light text-truncate" disabled>
               {{ attachment.name }}
@@ -23,11 +26,14 @@
         </div>
 
         <div class="card-body">
-          <p class="card-text text-break">{{ message.body }}</p>
+          <!-- Render parsed markdown with v-html -->
+          <p class="card-text text-break" v-html="parsedMessageBody"></p>
         </div>
 
-        <div class="card-footer p-0 bg-light border-top-0">
-          <p class="text-muted p-0 m-0 me-1 text-end">{{ getDateTime }}</p>
+        <div class="card-footer p-0 border-top-0">
+          <p class="p-0 m-0 me-1 text-end text-dark">
+            <span class="badge badge-secondary mr-2 text-dark">{{ getDateTime }} UTC</span>
+          </p>
           <!-- Display formatted timestamp in card-footer -->
         </div>
       </div>
@@ -36,13 +42,16 @@
     <!-- Delete button outside of the card -->
     <div class="col-auto">
       <button
-        disabled
         class="btn btn-outline-secondary border-0 me-1"
         @click="showMessageInfo"
         data-bs-target="#messageInfoModal"
         data-bs-toggle="modal"
       >
         <i class="bi bi-info-circle"></i>
+      </button>
+
+      <button class="btn btn-outline-secondary border-0" @click="sendADIF">
+        ADIF
       </button>
 
       <button class="btn btn-outline-secondary border-0" @click="deleteMessage">
@@ -53,35 +62,46 @@
 </template>
 
 <script>
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import {
   deleteMessageFromDB,
   requestMessageInfo,
-  getMessageAttachment,
+  getMessageAttachment, sendADIFviaUDP,
 } from "../js/messagesHandler";
-import { atob_FD } from "../js/freedata";
 
-// pinia store setup
+import chat_messages_image_preview from './chat_messages_image_preview.vue';
+
+// Pinia store setup
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { useChatStore } from "../store/chatStore.js";
-const chat = useChatStore(pinia);
+import { useChatStore } from '../store/chatStore.js';
+const chatStore = useChatStore(pinia);
 
 export default {
+  components: {
+    chat_messages_image_preview,
+  },
+
   props: {
     message: Object,
   },
+
   methods: {
     showMessageInfo() {
-      requestMessageInfo(this.message.id);
-      //let infoModal = Modal.getOrCreateInstance(document.getElementById('messageInfoModal'))
-      //console.log(this.infoModal)
-      //this.infoModal.show()
+      chatStore.messageInfoById = requestMessageInfo(this.message.id);
     },
+
+    sendADIF() {
+      sendADIFviaUDP(this.message.id);
+    },
+
     deleteMessage() {
       deleteMessageFromDB(this.message.id);
     },
+
     async downloadAttachment(hash_sha512, fileName) {
       try {
         const jsondata = await getMessageAttachment(hash_sha512);
@@ -116,10 +136,10 @@ export default {
       }
     },
   },
+
   computed: {
     messageWidthClass() {
       // Calculate a Bootstrap grid class based on message length
-      // Adjust the logic as needed to fit your requirements
       if (this.message.body.length <= 50) {
         return "col-4";
       } else if (this.message.body.length <= 100) {
@@ -135,6 +155,11 @@ export default {
       let minutes = date.getMinutes().toString().padStart(2, "0");
       let seconds = date.getSeconds().toString().padStart(2, "0");
       return `${hours}:${minutes}:${seconds}`;
+    },
+
+    parsedMessageBody() {
+      // Use marked to parse markdown and DOMPurify to sanitize
+      return DOMPurify.sanitize(marked.parse(this.message.body));
     },
   },
 };

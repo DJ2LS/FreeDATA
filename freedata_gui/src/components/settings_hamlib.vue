@@ -1,67 +1,134 @@
-<script setup lang="ts">
+<script setup>
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
-import { useSerialStore } from "../store/serialStore";
-const serialStore = useSerialStore();
+import { useSerialStore } from "../store/serialStore.js";
+
+// Pinia setup
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
+setActivePinia(pinia);
+
+const serialStore = useSerialStore(pinia);
+
+/*
+const settings = ref({
+  remote: {
+    RIGCTLD: {
+      ip: '',
+      port: 0,
+      enable_vfo: false
+    },
+    RADIO: {
+      control: '',
+      model_id: 0
+    }
+  }
+});
+*/
+
 </script>
 
 <template>
-  <hr class="m-2" />
+  <!-- Rigctld IP -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">Rigctld IP</span>
+    <label class="input-group-text w-50 text-wrap">
+      Rigctld IP
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Enter the IP address of the rigctld server"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
     <input
       type="text"
       class="form-control"
-      placeholder="rigctld IP"
-      id="hamlib_rigctld_ip"
-      aria-label="Device IP"
+      placeholder="Enter Rigctld IP"
+      id="rigctldIp"
+      aria-label="Rigctld IP"
       @change="onChange"
       v-model="settings.remote.RIGCTLD.ip"
     />
   </div>
 
+  <!-- Rigctld Port -->
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">Rigctld port</span>
+    <label class="input-group-text w-50 text-wrap">
+      Rigctld Port
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Enter the port number of the rigctld server"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
     <input
       type="number"
       class="form-control"
-      placeholder="rigctld port"
-      id="hamlib_rigctld_port"
-      aria-label="Device Port"
+      placeholder="Enter Rigctld port"
+      id="rigctldPort"
+      aria-label="Rigctld Port"
       @change="onChange"
       v-model.number="settings.remote.RIGCTLD.port"
     />
   </div>
 
+  <!-- Rigctld VFO Parameter -->
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">rigctld VFO parameter</label>
+    <label class="input-group-text w-50 text-wrap">
+      Rigctld VFO parameter
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Enable VFO support in rigctld"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
         <input
           class="form-check-input"
           type="checkbox"
-          id="enableVFOSwitch"
+          id="enableVfoSwitch"
           v-model="settings.remote.RIGCTLD.enable_vfo"
           @change="onChange"
         />
-        <label class="form-check-label" for="enableVFOSwitch">VFO</label>
+        <label class="form-check-label" for="enableVfoSwitch">Enable</label>
       </div>
     </label>
   </div>
 
   <hr class="m-2" />
-  <div
-    :class="settings.remote.RADIO.control == 'rigctld_bundle' ? '' : 'd-none'"
-  >
+
+  <!-- Conditional Section for Rigctld Bundle -->
+  <div :class="settings.remote.RADIO.control == 'rigctld_bundle' ? '' : 'd-none'">
+    <!-- Radio Model -->
     <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">Radio model</span>
+      <label class="input-group-text w-50 text-wrap">
+        Radio model
+        <button
+          type="button"
+          class="btn btn-link p-0 ms-2"
+          data-bs-toggle="tooltip"
+          title="Select your radio model for rig control"
+        >
+          <i class="bi bi-question-circle"></i>
+        </button>
+      </label>
       <select
-        class="form-select form-select-sm"
-        aria-label=".form-select-sm"
-        id="hamlib_deviceid"
+        class="form-select form-select-sm w-50"
+        aria-label="Radio Model"
+        id="radioModelSelect"
         @change="onChange"
         v-model.number="settings.remote.RADIO.model_id"
       >
-        <option selected value="0">-- ignore --</option>
+        <!-- Your extensive list of options -->
+<option selected value="0">-- ignore --</option>
         <option value="1">Hamlib Dummy</option>
         <option value="2">Hamlib NET rigctl</option>
         <option value="4">FLRig FLRig</option>
@@ -347,13 +414,23 @@ const serialStore = useSerialStore();
       </select>
     </div>
 
+    <!-- Radio Port -->
     <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">Radio port</span>
-
+      <label class="input-group-text w-50 text-wrap">
+        Radio port
+        <button
+          type="button"
+          class="btn btn-link p-0 ms-2"
+          data-bs-toggle="tooltip"
+          title="Select the serial port connected to your radio"
+        >
+          <i class="bi bi-question-circle"></i>
+        </button>
+      </label>
       <select
+        class="form-select form-select-sm w-50"
         @change="onChange"
         v-model="settings.remote.RADIO.serial_port"
-        class="form-select form-select-sm"
       >
         <option
           v-for="device in serialStore.serialDevices"
@@ -365,13 +442,22 @@ const serialStore = useSerialStore();
       </select>
     </div>
 
+    <!-- Serial Speed -->
     <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">Serial speed</span>
-
+      <label class="input-group-text w-50 text-wrap">
+        Serial speed
+        <button
+          type="button"
+          class="btn btn-link p-0 ms-2"
+          data-bs-toggle="tooltip"
+          title="Set the baud rate for serial communication"
+        >
+          <i class="bi bi-question-circle"></i>
+        </button>
+      </label>
       <select
-        class="form-select form-select-sm"
-        aria-label=".form-select-sm"
-        id="hamlib_serialspeed"
+        class="form-select form-select-sm w-50"
+        id="serialSpeedSelect"
         @change="onChange"
         v-model.number="settings.remote.RADIO.serial_speed"
       >
@@ -380,21 +466,29 @@ const serialStore = useSerialStore();
         <option value="2400">2400</option>
         <option value="4800">4800</option>
         <option value="9600">9600</option>
-        <option value="14400">14400</option>
         <option value="19200">19200</option>
-        <option value="28800">28800</option>
         <option value="38400">38400</option>
         <option value="57600">57600</option>
         <option value="115200">115200</option>
       </select>
     </div>
-    <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">Data bits</span>
 
+    <!-- Data Bits -->
+    <div class="input-group input-group-sm mb-1">
+      <label class="input-group-text w-50 text-wrap">
+        Data bits
+        <button
+          type="button"
+          class="btn btn-link p-0 ms-2"
+          data-bs-toggle="tooltip"
+          title="Choose the number of data bits"
+        >
+          <i class="bi bi-question-circle"></i>
+        </button>
+      </label>
       <select
-        class="form-select form-select-sm"
-        aria-label=".form-select-sm"
-        id="hamlib_data_bits"
+        class="form-select form-select-sm w-50"
+        id="dataBitsSelect"
         @change="onChange"
         v-model.number="settings.remote.RADIO.data_bits"
       >
@@ -403,13 +497,23 @@ const serialStore = useSerialStore();
         <option value="8">8</option>
       </select>
     </div>
-    <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">Stop bits</span>
 
+    <!-- Stop Bits -->
+    <div class="input-group input-group-sm mb-1">
+      <label class="input-group-text w-50 text-wrap">
+        Stop bits
+        <button
+          type="button"
+          class="btn btn-link p-0 ms-2"
+          data-bs-toggle="tooltip"
+          title="Choose the number of stop bits"
+        >
+          <i class="bi bi-question-circle"></i>
+        </button>
+      </label>
       <select
-        class="form-select form-select-sm"
-        aria-label=".form-select-sm"
-        id="hamlib_stop_bits"
+        class="form-select form-select-sm w-50"
+        id="stopBitsSelect"
         @change="onChange"
         v-model.number="settings.remote.RADIO.stop_bits"
       >
@@ -418,30 +522,49 @@ const serialStore = useSerialStore();
         <option value="2">2</option>
       </select>
     </div>
-    <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px"
-        >Serial handshake</span
-      >
 
+    <!-- Serial Handshake -->
+    <div class="input-group input-group-sm mb-1">
+      <label class="input-group-text w-50 text-wrap">
+        Serial handshake
+        <button
+          type="button"
+          class="btn btn-link p-0 ms-2"
+          data-bs-toggle="tooltip"
+          title="Set the serial handshake method"
+        >
+          <i class="bi bi-question-circle"></i>
+        </button>
+      </label>
       <select
-        class="form-select form-select-sm"
-        aria-label=".form-select-sm"
-        id="hamlib_handshake"
+        class="form-select form-select-sm w-50"
+        id="serialHandshakeSelect"
         @change="onChange"
         v-model="settings.remote.RADIO.serial_handshake"
       >
         <option selected value="ignore">-- ignore --</option>
         <option value="None">None (Default)</option>
+        <!-- Add more options if needed -->
       </select>
     </div>
 
+    <!-- PTT Device Port -->
     <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">PTT device port</span>
-
+      <label class="input-group-text w-50 text-wrap">
+        PTT device port
+        <button
+          type="button"
+          class="btn btn-link p-0 ms-2"
+          data-bs-toggle="tooltip"
+          title="Select the port used for PTT control"
+        >
+          <i class="bi bi-question-circle"></i>
+        </button>
+      </label>
       <select
+        class="form-select form-select-sm w-50"
         @change="onChange"
         v-model="settings.remote.RADIO.ptt_port"
-        class="form-select form-select-sm"
       >
         <option
           v-for="device in serialStore.serialDevices"
@@ -452,14 +575,23 @@ const serialStore = useSerialStore();
         </option>
       </select>
     </div>
-    <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">PTT type</span>
 
+    <!-- PTT Type -->
+    <div class="input-group input-group-sm mb-1">
+      <label class="input-group-text w-50 text-wrap">
+        PTT type
+        <button
+          type="button"
+          class="btn btn-link p-0 ms-2"
+          data-bs-toggle="tooltip"
+          title="Select the method for PTT control"
+        >
+          <i class="bi bi-question-circle"></i>
+        </button>
+      </label>
       <select
-        class="form-select form-select-sm"
-        aria-label=".form-select-sm"
-        id="hamlib_pttprotocol"
-        style="width: 0.5rem"
+        class="form-select form-select-sm w-50"
+        id="pttTypeSelect"
         @change="onChange"
         v-model="settings.remote.RADIO.ptt_type"
       >
@@ -473,14 +605,23 @@ const serialStore = useSerialStore();
         <option value="CM108">Rig CM108</option>
       </select>
     </div>
-    <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">DCD</span>
 
+    <!-- DCD -->
+    <div class="input-group input-group-sm mb-1">
+      <label class="input-group-text w-50 text-wrap">
+        DCD
+        <button
+          type="button"
+          class="btn btn-link p-0 ms-2"
+          data-bs-toggle="tooltip"
+          title="Select the Data Carrier Detect method"
+        >
+          <i class="bi bi-question-circle"></i>
+        </button>
+      </label>
       <select
-        class="form-select form-select-sm"
-        aria-label=".form-select-sm"
-        id="hamlib_dcd"
-        style="width: 0.5rem"
+        class="form-select form-select-sm w-50"
+        id="dcdSelect"
         @change="onChange"
         v-model="settings.remote.RADIO.serial_dcd"
       >
@@ -493,14 +634,23 @@ const serialStore = useSerialStore();
         <option value="PARALLEL">PARALLEL</option>
       </select>
     </div>
-    <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">DTR</span>
 
+    <!-- DTR -->
+    <div class="input-group input-group-sm mb-1">
+      <label class="input-group-text w-50 text-wrap">
+        DTR
+        <button
+          type="button"
+          class="btn btn-link p-0 ms-2"
+          data-bs-toggle="tooltip"
+          title="Set the DTR line state"
+        >
+          <i class="bi bi-question-circle"></i>
+        </button>
+      </label>
       <select
-        class="form-select form-select-sm"
-        aria-label=".form-select-sm"
-        id="hamlib_dtrstate"
-        style="width: 0.5rem"
+        class="form-select form-select-sm w-50"
+        id="dtrSelect"
         @change="onChange"
         v-model="settings.remote.RADIO.serial_dtr"
       >
@@ -509,16 +659,27 @@ const serialStore = useSerialStore();
         <option value="ON">ON</option>
       </select>
     </div>
+
+    <!-- Rigctld Command -->
     <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">Rigctld command</span>
+      <label class="input-group-text w-50 text-wrap">
+        Rigctld command
+        <button
+          type="button"
+          class="btn btn-link p-0 ms-2"
+          data-bs-toggle="tooltip"
+          title="Auto-populated command based on settings"
+        >
+          <i class="bi bi-question-circle"></i>
+        </button>
+      </label>
       <input
         type="text"
         class="form-control"
-        id="hamlib_rigctld_command"
-        aria-label="Device Port"
-        aria-describedby="basic-addon1"
+        id="rigctldCommand"
+        aria-label="Rigctld Command"
         disabled
-        placeholder="auto populated from above settings"
+        placeholder="Auto-populated from above settings"
       />
       <button
         class="btn btn-outline-secondary"
@@ -528,17 +689,26 @@ const serialStore = useSerialStore();
         <i id="btnHamlibCopyCommandBi" class="bi bi-clipboard"></i>
       </button>
     </div>
+
+    <!-- Rigctld Custom Arguments -->
     <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px"
-        >Rigctld custom arguments</span
-      >
+      <label class="input-group-text w-50 text-wrap">
+        Rigctld custom arguments
+        <button
+          type="button"
+          class="btn btn-link p-0 ms-2"
+          data-bs-toggle="tooltip"
+          title="Additional arguments for rigctld (usually not needed)"
+        >
+          <i class="bi bi-question-circle"></i>
+        </button>
+      </label>
       <input
         type="text"
         class="form-control"
-        placeholder="not typically needed"
-        id="hamlib_rigctld_custom_args"
-        aria-label="Custom arguments"
-        aria-describedby="basic-addon1"
+        placeholder="Optional custom arguments"
+        id="rigctldCustomArgs"
+        aria-label="Rigctld Custom Arguments"
         @change="onChange"
         v-model="settings.remote.RIGCTLD.arguments"
       />

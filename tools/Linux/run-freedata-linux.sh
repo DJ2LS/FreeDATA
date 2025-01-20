@@ -15,6 +15,8 @@
 # We expect the config.ini file to be at $HOME/.config/FreeDATA/config.ini
 # If it isn't found, we copy config.ini.example there
 #
+# 1.8:  22 May 2024 (DJ2LS)
+#	add support for browser based gui
 # 1.7:  22 May 2024
 #	Slightly change the way we shutdown the server
 # 1.6:  05 May 2024
@@ -87,70 +89,52 @@ then
 	cp $serverdir/config.ini.example $HOME/.config/FreeDATA/config.ini
 fi
 
-FREEDATA_CONFIG=$HOME/.config/FreeDATA/config.ini python3 $serverdir/server.py > FreeDATA-server.log 2>&1 &
+FREEDATA_CONFIG=$HOME/.config/FreeDATA/config.ini FREEDATA_DATABASE=$HOME/.config/FreeDATA/freedata-messages.db python3 $serverdir/server.py > FreeDATA-server.log 2>&1 &
 serverpid=$!
 echo "Process ID of FreeDATA server is" $serverpid
 
-# Run the GUI front end
-echo "*************************************************************************"
-echo "Running the FreeDATA GUI front end"
-echo "*************************************************************************"
 
-# New versions use "freedata_gui", old versions use "gui"
-if [ -d "FreeDATA/freedata_gui" ];
-then
-	guidir="FreeDATA/freedata_gui"
-else
-	guidir="FreeDATA/gui"
-fi
 
-cd $guidir
 
-if [ -f "$HOME/.nvm/bash_completion" ];
-then
-	export NVM_DIR="$HOME/.nvm"
-	[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-	[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-else
-	echo "Something went wrong.  $HOME/.nvm environment not created properly."
-	exit 1
-fi
+# Function to handle Ctrl-C
+function ctrl_c() {
+    echo "*************************************************************************"
+    echo "Stopping the server component"
+    echo "*************************************************************************"
+    kill -INT $serverpid
 
-checknpm=`which npm`
-if [ -z "$checknpm" ];
-then
-	echo "Something went wrong.  npm not found."
-	exit 1
-fi
+    # Give time for the server to clean up rigctld if needed
+    sleep 5s
 
-npm start > ../../FreeDATA-client.log 2>&1
+    # If rigctld was already running before starting FreeDATA, leave it alone
+    # otherwise we should clean it up
+    if [ -z "$checkrigexist" ]; then
+        # rigctld was started by FreeDATA and should have stopped when the
+        # server exited.  If it didn't, stop it now.
+        checkrigctld=$(ps auxw | grep -i rigctld | grep -v grep)
+        if [ ! -z "$checkrigctld" ]; then
+            echo "*************************************************************************"
+            echo "Stopping rigctld"
+            echo "*************************************************************************"
+            rigpid=$(echo $checkrigctld | awk '{print $2}')
+            kill $rigpid
+        fi
+    fi
 
-# If we are this far, then we have just quit the GUI, so let's clean up the
-# server
-echo "*************************************************************************"
-echo "Stopping the server component"
-echo "*************************************************************************"
-kill -INT $serverpid
+    # Return to the directory we started in
+    cd ..
 
-# Give time for the server to clean up rigctld if needed
-sleep 5s
+    # Exit the script
+    exit 0
+}
 
-# If rigctld was already running before starting FreeDATA, leave it alone
-# otherwise we should clean it up
-if [ -z "$checkrigexist" ];
-then
-	# rigctld was started by FreeDATA and should have stopped when the 
-	# server exited.  If it didn't, stop it now.
-	checkrigctld=`ps auxw | grep -i rigctld | grep -v grep`
-	if [ ! -z "$checkrigctld" ];
-	then
-		echo "*************************************************************************"
-		echo "Stopping rigctld"
-		echo "*************************************************************************"
-		rigpid=`echo $checkrigctld | cut -f2 -d" "`
-		kill $rigpid
-	fi
-fi
 
-# Return to the directory we started in
-cd ..
+# Trap Ctrl-C (SIGINT) and call the ctrl_c function
+trap ctrl_c SIGINT
+
+# Wait indefinitely for Ctrl-C
+echo "Server started with PID $serverpid. Press Ctrl-C to stop."
+while true; do
+    sleep 1
+done
+

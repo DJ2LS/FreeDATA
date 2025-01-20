@@ -19,6 +19,7 @@ jobs:
           - node-version: "16"
           - node-version: "18"
           - node-version: "20"
+          - node-version: "22"
 
     steps:
       - uses: actions/checkout@v4
@@ -32,7 +33,12 @@ jobs:
         run: |
           npm i
 
-      - name: GUI Test
+      - name: GUI Linting
         working-directory: freedata_gui
         run: |
-          npm run test
+          npm run lint
+
+      - name: GUI Build
+        working-directory: freedata_gui
+        run: |
+          npm run build

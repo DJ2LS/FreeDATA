@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 import { setConfig } from "../js/api";
 
 import { setActivePinia } from "pinia";
@@ -9,19 +9,24 @@ import { settingsStore as settings } from "../store/settingsStore.js";
 </script>
 
 <template>
-  <div class="center">
-    <div class="badge text-bg-danger mb-2"></div>
+  <!-- Top Warning Area -->
+  <div class="alert alert-danger" role="alert">
+    <strong><i class="bi bi-shield-exclamation me-1"></i>WARNING:</strong> These features may be incomplete. They are for <u>experienced</u> users ONLY!
   </div>
+
+  <!-- Enable MESH Protocol -->
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text text-bg-danger w-100"
-      ><i class="bi bi-shield-exclamation"></i
-      ><strong
-        >&nbsp;WARNING: &nbsp;These features may be incomplete. &nbsp;They are
-        for <u>experienced</u> users ONLY!&nbsp;<i
-          class="bi bi-shield-exclamation"
-        ></i></strong
-    ></label>
-    <label class="input-group-text w-50">Enable MESH protocol</label>
+    <label class="input-group-text w-50 text-wrap">
+      Enable MESH protocol
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Experimental feature"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline ms-2">
         <input
@@ -32,10 +37,9 @@ import { settingsStore as settings } from "../store/settingsStore.js";
           v-model="settings.remote.MESH.enable_protocol"
           disabled
         />
-        <label class="form-check-label" for="enableMeshSwitch"
-          >experimental! REALLY!</label
-        >
+        <label class="form-check-label" for="enableMeshSwitch">Enable</label>
       </div>
     </label>
   </div>
 </template>
+
