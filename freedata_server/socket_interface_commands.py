@@ -17,20 +17,22 @@ class SocketCommandHandler:
         self.cmd_request.sendall(full_message.encode())
 
     def handle_connect(self, data):
-
-        params = {
-            'origin': data[0],
-            'destination': data[1],
-        }
-        cmd = P2PConnectionCommand(self.config_manager.read(), self.state_manager, self.event_manager, params, self)
-        self.session = cmd.run(self.event_manager.queues, self.modem)
-        print(self.session.session_id)
-        #if self.session.session_id:
-        #    self.state_manager.register_p2p_connection_session(self.session)
-        #    self.send_response("OK")
-        #    self.session.connect()
-        #else:
-        #    self.send_response("ERROR")
+        try:
+            params = {
+                'origin': data[0],
+                'destination': data[1],
+            }
+            cmd = P2PConnectionCommand(self.config_manager.read(), self.state_manager, self.event_manager, params, self)
+            self.session = cmd.run(self.event_manager.queues, self.modem)
+            print(self.session.session_id)
+            #if self.session.session_id:
+            #    self.state_manager.register_p2p_connection_session(self.session)
+            #    self.send_response("OK")
+            #    self.session.connect()
+            #else:
+            #    self.send_response("ERROR")
+        except:
+            self.send_response(f"ERR: {data}")
 
     def handle_disconnect(self, data):
         self.send_response(f"NOT IMPLEMENTED: {data}")
