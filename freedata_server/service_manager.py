@@ -107,7 +107,8 @@ class SM:
         self.frame_dispatcher = frame_dispatcher.DISPATCHER(self.config, 
                                                             self.event_manager,
                                                             self.state_manager,
-                                                            self.modem)
+                                                            self.modem,
+                                                            self.socket_interface_manager)
         self.frame_dispatcher.start()
 
         self.event_manager.modem_started()

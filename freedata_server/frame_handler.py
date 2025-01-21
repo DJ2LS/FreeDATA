@@ -15,12 +15,13 @@ TESTMODE = False
 class FrameHandler():
 
     def __init__(self, name: str, config, states: StateManager, event_manager: EventManager, 
-                 modem) -> None:
+                 modem, socket_interface_manager) -> None:
         
         self.name = name
         self.config = config
         self.states = states
         self.event_manager = event_manager
+        self.socket_interface_manager = socket_interface_manager
         self.modem = modem
         self.logger = structlog.get_logger("Frame Handler")
 
