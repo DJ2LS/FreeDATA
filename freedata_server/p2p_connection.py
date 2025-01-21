@@ -71,7 +71,7 @@ class P2PConnection:
         self.state_manager = state_manager
         self.event_manager = event_manager
         self.modem = modem
-        self.modem.demodulator.set_decode_mode()
+        self.modem.demodulator.set_decode_mode(is_p2p_connection=True)
 
         self.p2p_data_rx_queue = Queue()
         self.p2p_data_tx_queue = Queue()
@@ -221,8 +221,6 @@ class P2PConnection:
         if self.socket_command_handler:
             self.socket_command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
 
-        session_open_frame = self.frame_factory.build_p2p_connection_connect_ack(self.destination, self.origin, self.session_id)
-        self.launch_twr_irs(session_open_frame, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
 
     def session_failed(self):
         self.set_state(States.FAILED)
@@ -230,38 +228,35 @@ class P2PConnection:
             self.socket_command_handler.socket_respond_disconnected()
 
     def process_data_queue(self, frame=None):
-        if not self.p2p_data_tx_queue.empty():
-            print("processing data....")
+        if self.p2p_data_tx_queue.empty():
+            return
+        print("processing data....")
 
-            data = self.p2p_data_tx_queue.get()
-            sequence_id = random.randint(0,255)
+        data = self.p2p_data_tx_queue.get()
+        sequence_id = random.randint(0,255)
 
-            if len(data) <= 11:
-                mode = FREEDV_MODE.signalling
-            elif 11 < len(data) < 32:
-                mode = FREEDV_MODE.datac4
-            else:
-                self.transmit_arq(data)
-                return
-
-            payload = self.frame_factory.build_p2p_connection_payload(mode, self.session_id, sequence_id, data)
-            self.launch_twr(payload, self.TIMEOUT_DATA, self.RETRIES_DATA,mode=mode)
-            self.set_state(States.PAYLOAD_SENT)
-
+        if len(data) <= 3:
+            mode = FREEDV_MODE.signalling_ack
+        elif  3 < len(data) <= 11:
+            mode = FREEDV_MODE.signalling
+        elif 11 < len(data) <= 32:
+            mode = FREEDV_MODE.datac4
+        else:
+            self.transmit_arq(data)
             return
 
-    def prepare_data_chunk(self, data, mode):
-        return data
+        payload = self.frame_factory.build_p2p_connection_payload(mode, self.session_id, sequence_id, data)
+        self.launch_twr(payload, self.TIMEOUT_DATA, self.RETRIES_DATA,mode=mode)
+        self.set_state(States.PAYLOAD_SENT)
+
+        return
 
     def received_data(self, frame):
-        print(frame)
+        print(f"received data...: {frame}")
         self.p2p_data_rx_queue.put(frame['data'])
 
         ack_data = self.frame_factory.build_p2p_connection_payload_ack(self.session_id, 0)
         self.launch_twr_irs(ack_data, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling_ack)
-
-    def transmit_data_ack(self, frame):
-        print(frame)
 
     def transmitted_data(self, frame):
         print("transmitted data...")
@@ -290,7 +285,14 @@ class P2PConnection:
             self.socket_command_handler.socket_respond_disconnected()
 
     def transmit_arq(self, data):
+        """
+        This function needs to be fixed - we want to send ARQ data within a p2p connection
+        check p2p_connection handler in arq_data_type_handler
+
+        """
         self.set_state(States.ARQ_SESSION)
+
+
 
         print("----------------------------------------------------------------")
         print(self.destination)
