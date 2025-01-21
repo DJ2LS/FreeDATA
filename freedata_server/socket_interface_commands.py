@@ -41,7 +41,6 @@ class SocketCommandHandler:
         # Logic for handling MYCALL command
         self.send_response(f"NOT IMPLEMENTED: {data}")
 
-
     def handle_bw(self, data):
         # Logic for handling BW command
         self.send_response(f"NOT IMPLEMENTED: {data}")
