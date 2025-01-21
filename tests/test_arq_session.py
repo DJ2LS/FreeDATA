@@ -74,7 +74,7 @@ class TestARQSession(unittest.TestCase):
         cls.iss_frame_dispatcher = DISPATCHER(cls.config, 
                                           cls.iss_event_manager,
                                           cls.iss_state_manager, 
-                                          cls.iss_modem)
+                                          cls.iss_modem, None)
 
         # IRS
         cls.irs_state_manager = StateManager(queue.Queue())

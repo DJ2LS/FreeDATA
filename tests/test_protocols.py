@@ -38,7 +38,7 @@ class TestProtocols(unittest.TestCase):
         cls.frame_dispatcher = DISPATCHER(cls.config, 
                                           cls.event_manager,
                                           cls.state_manager,
-                                          cls.modem)
+                                          cls.modem, None)
 
     def shortcutTransmission(self, frame_bytes):
         self.frame_dispatcher.process_data(frame_bytes, None, len(frame_bytes), 0, 0, mode_name="TEST")

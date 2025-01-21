@@ -21,7 +21,7 @@ from state_manager import StateManager
 from data_frame_factory import DataFrameFactory
 import codec2
 import p2p_connection
-
+from socket_interface import SocketInterfaceHandler
 from socket_interface_commands import SocketCommandHandler
 
 class TestModem:
@@ -73,10 +73,12 @@ class TestP2PConnectionSession(unittest.TestCase):
 
 
         cls.iss_modem = TestModem(cls.iss_event_queue, cls.iss_state_queue)
+        cls.iss_socket_interface_manager = SocketInterfaceHandler(cls.iss_modem, cls.config, cls.iss_state_manager, cls.iss_event_manager).start_servers()
+
         cls.iss_frame_dispatcher = DISPATCHER(cls.config,
                                               cls.iss_event_manager,
                                               cls.iss_state_manager,
-                                              cls.iss_modem)
+                                              cls.iss_modem, cls.iss_socket_interface_manager)
 
         #cls.iss_socket_interface_handler = SocketInterfaceHandler(cls.iss_modem, cls.iss_config_manager, cls.iss_state_manager, cls.iss_event_manager)
         #cls.iss_socket_command_handler = CommandSocket(TestSocket(), '127.0.0.1', 51234)
