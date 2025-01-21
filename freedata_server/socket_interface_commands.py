@@ -33,41 +33,40 @@ class SocketCommandHandler:
         #    self.send_response("ERROR")
 
     def handle_disconnect(self, data):
-        # Your existing connect logic
-        self.send_response("OK")
+        self.send_response("NOT IMPLEMENTED")
 
     def handle_mycall(self, data):
         # Logic for handling MYCALL command
-        print(data)
-        self.send_response("OK")
+        self.send_response(f"NOT IMPLEMENTED: {data}")
+
 
     def handle_bw(self, data):
         # Logic for handling BW command
-        self.send_response("OK")
+        self.send_response(f"NOT IMPLEMENTED: {data}")
 
     def handle_abort(self, data):
         # Logic for handling ABORT command
-        self.send_response("OK")
+        self.send_response(f"NOT IMPLEMENTED: {data}")
 
     def handle_public(self, data):
         # Logic for handling PUBLIC command
-        self.send_response("OK")
+        self.send_response(f"NOT IMPLEMENTED: {data}")
 
     def handle_cwid(self, data):
         # Logic for handling CWID command
-        self.send_response("OK")
+        self.send_response(f"NOT IMPLEMENTED: {data}")
 
     def handle_listen(self, data):
         # Logic for handling LISTEN command
-        self.send_response("OK")
+        self.send_response(f"NOT IMPLEMENTED: {data}")
 
     def handle_compression(self, data):
         # Logic for handling COMPRESSION command
-        self.send_response("OK")
+        self.send_response(f"NOT IMPLEMENTED: {data}")
 
     def handle_winlink_session(self, data):
         # Logic for handling WINLINK SESSION command
-        self.send_response("OK")
+        self.send_response(f"NOT IMPLEMENTED: {data}")
 
     def socket_respond_disconnected(self):
         self.send_response("DISCONNECTED")
