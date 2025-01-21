@@ -33,7 +33,7 @@ class SocketCommandHandler:
         #    self.send_response("ERROR")
 
     def handle_disconnect(self, data):
-        self.send_response("NOT IMPLEMENTED")
+        self.send_response(f"NOT IMPLEMENTED: {data}")
 
     def handle_mycall(self, data):
         # Logic for handling MYCALL command
