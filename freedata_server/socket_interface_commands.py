@@ -3,13 +3,13 @@ from command_p2p_connection import P2PConnectionCommand
 
 class SocketCommandHandler:
 
-    def __init__(self, cmd_request, modem, config_manager, state_manager, event_manager):
+    def __init__(self, cmd_request, modem, config_manager, state_manager, event_manager, socket_interface_manager):
         self.cmd_request = cmd_request
         self.modem = modem
         self.config_manager = config_manager
         self.state_manager = state_manager
         self.event_manager = event_manager
-
+        self.socket_interface_manager = socket_interface_manager
         self.session = None
 
     def send_response(self, message):
@@ -22,7 +22,11 @@ class SocketCommandHandler:
                 'origin': data[0],
                 'destination': data[1],
             }
-            cmd = P2PConnectionCommand(self.config_manager.read(), self.state_manager, self.event_manager, params, self)
+
+            # TODO "self" was expected to be the socket_command_handler, but its not making sense, we are always passing the socket_interface_manager, means the entire socket instance.
+            # so we need to find a way, passing the socket_interface_manager instead
+
+            cmd = P2PConnectionCommand(self.config_manager.read(), self.state_manager, self.event_manager, params, self.socket_interface_manager)
             self.session = cmd.run(self.event_manager.queues, self.modem)
             print(self.session.session_id)
             #if self.session.session_id:
@@ -74,4 +78,13 @@ class SocketCommandHandler:
 
     def socket_respond_connected(self, mycall, dxcall, bandwidth):
         message = f"CONNECTED {mycall} {dxcall} {bandwidth}"
+        self.send_response(message)
+
+    def socket_respond_ptt(self, state):
+        """ send the PTT state via command socket"""
+        if state:
+            message = f"PTT ON"
+        else:
+            message = f"PTT OFF"
+
         self.send_response(message)

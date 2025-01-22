@@ -56,13 +56,13 @@ class P2PConnection:
         },
     }
 
-    def __init__(self, config: dict, modem, origin: str, destination: str, state_manager, event_manager, socket_command_handler=None):
+    def __init__(self, config: dict, modem, origin: str, destination: str, state_manager, event_manager, socket_interface_manager=None):
         self.logger = structlog.get_logger(type(self).__name__)
         self.config = config
 
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
 
-        self.socket_command_handler = socket_command_handler
+        self.socket_interface_manager = socket_interface_manager
 
         self.destination = destination
         self.origin = origin
@@ -73,7 +73,6 @@ class P2PConnection:
         self.modem = modem
         self.modem.demodulator.set_decode_mode(is_p2p_connection=True)
 
-        self.p2p_data_rx_queue = Queue()
         self.p2p_data_tx_queue = Queue()
 
         self.arq_data_type_handler = ARQDataTypeHandler(self.event_manager, self.state_manager)
@@ -207,8 +206,8 @@ class P2PConnection:
         self.log("CONNECTED ISS...........................")
         self.set_state(States.CONNECTED)
         self.is_ISS = True
-        if self.socket_command_handler:
-            self.socket_command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
+        if self.socket_interface_manager:
+            self.socket_interface_manager.command_server.socket_respond_connected(self.origin, self.destination, self.bandwidth)
 
     def connected_irs(self, frame):
         self.log("CONNECTED IRS...........................")
@@ -218,14 +217,14 @@ class P2PConnection:
         self.orign = frame["origin"]
         self.destination = frame["destination_crc"]
 
-        if self.socket_command_handler:
-            self.socket_command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
+        if self.socket_interface_manager:
+            self.socket_interface_manager.command_server.socket_respond_connected(self.origin, self.destination, self.bandwidth)
 
 
     def session_failed(self):
         self.set_state(States.FAILED)
-        if self.socket_command_handler:
-            self.socket_command_handler.socket_respond_disconnected()
+        if self.socket_interface_manager:
+            self.socket_interface_manager.command_server.socket_respond_disconnected()
 
     def process_data_queue(self, frame=None):
         if self.p2p_data_tx_queue.empty():
@@ -253,7 +252,7 @@ class P2PConnection:
 
     def received_data(self, frame):
         print(f"received data...: {frame}")
-        self.p2p_data_rx_queue.put(frame['data'])
+        self.socket_interface_manager.data_server.data_handler.send_data_to_client(frame['data'])
 
         ack_data = self.frame_factory.build_p2p_connection_payload_ack(self.session_id, 0)
         self.launch_twr_irs(ack_data, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling_ack)
@@ -272,8 +271,8 @@ class P2PConnection:
     def received_disconnect(self, frame):
         self.log("DISCONNECTED...............")
         self.set_state(States.DISCONNECTED)
-        if self.socket_command_handler:
-            self.socket_command_handler.socket_respond_disconnected()
+        if self.socket_interface_manager:
+            self.socket_interface_manager.command_server.socket_respond_disconnected()
         self.is_ISS = False
         disconnect_ack_frame = self.frame_factory.build_p2p_connection_disconnect_ack(self.session_id)
         self.launch_twr_irs(disconnect_ack_frame, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
@@ -281,8 +280,8 @@ class P2PConnection:
     def received_disconnect_ack(self, frame):
         self.log("DISCONNECTED...............")
         self.set_state(States.DISCONNECTED)
-        if self.socket_command_handler:
-            self.socket_command_handler.socket_respond_disconnected()
+        if self.socket_interface_manager:
+            self.socket_interface_manager.command_server.socket_respond_disconnected()
 
     def transmit_arq(self, data):
         """
@@ -309,8 +308,11 @@ class P2PConnection:
     def transmitted_arq(self):
         self.last_data_timestamp = time.time()
         self.set_state(States.CONNECTED)
+        #socket_interface_manager.command_server.<command>
 
     def received_arq(self, data):
         self.last_data_timestamp = time.time()
         self.set_state(States.CONNECTED)
-        self.p2p_data_rx_queue.put(data)
+        #self.p2p_data_rx_queue.put(data)
+        #socket_interface_manager.command_server.<command>
+        self.socket_interface_manager.data_server.data_handler.send_data_to_client(data)

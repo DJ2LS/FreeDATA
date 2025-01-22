@@ -1,22 +1,29 @@
 """ WORK IN PROGRESS by DJ2LS"""
+"""
+access command handler from external via: 
+    self.socket_manager.command_server.command_handler.<function>
+    self.socket_manager.data_server.data_handler.<function>
+
+"""
 
 import socketserver
 import threading
 import structlog
 import select
-from queue import Queue
 from socket_interface_commands import SocketCommandHandler
+from socket_interface_data import SocketDataHandler
 
 class CommandSocket(socketserver.BaseRequestHandler):
     #def __init__(self, request, client_address, server):
-    def __init__(self, request, client_address, server, modem=None, state_manager=None, event_manager=None, config_manager=None):
+    def __init__(self, request, client_address, server, modem=None, state_manager=None, event_manager=None, config_manager=None, socket_interface_manager=None):
         self.state_manager = state_manager
         self.event_manager = event_manager
         self.config_manager = config_manager
         self.modem = modem
         self.logger = structlog.get_logger(type(self).__name__)
+        self.socket_interface_manager = socket_interface_manager
 
-        self.command_handler = SocketCommandHandler(request, self.modem, self.config_manager, self.state_manager, self.event_manager)
+        self.command_handler = SocketCommandHandler(request, self.modem, self.config_manager, self.state_manager, self.event_manager, self.socket_interface_manager)
 
         self.handlers = {
             'CONNECT': self.command_handler.handle_connect,
@@ -71,11 +78,14 @@ class CommandSocket(socketserver.BaseRequestHandler):
 
 class DataSocket(socketserver.BaseRequestHandler):
     #def __init__(self, request, client_address, server):
-    def __init__(self, request, client_address, server, modem=None, state_manager=None, event_manager=None, config_manager=None):
+    def __init__(self, request, client_address, server, modem=None, state_manager=None, event_manager=None, config_manager=None, socket_interface_manager=None):
         self.state_manager = state_manager
         self.event_manager = event_manager
         self.config_manager = config_manager
         self.modem = modem
+        self.socket_interface_manager = socket_interface_manager
+
+        self.data_handler = SocketDataHandler(request, self.modem, self.config_manager, self.state_manager, self.event_manager, self.socket_interface_manager)
 
         self.logger = structlog.get_logger(type(self).__name__)
 
@@ -101,6 +111,7 @@ class DataSocket(socketserver.BaseRequestHandler):
                     except Exception:
                         self.log(f"Data received from {self.client_address}: [{len(self.data)}] - {self.data}")
 
+
                     for session_id in self.state_manager.p2p_connection_sessions:
                         session = self.state_manager.p2p_connection_sessions[session_id]
 
@@ -114,13 +125,16 @@ class DataSocket(socketserver.BaseRequestHandler):
                         print(session.p2p_data_tx_queue.empty())
 
                 # Check if there's something to send from the queue, without blocking
-
+                """
+                TODO This part isnt needed anymore, since socket_interface_data.py handles this
+                
                 for session_id in self.state_manager.p2p_connection_sessions:
                     session = self.state_manager.get_p2p_connection_session(session_id)
                     if not session.p2p_data_rx_queue.empty():
                         data_to_send = session.p2p_data_rx_queue.get_nowait()  # Use get_nowait to avoid blocking
                         self.request.sendall(data_to_send)
                         self.log(f"Sent data to {self.client_address}")
+                """
 
         finally:
             self.log(f"Data connection closed with {self.client_address}")
