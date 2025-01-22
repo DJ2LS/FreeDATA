@@ -86,7 +86,7 @@ class TestMessageProtocol(unittest.TestCase):
         cls.irs_frame_dispatcher = DISPATCHER(cls.config,
                                               cls.irs_event_manager,
                                               cls.irs_state_manager,
-                                              cls.irs_modem)
+                                              cls.irs_modem, None)
 
         # Frame loss probability in %
         cls.loss_probability = 30
