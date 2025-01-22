@@ -57,7 +57,7 @@ class CommandSocket(socketserver.BaseRequestHandler):
                 args = data[len(command):].strip().split()
                 self.dispatch_command(command, args)
                 return
-        message = "ERR \r\n"
+        message = "ERR \r"
         self.request.sendall(message.encode('utf-8'))
 
     def dispatch_command(self, command, data):
@@ -65,7 +65,7 @@ class CommandSocket(socketserver.BaseRequestHandler):
             handler = self.handlers[command]
             handler(data)
         else:
-            message = "ERR \r\n"
+            message = "ERR \r"
             self.request.sendall(message.encode('utf-8'))
 
 
@@ -148,6 +148,7 @@ class SocketInterfaceHandler:
         self.state_manager = state_manager
         self.event_manager = event_manager
         self.logger = structlog.get_logger(type(self).__name__)
+        self.ip = self.config["SOCKET_INTERFACE"]["host"]
         self.command_port = self.config["SOCKET_INTERFACE"]["cmd_port"]
         self.data_port = self.config["SOCKET_INTERFACE"]["data_port"]
         self.command_server = None
@@ -169,26 +170,26 @@ class SocketInterfaceHandler:
             self.data_port = 8301
 
         # Method to start both command and data server threads
-        self.command_server_thread = threading.Thread(target=self.run_server, args=(self.command_port, CommandSocket))
-        self.data_server_thread = threading.Thread(target=self.run_server, args=(self.data_port, DataSocket))
+        self.command_server_thread = threading.Thread(target=self.run_server, args=(self.ip, self.command_port, CommandSocket))
+        self.data_server_thread = threading.Thread(target=self.run_server, args=(self.ip, self.data_port, DataSocket))
 
         self.command_server_thread.start()
         self.data_server_thread.start()
 
         self.log(f"Interfaces started")
 
-    def run_server(self, port, handler):
+    def run_server(self,ip, port, handler):
         try:
-            with CustomThreadedTCPServer(('127.0.0.1', port), handler, modem=self.modem, state_manager=self.state_manager, event_manager=self.event_manager, config_manager=self.config_manager) as server:
-                self.log(f"Server starting on port {port}")
+            with CustomThreadedTCPServer((ip, port), handler, modem=self.modem, state_manager=self.state_manager, event_manager=self.event_manager, config_manager=self.config_manager) as server:
+                self.log(f"Server starting on ip:port: {ip}:{port}")
                 if port == self.command_port:
                     self.command_server = server
                 else:
                     self.data_server = server
                 server.serve_forever()
-                self.log(f"Server started on port {port}")
+                self.log(f"Server started on ip:port: {ip}:{port}")
         except Exception as e:
-            self.log(f"Error starting server on port {port} | {e}", isWarning=True)
+            self.log(f"Error starting server on ip:port: {ip}:{port} | {e}", isWarning=True)
 
     def stop_servers(self):
         # Gracefully shutdown the server
