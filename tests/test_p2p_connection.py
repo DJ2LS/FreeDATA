@@ -90,10 +90,11 @@ class TestP2PConnectionSession(unittest.TestCase):
         cls.irs_state_queue = queue.Queue()
         cls.irs_p2p_data_queue = queue.Queue()
         cls.irs_modem = TestModem(cls.irs_event_queue, cls.irs_state_queue)
+        cls.irs_socket_interface_manager = SocketInterfaceHandler(cls.irs_modem, cls.config, cls.irs_state_manager, cls.irs_event_manager).start_servers()
         cls.irs_frame_dispatcher = DISPATCHER(cls.config,
                                               cls.irs_event_manager,
                                               cls.irs_state_manager,
-                                              cls.irs_modem)
+                                              cls.irs_modem,cls.irs_socket_interface_manager)
 
         # Frame loss probability in %
         cls.loss_probability = 30
