@@ -71,7 +71,8 @@ class P2PConnection:
         self.state_manager = state_manager
         self.event_manager = event_manager
         self.modem = modem
-        self.modem.demodulator.set_decode_mode(is_p2p_connection=True)
+        if self.modem:
+            self.modem.demodulator.set_decode_mode(is_p2p_connection=True)
 
         self.p2p_data_tx_queue = Queue()
 
