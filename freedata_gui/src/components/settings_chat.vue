@@ -99,5 +99,49 @@ export default {
       v-model.number="settings.remote.MESSAGES.adif_log_port"
     />
   </div>
+  <!-- Wavelog Host -->
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50 text-wrap">
+      Wavelog API Host
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Wavelog API server host, e.g., 127.0.0.1:8086"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
+    <input
+      type="text"
+      class="form-control"
+      placeholder="Enter wavelog server host"
+      id="wavelogHost"
+      @change="onChange"
+      v-model="settings.remote.MESSAGES.wavelog_host"
+    />
+  </div>
+
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50 text-wrap">
+      Wavelog API key
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Wavelog API key"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
+    <input
+      type="text"
+      class="form-control"
+      placeholder="Enter Wavelog api key"
+      id="wavelogApiKey"
+      @change="onChange"
+      v-model="settings.remote.MESSAGES.wavelog_api_key"
+    />
+  </div>
 </template>
 

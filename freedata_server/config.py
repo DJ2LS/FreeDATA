@@ -78,6 +78,8 @@ class CONFIG:
             'enable_auto_repeat': bool,
             'adif_log_host': str,
             'adif_log_port': int,
+            'wavelog_host': str,
+            'wavelog_api_key': str,
         },
         'GUI':{
             'auto_run_browser': bool,
