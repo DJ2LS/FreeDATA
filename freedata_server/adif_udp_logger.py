@@ -11,6 +11,13 @@ def send_adif_qso_data(config, adif_data):
     server_port (int): Port of the server.
     adif_data (str): ADIF-formatted QSO data.
     """
+
+    # If False then exit the function
+    adif = config['MESSAGES'].get('enable_adif_udp', 'False')
+
+    if not adif:
+        return # exit as we don't want to log ADIF UDP
+
     adif_log_host = config['MESSAGES'].get('adif_log_host', '127.0.0.1')
     adif_log_port = int(config['MESSAGES'].get('adif_log_port', '2237'))
 

@@ -67,6 +67,8 @@ adif_log_host = 127.0.0.1
 adif_log_port = 2237
 wavelog_host = http://localhost:8086
 wavelog_api_key = 0
+enable_wavelog = True
+enable_adif_udp = False
 
 [GUI]
 auto_run_browser = True

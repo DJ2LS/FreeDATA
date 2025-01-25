@@ -11,6 +11,13 @@ def send_wavelog_qso_data(config, wavelog_data):
     server_api_key (str)
     wavelog_data (str): wavelog-formatted ADIF QSO data.
     """
+
+    # If False then exit the function
+    wavelog = config['MESSAGES'].get('enable_wavelog', 'False')
+
+    if not wavelog:
+        return # exit as we don't want to log Wavelog
+
     wavelog_host = config['MESSAGES'].get('wavelog_host', 'http://localhost:8086')
     wavelog_api_key = config['MESSAGES'].get('wavelog_api_key', '')
 
@@ -21,7 +28,18 @@ def send_wavelog_qso_data(config, wavelog_data):
     }
 
     # If there is no gridsquare fix this so that it follows the ADIF standard.
-    wavelog_data = re.sub(r"<GRIDSQUARE:4>----", "<GRIDSQUARE:0>", wavelog_data)
+    wrong_grids = [
+        r"<GRIDSQUARE:4>----",
+        r"<GRIDSQUARE:1> ",
+        r"<GRIDSQUARE:3>N/A"
+    ]
+
+    for grids in wrong_grids:
+        if re.search(grids, wavelog_data):
+            wavelog_data = re.sub(grids, "<GRIDSQUARE:0>", wavelog_data)
+            break
+
+#    wavelog_data = re.sub(r"<GRIDSQUARE:4>----", "<GRIDSQUARE:0>", wavelog_data)
 
     data = {
         "key": wavelog_api_key,

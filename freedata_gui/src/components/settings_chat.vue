@@ -52,6 +52,33 @@ export default {
     </label>
   </div>
 
+<!-- Enable ADIF export -->
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50 text-wrap">
+      Enable ADIF
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Enable ADIF via UDP"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
+    <label class="input-group-text w-50">
+      <div class="form-check form-switch form-check-inline ms-2">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="enableADIFSwitch"
+          @change="onChange"
+          v-model="settings.remote.MESSAGES.enable_adif"
+        />
+        <label class="form-check-label" for="enableADIFSwitch">Enable</label>
+      </div>
+    </label>
+  </div>
+
   <!-- ADIF Log Host -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
@@ -99,6 +126,34 @@ export default {
       v-model.number="settings.remote.MESSAGES.adif_log_port"
     />
   </div>
+
+<!-- Enable Wavelog API -->
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50 text-wrap">
+      Enable Wavelog API
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        title="Enable Wavelog API"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </label>
+    <label class="input-group-text w-50">
+      <div class="form-check form-switch form-check-inline ms-2">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="enableWavelogSwitch"
+          @change="onChange"
+          v-model="settings.remote.MESSAGES.wavelog_enable"
+        />
+        <label class="form-check-label" for="enableWavelogSwitch">Enable</label>
+      </div>
+    </label>
+  </div>
+
   <!-- Wavelog Host -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
