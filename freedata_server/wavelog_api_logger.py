@@ -13,7 +13,7 @@ def send_wavelog_qso_data(config, wavelog_data):
     """
 
     # If False then exit the function
-    wavelog = config['MESSAGES'].get('enable_wavelog', 'False')
+    wavelog = config['MESSAGES'].get('wavelog_enable', 'False')
 
     if not wavelog:
         return # exit as we don't want to log Wavelog
