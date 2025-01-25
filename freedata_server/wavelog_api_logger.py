@@ -13,13 +13,13 @@ def send_wavelog_qso_data(config, wavelog_data):
     """
 
     # If False then exit the function
-    wavelog = config['MESSAGES'].get('wavelog_enable', 'False')
+    wavelog = config['LOG_QSO'].get('wavelog_enable', 'False')
 
     if not wavelog:
-        return # exit as we don't want to log Wavelog
+        return  # exit as we don't want to log Wavelog
 
-    wavelog_host = config['MESSAGES'].get('wavelog_host', 'http://localhost:8086')
-    wavelog_api_key = config['MESSAGES'].get('wavelog_api_key', '')
+    wavelog_host = config['LOG_QSO'].get('wavelog_host', 'http://localhost:8086')
+    wavelog_api_key = config['LOG_QSO'].get('wavelog_api_key', '')
 
     url = wavelog_host + "/index.php/api/qso"
     headers = {

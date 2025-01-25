@@ -63,12 +63,14 @@ data_port = 8001
 
 [MESSAGES]
 enable_auto_repeat = False
+
+[LOG_QSO]
+enable_adif = False
 adif_log_host = 127.0.0.1
 adif_log_port = 2237
-wavelog_host = http://localhost:8086
-wavelog_api_key = 0
-enable_wavelog = True
-enable_adif_udp = False
+wavelog_enable = False
+wavelog_host = http://raspberrypi:8086
+wavelog_api_key = wl6793ce6c78c21
 
 [GUI]
 auto_run_browser = True
