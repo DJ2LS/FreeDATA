@@ -76,10 +76,10 @@ class CONFIG:
         },
         'MESSAGES': {
             'enable_auto_repeat': bool,
-            'enable_adif_udp': bool,
+            'enable_adif': bool,
             'adif_log_host': str,
             'adif_log_port': int,
-            'enable_wavelog': bool,
+            'wavelog_enable': bool,
             'wavelog_host': str,
             'wavelog_api_key': str,
         },
