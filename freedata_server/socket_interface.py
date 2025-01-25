@@ -37,6 +37,9 @@ class CommandSocket(socketserver.BaseRequestHandler):
             'COMPRESSION': self.command_handler.handle_compression,
             'WINLINK SESSION': self.command_handler.handle_winlink_session,
         }
+        # Register this CommandSocket's command_handler with the command_server
+        if hasattr(self.socket_interface_manager, 'command_server'):
+            self.socket_interface_manager.command_server.command_handler = self.command_handler
         super().__init__(request, client_address, server)
 
     def log(self, message, isWarning = False):
@@ -169,6 +172,8 @@ class SocketInterfaceHandler:
         self.data_server = None
         self.command_server_thread = None
         self.data_server_thread = None
+        self.socket_interface_callsigns = None
+        self.socket_interface_bandwidth = None
 
     def log(self, message, isWarning = False):
         msg = f"[{type(self).__name__}]: {message}"
@@ -191,10 +196,11 @@ class SocketInterfaceHandler:
         self.data_server_thread.start()
 
         self.log(f"Interfaces started")
+        return self
 
     def run_server(self,ip, port, handler):
         try:
-            with CustomThreadedTCPServer((ip, port), handler, modem=self.modem, state_manager=self.state_manager, event_manager=self.event_manager, config_manager=self.config_manager) as server:
+            with CustomThreadedTCPServer((ip, port), handler, modem=self.modem, state_manager=self.state_manager, event_manager=self.event_manager, config_manager=self.config_manager, socket_interface_manager = self) as server:
                 self.log(f"Server starting on ip:port: {ip}:{port}")
                 if port == self.command_port:
                     self.command_server = server

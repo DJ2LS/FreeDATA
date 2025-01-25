@@ -43,11 +43,14 @@ class SocketCommandHandler:
 
     def handle_mycall(self, data):
         # Logic for handling MYCALL command
-        self.send_response(f"NOT IMPLEMENTED: {data}")
+        print()
+        #self.socket_interface_manager.socket_interface_callsigns = data
+        self.send_response(f"OK")
 
     def handle_bw(self, data):
         # Logic for handling BW command
-        self.send_response(f"NOT IMPLEMENTED: {data}")
+        #self.socket_interface_manager.bandwidth = data
+        self.send_response(f"OK")
 
     def handle_abort(self, data):
         # Logic for handling ABORT command
@@ -63,7 +66,7 @@ class SocketCommandHandler:
 
     def handle_listen(self, data):
         # Logic for handling LISTEN command
-        self.send_response(f"NOT IMPLEMENTED: {data}")
+        self.send_response(f"OK")
 
     def handle_compression(self, data):
         # Logic for handling COMPRESSION command
@@ -77,7 +80,11 @@ class SocketCommandHandler:
         self.send_response("DISCONNECTED")
 
     def socket_respond_connected(self, mycall, dxcall, bandwidth):
-        message = f"CONNECTED {mycall} {dxcall} {bandwidth}"
+        print("[socket interface_commands] socket_respond_connected")
+        if self.session.is_ISS:
+            message = f"CONNECTED {mycall} {dxcall} {bandwidth}"
+        else:
+            message = f"CONNECTED {dxcall} {mycall} {bandwidth}"
         self.send_response(message)
 
     def socket_respond_ptt(self, state):

@@ -208,7 +208,7 @@ class P2PConnection:
         self.set_state(States.CONNECTED)
         self.is_ISS = True
         if self.socket_interface_manager:
-            self.socket_interface_manager.command_server.socket_respond_connected(self.origin, self.destination, self.bandwidth)
+            self.socket_interface_manager.command_server.command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
 
     def connected_irs(self, frame):
         self.log("CONNECTED IRS...........................")
@@ -217,15 +217,19 @@ class P2PConnection:
         self.is_ISS = False
         self.orign = frame["origin"]
         self.destination = frame["destination_crc"]
+        #If these 2 lines are not here, the receiving station does not reply back with an ACK to a P2P_CONNECTION_CONNECT packet. Is this intentional? Leaving here for testing for now.
+        session_open_frame = self.frame_factory.build_p2p_connection_connect_ack(self.destination, self.origin, self.session_id)
+        self.launch_twr_irs(session_open_frame, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
+
 
         if self.socket_interface_manager:
-            self.socket_interface_manager.command_server.socket_respond_connected(self.origin, self.destination, self.bandwidth)
+            self.socket_interface_manager.command_server.command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
 
 
     def session_failed(self):
         self.set_state(States.FAILED)
         if self.socket_interface_manager:
-            self.socket_interface_manager.command_server.socket_respond_disconnected()
+            self.socket_interface_manager.command_server.command_handler.socket_respond_disconnected()
 
     def process_data_queue(self, frame=None):
         if self.p2p_data_tx_queue.empty():
@@ -273,7 +277,7 @@ class P2PConnection:
         self.log("DISCONNECTED...............")
         self.set_state(States.DISCONNECTED)
         if self.socket_interface_manager:
-            self.socket_interface_manager.command_server.socket_respond_disconnected()
+            self.socket_interface_manager.command_server.command_handler.socket_respond_disconnected()
         self.is_ISS = False
         disconnect_ack_frame = self.frame_factory.build_p2p_connection_disconnect_ack(self.session_id)
         self.launch_twr_irs(disconnect_ack_frame, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
@@ -282,7 +286,7 @@ class P2PConnection:
         self.log("DISCONNECTED...............")
         self.set_state(States.DISCONNECTED)
         if self.socket_interface_manager:
-            self.socket_interface_manager.command_server.socket_respond_disconnected()
+            self.socket_interface_manager.command_server.command_handler.socket_respond_disconnected()
 
     def transmit_arq(self, data):
         """
