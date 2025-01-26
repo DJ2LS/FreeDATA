@@ -92,6 +92,9 @@ class DataSocket(socketserver.BaseRequestHandler):
 
         self.logger = structlog.get_logger(type(self).__name__)
 
+        if hasattr(self.socket_interface_manager, 'data_server'):
+            self.socket_interface_manager.data_server.data_handler = self.data_handler
+
         super().__init__(request, client_address, server)
 
     def log(self, message, isWarning = False):
@@ -172,7 +175,10 @@ class SocketInterfaceHandler:
         self.data_server = None
         self.command_server_thread = None
         self.data_server_thread = None
+        #Not sure if this will be the permanent home for these items. This will allow us to use several callsigns.
+        #Bandwidth is also sent to the command socket by the client. Not sure how to translate this info to freedata yet.
         self.socket_interface_callsigns = None
+        self.connecting_callsign = None
         self.socket_interface_bandwidth = None
 
     def log(self, message, isWarning = False):

@@ -28,7 +28,10 @@ class SocketCommandHandler:
 
             cmd = P2PConnectionCommand(self.config_manager.read(), self.state_manager, self.event_manager, params, self.socket_interface_manager)
             self.session = cmd.run(self.event_manager.queues, self.modem)
-            print(self.session.session_id)
+            self.send_response(f"OK")
+            self.send_response(f"REGISTERED {data[0]}")
+            self.send_response(f"UNENCRYPTED LINK")
+            self.socket_interface_manager.connecting_callsign = data[0]
             #if self.session.session_id:
             #    self.state_manager.register_p2p_connection_session(self.session)
             #    self.send_response("OK")
@@ -42,9 +45,9 @@ class SocketCommandHandler:
         self.send_response(f"NOT IMPLEMENTED: {data}")
 
     def handle_mycall(self, data):
-        # Logic for handling MYCALL command
-        print()
-        #self.socket_interface_manager.socket_interface_callsigns = data
+        #Storing all of the callsigns assigned by client, to make sure they are checked later in new frames.
+        self.socket_interface_manager.socket_interface_callsigns = data
+        self.send_response(f"ENCRYPTION DISABLED")
         self.send_response(f"OK")
 
     def handle_bw(self, data):
@@ -82,9 +85,9 @@ class SocketCommandHandler:
     def socket_respond_connected(self, mycall, dxcall, bandwidth):
         print("[socket interface_commands] socket_respond_connected")
         if self.session.is_ISS:
-            message = f"CONNECTED {mycall} {dxcall} {bandwidth}"
+            message = f"CONNECTED {self.socket_interface_manager.connecting_callsign} {dxcall} {bandwidth}"
         else:
-            message = f"CONNECTED {dxcall} {mycall} {bandwidth}"
+            message = f"CONNECTED {dxcall} {self.socket_interface_manager.connecting_callsign} {bandwidth}"
         self.send_response(message)
 
     def socket_respond_ptt(self, state):
