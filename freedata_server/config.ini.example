@@ -71,7 +71,7 @@ adif_udp_port = 2237
 enable_adif_wavelog = False
 adif_wavelog_host = http://raspberrypi
 adif_wavelog_port = 8086
-adif_wavelog_api_key = wl6793ce6c78c21
+adif_wavelog_api_key = API-KEY
 
 [GUI]
 auto_run_browser = True

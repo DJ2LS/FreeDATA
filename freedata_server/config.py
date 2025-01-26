@@ -76,12 +76,6 @@ class CONFIG:
         },
         'MESSAGES': {
             'enable_auto_repeat': bool,
-            'enable_adif': bool,
-            'adif_log_host': str,
-            'adif_log_port': int,
-            'wavelog_enable': bool,
-            'wavelog_host': str,
-            'wavelog_api_key': str,
         },
         'QSO_LOGGING': {
             'enable_adif_udp': bool,

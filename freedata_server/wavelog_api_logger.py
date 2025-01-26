@@ -1,6 +1,6 @@
 import requests
 import re
-
+import structlog
 
 def send_wavelog_qso_data(config, wavelog_data):
     """
@@ -11,6 +11,8 @@ def send_wavelog_qso_data(config, wavelog_data):
     server_api_key (str)
     wavelog_data (str): wavelog-formatted ADIF QSO data.
     """
+
+    log = structlog.get_logger()
 
     # If False then exit the function
     wavelog = config['QSO_LOGGING'].get('enable_adif_wavelog', 'False')
@@ -41,7 +43,6 @@ def send_wavelog_qso_data(config, wavelog_data):
             wavelog_data = re.sub(grids, "<GRIDSQUARE:0>", wavelog_data)
             break
 
-#    wavelog_data = re.sub(r"<GRIDSQUARE:4>----", "<GRIDSQUARE:0>", wavelog_data)
 
     data = {
         "key": wavelog_api_key,
@@ -53,6 +54,6 @@ def send_wavelog_qso_data(config, wavelog_data):
     try:
         response = requests.post(url, headers=headers, json=data)
         response.raise_for_status()  # Raise an error for bad status codes
-        print("Response:", response.json())  # Print the JSON response from the server
+        log.info(f"[CHAT] Error Wavelog API: {response.json()}")
     except requests.exceptions.RequestException as e:
-        print("An error occurred:", e)
+        log.warning(f"[WAVELOG ADIF API EXCEPTION]: {e}")
