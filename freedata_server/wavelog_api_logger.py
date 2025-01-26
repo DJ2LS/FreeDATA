@@ -13,15 +13,17 @@ def send_wavelog_qso_data(config, wavelog_data):
     """
 
     # If False then exit the function
-    wavelog = config['LOG_QSO'].get('wavelog_enable', 'False')
+    wavelog = config['QSO_LOGGING'].get('enable_adif_wavelog', 'False')
 
     if not wavelog:
         return  # exit as we don't want to log Wavelog
 
-    wavelog_host = config['LOG_QSO'].get('wavelog_host', 'http://localhost:8086')
-    wavelog_api_key = config['LOG_QSO'].get('wavelog_api_key', '')
+    wavelog_host = config['QSO_LOGGING'].get('adif_wavelog_host', 'http://localhost')
+    wavelog_port = config['QSO_LOGGING'].get('adif_wavelog_port', '8086')
+    wavelog_api_key = config['QSO_LOGGING'].get('adif_wavelog_api_key', '')
 
-    url = wavelog_host + "/index.php/api/qso"
+    url = wavelog_host + ":" + str(wavelog_port) + "/index.php/api/qso"
+
     headers = {
         "Content-Type": "application/json",
         "Accept": "application/json"

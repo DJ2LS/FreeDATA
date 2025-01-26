@@ -83,13 +83,14 @@ class CONFIG:
             'wavelog_host': str,
             'wavelog_api_key': str,
         },
-        'LOG_QSO': {
-            'enable_adif': bool,
-            'adif_log_host': str,
-            'adif_log_port': int,
-            'wavelog_enable': bool,
-            'wavelog_host': str,
-            'wavelog_api_key': str,
+        'QSO_LOGGING': {
+            'enable_adif_udp': bool,
+            'adif_udp_host': str,
+            'adif_udp_port': int,
+            'enable_adif_wavelog': bool,
+            'adif_wavelog_host': str,
+            'adif_wavelog_port': int,
+            'adif_wavelog_api_key': str,
         },
 
         'GUI': {
