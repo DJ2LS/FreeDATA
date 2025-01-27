@@ -31,19 +31,6 @@ def send_wavelog_qso_data(config, wavelog_data):
         "Accept": "application/json"
     }
 
-    # If there is no gridsquare fix this so that it follows the ADIF standard.
-    wrong_grids = [
-        r"<GRIDSQUARE:4>----",
-        r"<GRIDSQUARE:1> ",
-        r"<GRIDSQUARE:3>N/A"
-    ]
-
-    for grids in wrong_grids:
-        if re.search(grids, wavelog_data):
-            wavelog_data = re.sub(grids, "<GRIDSQUARE:0>", wavelog_data)
-            break
-
-
     data = {
         "key": wavelog_api_key,
         "station_profile_id": "1",
@@ -54,6 +41,6 @@ def send_wavelog_qso_data(config, wavelog_data):
     try:
         response = requests.post(url, headers=headers, json=data)
         response.raise_for_status()  # Raise an error for bad status codes
-        log.info(f"[CHAT] Error Wavelog API: {response.json()}")
+        log.info(f"[CHAT] Wavelog API: {wavelog_data}")
     except requests.exceptions.RequestException as e:
         log.warning(f"[WAVELOG ADIF API EXCEPTION]: {e}")
