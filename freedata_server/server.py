@@ -26,7 +26,7 @@ import api_validations as validations
 import command_cq
 import command_beacon
 import command_ping
-import command_feq
+import command_fec
 import command_test
 import command_transmit_sine
 import command_arq_raw
@@ -2373,7 +2373,6 @@ def main():
 
         if conf['GUI'].get('auto_run_browser', True):
             threading.Thread(target=open_browser_after_delay, args=(url, 2)).start()
-
 
     uvicorn.run(app, host=modemaddress, port=modemport, log_config=None, log_level="info")
 
