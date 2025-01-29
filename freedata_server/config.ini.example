@@ -70,7 +70,6 @@ adif_udp_host = 127.0.0.1
 adif_udp_port = 2237
 enable_adif_wavelog = False
 adif_wavelog_host = http://raspberrypi
-adif_wavelog_port = 8086
 adif_wavelog_api_key = API-KEY
 
 [GUI]

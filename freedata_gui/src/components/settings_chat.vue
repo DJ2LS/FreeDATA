@@ -176,30 +176,6 @@ export default {
       v-model="settings.remote.QSO_LOGGING.adif_wavelog_host"
     />
   </div>
-  <!-- ADIF Wavelog Port -->
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50 text-wrap">
-      ADIF Wavelog Port
-      <button
-        type="button"
-        class="btn btn-link p-0 ms-2"
-        data-bs-toggle="tooltip"
-        title="ADIF Wavelog server port, e.g., 8086"
-      >
-        <i class="bi bi-question-circle"></i>
-      </button>
-    </label>
-    <input
-      type="number"
-      class="form-control"
-      placeholder="Enter ADIF Wavelog server port"
-      id="adifWavelogPort"
-      max="65534"
-      min="1025"
-      @change="onChange"
-      v-model.number="settings.remote.QSO_LOGGING.adif_wavelog_port"
-    />
-  </div>
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
       Wavelog API key

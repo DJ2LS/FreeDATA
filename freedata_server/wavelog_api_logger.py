@@ -20,11 +20,14 @@ def send_wavelog_qso_data(config, wavelog_data):
     if not wavelog:
         return  # exit as we don't want to log Wavelog
 
-    wavelog_host = config['QSO_LOGGING'].get('adif_wavelog_host', 'http://localhost')
-    wavelog_port = config['QSO_LOGGING'].get('adif_wavelog_port', '8086')
+    wavelog_host = config['QSO_LOGGING'].get('adif_wavelog_host', 'http://localhost/')
     wavelog_api_key = config['QSO_LOGGING'].get('adif_wavelog_api_key', '')
 
-    url = wavelog_host + ":" + str(wavelog_port) + "/index.php/api/qso"
+    # check if the last part in the HOST URL from the config is correct
+    if wavelog_host.endswith("/"):
+        url = wavelog_host + "index.php/api/qso"
+    else:
+        url = wavelog_host + "/" + "index.php/api/qso"
 
     headers = {
         "Content-Type": "application/json",
