@@ -83,7 +83,6 @@ class CONFIG:
             'adif_udp_port': int,
             'enable_adif_wavelog': bool,
             'adif_wavelog_host': str,
-            'adif_wavelog_port': int,
             'adif_wavelog_api_key': str,
         },
 
