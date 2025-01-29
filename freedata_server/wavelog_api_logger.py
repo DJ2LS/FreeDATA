@@ -23,7 +23,7 @@ def send_wavelog_qso_data(config, wavelog_data):
     wavelog_host = config['QSO_LOGGING'].get('adif_wavelog_host', 'http://localhost')
     wavelog_api_key = config['QSO_LOGGING'].get('adif_wavelog_api_key', '')
 
-    url = wavelog_host + "/index.php/api/qso"
+    url = wavelog_host + "index.php/api/qso"
 
     headers = {
         "Content-Type": "application/json",
