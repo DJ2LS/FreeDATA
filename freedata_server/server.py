@@ -26,7 +26,7 @@ import api_validations as validations
 import command_cq
 import command_beacon
 import command_ping
-import command_feq
+import command_fec
 import command_test
 import command_transmit_sine
 import command_arq_raw
@@ -47,7 +47,7 @@ from schedule_manager import ScheduleManager
 CONFIG_ENV_VAR = 'FREEDATA_CONFIG'
 DEFAULT_CONFIG_FILE = 'config.ini'
 
-MODEM_VERSION = "0.16.10-alpha"
+MODEM_VERSION = "0.16.11-alpha"
 
 API_VERSION = 3
 LICENSE = 'GPL3.0'
@@ -96,13 +96,13 @@ async def http_middleware(request: Request, call_next):
     response = await call_next(request)
 
     # Disable caching
-    #response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private"
-    #response.headers["Pragma"] = "no-cache"  # For HTTP/1.0 backward compatibility
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private"
+    response.headers["Pragma"] = "no-cache"  # For HTTP/1.0 backward compatibility
 
     # Enable caching for 1 day
-    response.headers["Cache-Control"] = "public, max-age=86400"  # Cache for 86400 seconds (1 day)
-    response.headers["Pragma"] = "cache"  # backward compatibility with HTTP/1.0
-    response.headers["Expires"] = "0"  # Forces modern clients to use max-age
+    # response.headers["Cache-Control"] = "public, max-age=86400"  # Cache for 86400 seconds (1 day)
+    # response.headers["Pragma"] = "cache"  # backward compatibility with HTTP/1.0
+    # response.headers["Expires"] = "0"  # Forces modern clients to use max-age
 
     # Log requests
     logger.info(f"[API] {request.method}", url=str(request.url), response_code=response.status_code)
@@ -2373,7 +2373,6 @@ def main():
 
         if conf['GUI'].get('auto_run_browser', True):
             threading.Thread(target=open_browser_after_delay, args=(url, 2)).start()
-
 
     uvicorn.run(app, host=modemaddress, port=modemport, log_config=None, log_level="info")
 
