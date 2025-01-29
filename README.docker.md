@@ -74,7 +74,7 @@ docker run --rm -it \
     ghcr.io/dj2ls/freedata:latest
 ```
 
-If you'd like to start a `rigctld` instance in the container (see [the wiki](https://wiki.freedata.app/en/usage/radio-control#hamlib-rigctld-commands)), the arguments can be provided with the `RIGCTL_ARGS` environment variable eg:
+If you'd like to start a `rigctld` instance in the container (see [the wiki](https://wiki.freedata.app/en/usage/radio-control#hamlib-rigctld-commands)), the arguments can be provided with the `RIGCTL_ARGS` environment variable. In the examples below I'm passing a model for a FlexRadio at IP `192.168.0.10` listening on port `6701`:
 
 ```bash
 docker run --rm -it \
