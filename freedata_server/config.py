@@ -2,6 +2,7 @@ import configparser
 import structlog
 import json
 
+
 class CONFIG:
     """
     CONFIG class for handling with config files
@@ -68,18 +69,25 @@ class CONFIG:
             'enable_socket_interface': bool,
         },
         'SOCKET_INTERFACE': {
-            'enable' : bool,
-            'host' : str,
-            'cmd_port' : int,
-            'data_port' : int,
-
+            'enable': bool,
+            'host': str,
+            'cmd_port': int,
+            'data_port': int,
         },
         'MESSAGES': {
             'enable_auto_repeat': bool,
-            'adif_log_host': str,
-            'adif_log_port': int,
         },
-        'GUI':{
+        'QSO_LOGGING': {
+            'enable_adif_udp': bool,
+            'adif_udp_host': str,
+            'adif_udp_port': int,
+            'enable_adif_wavelog': bool,
+            'adif_wavelog_host': str,
+            'adif_wavelog_port': int,
+            'adif_wavelog_api_key': str,
+        },
+
+        'GUI': {
             'auto_run_browser': bool,
         }
     }
@@ -104,7 +112,7 @@ class CONFIG:
         except Exception:
             self.config_name = "config.ini"
 
-        #self.log.info("[CFG] config init", file=self.config_name)
+        # self.log.info("[CFG] config init", file=self.config_name)
 
         # check if config file exists
         self.config_exists()
@@ -167,7 +175,7 @@ class CONFIG:
     # Handle special setting data type conversion
     # is_writing means data from a dict being writen to the config file
     # if False, it means the opposite direction
-    def handle_setting(self, section, setting, value, is_writing = False):
+    def handle_setting(self, section, setting, value, is_writing=False):
         try:
             if self.config_types[section][setting] == list:
                 if is_writing:
@@ -180,8 +188,6 @@ class CONFIG:
                     if isinstance(value, str):
                         return json.loads(value)
                     return value  # Return as-is if already a list
-
-
 
             elif self.config_types[section][setting] == bool and not is_writing:
                 return self.parser.getboolean(section, setting)
@@ -227,12 +233,12 @@ class CONFIG:
         """
         read config file
         """
-        #self.log.info("[CFG] reading...")
+        # self.log.info("[CFG] reading...")
         if not self.config_exists():
             return False
         
         # at first just copy the config as read from file
-        result = {s:dict(self.parser.items(s)) for s in self.parser.sections()}
+        result = {s: dict(self.parser.items(s)) for s in self.parser.sections()}
 
         # handle the special settings
         for section in result:
