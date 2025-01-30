@@ -52,8 +52,14 @@ class FreeDV:
 
 # Usage example
 if __name__ == "__main__":
-    MODE = FREEDV_MODE.datac13
-    RX_MODE = FREEDV_MODE.data_ofdm_200
+
+    # geht
+    MODE = FREEDV_MODE.data_ofdm_250
+    RX_MODE = FREEDV_MODE.datac4
+
+    # fail
+    #MODE = FREEDV_MODE.datac4
+    #RX_MODE = FREEDV_MODE.data_ofdm_250
 
     FRAMES = 1
 
