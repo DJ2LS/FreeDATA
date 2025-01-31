@@ -63,8 +63,14 @@ data_port = 8001
 
 [MESSAGES]
 enable_auto_repeat = False
-adif_log_host = 127.0.0.1
-adif_log_port = 2237
+
+[QSO_LOGGING]
+enable_adif_udp = False
+adif_udp_host = 127.0.0.1
+adif_udp_port = 2237
+enable_adif_wavelog = False
+adif_wavelog_host = http://raspberrypi
+adif_wavelog_api_key = API-KEY
 
 [GUI]
 auto_run_browser = True

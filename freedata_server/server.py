@@ -35,6 +35,7 @@ import event_manager
 import structlog
 from log_handler import setup_logging
 import adif_udp_logger
+import wavelog_api_logger
 
 from message_system_db_manager import DatabaseManager
 from message_system_db_messages import DatabaseManagerMessages
@@ -1671,8 +1672,14 @@ async def post_freedata_message(request: Request):
 })
 async def post_freedata_message_adif_log(message_id: str):
     adif_output = DatabaseManagerMessages(app.event_manager).get_message_by_id_adif(message_id)
+
+    # if message not found do not send adif as the return then is not valid
+    if not adif_output:
+        return
+
     # Send the ADIF data via UDP
     adif_udp_logger.send_adif_qso_data(app.config_manager.read(), adif_output)
+    wavelog_api_logger.send_wavelog_qso_data(app.config_manager.read(), adif_output)
     return api_response(adif_output)
 
 @app.patch("/freedata/messages/{message_id}", summary="Update Message by ID", tags=["FreeDATA"], responses={

@@ -74,6 +74,11 @@ function handleFiles(files) {
             ((file.size - compressedFile.size) / file.size * 100).toFixed(2) + '%'
           );
 
+          // Check if compression made the file larger
+          if (compressedFile.size >= file.size) {
+            console.warn("Compressed file is larger than original. Using original file instead.");
+            compressedFile = file; // Use original file
+          }
           // toast notification
           let message = `
               <div>
