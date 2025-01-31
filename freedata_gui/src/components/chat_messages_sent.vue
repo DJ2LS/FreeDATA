@@ -202,8 +202,26 @@ export default {
     },
 
     parsedMessageBody() {
-      // Use marked to parse markdown and DOMPurify to sanitize
-      return DOMPurify.sanitize(marked.parse(this.message.body));
+     // Parse markdown to HTML
+  let parsedHTML = marked.parse(this.message.body);
+
+  // Sanitize the HTML
+  let sanitizedHTML = DOMPurify.sanitize(parsedHTML);
+
+  // Create a temporary DOM element to manipulate the sanitized output
+  let tempDiv = document.createElement("div");
+  tempDiv.innerHTML = sanitizedHTML;
+
+  // Modify all links to open in a new tab
+  tempDiv.querySelectorAll("a").forEach(link => {
+    link.setAttribute("target", "_blank");
+    link.setAttribute("rel", "noopener noreferrer"); // Security best practice
+  });
+
+  // Return the updated HTML
+  return tempDiv.innerHTML;
+
+
     },
   },
 };
