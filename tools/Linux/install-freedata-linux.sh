@@ -19,6 +19,10 @@
 #
 #
 # Changelog:
+# 2.2:	01 Feb 2025 (deej)
+# 	Check if account is in the dialout group
+#	Add a warning about account needing to be in sudoers
+#
 # 2.1:	01 Feb 2025 (deej)
 # 	Add support for Fedora 41
 #
@@ -62,6 +66,15 @@
 # 1.0:	Initial release 25 Apr 2024 supporting Debian 12
 #
 
+# Account needs to be in the dialout group for some radios to work
+checkdial=`grep -i $USER /etc/group | grep -i dialout`
+
+if [ -z "$checkdial" ];
+then
+	echo "Please add your account" $USER "to the dialout group in /etc/group and then re-run this script."
+	exit 1;
+fi
+
 case $1 in
    "" | "main")
 	args="main"
@@ -86,6 +99,11 @@ echo "Running on" $osname "version" $osversion
 echo "*************************************************************************"
 echo "Installing software prerequisites"
 echo "If prompted, enter your password to run the sudo command"
+echo ""
+echo "If the sudo command gives an error saying Sorry, or not in sudoers file,"
+echo "or something to that effect, check to make sure your account has sudo"
+echo "privileges.  This generally means a listing in /etc/sudoers or in a file"
+echo "in the directory /etc/sudoers.d"
 echo "*************************************************************************"
 
 case $osname in
