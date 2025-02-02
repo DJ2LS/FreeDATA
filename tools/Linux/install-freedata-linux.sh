@@ -3,7 +3,8 @@
 # Simple script to install FreeDATA in Linux
 # Dj Merrill - N1JOV
 #
-# Currently supports Debian [11, 12], Ubuntu [22.04, 24.04], Fedora [40,41]
+# Currently tested in Debian [11, 12], Ubuntu [22.04, 24.04], Fedora [40,41]
+# Untested additions for Linux Mint [21.3]
 # 
 # Run this script by typing in the terminal (without the quotes):
 # "bash install-freedata-linux.sh" to install from the main branch 
@@ -19,6 +20,9 @@
 #
 #
 # Changelog:
+# 2.3:	01 Feb 2025 (deej)
+# 	Add untested additions for Linux Mint 21.3
+#
 # 2.2:	01 Feb 2025 (deej)
 # 	Check if account is in the dialout group
 #	Add a warning about account needing to be in sudoers
@@ -125,9 +129,9 @@ case $osname in
 
    ;;
 
-   "Ubuntu")
+   "Ubuntu" | "Linux Mint")
 	case $osversion in
-	   "22.04" | "24.04")
+	   "21.3" | "22.04" | "24.04")
 		sudo apt install --upgrade -y fonts-noto-color-emoji git build-essential cmake python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama python3-venv wget
 	   ;;
 
