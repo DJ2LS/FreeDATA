@@ -3,7 +3,8 @@
 # Simple script to install FreeDATA in Linux
 # Dj Merrill - N1JOV
 #
-# Currently supports Debian [11, 12], Ubuntu [22.04, 24.04], Fedora [40]
+# Currently tested in Debian [11, 12], Ubuntu [22.04, 24.04], Fedora [40,41]
+# Untested additions for Linux Mint [21.3]
 # 
 # Run this script by typing in the terminal (without the quotes):
 # "bash install-freedata-linux.sh" to install from the main branch 
@@ -19,6 +20,16 @@
 #
 #
 # Changelog:
+# 2.3:	01 Feb 2025 (deej)
+# 	Add untested additions for Linux Mint 21.3
+#
+# 2.2:	01 Feb 2025 (deej)
+# 	Check if account is in the dialout group
+#	Add a warning about account needing to be in sudoers
+#
+# 2.1:	01 Feb 2025 (deej)
+# 	Add support for Fedora 41
+#
 # 2.0:	04 Oct 2024 (deej)
 # 	Add support for Fedora 40
 #
@@ -59,6 +70,15 @@
 # 1.0:	Initial release 25 Apr 2024 supporting Debian 12
 #
 
+# Account needs to be in the dialout group for some radios to work
+checkdial=`grep -i $USER /etc/group | grep -i dialout`
+
+if [ -z "$checkdial" ];
+then
+	echo "Please add your account" $USER "to the dialout group in /etc/group and then re-run this script."
+	exit 1;
+fi
+
 case $1 in
    "" | "main")
 	args="main"
@@ -83,6 +103,11 @@ echo "Running on" $osname "version" $osversion
 echo "*************************************************************************"
 echo "Installing software prerequisites"
 echo "If prompted, enter your password to run the sudo command"
+echo ""
+echo "If the sudo command gives an error saying Sorry, or not in sudoers file,"
+echo "or something to that effect, check to make sure your account has sudo"
+echo "privileges.  This generally means a listing in /etc/sudoers or in a file"
+echo "in the directory /etc/sudoers.d"
 echo "*************************************************************************"
 
 case $osname in
@@ -104,9 +129,9 @@ case $osname in
 
    ;;
 
-   "Ubuntu")
+   "Ubuntu" | "Linux Mint")
 	case $osversion in
-	   "22.04" | "24.04")
+	   "21.3" | "22.04" | "24.04")
 		sudo apt install --upgrade -y fonts-noto-color-emoji git build-essential cmake python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama python3-venv wget
 	   ;;
 
@@ -121,7 +146,7 @@ case $osname in
    ;;
    "Fedora Linux")
 	case $osversion in
-	   "VERSION_ID=40")
+	   "VERSION_ID=40" | "VERSION_ID=41")
 		sudo dnf install -y git cmake make automake gcc gcc-c++ kernel-devel wget portaudio-devel python3-pyaudio python3-pip python3-colorama python3-virtualenv google-noto-emoji-fonts python3-devel
 	   ;;
 	esac
