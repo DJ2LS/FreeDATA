@@ -12,6 +12,7 @@ import structlog
 import select
 from socket_interface_commands import SocketCommandHandler
 from socket_interface_data import SocketDataHandler
+import io
 
 class CommandSocket(socketserver.BaseRequestHandler):
     #def __init__(self, request, client_address, server):
@@ -36,6 +37,8 @@ class CommandSocket(socketserver.BaseRequestHandler):
             'LISTEN': self.command_handler.handle_listen,
             'COMPRESSION': self.command_handler.handle_compression,
             'WINLINK SESSION': self.command_handler.handle_winlink_session,
+            'VERSION': self.command_handler.handle_version,
+
         }
         # Register this CommandSocket's command_handler with the command_server
         if hasattr(self.socket_interface_manager, 'command_server'):
@@ -50,13 +53,19 @@ class CommandSocket(socketserver.BaseRequestHandler):
     def handle(self):
         self.log(f"Client connected: {self.client_address}")
         try:
+            # Wrap the socket in a binary file-like object.
+            file_obj = self.request.makefile('rb')
+            # Setting newline='\r' makes a carriage return the delimiter for readline().
+            text_file = io.TextIOWrapper(file_obj, encoding='utf-8', newline='\r')
+
+            # Continuously read data until the connection is closed.
             while True:
-                data = self.request.recv(1024).strip()
-                if not data:
+                line = text_file.readline()
+                # An empty string indicates that the connection has been closed.
+                if line == "":
                     break
-                decoded_data = data.decode()
-                self.log(f"Command received from {self.client_address}: {decoded_data}")
-                self.parse_command(decoded_data)
+                self.log(f"<<<<< {line}")
+                self.parse_command(line)
         finally:
             self.log(f"Command connection closed with {self.client_address}")
 
@@ -67,7 +76,7 @@ class CommandSocket(socketserver.BaseRequestHandler):
                 args = data[len(command):].strip().split()
                 self.dispatch_command(command, args)
                 return
-        message = "ERR \r"
+        message = "WRONG \r"
         self.request.sendall(message.encode('utf-8'))
 
     def dispatch_command(self, command, data):
@@ -75,7 +84,7 @@ class CommandSocket(socketserver.BaseRequestHandler):
             handler = self.handlers[command]
             handler(data)
         else:
-            message = "ERR \r"
+            message = "WRONG \r"
             self.request.sendall(message.encode('utf-8'))
 
 

@@ -1,9 +1,11 @@
 """ WORK IN PROGRESS by DJ2LS"""
 from command_p2p_connection import P2PConnectionCommand
+import structlog
 
 class SocketCommandHandler:
 
     def __init__(self, cmd_request, modem, config_manager, state_manager, event_manager, socket_interface_manager):
+        self.logger = structlog.get_logger(type(self).__name__)
         self.cmd_request = cmd_request
         self.modem = modem
         self.config_manager = config_manager
@@ -12,7 +14,13 @@ class SocketCommandHandler:
         self.socket_interface_manager = socket_interface_manager
         self.session = None
 
+    def log(self, message, isWarning = False):
+        msg = f"[{type(self).__name__}]: {message}"
+        logger = self.logger.warn if isWarning else self.logger.info
+        logger(msg)
+
     def send_response(self, message):
+        self.log(f">>>>> {message}")
         full_message = f"{message}\r"
         self.cmd_request.sendall(full_message.encode())
 
@@ -22,9 +30,6 @@ class SocketCommandHandler:
                 'origin': data[0],
                 'destination': data[1],
             }
-
-            # TODO "self" was expected to be the socket_command_handler, but its not making sense, we are always passing the socket_interface_manager, means the entire socket instance.
-            # so we need to find a way, passing the socket_interface_manager instead
 
             cmd = P2PConnectionCommand(self.config_manager.read(), self.state_manager, self.event_manager, params, self.socket_interface_manager)
             self.session = cmd.run(self.event_manager.queues, self.modem)
@@ -61,7 +66,7 @@ class SocketCommandHandler:
 
     def handle_public(self, data):
         # Logic for handling PUBLIC command
-        self.send_response(f"NOT IMPLEMENTED: {data}")
+        self.send_response(f"OK")
 
     def handle_cwid(self, data):
         # Logic for handling CWID command
@@ -73,11 +78,17 @@ class SocketCommandHandler:
 
     def handle_compression(self, data):
         # Logic for handling COMPRESSION command
-        self.send_response(f"NOT IMPLEMENTED: {data}")
+        # We are always sending OK, as we have our own compression
+        self.send_response(f"OK")
 
     def handle_winlink_session(self, data):
         # Logic for handling WINLINK SESSION command
         self.send_response(f"NOT IMPLEMENTED: {data}")
+
+    def handle_version(self, data):
+        # Logic for handling VERSION command
+        # maybe we need to use a different version, like 5.0
+        self.send_response(f"VERSION FREEDATA")
 
     def socket_respond_disconnected(self):
         self.send_response("DISCONNECTED")

@@ -37,6 +37,12 @@ class P2PConnectionFrameHandler(frame_handler.FrameHandler):
                 session.session_id = session_id
                 self.states.register_p2p_connection_session(session)
 
+            print(vars(self.socket_interface_manager.command_server))
+            print("---------------------------------")
+            print("----------------------------- OKAY, WO IST DIE SESSION")
+
+
+
         elif frame['frame_type_int'] in [
             FR.P2P_CONNECTION_CONNECT_ACK.value,
             FR.P2P_CONNECTION_DISCONNECT.value,
