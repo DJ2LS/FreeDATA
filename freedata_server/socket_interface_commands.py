@@ -52,8 +52,9 @@ class SocketCommandHandler:
     def handle_mycall(self, data):
         #Storing all of the callsigns assigned by client, to make sure they are checked later in new frames.
         self.socket_interface_manager.socket_interface_callsigns = data
-        self.send_response(f"ENCRYPTION DISABLED")
         self.send_response(f"OK")
+        self.send_response(f"UNENCRYPTED LINK")
+        self.send_response(f"ENCRYPTION DISABLED")
 
     def handle_bw(self, data):
         # Logic for handling BW command
@@ -96,6 +97,8 @@ class SocketCommandHandler:
     def socket_respond_connected(self, origin, destination, bandwidth):
         print("[socket interface_commands] socket_respond_connected")
         message = f"CONNECTED {self.socket_interface_manager.connecting_callsign} {destination} {bandwidth}"
+        self.send_response(f"UNENCRYPTED LINK")
+        self.send_response(f"LINK REGISTERED")
         self.send_response(message)
 
     def socket_respond_ptt(self, state):

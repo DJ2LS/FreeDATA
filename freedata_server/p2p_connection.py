@@ -75,6 +75,8 @@ class P2PConnection:
             self.modem.demodulator.set_decode_mode(is_p2p_connection=True)
 
         self.p2p_data_tx_queue = Queue()
+        #Remove after testing
+        self.p2p_data_rx_queue = Queue()
 
         self.arq_data_type_handler = ARQDataTypeHandler(self.event_manager, self.state_manager)
 
@@ -259,7 +261,7 @@ class P2PConnection:
         print(f"received data...: {frame}")
         print(vars(self.socket_interface_manager.data_server))
         if self.socket_interface_manager and hasattr(self.socket_interface_manager.data_server, "data_handler"):
-            self.socket_interface_manager.data_server.data_handler.send_data_to_client(frame['data'])
+            self.socket_interface_manager.data_server.data_handler.send_data_to_client(frame['data'].rstrip('\x00'))
 
         ack_data = self.frame_factory.build_p2p_connection_payload_ack(self.session_id, 0)
         self.launch_twr_irs(ack_data, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling_ack)

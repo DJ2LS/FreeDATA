@@ -61,6 +61,10 @@ class FrameHandler():
         elif ft in ['P2P_CONNECTION_CONNECT']:
             #Need to make sure this does not affect any other features in FreeDATA.
             #This will allow the client to respond to any call sent in the "MYCALL" command
+            valid, mycallsign = helpers.check_callsign(
+                call_with_ssid,
+                self.details["frame"]["destination_crc"],
+                self.config['STATION']['ssid_list'])
             if self.socket_interface_manager:
                 for callsign in self.socket_interface_manager.socket_interface_callsigns:
                     valid, mycallsign = helpers.check_callsign(
