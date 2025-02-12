@@ -90,7 +90,7 @@ class TestP2PConnectionSession(unittest.TestCase):
         cls.iss_socket_data_client.connect(('127.0.0.1', 8001))
 
         threading.Thread(target=cls.read_from_socket, args=[cls, cls.iss_socket_cmd_client, 'CMD', 'ISS'], daemon=False).start()
-        threading.Thread(target=cls.read_from_socket, args=[cls, cls.iss_socket_cmd_client, 'DATA', 'ISS'], daemon=False).start()
+        threading.Thread(target=cls.read_from_socket, args=[cls, cls.iss_socket_data_client, 'DATA', 'ISS'], daemon=False).start()
 
 
         cls.iss_frame_dispatcher = DISPATCHER(cls.config,
@@ -121,7 +121,7 @@ class TestP2PConnectionSession(unittest.TestCase):
         cls.irs_socket_data_client.connect(('127.0.0.1', 8001))
 
         threading.Thread(target=cls.read_from_socket, args=[cls, cls.irs_socket_cmd_client, 'CMD', 'IRS'], daemon=False).start()
-        threading.Thread(target=cls.read_from_socket, args=[cls, cls.irs_socket_cmd_client, 'DATA', 'IRS'], daemon=False).start()
+        threading.Thread(target=cls.read_from_socket, args=[cls, cls.irs_socket_data_client, 'DATA', 'IRS'], daemon=False).start()
 
         cls.irs_frame_dispatcher = DISPATCHER(cls.config,
                                               cls.irs_event_manager,
