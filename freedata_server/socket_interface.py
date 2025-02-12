@@ -101,8 +101,10 @@ class DataSocket(socketserver.BaseRequestHandler):
 
         self.logger = structlog.get_logger(type(self).__name__)
 
-        if hasattr(self.socket_interface_manager, 'data_server'):
-            self.socket_interface_manager.data_server.data_handler = self.data_handler
+        # not sure if we really need this
+        #if hasattr(self.socket_interface_manager, 'data_server'):
+        #    self.socket_interface_manager.data_server.data_handler = self.data_handler
+
 
         super().__init__(request, client_address, server)
 
@@ -161,6 +163,7 @@ class DataSocket(socketserver.BaseRequestHandler):
 
 class CustomThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     allow_reuse_address = True
+    allow_reuse_port = True
 
     def __init__(self, server_address, RequestHandlerClass, bind_and_activate=True, **kwargs):
         self.extra_args = kwargs
@@ -209,6 +212,11 @@ class SocketInterfaceHandler:
 
         self.command_server_thread.start()
         self.data_server_thread.start()
+
+        # this might not work
+        #self.command_server = self.command_server_thread._target.__self__
+        #self.data_server = self.data_server_thread._target.__self__
+
 
         self.log(f"Interfaces started")
         return self

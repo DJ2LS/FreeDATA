@@ -207,7 +207,8 @@ class P2PConnection:
         self.log("CONNECTED ISS...........................")
         self.set_state(States.CONNECTED)
         self.is_ISS = True
-        if self.socket_interface_manager:
+
+        if self.socket_interface_manager and hasattr(self.socket_interface_manager.command_server, "command_handler"):
             self.socket_interface_manager.command_server.command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
 
     def connected_irs(self, frame):
@@ -221,14 +222,13 @@ class P2PConnection:
         session_open_frame = self.frame_factory.build_p2p_connection_connect_ack(self.destination, self.origin, self.session_id)
         self.launch_twr_irs(session_open_frame, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
 
-
-        if self.socket_interface_manager:
+        if self.socket_interface_manager and hasattr(self.socket_interface_manager.command_server, "command_handler"):
             self.socket_interface_manager.command_server.command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
 
 
     def session_failed(self):
         self.set_state(States.FAILED)
-        if self.socket_interface_manager:
+        if self.socket_interface_manager and hasattr(self.socket_interface_manager.command_server, "command_handler"):
             self.socket_interface_manager.command_server.command_handler.socket_respond_disconnected()
 
     def process_data_queue(self, frame=None):
@@ -257,7 +257,9 @@ class P2PConnection:
 
     def received_data(self, frame):
         print(f"received data...: {frame}")
-        self.socket_interface_manager.data_server.data_handler.send_data_to_client(frame['data'])
+        print(vars(self.socket_interface_manager.data_server))
+        if self.socket_interface_manager and hasattr(self.socket_interface_manager.data_server, "data_handler"):
+            self.socket_interface_manager.data_server.data_handler.send_data_to_client(frame['data'])
 
         ack_data = self.frame_factory.build_p2p_connection_payload_ack(self.session_id, 0)
         self.launch_twr_irs(ack_data, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling_ack)

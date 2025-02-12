@@ -93,12 +93,9 @@ class SocketCommandHandler:
     def socket_respond_disconnected(self):
         self.send_response("DISCONNECTED")
 
-    def socket_respond_connected(self, mycall, dxcall, bandwidth):
+    def socket_respond_connected(self, origin, destination, bandwidth):
         print("[socket interface_commands] socket_respond_connected")
-        if self.session.is_ISS:
-            message = f"CONNECTED {self.socket_interface_manager.connecting_callsign} {dxcall} {bandwidth}"
-        else:
-            message = f"CONNECTED {dxcall} {self.socket_interface_manager.connecting_callsign} {bandwidth}"
+        message = f"CONNECTED {self.socket_interface_manager.connecting_callsign} {destination} {bandwidth}"
         self.send_response(message)
 
     def socket_respond_ptt(self, state):

@@ -281,8 +281,8 @@ class StateManager:
                 return self.arq_irs_sessions[session_id].dxcall
 
             # If not found in either session dictionary
-            self.log(f"Session ID {session_id} not found in ISS or IRS sessions", isWarning=True)
+            print(f"Session ID {session_id} not found in ISS or IRS sessions")
             return None
         except KeyError:
-            self.log(f"Error retrieving session ID {session_id}", isError=True)
+            print(f"Error retrieving session ID {session_id}")
             return None
