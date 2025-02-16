@@ -53,7 +53,7 @@ RUN mkdir build_linux
 
 WORKDIR /app/FreeDATA/freedata_server/lib/codec2/build_linux
 
-RUN cmake .. && make -j4
+RUN cmake .. && make codec2 -j4
 
 ################################################################################
 # Final image
