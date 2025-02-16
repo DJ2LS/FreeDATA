@@ -23,6 +23,10 @@ const audioStore = useAudioStore(pinia);
     <strong><i class="bi bi-gear-wide-connected me-1"></i>Modem and Audio</strong> related settings, including starting/stopping the modem, configuring audio devices, and adjusting audio levels.
   </div>
 
+  <div class="alert alert-light" role="alert">
+   Settings in <strong class="text-danger">RED</strong> require a server restart!
+  </div>
+
   <!-- Start and Stop Modem Buttons -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
@@ -65,7 +69,7 @@ const audioStore = useAudioStore(pinia);
   </div>
   <!-- Modem Port -->
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50 text-wrap">
+    <label class="input-group-text w-50 text-wrap text-danger">
       Modem port
       <button
         type="button"
@@ -91,7 +95,7 @@ const audioStore = useAudioStore(pinia);
 
   <!-- Modem Host -->
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50 text-wrap">
+    <label class="input-group-text w-50 text-wrap text-danger">
       Modem host
       <button
         type="button"
