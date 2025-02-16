@@ -174,14 +174,14 @@ const gridWidgets = [
   ),
   new gridWidget(
     active_broadcasts,
-    { x: 6, y: 70, w: 6, h: 15 },
+    { x: 6, y: 70, w: 6, h: 25 },
     "Broadcasts main (horizontal)",
     false,
     true,
     "Broadcasts",
     4,
     false,
-    { x: 6, y: 70, w: 6, h: 15 }
+    { x: 6, y: 70, w: 6, h: 25 }
   ),
   new gridWidget(
     mini_heard_stations,
