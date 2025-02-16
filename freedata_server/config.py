@@ -58,9 +58,6 @@ class CONFIG:
             'tci_ip': str,
             'tci_port': int,
         },
-        'MESH': {
-            'enable_protocol': bool,
-        },
         'MODEM': {
             'enable_hmac': bool,
             'enable_morse_identifier': bool,
