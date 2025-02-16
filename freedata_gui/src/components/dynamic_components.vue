@@ -130,14 +130,14 @@ const gridWidgets = [
   ),
   new gridWidget(
     active_audio_level,
-    { x: 16, y: 0, w: 8, h: 15 },
+    { x: 16, y: 0, w: 8, h: 20 },
     "Audio main",
     false,
     true,
     "Audio",
     2,
     false,
-    { x: 0, y: 114, w: 6, h: 30 }
+    { x: 0, y: 114, w: 6, h: 20 }
   ),
   new gridWidget(
     grid_freq,
@@ -152,14 +152,14 @@ const gridWidgets = [
   ),
   new gridWidget(
     active_rig_control,
-    { x: 0, y: 108, w: 6, h: 36 },
+    { x: 0, y: 108, w: 6, h: 25 },
     "Rig control main",
     true,
     true,
     "Rig",
     3,
     false,
-    { x: 0, y: 114, w: 6, h: 30 }
+    { x: 0, y: 114, w: 6, h: 25 }
   ),
   new gridWidget(
     grid_beacon,
@@ -262,7 +262,7 @@ const gridWidgets = [
   ),
   new gridWidget(
     grid_mycall_small,
-    { x: 8, y: 40, w: 4, h: 8 },
+    { x: 8, y: 40, w: 4, h: 10 },
     "My callsign widget (small)",
     false,
     true,
