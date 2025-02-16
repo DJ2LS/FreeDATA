@@ -21,9 +21,6 @@ const defaultConfig = {
       rx_audio_level: 0,
       tx_audio_level: 0,
     },
-    MESH: {
-      enable_protocol: false,
-    },
     MODEM: {
       tx_delay: 0,
       enable_hamc: false,

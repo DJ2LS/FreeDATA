@@ -238,9 +238,6 @@ async def index():
                         "rx_audio_level": 0,
                         "tx_audio_level": 2
                     },
-                    "MESH": {
-                        "enable_protocol": False
-                    },
                     "MESSAGES": {
                         "enable_auto_repeat": True
                     },
