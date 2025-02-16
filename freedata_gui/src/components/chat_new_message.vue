@@ -300,10 +300,15 @@ function applyMarkdown(formatType) {
 
   <!-- Emoji Picker Modal -->
   <div class="modal fade" id="emojiPickerModal" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-dialog modal-dialog-centered modal">
       <div class="modal-content">
-        <div class="modal-body p-0">
-          <VuemojiPicker @emojiClick="handleEmojiClick" />
+        <div class="modal-header">
+        <h5 class="modal-title">Insert emoji</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-target="#emojiPickerModal" aria-label="Close"></button>
+      </div>
+
+        <div class="modal-body">
+          <VuemojiPicker @emojiClick="handleEmojiClick"/>
         </div>
       </div>
     </div>
