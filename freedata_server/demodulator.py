@@ -25,7 +25,7 @@ class Demodulator():
                 'decoding_thread': None
             }
 
-    def __init__(self, config, audio_rx_q, data_q_rx, states, event_manager, service_queue, fft_queue):
+    def __init__(self, config, data_q_rx, states, event_manager, service_queue, fft_queue):
         self.log = structlog.get_logger("Demodulator")
         self.config = config
 
@@ -37,7 +37,6 @@ class Demodulator():
         self.is_codec2_traffic_counter = 0
         self.is_codec2_traffic_cooldown = 5
 
-        self.audio_received_queue = audio_rx_q
         self.data_queue_received = data_q_rx
 
         self.states = states
@@ -222,34 +221,6 @@ class Demodulator():
                 )
                 audio.sd._terminate()
 
-    def tci_rx_callback(self) -> None:
-        """
-        Callback for TCI RX
-
-        data_in48k must be filled with 48000Hz audio raw data
-
-        """
-
-        while True and not self.shutdown_flag.is_set():
-
-            audio_48k = self.audio_received_queue.get()
-            audio_48k = np.frombuffer(audio_48k, dtype=np.int16)
-
-            audio.calculate_fft(audio_48k, self.fft_queue, self.states)
-
-            length_audio_48k = len(audio_48k)
-            index = 0
-            for mode in self.MODE_DICT:
-                mode_data = self.MODE_DICT[mode]
-                audiobuffer = mode_data['audio_buffer']
-                decode = mode_data['decode']
-                index += 1
-                if audiobuffer:
-                    if (audiobuffer.nbuffer + length_audio_48k) > audiobuffer.size:
-                        self.buffer_overflow_counter[index] += 1
-                        self.event_manager.send_buffer_overflow(self.buffer_overflow_counter)
-                    elif decode:
-                        audiobuffer.push(audio_48k)
 
     def set_frames_per_burst(self, frames_per_burst: int) -> None:
         """

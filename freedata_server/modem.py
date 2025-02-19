@@ -72,12 +72,11 @@ class RF:
         # Make sure our resampler will work
         assert (self.AUDIO_SAMPLE_RATE / self.modem_sample_rate) == codec2.api.FDMDV_OS_48  # type: ignore
 
-        self.audio_received_queue = queue.Queue()
+        self.tci_audio_rx_queue = queue.Queue()
         self.data_queue_received = queue.Queue()
         self.fft_queue = fft_queue
 
         self.demodulator = demodulator.Demodulator(self.config, 
-                                            self.audio_received_queue, 
                                             self.data_queue_received,
                                             self.states,
                                             self.event_manager,
@@ -89,10 +88,6 @@ class RF:
 
 
 
-    def tci_tx_callback(self, audio_48k) -> None:
-        self.radio.set_ptt(True)
-        self.event_manager.send_ptt_change(True)
-        self.tci_module.push_audio(audio_48k)
 
     def start_modem(self):
         if TESTMODE:
@@ -187,7 +182,7 @@ class RF:
         self.stream = Object()
 
         # lets init TCI module
-        self.tci_module = tci.TCICtrl(self.audio_received_queue)
+        self.tci_module = tci.TCICtrl(self.tci_audio_rx_queue)
 
         return True
 
@@ -289,7 +284,7 @@ class RF:
         self.event_manager.send_ptt_change(True)
 
         if self.radiocontrol in ["tci"]:
-            self.tci_tx_callback(audio_48k)
+            self.tci_module.push_audio(audio_48k)
             # we need to wait manually for tci processing
             self.tci_module.wait_until_transmitted(audio_48k)
         else:
@@ -364,3 +359,42 @@ class RF:
                             audiobuffer.push(audio_8k_level_adjusted)
             except Exception as e:
                 self.log.warning("[AUDIO EXCEPTION]", status=status, time=time, frames=frames, e=e)
+    
+    def tci_input_audio_callback(self):
+        """
+        TODO: 
+            Start this audio callback when tci is selected
+            get data from tci and move it to the buffer
+            simulate a audio stream object
+            can we get audio directly as 8000Hz sample rate?
+        
+        """
+        while True:
+            try:
+            
+                indata = self.tci_audio_rx_queue.get()
+                audio_48k = np.frombuffer(indata, dtype=np.int16)
+                audio_8k = self.resampler.resample48_to_8(audio_48k)
+    
+                audio_8k_level_adjusted = audio.set_audio_volume(audio_8k, self.rx_audio_level)
+    
+                if not self.states.isTransmitting():
+                    audio.calculate_fft(audio_8k_level_adjusted, self.fft_queue, self.states)
+    
+                length_audio_8k_level_adjusted = len(audio_8k_level_adjusted)
+                # Avoid buffer overflow by filling only if buffer for
+                # selected datachannel mode is not full
+                index = 0
+                for mode in self.demodulator.MODE_DICT:
+                    mode_data = self.demodulator.MODE_DICT[mode]
+                    audiobuffer = mode_data['audio_buffer']
+                    decode = mode_data['decode']
+                    index += 1
+                    if audiobuffer:
+                        if (audiobuffer.nbuffer + length_audio_8k_level_adjusted) > audiobuffer.size:
+                            self.demodulator.buffer_overflow_counter[index] += 1
+                            self.event_manager.send_buffer_overflow(self.demodulator.buffer_overflow_counter)
+                        elif decode:
+                            audiobuffer.push(audio_8k_level_adjusted)
+            except Exception as e:
+                self.log.warning("[TCI AUDIO EXCEPTION]", e=e)
