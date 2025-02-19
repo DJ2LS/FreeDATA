@@ -10,6 +10,7 @@ Created on Wed Dec 23 07:04:24 2020
 # pylint: disable=import-outside-toplevel
 
 import queue
+import threading
 import time
 import codec2
 import numpy as np
@@ -95,6 +96,8 @@ class RF:
         elif self.radiocontrol.lower() == "tci":
             if not self.init_tci():
                 return False
+            self.tci_audio_thread = threading.Thread(target=self.tci_audio_thread)
+            self.tci_audio_thread.start()
         else:
             if not self.init_audio():
                 raise RuntimeError("Unable to init audio devices")
