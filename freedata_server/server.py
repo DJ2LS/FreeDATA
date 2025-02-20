@@ -158,6 +158,7 @@ def start_gui(url):
     print("Opening webview at:", url)
     window = webview.create_window("Freedata App", url, width=1280, height=1024, confirm_close=True)
     window.events.closing += stop_server
+    webview.settings['ALLOW_DOWNLOADS'] = True
     webview.start(icon='../freedata_gui/public/icon_cube_border.png')
 
 def main():
@@ -192,7 +193,6 @@ def main():
 
 
     webview_mode = "--webview" in sys.argv
-
     if gui_dir and os.path.isdir(gui_dir):
         url = f"http://{modemaddress}:{modemport}/gui"
         logger.info("---------------------------------------------------")
