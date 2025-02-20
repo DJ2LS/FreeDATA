@@ -227,8 +227,8 @@ def main():
             uvicorn.run(app, host=modemaddress, port=modemport, log_config=None, log_level="info")
 
     else:
-        logger.warning("GUI not compiled")
-        sys.exit(1)
+        logger.warning("GUI not compiled, starting server anyway")
+        uvicorn.run(app, host=modemaddress, port=modemport, log_config=None, log_level="info")
 
 if __name__ == "__main__":
     main()
