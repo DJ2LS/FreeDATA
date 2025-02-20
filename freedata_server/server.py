@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import structlog
+from appdirs import user_data_dir, user_cache_dir
 
 from config import CONFIG
 import audio
@@ -156,10 +157,20 @@ def start_uvicorn_server(modemaddress, modemport):
 # der beim Schließen des Fensters den Server herunterfährt.
 def start_gui(url):
     print("Opening webview at:", url)
-    window = webview.create_window("Freedata App", url, width=1280, height=1024, confirm_close=True)
+
+    APP_NAME = "FreeDATA"
+    APP_AUTHOR = ""
+
+    # Get the proper user data directory for the current platform
+    user_data_folder = user_data_dir(APP_NAME, APP_AUTHOR)
+
+    # Ensure the directory exists
+    os.makedirs(user_data_folder, exist_ok=True)
+    print(user_data_folder)
+    window = webview.create_window("FreeDATA", url, width=1280, height=1024, confirm_close=True)
     window.events.closing += stop_server
     webview.settings['ALLOW_DOWNLOADS'] = True
-    webview.start(icon='../freedata_gui/public/icon_cube_border.png')
+    webview.start(icon='../freedata_gui/public/icon_cube_border.png', storage_path=user_data_folder)
 
 def main():
     signal.signal(signal.SIGINT, signal_handler)
