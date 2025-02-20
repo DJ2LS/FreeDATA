@@ -201,7 +201,8 @@ class P2PConnection:
     def connect(self):
         self.set_state(States.CONNECTING)
         self.is_ISS = True
-        session_open_frame = self.frame_factory.build_p2p_connection_connect(self.origin, self.destination, self.session_id)
+
+        session_open_frame = self.frame_factory.build_p2p_connection_connect(self.destination, self.origin, self.session_id)
         self.launch_twr(session_open_frame, self.TIMEOUT_CONNECT, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         return
 
@@ -241,9 +242,7 @@ class P2PConnection:
         data = self.p2p_data_tx_queue.get()
         sequence_id = random.randint(0,255)
 
-        if len(data) <= 3:
-            mode = FREEDV_MODE.signalling_ack
-        elif  3 < len(data) <= 11:
+        if  len(data) <= 11:
             mode = FREEDV_MODE.signalling
         elif 11 < len(data) <= 32:
             mode = FREEDV_MODE.datac4
@@ -259,12 +258,14 @@ class P2PConnection:
 
     def received_data(self, frame):
         print(f"received data...: {frame}")
+
+        ack_data = self.frame_factory.build_p2p_connection_payload_ack(self.session_id, 0)
+        self.launch_twr_irs(ack_data, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling_ack)
+
         print(vars(self.socket_interface_manager.data_server))
         if self.socket_interface_manager and hasattr(self.socket_interface_manager.data_server, "data_handler"):
             self.socket_interface_manager.data_server.data_handler.send_data_to_client(frame['data'].rstrip('\x00'))
 
-        ack_data = self.frame_factory.build_p2p_connection_payload_ack(self.session_id, 0)
-        self.launch_twr_irs(ack_data, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling_ack)
 
     def transmitted_data(self, frame):
         print("transmitted data...")

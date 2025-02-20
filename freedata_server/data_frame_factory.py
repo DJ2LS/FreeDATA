@@ -228,6 +228,10 @@ class DataFrameFactory:
 
             if not isinstance(item_length, int):
                 item_length = len(content[key])
+
+            print(frame_length)
+            print(item_length)
+            print(content)
             if buffer_position + item_length > frame_length:
                 raise OverflowError("Frame data overflow!")
             frame[buffer_position: buffer_position + item_length] = content[key]
@@ -532,6 +536,7 @@ class DataFrameFactory:
             "sequence_id": sequence_id.to_bytes(1, 'big'),
             "data": data,
         }
+        print(self.get_bytes_per_frame(freedv_mode))
         return self.construct(
             FR_TYPE.P2P_CONNECTION_PAYLOAD,
             payload,
