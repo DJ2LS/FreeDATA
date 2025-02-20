@@ -59,11 +59,9 @@ class CONFIG:
             'tci_port': int,
         },
         'MODEM': {
-            'enable_hmac': bool,
             'enable_morse_identifier': bool,
             'maximum_bandwidth': int,
             'tx_delay': int,
-            'enable_socket_interface': bool,
         },
         'SOCKET_INTERFACE': {
             'enable': bool,

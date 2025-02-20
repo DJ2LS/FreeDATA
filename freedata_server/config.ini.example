@@ -46,11 +46,9 @@ tci_ip = 127.0.0.1
 tci_port = 50001
 
 [MODEM]
-enable_hmac = False
 enable_morse_identifier = False
 tx_delay = 50
 maximum_bandwidth = 2438
-enable_socket_interface = False
 
 [SOCKET_INTERFACE]
 enable = False

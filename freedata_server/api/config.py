@@ -19,7 +19,6 @@ router = APIRouter()
                         "enable_auto_repeat": True
                     },
                     "MODEM": {
-                        "enable_hmac": False,
                         "enable_morse_identifier": False,
                         "enable_socket_interface": False,
                         "maximum_bandwidth": 2438,
