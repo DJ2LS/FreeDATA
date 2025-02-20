@@ -36,6 +36,7 @@ def tcp_client(server_ip, server_port):
             message = input("> ")
             if message.lower() == 'quit':
                 break
+            message += '\r'
             client_socket.sendall(message.encode('utf-8'))
     except Exception as e:
         print(f"An error occurred: {e}")
