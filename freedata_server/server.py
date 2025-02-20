@@ -190,7 +190,7 @@ def main():
     if not modemaddress or modemaddress == '':
         modemaddress = '127.0.0.1'
 
-    # Entscheiden, ob WebView-Modus genutzt wird
+
     webview_mode = "--webview" in sys.argv
 
     if gui_dir and os.path.isdir(gui_dir):
