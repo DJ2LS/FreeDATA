@@ -8,13 +8,18 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { useStateStore } from "../store/stateStore.js";
-const state = useStateStore(pinia);
 
 import { startModem, stopModem } from "../js/api.js";
 
 import { useAudioStore } from "../store/audioStore";
 const audioStore = useAudioStore(pinia);
+
+
+function reloadModem(){
+  stopModem();
+  setTimeout(startModem, 5000); // Executes startModem after 5000 milliseconds as server needs to shutdown first
+}
+
 </script>
 
 <template>
@@ -43,28 +48,15 @@ const audioStore = useAudioStore(pinia);
     <div class="w-50 d-flex justify-content-between">
       <button
         type="button"
-        id="startModem"
-        class="btn btn-outline-success btn-sm w-50 me-1"
+        class="btn btn-outline-secondary btn-sm w-100 me-1"
         data-bs-toggle="tooltip"
         title="Start the Modem"
-        @click="startModem"
-        :disabled="state.is_modem_running"
+        @click="reloadModem"
       >
-        <i class="bi bi-play-fill"></i>
-        Start
+        <i class="bi bi-arrow-clockwise"></i>
+        Reload
       </button>
-      <button
-        type="button"
-        id="stopModem"
-        class="btn btn-outline-danger btn-sm w-50 ms-1"
-        data-bs-toggle="tooltip"
-        title="Stop the Modem"
-        @click="stopModem"
-        :disabled="!state.is_modem_running"
-      >
-        <i class="bi bi-stop-fill"></i>
-        Stop
-      </button>
+
     </div>
   </div>
   <!-- Modem Port -->

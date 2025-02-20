@@ -7,6 +7,7 @@ def api_response(data, status=200):
 
 
 def api_abort(message, code):
+    print(message)
     raise HTTPException(status_code=code, detail={"error": message})
 
 
