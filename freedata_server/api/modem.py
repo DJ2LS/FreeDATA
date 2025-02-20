@@ -558,29 +558,22 @@ async def post_modem_start(request: Request):
     Trigger the modem to start.
 
     Parameters:
-        request (Request): The HTTP request containing the following JSON key:
-            - 'start' (bool): True to start the modem.
-
+        request (Request): The HTTP request
     Returns:
         dict: A JSON object indicating the modem has started.
 
     Raises:
         HTTPException: If parameters are invalid or an error occurs.
     """
-    try:
-        data = await request.json()
-        if 'start' not in data or not isinstance(data['start'], bool):
-            api_abort("Invalid parameters.", 400)
-        if not data['start']:
-            api_abort("Invalid 'start' parameter. Must be True.", 400)
-    except Exception:
-        api_abort("Invalid parameters.", 400)
 
     try:
-        request.app.modem_service.put("start")
-        return api_response({"modem": "started"})
+        if not request.app.state_manager.is_modem_running:
+            request.app.modem_service.put("start")
+            return api_response({"modem": "started"})
+        else:
+            api_abort("Modem already running", 503)
     except Exception as e:
-        api_abort("Internal server error.", 500)
+        api_abort(f"Internal server error. {e}", 500)
 
 
 @router.post("/stop", summary="Stop Modem", tags=["Modem"], responses={
@@ -636,14 +629,14 @@ async def post_modem_stop(request:Request):
     Raises:
         HTTPException: If the modem is not running or an error occurs.
     """
-    if not request.app.state_manager.is_modem_running:
-        api_abort("Modem not running", 503)
+    #if not request.app.state_manager.is_modem_running:
+    #    api_abort("Modem not running", 503)
 
     try:
         request.app.modem_service.put("stop")
         return api_response({"modem": "stopped"})
-    except Exception:
-        api_abort("Internal server error.", 500)
+    except Exception as e:
+        api_abort(f"Internal server error. {e}", 500)
 
 
 
