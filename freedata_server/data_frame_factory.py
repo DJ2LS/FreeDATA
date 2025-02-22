@@ -154,7 +154,7 @@ class DataFrameFactory:
         # p2p connect request
         self.template_list[FR_TYPE.P2P_CONNECTION_CONNECT.value] = {
             "frame_length": self.LENGTH_SIG1_FRAME,
-            "destination_crc": 3,
+            "destination": 6,
             "origin": 6,
             "session_id": 1,
         }
@@ -504,7 +504,7 @@ class DataFrameFactory:
     
     def build_p2p_connection_connect(self, destination, origin, session_id):
         payload = {
-            "destination_crc": helpers.get_crc_24(destination),
+            "destination": helpers.callsign_to_bytes(destination),
             "origin": helpers.callsign_to_bytes(origin),
             "session_id": session_id.to_bytes(1, 'big'),
         }
