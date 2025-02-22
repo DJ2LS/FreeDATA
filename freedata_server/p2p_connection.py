@@ -66,7 +66,7 @@ class P2PConnection:
         self.socket_interface_manager = socket_interface_manager
 
         self.destination = destination
-        self.destination_crc = helpers.get_crc24(destination)
+        self.destination_crc = helpers.get_crc_24(destination)
         self.origin = origin
         self.bandwidth = 0
 
