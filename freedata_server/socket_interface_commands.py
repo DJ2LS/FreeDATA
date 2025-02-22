@@ -98,7 +98,10 @@ class SocketCommandHandler:
 
     def socket_respond_connected(self, origin, destination, bandwidth):
         print("[socket interface_commands] socket_respond_connected")
-        message = f"CONNECTED {self.socket_interface_manager.connecting_callsign} {destination} {bandwidth}"
+        if self.socket_interface_manager.connecting_callsign:
+            message = f"CONNECTED {self.socket_interface_manager.connecting_callsign} {destination} {bandwidth}"
+        else:
+            message = f"CONNECTED {origin} {destination} {bandwidth}"
         self.send_response(f"UNENCRYPTED LINK")
         self.send_response(f"LINK REGISTERED")
         self.send_response(message)

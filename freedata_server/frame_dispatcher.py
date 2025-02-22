@@ -109,8 +109,6 @@ class DISPATCHER():
         
         # instantiate handler
         handler_class = self.FRAME_HANDLER[frametype]['class']
-        print("ööööööööööööööööööööööööööööööööööööööööööööööööööööö")
-        print(vars(self.socket_interface_manager))
         handler: FrameHandler = handler_class(self.FRAME_HANDLER[frametype]['name'],
                                 self.config,
                                 self.states,

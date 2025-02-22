@@ -330,6 +330,13 @@ def bytes_to_callsign(bytestring: bytes) -> bytes:
     ssid = ord(bytes(decoded[-1], "utf-8"))
     return bytes(f"{callsign}-{ssid}", "utf-8")
 
+def separate_callsign_from_ssid(callsign:bytes):
+    # We want the callsign without SSID
+    splitted_callsign = callsign.split(b"-")
+    callsign = splitted_callsign[0]
+    ssid = splitted_callsign[1].decode()
+    return callsign, ssid
+
 
 def check_callsign(callsign: str, crc_to_check: bytes, ssid_list):
     """
@@ -373,7 +380,7 @@ def check_callsign(callsign: str, crc_to_check: bytes, ssid_list):
             log.debug("[HLP] check_callsign matched:", call_with_ssid=call_with_ssid, checksum=crc_to_check)
             return [True, call_with_ssid.decode()]
 
-    log.debug("[HLP] check_callsign: Checking:", callsign=callsign, crc_to_check=crc_to_check, own_crc=callsign_crc)
+    log.debug("[HLP] check_callsign: Check failed:", callsign=callsign, crc_to_check=crc_to_check, own_crc=callsign_crc)
     return [False, b'']
 
 

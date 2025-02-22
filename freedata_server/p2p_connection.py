@@ -221,16 +221,22 @@ class P2PConnection:
         self.state_manager.register_p2p_connection_session(self)
         self.set_state(States.CONNECTED)
         self.is_ISS = False
+        print("-------------------------------------")
+        print(frame)
         self.origin = frame["origin"]
         self.destination = frame["destination"]
+        print(self.destination)
+        print(self.origin)
         self.destination_crc = frame["destination_crc"]
+
+
+        if self.socket_interface_manager and hasattr(self.socket_interface_manager.command_server, "command_handler"):
+            self.socket_interface_manager.command_server.command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
+
 
         #If these 2 lines are not here, the receiving station does not reply back with an ACK to a P2P_CONNECTION_CONNECT packet. Is this intentional? Leaving here for testing for now.
         session_open_frame = self.frame_factory.build_p2p_connection_connect_ack(self.destination, self.origin, self.session_id)
         self.launch_twr_irs(session_open_frame, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
-
-        if self.socket_interface_manager and hasattr(self.socket_interface_manager.command_server, "command_handler"):
-            self.socket_interface_manager.command_server.command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
 
 
     def session_failed(self):
@@ -262,7 +268,6 @@ class P2PConnection:
 
     def received_data(self, frame):
         print(f"received data...: {frame}")
-        self.socket_interface_manager.command_server.command_handler.socket_respond_connected("TEST1", "TEST2", 9999)
         self.socket_interface_manager.data_server.data_handler.send_data_to_client(frame['data'].rstrip('\x00'))
 
         ack_data = self.frame_factory.build_p2p_connection_payload_ack(self.session_id, 0)
