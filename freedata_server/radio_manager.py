@@ -40,10 +40,13 @@ class RadioManager:
         if not state:
             self.radio.set_ptt(state)
 
+        print(vars(self.socket_interface_manager.command_server))
         # send ptt state via socket interface
-        if self.socket_interface_manager:
-            self.socket_interface_manager.command_server.command_handler.socket_respond_ptt(state)
-
+        try:
+            if self.socket_interface_manager:
+                self.socket_interface_manager.command_server.command_handler.socket_respond_ptt(state)
+        except Exception as e:
+            print(e)
 
     def set_tuner(self, state):
         self.radio.set_tuner(state)

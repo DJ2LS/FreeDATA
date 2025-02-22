@@ -46,6 +46,9 @@ class SM:
 
                     if self.config['SOCKET_INTERFACE']['enable']:
                         self.socket_interface_manager = SocketInterfaceHandler(self.modem, self.app.config_manager, self.state_manager, self.event_manager).start_servers()
+                        self.app.radio_manager.socket_interface_manager = self.socket_interface_manager
+                        #self.app.modem_service.socket_interface_manager = self.socket_interface_manager
+                        self.frame_dispatcher.socket_interface_manager = self.socket_interface_manager
                     else:
                         self.socket_interface_manager = None
 

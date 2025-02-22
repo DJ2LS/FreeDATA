@@ -20,10 +20,12 @@ class SocketCommandHandler:
         logger(msg)
 
     def send_response(self, message):
-        self.log(f">>>>> {message}")
-        full_message = f"{message}\r"
-        self.cmd_request.sendall(full_message.encode())
-
+        try:
+            self.log(f">>>>> {message}")
+            full_message = f"{message}\r"
+            self.cmd_request.sendall(full_message.encode())
+        except Exception as e:
+            self.log(f"Error sending to socket: {message}", isWarning = True)
     def handle_connect(self, data):
         try:
             params = {

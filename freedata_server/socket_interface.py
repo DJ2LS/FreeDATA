@@ -61,6 +61,7 @@ class CommandSocket(socketserver.BaseRequestHandler):
             # Continuously read data until the connection is closed.
             while True:
                 line = text_file.readline()
+                print(line)
                 # An empty string indicates that the connection has been closed.
                 if line == "":
                     break
