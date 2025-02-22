@@ -267,15 +267,22 @@ class P2PConnection:
         return
 
     def received_data(self, frame):
-        print(f"received data...: {frame}")
-        self.socket_interface_manager.data_server.data_handler.send_data_to_client(frame['data'].rstrip('\x00'))
+        self.log(f"received data...: {frame}")
+
+        # FIXME: 2025-02-22 19:26:55 [info     ] [P2PConnection][id=198][state=States.CONNECTED][ISS=False]: Error preparing data for socket: a bytes-like object is required, not 'str'
+        try:
+            received_data = frame['data'].rstrip('\x00').encode('utf-8')
+            received_data = bytes(received_data)
+        except Exception as e:
+            self.log(f"Error preparing data for socket: {e}")
+            received_data = b'DUMMY MESSAGE'
+        self.log(received_data)
 
         ack_data = self.frame_factory.build_p2p_connection_payload_ack(self.session_id, 0)
         self.launch_twr_irs(ack_data, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling_ack)
 
-        print(vars(self.socket_interface_manager.data_server))
         if self.socket_interface_manager and hasattr(self.socket_interface_manager.data_server, "data_handler"):
-            self.socket_interface_manager.data_server.data_handler.send_data_to_client(frame['data'].rstrip('\x00'))
+            self.socket_interface_manager.data_server.data_handler.send_data_to_client(received_data)
 
 
     def transmitted_data(self, frame):

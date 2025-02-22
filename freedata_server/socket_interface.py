@@ -103,8 +103,8 @@ class DataSocket(socketserver.BaseRequestHandler):
         self.logger = structlog.get_logger(type(self).__name__)
 
         # not sure if we really need this
-        #if hasattr(self.socket_interface_manager, 'data_server'):
-        #    self.socket_interface_manager.data_server.data_handler = self.data_handler
+        if hasattr(self.socket_interface_manager, 'data_server'):
+            self.socket_interface_manager.data_server.data_handler = self.data_handler
 
 
         super().__init__(request, client_address, server)
