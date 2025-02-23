@@ -273,7 +273,7 @@ class P2PConnection:
         self.launch_twr_irs(ack_data, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling_ack)
 
         try:
-            received_data = frame['data'].rstrip(b'\x00').encode('utf-8')
+            received_data = frame['data'].rstrip(b'\x00')
             if self.socket_interface_manager and hasattr(self.socket_interface_manager.data_server, "data_handler"):
                 self.socket_interface_manager.data_server.data_handler.send_data_to_client(received_data)
 
