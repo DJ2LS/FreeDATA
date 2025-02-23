@@ -74,7 +74,7 @@ class ARQSessionISS(arq_session.ARQSession):
         self.is_IRS = False
 
         # enable decoder for signalling ACK bursts
-        self.modem.demodulator.set_decode_mode(modes_to_decode=None, is_irs=False)
+        self.modem.demodulator.set_decode_mode(modes_to_decode=None, is_arq_irs=False)
 
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
 

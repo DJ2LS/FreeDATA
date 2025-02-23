@@ -275,6 +275,7 @@ class P2PConnection:
         try:
             received_data = frame['data'].rstrip(b'\x00')
             if self.socket_interface_manager and hasattr(self.socket_interface_manager.data_server, "data_handler"):
+                self.log(f"sending {len(received_data)} bytes to data socket client")
                 self.socket_interface_manager.data_server.data_handler.send_data_to_client(received_data)
 
         except Exception as e:
