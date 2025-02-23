@@ -27,9 +27,9 @@ const defaultConfig = {
       maximum_bandwidth: 3000,
     },
     NETWORK: {
-            modemaddress: "127.0.0.1",
-            modemport: 5000,
-        },
+      modemaddress: "127.0.0.1",
+      modemport: 5000,
+    },
     RADIO: {
       control: "disabled",
       model_id: 0,
