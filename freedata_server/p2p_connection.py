@@ -221,14 +221,9 @@ class P2PConnection:
         self.state_manager.register_p2p_connection_session(self)
         self.set_state(States.CONNECTED)
         self.is_ISS = False
-        print("-------------------------------------")
-        print(frame)
         self.origin = frame["origin"]
         self.destination = frame["destination"]
-        print(self.destination)
-        print(self.origin)
         self.destination_crc = frame["destination_crc"]
-
 
         if self.socket_interface_manager and hasattr(self.socket_interface_manager.command_server, "command_handler"):
             self.socket_interface_manager.command_server.command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
