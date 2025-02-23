@@ -26,7 +26,7 @@ class States(Enum):
     ARQ_SESSION = 8
     DISCONNECTING = 9
     DISCONNECTED = 10
-    FAILED = 11
+    ABORTED = 11
 
 
 
@@ -55,6 +55,8 @@ class P2PConnection:
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT_ACK.value: 'received_disconnect_ack',
 
+        },
+        States.ABORTED:{
         },
     }
 
@@ -112,7 +114,7 @@ class P2PConnection:
 
                 if not self.p2p_data_tx_queue.empty() and self.state == States.CONNECTED:
                     self.process_data_queue()
-                threading.Event().wait(1.0)
+                threading.Event().wait(0.500)
 
 
 
@@ -290,6 +292,12 @@ class P2PConnection:
             disconnect_frame = self.frame_factory.build_p2p_connection_disconnect(self.session_id)
             self.launch_twr(disconnect_frame, self.TIMEOUT_CONNECT, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         return
+
+    def abort_connection(self):
+        # abort is a dirty disconnect
+        self.log("ABORTING...............")
+        self.event_frame_received.set()
+        self.set_state(States.DISCONNECTED)
 
     def received_disconnect(self, frame):
         self.log("DISCONNECTED...............")
