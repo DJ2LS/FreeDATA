@@ -361,6 +361,7 @@ def check_callsign(callsign: str, crc_to_check: bytes, ssid_list):
         callsign = splitted_callsign[0]
         ssid = splitted_callsign[1].decode()
 
+
     except IndexError:
         # This is expected when `callsign` doesn't have a dash.
         ssid = 0
@@ -375,10 +376,13 @@ def check_callsign(callsign: str, crc_to_check: bytes, ssid_list):
         call_with_ssid = callsign + b'-' + (str(ssid)).encode('utf-8')
         callsign_crc = get_crc_24(call_with_ssid)
         callsign_crc = callsign_crc.hex()
-
         if callsign_crc == crc_to_check:
             log.debug("[HLP] check_callsign matched:", call_with_ssid=call_with_ssid, checksum=crc_to_check)
             return [True, call_with_ssid.decode()]
+
+        if get_crc_24(callsign).hex() == crc_to_check:
+            log.debug("[HLP] check_callsign matched:", call_without_ssid=callsign, checksum=crc_to_check)
+            return [True, callsign.decode()]
 
     log.debug("[HLP] check_callsign: Check failed:", callsign=callsign, crc_to_check=crc_to_check, own_crc=callsign_crc)
     return [False, b'']
