@@ -1,4 +1,6 @@
 """ WORK IN PROGRESS by DJ2LS"""
+import time
+
 """
 access command handler from external via: 
     self.socket_manager.command_server.command_handler.<function>
@@ -50,6 +52,26 @@ class CommandSocket(socketserver.BaseRequestHandler):
         logger = self.logger.warn if isWarning else self.logger.info
         logger(msg)
 
+    def handle2(self):
+        self.log(f"Client connected: {self.client_address}")
+        try:
+
+            file_obj = self.request.makefile('rb')
+
+            text_file = io.TextIOWrapper(file_obj, encoding='utf-8', newline='\r')
+
+            # Continuously read data until the connection is closed.
+            while True:
+                line = text_file.readline()
+                print(line)
+
+                if line == "":
+                    break
+                self.log(f"<<<<< {line}")
+                self.parse_command(line)
+        finally:
+            self.log(f"Command connection closed with {self.client_address}")
+
     def handle(self):
         self.log(f"Client connected: {self.client_address}")
         try:
@@ -57,13 +79,16 @@ class CommandSocket(socketserver.BaseRequestHandler):
             file_obj = self.request.makefile('rb')
             # Setting newline='\r' makes a carriage return the delimiter for readline().
             text_file = io.TextIOWrapper(file_obj, encoding='utf-8', newline='\r')
-
-            # Continuously read data until the connection is closed.
             while True:
-                line = text_file.readline()
-                print(line)
-                # An empty string indicates that the connection has been closed.
-                if line == "":
+                try:
+                    line = text_file.readline()
+                except OSError as e:
+                    if e.errno == 57:  # Socket is not connected
+                        self.log("Socket is not connected. Exiting handler.", isWarning=True)
+                        break
+                    else:
+                        raise
+                if not line:  # End of stream indicates closed connection
                     break
                 self.log(f"<<<<< {line}")
                 self.parse_command(line)

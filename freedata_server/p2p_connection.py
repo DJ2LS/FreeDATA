@@ -214,7 +214,7 @@ class P2PConnection:
         self.is_ISS = True
 
         if self.socket_interface_manager and hasattr(self.socket_interface_manager.command_server, "command_handler"):
-            self.socket_interface_manager.command_server.command_handler.socket_respond_connected(self.origin, self.destination_crc, self.bandwidth)
+            self.socket_interface_manager.command_server.command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
 
     def connected_irs(self, frame):
         self.log("CONNECTED IRS...........................")

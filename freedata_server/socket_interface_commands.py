@@ -73,7 +73,7 @@ class SocketCommandHandler:
 
     def handle_cwid(self, data):
         # Logic for handling CWID command
-        self.send_response(f"NOT IMPLEMENTED: {data}")
+        self.send_response(f"OK")
 
     def handle_listen(self, data):
         # Logic for handling LISTEN command
