@@ -13,8 +13,8 @@ class SocketDataHandler:
         self.session = None
 
     def send_response(self, message):
-        full_message = f"{message}\r\n"
+        full_message = f"{message}\r"
         self.cmd_request.sendall(full_message.encode())
 
     def send_data_to_client(self, data):
-        self.cmd_request.sendall(data)
+        self.cmd_request.sendall(data + b'\r')

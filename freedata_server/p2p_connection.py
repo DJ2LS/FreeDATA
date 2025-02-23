@@ -48,6 +48,7 @@ class P2PConnection:
             FRAME_TYPE.P2P_CONNECTION_PAYLOAD_ACK.value: 'transmitted_data',
         },
         States.DISCONNECTING: {
+            FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT_ACK.value: 'received_disconnect_ack',
         },
         States.DISCONNECTED: {
@@ -111,7 +112,7 @@ class P2PConnection:
 
                 if not self.p2p_data_tx_queue.empty() and self.state == States.CONNECTED:
                     self.process_data_queue()
-                threading.Event().wait(0.1)
+                threading.Event().wait(1.0)
 
 
 
@@ -203,7 +204,7 @@ class P2PConnection:
     def connect(self):
         self.set_state(States.CONNECTING)
         self.is_ISS = True
-
+        self.last_data_timestamp = time.time()
         session_open_frame = self.frame_factory.build_p2p_connection_connect(self.destination, self.origin, self.session_id)
         self.launch_twr(session_open_frame, self.TIMEOUT_CONNECT, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         return
