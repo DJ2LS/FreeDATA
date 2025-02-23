@@ -317,13 +317,6 @@ class P2PConnection:
 
         """
         self.set_state(States.ARQ_SESSION)
-
-
-
-        print("----------------------------------------------------------------")
-        print(self.destination)
-        print(self.state_manager.p2p_connection_sessions)
-
         prepared_data, type_byte = self.arq_data_type_handler.prepare(data, ARQ_SESSION_TYPES.p2p_connection)
         iss = ARQSessionISS(self.config, self.modem, self.destination, self.state_manager, prepared_data, type_byte)
         iss.id = self.session_id
@@ -332,14 +325,21 @@ class P2PConnection:
             iss.start()
             return iss
 
-    def transmitted_arq(self):
+    def transmitted_arq(self, transmitted_data):
         self.last_data_timestamp = time.time()
         self.set_state(States.CONNECTED)
-        #socket_interface_manager.command_server.<command>
 
-    def received_arq(self, data):
+    def received_arq(self, received_data):
         self.last_data_timestamp = time.time()
         self.set_state(States.CONNECTED)
-        #self.p2p_data_rx_queue.put(data)
-        #socket_interface_manager.command_server.<command>
-        self.socket_interface_manager.data_server.data_handler.send_data_to_client(data)
+
+        try:
+            if self.socket_interface_manager and hasattr(self.socket_interface_manager.data_server, "data_handler"):
+                self.log(f"sending {len(received_data)} bytes to data socket client")
+                self.socket_interface_manager.data_server.data_handler.send_data_to_client(received_data)
+
+        except Exception as e:
+            self.log(f"Error sending data to socket: {e}")
+
+    def failed_arq(self):
+        self.set_state(States.CONNECTED)
