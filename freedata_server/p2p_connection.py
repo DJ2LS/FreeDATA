@@ -93,7 +93,7 @@ class P2PConnection:
 
         self.event_frame_received = threading.Event()
 
-        self.RETRIES_CONNECT = 5
+        self.RETRIES_CONNECT = 3
         self.TIMEOUT_CONNECT = 5
         self.TIMEOUT_DATA = 5
         self.RETRIES_DATA = 5
@@ -224,6 +224,7 @@ class P2PConnection:
     def connected_irs(self, frame):
         self.log("CONNECTED IRS...........................")
         self.state_manager.register_p2p_connection_session(self)
+        self.socket_interface_manager.command_server.command_handler.session = self
         self.set_state(States.CONNECTED)
         self.is_ISS = False
         self.origin = frame["origin"]
