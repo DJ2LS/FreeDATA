@@ -55,7 +55,7 @@ export default {
 <!-- Enable ADIF export -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      Enable ADIF
+      Enable ADIF logging via UDP
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
@@ -130,7 +130,7 @@ export default {
 <!-- Enable Wavelog API -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      Enable Wavelog API
+      Enable logging via Wavelog API
       <button
         type="button"
         class="btn btn-link p-0 ms-2"

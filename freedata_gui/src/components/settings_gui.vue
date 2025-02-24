@@ -60,32 +60,6 @@
     </label>
   </div>
 
-  <!-- Enable Notifications Toggle -->
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50 text-wrap">
-      Enable notifications
-      <button
-        type="button"
-        class="btn btn-link p-0 ms-2"
-        data-bs-toggle="tooltip"
-        title="Show system pop-ups"
-      >
-        <i class="bi bi-question-circle"></i>
-      </button>
-    </label>
-    <label class="input-group-text w-50">
-      <div class="form-check form-switch form-check-inline">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          id="enableNotificationsSwitch"
-          @change="saveSettings"
-          v-model="settings.local.enable_sys_notification"
-        />
-        <label class="form-check-label" for="enableNotificationsSwitch">Enable</label>
-      </div>
-    </label>
-  </div>
 </template>
 
 <script>
