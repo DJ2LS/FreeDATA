@@ -1,13 +1,13 @@
 <template>
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-      <div class="btn-group btn-group-sm" role="group">
+      <div class="btn-group btn-group-sm rounded" role="group">
         <button @click="zoomIn" class="btn btn-sm btn-outline-secondary"><i class="bi bi-plus-square"></i></button>
         <button @click="centerMap" class="btn btn-sm btn-secondary"><i class="bi bi-house-door"></i></button>
         <button @click="zoomOut" class="btn btn-sm btn-outline-secondary"><i class="bi bi-dash-square"></i></button>
-        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-      </div>
 
+      </div>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
       <div class="input-group input-group-sm ms-2">
         <input type="text" class="form-control w-100" placeholder="Station" aria-label="Username" aria-describedby="basic-addon1" v-model="infoText" disabled>
       </div>
@@ -39,6 +39,8 @@ const popupStyle = ref({});
 let svg, path, projection, zoom;
 const basePinRadius = 5; // Base radius for pins
 let actualPinRadius = basePinRadius;
+
+setTimeout(() => {centerMap();}, 1500);
 
 // Function to get distance between two grid squares
 function getMaidenheadDistance(dxGrid) {
