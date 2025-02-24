@@ -27,7 +27,7 @@ class States(Enum):
     DISCONNECTING = 9
     DISCONNECTED = 10
     ABORTED = 11
-
+    FAILED = 12
 
 
 class P2PConnection:
@@ -57,6 +57,8 @@ class P2PConnection:
 
         },
         States.ABORTED:{
+        },
+        States.FAILED: {
         },
     }
 

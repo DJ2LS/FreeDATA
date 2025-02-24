@@ -49,7 +49,8 @@ class SocketCommandHandler:
             self.send_response(f"ERR: {data}")
 
     def handle_disconnect(self, data):
-        self.send_response(f"NOT IMPLEMENTED: {data}")
+        self.send_response(f"OK")
+        self.session.disconnect()
 
     def handle_mycall(self, data):
         #Storing all of the callsigns assigned by client, to make sure they are checked later in new frames.
@@ -65,7 +66,9 @@ class SocketCommandHandler:
 
     def handle_abort(self, data):
         # Logic for handling ABORT command
-        self.send_response(f"NOT IMPLEMENTED: {data}")
+        self.send_response(f"OK")
+        self.session.abort_connection()
+        self.send_response(f"DISCONNECTED")
 
     def handle_public(self, data):
         # Logic for handling PUBLIC command
