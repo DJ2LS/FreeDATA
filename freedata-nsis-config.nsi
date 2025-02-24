@@ -61,10 +61,6 @@ doneBackup:
   ; Create a shortcut in the user's desktop
   CreateShortCut "$DESKTOP\FreeDATA Server.lnk" "$INSTDIR\freedata-server\freedata-server.exe"
 
-  ; Create a shortcut in the user's desktop
-  CreateShortCut "$DESKTOP\FreeDATA.lnk" "$INSTDIR\freedata-server\freedata-server.exe --webview"
-
-
   ; Create Uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 
@@ -73,9 +69,6 @@ doneBackup:
 
   ; Create shortcut in the Start Menu directory
   CreateShortCut "$SMPROGRAMS\FreeDATA\FreeDATA Server.lnk" "$INSTDIR\freedata-server\freedata-server.exe"
-
-  ; Create shortcut in the Start Menu directory
-  CreateShortCut "$SMPROGRAMS\FreeDATA\FreeDATA.lnk" "$INSTDIR\freedata-server\freedata-server.exe --webview"
 
   ; Create an Uninstall shortcut
   CreateShortCut "$SMPROGRAMS\FreeDATA\Uninstall FreeDATA.lnk" "$INSTDIR\Uninstall.exe"
