@@ -202,6 +202,8 @@ def main():
     if not modemaddress or modemaddress == '':
         modemaddress = '127.0.0.1'
 
+    if not modemport or modemport == '':
+        modemaddress = 5000
 
     webview_mode = "--webview" in sys.argv
     if gui_dir and os.path.isdir(gui_dir):
@@ -215,6 +217,7 @@ def main():
         if webview_mode:
             # in WebView Mode we always want local host
             modemaddress = '127.0.0.1'
+            modemport = 5000
             url = f"http://{modemaddress}:{modemport}/gui"
 
             # WebView-Mode: Start Server then open Webview
