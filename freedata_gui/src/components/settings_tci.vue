@@ -1,4 +1,9 @@
 <template>
+
+    <div class="alert alert-warning" role="alert">
+    <strong><i class="bi bi-gear-wide-connected me-1"></i>TCI</strong> is currently broken. Re-Implementation is a work in progress.
+  </div>
+
   <!-- TCI IP Address Input -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">

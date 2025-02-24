@@ -47,10 +47,19 @@ function pushToPing(origin) {
 function getActivityInfo(activityType) {
   switch (activityType) {
     case 'ARQ_SESSION_INFO':
-      return { iconClass: 'bi bi-info-circle', description: activityType };
     case 'ARQ_SESSION_OPEN':
     case 'ARQ_SESSION_OPEN_ACK':
-      return { iconClass: 'bi bi-link', description: activityType };
+    case 'ARQ_BURST':
+    case 'ARQ_BURST_ACK':
+      return { iconClass: 'bi bi-file-earmark-binary', description: activityType };
+    case 'P2P_CONNECTION_CONNECT':
+    case 'P2P_CONNECTION_CONNECT_ACK':
+    case 'P2P_CONNECTION_PAYLOAD':
+    case 'P2P_CONNECTION_PAYLOAD_ACK':
+    case 'P2P_CONNECTION_DISCONNECT':
+    case 'P2P_CONNECTION_DISCONNECT_ACK':
+
+      return { iconClass: 'bi bi-arrow-left-right', description: activityType };
     case 'QRV':
       return { iconClass: 'bi bi-person-raised-hand', description: activityType };
     case 'CQ':

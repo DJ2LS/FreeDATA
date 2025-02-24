@@ -62,6 +62,7 @@
                 'bg-danger': message.status == 'failed',
                 'bg-primary': message.status == 'transmitting',
                 'bg-secondary': message.status == 'transmitted',
+                'bg-secondary': message.status == 'queued',
               }"
             >
               {{ message.status }}
@@ -81,6 +82,7 @@
               'bg-danger': message.status == 'failed',
               'bg-primary': message.status == 'transmitting',
               'bg-secondary': message.status == 'transmitted',
+              'bg-secondary': message.status == 'queued',
             }"
           >
             <div
