@@ -230,6 +230,7 @@ class P2PConnection:
         self.destination = frame["destination"]
         self.destination_crc = frame["destination_crc"]
         self.log(frame)
+
         if self.socket_interface_manager and hasattr(self.socket_interface_manager.command_server, "command_handler"):
             self.socket_interface_manager.command_server.command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
 
