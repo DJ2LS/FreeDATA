@@ -1,7 +1,7 @@
 <template>
   <div class="row justify-content-start mb-2">
     <div :class="messageWidthClass">
-      <div class="card bg-light border-0 text-dark">
+      <div class="card bg-light border rounded-top text-dark">
         <div
           v-for="attachment in message.attachments"
           :key="attachment.id"
@@ -11,14 +11,14 @@
           <chat_messages_image_preview :attachment="attachment" />
 
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-light text-truncate" disabled>
+            <button class="btn btn-light border rounded-bottom text-truncate" disabled>
               {{ attachment.name }}
             </button>
             <button
               @click="
                 downloadAttachment(attachment.hash_sha512, attachment.name)
               "
-              class="btn btn-light w-25"
+              class="btn btn-light border rounded-bottom w-25"
             >
               <i class="bi bi-download strong"></i>
             </button>

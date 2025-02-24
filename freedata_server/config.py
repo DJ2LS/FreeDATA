@@ -58,15 +58,10 @@ class CONFIG:
             'tci_ip': str,
             'tci_port': int,
         },
-        'MESH': {
-            'enable_protocol': bool,
-        },
         'MODEM': {
-            'enable_hmac': bool,
             'enable_morse_identifier': bool,
             'maximum_bandwidth': int,
             'tx_delay': int,
-            'enable_socket_interface': bool,
         },
         'SOCKET_INTERFACE': {
             'enable': bool,
