@@ -8,9 +8,10 @@ def get_ports():
 
     serial_devices = []
     if sys.platform == 'win32':
-        ports = serial.tools.list_ports.comports(include_links=False)
-    else:
         ports = list_ports_winreg.comports(include_links=False)
+    else:
+
+        ports = serial.tools.list_ports.comports(include_links=False)
 
     for port, desc, hwid in ports:
         # calculate hex of hwid if we have unique names
