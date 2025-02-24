@@ -432,9 +432,19 @@ const beaconHistogramData = computed(() => ({
           <span class="input-group-text">{{ Math.round(chat.messageInfoById?.statistics?.duration) ?? 'NaN' }}</span>
         </div>
       </div>
+      <!-- Size -->
+      <div class="col-auto mb-2">
+        <div class="input-group">
+          <span class="input-group-text">Size</span>
+          <span class="input-group-text">{{ chat.messageInfoById?.statistics?.total_bytes ?? 'NaN'  }} Bytes</span>
+        </div>
+      </div>
     </div>
   </div>
 </div>
+
+
+
 
                </div>
 
