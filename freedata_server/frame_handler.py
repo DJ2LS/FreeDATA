@@ -15,12 +15,13 @@ TESTMODE = False
 class FrameHandler():
 
     def __init__(self, name: str, config, states: StateManager, event_manager: EventManager, 
-                 modem) -> None:
+                 modem, socket_interface_manager) -> None:
         
         self.name = name
         self.config = config
         self.states = states
         self.event_manager = event_manager
+        self.socket_interface_manager = socket_interface_manager
         self.modem = modem
         self.logger = structlog.get_logger("Frame Handler")
 
@@ -38,7 +39,8 @@ class FrameHandler():
         valid = False
                 
         # Check for callsign checksum
-        if ft in ['ARQ_SESSION_OPEN', 'ARQ_SESSION_OPEN_ACK', 'PING', 'PING_ACK', 'P2P_CONNECTION_CONNECT']:
+        if ft in ['ARQ_SESSION_OPEN', 'ARQ_SESSION_OPEN_ACK', 'PING', 'PING_ACK']:
+
             valid, mycallsign = helpers.check_callsign(
                 call_with_ssid,
                 self.details["frame"]["destination_crc"],
@@ -58,10 +60,39 @@ class FrameHandler():
 
         # check for p2p connection
         elif ft in ['P2P_CONNECTION_CONNECT']:
-            valid, mycallsign = helpers.check_callsign(
-                call_with_ssid,
-                self.details["frame"]["destination_crc"],
-                self.config['STATION']['ssid_list'])
+            #Need to make sure this does not affect any other features in FreeDATA.
+            #This will allow the client to respond to any call sent in the "MYCALL" command
+
+            #print("check......")
+            #self.details["frame"]["mycallsign_crc"] = helpers.get_crc_24(self.details["frame"]["mycallsign"])
+            #print("Jaaaa?")
+
+            print(self.details)
+
+            self.details["frame"]["destination_crc"] = helpers.get_crc_24(self.details["frame"]["destination"])
+
+            print(helpers.get_crc_24(self.details["frame"]["destination"]))
+
+            print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+            if self.socket_interface_manager and self.socket_interface_manager.socket_interface_callsigns:
+                print("checking callsings....")
+                print(self.socket_interface_manager.socket_interface_callsigns)
+                for callsign in self.socket_interface_manager.socket_interface_callsigns:
+                    print("check:", callsign)
+                    valid, mycallsign = helpers.check_callsign(
+                        callsign,
+                        self.details["frame"]["destination_crc"].hex(),
+                        self.config['STATION']['ssid_list'])
+                    if valid is True:
+                        break
+            else:
+                print("no socket interface manager")
+                valid, mycallsign = helpers.check_callsign(
+                    call_with_ssid,
+                    self.details["frame"]["destination_crc"].hex(),
+                    self.config['STATION']['ssid_list'])
+            print("check done .... ")
+
 
         #check for p2p connection
         elif ft in ['P2P_CONNECTION_CONNECT_ACK', 'P2P_CONNECTION_PAYLOAD', 'P2P_CONNECTION_PAYLOAD_ACK', 'P2P_CONNECTION_DISCONNECT', 'P2P_CONNECTION_DISCONNECT_ACK']:
