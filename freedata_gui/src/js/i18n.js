@@ -4,7 +4,7 @@ import { createI18n } from 'vue-i18n'
 function loadLocaleMessages() {
   const locales = require.context('../locales', true, /[A-Za-z0-9-_,\s]+\.json$/i)
   const messages = {}
-  const languages = [] // This will hold objects with iso and name properties
+  const languages = []
   locales.keys().forEach(key => {
     // Expecting file names like "./en_english.json" or "./de_deutsch.json"
     const matched = key.match(/\.\/([^_]+)_([^.]+)\.json$/i)
@@ -21,12 +21,10 @@ function loadLocaleMessages() {
 const { messages, languages } = loadLocaleMessages()
 
 const i18n = createI18n({
-  locale: 'de',         // Default language (e.g., German)
+  locale: 'de',
   fallbackLocale: 'en', // Fallback language (English)
   messages,
 })
 
 export default i18n
-
-// Export available languages for use in components as an array of objects
 export const availableLanguages = languages
