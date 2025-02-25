@@ -217,6 +217,9 @@ def main():
     if modemaddress in ['', None]:
         modemaddress = '127.0.0.1'
 
+    if modemport in ['', None]:
+        modemport = '5000'
+
     if gui_dir and os.path.isdir(gui_dir):
         url = f"http://{modemaddress}:{modemport}/gui"
 
