@@ -1,4 +1,6 @@
+
 <template>
+
     <div class="container-fluid p-2" style="height: calc(-48px + 100vh);">
       <div class="card text-center h-100">
         <div class="card-header">
@@ -214,6 +216,8 @@ import settings_web from "./settings_web.vue";
 import settings_exp from "./settings_exp.vue";
 import settings_url from "./settings_url.vue";
 
+
+
 export default {
   components: {
     settings_station,
@@ -224,7 +228,9 @@ export default {
     settings_web,
     settings_exp,
     settings_url
-  }
+  },
 };
+
+
 
 </script>
