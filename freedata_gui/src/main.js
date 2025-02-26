@@ -1,7 +1,8 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
 import App from "./App.vue";
-import i18n from './js/i18n'
+import i18next from "./js/i18n";
+import I18NextVue from "i18next-vue";
 
 import { Chart, Filler } from "chart.js";
 import { getRemote, settingsStore as settings } from "./store/settingsStore";
@@ -14,10 +15,9 @@ Chart.register(Filler);
 // Create the Vue app
 const app = createApp(App);
 
-// use i18n
-app.use(i18n)
+app.use(I18NextVue, { i18next });
 
-// Create and use Pinia store
+// Create and use the Pinia store
 const pinia = createPinia();
 app.use(pinia);
 
@@ -28,10 +28,6 @@ app.mount("#app");
 getRemote().then(() => {
   initConnections();
   getModemState();
-  //console.log(settings.local)
-  //console.log(settings.local.language)
-
-  //let language = JSON.parse(settings.local.getItem("language")) || 'en';
-  i18n.global.locale = settings.local.language;
-
+  // Update the i18next language based on the stored settings
+  i18next.changeLanguage(settings.local.language);
 });

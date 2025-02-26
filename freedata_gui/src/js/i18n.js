@@ -1,30 +1,44 @@
-import { createI18n } from 'vue-i18n'
+import i18next from 'i18next';
 
-// Dynamically import all JSON files from the locales folder
+// Function to load translation JSON files from the locales folder.
+// It expects file names like "en_english.json" or "de_deutsch.json"
 function loadLocaleMessages() {
-  const locales = require.context('../locales', true, /[A-Za-z0-9-_,\s]+\.json$/i)
-  const messages = {}
-  const languages = []
+  // Automatically load all JSON files in ../locales
+  const locales = require.context('../locales', true, /[A-Za-z0-9-_,\s]+\.json$/i);
+  const resources = {};
+  const availableLanguages = [];
+
   locales.keys().forEach(key => {
-    // Expecting file names like "./en_english.json" or "./de_deutsch.json"
-    const matched = key.match(/\.\/([^_]+)_([^.]+)\.json$/i)
+    // Use regex to extract the ISO code and language name from the file name.
+    // For example, "./en_english.json" extracts iso: "en", name: "english"
+    const matched = key.match(/\.\/([^_]+)_([^.]+)\.json$/i);
     if (matched && matched.length > 2) {
-      const iso = matched[1]
-      const name = matched[2]
-      messages[iso] = locales(key)
-      languages.push({ iso, name })
+      const iso = matched[1];
+      const name = matched[2];
+      // Load the translation JSON file
+      const translations = locales(key);
+      // Wrap translations into the default namespace ("translation")
+      resources[iso] = { translation: translations };
+      availableLanguages.push({ iso, name });
     }
-  })
-  return { messages, languages }
+  });
+
+  return { resources, availableLanguages };
 }
 
-const { messages, languages } = loadLocaleMessages()
+const { resources, availableLanguages } = loadLocaleMessages();
 
-const i18n = createI18n({
-  locale: 'de',
-  fallbackLocale: 'en', // Fallback language (English)
-  messages,
-})
+i18next.init({
+  lng: 'de',
+  fallbackLng: 'en',
+  resources,
+}, (err) => {
+  if (err) {
+    console.error('i18next initialization error:', err);
+  } else {
+    console.log('i18next is ready.');
+  }
+});
 
-export default i18n
-export const availableLanguages = languages
+export default i18next;
+export { availableLanguages };
