@@ -1,5 +1,7 @@
 {
   "settings_gui_selectlanguage": "Sprache",
+  "settings_gui_waterfalltheme": "Wasserfall Farbgebung",
+  "settings_gui_waterfalltheme_help": "Wähle ein Farb-Thema für das Wasserfall Diagramm",
   "settings_enable": "Aktivieren",
   "settings_default": "standard"
 }

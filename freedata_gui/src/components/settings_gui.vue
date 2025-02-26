@@ -27,12 +27,12 @@
   <!-- Waterfall Theme Selection -->
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-50 text-wrap">
-      Waterfall theme
+      {{ $t('settings_gui_waterfalltheme') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Select color theme for waterfall display"
+        :title="$t('settings_gui_waterfalltheme_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
