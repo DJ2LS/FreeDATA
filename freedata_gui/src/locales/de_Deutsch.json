@@ -1,5 +1,5 @@
 {
-  "settings_select_language": "Sprache",
+  "settings_gui_selectlanguage": "Sprache",
   "settings_enable": "Aktivieren",
   "settings_default": "standard"
 }

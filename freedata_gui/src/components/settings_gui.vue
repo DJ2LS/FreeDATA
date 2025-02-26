@@ -7,7 +7,7 @@
   <!-- Language Selector -->
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-50 text-wrap">
-      {{ t('settings_select_language') }}
+      {{ $t('settings_gui_selectlanguage') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
@@ -43,7 +43,7 @@
       @change="saveSettings"
       v-model="settings.local.wf_theme"
     >
-      <option value="2">{{ t('settings_default') }}</option>
+      <option value="2">{{ $t('settings_default') }}</option>
       <option value="0">Turbo</option>
       <option value="1">Fosphor</option>
       <option value="3">Inferno</option>
@@ -75,7 +75,7 @@
           @change="onChange"
           v-model="settings.remote.GUI.auto_run_browser"
         />
-        <label class="form-check-label" for="autoLaunchBrowserSwitch">{{ t('settings_enable') }}</label>
+        <label class="form-check-label" for="autoLaunchBrowserSwitch">{{ $t('settings_enable') }}</label>
       </div>
     </label>
   </div>
@@ -112,9 +112,6 @@ export default {
       // Update the language in i18next
       i18next.changeLanguage(this.settings.local.language);
       this.$forceUpdate();
-    },
-    t(key) {
-      return i18next.t(key);
     },
   },
 };
