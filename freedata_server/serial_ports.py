@@ -1,5 +1,4 @@
 import serial.tools.list_ports
-import list_ports_winreg
 import helpers
 import sys
 
@@ -8,6 +7,7 @@ def get_ports():
 
     serial_devices = []
     if sys.platform == 'win32':
+        import list_ports_winreg
         ports = list_ports_winreg.comports(include_links=False)
     else:
 
