@@ -7,7 +7,7 @@
   <!-- Language Selector -->
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-50 text-wrap">
-      {{ $t('settings_gui_selectlanguage') }}
+      {{ $t('settings.gui.selectlanguage') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
@@ -27,12 +27,12 @@
   <!-- Waterfall Theme Selection -->
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-50 text-wrap">
-      {{ $t('settings_gui_waterfalltheme') }}
+      {{ $t('settings.gui.waterfalltheme') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        :title="$t('settings_gui_waterfalltheme_help')"
+        :title="$t('settings.gui.waterfalltheme_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -43,7 +43,7 @@
       @change="saveSettings"
       v-model="settings.local.wf_theme"
     >
-      <option value="2">{{ $t('settings_default') }}</option>
+      <option value="2">{{ $t('settings.default') }}</option>
       <option value="0">Turbo</option>
       <option value="1">Fosphor</option>
       <option value="3">Inferno</option>
@@ -75,7 +75,7 @@
           @change="onChange"
           v-model="settings.remote.GUI.auto_run_browser"
         />
-        <label class="form-check-label" for="autoLaunchBrowserSwitch">{{ $t('settings_enable') }}</label>
+        <label class="form-check-label" for="autoLaunchBrowserSwitch">{{ $t('settings.enable') }}</label>
       </div>
     </label>
   </div>
