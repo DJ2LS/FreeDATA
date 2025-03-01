@@ -313,88 +313,108 @@ def calculate_rms_dbfs(data):
     # Convert the RMS value to dBFS
     return 20 * np.log10(rms / 32768) if rms > 0 else -100
 
-def calculate_fft(data, fft_queue, states) -> None:
-    """
-    Perform FFT calculation, update channel status, and manage the FFT queue
-    for visualization purposes.
 
-    Parameters:
-    - data: numpy.ndarray of type np.int16, representing the audio data.
-    - fft_queue: queue.Queue, stores FFT results for visualization.
-    - states: An object that holds the current state of the system.
-    """
+def calculate_fft(data, fft_queue, states) -> None:
     global CHANNEL_BUSY_DELAY, last_rms_time
 
     try:
-        # Prepare the data for FFT processing
+        # Prepare the data for FFT processing by ensuring it meets the target length
         data = prepare_data_for_fft(data)
 
-        # Perform FFT and compute the power spectrum
+        # Compute the real FFT of the audio data
         fftarray = np.fft.rfft(data)
-        power_spectrum = np.abs(fftarray) ** 2
 
-        # Calculate the average power and set the detection threshold
-        avg_power = np.mean(power_spectrum)
-        threshold = avg_power * 20
+        # Calculate the amplitude spectrum in decibels (dB)
+        dfft = 10.0 * np.log10(np.abs(fftarray) + 1e-12)  # Adding a small constant to avoid log(0)
+
+        # Compute the average amplitude of the spectrum
+        avg_amplitude = np.mean(dfft)
+
+        # Set the threshold for significant frequency components; adjust the offset as needed
+        threshold = avg_amplitude + 13
+
+        # Identify frequency components that exceed the threshold
+        significant_frequencies = dfft > threshold
 
         # Check if the system is neither transmitting nor receiving
         not_transmitting = not states.isTransmitting()
         not_receiving = not states.is_receiving_codec2_signal()
 
-        # Compute the logarithmic power spectrum for visualization
-        dfft = 10.0 * np.log10(power_spectrum + 1e-12)
-
         if not_transmitting:
-            # Highlight frequency components exceeding the threshold
-            dfft[power_spectrum > threshold] = 100
+            # Highlight significant frequencies in the dfft array
+            dfft[significant_frequencies] = 100
 
-            # Calculate the audio RMS value in dBFS once per second
+            # Get the current time
             current_time = time.time()
+
+            # Update the RMS value every second
             if current_time - last_rms_time >= 1.0:
+                # Calculate the RMS value in dBFS
                 audio_dbfs = calculate_rms_dbfs(data)
+
+                # Update the state with the new RMS value
                 states.set("audio_dbfs", audio_dbfs)
+
+                # Update the last RMS calculation time
                 last_rms_time = current_time
 
-        # Convert the FFT data to integers for visualization
+        # Convert the dfft array to integers for further processing
         dfft = dfft.astype(int)
+
+        # Convert the dfft array to a list for queue insertion
         dfftlist = dfft.tolist()
 
         # Initialize the slot busy status list
-        slotbusy = [False] * 5
+        slotbusy = [False] * len(SLOT_RANGES)
+
+        # Flag to determine if additional delay should be added
         addDelay = False
 
-        # Evaluate each slot to determine if it exceeds the threshold
+        # Iterate over each slot range to detect activity
         for slot, (range_start, range_end) in enumerate(SLOT_RANGES):
-            slot_power = np.sum(power_spectrum[range_start:range_end])
-            if slot_power > threshold and not_transmitting and not_receiving:
+            # Check if any frequency in the slot exceeds the threshold
+            if np.any(significant_frequencies[range_start:range_end]) and not_transmitting and not_receiving:
+                # Mark that additional delay should be added
                 addDelay = True
+
+                # Set the current slot as busy
                 slotbusy[slot] = True
+
+                # Increment the slot delay, ensuring it does not exceed the maximum
                 SLOT_DELAY[slot] = min(SLOT_DELAY[slot] + DELAY_INCREMENT, MAX_DELAY)
             else:
+                # Decrement the slot delay, ensuring it does not go below zero
                 SLOT_DELAY[slot] = max(SLOT_DELAY[slot] - 1, 0)
+
+                # Set the slot busy status based on the current delay
                 slotbusy[slot] = SLOT_DELAY[slot] > 0
 
-        # Update the channel slot busy status based on slot evaluations
+        # Update the state with the current slot busy statuses
         states.set_channel_slot_busy(slotbusy)
 
         if addDelay:
-            # If any slot is busy, increase the channel busy delay
+            # Set the channel busy condition due to traffic
             states.set_channel_busy_condition_traffic(True)
+
+            # Increment the channel busy delay, ensuring it does not exceed the maximum
             CHANNEL_BUSY_DELAY = min(CHANNEL_BUSY_DELAY + DELAY_INCREMENT, MAX_DELAY)
         else:
-            # If no slots are busy, decrease the channel busy delay
+            # Decrement the channel busy delay, ensuring it does not go below zero
             CHANNEL_BUSY_DELAY = max(CHANNEL_BUSY_DELAY - 1, 0)
+
+            # If the channel busy delay has reset, clear the busy condition
             if CHANNEL_BUSY_DELAY == 0:
                 states.set_channel_busy_condition_traffic(False)
 
-        # Ensure the FFT queue does not overflow
+        # Clear any existing items in the FFT queue
         while not fft_queue.empty():
             fft_queue.get()
 
-        # Add the current FFT data to the queue for visualization
+        # Add the processed dfft list to the FFT queue, limited to the first 315 elements
         fft_queue.put(dfftlist[:315])
 
     except Exception as err:
+        # Log any exceptions that occur during the FFT calculation
         print(f"[MDM] calculate_fft: Exception: {err}")
 
 
