@@ -22,39 +22,6 @@ async def get_freedata_message(message_id: str, request: Request):
     return api_response(message)
 
 
-@router.post("/messages", summary="Transmit Message", tags=["FreeDATA"], responses={
-    200: {
-        "description": "Message transmitted successfully.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "destination": "XX1XXX-6",
-                    "body": "Hello FreeDATA"
-                }
-            }
-        }
-    },
-    404: {
-        "description": "The requested resource was not found.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "Resource not found."
-                }
-            }
-        }
-    },
-    503: {
-        "description": "Modem not running or busy.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "Modem not running."
-                }
-            }
-        }
-    }
-})
 async def post_freedata_message(request: Request):
     """
     Transmit a FreeDATA message.

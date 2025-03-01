@@ -25,6 +25,7 @@ import structlog
 
 
 from message_system_db_manager import DatabaseManager
+from message_system_db_attachments import DatabaseManagerAttachments
 from schedule_manager import ScheduleManager
 
 from api.general import router as general_router
@@ -206,6 +207,8 @@ def main():
     app.modem_service.put("start")
     DatabaseManager(app.event_manager).initialize_default_values()
     DatabaseManager(app.event_manager).database_repair_and_cleanup()
+    DatabaseManagerAttachments(app.event_manager).clean_orphaned_attachments()
+
     app.wsm = websocket_manager.wsm()
     app.wsm.startWorkerThreads(app)
 

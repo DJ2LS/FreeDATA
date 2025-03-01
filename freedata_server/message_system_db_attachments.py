@@ -71,3 +71,87 @@ class DatabaseManagerAttachments(DatabaseManager):
             return None
         finally:
             session.remove()
+
+    def delete_attachments_by_message_id(self, message_id):
+        """
+        Deletes attachment associations for a given message ID.
+
+        For each attachment linked to the message:
+          - If the attachment is linked to more than one message, only the association for this message is deleted.
+          - If the attachment is linked only to this message, both the association and the attachment record are deleted.
+
+        Parameters:
+            message_id (str): The ID of the message whose attachment associations should be deleted.
+
+        Returns:
+            bool: True if the deletion was successful, False otherwise.
+        """
+        session = self.get_thread_scoped_session()
+        try:
+            # Find all attachment associations for the given message ID.
+            links = session.query(MessageAttachment).filter_by(message_id=message_id).all()
+            if not links:
+                self.log(f"No attachments linked with message ID {message_id} found.")
+                return True
+
+            for link in links:
+                # Count how many associations exist for this attachment.
+                link_count = session.query(MessageAttachment).filter_by(attachment_id=link.attachment_id).count()
+                if link_count > 1:
+                    # More than one link exists, so only remove the association.
+                    session.delete(link)
+                    self.log(
+                        f"Deleted link for attachment '{link.attachment.name}' from message {message_id} (other links exist).")
+                else:
+                    # Only one link exists, so delete both the association and the attachment.
+                    session.delete(link)
+                    session.delete(link.attachment)
+                    self.log(f"Deleted attachment '{link.attachment.name}' from message {message_id} (only link).")
+
+            session.commit()
+            return True
+        except Exception as e:
+            session.rollback()
+            self.log(f"Error deleting attachments for message ID {message_id}: {e}", isWarning=True)
+            return False
+        finally:
+            session.remove()
+
+
+    def clean_orphaned_attachments(self):
+        """
+        Checks for orphaned attachments in the database, i.e. attachments that have no
+        MessageAttachment links to any messages. Optionally, deletes these orphaned attachments.
+
+        Parameters:
+            cleanup (bool): If True, deletes the orphaned attachments; if False, only returns them.
+
+        Returns:
+            If cleanup is False:
+                list: A list of dictionaries representing the orphaned attachments.
+            If cleanup is True:
+                dict: A summary dictionary with the count of deleted attachments.
+        """
+        session = self.get_thread_scoped_session()
+        try:
+            orphaned = []
+            # Get all attachments in the database.
+            attachments = session.query(Attachment).all()
+            for attachment in attachments:
+                # Count the number of MessageAttachment links for this attachment.
+                link_count = session.query(MessageAttachment).filter_by(attachment_id=attachment.id).count()
+                if link_count == 0:
+                    orphaned.append(attachment)
+
+            for attachment in orphaned:
+                self.log(f"Deleting orphaned attachment: {attachment.name}")
+                session.delete(attachment)
+            self.log(f"Checked for orphaned attachments")
+            session.commit()
+            return {'status': 'success', 'deleted_count': len(orphaned)}
+        except Exception as e:
+            session.rollback()
+            self.log(f"Error checking orphaned attachments: {e}", isWarning=True)
+            return None
+        finally:
+            session.remove()

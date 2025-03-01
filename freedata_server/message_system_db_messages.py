@@ -222,23 +222,30 @@ class DatabaseManagerMessages(DatabaseManager):
             return None
 
     def delete_message(self, message_id):
+
+        # Delete attachment links associated with this message.
+        # This call will check each attachment link:
+        # - If the attachment is used by other messages, only the link is removed.
+        # - If the attachment is solely linked to this message, the attachment record is deleted.
+        self.attachments_manager.delete_attachments_by_message_id(message_id)
+
+
         session = self.get_thread_scoped_session()
         try:
             message = session.query(P2PMessage).filter_by(id=message_id).first()
             if message:
                 session.delete(message)
                 session.commit()
+
                 self.log(f"Deleted: {message_id}")
                 self.event_manager.freedata_message_db_change(message_id=message_id)
                 return {'status': 'success', 'message': f'Message {message_id} deleted'}
             else:
                 return {'status': 'failure', 'message': 'Message not found'}
-
         except Exception as e:
             session.rollback()
             self.log(f"Error deleting message with ID {message_id}: {e}", isWarning=True)
             return {'status': 'failure', 'message': 'error deleting message'}
-
         finally:
             session.remove()
 
