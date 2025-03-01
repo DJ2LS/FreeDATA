@@ -54,7 +54,7 @@
     "@vue/cli-service": "~5.0.8",
     "eslint": "^8.0.0",
     "eslint-plugin-vue": "^9.28.0",
-    "globals": "^15.9.0"
+    "globals": "^16.0.0"
   },
   "eslintConfig": {
     "root": true,
