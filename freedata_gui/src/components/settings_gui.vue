@@ -1,8 +1,10 @@
 <template>
   <!-- Top Info Area for GUI Settings -->
   <div class="alert alert-info" role="alert">
-    <strong><i class="bi bi-gear-wide-connected me-1"></i>GUI</strong> related settings, like customizing your <strong>waterfall theme</strong>, <strong>notifications</strong>, and <strong>browser behavior</strong>.
-  </div>
+    <strong><i class="bi bi-gear-wide-connected me-1"></i>GUI</strong> {{ $t('settings.gui.introduction') }} </div>
+
+
+
 
   <!-- Language Selector -->
   <div class="input-group input-group-sm mb-1">

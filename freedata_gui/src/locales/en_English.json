@@ -3,6 +3,7 @@
         "enable": "Enable",
         "default": "default",
         "gui": {
+            "introduction": " realated settings like customizing waterfall theme, notifications or browser behaviour.",
             "selectlanguage": "Select language",
             "waterfalltheme": "Waterfall theme",
             "waterfalltheme_help": "Select color theme for waterfall display"

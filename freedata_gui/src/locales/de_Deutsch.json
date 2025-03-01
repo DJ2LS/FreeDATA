@@ -3,6 +3,7 @@
         "enable": "Aktivieren",
         "default": "Standard",
         "gui": {
+            "introduction": " spezifische Einstellungen wie Wasserfall-Farbgebung, Benachrichtigungen oder Browser-Verhalten.",
             "selectlanguage": "Sprache auswählen",
             "waterfalltheme": "Wasserfall-Farbgebung",
             "waterfalltheme_help": "Wähle ein Farbthema für das Wasserfalldiagramm"
