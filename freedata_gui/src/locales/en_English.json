@@ -1,7 +1,11 @@
 {
-  "settings_gui_selectlanguage": "Select language",
-  "settings_gui_waterfalltheme": "Waterfall theme",
-  "settings_gui_waterfalltheme_help": "Select color theme for waterfall display",
-  "settings_enable": "Enable",
-  "settings_default": "default"
+    "settings": {
+        "enable": "Enable",
+        "default": "default",
+        "gui": {
+            "selectlanguage": "Select language",
+            "waterfalltheme": "Waterfall theme",
+            "waterfalltheme_help": "Select color theme for waterfall display"
+        }
+    }
 }
