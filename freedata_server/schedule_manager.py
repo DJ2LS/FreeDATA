@@ -88,6 +88,48 @@ class ScheduleManager:
             print(e)
 
     def push_to_explorer(self):
+        """
+
+        Exception in thread Thread-5 (run):
+Traceback (most recent call last):
+  File "/usr/local/Cellar/python@3.11/3.11.10/Frameworks/Python.framework/Versions/3.11/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+  File "/usr/local/Cellar/python@3.11/3.11.10/Frameworks/Python.framework/Versions/3.11/lib/python3.11/threading.py", line 982, in run
+    self._target(*self._args, **self._kwargs)
+  File "/usr/local/Cellar/python@3.11/3.11.10/Frameworks/Python.framework/Versions/3.11/lib/python3.11/sched.py", line 151, in run
+    action(*argument, **kwargs)
+  File "/Users/simonlang/PycharmProjects/FreeDATA/freedata_server/schedule_manager.py", line 42, in schedule_event
+    event_function()  # Execute the event function
+    ^^^^^^^^^^^^^^^^
+  File "/Users/simonlang/PycharmProjects/FreeDATA/freedata_server/schedule_manager.py", line 91, in push_to_explorer
+    self.config = self.config_manager.read()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/simonlang/PycharmProjects/FreeDATA/freedata_server/config.py", line 235, in read
+    result = {s: dict(self.parser.items(s)) for s in self.parser.sections()}
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/simonlang/PycharmProjects/FreeDATA/freedata_server/config.py", line 235, in <dictcomp>
+    result = {s: dict(self.parser.items(s)) for s in self.parser.sections()}
+                      ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.11/3.11.10/Frameworks/Python.framework/Versions/3.11/lib/python3.11/configparser.py", line 875, in items
+    return [(option, value_getter(option)) for option in orig_keys]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-02-28 17:14:49 [info     ] [DatabaseManagerMessages]: Updating station list with DJ2LS-0
+  File "/usr/local/Cellar/python@3.11/3.11.10/Frameworks/Python.framework/Versions/3.11/lib/python3.11/configparser.py", line 875, in <listcomp>
+    return [(option, value_getter(option)) for option in orig_keys]
+                     ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.11/3.11.10/Frameworks/Python.framework/Versions/3.11/lib/python3.11/configparser.py", line 871, in <lambda>
+    value_getter = lambda option: self._interpolation.before_get(self,
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.11/3.11.10/Frameworks/Python.framework/Versions/3.11/lib/python3.11/configparser.py", line 396, in before_get
+    self._interpolate_some(parser, option, L, value, section, defaults, 1)
+  File "/usr/local/Cellar/python@3.11/3.11.10/Frameworks/Python.framework/Versions/3.11/lib/python3.11/configparser.py", line 413, in _interpolate_some
+    p = rest.find("%")
+        ^^^^^^^^^
+AttributeError: 'list' object has no attribute 'find'
+
+
+
+        """
         self.config = self.config_manager.read()
         if self.config['STATION']['enable_explorer'] and self.state_manager.is_modem_running:
             try:
