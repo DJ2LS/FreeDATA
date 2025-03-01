@@ -1,3 +1,4 @@
+
 import os
 import sys
 # we need to add script directory to the sys path for avoiding problems with pip package
@@ -19,7 +20,6 @@ import audio
 import service_manager
 import state_manager
 import websocket_manager
-
 import event_manager
 import structlog
 

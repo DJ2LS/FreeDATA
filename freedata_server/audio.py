@@ -7,6 +7,7 @@ import structlog
 import numpy as np
 import queue
 import helpers
+import time
 
 log = structlog.get_logger("audio")
 
@@ -250,171 +251,152 @@ def normalize_audio(datalist: np.ndarray) -> np.ndarray:
     return normalized_data
 
 
+# Global variables to manage channel status
+CHANNEL_BUSY_DELAY = 0  # Counter for channel busy delay
+SLOT_DELAY = [0] * 5  # Counters for delays in each slot
 
-RMS_COUNTER = 0
-CHANNEL_BUSY_DELAY = 0
-SLOT_DELAY = [0, 0, 0, 0, 0]
+# Constants for delay logic
+DELAY_INCREMENT = 2  # Amount to increase delay
+MAX_DELAY = 200  # Maximum allowable delay
 
+# Predefined frequency ranges (slots) for FFT analysis
+# These ranges are based on an FFT length of 800 samples
+SLOT_RANGES = [
+    (0, 65),  # Slot 1: Frequency range from 0 to 65
+    (65, 120),  # Slot 2: Frequency range from 65 to 120
+    (120, 176),  # Slot 3: Frequency range from 120 to 176
+    (176, 231),  # Slot 4: Frequency range from 176 to 231
+    (231, 315)  # Slot 5: Frequency range from 231 to 315
+]
 
-def prepare_data_for_fft(data, target_length_samples=400):
+# Initialize a queue to store FFT results for visualization
+fft_queue = queue.Queue()
+
+# Variable to track the time of the last RMS calculation
+last_rms_time = 0
+
+def prepare_data_for_fft(data, target_length_samples=800):
     """
-    Prepare data array for FFT by padding if necessary to match the target length.
-    Center the data if it's shorter than the target length.
+    Prepare the input data for FFT by ensuring it meets the required length.
 
     Parameters:
-    - data: numpy array of np.int16, representing the input data.
-    - target_length_samples: int, the target length of the data in samples.
+    - data: numpy.ndarray of type np.int16, representing the audio data.
+    - target_length_samples: int, the desired length of the data in samples.
 
     Returns:
-    - numpy array of np.int16, padded and/or centered if necessary.
+    - numpy.ndarray of type np.int16 with a length of target_length_samples.
     """
-    # Calculate the current length in samples
-    current_length_samples = data.size
+    # Check if the input data type is np.int16
+    if data.dtype != np.int16:
+        raise ValueError("Audio data must be of type np.int16")
 
-    # Check if padding is needed
-    if current_length_samples < target_length_samples:
-        # Calculate total padding needed
-        total_pad_length = target_length_samples - current_length_samples
-        # Calculate padding on each side
-        pad_before = total_pad_length // 2
-        pad_after = total_pad_length - pad_before
-        # Pad the data to center it
-        data_padded = np.pad(data, (pad_before, pad_after), 'constant', constant_values=(0,))
-        return data_padded
+    # If data is shorter than the target length, pad with zeros
+    if len(data) < target_length_samples:
+        return np.pad(data, (0, target_length_samples - len(data)), 'constant', constant_values=(0,))
     else:
-        # No padding needed, return original data
-        return data
+        # If data is longer or equal to the target length, truncate it
+        return data[:target_length_samples]
+
+def calculate_rms_dbfs(data):
+    """
+    Calculate the Root Mean Square (RMS) value of the audio data and
+    convert it to dBFS (decibels relative to full scale).
+
+    Parameters:
+    - data: numpy.ndarray of type np.int16, representing the audio data.
+
+    Returns:
+    - float: RMS value in dBFS. Returns -100 if the RMS value is 0.
+    """
+    # Compute the RMS value using int32 to prevent overflow
+    rms = np.sqrt(np.mean(np.square(data, dtype=np.int32), dtype=np.float64))
+    # Convert the RMS value to dBFS
+    return 20 * np.log10(rms / 32768) if rms > 0 else -100
 
 def calculate_fft(data, fft_queue, states) -> None:
     """
-    Calculate an average signal strength of the channel to assess
-    whether the channel is "busy."
+    Perform FFT calculation, update channel status, and manage the FFT queue
+    for visualization purposes.
+
+    Parameters:
+    - data: numpy.ndarray of type np.int16, representing the audio data.
+    - fft_queue: queue.Queue, stores FFT results for visualization.
+    - states: An object that holds the current state of the system.
     """
-    # Initialize dbfs counter
-    # rms_counter = 0
-
-    # https://gist.github.com/ZWMiller/53232427efc5088007cab6feee7c6e4c
-    # Fast Fourier Transform, 10*log10(abs) is to scale it to dB
-    # and make sure it's not imaginary
-
-    global RMS_COUNTER, CHANNEL_BUSY_DELAY
+    global CHANNEL_BUSY_DELAY, last_rms_time
 
     try:
-        data = prepare_data_for_fft(data, target_length_samples=800)
+        # Prepare the data for FFT processing
+        data = prepare_data_for_fft(data)
+
+        # Perform FFT and compute the power spectrum
         fftarray = np.fft.rfft(data)
+        power_spectrum = np.abs(fftarray) ** 2
 
-        # Set value 0 to 1 to avoid division by zero
-        fftarray[fftarray == 0] = 1
-        dfft = 10.0 * np.log10(abs(fftarray))
+        # Calculate the average power and set the detection threshold
+        avg_power = np.mean(power_spectrum)
+        threshold = avg_power * 20
 
-        # get average of dfft
-        avg = np.mean(dfft)
+        # Check if the system is neither transmitting nor receiving
+        not_transmitting = not states.isTransmitting()
+        not_receiving = not states.is_receiving_codec2_signal()
 
-        # Detect signals which are higher than the
-        # average + 10 (+10 smoothes the output).
-        # Data higher than the average must be a signal.
-        # Therefore we are setting it to 100 so it will be highlighted
-        # Have to do this when we are not transmitting so our
-        # own sending data will not affect this too much
-        if not states.isTransmitting():
-            dfft[dfft > avg + 15] = 100
+        # Compute the logarithmic power spectrum for visualization
+        dfft = 10.0 * np.log10(power_spectrum + 1e-12)
 
-            # Calculate audio dbfs
-            # https://stackoverflow.com/a/9763652
-            # calculate dbfs every 50 cycles for reducing CPU load
-            RMS_COUNTER += 1
-            if RMS_COUNTER > 5:
-                d = np.frombuffer(data, np.int16).astype(np.float32)
-                # calculate RMS and then dBFS
-                # https://dsp.stackexchange.com/questions/8785/how-to-compute-dbfs
-                # try except for avoiding runtime errors by division/0
-                try:
-                    rms = int(np.sqrt(np.max(d ** 2)))
-                    if rms == 0:
-                        raise ZeroDivisionError
-                    audio_dbfs = 20 * np.log10(rms / 32768)
-                    states.set("audio_dbfs", audio_dbfs)
-                except Exception as e:
-                    states.set("audio_dbfs", -100)
+        if not_transmitting:
+            # Highlight frequency components exceeding the threshold
+            dfft[power_spectrum > threshold] = 100
 
-                RMS_COUNTER = 0
+            # Calculate the audio RMS value in dBFS once per second
+            current_time = time.time()
+            if current_time - last_rms_time >= 1.0:
+                audio_dbfs = calculate_rms_dbfs(data)
+                states.set("audio_dbfs", audio_dbfs)
+                last_rms_time = current_time
 
-        # Convert data to int to decrease size
+        # Convert the FFT data to integers for visualization
         dfft = dfft.astype(int)
-
-        # Create list of dfft
         dfftlist = dfft.tolist()
 
-        # Reduce area where the busy detection is enabled
-        # We want to have this in correlation with mode bandwidth
-        # TODO This is not correctly and needs to be checked for correct maths
-        # dfftlist[0:1] = 10,15Hz
-        # Bandwidth[Hz] / 10,15
-        # narrowband = 563Hz = 56
-        # wideband = 1700Hz = 167
-        # 1500Hz = 148
-        # 2700Hz = 266
-        # 3200Hz = 315
-        # Initialize slot delay counters
-        DELAY_INCREMENT = 2
-        MAX_DELAY = 200
-
-        # Main logic
-        slot = 0
-        slot1 = [0, 65]
-        slot2 = [65, 120]
-        slot3 = [120, 176]
-        slot4 = [176, 231]
-        slot5 = [231, len(dfftlist)]
-        slotbusy = [False, False, False, False, False]
-
-        # Set to true if we should increment delay count; else false to decrement
+        # Initialize the slot busy status list
+        slotbusy = [False] * 5
         addDelay = False
 
-        for range in [slot1, slot2, slot3, slot4, slot5]:
-            range_start = range[0]
-            range_end = range[1]
-            # define the area, we are detecting busy state
-            slotdfft = dfft[range_start:range_end]
-            # Check for signals higher than average by checking for "100"
-            # If we have a signal, increment our channel_busy delay counter
-            # so we have a smoother state toggle
-            if np.sum(slotdfft[slotdfft > avg + 15]) >= 200 and not states.isTransmitting() and not states.is_receiving_codec2_signal():
+        # Evaluate each slot to determine if it exceeds the threshold
+        for slot, (range_start, range_end) in enumerate(SLOT_RANGES):
+            slot_power = np.sum(power_spectrum[range_start:range_end])
+            if slot_power > threshold and not_transmitting and not_receiving:
                 addDelay = True
                 slotbusy[slot] = True
                 SLOT_DELAY[slot] = min(SLOT_DELAY[slot] + DELAY_INCREMENT, MAX_DELAY)
             else:
                 SLOT_DELAY[slot] = max(SLOT_DELAY[slot] - 1, 0)
+                slotbusy[slot] = SLOT_DELAY[slot] > 0
 
-                if SLOT_DELAY[slot] == 0:
-                    slotbusy[slot] = False
-                else:
-                    slotbusy[slot] = True
-
-            # increment slot
-            slot += 1
+        # Update the channel slot busy status based on slot evaluations
         states.set_channel_slot_busy(slotbusy)
 
         if addDelay:
-            # Limit delay counter to a maximum of 200. The higher this value,
-            # the longer we will wait until releasing state
+            # If any slot is busy, increase the channel busy delay
             states.set_channel_busy_condition_traffic(True)
             CHANNEL_BUSY_DELAY = min(CHANNEL_BUSY_DELAY + DELAY_INCREMENT, MAX_DELAY)
         else:
-            # Decrement channel busy counter if no signal has been detected.
+            # If no slots are busy, decrease the channel busy delay
             CHANNEL_BUSY_DELAY = max(CHANNEL_BUSY_DELAY - 1, 0)
-            # When our channel busy counter reaches 0, toggle state to False
             if CHANNEL_BUSY_DELAY == 0:
                 states.set_channel_busy_condition_traffic(False)
 
-        # erase queue if greater than 3
-        if fft_queue.qsize() >= 1:
-            fft_queue = queue.Queue()
+        # Ensure the FFT queue does not overflow
+        while not fft_queue.empty():
+            fft_queue.get()
 
-        fft_queue.put(dfftlist[:315])  # 315 --> bandwidth 3200
+        # Add the current FFT data to the queue for visualization
+        fft_queue.put(dfftlist[:315])
 
     except Exception as err:
         print(f"[MDM] calculate_fft: Exception: {err}")
+
 
 def terminate():
     log.warning("[SHUTDOWN] terminating audio instance...")
