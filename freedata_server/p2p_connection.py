@@ -12,6 +12,7 @@ import numpy as np
 import base64
 from arq_data_type_handler import ARQDataTypeHandler, ARQ_SESSION_TYPES
 from arq_session_iss import ARQSessionISS
+import helpers
 
 class States(Enum):
     NEW = 0
@@ -25,8 +26,8 @@ class States(Enum):
     ARQ_SESSION = 8
     DISCONNECTING = 9
     DISCONNECTED = 10
-    FAILED = 11
-
+    ABORTED = 11
+    FAILED = 12
 
 
 class P2PConnection:
@@ -47,6 +48,7 @@ class P2PConnection:
             FRAME_TYPE.P2P_CONNECTION_PAYLOAD_ACK.value: 'transmitted_data',
         },
         States.DISCONNECTING: {
+            FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT_ACK.value: 'received_disconnect_ack',
         },
         States.DISCONNECTED: {
@@ -54,27 +56,34 @@ class P2PConnection:
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT_ACK.value: 'received_disconnect_ack',
 
         },
+        States.ABORTED:{
+        },
+        States.FAILED: {
+        },
     }
 
-    def __init__(self, config: dict, modem, origin: str, destination: str, state_manager, event_manager, socket_command_handler=None):
+    def __init__(self, config: dict, modem, origin: str, destination: str, state_manager, event_manager, socket_interface_manager=None):
         self.logger = structlog.get_logger(type(self).__name__)
         self.config = config
 
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
 
-        self.socket_command_handler = socket_command_handler
+        self.socket_interface_manager = socket_interface_manager
 
         self.destination = destination
+        self.destination_crc = helpers.get_crc_24(destination)
         self.origin = origin
         self.bandwidth = 0
 
         self.state_manager = state_manager
         self.event_manager = event_manager
         self.modem = modem
-        self.modem.demodulator.set_decode_mode()
+        if self.modem:
+            self.modem.demodulator.set_decode_mode(is_p2p_connection=True)
 
-        self.p2p_data_rx_queue = Queue()
         self.p2p_data_tx_queue = Queue()
+        #Remove after testing
+        self.p2p_data_rx_queue = Queue()
 
         self.arq_data_type_handler = ARQDataTypeHandler(self.event_manager, self.state_manager)
 
@@ -84,7 +93,7 @@ class P2PConnection:
 
         self.event_frame_received = threading.Event()
 
-        self.RETRIES_CONNECT = 5
+        self.RETRIES_CONNECT = 3
         self.TIMEOUT_CONNECT = 5
         self.TIMEOUT_DATA = 5
         self.RETRIES_DATA = 5
@@ -107,7 +116,7 @@ class P2PConnection:
 
                 if not self.p2p_data_tx_queue.empty() and self.state == States.CONNECTED:
                     self.process_data_queue()
-                threading.Event().wait(0.1)
+                threading.Event().wait(0.500)
 
 
 
@@ -199,7 +208,8 @@ class P2PConnection:
     def connect(self):
         self.set_state(States.CONNECTING)
         self.is_ISS = True
-        session_open_frame = self.frame_factory.build_p2p_connection_connect(self.origin, self.destination, self.session_id)
+        self.last_data_timestamp = time.time()
+        session_open_frame = self.frame_factory.build_p2p_connection_connect(self.destination, self.origin, self.session_id)
         self.launch_twr(session_open_frame, self.TIMEOUT_CONNECT, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         return
 
@@ -207,61 +217,74 @@ class P2PConnection:
         self.log("CONNECTED ISS...........................")
         self.set_state(States.CONNECTED)
         self.is_ISS = True
-        if self.socket_command_handler:
-            self.socket_command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
+        self.log(frame)
+        if self.socket_interface_manager and hasattr(self.socket_interface_manager.command_server, "command_handler"):
+            self.socket_interface_manager.command_server.command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
 
     def connected_irs(self, frame):
         self.log("CONNECTED IRS...........................")
         self.state_manager.register_p2p_connection_session(self)
+        self.socket_interface_manager.command_server.command_handler.session = self
         self.set_state(States.CONNECTED)
         self.is_ISS = False
-        self.orign = frame["origin"]
-        self.destination = frame["destination_crc"]
+        self.origin = frame["origin"]
+        self.destination = frame["destination"]
+        self.destination_crc = frame["destination_crc"]
+        self.log(frame)
 
-        if self.socket_command_handler:
-            self.socket_command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
+        if self.socket_interface_manager and hasattr(self.socket_interface_manager.command_server, "command_handler"):
+            self.socket_interface_manager.command_server.command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
 
+
+        #If these 2 lines are not here, the receiving station does not reply back with an ACK to a P2P_CONNECTION_CONNECT packet. Is this intentional? Leaving here for testing for now.
         session_open_frame = self.frame_factory.build_p2p_connection_connect_ack(self.destination, self.origin, self.session_id)
         self.launch_twr_irs(session_open_frame, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
 
+
     def session_failed(self):
         self.set_state(States.FAILED)
-        if self.socket_command_handler:
-            self.socket_command_handler.socket_respond_disconnected()
+        if self.socket_interface_manager and hasattr(self.socket_interface_manager.command_server, "command_handler"):
+            self.socket_interface_manager.command_server.command_handler.socket_respond_disconnected()
 
     def process_data_queue(self, frame=None):
-        if not self.p2p_data_tx_queue.empty():
-            print("processing data....")
+        if self.p2p_data_tx_queue.empty():
+            return
+        print("processing data....")
 
-            self.set_state(States.PAYLOAD_SENT)
-            data = self.p2p_data_tx_queue.get()
-            sequence_id = random.randint(0,255)
-            data = data.encode('utf-8')
+        data = self.p2p_data_tx_queue.get()
+        sequence_id = random.randint(0,255)
 
-            if len(data) <= 11:
-                mode = FREEDV_MODE.signalling
-            elif 11 < len(data) < 32:
-                mode = FREEDV_MODE.datac4
-            else:
-                self.transmit_arq(data)
-                return
-
-            payload = self.frame_factory.build_p2p_connection_payload(mode, self.session_id, sequence_id, data)
-            self.launch_twr(payload, self.TIMEOUT_DATA, self.RETRIES_DATA,mode=mode)
+        if  len(data) <= 11:
+            mode = FREEDV_MODE.signalling
+        elif 11 < len(data) <= 32:
+            mode = FREEDV_MODE.datac4
+        else:
+            self.transmit_arq(data)
             return
 
-    def prepare_data_chunk(self, data, mode):
-        return data
+        payload = self.frame_factory.build_p2p_connection_payload(mode, self.session_id, sequence_id, data)
+        self.launch_twr(payload, self.TIMEOUT_DATA, self.RETRIES_DATA,mode=mode)
+        self.set_state(States.PAYLOAD_SENT)
+
+        return
 
     def received_data(self, frame):
-        print(frame)
-        self.p2p_data_rx_queue.put(frame['data'])
+        self.log(f"received data...: {frame}")
 
         ack_data = self.frame_factory.build_p2p_connection_payload_ack(self.session_id, 0)
-        self.launch_twr_irs(ack_data, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
+        self.launch_twr_irs(ack_data, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling_ack)
 
-    def transmit_data_ack(self, frame):
-        print(frame)
+        try:
+            received_data = frame['data'].rstrip(b'\x00')
+            if self.socket_interface_manager and hasattr(self.socket_interface_manager.data_server, "data_handler"):
+                self.log(f"sending {len(received_data)} bytes to data socket client")
+                self.socket_interface_manager.data_server.data_handler.send_data_to_client(received_data)
+
+        except Exception as e:
+            self.log(f"Error sending data to socket: {e}")
+
+
+
 
     def transmitted_data(self, frame):
         print("transmitted data...")
@@ -274,11 +297,17 @@ class P2PConnection:
             self.launch_twr(disconnect_frame, self.TIMEOUT_CONNECT, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         return
 
+    def abort_connection(self):
+        # abort is a dirty disconnect
+        self.log("ABORTING...............")
+        self.event_frame_received.set()
+        self.set_state(States.DISCONNECTED)
+
     def received_disconnect(self, frame):
         self.log("DISCONNECTED...............")
         self.set_state(States.DISCONNECTED)
-        if self.socket_command_handler:
-            self.socket_command_handler.socket_respond_disconnected()
+        if self.socket_interface_manager:
+            self.socket_interface_manager.command_server.command_handler.socket_respond_disconnected()
         self.is_ISS = False
         disconnect_ack_frame = self.frame_factory.build_p2p_connection_disconnect_ack(self.session_id)
         self.launch_twr_irs(disconnect_ack_frame, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
@@ -286,30 +315,39 @@ class P2PConnection:
     def received_disconnect_ack(self, frame):
         self.log("DISCONNECTED...............")
         self.set_state(States.DISCONNECTED)
-        if self.socket_command_handler:
-            self.socket_command_handler.socket_respond_disconnected()
+        if self.socket_interface_manager:
+            self.socket_interface_manager.command_server.command_handler.socket_respond_disconnected()
 
     def transmit_arq(self, data):
+        """
+        This function needs to be fixed - we want to send ARQ data within a p2p connection
+        check p2p_connection handler in arq_data_type_handler
+
+        """
         self.set_state(States.ARQ_SESSION)
-
-        print("----------------------------------------------------------------")
-        print(self.destination)
-        print(self.state_manager.p2p_connection_sessions)
-
         prepared_data, type_byte = self.arq_data_type_handler.prepare(data, ARQ_SESSION_TYPES.p2p_connection)
-        iss = ARQSessionISS(self.config, self.modem, 'AA1AAA-1', self.state_manager, prepared_data, type_byte)
+        iss = ARQSessionISS(self.config, self.modem, self.destination, self.state_manager, prepared_data, type_byte)
         iss.id = self.session_id
         if iss.id:
             self.state_manager.register_arq_iss_session(iss)
             iss.start()
             return iss
 
-    def transmitted_arq(self):
+    def transmitted_arq(self, transmitted_data):
         self.last_data_timestamp = time.time()
         self.set_state(States.CONNECTED)
 
-    def received_arq(self, data):
+    def received_arq(self, received_data):
         self.last_data_timestamp = time.time()
         self.set_state(States.CONNECTED)
-        self.p2p_data_rx_queue.put(data)
 
+        try:
+            if self.socket_interface_manager and hasattr(self.socket_interface_manager.data_server, "data_handler"):
+                self.log(f"sending {len(received_data)} bytes to data socket client")
+                self.socket_interface_manager.data_server.data_handler.send_data_to_client(received_data)
+
+        except Exception as e:
+            self.log(f"Error sending data to socket: {e}")
+
+    def failed_arq(self):
+        self.set_state(States.CONNECTED)
