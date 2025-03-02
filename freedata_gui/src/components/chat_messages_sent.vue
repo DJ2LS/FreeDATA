@@ -58,11 +58,11 @@
 
         <div class="card-footer p-1 border-top-0">
           <p class="text p-0 m-0 mb-1 me-1 text-end">
-            <span class="badge badge-primary mr-2" :class="{
-                'bg-danger': message.status == 'failed',
-                'bg-primary': message.status == 'transmitting',
-                'bg-secondary': message.status == 'transmitted',
-                'bg-secondary': message.status == 'queued',
+            <span class="badge mr-2" :class="{
+                'text-bg-danger': message.status == 'failed',
+                'text-bg-primary': message.status == 'transmitting',
+                'text-bg-secondary': message.status == 'transmitted',
+                'text-bg-secondary': message.status == 'queued',
               }"
             >
               {{ message.status }}
