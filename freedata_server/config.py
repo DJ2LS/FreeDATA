@@ -230,14 +230,17 @@ class CONFIG:
         # self.log.info("[CFG] reading...")
         if not self.config_exists():
             return False
-        
-        # at first just copy the config as read from file
-        result = {s: dict(self.parser.items(s)) for s in self.parser.sections()}
+        try:
+            # at first just copy the config as read from file
+            result = {s: dict(self.parser.items(s)) for s in self.parser.sections()}
 
-        # handle the special settings
-        for section in result:
-            for setting in result[section]:
-                result[section][setting] = self.handle_setting(
-                   section, setting, result[section][setting], False)
+            # handle the special settings
+            for section in result:
+                for setting in result[section]:
+                    result[section][setting] = self.handle_setting(
+                       section, setting, result[section][setting], False)
+            return result
+        except Exception as conferror:
+            self.log.error("[CFG] reading logfile", e=conferror)
+            return False
 
-        return result

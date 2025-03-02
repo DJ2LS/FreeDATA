@@ -88,6 +88,7 @@ class ScheduleManager:
             print(e)
 
     def push_to_explorer(self):
+        
         self.config = self.config_manager.read()
         if self.config['STATION']['enable_explorer'] and self.state_manager.is_modem_running:
             try:
