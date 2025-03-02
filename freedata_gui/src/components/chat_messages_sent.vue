@@ -59,10 +59,9 @@
         <div class="card-footer p-1 border-top-0">
           <p class="text p-0 m-0 mb-1 me-1 text-end">
             <span class="badge mr-2" :class="{
-                'text-bg-danger': message.status == 'failed',
-                'text-bg-primary': message.status == 'transmitting',
-                'text-bg-secondary': message.status == 'transmitted',
-                'text-bg-secondary': message.status == 'queued',
+                'text-bg-danger': message.status === 'failed',
+                'text-bg-primary': message.status === 'transmitting',
+                'text-bg-secondary': message.status === 'transmitted' || message.status === 'queued'
               }"
             >
               {{ message.status }}
