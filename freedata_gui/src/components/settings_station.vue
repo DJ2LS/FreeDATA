@@ -19,7 +19,7 @@
       type="text"
       class="form-control"
       style="text-transform: uppercase"
-      :placeholder="$t('settings.station.callsign_help')"
+      :placeholder="$t('settings.station.callsign_placeholder')"
       id="myCall"
       aria-label="Station Callsign"
       v-model="settings.remote.STATION.mycall"
@@ -73,7 +73,7 @@
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        :title="$t('settings.station.locator')"
+        :title="$t('settings.station.locator_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -147,7 +147,7 @@
   <!-- Callsign Blacklist Textarea -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      {{ $t('settings.station.callsignblacklist_placeholder') }}
+      {{ $t('settings.station.callsignblacklist') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
@@ -161,13 +161,13 @@
       <div class="form-floating">
         <textarea
           class="form-control"
-          placeholder="One call per line"
+          :placeholder="$t('settings.station.callsignblacklist_placeholder')"
           id="callsignBlacklistfloatingTextarea"
           style="height: 150px"
           v-model="settings.remote.STATION.callsign_blacklist"
           @change="onChange"
         ></textarea>
-        <label for="callsignBlacklistfloatingTextarea">One call per line</label>
+        <label for="callsignBlacklistfloatingTextarea">{{ $t('settings.station.callsignblacklist_help') }}</label>
       </div>
     </div>
   </div>

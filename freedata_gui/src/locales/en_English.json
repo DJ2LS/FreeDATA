@@ -25,7 +25,8 @@
             "respondtocq_help": "QRV reply sent with random delay",
             "enablecallsignblacklist": "Enable callsign blacklist",
             "enablecallsignblacklist_help": "Ignore requests from blacklisted callsigns",
-            "callsignblacklist_placeholder": "Enable callsign blacklist",
+            "callsignblacklist": "Callsign blacklist",
+            "callsignblacklist_placeholder": "List of callsigns",
             "callsignblacklist_help": "One callsign per line"
         },
         "chat": {

@@ -3,13 +3,51 @@
         "enable": "Aktivovat",
         "default": "Výchozí",
         "gui": {
-            "introduction": " související nastavení, jako je přizpůsobení vodopádového motivu, jazyka nebo chování prohlížeče.",
+            "introduction": "GUI související nastavení, jako je přizpůsobení vodopádového motivu, jazyka nebo chování prohlížeče.",
             "browserautolaunch": "Automaticky spustit prohlížeč",
             "browserautolaunch_help": "Automaticy otevře prohlížeč s GUI odkazem při startu serveru",
             "selectlanguage": "Zvolte jazyk",
             "selectlanguage_help": "Nastaví preferovaný jazyk pro GUI",
-            "waterfalltheme": "Těma vodopádu",
+            "waterfalltheme": "Téma vodopádu",
             "waterfalltheme_help": "Nastaví barevné téma pro vodopád"
+        },
+        "station": {
+            "introduction": "Nastavení stanice, volací značka, lokátor a základní chování.\n",
+            "callsign": "Volací značka",
+            "callsign_help": "Zadej platnou volací značku (Maximálně 7 znaku, bez speciálních znaku)",
+            "callsign_placeholder": "Zadej svoji volací značku a ulož ji",
+            "callsignssid": "SSID",
+            "callsignssid_help": "Nastaví SSID pro tuto stanici",
+            "locator": "Lokátor",
+            "locator_help": "Zadej lokátor (Maximálně 6 znaku; kratší bude náhodný)",
+            "locator_placeholder": "Tvuj lokátor",
+            "respondtocq": "Odpovědět na výzvu pomocí QRV odpovědi",
+            "respondtocq_help": "QRV Odpovědět je odeslána s náhodným zpožděním",
+            "enablecallsignblacklist": "Aktivovat černou listinu volacích značek",
+            "enablecallsignblacklist_help": "Ignoruje požadavky od volacích značek na černé listině",
+            "callsignblacklist": "Černá listina volacích značek",
+            "callsignblacklist_placeholder": "Seznam volacích značek",
+            "callsignblacklist_help": "Jedna volací značka na řádek"
+        },
+        "chat": {
+            "introduction": "Nastavení zpráv, automatické opakování a konfigurace ADIF připojení.",
+            "enablemessageautorepeat": "Aktivovat automatické opakování zpráv",
+            "enablemessageautorepeat_help": "Pokusí se znovu odeslat zprávu při obdržení beaconu",
+            "enableadifloggingudp": "Aktivovat adif logování přes UDP",
+            "adifloggingudphost": "ADIF logovací UDP hostitel",
+            "adifloggingudphost_help": "ADIF server, např., 127.0.0.1",
+            "adifloggingudphost_placeholder": "Zadej ADIF server",
+            "adifloggingudpport": "ADIF logovací UDP port",
+            "adifloggingudpport_help": "ADIF server port, e.g., 2237",
+            "adifloggingudpport_placeholder": "Zadej ADIF server port",
+            "adifloggingwavelog": "Aktivovat logování pomocí Wavelog API",
+            "enableadifloggingwavelog_help": "Aktivuje ADIF logování pomocí Wavelog",
+            "adifloggingwaveloghost": "Wavelog API hostitel",
+            "adifloggingwaveloghost_placeholder": "Zadej hostitele",
+            "adifloggingwaveloghost_help": "Wavelog API server, např., 127.0.0.1",
+            "adifloggingwavelogapi": "Wavelog API klíč",
+            "adifloggingwavelogapi_placeholder": "Zadej API klíč",
+            "adifloggingwavelogapi_help": "Zadej Wavelog API klíč"
         }
     }
 }
