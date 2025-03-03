@@ -25,7 +25,8 @@
             "respondtocq_help": "QRV Odpovědět je odeslána s náhodným zpožděním",
             "enablecallsignblacklist": "Aktivovat černou listinu volacích značek",
             "enablecallsignblacklist_help": "Ignoruje požadavky od volacích značek na černé listině",
-            "callsignblacklist_placeholder": "Aktivovat černou listinu volacích značek",
+            "callsignblacklist": "Černá listina volacích značek",
+            "callsignblacklist_placeholder": "Seznam volacích značek",
             "callsignblacklist_help": "Jedna volací značka na řádek"
         },
         "chat": {
