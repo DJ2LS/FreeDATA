@@ -1,0 +1,15 @@
+{
+    "settings": {
+        "enable": "Aktivovat",
+        "default": "Výchozí",
+        "gui": {
+            "introduction": " související nastavení, jako je přizpůsobení vodopádového motivu, jazyka nebo chování prohlížeče.",
+            "browserautolaunch": "Automaticky spustit prohlížeč",
+            "browserautolaunch_help": "Automaticy otevře prohlížeč s GUI odkazem při startu serveru",
+            "selectlanguage": "Zvolte jazyk",
+            "selectlanguage_help": "Nastaví preferovaný jazyk pro GUI",
+            "waterfalltheme": "Těma vodopádu",
+            "waterfalltheme_help": "Nastaví barevné téma pro vodopád"
+        }
+    }
+}
