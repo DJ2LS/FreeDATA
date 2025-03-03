@@ -3,8 +3,11 @@
         "enable": "Aktivieren",
         "default": "Standard",
         "gui": {
-            "introduction": " spezifische Einstellungen wie Wasserfall-Farbgebung, Benachrichtigungen oder Browser-Verhalten.",
+            "introduction": " spezifische Einstellungen wie Wasserfall-Farbgebung, Sprache oder Browser-Verhalten.",
+            "browserautolaunch": "Browser automatisch starten",
+            "browserautolaunch_help": "Starte einen Browser und die GUI automatisch bei Server-Start",
             "selectlanguage": "Sprache auswählen",
+            "selectlanguage_help": "Wähle eine Sprache für die grafische Oberfläche",
             "waterfalltheme": "Wasserfall-Farbgebung",
             "waterfalltheme_help": "Wähle ein Farbthema für das Wasserfalldiagramm"
         }

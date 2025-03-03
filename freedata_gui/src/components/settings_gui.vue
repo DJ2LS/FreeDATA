@@ -1,8 +1,8 @@
 <template>
   <!-- Top Info Area for GUI Settings -->
   <div class="alert alert-info" role="alert">
-    <strong><i class="bi bi-gear-wide-connected me-1"></i>GUI</strong> {{ $t('settings.gui.introduction') }} </div>
-
+    <strong><i class="bi bi-gear-wide-connected me-1"></i>GUI</strong> {{ $t('settings.gui.introduction') }}
+  </div>
 
 
 
@@ -14,7 +14,7 @@
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Select color theme for waterfall display"
+        :title="$t('settings.gui.selectlanguage_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -58,12 +58,13 @@
   <!-- Auto Launch Browser Toggle -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      Auto launch browser
+
+      {{ $t('settings.gui.browserautolaunch') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Launch browser to GUI URL on server startup"
+        :title="$t('settings.gui.browserautolaunch_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>

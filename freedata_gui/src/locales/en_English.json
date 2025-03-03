@@ -3,8 +3,11 @@
         "enable": "Enable",
         "default": "default",
         "gui": {
-            "introduction": " realated settings like customizing waterfall theme, notifications or browser behaviour.",
+            "introduction": " realated settings like customizing waterfall theme, language or browser behaviour.",
+            "browserautolaunch": "Auto launch browser",
+            "browserautolaunch_help": "Launch browser to GUI URL on server startup",
             "selectlanguage": "Select language",
+            "selectlanguage_help": "Select the preferred language used for GUI",
             "waterfalltheme": "Waterfall theme",
             "waterfalltheme_help": "Select color theme for waterfall display"
         }
