@@ -28,7 +28,7 @@
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
-    "bootstrap-vue-next": "^0.26.7",
+    "bootstrap-vue-next": "^0.27.0",
     "chart.js": "^4.4.3",
     "chartjs-plugin-annotation": "^3.0.1",
     "core-js": "^3.8.3",
@@ -42,7 +42,7 @@
     "install": "^0.13.0",
     "js-image-compressor": "^2.0.0",
     "marked": "^15.0.3",
-    "pinia": "^2.1.7",
+    "pinia": "^3.0.1",
     "qth-locator": "^2.1.0",
     "topojson-client": "^3.1.0",
     "uuid": "^11.0.2",
@@ -59,7 +59,7 @@
     "@vue/cli-service": "~5.0.8",
     "eslint": "^8.0.0",
     "eslint-plugin-vue": "^9.28.0",
-    "globals": "^15.9.0"
+    "globals": "^16.0.0"
   },
   "eslintConfig": {
     "root": true,

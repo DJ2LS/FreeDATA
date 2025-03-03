@@ -442,6 +442,31 @@ const settings = ref({
       </select>
     </div>
 
+        <!-- Radio Custom Port -->
+    <div class="input-group input-group-sm mb-1">
+      <label class="input-group-text w-50 text-wrap">
+        Radio custom port
+        <button
+          type="button"
+          class="btn btn-link p-0 ms-2"
+          data-bs-toggle="tooltip"
+          title="Override the com port of your radio if its not listed above"
+        >
+          <i class="bi bi-question-circle"></i>
+        </button>
+      </label>
+
+      <input
+        type="text"
+        class="form-control"
+        placeholder="settings.remote.RADIO.serial_port.port"
+        id="rigctldIp"
+        aria-label="Rigctld IP"
+        @change="onChange"
+        v-model="settings.remote.RADIO.serial_port"
+      />
+    </div>
+
     <!-- Serial Speed -->
     <div class="input-group input-group-sm mb-1">
       <label class="input-group-text w-50 text-wrap">
