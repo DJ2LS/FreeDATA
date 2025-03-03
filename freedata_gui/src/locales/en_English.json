@@ -3,13 +3,35 @@
         "enable": "Enable",
         "default": "default",
         "gui": {
-            "introduction": " realated settings like customizing waterfall theme, language or browser behaviour.",
+            "introduction": "GUI realated settings like customizing waterfall theme, language or browser behaviour.",
             "browserautolaunch": "Auto launch browser",
             "browserautolaunch_help": "Launch browser to GUI URL on server startup",
             "selectlanguage": "Select language",
             "selectlanguage_help": "Select the preferred language used for GUI",
             "waterfalltheme": "Waterfall theme",
             "waterfalltheme_help": "Select color theme for waterfall display"
+        },
+        "station": {
+            "introduction": "Station related settings, like changing your callsign, location and general behaviour.\n",
+            "callsign": "Callsign",
+            "callsign_help": "Enter a valid callsign (Max 7 chars, no special chars)",
+            "callsign_placeholder": "Enter your callsign and save it",
+            "callsignssid": "Callsign SSID",
+            "callsignssid_help": "Set a SSID for this station",
+            "locator": "Grid Locator / Maidenhead",
+            "locator_help": "Enter a grid locator (Max 6 chars; shorter will randomize)",
+            "locator_placeholder": "Your grid locator",
+            "respondtocq": "Respond to CQ callings with a QRV reply",
+            "respondtocq_help": "QRV reply sent with random delay",
+            "enablecallsignblacklist": "Enable callsign blacklist",
+            "enablecallsignblacklist_help": "Ignore requests from blacklisted callsigns",
+            "callsignblacklist_placeholder": "Enable callsign blacklist",
+            "callsignblacklist_help": "One callsign per line"
+        },
+        "chat": {
+            "introduction": "Message related settings, like enabling message auto repeat and configuring ADIF log connection.",
+            "enablemessageautorepeat": "Enable message auto repeat",
+            "enablemessageautorepeat_help": "Re-send message on beacon"
         }
     }
 }

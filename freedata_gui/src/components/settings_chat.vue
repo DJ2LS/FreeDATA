@@ -22,18 +22,18 @@ export default {
 <template>
   <!-- Top Info Area for Messages Settings -->
   <div class="alert alert-info" role="alert">
-    <strong><i class="bi bi-gear-wide-connected me-1"></i>Messages</strong> related settings, like enabling <strong>message auto repeat</strong> and configuring <strong>ADIF log</strong> connection.
+    <strong><i class="bi bi-gear-wide-connected me-1"></i></strong> {{ $t('settings.chat.introduction') }}
   </div>
 
   <!-- Enable Message Auto Repeat -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      Enable message auto repeat
+      {{ $t('settings.chat.enablemessageautorepeat') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Re-send message on beacon"
+        :title="$t('settings.chat.enablemessageautorepeat_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -47,7 +47,7 @@ export default {
           @change="onChange"
           v-model="settings.remote.MESSAGES.enable_auto_repeat"
         />
-        <label class="form-check-label" for="enableMessagesAutoRepeatSwitch">Enable</label>
+        <label class="form-check-label" for="enableMessagesAutoRepeatSwitch">{{ $t('settings.enable') }}</label>
       </div>
     </label>
   </div>
@@ -74,7 +74,7 @@ export default {
           @change="onChange"
           v-model="settings.remote.QSO_LOGGING.enable_adif_udp"
         />
-        <label class="form-check-label" for="enableADIFSwitch">Enable</label>
+        <label class="form-check-label" for="enableADIFSwitch">{{ $t('settings.enable') }}</label>
       </div>
     </label>
   </div>
@@ -149,7 +149,7 @@ export default {
           @change="onChange"
           v-model="settings.remote.QSO_LOGGING.enable_adif_wavelog"
         />
-        <label class="form-check-label" for="enableWavelogSwitch">Enable</label>
+        <label class="form-check-label" for="enableWavelogSwitch">{{ $t('settings.enable') }}</label>
       </div>
     </label>
   </div>

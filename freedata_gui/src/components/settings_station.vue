@@ -1,17 +1,16 @@
 <template>
   <div class="alert alert-info" role="alert">
-    <strong><i class="bi bi-gear-wide-connected me-1"></i>Station</strong> related settings, like changing your <strong>callsign</strong>, <strong>location</strong>, and <strong>general behaviour</strong>.
-  </div>
+    <strong><i class="bi bi-gear-wide-connected me-1"></i></strong>{{ $t('settings.station.introduction') }}   </div>
 
   <!-- Station Callsign -->
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-50 text-wrap">
-      Callsign
+      {{ $t('settings.station.callsign') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Enter a valid callsign (Max 7 chars, no special chars)"
+        :title="$t('settings.station.callsign_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -20,7 +19,7 @@
       type="text"
       class="form-control"
       style="text-transform: uppercase"
-      placeholder="Enter your callsign and save it"
+      :placeholder="$t('settings.station.callsign_help')"
       id="myCall"
       aria-label="Station Callsign"
       v-model="settings.remote.STATION.mycall"
@@ -31,12 +30,12 @@
   <!-- Station SSID -->
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-50 text-wrap">
-      Callsign SSID
+      {{ $t('settings.station.callsignssid') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Set a unique SSID for this station"
+        :title="$t('settings.station.callsignssid_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -69,12 +68,12 @@
   <!-- Station Grid Locator -->
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-50 text-wrap">
-      Grid Locator / Maidenhead
+      {{ $t('settings.station.locator') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Enter a grid locator (Max 6 chars; shorter will randomize)"
+        :title="$t('settings.station.locator')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -82,7 +81,7 @@
     <input
       type="text"
       class="form-control"
-      placeholder="Your grid locator"
+      :placeholder="$t('settings.station.locator_placeholder')"
       id="myGrid"
       maxlength="6"
       aria-label="Station Grid Locator"
@@ -94,12 +93,12 @@
   <!-- Respond to CQ Callings -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      Respond to CQ callings with a QRV reply
+      {{ $t('settings.station.respondtocq') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="QRV reply sent with random delay"
+        :title="$t('settings.station.respondtocq_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -113,7 +112,7 @@
           v-model="settings.remote.STATION.respond_to_cq"
           @change="onChange"
         />
-        <label class="form-check-label" for="respondCQSwitch">Enable</label>
+        <label class="form-check-label" for="respondCQSwitch">{{ $t('settings.enable') }}</label>
       </div>
     </label>
   </div>
@@ -121,12 +120,12 @@
   <!-- Enable Callsign Blacklist -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      Enable callsign blacklist
+      {{ $t('settings.station.enablecallsignblacklist') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Ignore requests from blacklisted callsigns"
+        :title="$t('settings.station.enablecallsignblacklist_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -140,7 +139,7 @@
           v-model="settings.remote.STATION.enable_callsign_blacklist"
           @change="onChange"
         />
-        <label class="form-check-label" for="respondEnableBlacklistSwitch">Enable</label>
+        <label class="form-check-label" for="respondEnableBlacklistSwitch">{{ $t('settings.enable') }}</label>
       </div>
     </label>
   </div>
@@ -148,12 +147,12 @@
   <!-- Callsign Blacklist Textarea -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      Callsign blacklist
+      {{ $t('settings.station.callsignblacklist_placeholder') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="One callsign per line"
+        :title="$t('settings.station.callsignblacklist_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -179,6 +178,7 @@ import { onMounted } from "vue";
 import { settingsStore as settings, onChange, getRemote } from "../store/settingsStore.js";
 import { validateCallsignWithoutSSID } from "../js/freedata";
 import * as bootstrap from "bootstrap";
+
 
 // Initialize Bootstrap tooltips
 onMounted(() => {

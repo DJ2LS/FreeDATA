@@ -1,7 +1,7 @@
 <template>
   <!-- Top Info Area for GUI Settings -->
   <div class="alert alert-info" role="alert">
-    <strong><i class="bi bi-gear-wide-connected me-1"></i>GUI</strong> {{ $t('settings.gui.introduction') }}
+    <strong><i class="bi bi-gear-wide-connected me-1"></i></strong> {{ $t('settings.gui.introduction') }}
   </div>
 
 
