@@ -31,7 +31,22 @@
         "chat": {
             "introduction": "Message related settings, like enabling message auto repeat and configuring ADIF log connection.",
             "enablemessageautorepeat": "Enable message auto repeat",
-            "enablemessageautorepeat_help": "Re-send message on beacon"
+            "enablemessageautorepeat_help": "Re-send message on beacon",
+            "enableadifloggingudp": "Enable adif logging via UDP",
+            "adifloggingudphost": "ADIF Logging UDP host",
+            "adifloggingudphost_help": "ADIF server host, e.g., 127.0.0.1",
+            "adifloggingudphost_placeholder": "Enter ADIF server host",
+            "adifloggingudpport": "ADIF Logging UDP port",
+            "adifloggingudpport_help": "ADIF server port, e.g., 2237",
+            "adifloggingudpport_placeholder": "Enter ADIF server port",
+            "adifloggingwavelog": "Enable logging via Wavelog API",
+            "enableadifloggingwavelog_help": "Enable ADIF Logging via Wavelog",
+            "adifloggingwaveloghost": "Wavelog API Host",
+            "adifloggingwaveloghost_placeholder": "Enter Host",
+            "adifloggingwaveloghost_help": "Wavelog API server host, e.g., 127.0.0.1",
+            "adifloggingwavelogapi": "Wavelog API key",
+            "adifloggingwavelogapi_placeholder": "Enter API key",
+            "adifloggingwavelogapi_help": "Enter Wavelog api key"
         }
     }
 }
