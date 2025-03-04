@@ -31,12 +31,12 @@ const settings = ref({
   <!-- Rigctld IP -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      Rigctld IP
+      {{ $t('settings.radio.hamlibrictldhost') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Enter the IP address of the rigctld server"
+        :title="$t('settings.radio.hamlibrictldhost_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -44,7 +44,7 @@ const settings = ref({
     <input
       type="text"
       class="form-control"
-      placeholder="Enter Rigctld IP"
+      :placeholder="$t('settings.radio.hamlibrictldhost_placeholder')"
       id="rigctldIp"
       aria-label="Rigctld IP"
       @change="onChange"
@@ -55,12 +55,12 @@ const settings = ref({
   <!-- Rigctld Port -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      Rigctld Port
+      {{ $t('settings.radio.hamlibrictldport') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Enter the port number of the rigctld server"
+        :title="$t('settings.radio.hamlibrictldport_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -68,7 +68,7 @@ const settings = ref({
     <input
       type="number"
       class="form-control"
-      placeholder="Enter Rigctld port"
+      :placeholder="$t('settings.radio.hamlibrictldport_placeholder')"
       id="rigctldPort"
       aria-label="Rigctld Port"
       @change="onChange"
@@ -98,7 +98,7 @@ const settings = ref({
           v-model="settings.remote.RIGCTLD.enable_vfo"
           @change="onChange"
         />
-        <label class="form-check-label" for="enableVfoSwitch">Enable</label>
+        <label class="form-check-label" for="enableVfoSwitch">{{ $t('settings.enable') }}</label>
       </div>
     </label>
   </div>

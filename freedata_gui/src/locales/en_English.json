@@ -104,7 +104,14 @@
             "tcihost": "TCI Host",
             "tcihost_help": "Enter the IP address of your TCI device",
             "tciport": "TCI Port",
-            "tciport_help": "Enter the port number for TCI communication"
+            "tciport_help": "Enter the port number for TCI communication",
+            "hamlibrigctldhost": "Rigctld IP",
+            "hamlibrigctldhost_help": "Enter the IP address of the rigctld server",
+            "hamlibrigctldhost_placeholder": "Enter Rigctld IP",
+            "hamlibrigctldport": "Rigctld Port",
+            "hamlibrigctldport_help": "Enter the port number of the rigctld server",
+            "hamlibrigctldport_placeholder": "Enter Rigctld Port"
+
         }
     }
 }
