@@ -79,12 +79,12 @@ const settings = ref({
   <!-- Rigctld VFO Parameter -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      Rigctld VFO parameter
+      {{ $t('settings.radio.hamlibrigctldenablevfo') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Enable VFO support in rigctld"
+        :title="$t('settings.radio.hamlibrigctldenablevfo_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -417,12 +417,12 @@ const settings = ref({
     <!-- Radio Port -->
     <div class="input-group input-group-sm mb-1">
       <label class="input-group-text w-50 text-wrap">
-        Radio port
+        {{ $t('settings.radio.hamlibrigctldcomport') }}
         <button
           type="button"
           class="btn btn-link p-0 ms-2"
           data-bs-toggle="tooltip"
-          title="Select the serial port connected to your radio"
+          :title="$t('settings.radio.hamlibrigctldcomport_help')"
         >
           <i class="bi bi-question-circle"></i>
         </button>
@@ -445,12 +445,12 @@ const settings = ref({
         <!-- Radio Custom Port -->
     <div class="input-group input-group-sm mb-1">
       <label class="input-group-text w-50 text-wrap">
-        Radio custom port
+        {{ $t('settings.radio.hamlibrigctldcustomcomport') }}
         <button
           type="button"
           class="btn btn-link p-0 ms-2"
           data-bs-toggle="tooltip"
-          title="Override the com port of your radio if its not listed above"
+          :title="$t('settings.radio.hamlibrigctldcustomcomport_help')"
         >
           <i class="bi bi-question-circle"></i>
         </button>
@@ -470,12 +470,12 @@ const settings = ref({
     <!-- Serial Speed -->
     <div class="input-group input-group-sm mb-1">
       <label class="input-group-text w-50 text-wrap">
-        Serial speed
+        {{ $t('settings.radio.hamlibrigctldserialspeed') }}
         <button
           type="button"
           class="btn btn-link p-0 ms-2"
           data-bs-toggle="tooltip"
-          title="Set the baud rate for serial communication"
+          :title="$t('settings.radio.hamlibrigctldserialspeed_help')"
         >
           <i class="bi bi-question-circle"></i>
         </button>
@@ -501,12 +501,12 @@ const settings = ref({
     <!-- Data Bits -->
     <div class="input-group input-group-sm mb-1">
       <label class="input-group-text w-50 text-wrap">
-        Data bits
+        {{ $t('settings.radio.hamlibrigctlddatabits') }}
         <button
           type="button"
           class="btn btn-link p-0 ms-2"
           data-bs-toggle="tooltip"
-          title="Choose the number of data bits"
+          :title="$t('settings.radio.hamlibrigctlddatabits_help')"
         >
           <i class="bi bi-question-circle"></i>
         </button>
@@ -526,12 +526,12 @@ const settings = ref({
     <!-- Stop Bits -->
     <div class="input-group input-group-sm mb-1">
       <label class="input-group-text w-50 text-wrap">
-        Stop bits
+        {{ $t('settings.radio.hamlibrigctldstopbits') }}
         <button
           type="button"
           class="btn btn-link p-0 ms-2"
           data-bs-toggle="tooltip"
-          title="Choose the number of stop bits"
+          :title="$t('settings.radio.hamlibrigctldstopbits_help')"
         >
           <i class="bi bi-question-circle"></i>
         </button>
@@ -551,12 +551,12 @@ const settings = ref({
     <!-- Serial Handshake -->
     <div class="input-group input-group-sm mb-1">
       <label class="input-group-text w-50 text-wrap">
-        Serial handshake
+        {{ $t('settings.radio.hamlibrigctldhandshake') }}
         <button
           type="button"
           class="btn btn-link p-0 ms-2"
           data-bs-toggle="tooltip"
-          title="Set the serial handshake method"
+          :title="$t('settings.radio.hamlibrigctldhandshake_help')"
         >
           <i class="bi bi-question-circle"></i>
         </button>
@@ -576,12 +576,12 @@ const settings = ref({
     <!-- PTT Device Port -->
     <div class="input-group input-group-sm mb-1">
       <label class="input-group-text w-50 text-wrap">
-        PTT device port
+        {{ $t('settings.radio.hamlibrigctldpttdeviceport') }}
         <button
           type="button"
           class="btn btn-link p-0 ms-2"
           data-bs-toggle="tooltip"
-          title="Select the port used for PTT control"
+          :title="$t('settings.radio.hamlibrigctldpttdeviceport_help')"
         >
           <i class="bi bi-question-circle"></i>
         </button>
@@ -604,12 +604,12 @@ const settings = ref({
     <!-- PTT Type -->
     <div class="input-group input-group-sm mb-1">
       <label class="input-group-text w-50 text-wrap">
-        PTT type
+        {{ $t('settings.radio.hamlibrigctldptttype') }}
         <button
           type="button"
           class="btn btn-link p-0 ms-2"
           data-bs-toggle="tooltip"
-          title="Select the method for PTT control"
+          :title="$t('settings.radio.hamlibrigctldptttype_help')"
         >
           <i class="bi bi-question-circle"></i>
         </button>
@@ -634,12 +634,12 @@ const settings = ref({
     <!-- DCD -->
     <div class="input-group input-group-sm mb-1">
       <label class="input-group-text w-50 text-wrap">
-        DCD
+        {{ $t('settings.radio.hamlibrigctlddcd') }}
         <button
           type="button"
           class="btn btn-link p-0 ms-2"
           data-bs-toggle="tooltip"
-          title="Select the Data Carrier Detect method"
+          :title="$t('settings.radio.hamlibrigctlddcd_help')"
         >
           <i class="bi bi-question-circle"></i>
         </button>
@@ -663,12 +663,12 @@ const settings = ref({
     <!-- DTR -->
     <div class="input-group input-group-sm mb-1">
       <label class="input-group-text w-50 text-wrap">
-        DTR
+        {{ $t('settings.radio.hamlibrigctlddtr') }}
         <button
           type="button"
           class="btn btn-link p-0 ms-2"
           data-bs-toggle="tooltip"
-          title="Set the DTR line state"
+          :title="$t('settings.radio.hamlibrigctlddtr_help')"
         >
           <i class="bi bi-question-circle"></i>
         </button>
@@ -688,12 +688,12 @@ const settings = ref({
     <!-- Rigctld Command -->
     <div class="input-group input-group-sm mb-1">
       <label class="input-group-text w-50 text-wrap">
-        Rigctld command
+        {{ $t('settings.radio.hamlibrigctldcommand') }}
         <button
           type="button"
           class="btn btn-link p-0 ms-2"
           data-bs-toggle="tooltip"
-          title="Auto-populated command based on settings"
+          :title="$t('settings.radio.hamlibrigctldcommand_help')"
         >
           <i class="bi bi-question-circle"></i>
         </button>
@@ -704,7 +704,7 @@ const settings = ref({
         id="rigctldCommand"
         aria-label="Rigctld Command"
         disabled
-        placeholder="Auto-populated from above settings"
+        :placeholder="$t('settings.radio.hamlibrigctldcommand_placeholder')"
       />
       <button
         class="btn btn-outline-secondary"
@@ -718,12 +718,12 @@ const settings = ref({
     <!-- Rigctld Custom Arguments -->
     <div class="input-group input-group-sm mb-1">
       <label class="input-group-text w-50 text-wrap">
-        Rigctld custom arguments
+        {{ $t('settings.radio.hamlibrigctldcustomarguments') }}
         <button
           type="button"
           class="btn btn-link p-0 ms-2"
           data-bs-toggle="tooltip"
-          title="Additional arguments for rigctld (usually not needed)"
+          :title="$t('settings.radio.hamlibrigctldcustomarguments_help')"
         >
           <i class="bi bi-question-circle"></i>
         </button>
@@ -731,7 +731,7 @@ const settings = ref({
       <input
         type="text"
         class="form-control"
-        placeholder="Optional custom arguments"
+        :placeholder="$t('settings.radio.hamlibrigctldcustomarguments_placeholder')"
         id="rigctldCustomArgs"
         aria-label="Rigctld Custom Arguments"
         @change="onChange"

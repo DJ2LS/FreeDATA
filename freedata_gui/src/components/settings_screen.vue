@@ -17,7 +17,7 @@
                 aria-controls="station"
                 aria-selected="true"
               >
-                Station
+                {{ $t('settings.tabstation') }}
               </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -31,7 +31,7 @@
                 aria-controls="gui"
                 aria-selected="false"
               >
-                GUI
+                {{ $t('settings.tabgui') }}
               </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -45,7 +45,7 @@
                 aria-controls="chat"
                 aria-selected="false"
               >
-                Chat
+                {{ $t('settings.tabchat') }}
               </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -59,7 +59,7 @@
                 aria-controls="rigcontrol"
                 aria-selected="false"
               >
-                Rig Control
+                {{ $t('settings.tabradiocontrol') }}
               </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -73,7 +73,7 @@
                 aria-controls="modem"
                 aria-selected="false"
               >
-                Modem
+                {{ $t('settings.tabmodem') }}
               </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -87,7 +87,7 @@
                 aria-controls="web"
                 aria-selected="false"
               >
-                Web
+                {{ $t('settings.tabweb') }}
               </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -101,7 +101,7 @@
                 aria-controls="experiments"
                 aria-selected="false"
               >
-                Exp
+                {{ $t('settings.tabexperimental') }}
               </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -115,7 +115,7 @@
                 aria-controls="url"
                 aria-selected="false"
               >
-                Links
+                 {{ $t('settings.tablinks') }}
               </button>
             </li>
           </ul>
