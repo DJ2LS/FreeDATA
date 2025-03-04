@@ -1,0 +1,53 @@
+{
+    "settings": {
+        "enable": "Aktivere",
+        "default": "standard",
+        "gui": {
+            "introduction": "GUI-relaterte innstillinger som å tilpasse fossetema, språk eller nettleseratferd.",
+            "browserautolaunch": "Start nettleseren automatisk",
+            "browserautolaunch_help": "Start nettleseren til GUI URL ved oppstart av serveren",
+            "selectlanguage": "Velg språk",
+            "selectlanguage_help": "Velg det foretrukne språket som brukes for GUI",
+            "waterfalltheme": "Fossefall tema",
+            "waterfalltheme_help": "Velg fargetema for fossefallvisning"
+        },
+        "station": {
+            "introduction": "Stasjonsrelaterte innstillinger, som å endre kallesignal, plassering og generell oppførsel.\n",
+            "callsign": "Kallesignal",
+            "callsign_help": "Skriv inn et gyldig kallesignal (maks. 7 tegn, ingen spesielle tegn)",
+            "callsign_placeholder": "Skriv inn kallesignalet ditt og lagre det",
+            "callsignssid": "Kallesignal SSID",
+            "callsignssid_help": "Angi en SSID for denne stasjonen",
+            "locator": "Grid Locator / Maidenhead",
+            "locator_help": "Skriv inn en Locator / Maidenhead (maks. 6 tegn; kortere vil randomisere)",
+            "locator_placeholder": "Din locator",
+            "respondtocq": "Svar på CQ-oppkall med et QRV-svar",
+            "respondtocq_help": "QRV-svar sendt med tilfeldig forsinkelse",
+            "enablecallsignblacklist": "Aktiver svarteliste for kallesignaler",
+            "enablecallsignblacklist_help": "Ignorer forespørsler fra svartelistede kallesignaler",
+            "callsignblacklist": "Kallesignal svarteliste",
+            "callsignblacklist_placeholder": "Liste over kallesignaler",
+            "callsignblacklist_help": "Ett kallesignal per linje"
+        },
+        "chat": {
+            "introduction": "Meldingsrelaterte innstillinger, som å aktivere automatisk repetisjon av meldinger og konfigurere ADIF-loggtilkobling.",
+            "enablemessageautorepeat": "Aktiver automatisk repetisjon av melding",
+            "enablemessageautorepeat_help": "Send melding på nytt ved mottak av beacon",
+            "enableadifloggingudp": "Aktiver adif-logging via UDP",
+            "adifloggingudphost": "ADIF Logging UDP-vert",
+            "adifloggingudphost_help": "ADIF-serververt, f.eks. 127.0.0.1",
+            "adifloggingudphost_placeholder": "Skriv inn ADIF-serververt",
+            "adifloggingudpport": "ADIF Logging UDP-port",
+            "adifloggingudpport_help": "ADIF-serverport, f.eks. 2237",
+            "adifloggingudpport_placeholder": "Angi ADIF-serverporten",
+            "adifloggingwavelog": "Aktiver logging via Wavelog API",
+            "enableadifloggingwavelog_help": "Aktiver ADIF-logging via Wavelog",
+            "adifloggingwaveloghost": "Wavelog API-vert",
+            "adifloggingwaveloghost_placeholder": "Skriv inn vert",
+            "adifloggingwaveloghost_help": "Wavelog API-serververt, f.eks. 127.0.0.1",
+            "adifloggingwavelogapi": "Wavelog API-nøkkel",
+            "adifloggingwavelogapi_placeholder": "Skriv inn API-nøkkel",
+            "adifloggingwavelogapi_help": "Skriv inn Wavelog api-nøkkel"
+        }
+    }
+}
