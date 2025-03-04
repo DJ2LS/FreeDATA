@@ -55,12 +55,12 @@ const settings = ref({
   <!-- Rigctld Port -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      {{ $t('settings.radio.hamlibrictldport') }}
+      {{ $t('settings.radio.hamlibrigctldport') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        :title="$t('settings.radio.hamlibrictldport_help')"
+        :title="$t('settings.radio.hamlibrigctldport_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -68,7 +68,7 @@ const settings = ref({
     <input
       type="number"
       class="form-control"
-      :placeholder="$t('settings.radio.hamlibrictldport_placeholder')"
+      :placeholder="$t('settings.radio.hamlibrigctldport_placeholder')"
       id="rigctldPort"
       aria-label="Rigctld Port"
       @change="onChange"
@@ -110,12 +110,12 @@ const settings = ref({
     <!-- Radio Model -->
     <div class="input-group input-group-sm mb-1">
       <label class="input-group-text w-50 text-wrap">
-        Radio model
+        {{ $t('settings.radio.hamlibrigctldradiomodel') }}
         <button
           type="button"
           class="btn btn-link p-0 ms-2"
           data-bs-toggle="tooltip"
-          title="Select your radio model for rig control"
+          :title="$t('settings.radio.hamlibrigctldradiomodel_help')"
         >
           <i class="bi bi-question-circle"></i>
         </button>

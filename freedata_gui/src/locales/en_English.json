@@ -110,8 +110,9 @@
             "hamlibrigctldhost_placeholder": "Enter Rigctld IP",
             "hamlibrigctldport": "Rigctld Port",
             "hamlibrigctldport_help": "Enter the port number of the rigctld server",
-            "hamlibrigctldport_placeholder": "Enter Rigctld Port"
-
+            "hamlibrigctldport_placeholder": "Enter Rigctld Port",
+            "hamlibrigctldradiomodel": "Radio model",
+            "hamlibrigctldradiomodel_help": "Select your radio model for rig control",
         }
     }
 }

@@ -5,7 +5,7 @@
   </div>
 
     <div class="alert alert-warning" role="alert">
-    {{ $t('settings.radio.introduction') }}
+    {{ $t('settings.radio.info') }}
   </div>
 
 
