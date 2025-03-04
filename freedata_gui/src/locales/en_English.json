@@ -2,6 +2,7 @@
     "settings": {
         "enable": "Enable",
         "default": "default",
+        "reload": "Reload",
         "gui": {
             "introduction": "GUI related settings like customizing waterfall theme, language or browser behaviour.",
             "browserautolaunch": "Auto launch browser",
@@ -48,6 +49,28 @@
             "adifloggingwavelogapi": "Wavelog API key",
             "adifloggingwavelogapi_placeholder": "Enter API key",
             "adifloggingwavelogapi_help": "Enter Wavelog api key"
+        },
+        "modem": {
+            "introduction": "Modem and Audio related settings, including starting/stopping the modem, configuring audio devices, and adjusting audio levels.",
+            "serverrestart_notification": "Settings in RED require a server restart!",
+            "restartserver": "Manual modem control",
+            "restartserver_help": "Start or stop the modem. Ensure your audio and radio settings are configured first.",
+            "modemport": "Modem port",
+            "modemport_help": "Set the modem port. A server restart is required",
+            "modemhost": "Modem host",
+            "modemhost_help": "set the modem host address. A server restart is required",
+            "audioinputdevice": "Audio Input Device",
+            "audioinputdevice_help": "Select your microphone or line-in device",
+            "audiooutputdevice": "Audio Output Device",
+            "audiooutputdevice_help": "Select your speaker or line-out device",
+            "rxaudiolevel": "RX Audio Level",
+            "rxaudiolevel_help": "Adjust to set the receive audio gain",
+            "txaudiolevel": "RX Audio Level",
+            "txaudiolevel_help": "Adjust to set the transmit audio gain",
+            "txdelay": "TX delay in ms",
+            "txdelay_help": "Delay before transmitting, in milliseconds",
+            "maximumbandwidth": "Maximum used bandwidth",
+            "maximumbandwidth_help": "Select the maximum bandwidth the modem will use"
         }
     }
 }
