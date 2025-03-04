@@ -25,22 +25,23 @@ function reloadModem(){
 <template>
   <!-- Top Info Area for Modem and Audio Settings -->
   <div class="alert alert-info" role="alert">
-    <strong><i class="bi bi-gear-wide-connected me-1"></i>Modem and Audio</strong> related settings, including starting/stopping the modem, configuring audio devices, and adjusting audio levels.
+    <strong><i class="bi bi-gear-wide-connected me-1"></i></strong>{{ $t('settings.modem.introduction') }}
   </div>
 
   <div class="alert alert-light" role="alert">
-   Settings in <strong class="text-danger">RED</strong> require a server restart!
+  <span class="text-danger">{{ $t('settings.modem.serverrestart_notification') }}</span>
   </div>
 
   <!-- Start and Stop Modem Buttons -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      Manual modem control
+
+      {{ $t('settings.modem.restartserver') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Start or stop the modem. Ensure your audio and radio settings are configured first."
+        :title="$t('settings.modem.restartserver_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -54,7 +55,7 @@ function reloadModem(){
         @click="reloadModem"
       >
         <i class="bi bi-arrow-clockwise"></i>
-        Reload
+        {{ $t('settings.reload') }}
       </button>
 
     </div>
@@ -62,12 +63,12 @@ function reloadModem(){
   <!-- Modem Port -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap text-danger">
-      Modem port
+      {{ $t('settings.modem.modemport') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Server restart required"
+        :title="$t('settings.modem.modemport_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -88,12 +89,12 @@ function reloadModem(){
   <!-- Modem Host -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap text-danger">
-      Modem host
+      {{ $t('settings.modem.modemhost') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Server restart required"
+        :title="$t('settings.modem.modemhost_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -113,12 +114,12 @@ function reloadModem(){
   <!-- Audio Input Device -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      Audio Input device
+      {{ $t('settings.modem.audioinputdevice') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Select your microphone or line-in device"
+        :title="$t('settings.modem.audioinputdevice_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -137,12 +138,12 @@ function reloadModem(){
   <!-- Audio Output Device -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      Audio Output device
+      {{ $t('settings.modem.audiooutputdevice') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Select your speakers or output device"
+        :title="$t('settings.modem.audiooutputdevice_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -161,12 +162,12 @@ function reloadModem(){
   <!-- RX Audio Level -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      RX Audio Level
+      {{ $t('settings.modem.rxaudiolevel') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Adjust to set the receive audio gain"
+        :title="$t('settings.modem.rxaudiolevel_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -191,12 +192,12 @@ function reloadModem(){
   <!-- TX Audio Level -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      TX Audio Level
+      {{ $t('settings.modem.txaudiolevel') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Adjust to set the transmit audio gain"
+        :title="$t('settings.modem.txaudiolevel_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -221,12 +222,12 @@ function reloadModem(){
   <!-- TX Delay -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      TX delay in ms
+      {{ $t('settings.modem.txdelay') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Delay before transmitting, in milliseconds"
+        :title="$t('settings.modem.txdelay_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -264,12 +265,12 @@ function reloadModem(){
   <!-- Maximum Used Bandwidth -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      Maximum used bandwidth
+      {{ $t('settings.modem.maximumbandwidth') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Select the maximum bandwidth the modem will use"
+        :title="$t('settings.modem.maximumbandwidth_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>

@@ -2,7 +2,7 @@
   <!-- PTT COM Port Selector -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      PTT COM port
+      {{ $t('settings.radio.serialpttcomport') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
@@ -30,12 +30,12 @@
           <!-- Radio Custom Port -->
     <div class="input-group input-group-sm mb-1">
       <label class="input-group-text w-50 text-wrap">
-        Custom PTT port
+        {{ $t('settings.radio.serialpttcustomcomport') }}
         <button
           type="button"
           class="btn btn-link p-0 ms-2"
           data-bs-toggle="tooltip"
-          title="Override the com port of your radio if its not listed above"
+          :title="$t('settings.radio.serialpttcustomcomport_help')"
         >
           <i class="bi bi-question-circle"></i>
         </button>
@@ -54,12 +54,12 @@
   <!-- PTT via DTR Selector -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      PTT via DTR
+      {{ $t('settings.radio.serialpttviadtr') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Configure DTR line behavior for PTT control"
+        :title="$t('settings.radio.serialpttviadtr_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -79,12 +79,12 @@
   <!-- PTT via RTS Selector -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      PTT via RTS
+      {{ $t('settings.radio.serialpttviarts') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Configure RTS line behavior for PTT control"
+        :title="$t('settings.radio.serialpttviarts_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
