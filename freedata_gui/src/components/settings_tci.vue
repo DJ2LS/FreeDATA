@@ -1,18 +1,18 @@
 <template>
 
     <div class="alert alert-warning" role="alert">
-    <strong><i class="bi bi-gear-wide-connected me-1"></i>TCI</strong> is currently broken. Re-Implementation is a work in progress.
+    <strong><i class="bi bi-gear-wide-connected me-1"></i></strong> {{ $t('settings.radio.tciinfo') }}
   </div>
 
   <!-- TCI IP Address Input -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      TCI IP Address
+      {{ $t('settings.radio.tcihost') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Enter the IP address of your TCI device"
+        :title="$t('settings.radio.tcihost_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -31,12 +31,12 @@
   <!-- TCI Port Input -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      TCI Port
+      {{ $t('settings.radio.tciport') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Enter the port number for TCI communication"
+        :title="$t('settings.radio.tciport_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>

@@ -83,6 +83,28 @@
         "exp": {
             "introduction": "Warning: These features may be incomplete. They are for experienced users ONLY!",
             "info": "Info: No features publishey for testing, yet"
+        },
+        "radio": {
+            "introduction": "Rig Control related settings, including selecting your rig control method and configuring specific settings.",
+            "info": "Please select Rig Control first.",
+            "rigcontroltype": "Rig Control",
+            "rigcontroltype_help": "Choose how the software controls your radio",
+            "tabhamlib": "Hamlib",
+            "tabtci": "TCI",
+            "tabserial": "Serial",
+            "serialpttcomport": "PTT Com port",
+            "serialpttcomport_help": "Select the COM port connected to your radio for PTT control",
+            "serialpttcustomcomport": "PTT Custom COM port",
+            "serialpttcustomcomport_help": "Override the com port of your radio if its not listed above",
+            "serialpttviadtr": "PTT via DTR",
+            "serialpttviadtr_help": "Configure DTR line behavior for PTT control",
+            "serialpttviarts": "PTT via RTS",
+            "serialpttviarts_help": "Configure RTS line behavior for PTT control",
+            "tciinfo": "TCI is currently broken. Re-Implementation is a work in progress",
+            "tcihost": "TCI Host",
+            "tcihost_help": "Enter the IP address of your TCI device",
+            "tciport": "TCI Port",
+            "tciport_help": "Enter the port number for TCI communication"
         }
     }
 }
