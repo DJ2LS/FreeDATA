@@ -13,7 +13,7 @@
             "waterfalltheme_help": "Select color theme for waterfall display"
         },
         "station": {
-            "introduction": "Station related settings, like changing your callsign, location and general behaviour.\n",
+            "introduction": "Station related settings, like changing your callsign, location and general behaviour.",
             "callsign": "Callsign",
             "callsign_help": "Enter a valid callsign (Max 7 chars, no special chars)",
             "callsign_placeholder": "Enter your callsign and save it",
@@ -71,6 +71,18 @@
             "txdelay_help": "Delay before transmitting, in milliseconds",
             "maximumbandwidth": "Maximum used bandwidth",
             "maximumbandwidth_help": "Select the maximum bandwidth the modem will use"
+        },
+        "web": {
+            "introduction": "Explorer related settings, including enabling Explorer publishingand Explorer stats publishing.",
+            "description": " Publish information like your frequency or heard stations to https://explorer.freedata.app, so other users can see your stations status. Publishing stats is currently under development and might be broken.",
+            "enableexplorer": "Publish station details",
+            "enableexplorer_help": "Share your station's status with FreeDATA web service",
+            "enablestats":"Publish statistics",
+            "enablestats_help": "Share your station's statistics with FreeDATA web service"
+        },
+        "exp": {
+            "introduction": "Warning: These features may be incomplete. They are for experienced users ONLY!",
+            "info": "Info: No features publishey for testing, yet"
         }
     }
 }
