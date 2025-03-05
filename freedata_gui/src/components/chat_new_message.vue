@@ -281,7 +281,7 @@ function applyMarkdown(formatType) {
           class="form-control border rounded-pill"
           rows="1"
           ref="chatModuleMessage"
-          placeholder="Message - Send with [Enter]"
+          :placeholder="$t('chat.entermessage_placeholder')"
           v-model="chat.inputText"
           @keyup.enter="transmitNewMessage()"
           style="resize: none;"
@@ -303,7 +303,7 @@ function applyMarkdown(formatType) {
     <div class="modal-dialog modal-dialog-centered modal">
       <div class="modal-content">
         <div class="modal-header">
-        <h5 class="modal-title">Insert emoji</h5>
+        <h5 class="modal-title">{{ $t('chat.insertemoji') }}</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-target="#emojiPickerModal" aria-label="Close"></button>
       </div>
 

@@ -32,7 +32,7 @@
 
         <div class="card-footer p-0 border-top-0">
           <p class="p-0 m-0 me-1 text-end text-dark">
-            <span class="badge badge-secondary mr-2 text-dark">{{ getDateTime }} UTC</span>
+            <span class="badge badge-secondary mr-2 text-dark">{{ getDateTime }} {{ $t('chat.utc') }}</span>
           </p>
           <!-- Display formatted timestamp in card-footer -->
         </div>
@@ -51,7 +51,7 @@
       </button>
 
       <button class="btn btn-outline-secondary border-0" @click="sendADIF">
-        ADIF
+        {{ $t('chat.adif') }}
       </button>
 
       <button class="btn btn-outline-secondary border-0" @click="deleteMessage">

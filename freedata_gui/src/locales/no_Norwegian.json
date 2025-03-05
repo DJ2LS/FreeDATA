@@ -10,7 +10,7 @@
         "tabchat": "Chat",
         "tabexperimental": "Exp",
         "tabweb": "Web",
-        "tablinks": "Lenker",,
+        "tablinks": "Lenker",
         "gui": {
             "introduction": "GUI-relaterte innstillinger som å tilpasse fossetema, språk eller nettleseratferd.",
             "browserautolaunch": "Start nettleseren automatisk",
