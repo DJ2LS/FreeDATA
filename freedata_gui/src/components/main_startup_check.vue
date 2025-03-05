@@ -10,14 +10,14 @@
       <div class="modal-dialog modal-dialog-scrollable">
          <div class="modal-content">
             <div class="modal-header">
-               <h1 class="modal-title fs-5">System check</h1>
+               <h1 class="modal-title fs-5">{{ $t('modals.systemcheck') }}</h1>
                <button
                   type="button"
                   class="ms-5 btn btn-secondary"
                   aria-label="Reload GUI"
                   @click="reloadGUI"
                   >
-               Reload GUI
+               {{ $t('modals.reloadgui') }}
                </button>
                <button
                   type="button"
@@ -37,7 +37,7 @@
                            data-bs-target="#networkStatusCollapse"
                            data-bs-toggle="collapse"
                            >
-                        Network
+                        {{ $t('modals.network') }}
                         <span
                            class="badge ms-2"
                            :class="state.modem_connection === 'connected' ? 'bg-success' : 'bg-danger'"
@@ -51,12 +51,12 @@
 
 
                         <div class="alert alert-info" role="alert">
-  For remote operation, please go to <strong>settings<i class="bi bi-gear-wide-connected ms-1"></i>/modem</strong> and set the server ip to <strong>0.0.0.0</strong>
+                          {{ $t('modals.remoteinfo') }}
 
 </div>
 
                            <div class="input-group input-group-sm mb-1">
-                              <span class="input-group-text w-25">API URL</span>
+                              <span class="input-group-text w-25">{{ $t('modals.apiurl') }}</span>
                               <input
                                  type="text"
                                  class="form-control"
@@ -76,7 +76,7 @@
                            data-bs-target="#modemStatusCollapse"
                            data-bs-toggle="collapse"
                            >
-                        Modem
+                        {{ $t('general.modem') }}
                         <span
                            class="badge ms-2"
                            :class="state.is_modem_running ? 'bg-success' : 'bg-danger'"
@@ -89,14 +89,14 @@
                         <div class="accordion-body">
 
                           <div class="alert alert-info" role="alert">
-                            For further settings please go to <strong>settings<i class="bi bi-gear-wide-connected ms-1"></i>/modem</strong>
+                            {{ $t('modals.furthersettings') }}
 
 </div>
 
 
                            <!-- Audio Input Device -->
                            <div class="input-group input-group-sm mb-1">
-                              <label class="input-group-text w-50">Audio Input device</label>
+                              <label class="input-group-text w-50">{{ $t('settings.modem.audioinputdevice') }}</label>
                               <select
                                  class="form-select form-select-sm"
                                  aria-label=".form-select-sm"
@@ -114,7 +114,7 @@
                            </div>
                            <!-- Audio Output Device -->
                            <div class="input-group input-group-sm mb-1">
-                              <label class="input-group-text w-50">Audio Output device</label>
+                              <label class="input-group-text w-50">{{ $t('settings.modem.audiooutputdevice') }}</label>
                               <select
                                  class="form-select form-select-sm"
                                  aria-label=".form-select-sm"
@@ -133,11 +133,11 @@
 
 
                           <div class="alert alert-warning mt-3" role="alert">
- In case of unusual problems, you can reload the internal modem manually. If the problem persists, consider a server restart.
+{{ $t('modals.restartserveronproblem') }}
 
 </div>
                           <div class="input-group input-group-sm">
-                              <label class="input-group-text w-50">Manual modem restart</label>
+                              <label class="input-group-text w-50">{{ $t('modals.manualmodemrestart') }}</label>
                               <label class="input-group-text w-50">
                               <button
                                  type="button"
@@ -146,7 +146,7 @@
                                  data-bs-toggle="tooltip"
                                  data-bs-trigger="hover"
                                  data-bs-html="false"
-                                 title="Restart the Modem. Please set your audio and radio settings first!"
+                                 :title=" $t('modals.manualmodemrestart_help')"
                                  @click="reloadModem"
                                  >
                               <i class="bi bi-arrow-clockwise"></i>
@@ -169,7 +169,7 @@
                            data-bs-toggle="collapse"
                            data-bs-parent="#startupCheckAccordion"
                            >
-                        Radio control
+                        {{ $t('modals.radiocontrol') }}
                         <span
                            class="badge ms-2"
                            :class="getRigControlStatus() ? 'bg-success' : 'bg-danger'"
@@ -182,11 +182,11 @@
                         <div class="accordion-body">
 
                            <div class="alert alert-info" role="alert">
-  This is just a quick setting! For further options, please go to <strong>settings<i class="bi bi-gear-wide-connected ms-1"></i>/rig control</strong>
+                             {{ $t('modals.radiocontrolinfo') }}
 </div>
 
                            <div class="input-group input-group-sm mb-1">
-                              <span class="input-group-text" style="width: 180px">Rig control method</span>
+                              <span class="input-group-text" style="width: 180px">{{ $t('modals.rigcontrolmethod') }}</span>
                               <select
                                  class="form-select form-select-sm"
                                  aria-label=".form-select-sm"
@@ -205,7 +205,7 @@
                            <div :class="{ 'd-none': settings.remote.RADIO.control !== 'rigctld_bundle' }">
                               <div class="input-group input-group-sm mb-1">
                                  <span class="input-group-text" style="width: 180px"
-                                    >Radio port</span
+                                    >{{ $t('modals.radioport') }}</span
                                     >
                                  <select
                                     @change="onChange"
@@ -228,7 +228,7 @@
                                     class="btn btn-sm btn-outline-secondary"
                                     @click="testHamlib"
                                     >
-                                 Test Hamlib
+                                 {{ $t('modals.testhamlib') }}
                                  </button>
                               </div>
                            </div>
@@ -245,7 +245,7 @@
                            data-bs-toggle="collapse"
                            >
 
-                        System Info
+                        {{ $t('modals.systeminfo') }}
                         <!--
                         <button type="button" class="btn btn-sm btn-outline-secondary" @click="copyToClipboard">Copy</button>
                         -->
@@ -257,29 +257,29 @@
                         <div class="accordion-body">
 
                            <div class="alert alert-info" role="alert">
-  Please share this information when opening an issue
+                             {{ $t('modals.systeminfoalert') }}
 
 </div>
 
-                            <h3>API Information</h3>
-                            <p><strong>API Version:</strong> {{ state.api_version }}</p>
-                            <p><strong>Modem Version:</strong> {{ state.modem_version }}</p>
+                            <h3>{{ $t('modals.apiinformation') }}</h3>
+                            <p><strong>{{ $t('modals.apiversion') }}:</strong> {{ state.api_version }}</p>
+                            <p><strong>{{ $t('modals.modemversion') }}:</strong> {{ state.modem_version }}</p>
 
-                            <h3>Operating System Information</h3>
-                            <p><strong>System:</strong> {{ state.os_info.system }}</p>
-                            <p><strong>Node:</strong> {{ state.os_info.node }}</p>
-                            <p><strong>Release:</strong> {{ state.os_info.release }}</p>
-                            <p><strong>Version:</strong> {{ state.os_info.version }}</p>
-                            <p><strong>Machine:</strong> {{ state.os_info.machine }}</p>
-                            <p><strong>Processor:</strong> {{ state.os_info.processor }}</p>
+                            <h3>{{ $t('modals.osinfo') }}</h3>
+                            <p><strong>{{ $t('modals.system') }}:</strong> {{ state.os_info.system }}</p>
+                            <p><strong>{{ $t('modals.node') }}:</strong> {{ state.os_info.node }}</p>
+                            <p><strong>{{ $t('modals.release') }}:</strong> {{ state.os_info.release }}</p>
+                            <p><strong>{{ $t('modals.version') }}:</strong> {{ state.os_info.version }}</p>
+                            <p><strong>{{ $t('modals.machine') }}:</strong> {{ state.os_info.machine }}</p>
+                            <p><strong>{{ $t('modals.processor') }}:</strong> {{ state.os_info.processor }}</p>
 
-                            <h3>Python Information</h3>
-                            <p><strong>Build:</strong> {{ state.python_info.build.join(' ') }}</p>
-                            <p><strong>Compiler:</strong> {{ state.python_info.compiler }}</p>
-                            <p><strong>Branch:</strong> {{ state.python_info.branch || 'N/A' }}</p>
-                            <p><strong>Implementation:</strong> {{ state.python_info.implementation }}</p>
-                            <p><strong>Revision:</strong> {{ state.python_info.revision || 'N/A' }}</p>
-                            <p><strong>Version:</strong> {{ state.python_info.version }}</p>
+                            <h3>{{ $t('modals.pythoninformation') }}</h3>
+                            <p><strong>{{ $t('modals.build') }}:</strong> {{ state.python_info.build.join(' ') }}</p>
+                            <p><strong>{{ $t('modals.compiler') }}:</strong> {{ state.python_info.compiler }}</p>
+                            <p><strong>{{ $t('modals.branch') }}:</strong> {{ state.python_info.branch || 'N/A' }}</p>
+                            <p><strong>{{ $t('modals.implementation') }}:</strong> {{ state.python_info.implementation }}</p>
+                            <p><strong>{{ $t('modals.revision') }}:</strong> {{ state.python_info.revision || 'N/A' }}</p>
+                            <p><strong>{{ $t('modals.version') }}:</strong> {{ state.python_info.version }}</p>
                         </div>
                      </div>
                   </div>

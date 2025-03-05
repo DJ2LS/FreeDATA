@@ -95,7 +95,7 @@ const scatterChartData = computed(() => ({
     <!--325px-->
     <div class="card-header">
       <i class="bi bi-border-outer" style="font-size: 1.2rem"></i>&nbsp;
-      <strong>Scatter diagram</strong>
+      <strong>{{ $t('grid.components.scatterdiagram') }}</strong>
     </div>
     <div class="card-body overflow-auto p-0">
       <Scatter :data="scatterChartData" :options="scatterChartOptions" />

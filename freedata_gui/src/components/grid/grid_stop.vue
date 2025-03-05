@@ -19,7 +19,7 @@ function stopAllTransmissions() {
     data-bs-trigger="hover"
     data-bs-html="false"
     @click="stopAllTransmissions"
-    title="Abort session and stop transmissions"
+    :title="$t('grid.components.stop_help')"
   >
     <i class="bi bi-sign-stop-fill h1"></i>
   </a>

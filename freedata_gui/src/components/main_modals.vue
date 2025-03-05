@@ -305,7 +305,7 @@ const beaconHistogramData = computed(() => ({
                   class="btn btn-secondary"
                   data-bs-dismiss="modal"
                   >
-               Close
+               {{ $t('modals.close') }}
                </button>
             </div>
          </div>
@@ -324,7 +324,7 @@ const beaconHistogramData = computed(() => ({
          <div class="modal-content">
             <div class="modal-header">
                <h1 class="modal-title fs-5" id="deleteChatModalLabel">
-                   {{ chat.selectedCallsign }} Options
+                   {{ chat.selectedCallsign }} {{ $t('modals.options') }}
                </h1>
                <button
                   type="button"
@@ -339,7 +339,7 @@ const beaconHistogramData = computed(() => ({
 
             <div class="card">
   <div class="card-header">
-    <strong>Beacon histogram</strong>
+    <strong>{{ $t('modals.beaconhistogram') }}</strong>
   </div>
   <div class="card-body">
     <Bar
@@ -354,7 +354,7 @@ const beaconHistogramData = computed(() => ({
 
             <div class="card mt-3">
   <div class="card-header">
-    <strong>Further options</strong>
+    <strong>{{ $t('modals.furtheroptions') }}</strong>
   </div>
   <div class="card-body">
     <button
@@ -363,7 +363,7 @@ const beaconHistogramData = computed(() => ({
                   @click="deleteChat"
                   data-bs-dismiss="modal"
                   >
-               Delete Chat
+               {{ $t('modals.deletechat') }}
                </button>
   </div>
 </div>
@@ -378,7 +378,7 @@ const beaconHistogramData = computed(() => ({
                   class="btn btn-secondary"
                   data-bs-dismiss="modal"
                   >
-               Close
+               {{ $t('modals.close') }}
                </button>
 
             </div>
@@ -410,14 +410,14 @@ const beaconHistogramData = computed(() => ({
             <div class="modal-body">
 
               <div class="card mt-2">
-                  <div class="card-header">Statistics</div>
+                  <div class="card-header">{{ $t('general.statistics') }}</div>
 <div class="card-body">
   <div class="container">
     <div class="row">
       <!-- Bytes per Minute -->
       <div class="auto mb-2">
         <div class="input-group">
-          <span class="input-group-text">Speed</span>
+          <span class="input-group-text">{{ $t('general.speed') }}</span>
           <span class="input-group-text">{{ chat.messageInfoById?.statistics?.bytes_per_minute ?? 'NaN' }} bpm / {{ chat.messageInfoById?.statistics?.bits_per_second ?? 'NaN' }} bps</span>
         </div>
       </div>
@@ -428,15 +428,15 @@ const beaconHistogramData = computed(() => ({
       <!-- Duration [s] -->
       <div class="col-auto mb-2">
         <div class="input-group">
-          <span class="input-group-text">Duration [s]</span>
+          <span class="input-group-text">{{ $t('general.duration') }}</span>
           <span class="input-group-text">{{ Math.round(chat.messageInfoById?.statistics?.duration) ?? 'NaN' }}</span>
         </div>
       </div>
       <!-- Size -->
       <div class="col-auto mb-2">
         <div class="input-group">
-          <span class="input-group-text">Size</span>
-          <span class="input-group-text">{{ chat.messageInfoById?.statistics?.total_bytes ?? 'NaN'  }} Bytes</span>
+          <span class="input-group-text">{{ $t('general.size') }}</span>
+          <span class="input-group-text">{{ chat.messageInfoById?.statistics?.total_bytes ?? 'NaN'  }} {{ $t('general.bytes') }}</span>
         </div>
       </div>
     </div>
@@ -450,7 +450,7 @@ const beaconHistogramData = computed(() => ({
 
 
                               <div class="card mt-2">
-                  <div class="card-header">Chart</div>
+                  <div class="card-header">{{ $t('general.chart') }}</div>
                   <div class="card-body">
                      <Line
                         :data="transmissionSpeedChartDataMessageInfo"
@@ -465,7 +465,7 @@ const beaconHistogramData = computed(() => ({
                   class="btn btn-secondary"
                   data-bs-dismiss="modal"
                   >
-               Close
+               {{ $t('modals.close') }}
                </button>
             </div>
          </div>
@@ -482,7 +482,7 @@ const beaconHistogramData = computed(() => ({
          <div class="modal-content">
             <div class="modal-header">
                <h1 class="modal-title fs-5" id="deleteChatModalLabel">
-                  Start a new chat
+                  {{ $t('modals.startnewchat') }}
                </h1>
                <button
                   type="button"
@@ -493,13 +493,13 @@ const beaconHistogramData = computed(() => ({
             </div>
             <div class="modal-body">
                <div class="alert alert-info" role="alert">
-                  1. Enter destination callsign
+                  1. {{ $t('modals.newchatline1') }}
                   <br />
-                  2. Enter a first message
+                  2. {{ $t('modals.newchatline2') }}
                   <br />
-                  3. Click "START NEW CHAT"
+                  3. {{ $t('modals.newchatline3') }}
                   <br />
-                  4. Check the chat tab on left side for messages
+                  4. {{ $t('modals.newchatline4') }}
                </div>
                <div class="form-floating mb-3">
                   <input
@@ -513,7 +513,7 @@ const beaconHistogramData = computed(() => ({
                      v-model="chat.newChatCallsign"
                      />
                   <label for="floatingInputDestination"
-                     >dxcallsign / destination</label
+                     >{{ $t('general.dxcallsign') }} / {{ $t('general.destination') }}</label
                      >
                </div>
                <div class="form-floating">
@@ -524,7 +524,7 @@ const beaconHistogramData = computed(() => ({
                      style="height: 100px"
                      v-model="chat.newChatMessage"
                      ></textarea>
-                  <label for="floatingTextareaNewChatMessage">First message</label>
+                  <label for="floatingTextareaNewChatMessage">{{ $t('modals.firstmessage') }}</label>
                </div>
             </div>
             <div class="modal-footer">
@@ -533,7 +533,7 @@ const beaconHistogramData = computed(() => ({
                   class="btn btn-secondary"
                   data-bs-dismiss="modal"
                   >
-               Close
+               {{ $t('modals.close') }}
                </button>
                <button
                   class="btn btn-sm btn-outline-success"
@@ -543,7 +543,7 @@ const beaconHistogramData = computed(() => ({
                   title="Start a new chat (enter dx call sign first)"
                   @click="newChat()"
                   >
-               START NEW CHAT
+               {{ $t('modals.startnewchat').toUpperCase() }}
                <i class="bi bi-pencil-square" style="font-size: 1.2rem"></i>
                </button>
             </div>
@@ -560,7 +560,7 @@ const beaconHistogramData = computed(() => ({
       <div class="modal-dialog modal-dialog-scrollable">
          <div class="modal-content">
             <div class="modal-header">
-               <h5 class="modal-title">Audio tuning</h5>
+               <h5 class="modal-title">{{ $t('modals.audiotuning') }}</h5>
                <button
                   type="button"
                   class="btn btn-close"
@@ -570,21 +570,21 @@ const beaconHistogramData = computed(() => ({
             </div>
             <div class="modal-body">
                <div class="alert alert-info" role="alert">
-                  Adjust audio levels. Value in dB. Default is <strong>0</strong>
+                  {{ $t('modals.audiotuninginfo') }}
                </div>
                <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text">Test-Frame</span>
+                  <span class="input-group-text">{{ $t('modals.testframe') }}</span>
                   <button
                      type="button"
                      id="sendTestFrame"
                      @click="sendModemTestFrame()"
                      class="btn btn-danger"
                      >
-                  Transmit ( 5s )
+                  {{ $t('modals.testframetransmit') }}
                   </button>
                </div>
                <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text">RX Level</span>
+                  <span class="input-group-text">{{ $t('modals.audiotuningrxlevel') }}</span>
                   <span class="input-group-text">{{
                   settings.remote.AUDIO.rx_audio_level
                   }}</span>
@@ -601,7 +601,7 @@ const beaconHistogramData = computed(() => ({
                      /></span>
                </div>
                <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text">TX Level</span>
+                  <span class="input-group-text">{{ $t('modals.audiotuningtxlevel') }}</span>
                   <span class="input-group-text">{{
                   settings.remote.AUDIO.tx_audio_level
                   }}</span>
@@ -620,14 +620,14 @@ const beaconHistogramData = computed(() => ({
 
 
               <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text">Transmit sine</span>
+                  <span class="input-group-text">{{ $t('modals.audiotuningtransmitsine') }}</span>
                   <button
                      type="button"
                      id="sendTestFrame"
                      @click="sendSineTone(true)"
                      class="btn btn-success"
                      >
-                  Transmit ( max 30s )
+                  {{ $t('modals.audiotuningtransmitsine30s') }}
                   </button>
 
                                 <button
@@ -636,7 +636,7 @@ const beaconHistogramData = computed(() => ({
                      @click="sendSineTone(false)"
                      class="btn btn-danger"
                      >
-                  Stop
+                  {{ $t('general.stop') }}
                   </button>
 
                </div>
@@ -800,14 +800,14 @@ const beaconHistogramData = computed(() => ({
                   class="btn btn-secondary"
                   data-bs-dismiss="modal"
                   >
-               Close
+               {{ $t('modals.close') }}
                </button>
                <button
                   type="button"
                   class="btn btn-primary"
                   @click="updateStationInfo"
                   >
-               Save changes
+               {{ $t('modals.savechanges') }}
                </button>
             </div>
          </div>

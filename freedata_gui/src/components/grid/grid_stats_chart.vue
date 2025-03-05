@@ -98,7 +98,7 @@ const transmissionSpeedChartData = computed(() => ({
     <!--325px-->
     <div class="card-header">
       <i class="bi bi-graph-up-arrow" style="font-size: 1.2rem"></i>&nbsp;
-      <strong>Transmission Charts</strong>
+      <strong>{{ $t('grid.components.transmissioncharts') }}</strong>
     </div>
     <div class="card-body overflow-auto p-0">
   <Line

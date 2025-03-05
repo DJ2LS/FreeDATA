@@ -16,7 +16,7 @@ setActivePinia(pinia);
       data-bs-target="#audioModal"
       title="Tune"
     >
-      Tune
+      {{ $t('grid.components.tune') }}
     </a>
   </div>
 </template>

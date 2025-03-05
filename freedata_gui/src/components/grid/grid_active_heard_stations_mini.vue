@@ -36,7 +36,7 @@ function pushToPing(origin) {
   <div class="card h-100">
     <div class="card-header">
       <i class="bi bi-list-columns-reverse" style="font-size: 1.2rem"></i>&nbsp;
-      <strong>Heard Stations</strong>
+      <strong>{{ $t('grid.components.heardstations') }}</strong>
     </div>
 
     <div class="card-body overflow-auto p-0">
@@ -45,8 +45,8 @@ function pushToPing(origin) {
         <table class="table table-sm table-striped">
           <thead>
             <tr>
-              <th scope="col">Time</th>
-              <th scope="col">DX Call</th>
+              <th scope="col">Tim{{ $t('grid.components.time') }}e</th>
+              <th scope="col">{{ $t('grid.components.dxcall') }}</th>
             </tr>
           </thead>
           <tbody>

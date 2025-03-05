@@ -1,23 +1,23 @@
 <template>
   <!-- Top Info Area for Rig Control Settings -->
   <div class="alert alert-info" role="alert">
-    <strong><i class="bi bi-gear-wide-connected me-1"></i>Rig Control</strong> related settings, including selecting your rig control method and configuring specific settings.
+    <strong><i class="bi bi-gear-wide-connected me-1"></i></strong>{{ $t('settings.radio.introduction') }}
   </div>
 
     <div class="alert alert-warning" role="alert">
-    Please select <strong>Rig Control</strong> first.
+    {{ $t('settings.radio.info') }}
   </div>
 
 
   <!-- Rig Control Selection -->
 <div class="input-group mb-1">
   <label class="input-group-text w-50 text-wrap">
-    Rig Control
+    {{ $t('settings.radio.rigcontroltype') }}
     <button
       type="button"
       class="btn btn-link p-0 ms-2"
       data-bs-toggle="tooltip"
-      title="Choose how the software controls your radio"
+      :title="$t('settings.radio.rigcontroltype_help')"
     >
       <i class="bi bi-question-circle"></i>
     </button>
@@ -52,7 +52,7 @@
         aria-controls="nav-hamlib"
         aria-selected="true"
       >
-        Hamlib
+        {{ $t('settings.radio.tabhamlib') }}
       </button>
       <button
         class="nav-link"
@@ -64,7 +64,7 @@
         aria-controls="nav-tci"
         aria-selected="false"
       >
-        TCI
+        {{ $t('settings.radio.tabtci') }}
       </button>
       <button
         class="nav-link"
@@ -76,7 +76,7 @@
         aria-controls="nav-serial"
         aria-selected="false"
       >
-        Serial
+        {{ $t('settings.radio.tabserial') }}
       </button>
     </div>
   </nav>

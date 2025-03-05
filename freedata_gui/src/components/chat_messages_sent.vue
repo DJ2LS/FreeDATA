@@ -66,7 +66,7 @@
             >
               {{ message.status }}
             </span>
-            | <span class="badge text-bg-light mr-2"> attempt: {{ message.attempt + 1 }} </span>|<span class="badge text-bg-light mr-2"> {{ getDateTime }} UTC</span>
+            | <span class="badge text-bg-light mr-2"> {{ $t('chat.attempt') }}: {{ message.attempt + 1 }} </span>|<span class="badge text-bg-light mr-2"> {{ getDateTime }} {{ $t('chat.utc') }}</span>
           </p>
         </div>
 

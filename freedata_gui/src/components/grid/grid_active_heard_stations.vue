@@ -88,7 +88,7 @@ function transmitPing(callsign) {
     <!--325px-->
     <div class="card-header">
       <i class="bi bi-list-columns-reverse" style="font-size: 1.2rem"></i>&nbsp;
-      <strong>Heard stations</strong>
+      <strong>{{ $t('grid.components.heardstations') }}</strong>
     </div>
 
     <div class="card-body overflow-auto p-0">
@@ -97,14 +97,14 @@ function transmitPing(callsign) {
         <table class="table table-sm table-striped" id="tblHeardStationList">
           <thead>
             <tr>
-              <th scope="col" id="thTime">Time</th>
-              <th scope="col" id="thFreq">Freq</th>
-              <th scope="col" id="thDxcall">DXCall</th>
-              <th scope="col" id="thDxgrid">Grid</th>
-              <th scope="col" id="thDist">Dist</th>
-              <th scope="col" id="thType">Type</th>
-              <th scope="col" id="thSnr">SNR</th>
-              <th scope="col" id="thSnr">AFK?</th>
+              <th scope="col" id="thTime">{{ $t('grid.components.time') }}</th>
+              <th scope="col" id="thFreq">{{ $t('grid.components.freq') }}</th>
+              <th scope="col" id="thDxcall">{{ $t('grid.components.dxcall') }}</th>
+              <th scope="col" id="thDxgrid">{{ $t('grid.components.grid') }}</th>
+              <th scope="col" id="thDist">{{ $t('grid.components.dist') }}</th>
+              <th scope="col" id="thType">{{ $t('grid.components.type') }}</th>
+              <th scope="col" id="thSnr">{{ $t('grid.components.snr') }}</th>
+              <th scope="col" id="thSnr">{{ $t('grid.components.afk') }}</th>
             </tr>
           </thead>
           <tbody id="gridHeardStations">

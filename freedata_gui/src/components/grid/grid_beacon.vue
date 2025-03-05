@@ -23,7 +23,7 @@ function startStopBeacon() {
       @click="startStopBeacon"
       title="Enable/disable periodic beacons"
     >
-      Beacon&nbsp;
+      {{ $t('grid.components.beacon') }}&nbsp;
       <span
         role="status"
         :class="{

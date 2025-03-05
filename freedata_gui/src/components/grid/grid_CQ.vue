@@ -29,7 +29,7 @@ async function handleCQCall() {
     <a
       class="btn btn-sm btn-secondary d-flex justify-content-center align-items-center object-fill border rounded w-100 h-100"
       @click="handleCQCall"
-      title="Send a CQ call!"
+      :title="$t('grid.components.callcq') "
     >
       <span v-if="!isCQButtonDisabled">CQ</span>
       <span v-else>...</span>

@@ -69,7 +69,7 @@ window.addEventListener(
   <div class="card h-100">
     <div class="card-header">
       <i class="bi bi-broadcast" style="font-size: 1.2rem"></i>&nbsp;
-      <strong>Broadcasts</strong>
+      <strong>{{ $t('grid.componments.broadcasts') }}</strong>
     </div>
     <div class="card-body overflow-auto">
       <div class="input-group">
@@ -95,8 +95,8 @@ window.addEventListener(
           title="Send a ping request to a remote station"
           @click="transmitPing"
         >
-                          <strong v-if="!isPingButtonDisabled">PING Station</strong>
-                <strong v-else>Sending...</strong>
+                          <strong v-if="!isPingButtonDisabled">{{ $t('grid.components.pingstation') }}</strong>
+                <strong v-else>{{ $t('grid.components.transmitting') }}</strong>
         </button>
 
         <button
@@ -106,8 +106,8 @@ window.addEventListener(
           title="Send a CQ to the world"
           @click="handleSendCQ"
         >
-          <span v-if="!isCQButtonDisabled">Call CQ</span>
-                <span v-else>Sending CQ...</span>
+          <span v-if="!isCQButtonDisabled">{{ $t('grid.components.callcq') }}</span>
+                <span v-else>{{ $t('grid.components.sendingcq') }}</span>
         </button>
 
         <button
@@ -119,9 +119,9 @@ window.addEventListener(
             'btn-success': state.beacon_state,
             'btn-outline-secondary': !state.beacon_state,
           }"
-          title="Toggle beacon mode. The interval can be set in settings. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses."
+          :title=" $t('grid.components.togglebeacon_help')"
         >
-          Toggle beacon
+          {{ $t('grid.components.togglebeacon') }}
         </button>
       </div>
       <!-- end of row-->
