@@ -43,10 +43,10 @@ window.addEventListener(
       data-bs-toggle="tooltip"
       data-bs-trigger="hover"
       data-bs-html="false"
-      title="Send a ping request to a remote station"
+      :title="$t('grid.components.ping_help')"
       @click="transmitPing"
     >
-      Ping
+      {{ $t('grid.components.ping') }}
     </a>
   </div>
 </template>
