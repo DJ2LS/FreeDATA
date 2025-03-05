@@ -39,7 +39,7 @@
             "scatterdiagram": "Scatter diagram",
             "onair": "on air",
             "ping": "Ping",
-            "ping_help": "Send a ping reqiuest to a remote station",
+            "ping_help": "Send a ping request to a remote station",
             "heardstations": "Heard Stations",
             "time": "Time",
             "freq": "Freq",
@@ -57,7 +57,7 @@
             "callcq": "Call CQ",
             "cqcqcq": "CQ CQ CQ",
             "togglebeacon": "toggle beacon",
-            "togglebeacon_help": "Toggle beacon mode. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is openend, the beacon pauses.",
+            "togglebeacon_help": "Toggle beacon mode. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses.",
             "enablebeacon": "Enable beacon",
             "awayfromkey": "Away from key",
             "radiocontrol": "Radio control",
@@ -95,14 +95,14 @@
         "remoteinfo": "For remote operation, please go to settings/modem and set the server ip to 0.0.0.0",
         "apiurl": "API Url",
         "furthersettings": "For further settings please go to settings/modem",
-        "restartserveronproblem": "In case of unusual problems, you can reload the internal moidem manually. If the problem persists, consider a server restart.",
+        "restartserveronproblem": "In case of unusual problems, you can reload the internal modem manually. If the problem persists, consider a server restart.",
         "manualmodemrestart": "Manual modem restart",
         "manualmodemrestart_help": "Restart the modem. Please set your audio and radio settings first!",
         "radiocontrol": "Radio control",
         "radiocontrolinfo": "This is just a quick setting! For further options, please go to settings/rig control",
         "rigcontrolmethod": "Rig control method",
         "rigcontrolmethoddisabled": "Disabled ( no rig control; use with VOX)",
-        "rigcontrolmethodserialptt": "Seriaal PTT via DTR/RTS",
+        "rigcontrolmethodserialptt": "Serial PTT via DTR/RTS",
         "rigcontrolmethodrigctld": "Rigctld ( external Hamlib instance)",
         "rigcontrolmethodrigctldbundle": "Rigctld ( internal Hamlib)",
         "rigcontrolmethodtci": "TCI",
@@ -217,7 +217,7 @@
             "maximumbandwidth_help": "Select the maximum bandwidth the modem will use"
         },
         "web": {
-            "introduction": "Explorer related settings, including enabling Explorer publishingand Explorer stats publishing.",
+            "introduction": "Explorer related settings, including enabling Explorer publishing and Explorer stats publishing.",
             "description": " Publish information like your frequency or heard stations to https://explorer.freedata.app, so other users can see your stations status. Publishing stats is currently under development and might be broken.",
             "enableexplorer": "Publish station details",
             "enableexplorer_help": "Share your station's status with FreeDATA web service",
@@ -226,7 +226,7 @@
         },
         "exp": {
             "introduction": "Warning: These features may be incomplete. They are for experienced users ONLY!",
-            "info": "Info: No features publishey for testing, yet"
+            "info": "Info: No features publishes for testing, yet"
         },
         "radio": {
             "introduction": "Rig Control related settings, including selecting your rig control method and configuring specific settings.",
