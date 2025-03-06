@@ -213,6 +213,7 @@
             "enablemessageautorepeat": "Enable message auto repeat",
             "enablemessageautorepeat_help": "Re-send message on beacon",
             "enableadifloggingudp": "Enable adif logging via UDP",
+            "enableadifloggingudp_help": "ADIF Logging via UDP instead of TCP",
             "adifloggingudphost": "ADIF Logging UDP host",
             "adifloggingudphost_help": "ADIF server host, e.g., 127.0.0.1",
             "adifloggingudphost_placeholder": "Enter ADIF server host",
