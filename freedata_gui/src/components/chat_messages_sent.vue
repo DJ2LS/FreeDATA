@@ -64,7 +64,16 @@
                 'text-bg-secondary': message.status === 'transmitted' || message.status === 'queued'
               }"
             >
-              {{ message.status }}
+              {{
+                  message.status === 'failed'
+                    ? $t('grid.components.msgstatusfailed')
+                  : message.status === 'transmitting'
+                    ? $t('grid.components.msgstatustransmitting')
+                  : message.status === 'transmitted'
+                    ? $t('grid.components.msgstatustransmitted')
+                  : message.status === 'queued'
+                    ? $t('grid.components.msgstatusqueued')
+                  : message.status }}
             </span>
             | <span class="badge text-bg-light mr-2"> {{ $t('chat.attempt') }}: {{ message.attempt + 1 }} </span>|<span class="badge text-bg-light mr-2"> {{ getDateTime }} {{ $t('chat.utc') }}</span>
           </p>

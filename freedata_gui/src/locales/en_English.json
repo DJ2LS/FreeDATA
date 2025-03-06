@@ -107,7 +107,11 @@
             "online": "Online",
             "offline": "Offline",
             "received": "received",
-            "transmitted": "transmitted"
+            "transmitted": "transmitted",
+            "msgstatustransmitting": "transmitting",
+            "msgstatustransmitted": "transmitted",
+            "msgstatusfailed": "failed",
+            "msgstatusqueued": "queued"
 
         }
     },
