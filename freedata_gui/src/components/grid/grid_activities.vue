@@ -38,8 +38,14 @@ function getDateTime(timestampRaw) {
 
         </h6>
 
+
         <p class="mb-2" style="text-align: start; font-size: smaller">
-          <small>{{ item[1].activity_type }} - {{ item[1].direction }}</small>
+          <small>
+  {{ item[1].activity_type }} -
+  {{ item[1].direction === 'received'
+      ? $t('grid.components.received')
+      : $t('grid.components.transmitted') }}
+</small>
         </p>
       </div>
     </div>

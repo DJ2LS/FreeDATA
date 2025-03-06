@@ -105,7 +105,9 @@
             "connected": "Connected",
             "disconnected": "Disconnected",
             "online": "Online",
-            "offline": "Offline"
+            "offline": "Offline",
+            "received": "received",
+            "transmitted": "transmitted"
 
         }
     },
