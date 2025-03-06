@@ -50,7 +50,7 @@
         "frequencydescription": "Commonly used frequencies are listed here, and are all USB. Simply click on a entry or manually enter a frequency in the textbox to tune your rig if rig control is enabled.",
         "frequencyselection": "Frequency selection",
         "savepreset": "Save preset",
-        "savepreset_help": "Save current grid layout as a preset that can be resotred using restore preset button",
+        "savepreset_help": "Save current grid layout as a preset that can be restored using restore preset button",
         "restorepreset": "Restore preset",
         "restorepreset_help": "Restore your saved grid preset (clears current grid)",
         "cleargrid": "Clear grid",
