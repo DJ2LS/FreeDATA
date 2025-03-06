@@ -44,7 +44,17 @@
         "to": "to",
         "pttstate_help": "PTT trigger state",
         "modemstate_help" : "Modem state",
-        "bytestransferred": "Bytes transferred"
+        "bytestransferred": "Bytes transferred",
+        "modemcheck": "Healthcheck",
+        "modemcheck_help": "Check FreeDATA Status",
+        "home": "Home",
+        "home_help": "Home",
+        "chat": "RF Chat",
+        "chat_help": "RF Chat",
+        "settings": "Settings",
+        "settings_help": "Settings"
+
+
     },
     "grid": {
         "frequencydescription": "Commonly used frequencies are listed here, and are all USB. Simply click on a entry or manually enter a frequency in the textbox to tune your rig if rig control is enabled.",
