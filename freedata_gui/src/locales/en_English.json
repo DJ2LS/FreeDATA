@@ -99,7 +99,14 @@
             "powerpercent": "% Power",
             "tuner": "Tuner",
             "activity": "Activity",
-            "beacon": "Beacon"
+            "beacon": "Beacon",
+            "active": "Active",
+            "inactive": "Inactive",
+            "connected": "Connected",
+            "disconnected": "Disconnected",
+            "online": "Online",
+            "offline": "Offline"
+
         }
     },
     "modals": {

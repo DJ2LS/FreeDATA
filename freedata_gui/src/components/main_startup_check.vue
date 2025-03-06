@@ -174,7 +174,7 @@
                            class="badge ms-2"
                            :class="getRigControlStatus() ? 'bg-success' : 'bg-danger'"
                            >
-                        {{ getRigControlStatus() ? "Online" : "Offline" }}
+                        {{ getRigControlStatus() ? i18next.t('grid.components.online') : i18next.t('grid.components.offline') }}
                         </span>
                         </button>
                      </h2>
@@ -308,6 +308,7 @@ import { useSerialStore } from '../store/serialStore.js';
 
 // API imports
 import { getVersion, getSysInfo } from '../js/api';
+import i18next from "@/js/i18n";
 
 // Reactive state
 const state = useStateStore(pinia);
@@ -367,11 +368,11 @@ const copyToClipboard = () => {
 
 // Helper functions
 function getModemStateLocal() {
-  return state.is_modem_running ? 'Active' : 'Inactive';
+  return state.is_modem_running ? i18next.t('grid.components.active') : i18next.t('grid.components.inactive')
 }
 
 function getNetworkState() {
-  return state.modem_connection === 'connected' ? 'Connected' : 'Disconnected';
+  return state.modem_connection === 'connected' ? i18next.t('grid.components.connected') : i18next.t('grid.components.disconnected');
 }
 
 function getRigControlStatus() {
