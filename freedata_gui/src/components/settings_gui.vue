@@ -26,6 +26,32 @@
     </select>
   </div>
 
+    <!-- Language Selector -->
+  <div class="input-group input-group-sm mb-1">
+    <span class="input-group-text w-50 text-wrap">
+      {{ $t('settings.gui.colormode') }}
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        :title="$t('settings.gui.colormode_help')"
+      >
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </span>
+     <select
+      class="form-select form-select-sm w-50"
+      id="colormode_selector"
+      @change="saveSettings"
+      v-model="settings.local.colormode"
+    >
+      <option value="light">{{ $t('settings.gui.colormodelight') }}</option>
+      <option value="dark">{{ $t('settings.gui.colormodedark') }}</option>
+      <option value="auto">{{ $t('settings.gui.colormodeauto') }}</option>
+
+    </select>
+  </div>
+
   <!-- Waterfall Theme Selection -->
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-50 text-wrap">

@@ -212,7 +212,12 @@
             "selectlanguage": "Select language",
             "selectlanguage_help": "Select the preferred language used for GUI",
             "waterfalltheme": "Waterfall theme",
-            "waterfalltheme_help": "Select color theme for waterfall display"
+            "waterfalltheme_help": "Select color theme for waterfall display",
+            "colormode": "Color Mode",
+            "colormode_help": "Set the GUI color mode",
+            "colormodelight": "light",
+            "colormodedark": "dark",
+            "colormodeauto": "auto"
         },
         "station": {
             "introduction": "Station related settings, like changing your callsign, location and general behaviour.",
