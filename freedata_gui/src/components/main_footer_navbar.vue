@@ -70,7 +70,7 @@ const state = useStateStore(pinia);
           <button
             class="btn btn-sm btn-secondary me-0"
             type="button"
-            title="Speed level"
+            :title="$t('navbar.speedlevel_help')"
           >
             <i class="bi bi-speedometer2"></i>
           </button>
@@ -102,7 +102,7 @@ const state = useStateStore(pinia);
           <button
             class="btn btn-sm btn-secondary me-0"
             type="button"
-            title="Bytes transferred"
+            :title="$t('navbar.bytestransferred')"
           >
             <i class="bi bi-file-earmark-binary"></i>
           </button>
