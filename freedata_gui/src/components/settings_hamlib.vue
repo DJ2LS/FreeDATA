@@ -31,12 +31,12 @@ const settings = ref({
   <!-- Rigctld IP -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      {{ $t('settings.radio.hamlibrictldhost') }}
+      {{ $t('settings.radio.hamlibrigctldhost') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        :title="$t('settings.radio.hamlibrictldhost_help')"
+        :title="$t('settings.radio.hamlibrigctldhost_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
@@ -44,7 +44,7 @@ const settings = ref({
     <input
       type="text"
       class="form-control"
-      :placeholder="$t('settings.radio.hamlibrictldhost_placeholder')"
+      :placeholder="$t('settings.radio.hamlibrigctldhost_placeholder')"
       id="rigctldIp"
       aria-label="Rigctld IP"
       @change="onChange"
