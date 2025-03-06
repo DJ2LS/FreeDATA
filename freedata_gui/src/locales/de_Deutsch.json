@@ -99,7 +99,15 @@
             "powerpercent": "% Leistung",
             "tuner": "Tuner",
             "activity": "Aktivität",
-            "beacon": "Bake"
+            "beacon": "Bake",
+	    "active": "Aktiv",
+            "inactive": "Inaktiv",
+            "connected": "Verbunden",
+            "disconnected": "Getrennt",
+            "online": "Online",
+            "offline": "Offline",
+            "received": "empfangen",
+            "transmitted": "gesendet"
         }
     },
     "modals": {
