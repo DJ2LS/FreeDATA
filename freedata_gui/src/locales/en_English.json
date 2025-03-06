@@ -12,6 +12,32 @@
         "modem": "Modem",
         "frequency": "frequency"
     },
+    "popups": {
+        "startupfailed": "Modem startup failed - bad config?",
+        "connectedtoserver": "Connected to server",
+        "cqreceived": "CQ received",
+        "gridsquare": "Grid Square",
+        "snr": "SNR",
+        "qrvreceived": "QRV received",
+        "pingreceived": "PING received",
+        "pingackreceived": "PING ACK received",
+        "newtransmissionwith": "New transmission with",
+        "sessionid": "Session ID",
+        "totalbytes": "Total bytes",
+        "openingtransmissionwith": "Opening transmission with",
+        "ongoingtransmissionwith": "Ongoing transmission with",
+        "transmittedbytes": "Transmitted Bytes",
+        "transmissionabortedwith": "Transmission ABORTED with",
+        "state": "State",
+        "transmissionendedwith": "Transmission ENDED with",
+        "bytesperminute": "Bytes per minute",
+        "transmissionfailedwith": "Transmission FAILED with",
+        "confirmingtransmissionwith": "Confirming transmission with",
+        "receivedbytes": "Received Bytes"
+
+
+
+    },
     "grid": {
         "frequencydescription": "Commonly used frequencies are listed here, and are all USB. Simply click on a entry or manually enter a frequency in the textbox to tune your rig if rig control is enabled.",
         "frequencyselection": "Frequency selection",
