@@ -26,7 +26,7 @@
     </select>
   </div>
 
-    <!-- Language Selector -->
+    <!-- Colormode Selector -->
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-50 text-wrap">
       {{ $t('settings.gui.colormode') }}
@@ -42,7 +42,7 @@
      <select
       class="form-select form-select-sm w-50"
       id="colormode_selector"
-      @change="saveSettings"
+      @change="updateColormode"
       v-model="settings.local.colormode"
     >
       <option value="light">{{ $t('settings.gui.colormodelight') }}</option>
@@ -117,6 +117,7 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 import { availableLanguages } from '../js/i18n';
 import i18next from '../js/i18n';
+import {applyColorMode} from '../js/freedata.js'
 
 // Set the active Pinia store
 setActivePinia(pinia);
@@ -141,6 +142,11 @@ export default {
       // Update the language in i18next
       i18next.changeLanguage(this.settings.local.language);
       this.$forceUpdate();
+    },
+    updateColormode() {
+      saveSettings();
+      applyColorMode(this.settings.local.colormode);
+
     },
   },
 };

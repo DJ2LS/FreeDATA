@@ -1,7 +1,7 @@
 <template>
   <div class="row justify-content-start mb-2">
     <div :class="messageWidthClass">
-      <div class="card bg-light border rounded-top text-dark">
+      <div class="card border rounded-top ">
         <div
           v-for="attachment in message.attachments"
           :key="attachment.id"
@@ -11,14 +11,14 @@
           <chat_messages_image_preview :attachment="attachment" />
 
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-light border rounded-bottom text-truncate" disabled>
+            <button class="btn w-75 btn-secondary text-truncate" disabled>
               {{ attachment.name }}
             </button>
             <button
               @click="
                 downloadAttachment(attachment.hash_sha512, attachment.name)
               "
-              class="btn btn-light border rounded-bottom w-25"
+              class="btn btn-secondary w-25"
             >
               <i class="bi bi-download strong"></i>
             </button>
@@ -31,8 +31,8 @@
         </div>
 
         <div class="card-footer p-0 border-top-0">
-          <p class="p-0 m-0 me-1 text-end text-dark">
-            <span class="badge badge-secondary mr-2 text-dark">{{ getDateTime }} {{ $t('chat.utc') }}</span>
+          <p class="p-0 m-0 me-1 text-end ">
+            <span class="mr-2 ">{{ getDateTime }} {{ $t('chat.utc') }}</span>
           </p>
           <!-- Display formatted timestamp in card-footer -->
         </div>

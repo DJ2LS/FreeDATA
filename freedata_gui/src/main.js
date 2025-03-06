@@ -8,6 +8,7 @@ import { Chart, Filler } from "chart.js";
 import { getRemote, settingsStore as settings } from "./store/settingsStore";
 import { initConnections } from "./js/event_sock.js";
 import { getModemState } from "./js/api";
+import {applyColorMode} from './js/freedata.js'
 
 // Register the Filler plugin globally
 Chart.register(Filler);
@@ -28,6 +29,11 @@ app.mount("#app");
 getRemote().then(() => {
   initConnections();
   getModemState();
+
   // Update the i18next language based on the stored settings
   i18next.changeLanguage(settings.local.language);
+
+  //Apply Color Mode to gui
+  applyColorMode(settings.local.colormode);
+
 });
