@@ -12,7 +12,7 @@
         "modem": "Modem",
         "frequency": "Frequenz"
     },
-	"popups": {
+    "popups": {
         "startupfailed": "Modemstart fehlgeschlagen - fehlerhafte Konfiguration?",
         "connectedtoserver": "Mit dem Server verbunden",
         "cqreceived": "CQ empfangen",
