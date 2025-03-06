@@ -108,6 +108,10 @@
             "offline": "Offline",
             "received": "empfangen",
             "transmitted": "gesendet"
+ 	    "msgstatustransmitting": "Übermittlung",
+            "msgstatustransmitted": "Übermittelt",
+            "msgstatusfailed": "Fehlgeschlagen",
+            "msgstatusqueued": "Warteschlange"
         }
     },
     "modals": {
