@@ -34,9 +34,16 @@
         "transmissionfailedwith": "Transmission FAILED with",
         "confirmingtransmissionwith": "Confirming transmission with",
         "receivedbytes": "Received Bytes"
-
-
-
+    },
+    "navbar": {
+        "frequency_help": "What's the frequency, Kenneth?",
+        "speedlevel_help": "Speed Level",
+        "totalbytes_help": "Total bytes of transmission",
+        "connectedstation_help": "Current or last connected station",
+        "from": "from",
+        "to": "to",
+        "pttstate_help": "PTT trigger state",
+        "modemstate_help" : "Modem state"
     },
     "grid": {
         "frequencydescription": "Commonly used frequencies are listed here, and are all USB. Simply click on a entry or manually enter a frequency in the textbox to tune your rig if rig control is enabled.",
