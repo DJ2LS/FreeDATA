@@ -107,7 +107,7 @@
             "online": "Online",
             "offline": "Offline",
             "received": "empfangen",
-            "transmitted": "gesendet"
+            "transmitted": "gesendet",
  	    "msgstatustransmitting": "Übermittlung",
             "msgstatustransmitted": "Übermittelt",
             "msgstatusfailed": "Fehlgeschlagen",
