@@ -52,8 +52,9 @@
         "chat": "RF Chat",
         "chat_help": "RF Chat",
         "settings": "Settings",
-        "settings_help": "Settings"
-
+        "settings_help": "Settings",
+        "station": "Station",
+        "station_help": "Set station info"
 
     },
     "grid": {

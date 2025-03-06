@@ -144,10 +144,10 @@ const isNetworkTraffic = computed(() => state.is_network_traffic);
       data-bs-html="false"
       data-bs-toggle="modal"
       data-bs-target="#stationInfoModal"
-      title="Set station info"
+      :title="$t('navbar.station_help')"
       disabled
   >
     <i class="bi bi-person-circle h3"></i>
-    <span class="ms-2" v-if="isTextVisible">Station</span>
+    <span class="ms-2" v-if="isTextVisible">{{ $t('navbar.station') }}</span>
   </button>
 </template>
