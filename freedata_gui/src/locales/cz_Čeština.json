@@ -271,7 +271,7 @@
             "txdelay": "Spoždění vysílání v ms",
             "txdelay_help": "O kolik pozdeji se ma zahájit vysílání, v milisekundách",
             "maximumbandwidth": "Maximální šířka pásma",
-            "maximumbandwidth_help": "Nastaví maximálně použitou šířku pásma",
+            "maximumbandwidth_help": "Nastaví maximálně použitou šířku pásma"
         },
         "web": {
             "introduction": "Explorer related settings, including enabling Explorer publishing and Explorer stats publishing.",
