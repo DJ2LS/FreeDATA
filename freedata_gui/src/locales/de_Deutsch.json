@@ -169,8 +169,8 @@
         "pythoninformation": "Python Information",
         "build": "Build",
         "compiler": "Compiler",
-        "branch": "Branch",
-        "implementation": "Implementation",
+        "branch": "Zweig",
+        "implementation": "Implementierung",
         "revision": "Revision"
     },
     "chat": {
@@ -211,7 +211,7 @@
             "callsignssid_help": "Eine SSID für diese Station",
             "locator": "Grid- / Maidenhead Locator",
             "locator_help": "Einen Locator eingeben (maximal 6 Zeichen; kürzere Zeichen werden zufällig ausgewählt)",
-            "locator_placeholder": "Dein grid locator",
+            "locator_placeholder": "Dein Grid Locator",
             "respondtocq": "CQ-Rufe mit einem 'QRV' beantworten",
             "respondtocq_help": "QRV-Antwort wird mit zufälliger Verzögerung gesendet",
             "enablecallsignblacklist": "Rufzeichen-Blacklist einschalten",
@@ -245,7 +245,7 @@
             "introduction": "Modem- und Audioeinstellungen, einschließlich Starten/Stoppen des Modems, Konfigurieren von Audiogeräten und Anpassen der Audiopegel.",
             "serverrestart_notification": "Einstellungen in ROT erfordern einen Serverneustart!",
             "restartserver": "Manuelle Modemsteuerung",
-            "restartserver_help": "Modem Starten oder Stoppen. Vergewissere Dich, dass zuvor die Audio- und Funkeinstellungen konfiguriert wurden",
+            "restartserver_help": "Modem Starten oder Stoppen. Vergewissere Dich, dass zuvor die Audio- und Transceivereinstellungen konfiguriert wurden",
             "modemport": "Modem Port",
             "modemport_help": "Modemport einstellen. Ein Serverneustart ist erforderlich",
             "modemhost": "Modem Host",
