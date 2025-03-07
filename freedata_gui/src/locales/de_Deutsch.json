@@ -43,7 +43,7 @@
         "from": "von",
         "to": "an",
         "pttstate_help": "PTT Status",
-        "modemstate_help" : "Modemstatus",
+        "modemstate_help": "Modemstatus",
         "bytestransferred": "Bytes übertragen"
     },		   
     "grid": {
