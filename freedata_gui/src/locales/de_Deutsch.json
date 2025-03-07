@@ -44,7 +44,17 @@
         "to": "an",
         "pttstate_help": "PTT Status",
         "modemstate_help": "Modemstatus",
-        "bytestransferred": "Bytes übertragen"
+        "bytestransferred": "Bytes übertragen",
+        "modemcheck": "Healthcheck",
+        "modemcheck_help": "FreeDATA Status prüfen",
+        "home": "Home",
+        "home_help": "Home",
+        "chat": "HF Chat",
+        "chat_help": "HF Chat",
+        "settings": "Einstellungen",
+        "settings_help": "Einstellungen",
+        "station": "Station",
+        "station_help": "Stationsinfo setzen"
     },		   
     "grid": {
         "frequencydescription": "Häufig verwendete Frequenzen sind hier aufgelistet, alle in USB. Klicke einfach auf einen Eintrag oder gebe manuell eine Frequenz in das Textfeld ein, um den Transceiver abzustimmen. Nur bei aktivierter Hamlib-Steuerung.",
