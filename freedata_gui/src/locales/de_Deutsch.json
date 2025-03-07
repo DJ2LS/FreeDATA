@@ -83,7 +83,7 @@
             "scatterdiagram": "Scatter-Diagramm",
             "onair": "on air",
             "ping": "Ping",
-            "ping_help": "Senden einer Ping-Anfrage an eine entfernte Station",
+            "ping_help": "Sende eine Ping-Anfrage an eine entfernte Station",
             "heardstations": "gehörte Stationen",
             "time": "Zeit",
             "freq": "Freq",
