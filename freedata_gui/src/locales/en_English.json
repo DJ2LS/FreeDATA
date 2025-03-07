@@ -43,7 +43,7 @@
         "from": "from",
         "to": "to",
         "pttstate_help": "PTT trigger state",
-        "modemstate_help" : "Modem state",
+        "modemstate_help": "Modem state",
         "bytestransferred": "Bytes transferred",
         "modemcheck": "Healthcheck",
         "modemcheck_help": "Check FreeDATA Status",
