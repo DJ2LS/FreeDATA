@@ -230,7 +230,7 @@
             "enablemessageautorepeat": "Automatische Nachrichtenwiederholung aktivieren",
             "enablemessageautorepeat_help": "Nachricht bei Bakenempfang erneut senden",
             "enableadifloggingudp": "ADIF Logging per UDP",
-            "enableadifloggingudp_help": "ADIF Logging per UDP statt TCP",
+            "enableadifloggingudp_help": "ADIF Logging per UDP einschalten",
             "adifloggingudphost": "ADIF Logging UDP Host",
             "adifloggingudphost_help": "ADIF Server Host, z.B. '127.0.0.1'",
             "adifloggingudphost_placeholder": "ADIF Server Host eingeben",
