@@ -72,7 +72,7 @@ window.addEventListener(
   <div class="card h-100">
     <div class="card-header">
       <i class="bi bi-broadcast" style="font-size: 1.2rem"></i>&nbsp;
-      <strong>Broadcasts</strong>
+      <strong>{{ $t('grid.components.broadcasts') }}</strong>
     </div>
     <div class="card-body overflow-auto p-0">
       <div class="container text-center">
@@ -90,7 +90,7 @@ window.addEventListener(
                   maxlength="11"
                   pattern="[A-Z]*"
                 />
-                <label for="floatingInput">DX-Callsign</label>
+                <label for="floatingInput">{{ $t('grid.components.dxcall') }}</label>
               </div>
               <button
                 class="btn btn-sm btn-outline-secondary"
@@ -104,8 +104,8 @@ window.addEventListener(
                 @click="transmitPing"
                 :disabled="isPingButtonDisabled"
               >
-                <strong v-if="!isPingButtonDisabled">PING Station</strong>
-                <strong v-else>Sending ping...</strong>
+                <strong v-if="!isPingButtonDisabled">{{ $t('grid.components.pingstation') }}</strong>
+                <strong v-else>{{ $t('grid.components.sendingping') }}</strong>
               </button>
             </div>
           </div>
@@ -122,8 +122,8 @@ window.addEventListener(
               :disabled="isCQButtonDisabled"
             >
               <h3>
-                <span v-if="!isCQButtonDisabled">CQ CQ CQ</span>
-                <span v-else>Sending CQ...</span>
+                <span v-if="!isCQButtonDisabled">{{ $t('grid.components.cqcqcq') }}</span>
+                <span v-else>{{ $t('grid.components.sendingcq') }}</span>
               </h3>
             </button>
           </div>
@@ -140,7 +140,7 @@ window.addEventListener(
                 v-model="state.beacon_state"
                 @click="startStopBeacon"
               />
-              <label class="form-check-label" for="flexSwitchBeacon">Enable Beacon</label>
+              <label class="form-check-label" for="flexSwitchBeacon">{{ $t('grid.components.enablebeacon') }}</label>
             </div>
           </div>
 
@@ -154,7 +154,7 @@ window.addEventListener(
                 v-model="state.away_from_key"
                 @change="setAwayFromKey"
               />
-              <label class="form-check-label" for="flexSwitchAFK">Away From Key</label>
+              <label class="form-check-label" for="flexSwitchAFK">{{ $t('grid.components.awayfromkey') }}</label>
             </div>
           </div>
         </div>

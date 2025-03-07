@@ -12,6 +12,6 @@ const state = useStateStore(pinia);
     class="d-flex justify-content-center align-items-center object-fill border rounded w-100 h-100"
     :class="state.ptt_state ? 'text-bg-warning' : 'text-bg-white'"
   >
-    <h2>ON AIR</h2>
+    <h2>{{ $t('grid.components.onair').toUpperCase() }}</h2>
   </div>
 </template>

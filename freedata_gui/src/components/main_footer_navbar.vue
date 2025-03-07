@@ -27,7 +27,7 @@ const state = useStateStore(pinia);
             disabled
             data-bs-toggle="tooltip"
             data-bs-placement="top"
-            data-bs-title="PTT trigger state"
+            :data-bs-title="$t('navbar.pttstate_help')"
           >
             <i class="bi bi-broadcast-pin" style="font-size: 0.8rem"></i>
           </button>
@@ -43,7 +43,7 @@ const state = useStateStore(pinia);
               'btn-danger': state.busy_state,
               'btn-secondary': !state.busy_state,
             }"
-            data-bs-title="Modem state"
+            :data-bs-title="$t('navbar.modemstate_help')"
             disabled
             style="pointer-events: auto"
           >
@@ -59,7 +59,7 @@ const state = useStateStore(pinia);
             data-bs-placement="top"
             data-bs-toggle="tooltip"
             data-bs-trigger="hover"
-            data-bs-title="What's the frequency, Kenneth?"
+            :data-bs-title="$t('navbar.frequency_help')"
             style="pointer-events: auto"
           >
             {{ state.frequency / 1000 }} kHz
@@ -70,7 +70,7 @@ const state = useStateStore(pinia);
           <button
             class="btn btn-sm btn-secondary me-0"
             type="button"
-            title="Speed level"
+            :title="$t('navbar.speedlevel_help')"
           >
             <i class="bi bi-speedometer2"></i>
           </button>
@@ -82,7 +82,7 @@ const state = useStateStore(pinia);
             data-bs-toggle="tooltip"
             data-bs-trigger="hover"
             data-bs-html="true"
-            data-bs-title="speed level"
+            :data-bs-title="$t('navbar.speedlevel_help')"
           >
             <i
               class="bi"
@@ -102,7 +102,7 @@ const state = useStateStore(pinia);
           <button
             class="btn btn-sm btn-secondary me-0"
             type="button"
-            title="Bytes transferred"
+            :title="$t('navbar.bytestransferred')"
           >
             <i class="bi bi-file-earmark-binary"></i>
           </button>
@@ -114,7 +114,7 @@ const state = useStateStore(pinia);
             data-bs-toggle="tooltip"
             data-bs-trigger="hover"
             data-bs-html="true"
-            data-bs-title="total bytes of transmission"
+            :data-bs-title="$t('navbar.totalbytes_help')"
           >
             {{ state.arq_total_bytes }}
           </button>
@@ -128,7 +128,7 @@ const state = useStateStore(pinia);
             data-bs-toggle="tooltip"
             data-bs-trigger="hover"
             data-bs-html="true"
-            data-bs-title="Current or last connected with station"
+            :data-bs-title="$t('navbar.connectedstation_help')"
           >
             <i class="bi bi-file-earmark-binary"></i>
           </button>
@@ -142,8 +142,8 @@ const state = useStateStore(pinia);
             data-bs-html="true"
             data-bs-title="the dxcallsign of the connected station"
           >
-            <span v-if="state.arq_is_receiving">from</span>
-            <span v-else>to</span>
+            <span v-if="state.arq_is_receiving">{{$t('navbar.from')}}</span>
+            <span v-else>{{$t('navbar.to')}}</span>
           </button>
 
           <button
@@ -179,6 +179,7 @@ const state = useStateStore(pinia);
         </p>
       </div>
 
+      <!-- TODO: This code block can be removed I think, DJ2LS -->
       <div hidden class="progress mb-0 rounded-0 rounded-bottom" style="height: 10px;">
         <div
           class="progress-bar progress-bar-striped bg-warning"

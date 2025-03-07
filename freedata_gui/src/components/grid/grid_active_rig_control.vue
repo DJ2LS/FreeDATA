@@ -36,7 +36,7 @@ function setRadioParameterTuner() {
   <div class="card h-100">
     <div class="card-header">
       <i class="bi bi-house-door" style="font-size: 1.2rem"></i>&nbsp;
-      <strong>Radio control</strong>
+      <strong>{{ $t('grid.components.radiocontrol') }}</strong>
     </div>
 
     <div class="card-body overflow-auto p-2">
@@ -58,7 +58,7 @@ function setRadioParameterTuner() {
 
         <div class="me-2">
           <div class="input-group input-group-sm">
-            <span class="input-group-text">Mode</span>
+            <span class="input-group-text">{{ $t('grid.components.radiocontrolmode') }}</span>
             <select
               class="form-control"
               v-model="state.mode"
@@ -75,7 +75,7 @@ function setRadioParameterTuner() {
 
         <div class="me-2">
           <div class="input-group input-group-sm">
-            <span class="input-group-text">% Power</span>
+            <span class="input-group-text">{{ $t('grid.components.powerpercent') }}</span>
             <select
               class="form-control"
               v-model="state.rf_level"
@@ -116,7 +116,7 @@ function setRadioParameterTuner() {
             v-model="state.tuner"
             @change="setRadioParameterTuner"
           />
-          <label class="form-check-label" for="flexSwitchTuner">Tuner</label>
+          <label class="form-check-label" for="flexSwitchTuner">{{ $t('grid.components.tuner') }}</label>
         </div>
       </div>
     </div>

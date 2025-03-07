@@ -518,7 +518,7 @@ onMounted(() => {
    <!-- <i class="bi bi-grip-vertical h5">      </i>-->
 
   <span class="me-4 text-white" style="writing-mode: vertical-rl; transform: rotate(180deg);">
-    grid edit
+    {{ $t('grid.gridedit') }}
   </span>
 
 
@@ -560,7 +560,7 @@ onMounted(() => {
   >
     <div class="offcanvas-header">
       <h5 class="offcanvas-title" id="offcanvasGridItemsLabel">
-        Manage grid widgets &nbsp;<button
+        {{ $t('grid.managegridwidgets') }} &nbsp;<button
         class="btn btn-sm"
         :class="settingsStore.local.grid_enabled == true ? 'btn-outline-success' : 'btn-outline-danger'"
         type="button"
@@ -580,7 +580,7 @@ onMounted(() => {
     </div>
     <div class="offcanvas-body">
       <p>
-        Grid widgets allow you to customize the display. You may add additional widgets to fit your needs. You can move and resize the individual widgets!
+        {{ $t('grid.gridwidgetsdescription') }}
       </p>
       <div>
         <button
@@ -588,14 +588,14 @@ onMounted(() => {
           type="button"
           @click="quickfill"
         >
-          Fill grid with common widgets
+          {{ $t('grid.fillgrid') }}
         </button>
         <button
           class="btn btn-outline-primary"
           type="button"
           @click="quickfillSM"
         >
-          Fill grid for small screens
+          {{ $t('grid.fillgridsmallscreen') }}
         </button>
       </div>
       <hr />
@@ -612,7 +612,7 @@ onMounted(() => {
               aria-expanded="true"
               aria-controls="collapseHeardStations"
             >
-              <strong>Activity</strong>
+              <strong>{{ $t('grid.activity') }}</strong>
             </button>
           </h2>
           <div
@@ -636,7 +636,7 @@ onMounted(() => {
               aria-expanded="false"
               aria-controls="collapseActivities"
             >
-              <strong>Audio</strong>
+              <strong>{{ $t('grid.audio') }}</strong>
             </button>
           </h2>
           <div
@@ -659,7 +659,7 @@ onMounted(() => {
               aria-expanded="false"
               aria-controls="collapseBroadcasts"
             >
-              <strong>Broadcasts</strong>
+              <strong>{{ $t('grid.broadcasts') }}</strong>
             </button>
           </h2>
           <div
@@ -682,7 +682,7 @@ onMounted(() => {
               aria-expanded="false"
               aria-controls="collapseRadioControl"
             >
-              <strong>Radio Control/Status</strong>
+              <strong>{{ $t('grid.radiocontrol') }}</strong>
             </button>
           </h2>
           <div
@@ -706,7 +706,7 @@ onMounted(() => {
               aria-expanded="false"
               aria-controls="collapseAudioControl"
             >
-              <strong>Statistics</strong>
+              <strong>{{ $t('grid.statistics') }}</strong>
             </button>
           </h2>
           <div
@@ -730,7 +730,7 @@ onMounted(() => {
               aria-expanded="false"
               aria-controls="collapseStatistics"
             >
-              <strong>Other</strong>
+              <strong>{{ $t('grid.other') }}</strong>
             </button>
           </h2>
           <div
@@ -748,27 +748,27 @@ onMounted(() => {
         class="btn btn-sm btn-outline-warning"
         type="button"
         @click="clearAllItems"
-        title="Clear all items from the grid"
+        :title="$t('grid.cleargrid_help')"
       >
-        Clear grid
+        {{ $t('grid.cleargrid') }}
       </button>
       <hr/>
       <button
         class="btn btn-sm btn-outline-dark"
         type="button"
         @click="loadPreset"
-        title="Restore your saved grid preset (clears current grid)"
+        :title="$t('grid.restorepreset_help')"
       >
 
-        Restore preset
+        {{ $t('grid.restorepreset') }}
       </button>&nbsp;
       <button
         class="btn btn-sm btn-outline-dark"
         type="button"
         @click="savePreset"
-        title="Save current grid layout as a preset that can be restored using restore preset button"
+        :title="$t('grid.savepreset_help')"
       >
-        Save preset
+        {{ $t('grid.savepreset') }}
       </button>
     </div>
   </div>
@@ -776,7 +776,7 @@ onMounted(() => {
   <div class="offcanvas offcanvas-end text-start"     data-bs-scroll="true"
     data-bs-backdrop="false" tabindex="-1" id="offcanvasFrequency" aria-labelledby="offcanvasExampleLabel">
   <div class="offcanvas-header">
-    <h5 class="offcanvas-title" id="offcanvasExampleLabel">Frequency selection</h5>
+    <h5 class="offcanvas-title" id="offcanvasExampleLabel">{{ $t('grid.frequencyselection') }}</h5>
       <button
         type="button"
         class="btn-close"
@@ -789,7 +789,7 @@ onMounted(() => {
   </div>
   <div class="offcanvas-body">
     <p>
-    Commonly used frequencies are listed here, and are all USB.&nbsp; Simply click on a entry or manually enter a frequency in the textbox to tune your rig if rig control is enabled.
+      {{ $t('grid.frequencydescription') }}
     </p>
     <ul
               class="list-group"
@@ -798,7 +798,7 @@ onMounted(() => {
             >
               <li class="list-group-item">
                 <div class="input-group p-1">
-                  <span class="input-group-text">frequency</span>
+                  <span class="input-group-text">{{ $t('general.frequency') }}</span>
                   <input
                     v-model="state.new_frequency"
                     style="max-width: 8rem"

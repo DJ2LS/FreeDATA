@@ -7,7 +7,7 @@
       data-bs-toggle="modal"
       @click="startNewChat"
     >
-      <i class="bi bi-pencil-square"></i> Start a new chat
+      <i class="bi bi-pencil-square"></i> {{ $t('chat.startnewchat') }}
     </button>
   </nav>
 
