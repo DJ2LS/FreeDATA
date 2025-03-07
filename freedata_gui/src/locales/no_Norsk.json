@@ -44,7 +44,18 @@
         "to": "til",
         "pttstate_help": "PTT tilstand",
         "modemstate_help" : "Modemtilstand",
-        "bytestransferred": "Bytes overført"
+        "bytestransferred": "Bytes overført",
+        "modemcheck": "Modemsjekk",
+        "modemcheck_help": "Sjekk FreeDATA-status",
+        "home": "Hjem",
+        "home_help": "Hjem",
+        "chat": "RF Chat",
+        "chat_help": "RF Chat",
+        "settings": "Innstillinger",
+        "settings_help": "Innstillinger",
+        "station": "Stasjon",
+        "station_help": "Stasjonsinformasjon"
+
     },
     "grid": {
         "frequencydescription": "Vanlig brukte frekvenser er oppført her, og er alle USB. Bare klikk på en oppføring eller skriv inn en frekvens manuelt i tekstboksen for å justere riggen din hvis riggkontroll er aktivert.",
@@ -99,7 +110,20 @@
             "powerpercent": "% Effekt",
             "tuner": "Tuner",
             "activity": "Aktivitet",
-            "beacon": "Beacon"
+            "beacon": "Beacon",
+            "active": "Aktiv",
+            "inactive": "Inaktiv",
+            "connected": "Tilkoblet",
+            "disconnected": "Koblet fra",
+            "online": "Online",
+            "offline": "Frakoblet",
+            "received": "mottatt",
+            "transmitted": "overført",
+            "msgstatustransmitting": "transmitting",
+            "msgstatustransmitted": "transmitted",
+            "msgstatusfailed": "mislyktes",
+            "msgstatusqueued": "i kø"
+
         }
     },
     "modals": {
@@ -188,7 +212,12 @@
             "selectlanguage": "Velg språk",
             "selectlanguage_help": "Velg det foretrukne språket som brukes for GUI",
             "waterfalltheme": "Fossefalltema",
-            "waterfalltheme_help": "Velg fargetema for fossefallvisning"
+            "waterfalltheme_help": "Velg fargetema for fossefallvisning",
+            "colormode": "Fargemodus",
+            "colormode_help": "GUI-fargemodus",
+            "colormodelight": "lys",
+            "colormodedark": "mørk",
+            "colormodeauto": "auto"
         },
         "station": {
             "introduction": "Stasjonsrelaterte innstillinger, som å endre kallesignal, plassering og generell oppførsel.",
