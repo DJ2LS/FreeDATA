@@ -55,7 +55,6 @@
         "settings_help": "Settings",
         "station": "Station",
         "station_help": "Set station info"
-
     },
     "grid": {
         "frequencydescription": "Commonly used frequencies are listed here, and are all USB. Simply click on a entry or manually enter a frequency in the textbox to tune your rig if rig control is enabled.",
@@ -123,7 +122,6 @@
             "msgstatustransmitted": "transmitted",
             "msgstatusfailed": "failed",
             "msgstatusqueued": "queued"
-
         }
     },
     "modals": {
