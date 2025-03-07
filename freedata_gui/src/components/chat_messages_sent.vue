@@ -37,14 +37,14 @@
         >
           <chat_messages_image_preview :attachment="attachment" />
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-light text-truncate" disabled>
+            <button class="btn w-75 btn-secondary text-truncate" disabled>
               {{ attachment.name }}
             </button>
             <button
               @click="
                 downloadAttachment(attachment.hash_sha512, attachment.name)
               "
-              class="btn btn-light w-25"
+              class="btn btn-secondary w-25"
             >
               <i class="bi bi-download strong"></i>
             </button>

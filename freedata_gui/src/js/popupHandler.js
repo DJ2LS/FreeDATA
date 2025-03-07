@@ -6,9 +6,9 @@ export function displayToast(type, icon, content, duration) {
 
   const randomID = uuidv4();
   const toastCode = `
-    <div class="toast align-items-center bg-outline-${type} border-1" id="${randomID}" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast align-items-center border-1 bg-body-tertiary" id="${randomID}" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="d-flex">
-        <div class="toast-body p-0 m-0 bg-white rounded-2 w-100">
+        <div class="toast-body  p-0 m-0 rounded-2 w-100">
           <div class="row p-1 m-0">
             <div class="col-auto bg-${type} rounded-start rounded-2 d-flex align-items-center">
               <i class="bi ${icon}" style="font-size: 1rem; color: white;"></i>
