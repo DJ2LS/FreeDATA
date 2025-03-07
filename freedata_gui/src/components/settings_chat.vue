@@ -87,7 +87,7 @@ export default {
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        :title="$t('settings.chat.enableadifloggingudp_help')"
+        :title="$t('settings.chat.enableadifloggingudphost_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
