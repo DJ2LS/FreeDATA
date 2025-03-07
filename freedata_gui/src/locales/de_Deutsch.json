@@ -200,7 +200,12 @@
             "selectlanguage": "Sprache auswählen",
             "selectlanguage_help": "Wähle eine Sprache für die grafische Oberfläche",
             "waterfalltheme": "Wasserfall-Farbgebung",
-            "waterfalltheme_help": "Wähle ein Farbthema für das Wasserfalldiagramm"
+            "waterfalltheme_help": "Wähle ein Farbthema für das Wasserfalldiagramm",
+	    "colormode": "Farbmodus",
+            "colormode_help": "Farbmodus der GUI einstellen",
+            "colormodelight": "hell",
+            "colormodedark": "dunkel",
+            "colormodeauto": "auto"
          },
         "station": {
             "introduction": "Stationsbezogene Einstellungen, wie das Ändern des Rufzeichens, des Standorts und des allgemeinen Verhaltens.",
