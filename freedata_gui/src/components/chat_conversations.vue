@@ -7,13 +7,13 @@
       data-bs-toggle="modal"
       @click="startNewChat"
     >
-      <i class="bi bi-pencil-square"></i> Start a new chat
+      <i class="bi bi-pencil-square"></i> {{ $t('chat.startnewchat') }}
     </button>
   </nav>
 
   <!-- List of chats -->
   <div
-    class="list-group bg-body-tertiary m-0 p-1"
+    class="list-group m-0 p-1"
     id="chat-list-tab"
     role="tablist"
   >

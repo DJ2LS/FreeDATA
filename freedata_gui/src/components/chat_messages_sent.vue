@@ -37,14 +37,14 @@
         >
           <chat_messages_image_preview :attachment="attachment" />
           <div class="btn-group w-100" role="group">
-            <button class="btn btn-light text-truncate" disabled>
+            <button class="btn w-75 btn-secondary text-truncate" disabled>
               {{ attachment.name }}
             </button>
             <button
               @click="
                 downloadAttachment(attachment.hash_sha512, attachment.name)
               "
-              class="btn btn-light w-25"
+              class="btn btn-secondary w-25"
             >
               <i class="bi bi-download strong"></i>
             </button>
@@ -64,9 +64,18 @@
                 'text-bg-secondary': message.status === 'transmitted' || message.status === 'queued'
               }"
             >
-              {{ message.status }}
+              {{
+                  message.status === 'failed'
+                    ? $t('grid.components.msgstatusfailed')
+                  : message.status === 'transmitting'
+                    ? $t('grid.components.msgstatustransmitting')
+                  : message.status === 'transmitted'
+                    ? $t('grid.components.msgstatustransmitted')
+                  : message.status === 'queued'
+                    ? $t('grid.components.msgstatusqueued')
+                  : message.status }}
             </span>
-            | <span class="badge text-bg-light mr-2"> attempt: {{ message.attempt + 1 }} </span>|<span class="badge text-bg-light mr-2"> {{ getDateTime }} UTC</span>
+            | <span class="badge text-bg-light mr-2"> {{ $t('chat.attempt') }}: {{ message.attempt + 1 }} </span>|<span class="badge text-bg-light mr-2"> {{ getDateTime }} {{ $t('chat.utc') }}</span>
           </p>
         </div>
 

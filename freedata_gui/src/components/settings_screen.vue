@@ -1,4 +1,6 @@
+
 <template>
+
     <div class="container-fluid p-2" style="height: calc(-48px + 100vh);">
       <div class="card text-center h-100">
         <div class="card-header">
@@ -15,7 +17,7 @@
                 aria-controls="station"
                 aria-selected="true"
               >
-                Station
+                {{ $t('settings.tabstation') }}
               </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -29,7 +31,7 @@
                 aria-controls="gui"
                 aria-selected="false"
               >
-                GUI
+                {{ $t('settings.tabgui') }}
               </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -43,7 +45,7 @@
                 aria-controls="chat"
                 aria-selected="false"
               >
-                Chat
+                {{ $t('settings.tabchat') }}
               </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -57,7 +59,7 @@
                 aria-controls="rigcontrol"
                 aria-selected="false"
               >
-                Rig Control
+                {{ $t('settings.tabradiocontrol') }}
               </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -71,7 +73,7 @@
                 aria-controls="modem"
                 aria-selected="false"
               >
-                Modem
+                {{ $t('settings.tabmodem') }}
               </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -85,7 +87,7 @@
                 aria-controls="web"
                 aria-selected="false"
               >
-                Web
+                {{ $t('settings.tabweb') }}
               </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -99,7 +101,7 @@
                 aria-controls="experiments"
                 aria-selected="false"
               >
-                Exp
+                {{ $t('settings.tabexperimental') }}
               </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -113,7 +115,7 @@
                 aria-controls="url"
                 aria-selected="false"
               >
-                Links
+                 {{ $t('settings.tablinks') }}
               </button>
             </li>
           </ul>
@@ -214,6 +216,8 @@ import settings_web from "./settings_web.vue";
 import settings_exp from "./settings_exp.vue";
 import settings_url from "./settings_url.vue";
 
+
+
 export default {
   components: {
     settings_station,
@@ -224,7 +228,9 @@ export default {
     settings_web,
     settings_exp,
     settings_url
-  }
+  },
 };
+
+
 
 </script>

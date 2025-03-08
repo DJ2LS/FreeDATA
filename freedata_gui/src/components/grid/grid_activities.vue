@@ -26,7 +26,7 @@ function getDateTime(timestampRaw) {
   <div class="card h-100">
     <div class="card-header">
       <i class="bi bi-card-list" style="font-size: 1.2rem"></i>&nbsp;
-      <strong>Activity</strong>
+      <strong>{{ $t('grid.components.activity') }}</strong>
     </div>
     <div class="card-body overflow-auto m-0" style="align-items: start">
       <div v-for="item in state.activities" :key="item[0]">
@@ -38,8 +38,14 @@ function getDateTime(timestampRaw) {
 
         </h6>
 
+
         <p class="mb-2" style="text-align: start; font-size: smaller">
-          <small>{{ item[1].activity_type }} - {{ item[1].direction }}</small>
+          <small>
+  {{ item[1].activity_type }} -
+  {{ item[1].direction === 'received'
+      ? $t('grid.components.received')
+      : $t('grid.components.transmitted') }}
+</small>
         </p>
       </div>
     </div>

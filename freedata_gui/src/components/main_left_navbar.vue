@@ -40,13 +40,13 @@ const isNetworkTraffic = computed(() => state.is_network_traffic);
   </div>
 
   <!-- Health Status/Spinner -->
-  <div class="btn-group list-group-item" role="group" aria-label="Basic example">
+  <div class="btn-group list-group-item" role="group" aria-label="">
     <button
         class="btn border btn-outline-secondary rounded-3"
         data-bs-html="false"
         data-bs-toggle="modal"
         data-bs-target="#modemCheck"
-        title="Check FreeDATA status"
+        :title=" $t('navbar.modemcheck_help')"
         :class="
         getOverallHealth() > 4
           ? 'bg-danger'
@@ -64,7 +64,7 @@ const isNetworkTraffic = computed(() => state.is_network_traffic);
       <template v-else>
         <i class="h3 bi bi-activity p-1"></i>
       </template>
-      <span class="ms-2" v-if="isTextVisible">Healthcheck</span>
+      <span class="ms-2" v-if="isTextVisible">{{ $t('navbar.modemcheck') }}</span>
     </button>
   </div>
 
@@ -83,11 +83,11 @@ const isNetworkTraffic = computed(() => state.is_network_traffic);
         href="#list-grid"
         role="tab"
         aria-controls="list-grid"
-        title="Grid"
+        :title="$t('navbar.home_help')"
         :class="{ disabled: isNetworkDisconnected }"
     >
       <i class="bi bi-columns-gap h3"></i>
-      <span class="ms-2" v-if="isTextVisible">Home</span>
+      <span class="ms-2" v-if="isTextVisible">{{ $t('navbar.home') }}</span>
     </a>
 
     <a
@@ -97,12 +97,12 @@ const isNetworkTraffic = computed(() => state.is_network_traffic);
         href="#list-chat"
         role="tab"
         aria-controls="list-chat"
-        title="Chat"
+        :title="$t('navbar.chat_help')"
         :class="{ disabled: isNetworkDisconnected }"
         @click="isNetworkDisconnected ? null : getFreedataMessages"
     >
       <i class="bi bi-chat-text h3"></i>
-      <span class="ms-2" v-if="isTextVisible">RF Chat</span>
+      <span class="ms-2" v-if="isTextVisible">{{ $t('navbar.chat') }}</span>
       <span
           v-if="chat.totalUnreadMessages > 0"
           class="badge bg-danger position-absolute top-0 end-0 mt-1 me-1"
@@ -130,12 +130,12 @@ const isNetworkTraffic = computed(() => state.is_network_traffic);
         href="#list-settings"
         role="tab"
         aria-controls="list-settings"
-        title="Settings"
+        :title="$t('navbar.settings_help')"
         :class="{ disabled: isNetworkDisconnected }"
         @click="isNetworkDisconnected ? null : loadAllData()"
     >
       <i class="bi bi-gear-wide-connected h3"></i>
-      <span class="ms-2" v-if="isTextVisible">Settings</span>
+      <span class="ms-2" v-if="isTextVisible">{{ $t('navbar.settings') }}</span>
     </a>
   </div>
 
@@ -144,10 +144,10 @@ const isNetworkTraffic = computed(() => state.is_network_traffic);
       data-bs-html="false"
       data-bs-toggle="modal"
       data-bs-target="#stationInfoModal"
-      title="Set station info"
+      :title="$t('navbar.station_help')"
       disabled
   >
     <i class="bi bi-person-circle h3"></i>
-    <span class="ms-2" v-if="isTextVisible">Station</span>
+    <span class="ms-2" v-if="isTextVisible">{{ $t('navbar.station') }}</span>
   </button>
 </template>
