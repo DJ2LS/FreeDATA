@@ -7,7 +7,7 @@
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Select the COM port connected to your radio for PTT control"
+        :title="$t('settings.radio.serialpttcomport_help')"
       >
         <i class="bi bi-question-circle"></i>
       </button>
