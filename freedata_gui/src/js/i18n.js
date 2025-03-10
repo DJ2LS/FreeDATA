@@ -29,7 +29,7 @@ function loadLocaleMessages() {
 const { resources, availableLanguages } = loadLocaleMessages();
 
 i18next.init({
-  lng: 'de',
+  lng: 'en',
   fallbackLng: 'en',
   resources,
 }, (err) => {
