@@ -8,11 +8,9 @@ Created on 05.11.23
 # pylint: disable=import-outside-toplevel, attribute-defined-outside-init
 
 import requests
-import threading
 import json
 import structlog
-import sched
-import time
+from constants import EXPLORER_API_URL
 
 log = structlog.get_logger("explorer")
 
@@ -22,7 +20,7 @@ class Explorer:
         self.config_manager = config_manager
         self.config = self.config_manager.read()
         self.states = states
-        self.explorer_url = "https://api.freedata.app/explorer.php"
+        self.explorer_url = EXPLORER_API_URL
 
     def push(self):
         self.config = self.config_manager.read()
