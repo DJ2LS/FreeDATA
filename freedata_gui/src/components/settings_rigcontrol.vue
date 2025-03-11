@@ -32,7 +32,6 @@
     <option value="serial_ptt">Serial PTT via DTR/RTS</option>
     <option value="rigctld">Rigctld (external Hamlib)</option>
     <option value="rigctld_bundle">Rigctld (internal Hamlib)</option>
-    <option value="tci">TCI</option>
   </select>
 </div>
 
@@ -54,18 +53,7 @@
       >
         {{ $t('settings.radio.tabhamlib') }}
       </button>
-      <button
-        class="nav-link"
-        id="nav-tci-tab"
-        data-bs-toggle="tab"
-        data-bs-target="#nav-tci"
-        type="button"
-        role="tab"
-        aria-controls="nav-tci"
-        aria-selected="false"
-      >
-        {{ $t('settings.radio.tabtci') }}
-      </button>
+
       <button
         class="nav-link"
         id="nav-serial-tab"
@@ -94,17 +82,6 @@
       <settings_hamlib />
     </div>
 
-    <!-- TCI Settings -->
-    <div
-      class="tab-pane fade"
-      id="nav-tci"
-      role="tabpanel"
-      aria-labelledby="nav-tci-tab"
-      tabindex="1"
-    >
-      <settings_tci />
-    </div>
-
     <!-- Serial PTT Settings -->
     <div
       class="tab-pane fade"
@@ -123,13 +100,11 @@
 <script>
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 import settings_hamlib from "./settings_hamlib.vue";
-import settings_tci from "./settings_tci.vue";
 import settings_serial_ptt from "./settings_serial_ptt.vue";
 
 export default {
   components: {
     settings_hamlib,
-    settings_tci,
     settings_serial_ptt
   },
   methods: {
