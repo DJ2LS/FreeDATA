@@ -35,14 +35,7 @@ from api.radio import router as radio_router
 from api.modem import router as modem_router
 from api.freedata import router as freedata_router
 from api.websocket import router as websocket_router
-
-# Constants
-CONFIG_ENV_VAR = 'FREEDATA_CONFIG'
-DEFAULT_CONFIG_FILE = 'config.ini'
-MODEM_VERSION = "0.16.11-alpha"
-API_VERSION = 3
-LICENSE = 'GPL3.0'
-DOCUMENTATION_URL = 'https://wiki.freedata.app'
+from constants import CONFIG_ENV_VAR, DEFAULT_CONFIG_FILE, MODEM_VERSION, API_VERSION, LICENSE, DOCUMENTATION_URL
 
 # adjust asyncio for windows usage for avoiding a Assertion Error
 if sys.platform == 'win32':
