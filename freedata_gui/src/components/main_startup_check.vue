@@ -198,7 +198,6 @@
                                  <option value="serial_ptt">Serial PTT via DTR/RTS</option>
                                  <option value="rigctld">Rigctld (external Hamlib)</option>
                                  <option value="rigctld_bundle">Rigctld (internal Hamlib)</option>
-                                 <option value="tci">TCI</option>
                               </select>
                            </div>
                            <!-- Shown when rigctld_bundle is selected -->
@@ -382,7 +381,6 @@ function getRigControlStatus() {
     case 'serial_ptt':
     case 'rigctld':
     case 'rigctld_bundle':
-    case 'tci':
       return state.radio_status;
     default:
       console.error('Unknown radio control mode ' + settings.remote.RADIO.control);

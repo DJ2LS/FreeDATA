@@ -54,10 +54,6 @@ class CONFIG:
             'arguments': str,
             'enable_vfo': bool,
         },
-        'TCI': {
-            'tci_ip': str,
-            'tci_port': int,
-        },
         'MODEM': {
             'enable_morse_identifier': bool,
             'maximum_bandwidth': int,

@@ -41,10 +41,6 @@ serial_dcd = NONE
 serial_dtr = OFF
 serial_rts = OFF
 
-[TCI]
-tci_ip = 127.0.0.1
-tci_port = 50001
-
 [MODEM]
 enable_morse_identifier = False
 tx_delay = 50
