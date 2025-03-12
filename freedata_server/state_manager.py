@@ -2,6 +2,14 @@ import time
 import threading
 import numpy as np
 class StateManager:
+    """Manages and updates the state of the FreeDATA server.
+
+    This class stores and manages various state variables related to the
+    FreeDATA server, including modem status, channel activity, ARQ sessions,
+    radio parameters, and P2P connections. It provides methods to update
+    and retrieve state information, as well as manage events and
+    synchronization.
+    """
     def __init__(self, statequeue):
 
         # state related settings
@@ -55,14 +63,40 @@ class StateManager:
         self.radio_status = False
 
     def sendState(self):
+        """Sends the current state to the state queue.
+
+        This method retrieves the current state using get_state_event() and
+        puts it into the state queue for processing and distribution.
+
+        Returns:
+            dict: The current state.
+        """
         currentState = self.get_state_event(False)
         self.statequeue.put(currentState)
         return currentState
 
     def sendStateUpdate(self, state):
+        """Sends a state update to the state queue.
+
+        This method puts the given state update into the state queue for
+        processing and distribution.
+
+        Args:
+            state (dict): The state update to send.
+        """
         self.statequeue.put(state)
 
     def set(self, key, value):
+        """Sets a state variable and sends an update if the state changes.
+
+        This method sets the specified state variable to the given value.
+        If the new state is different from the current state, it generates
+        a state update event and sends it to the state queue.
+
+        Args:
+            key (str): The name of the state variable.
+            value: The new value for the state variable.
+        """
         setattr(self, key, value)
         #print(f"State ==> Setting {key} to value {value}")
         # only process data if changed
@@ -72,6 +106,16 @@ class StateManager:
             self.sendStateUpdate(new_state)
 
     def set_radio(self, key, value):
+        """Sets a radio parameter and sends an update if the value changes.
+
+        This method sets the specified radio parameter to the given value.
+        If the new value is different from the current value, it generates
+        a radio update event and sends it to the state queue.
+
+        Args:
+            key (str): The name of the radio parameter.
+            value: The new value for the radio parameter.
+        """
         setattr(self, key, value)
         #print(f"State ==> Setting {key} to value {value}")
         # only process data if changed
@@ -81,6 +125,15 @@ class StateManager:
             self.sendStateUpdate(new_radio)
 
     def set_channel_slot_busy(self, array):
+        """Sets the channel busy status for each slot.
+
+        This method updates the channel busy status for each slot based on
+        the provided array. If any slot's status changes, it generates a
+        state update event and sends it to the state queue.
+
+        Args:
+            array (list): A list of booleans representing the busy status of each slot.
+        """
         for i in range(0,len(array),1):
             if not array[i] == self.channel_busy_slot[i]:
                 self.channel_busy_slot = array
@@ -89,6 +142,20 @@ class StateManager:
                 continue
     
     def get_state_event(self, isChangedState):
+        """Generates a state event dictionary.
+
+        This method creates a dictionary containing the current state
+        information, including modem and beacon status, channel activity,
+        radio status, and audio levels. The type of event ('state' or
+        'state-change') is determined by the isChangedState flag.
+
+        Args:
+            isChangedState (bool): True if the event represents a state change,
+                False if it's a full state update.
+
+        Returns:
+            dict: A dictionary containing the state information.
+        """
         msgtype = "state-change"
         if (not isChangedState):
             msgtype = "state"
@@ -107,6 +174,20 @@ class StateManager:
         }
 
     def get_radio_event(self, isChangedState):
+        """Generates a radio event dictionary.
+
+        This method creates a dictionary containing the current radio state
+        information, including frequency, mode, RF level, S-meter strength,
+        SWR, and tuner status. The type of event ('radio' or 'radio-change')
+        is determined by the isChangedState flag.
+
+        Args:
+            isChangedState (bool): True if this is a radio change event,
+                False for a full radio state update.
+
+        Returns:
+            dict: A dictionary containing the radio state information.
+        """
         msgtype = "radio-change"
         if (not isChangedState):
             msgtype = "radio"
