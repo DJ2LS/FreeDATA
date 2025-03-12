@@ -4,6 +4,21 @@ import sys
 
 
 def get_ports():
+    """Retrieves a list of available serial ports.
+
+    This function retrieves a list of available serial ports on the system,
+    including their names and descriptions. On Windows, it uses a specific
+    registry lookup to get detailed port information. For other platforms,
+    it uses the standard serial.tools.list_ports function. It calculates a
+    CRC-16 checksum of the hardware ID (HWID) for each port and appends it
+    to the description to ensure unique entries.
+
+    Windows part taken from https://github.com/pyserial/pyserial/pull/70 as a temporary fix
+
+    Returns:
+        list: A list of dictionaries, where each dictionary represents a
+        serial port and contains 'port' (str) and 'description' (str) keys.
+    """
 
     serial_devices = []
     if sys.platform == 'win32':
