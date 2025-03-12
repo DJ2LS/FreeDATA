@@ -52,7 +52,6 @@ class Demodulator():
         self.resampler = codec2.resampler()
 
         self.init_codec2()
-        self.init_tci()
 
         # enable decoding of signalling modes
         self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
@@ -63,15 +62,6 @@ class Demodulator():
         # Open codec2 instances
         for mode in codec2.FREEDV_MODE:
             self.init_codec2_mode(mode.value)
-
-    def init_tci(self):
-        if self.config['RADIO']['control'] == "tci":
-            tci_rx_callback_thread = threading.Thread(
-                target=self.tci_rx_callback,
-                name="TCI RX CALLBACK THREAD",
-                daemon=True,
-            )
-            tci_rx_callback_thread.start()
 
 
     def init_codec2_mode(self, mode):
@@ -222,34 +212,6 @@ class Demodulator():
                 )
                 audio.sd._terminate()
 
-    def tci_rx_callback(self) -> None:
-        """
-        Callback for TCI RX
-
-        data_in48k must be filled with 48000Hz audio raw data
-
-        """
-
-        while True and not self.shutdown_flag.is_set():
-
-            audio_48k = self.audio_received_queue.get()
-            audio_48k = np.frombuffer(audio_48k, dtype=np.int16)
-
-            audio.calculate_fft(audio_48k, self.fft_queue, self.states)
-
-            length_audio_48k = len(audio_48k)
-            index = 0
-            for mode in self.MODE_DICT:
-                mode_data = self.MODE_DICT[mode]
-                audiobuffer = mode_data['audio_buffer']
-                decode = mode_data['decode']
-                index += 1
-                if audiobuffer:
-                    if (audiobuffer.nbuffer + length_audio_48k) > audiobuffer.size:
-                        self.buffer_overflow_counter[index] += 1
-                        self.event_manager.send_buffer_overflow(self.buffer_overflow_counter)
-                    elif decode:
-                        audiobuffer.push(audio_48k)
 
     def set_frames_per_burst(self, frames_per_burst: int) -> None:
         """

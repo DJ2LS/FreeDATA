@@ -9,16 +9,13 @@ Created on 05.11.23
 import requests
 import json
 import structlog
+from constants import MODEM_VERSION, STATS_API_URL
 
 log = structlog.get_logger("stats")
 
-#  we have to move the modem version, its a duplicate
-MODEM_VERSION = "0.16.9-alpha"
-
-
 class stats():
     def __init__(self, config, event_manager, states):
-        self.api_url = "https://api.freedata.app/stats.php"
+        self.api_url = STATS_API_URL
         self.states = states
         self.config = config
         self.event_manager = event_manager

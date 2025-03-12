@@ -15,7 +15,6 @@ import codec2
 import numpy as np
 import sounddevice as sd
 import structlog
-import tci
 import cw
 import audio
 import demodulator
@@ -47,8 +46,6 @@ class RF:
         self.rigctld_ip = config['RIGCTLD']['ip']
         self.rigctld_port = config['RIGCTLD']['port']
 
-        self.tci_ip = config['TCI']['tci_ip']
-        self.tci_port = config['TCI']['tci_port']
 
         self.tx_audio_level = config['AUDIO']['tx_audio_level']
         self.rx_audio_level = config['AUDIO']['rx_audio_level']
@@ -61,7 +58,6 @@ class RF:
         self.modem_sample_rate = codec2.api.FREEDV_FS_8000
 
         # 8192 Let's do some tests with very small chunks for TX
-        #self.AUDIO_FRAMES_PER_BUFFER_TX = 1200 if self.radiocontrol in ["tci"] else 2400 * 2
         # 8 * (self.AUDIO_SAMPLE_RATE/self.modem_sample_rate) == 48
         self.AUDIO_CHANNELS = 1
         self.MODE = 0
@@ -87,19 +83,9 @@ class RF:
 
         self.modulator = modulator.Modulator(self.config)
 
-
-
-    def tci_tx_callback(self, audio_48k) -> None:
-        self.radio.set_ptt(True)
-        self.event_manager.send_ptt_change(True)
-        self.tci_module.push_audio(audio_48k)
-
     def start_modem(self):
         if TESTMODE:
             return True
-        elif self.radiocontrol.lower() == "tci":
-            if not self.init_tci():
-                return False
         else:
             if not self.init_audio():
                 raise RuntimeError("Unable to init audio devices")
@@ -174,23 +160,6 @@ class RF:
             self.stop_modem()
             return False
 
-    def init_tci(self):
-        # placeholder area for processing audio via TCI
-        # https://github.com/maksimus1210/TCI
-        self.log.warning("[MDM] [TCI] Not yet fully implemented", ip=self.tci_ip, port=self.tci_port)
-
-        # we are trying this by simulating an audio stream Object like with mkfifo
-        class Object:
-            """An object for simulating audio stream"""
-            active = True
-
-        self.stream = Object()
-
-        # lets init TCI module
-        self.tci_module = tci.TCICtrl(self.audio_received_queue)
-
-        return True
-
     def transmit_sine(self):
         """ Transmit a sine wave for audio tuning """
         self.states.setTransmitting(True)
@@ -263,15 +232,8 @@ class RF:
         x = audio.normalize_audio(x)
         x = audio.set_audio_volume(x, self.tx_audio_level)
 
-        if self.radiocontrol not in ["tci"]:
-            txbuffer_out = self.resampler.resample8_to_48(x)
-        else:
-            txbuffer_out = x
-
-
-
         # transmit audio
-        self.enqueue_audio_out(txbuffer_out)
+        self.enqueue_audio_out(x)
 
         end_of_transmission = time.time()
         transmission_time = end_of_transmission - start_of_transmission
@@ -288,19 +250,14 @@ class RF:
 
         self.event_manager.send_ptt_change(True)
 
-        if self.radiocontrol in ["tci"]:
-            self.tci_tx_callback(audio_48k)
-            # we need to wait manually for tci processing
-            self.tci_module.wait_until_transmitted(audio_48k)
-        else:
-            # slice audio data to needed blocklength
-            block_size = self.sd_output_stream.blocksize
-            pad_length = -len(audio_48k) % block_size
-            padded_data = np.pad(audio_48k, (0, pad_length), mode='constant')
-            sliced_audio_data = padded_data.reshape(-1, block_size)
-            # add each block to audio out queue
-            for block in sliced_audio_data:
-                self.audio_out_queue.put(block)
+        # slice audio data to needed blocklength
+        block_size = self.sd_output_stream.blocksize
+        pad_length = -len(audio_48k) % block_size
+        padded_data = np.pad(audio_48k, (0, pad_length), mode='constant')
+        sliced_audio_data = padded_data.reshape(-1, block_size)
+        # add each block to audio out queue
+        for block in sliced_audio_data:
+            self.audio_out_queue.put(block)
 
 
         self.enqueuing_audio = False

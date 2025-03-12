@@ -65,10 +65,6 @@ const defaultConfig = {
       enable_callsign_blacklist: false,
       callsign_blacklist: [],
     },
-    TCI: {
-      tci_ip: "127.0.0.1",
-      tci_port: 0,
-    },
     MESSAGES: {
       enable_auto_repeat: false,
     },
