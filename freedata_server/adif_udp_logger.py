@@ -1,7 +1,13 @@
-import socket
-import re
-import structlog
+"""
+This module provides a utility function to send ADIF-formatted QSO data over UDP.
+It reads configuration settings from a provided dictionary to determine if ADIF UDP logging is enabled,
+and if so, retrieves the destination host and port. Using a UDP socket, it encodes the ADIF data as UTF-8 and
+sends it to the specified server.
+"""
 
+
+import socket
+import structlog
 
 def send_adif_qso_data(config, adif_data):
     """
