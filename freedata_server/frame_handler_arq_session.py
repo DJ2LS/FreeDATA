@@ -9,8 +9,22 @@ from arq_session_irs import IRS_State
 
 
 class ARQFrameHandler(frame_handler.FrameHandler):
+    """Handles ARQ frames and manages ARQ sessions.
+
+    This class processes incoming ARQ frames, manages ARQ sessions for both
+    ISS (Information Sending Station) and IRS (Information Receiving Station),
+    and dispatches frames to the appropriate session based on their type
+    and session ID.
+    """
 
     def follow_protocol(self):
+        """Processes the received ARQ frame based on its type.
+
+        This method handles different ARQ frame types, including session
+        open, information, burst data, stop, and various acknowledgements.
+        It manages session creation, retrieval, and updates based on the
+        frame type and session ID.
+        """
 
         if not self.should_respond():
             return

@@ -205,43 +205,134 @@ class StateManager:
     
     # .wait() blocks until the event is set
     def isTransmitting(self):
+        """Checks if the server is currently transmitting.
+
+        This method returns True if the transmitting_event is not set,
+        indicating that a transmission is in progress. Otherwise, it
+        returns False.
+
+        Returns:
+            bool: True if transmitting, False otherwise.
+        """
         return not self.transmitting_event.is_set()
     
     # .wait() blocks until the event is set
     def setTransmitting(self, transmitting: bool):
+        """Sets the transmitting status of the server.
+
+        This method controls the transmitting_event, which is used for
+        synchronization and blocking other operations during transmissions.
+        If transmitting is True, the event is cleared (set to non-signaled
+        state), causing any threads waiting on it to block. If transmitting
+        is False, the event is set (signaled state), allowing waiting
+        threads to proceed.
+
+        Args:
+            transmitting (bool): True if the server is transmitting, False otherwise.
+        """
         if transmitting:
             self.transmitting_event.clear()
         else:
             self.transmitting_event.set()
 
     def setARQ(self, busy):
+        """Sets the ARQ status.
+
+        This method sets the is_modem_busy event based on the provided
+        busy flag. If busy is True, the event is cleared, indicating that
+        the modem is busy with ARQ. If busy is False, the event is set,
+        indicating that the modem is available.
+
+        Args:
+            busy (bool): True if ARQ is busy, False otherwise.
+        """
         if busy:
             self.is_modem_busy.clear()
         else:
             self.is_modem_busy.set()
 
     def getARQ(self):
+        """Gets the ARQ status.
+
+        This method returns True if the is_modem_busy event is not set,
+        indicating that ARQ is currently not busy. Otherwise, it returns
+        False.
+
+        Returns:
+            bool: True if ARQ is not busy, False otherwise.
+        """
         return not self.is_modem_busy.is_set()
 
     def waitForTransmission(self):
+        """Waits for any ongoing transmissions to complete.
+
+        This method blocks the calling thread until the transmitting_event
+        is set, indicating that the server is no longer transmitting.
+        """
         self.transmitting_event.wait()
 
     def waitForChannelBusy(self):
+        """Waits for the channel busy event.
+
+        This method waits for the channel_busy_event to be set, with a
+        timeout of 2 seconds. This is used to pause operations when the
+        channel is detected as busy.
+        """
         self.channel_busy_event.wait(2)
 
     def register_arq_iss_session(self, session):
+        """Registers an ARQ ISS session.
+
+        This method registers an ARQ Information Sending Station (ISS) session
+        by storing it in the arq_iss_sessions dictionary. It returns True
+        if the session is successfully registered, False if a session with
+        the same ID already exists.
+
+        Args:
+            session (ARQSessionISS): The ARQ ISS session to register.
+
+        Returns:
+            bool: True if the session was registered, False otherwise.
+        """
         if session.id in self.arq_iss_sessions:
             return False
         self.arq_iss_sessions[session.id] = session
         return True
 
     def register_arq_irs_session(self, session):
+        """Registers an ARQ IRS session.
+
+        This method registers an ARQ Information Receiving Station (IRS)
+        session, storing it in the arq_irs_sessions dictionary. It
+        returns True if the session is registered successfully, or False
+        if a session with the same ID already exists.
+
+        Args:
+            session (ARQSessionIRS): The ARQ IRS session to register.
+
+        Returns:
+            bool: True if the session was registered, False otherwise.
+        """
         if session.id in self.arq_irs_sessions:
             return False
         self.arq_irs_sessions[session.id] = session
         return True
 
     def check_if_running_arq_session(self, irs=False):
+        """Checks if there is a running ARQ session.
+
+        This method iterates through either the ISS or IRS ARQ sessions,
+        depending on the 'irs' flag. It cleans up outdated sessions and
+        checks if any remaining sessions are not in a final state (ENDED,
+        ABORTED, or FAILED).
+
+        Args:
+            irs (bool, optional): If True, checks IRS sessions; otherwise,
+                checks ISS sessions. Defaults to False (ISS sessions).
+
+        Returns:
+            bool: True if there is a running ARQ session, False otherwise.
+        """
         sessions = self.arq_irs_sessions if irs else self.arq_iss_sessions
 
         for session_id in sessions:
@@ -252,15 +343,26 @@ class StateManager:
                     self.remove_arq_irs_session(session_id)
                 else:
                     self.remove_arq_iss_session(session_id)
-            
+
             # check again if session id exists in session because of cleanup
             if session_id in sessions and sessions[session_id].state.name not in ['ENDED', 'ABORTED', 'FAILED']:
                 print(f"[State Manager] running session...[{session_id}]")
                 return True
-            return False
         return False
 
     def get_arq_iss_session(self, id):
+        """Retrieves an ARQ ISS session by ID.
+
+        This method returns the ARQ Information Sending Station (ISS) session
+        associated with the given ID. If no session with the given ID is
+        found, it returns None.
+
+        Args:
+            id: The ID of the ARQ ISS session.
+
+        Returns:
+            ARQSessionISS or None: The ARQSessionISS object if found, None otherwise.
+        """
         if id not in self.arq_iss_sessions:
             #raise RuntimeError(f"ARQ ISS Session '{id}' not found!")
             # DJ2LS: WIP We need to find a better way of handling this
@@ -268,6 +370,18 @@ class StateManager:
         return self.arq_iss_sessions[id]
 
     def get_arq_irs_session(self, id):
+        """Retrieves an ARQ IRS session by ID.
+
+        This method returns the ARQ Information Receiving Station (IRS) session
+        associated with the given ID. It returns None if no session with the
+        given ID is found.
+
+        Args:
+            id: The ID of the ARQ IRS session.
+
+        Returns:
+            ARQSessionIRS or None: The ARQSessionIRS object if found, None otherwise.
+        """
         if id not in self.arq_irs_sessions:
             #raise RuntimeError(f"ARQ IRS Session '{id}' not found!")
             # DJ2LS: WIP We need to find a better way of handling this
@@ -275,14 +389,39 @@ class StateManager:
         return self.arq_irs_sessions[id]
 
     def remove_arq_iss_session(self, id):
+        """Removes an ARQ ISS session.
+
+        This method removes the ARQ Information Sending Station (ISS) session
+        associated with the given ID from the arq_iss_sessions dictionary.
+
+        Args:
+            id: The ID of the ARQ ISS session to remove.
+        """
         if id in self.arq_iss_sessions:
             del self.arq_iss_sessions[id]
 
     def remove_arq_irs_session(self, id):
+        """Removes an ARQ IRS session.
+
+        This method removes the ARQ Information Receiving Station (IRS) session
+        associated with the given ID from the arq_irs_sessions dictionary.
+
+        Args:
+            id: The ID of the ARQ IRS session to remove.
+        """
         if id in self.arq_irs_sessions:
             del self.arq_irs_sessions[id]
 
     def add_activity(self, activity_data):
+        """Adds a new activity to the activities list.
+
+        This method generates a unique ID for the activity, adds a timestamp
+        and frequency if not provided, and stores the activity data in the
+        activities list. It then triggers a state update.
+
+        Args:
+            activity_data (dict): A dictionary containing the activity data.
+        """
         # Generate a random 8-byte string as hex
         activity_id = np.random.bytes(8).hex()
 
@@ -297,12 +436,31 @@ class StateManager:
         self.sendStateUpdate(self.newstate)
 
     def calculate_channel_busy_state(self):
+        """Calculates and sets the overall channel busy state.
+
+        This method determines the channel busy state based on the status
+        of channel_busy_condition_traffic and
+        channel_busy_condition_codec2. If both events are set (not busy),
+        it sets the channel_busy_event, indicating the channel is available.
+        Otherwise, it resets the channel_busy_event.
+        """
         if self.channel_busy_condition_traffic.is_set() and self.channel_busy_condition_codec2.is_set():
             self.channel_busy_event.set()
         else:
             self.channel_busy_event = threading.Event()
 
     def set_channel_busy_condition_traffic(self, busy):
+        """Sets the channel busy condition based on data traffic.
+
+        This method sets or clears the channel_busy_condition_traffic event
+        based on the provided busy flag. If busy is False, the event is set,
+        indicating no traffic. If busy is True, the event is cleared,
+        indicating traffic. It then recalculates the overall channel busy
+        state.
+
+        Args:
+            busy (bool): True if there is data traffic, False otherwise.
+        """
         if not busy:
             self.channel_busy_condition_traffic.set()
         else:
@@ -310,6 +468,17 @@ class StateManager:
         self.calculate_channel_busy_state()
 
     def set_channel_busy_condition_codec2(self, traffic):
+        """Sets the channel busy condition based on Codec2 traffic.
+
+        This method sets or clears the channel_busy_condition_codec2 event
+        based on the provided traffic flag. If traffic is False, the event
+        is set, indicating no Codec2 traffic. If traffic is True, the event
+        is cleared, indicating ongoing Codec2 traffic. It then recalculates
+        the overall channel busy state.
+
+        Args:
+            traffic (bool): True if there is Codec2 traffic, False otherwise.
+        """
         if not traffic:
             self.channel_busy_condition_codec2.set()
         else:
@@ -317,9 +486,27 @@ class StateManager:
         self.calculate_channel_busy_state()
 
     def is_receiving_codec2_signal(self):
+        """Checks if the server is receiving a Codec2 signal.
+
+        This method returns True if the channel_busy_condition_codec2 event
+        is not set, indicating that a Codec2 signal is being received.
+        Otherwise, it returns False.
+
+        Returns:
+            bool: True if a Codec2 signal is being received, False otherwise.
+        """
         return not self.channel_busy_condition_codec2.is_set()
 
     def get_radio_status(self):
+        """Returns the current radio status.
+
+        This method returns a dictionary containing the current status
+        information of the radio, including its status, frequency, mode,
+        RF level, S-meter strength, SWR, and tuner status.
+
+        Returns:
+            dict: A dictionary containing the radio status information.
+        """
         return {
             "radio_status": self.radio_status,
             "radio_frequency": self.radio_frequency,
@@ -331,6 +518,19 @@ class StateManager:
         }
 
     def register_p2p_connection_session(self, session):
+        """Registers a P2P connection session.
+
+        This method registers a peer-to-peer (P2P) connection session by
+        storing it in the p2p_connection_sessions dictionary. It returns
+        True if the session is successfully registered, or False if a
+        session with the same ID already exists.
+
+        Args:
+            session (P2PConnection): The P2P connection session object.
+
+        Returns:
+            bool: True if the session was registered, False otherwise.
+        """
         if session.session_id in self.p2p_connection_sessions:
             print("session already registered...")
             return False
