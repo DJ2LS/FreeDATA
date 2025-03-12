@@ -83,6 +83,21 @@ else:
 
 @app.middleware("http")
 async def http_middleware(request: Request, call_next):
+    """Middleware function for HTTP requests.
+
+    This middleware function intercepts HTTP requests, disables caching,
+    logs request details (method, URL, and response code), and passes the
+    request to the next middleware or route handler. It also includes
+    commented-out code for enabling caching, which can be activated if
+    needed.
+
+    Args:
+        request (Request): The incoming HTTP request.
+        call_next: The next middleware function or route handler in the chain.
+
+    Returns:
+        Response: The HTTP response.
+    """
     response = await call_next(request)
 
     # Disable caching
@@ -114,6 +129,16 @@ app.add_middleware(
 
 # Set config file to use
 def set_config():
+    """Sets the configuration file to use.
+
+    This function retrieves the path to the configuration file from the
+    environment variable CONFIG_ENV_VAR or defaults to DEFAULT_CONFIG_FILE
+    in the script directory. It checks if the file exists and exits the
+    program if not found.
+
+    Returns:
+        str: The path to the configuration file.
+    """
     config_file = os.getenv(CONFIG_ENV_VAR, os.path.join(script_directory, DEFAULT_CONFIG_FILE))
     if os.path.exists(config_file):
         print(f"Using config from {config_file}")
@@ -129,14 +154,31 @@ def set_config():
 
 # Signal Handler
 def signal_handler(sig, frame):
+    """Handles SIGINT signal (Ctrl+C).
+
+    This function is called when the user interrupts the server with
+    Ctrl+C (SIGINT signal). It logs a warning message and initiates the
+    server shutdown process. The frame argument is not currently used.
+
+    Args:
+        sig: The signal number (SIGINT).
+        frame: The current stack frame.
+    """
     print("\n------------------------------------------")
     logger.warning("[SHUTDOWN] Received SIGINT....")
     stop_server()
 
 def stop_server():
+    """Stops the FreeDATA server and its components.
+
+    This function performs a graceful shutdown of the FreeDATA server,
+    including stopping transmissions, shutting down various managers and
+    services, closing socket interfaces, and terminating audio streams.
+    It attempts to handle potential errors during the shutdown process.
+    """
     # INFO attempt stopping ongoing transmission for reducing chance of stuck PTT
     if hasattr(app, 'state_manager'):
-        logger.warning("[SHUTDOWN] stopping ongoing transmissions....")
+        logger.warning("[SHUTDOWN] Stopping ongoing transmissions....")
         try:
             for session in app.state_manager.arq_irs_sessions.values():
                 #session.abort_transmission()
@@ -177,10 +219,28 @@ def stop_server():
 
 
 def open_browser_after_delay(url, delay=2):
+    """Opens the specified URL in a web browser after a delay.
+
+    This function opens the given URL in a new browser window or tab after
+    a specified delay. It is used to automatically open the FreeDATA GUI
+    in a browser after the server has started.
+
+    Args:
+        url (str): The URL to open.
+        delay (int, optional): The delay in seconds before opening the browser. Defaults to 2.
+    """
     threading.Event().wait(delay)
     webbrowser.open(url, new=0, autoraise=True)
 
 def main():
+    """Main function to start the FreeDATA server.
+
+    This function initializes the FreeDATA server, sets up signal
+    handling, configures managers and services, starts the modem,
+    initializes the database, starts websocket workers, and runs the
+    FastAPI server using uvicorn. It also handles automatic opening of
+    the GUI in a web browser.
+    """
     signal.signal(signal.SIGINT, signal_handler)
 
     app.MODEM_VERSION = MODEM_VERSION
@@ -214,7 +274,7 @@ def main():
         modemaddress = '127.0.0.1'
 
     if modemport in ['', None]:
-        modemport = '5000'
+        modemport = 5000  # Use integer value
 
     if gui_dir and os.path.isdir(gui_dir):
         url = f"http://{modemaddress}:{modemport}/gui"
