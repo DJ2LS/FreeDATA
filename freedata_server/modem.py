@@ -231,9 +231,9 @@ class RF:
         x = np.frombuffer(txbuffer, dtype=np.int16)
         x = audio.normalize_audio(x)
         x = audio.set_audio_volume(x, self.tx_audio_level)
-
+        txbuffer_out = self.resampler.resample8_to_48(x)
         # transmit audio
-        self.enqueue_audio_out(x)
+        self.enqueue_audio_out(txbuffer_out)
 
         end_of_transmission = time.time()
         transmission_time = end_of_transmission - start_of_transmission
