@@ -240,7 +240,7 @@ class EventManager:
         """
         self.broadcast({"message-db": "changed", "message_id": message_id})
 
-    def freedata_logging(self, type, status):
+    def freedata_logging(self, type, status, message):
         """Broadcasts a FreeDATA logging event.
 
         This method broadcasts an event related to FreeDATA logging,
@@ -253,4 +253,4 @@ class EventManager:
             status (any): The status of the logging operation.
         """
 
-        self.broadcast({"type": "message-logging", "endpoint": type, "status": status})
+        self.broadcast({"type": "message-logging", "endpoint": type, "status": status, "message": message})

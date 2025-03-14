@@ -2,6 +2,7 @@ import requests
 import threading
 import structlog
 
+
 def send_wavelog_qso_data(config, event_manager, wavelog_data):
     """
     Sends wavelog QSO data to the specified server via API call.
@@ -41,15 +42,27 @@ def send_wavelog_qso_data(config, event_manager, wavelog_data):
         "string": wavelog_data
     }
 
+    def extract_between(text, start_marker, end_marker):
+        start = text.find(start_marker)
+        if start == -1:
+            return None  # Marker not found
+        start += len(start_marker)  # Move past the start marker
+        end = text.find(end_marker, start)
+        if end == -1:
+            return text[start:]  # If end marker not found, take rest of the string
+        return text[start:end]
+
     def send_api():
         try:
             response = requests.post(url, headers=headers, json=data)
             response.raise_for_status()  # Raise an error for bad status codes
             log.info(f"[CHAT] Wavelog API: {wavelog_data}")
-            event_manager.freedata_logging(type="wavelog", status=True)
+#            event_manager.freedata_logging(type="wavelog", status=True)
+            event_manager.freedata_logging(type="wavelog", status=False, message=f"QSO added")
         except requests.exceptions.RequestException as e:
             log.warning(f"[WAVELOG ADIF API EXCEPTION]: {e}")
-            event_manager.freedata_logging(type="wavelog", status=False)
+            #FIXME format the output to get the actual error
+            event_manager.freedata_logging(type="wavelog", status=False, message=f"Wavelog error check log")
 
     # Run the API call in a background thread to avoid blocking the main thread
     thread = threading.Thread(target=send_api, daemon=True)
