@@ -277,7 +277,19 @@ class DatabaseManager:
 
 
     def check_database_version(self):
+        """Updates the database schema to the expected version.
 
+            This method is called by `check_database_version` if the current
+            schema version is older than the expected version. It performs
+            the necessary schema updates based on the current and expected
+            versions. Currently, it only logs a message indicating that
+            schema updates are not yet implemented. It takes the current and
+            expected versions as arguments, but doesn't use them yet.
+
+            Args:
+            current_version (int): The current database schema version.
+            expected_version (int): The expected database schema version.
+        """
         session = self.get_thread_scoped_session()
         try:
             config = session.query(Config).filter_by(db_variable='database_version').first()
