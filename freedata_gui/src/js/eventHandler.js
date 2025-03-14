@@ -158,10 +158,10 @@ export function eventDispatcher(data) {
         if (data.status === true) {
             const message = `
             <div>
-                <strong>${i18next.t('popups.loggingsuccess')}:</strong>
+                <strong>${i18next.t('Wavelog posted')}:</strong>
                 <span class="badge bg-success">${data.endpoint}</span>
                 <div class="mt-2">
-                <span class="badge bg-secondary">${i18next.t('popups.loggingsuccessmessage')}</span>
+                <span class="badge bg-secondary">${i18next.t('Wavelog posted')}</span>
                 </div>
             </div>
           `;

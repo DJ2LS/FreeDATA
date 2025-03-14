@@ -57,8 +57,7 @@ def send_wavelog_qso_data(config, event_manager, wavelog_data):
             response = requests.post(url, headers=headers, json=data)
             response.raise_for_status()  # Raise an error for bad status codes
             log.info(f"[CHAT] Wavelog API: {wavelog_data}")
-#            event_manager.freedata_logging(type="wavelog", status=True)
-            event_manager.freedata_logging(type="wavelog", status=False, message=f"QSO added")
+            event_manager.freedata_logging(type="wavelog", status=True, message=f"QSO added")
         except requests.exceptions.RequestException as e:
             log.warning(f"[WAVELOG ADIF API EXCEPTION]: {e}")
             #FIXME format the output to get the actual error
