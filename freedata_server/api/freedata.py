@@ -85,7 +85,7 @@ async def post_freedata_message_adif_log(message_id: str, request:Request):
     if not adif_output:
         return
 
-    # Send the ADIF data via UDP
+    # Send the ADIF data via UDP and/or wavelog
     adif_udp_logger.send_adif_qso_data(request.app.config_manager.read(), request.app.event_manager, adif_output)
     wavelog_api_logger.send_wavelog_qso_data(request.app.config_manager.read(), request.app.event_manager, adif_output)
     return api_response(adif_output)
