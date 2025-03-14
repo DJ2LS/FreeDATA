@@ -153,6 +153,38 @@ export function eventDispatcher(data) {
       loadAllData();
       return;
 
+    case "message-logging":
+      if (data.endpoint === "adif") {
+        if (data.status === true) {
+          const message = `
+
+<div>
+        <strong>${i18next.t('popups.loggingsuccess')}:</strong>
+        <span class="badge bg-success">${data.endpoint}</span>
+        <div class="mt-2">
+          <span class="badge bg-secondary">${i18next.t('popups.loggingsuccessmessage')}</span>
+        </div>
+      </div>
+
+          `;
+          displayToast("success", "bi-check-circle", message, 5000);
+        } else {
+          const message = `
+            <div>
+        <strong>${i18next.t('popups.loggingfailed')}:</strong>
+        <span class="badge bg-danger">${data.endpoint}</span>
+        <div class="mt-2">
+          <span class="badge bg-secondary">${i18next.t('popups.loggingfailedmessage')}</span>
+        </div>
+      </div>
+          `;
+          displayToast("warning", "bi-exclamation-circle", message, 5000);
+        }
+      }
+      return;
+
+
+
     case "frame-handler":
       switch (data.received) {
         case "CQ":
