@@ -98,7 +98,7 @@
             "transmitting": "Sto inviando...",
             "pingstation": "PING Stazione",
             "sendingcq": "Invio CQ...",
-            "sendingping": "Sending PING...",
+            "sendingping": "Invio PING...",
             "callcq": "Chiamo CQ",
             "cqcqcq": "CQ CQ CQ",
             "togglebeacon": "attiva/disattiva beacon",
