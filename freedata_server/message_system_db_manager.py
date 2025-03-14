@@ -1,14 +1,15 @@
 # database_manager.py
 import sqlite3
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, inspect
 from sqlalchemy.orm import scoped_session, sessionmaker
 from threading import local
-from message_system_db_model import Base, Station, Status, P2PMessage
+from message_system_db_model import Base, Config, Station, Status, P2PMessage
 import structlog
 import helpers
 import os
 import sys
+from constants import MESSAGE_SYSTEM_DATABASE_VERSION
 
 class DatabaseManager:
     """Manages database connections and operations.
@@ -274,3 +275,142 @@ class DatabaseManager:
             session.flush()  # To get the ID immediately
         return status
 
+
+    def check_database_version(self):
+
+        session = self.get_thread_scoped_session()
+        try:
+            config = session.query(Config).filter_by(db_variable='database_version').first()
+            if config is None:
+                config = Config(db_variable='database_version', db_version="0")
+                session.add(config)
+                session.commit()
+                self.log("No database version found. Assuming version 0 and storing it.")
+
+            current_version = int(config.db_version)
+            expected_version = int(MESSAGE_SYSTEM_DATABASE_VERSION)
+
+            if current_version < expected_version:
+                self.log(
+                    f"Database schema outdated (current: {current_version}, expected: {expected_version}). Updating schema...")
+                self.update_database_schema()
+                config.db_version = str(expected_version)
+                session.commit()
+                self.log("Database schema updated successfully.")
+            elif current_version > expected_version:
+                self.log("Database version is newer than the expected version. Manual intervention might be required.",
+                         isWarning=True)
+            else:
+                self.log("Database schema is up-to-date.")
+        except Exception as e:
+            session.rollback()
+            self.log(f"Database version check failed: {e}", isWarning=True)
+        finally:
+            session.remove()
+
+    def update_database_schema(self):
+        """Updates the database schema to the latest version.
+
+        This method updates both tables and columns within the database
+        schema. It checks for and adds any missing tables or columns
+        defined in the model. It logs the progress and results of the
+        schema update.
+
+        Returns:
+            bool: True if the schema update was completely successful,
+            False otherwise.
+        """
+        self.log("Starting schema update...")
+        tables_success = self.update_tables_schema()
+        columns_success = self.update_columns_schema()
+
+        if tables_success and columns_success:
+            self.log("Database schema update completed successfully.")
+            return True
+        else:
+            self.log("Database schema update completed with errors.", isWarning=True)
+            return False
+
+    def update_tables_schema(self):
+        """Updates the database schema by adding new tables.
+
+        This method checks for any new tables defined in the data model
+        (Base.metadata) that are not present in the database. If new
+        tables are found, it creates them in the database. It logs the
+        names of the tables being added and any errors encountered during
+        the process.
+
+        Returns:
+            bool: True if the table update was successful, False otherwise.
+        """
+        self.log("Checking for new tables to add to the schema.")
+        success = True
+        inspector = inspect(self.engine)
+        existing_tables = inspector.get_table_names()
+
+        new_tables = [table for table in Base.metadata.sorted_tables if table.name not in existing_tables]
+
+        if new_tables:
+            table_names = ", ".join(table.name for table in new_tables)
+            self.log(f"New tables to be added: {table_names}")
+            try:
+                Base.metadata.create_all(self.engine, tables=new_tables)
+                self.log("New tables have been added successfully.")
+            except Exception as e:
+                self.log(f"Error while adding new tables: {e}", isWarning=True)
+                success = False
+        else:
+            self.log("No new tables to add.")
+        return success
+
+    def update_columns_schema(self):
+        """Updates the database schema by adding missing columns.
+
+        This method checks for any missing columns in existing tables by
+        comparing the database schema with the defined models. If missing
+        columns are found, it adds them to the respective tables using
+        ALTER TABLE statements. It handles different column types,
+        nullability, and default values. It logs the DDL statements and
+        any errors encountered during the process.
+
+        Returns:
+            bool: True if the column update was successful, False otherwise.
+        """
+
+        self.log("Checking for missing columns in existing tables.")
+        success = True
+        inspector = inspect(self.engine)
+        existing_tables = inspector.get_table_names()
+
+        for table in Base.metadata.sorted_tables:
+            if table.name in existing_tables:
+                existing_columns_info = inspector.get_columns(table.name)
+                existing_column_names = {col["name"] for col in existing_columns_info}
+
+                for column in table.columns:
+                    if column.name not in existing_column_names:
+                        col_name = column.name
+                        col_type = column.type.compile(dialect=self.engine.dialect)
+                        nullable_clause = "" if column.nullable else "NOT NULL"
+                        default_clause = ""
+                        if column.default is not None and hasattr(column.default, "arg"):
+                            default_value = column.default.arg
+                            if isinstance(default_value, str):
+                                default_clause = f" DEFAULT '{default_value}'"
+                            else:
+                                default_clause = f" DEFAULT {default_value}"
+
+                        ddl = (
+                            f"ALTER TABLE {table.name} ADD COLUMN {col_name} {col_type} "
+                            f"{nullable_clause}{default_clause}"
+                        )
+                        ddl = " ".join(ddl.split())
+                        self.log(f"Adding missing column with DDL: {ddl}")
+                        try:
+                            with self.engine.connect() as conn:
+                                conn.execute(text(ddl))
+                            self.log(f"Column '{col_name}' added to table '{table.name}'.")
+                        except Exception as e:
+                            self.log(f"Failed to add column '{col_name}' to table '{table.name}': {e}", isWarning=True)
+                            success = False
+        return success
