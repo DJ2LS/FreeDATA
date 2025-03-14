@@ -154,7 +154,7 @@ export function eventDispatcher(data) {
       return;
 
     case "message-logging":
-      if (data.endpoint === "adif") {
+      if (data.endpoint === "wavelog") {
         if (data.status === true) {
           const message = `
 
