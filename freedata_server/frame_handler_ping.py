@@ -5,6 +5,11 @@ from message_system_db_messages import DatabaseManagerMessages
 
 
 class PingFrameHandler(frame_handler.FrameHandler):
+    """Handles received PING frames.
+
+    This class processes received PING frames, sends acknowledgements, and
+    checks for queued messages to be sent based on configuration.
+    """
 
     #def is_frame_for_me(self):
     #    call_with_ssid = self.config['STATION']['mycall'] + "-" + str(self.config['STATION']['myssid'])
@@ -19,6 +24,12 @@ class PingFrameHandler(frame_handler.FrameHandler):
     #    return valid
 
     def follow_protocol(self):
+        """Processes the received PING frame.
+
+        This method checks if the frame is for the current station and if
+        the modem is not busy with ARQ. If both conditions are met, it sends
+        a PING acknowledgement and checks for queued messages to send.
+        """
         if not bool(self.is_frame_for_me() and not self.states.getARQ()):
             return
         self.logger.debug(
@@ -31,6 +42,11 @@ class PingFrameHandler(frame_handler.FrameHandler):
         self.check_for_queued_message()
 
     def send_ack(self):
+        """Sends a PING acknowledgement frame.
+
+        This method builds a PING acknowledgement frame using the received
+        frame's origin CRC and SNR, and transmits it using the modem.
+        """
         factory = data_frame_factory.DataFrameFactory(self.config)
         ping_ack_frame = factory.build_ping_ack(
             self.details['frame']['origin_crc'], 
@@ -39,6 +55,13 @@ class PingFrameHandler(frame_handler.FrameHandler):
         self.transmit(ping_ack_frame)
 
     def check_for_queued_message(self):
+        """Checks for queued messages to send.
+
+        This method checks if auto-repeat is enabled in the configuration
+        and if the received signal strength is above a certain threshold.
+        If both conditions are met, it sets any messages addressed to the
+        originating station to 'queued' status in the message database.
+        """
 
         # only check for queued messages, if we have enabled this and if we have a minimum snr received
         if self.config["MESSAGES"]["enable_auto_repeat"] and self.details["snr"] >= -2:

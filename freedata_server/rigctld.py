@@ -4,11 +4,30 @@ import helpers
 import threading
 
 class radio:
-    """rigctld (hamlib) communication class"""
+    """Controls a radio using rigctld.
+
+    This class provides methods to interact with a radio using the
+    rigctld server. It supports connecting, disconnecting, setting
+    parameters (PTT, mode, frequency, bandwidth, RF level, tuner),
+    retrieving radio parameters, starting and stopping the rigctld
+    service, and handling VFO settings.
+    """
 
     log = structlog.get_logger("radio (rigctld)")
 
     def __init__(self, config, states, hostname="localhost", port=4532, timeout=3):
+        """Initializes the radio controller.
+
+        Args:
+            config (dict): Configuration dictionary.
+            states (StateManager): State manager instance.
+            hostname (str, optional): Hostname or IP address of the
+                rigctld server. Defaults to "localhost".
+            port (int, optional): Port number of the rigctld server.
+                Defaults to 4532.
+            timeout (int, optional): Timeout for socket operations in
+                seconds. Defaults to 3.
+        """
         self.hostname = hostname
         self.port = port
         self.timeout = timeout
@@ -45,6 +64,14 @@ class radio:
         self.connect()
 
     def connect(self):
+        """Connects to the rigctld server.
+
+        This method attempts to establish a connection to the rigctld
+        server. If successful, it sets the connected flag, updates the
+        radio status, logs the connection, checks VFO support, and gets
+        the current VFO. If the connection fails, it logs a warning and
+        updates the radio status accordingly.
+        """
         if self.shutdown:
             return
         try:
@@ -64,6 +91,12 @@ class radio:
             self.states.set_radio("radio_status", False)
 
     def disconnect(self):
+        """Disconnects from the rigctld server.
+
+        This method disconnects from the rigctld server, updates the
+        radio status, resets radio parameters, and closes the socket
+        connection.
+        """
         self.shutdown = True
         self.connected = False
         if self.connection:
@@ -84,18 +117,37 @@ class radio:
             'vfo': '---'
         }
 
-    def send_command(self, command) -> str:
+    def send_command(self, command):
+        """Sends a command to the rigctld server.
+
+        This method sends a command to the rigctld server and waits for a
+        response. It handles potential timeouts and other errors during
+        communication. It uses a threading.Event to synchronize command
+        sending and avoid concurrent access to the socket.
+
+        Args:
+            command (str): The command to send to rigctld.
+
+        Returns:
+            str or None: The response from rigctld, or None if an error
+            occurred, the response contains 'RPRT', or the response
+            contains 'None'.
+
+        Raises:
+            TimeoutError: If a timeout occurs while waiting for a response.
+        """
         if self.connected:
             # wait if we have another command awaiting its response...
             # we need to set a timeout for avoiding a blocking state
-            self.await_response.wait(timeout=1)
+            if not self.await_response.wait(timeout=1):  # Check if timeout occurred
+                raise TimeoutError(f"[RIGCTLD] Timeout waiting for response from rigctld before sending command: [{command}]")
 
             try:
-                self.await_response = threading.Event()
+                self.await_response.clear()  # Signal that a command is awaiting response
 
                 self.connection.sendall(command.encode('utf-8') + b"\n")
                 response = self.connection.recv(1024)
-                self.await_response.set()
+                self.await_response.set()  # Signal that the response has been received
                 stripped_result = response.decode('utf-8').strip()
                 if 'RPRT' in stripped_result:
                     return None
@@ -106,15 +158,32 @@ class radio:
                 return stripped_result
 
             except socket.timeout:
-                self.await_response.set()
-                raise TimeoutError(f"[RIGCTLD] Timeout waiting for response from rigctld: [{command}]")
+                self.log.warning(f"[RIGCTLD] Timeout waiting for response from rigctld: [{command}]")
+                self.connected = False  # Set connected to False if timeout occurs
+                return None  # Return None to indicate timeout
             except Exception as err:
-                self.await_response.set()
                 self.log.warning(f"[RIGCTLD] Error sending command [{command}] to rigctld: {err}")
                 self.connected = False
+                return None  # Return None to indicate error
+            finally:
+                self.await_response.set()  # Ensure await_response is always set in case of exceptions
         return ""
 
     def insert_vfo(self, command):
+        """Inserts the VFO into rigctld commands if supported.
+
+        This method modifies rigctld commands to include the VFO
+        information if VFO support is enabled and the VFO is set. It
+        takes a command string as input and returns the modified command
+        string with the VFO inserted.
+
+        Args:
+            command (str): The rigctld command string.
+
+        Returns:
+            str: The modified command string with VFO inserted, or the
+            original command string if VFO is not supported or not set.
+        """
         #self.get_vfo()
         if self.parameters['chk_vfo'] and self.parameters['vfo'] and self.parameters['vfo'] not in [None, False, 'err', 0]:
             return f"{command[:1].strip()} {self.parameters['vfo']} {command[1:].strip()}"
@@ -306,6 +375,12 @@ class radio:
         return self.parameters
 
     def dump_caps(self):
+        """Dumps rigctld capabilities.
+
+        This method sends the '\dump_caps' command to rigctld and prints
+        the response. It is used for debugging and informational
+        purposes. It handles potential errors during command execution.
+        """
         try:
             vfo_response = self.send_command(r'\dump_caps')
             print(vfo_response)
@@ -314,9 +389,15 @@ class radio:
             self.log.warning(f"Error getting dump_caps: {e}")
 
     def check_vfo(self):
+        """Checks for VFO support.
+
+        This method checks if the connected radio supports VFO by sending
+        the '\chk_vfo' command to rigctld. It updates the 'chk_vfo'
+        parameter accordingly and handles potential errors during the
+        check.
+        """
         try:
             vfo_response = self.send_command(r'\chk_vfo')
-            print(vfo_response)
             if vfo_response in [1, "1"]:
                 self.parameters['chk_vfo'] = True
             else:
@@ -327,6 +408,14 @@ class radio:
             self.parameters['chk_vfo'] = False
 
     def get_vfo(self):
+        """Gets the current VFO.
+
+        This method retrieves the current VFO from the radio using the 'v'
+        command if VFO support is enabled. It updates the 'vfo' parameter
+        with the retrieved VFO or sets it to 'currVFO' if no specific VFO
+        is returned. If VFO support is disabled, it sets 'vfo' to False.
+        It handles potential errors during VFO retrieval.
+        """
         try:
             if self.parameters['chk_vfo']:
 
@@ -346,6 +435,14 @@ class radio:
             self.parameters['vfo'] = 'err'
 
     def get_frequency(self):
+        """Gets the current frequency from the radio.
+
+        This method retrieves the current frequency from the radio using
+        the 'f' command, with VFO support if enabled. It updates the
+        'frequency' parameter with the retrieved frequency or sets it to
+        'err' if an error occurs or no frequency is returned. It handles
+        potential errors during frequency retrieval.
+        """
         try:
             command = self.insert_vfo('f')
             frequency_response = self.send_command(command)
@@ -359,6 +456,14 @@ class radio:
             self.parameters['frequency'] = 'err'
 
     def get_mode_bandwidth(self):
+        """Gets the current mode and bandwidth from the radio.
+
+        This method retrieves the current mode and bandwidth from the
+        radio using the 'm' command, with VFO support if enabled. It
+        updates the 'mode' and 'bandwidth' parameters accordingly. It
+        handles potential errors during retrieval, including ValueError
+        if the response cannot be parsed correctly.
+        """
         try:
             command = self.insert_vfo('m')
             response = self.send_command(command)
@@ -367,21 +472,28 @@ class radio:
                 response = response.strip()
                 mode, bandwidth = response.split('\n', 1)
                 bandwidth = int(bandwidth)
+                self.parameters['mode'] = mode
+                self.parameters['bandwidth'] = bandwidth
             else:
-                mode = 'err'
-                bandwidth = 'err'
+                self.parameters['mode'] = 'err'
+                self.parameters['bandwidth'] = 'err'
         except ValueError:
-            mode = 'err'
-            bandwidth = 'err'
+            self.parameters['mode'] = 'err'
+            self.parameters['bandwidth'] = 'err'
         except Exception as e:
             self.log.warning(f"Error getting mode and bandwidth: {e}")
-            mode = 'err'
-            bandwidth = 'err'
-        finally:
-            self.parameters['mode'] = mode
-            self.parameters['bandwidth'] = bandwidth
+            self.parameters['mode'] = 'err'
+            self.parameters['bandwidth'] = 'err'
 
     def get_alc(self):
+        """Gets the ALC (Automatic Level Control) value.
+
+        This method retrieves the ALC value from the radio using the 'l
+        ALC' command, with VFO support if enabled. It updates the 'alc'
+        parameter with the retrieved value or sets it to 'err' if an
+        error occurs or no value is returned. It handles potential
+        errors during ALC retrieval.
+        """
         try:
             command = self.insert_vfo('l ALC')
             alc_response = self.send_command(command)
@@ -396,6 +508,14 @@ class radio:
             self.get_vfo()
 
     def get_strength(self):
+        """Gets the signal strength.
+
+        This method retrieves the signal strength from the radio using
+        the 'l STRENGTH' command, with VFO support if enabled. It updates
+        the 'strength' parameter with the retrieved value or sets it to
+        'err' if an error occurs or no value is returned. It handles
+        potential errors during strength retrieval.
+        """
         try:
             command = self.insert_vfo('l STRENGTH')
             strength_response = self.send_command(command)
@@ -409,6 +529,15 @@ class radio:
             self.get_vfo()
 
     def get_rf(self):
+        """Gets the RF power level.
+
+        This method retrieves the RF power level from the radio using the
+        'l RFPOWER' command, with VFO support if enabled. It updates the
+        'rf' parameter with the retrieved value (converted to integer
+        percentage) or sets it to 'err' if an error occurs or no value is
+        returned. It handles potential ValueErrors during conversion and
+        other exceptions during retrieval.
+        """
         try:
             command = self.insert_vfo('l RFPOWER')
             rf_response = self.send_command(command)
@@ -424,6 +553,14 @@ class radio:
             self.get_vfo()
 
     def get_swr(self):
+        """Gets the SWR (Standing Wave Ratio) value.
+
+        This method retrieves the SWR value from the radio using the 'l
+        SWR' command, with VFO support if enabled. It updates the 'swr'
+        parameter with the retrieved value or sets it to 'err' if an
+        error occurs or no value is returned. It handles potential
+        ValueErrors and other exceptions during retrieval.
+        """
         try:
             command = self.insert_vfo('l SWR')
             rf_response = self.send_command(command)
@@ -439,6 +576,14 @@ class radio:
             self.get_vfo()
 
     def start_service(self):
+        """Starts the rigctld service.
+
+        This method attempts to start the rigctld service using the
+        configured parameters and any additional arguments. It searches
+        for the rigctld binary in common locations, and if found,
+        attempts to execute it. It handles potential errors during
+        startup and logs informational and warning messages.
+        """
         binary_name = "rigctld"
         binary_paths = helpers.find_binary_paths(binary_name, search_system_wide=True)
         additional_args = self.format_rigctld_args()
@@ -448,29 +593,41 @@ class radio:
                 try:
                     self.log.info(f"Attempting to start rigctld using binary found at: {binary_path}")
                     self.rigctld_process = helpers.kill_and_execute(binary_path, additional_args)
-                    self.log.info("Successfully executed rigctld.")
-                    print(self.rigctld_process)
-                    print(additional_args)
-                    print(binary_paths)
-                    break  # Exit the loop after successful execution
+                    self.log.info(f"Successfully executed rigctld", args=additional_args)
+                    return  # Exit the function after successful execution
                 except Exception as e:
-                    pass
-                    # let's keep this hidden for the user to avoid confusion
-                    # self.log.warning(f"Failed to start rigctld with binary at {binary_path}: {e}")
-            else:
-                self.log.warning("Failed to start rigctld with all found binaries.", binaries=binary_paths)
+                    self.log.warning(f"Failed to start rigctld with binary at {binary_path}: {e}")  # Log the error
+            self.log.warning("Failed to start rigctld with all found binaries.", binaries=binary_paths)
         else:
             self.log.warning("Rigctld binary not found.")
 
     def stop_service(self):
+        """Stops the rigctld service.
+
+        This method stops the rigctld service if it was previously
+        started by this class. It uses the helper function
+        `helpers.kill_process` to terminate the rigctld process.
+        """
         if self.rigctld_process:
-            print("Killing rigctld process")
+            self.log.info("Stopping rigctld service")  # Log the action
             helpers.kill_process(self.rigctld_process)
 
 
     def format_rigctld_args(self):
-        config = self.config['RADIO']  # Accessing the 'RADIO' section of the INI file
-        config_rigctld = self.config['RIGCTLD'] # Accessing the 'RIGCTLD' section of the INI file for custom args
+        """Formats the arguments for starting rigctld.
+
+        This method reads the configuration and constructs the command-line
+        arguments for starting the rigctld process. It handles various
+        settings like model ID, serial port parameters, PTT configuration,
+        and custom arguments. Values defined as 'ignore', 0, or '0' in the
+        configuration are skipped. The method returns a list of formatted
+        arguments.
+
+        Returns:
+            list: A list of strings representing the formatted rigctld arguments.
+        """
+        config = self.config['RADIO']
+        config_rigctld = self.config['RIGCTLD']
         args = []
 
         # Helper function to check if the value should be ignored

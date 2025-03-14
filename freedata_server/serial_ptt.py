@@ -2,10 +2,24 @@ import serial
 import structlog
 
 class radio:
+    """Controls PTT via serial port.
+
+    This class manages PTT (Push-to-Talk) control using a serial port. It
+    handles serial connection setup, RTS/DTR line manipulation based on
+    configuration, and PTT activation/deactivation. It also provides basic
+    radio parameter handling, although most of these methods currently
+    return None.
+    """
 
     log = structlog.get_logger("radio (rigctld)")
 
     def __init__(self, config, state_manager):
+        """Initializes the serial PTT controller.
+
+        Args:
+            config (dict): Configuration dictionary.
+            state_manager (StateManager): State manager instance.
+        """
         self.parameters = {
             'frequency': '---',
             'mode': '---',

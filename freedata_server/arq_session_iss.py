@@ -10,6 +10,22 @@ import time
 import stats
 
 class ISS_State(Enum):
+    """Enumeration representing the states of an ISS (Information Sending Station) ARQ session.
+
+    This enumeration defines the various states that an ARQ session on the
+    Information Sending Station (ISS) side can transition through during
+    the data transfer process.
+
+    Attributes:
+        NEW: Initial state of a new session.
+        OPEN_SENT: State after sending an ARQ session open request.
+        INFO_SENT: State after sending the session information frame.
+        BURST_SENT: State after sending a burst data frame.
+        ENDED: State after successfully transmitting all data and receiving confirmation.
+        FAILED: State after a session failure, such as a timeout or abort.
+        ABORTING: State while running the abort sequence and waiting for a stop acknowledgement.
+        ABORTED: State after receiving a stop acknowledgement, indicating session termination.
+    """
     NEW = 0
     OPEN_SENT = 1
     INFO_SENT = 2
@@ -20,6 +36,12 @@ class ISS_State(Enum):
     ABORTED = 7 # stop ack received
 
 class ARQSessionISS(arq_session.ARQSession):
+    """Manages an ARQ session on the Information Sending Station (ISS) side.
+
+    This class extends the base ARQSession and handles the transmission of data
+    using the ARQ protocol. It manages session state, retries, timeouts, and
+    data transfer.
+    """
 
     RETRIES_CONNECT = 5
     RETRIES_INFO = 10
@@ -34,7 +56,7 @@ class ARQSessionISS(arq_session.ARQSession):
     TIMEOUT_STOP_ACK = 3.5 + TIMEOUT_CHANNEL_BUSY
 
     STATE_TRANSITION = {
-        ISS_State.OPEN_SENT: { 
+        ISS_State.OPEN_SENT: {
             FRAME_TYPE.ARQ_SESSION_OPEN_ACK.value: 'send_info',
         },
         ISS_State.INFO_SENT: {
@@ -58,6 +80,20 @@ class ARQSessionISS(arq_session.ARQSession):
     }
 
     def __init__(self, config: dict, modem, dxcall: str, state_manager, data: bytearray, type_byte: bytes):
+        """Initializes a new ARQ session on the Information Sending Station (ISS) side.
+
+        This method sets up the ARQ session for the ISS, initializing session
+        parameters, data, CRC, state, and frame factory. It also enables the
+        decoder for signalling ACK bursts.
+
+        Args:
+            config (dict): The configuration dictionary.
+            modem: The modem object.
+            dxcall (str): The DX call sign.
+            state_manager: The state manager object.
+            data (bytearray): The data to be transmitted.
+            type_byte (bytes): The type byte of the data.
+        """
         super().__init__(config, modem, dxcall, state_manager)
         self.state_manager = state_manager
         self.data = data
@@ -79,7 +115,16 @@ class ARQSessionISS(arq_session.ARQSession):
         self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
 
     def generate_id(self):
+        """Generates a unique session ID.
 
+        This method attempts to generate a unique 8-bit session ID. It first
+        checks for existing sessions with matching CRC to allow resuming
+        interrupted transmissions. If no match is found, it generates a new
+        ID based on the data CRC and ensures it's not already in use.
+
+        Returns:
+            int: The generated session ID (1-255), or False if all IDs are exhausted.
+        """
         # Iterate through existing sessions to find a matching CRC
         for session_id, session_data in self.state_manager.arq_iss_sessions.items():
             if session_data.data_crc == self.data_crc and session_data.state in [ISS_State.FAILED, ISS_State.ABORTED]:
@@ -108,6 +153,21 @@ class ARQSessionISS(arq_session.ARQSession):
                 return False
 
     def transmit_wait_and_retry(self, frame_or_burst, timeout, retries, mode, isARQBurst=False):
+        """Transmits a frame or burst, waits for a response, and retries if necessary.
+
+        This method transmits the given frame or burst of frames, waits for a
+        response event, and retries the transmission if a timeout occurs.
+        It handles retries up to the specified limit and implements a fallback
+        mechanism for ARQ bursts by switching to a lower speed level if
+        necessary.
+
+        Args:
+            frame_or_burst: The frame or list of frames to be transmitted.
+            timeout (float): The timeout period in seconds.
+            retries (int): The maximum number of retries.
+            mode: The FreeDV mode to use for transmission.
+            isARQBurst (bool, optional): True if transmitting an ARQ burst, False otherwise. Defaults to False.
+        """
         while retries > 0 and self.state not in [ISS_State.ABORTED, ISS_State.ABORTING]:
             self.event_frame_received = threading.Event()
             if isinstance(frame_or_burst, list): burst = frame_or_burst
@@ -134,10 +194,29 @@ class ARQSessionISS(arq_session.ARQSession):
         self.transmission_failed()
 
     def launch_twr(self, frame_or_burst, timeout, retries, mode, isARQBurst=False):
+        """Launches the transmit_wait_and_retry method in a separate thread.
+
+        Creates and starts a daemon thread to execute the transmit_wait_and_retry
+        method. This allows the transmission and retry process to occur in the
+        background without blocking the main thread.
+
+        Args:
+            frame_or_burst: The frame or burst of frames to transmit.
+            timeout (float): The timeout for each transmission attempt.
+            retries (int): The number of transmission retries to attempt.
+            mode: The FreeDV mode to use for transmission.
+            isARQBurst (bool, optional): True if the transmission is an ARQ burst, False otherwise. Defaults to False.
+        """
         twr = threading.Thread(target = self.transmit_wait_and_retry, args=[frame_or_burst, timeout, retries, mode, isARQBurst], daemon=True)
         twr.start()
 
     def start(self):
+        """Starts the ARQ session.
+
+        This method initiates the ARQ session by sending a session open frame
+        to the IRS and setting the session state to OPEN_SENT. It also sends
+        an ARQ session new event.
+        """
         maximum_bandwidth = self.config['MODEM']['maximum_bandwidth']
         print(maximum_bandwidth)
         self.event_manager.send_arq_session_new(
@@ -147,6 +226,16 @@ class ARQSessionISS(arq_session.ARQSession):
         self.set_state(ISS_State.OPEN_SENT)
 
     def update_speed_level(self, frame):
+        """Updates the transmission speed level based on the received frame.
+
+        This method extracts the speed level from the received frame and updates
+        the session's speed level accordingly. It logs the speed level change
+        and handles cases where the received speed level is outside the
+        allowable range.
+
+        Args:
+            frame: The received frame containing the new speed level.
+        """
         self.log("---------------------------------------------------------", isWarning=True)
 
         # Log the received frame for debugging
@@ -169,6 +258,19 @@ class ARQSessionISS(arq_session.ARQSession):
             self.log("No speed level specified in the received frame.", isWarning=True)
 
     def send_info(self, irs_frame):
+        """Sends the session information frame to the IRS.
+
+        This method builds and sends the ARQ_SESSION_INFO frame containing
+        details about the data to be transmitted, such as total length, CRC,
+        SNR, and data type. It also handles transmission retries and aborts
+        based on the received IRS frame.
+
+        Args:
+            irs_frame: The received frame from the IRS.
+
+        Returns:
+            Tuple[None, None]: Returns None for both data and type_byte as this method doesn't handle data.
+        """
         # check if we received an abort flag
         if irs_frame["flag"]["ABORT"]:
             return self.transmission_aborted(irs_frame=irs_frame)
@@ -183,6 +285,19 @@ class ARQSessionISS(arq_session.ARQSession):
         return None, None
 
     def send_data(self, irs_frame, fallback=None):
+        """Sends data bursts to the IRS.
+
+        This method handles sending data bursts to the IRS, managing speed
+        level adjustments, acknowledgements, and session progress updates.
+        It also handles transmission aborts and session completion or failure.
+
+        Args:
+            irs_frame: The received frame from the IRS.
+            fallback (bool, optional): Indicates if this is a fallback transmission attempt at a lower speed level. Defaults to None.
+
+        Returns:
+            Tuple[None, None]: Returns None for both data and type_byte as this method doesn't handle data directly.
+        """
         if 'offset' in irs_frame:
             self.log(f"received data offset: {irs_frame['offset']}", isWarning=True)
             self.expected_byte_offset = irs_frame['offset']
@@ -236,6 +351,18 @@ class ARQSessionISS(arq_session.ARQSession):
         return None, None
 
     def transmission_ended(self, irs_frame):
+        """Handles the successful completion of the transmission.
+
+        This method is called when the transmission ends successfully. It sets
+        the session state to ENDED, logs the completion, sends session finished
+        events, transmits session statistics, and cleans up the session.
+
+        Args:
+            irs_frame: The received IRS frame.
+
+        Returns:
+            Tuple[None, None]: Returns None for both data and type_byte.
+        """
         # final function for sucessfully ended transmissions
         self.session_ended = time.time()
         self.set_state(ISS_State.ENDED)
@@ -252,6 +379,19 @@ class ARQSessionISS(arq_session.ARQSession):
         return None, None
 
     def transmission_failed(self, irs_frame=None):
+        """Handles transmission failures.
+
+        This method is called when a transmission fails. It sets the session
+        state to FAILED, logs the failure, sends session finished events,
+        and disables ARQ. It also notifies the ARQ data type handler about
+        the failure.
+
+        Args:
+            irs_frame (optional): The received IRS frame, if any. Defaults to None.
+
+        Returns:
+            Tuple[None, None]: Returns None for both data and type_byte.
+        """
         # final function for failed transmissions
         self.session_ended = time.time()
         self.set_state(ISS_State.FAILED)
@@ -265,7 +405,16 @@ class ARQSessionISS(arq_session.ARQSession):
         return None, None
 
     def abort_transmission(self, send_stop=False, irs_frame=None):
-        # function for starting the abort sequence
+        """Starts the ARQ transmission abort sequence.
+
+        This method initiates the abort sequence, sets the session state to
+        ABORTING, sends session finished events, clears the audio output queue,
+        and optionally sends a stop frame after a delay.
+
+        Args:
+            send_stop (bool, optional): Whether to send an ARQ_STOP frame. Defaults to False.
+            irs_frame (optional): The received IRS frame, if any. Defaults to None.
+        """
         self.log("aborting transmission...")
         self.set_state(ISS_State.ABORTING)
 
@@ -293,10 +442,28 @@ class ARQSessionISS(arq_session.ARQSession):
         self.states.setARQ(False)
 
     def send_stop(self):
+        """Sends an ARQ stop frame.
+
+        This method builds and sends an ARQ_STOP frame to the IRS, initiating
+        the termination of the ARQ session. It uses the launch_twr method
+        for transmission and retries.
+        """
         stop_frame = self.frame_factory.build_arq_stop(self.id)
         self.launch_twr(stop_frame, self.TIMEOUT_STOP_ACK, self.RETRIES_STOP, mode=FREEDV_MODE.signalling)
 
     def transmission_aborted(self, irs_frame=None):
+        """Handles the abortion of the transmission.
+
+        This method is called when the transmission is aborted. It sets the
+        session state to ABORTED, logs the abortion, sends session finished
+        events, and disables ARQ.
+
+        Args:
+            irs_frame (optional): The received IRS frame, if any. Defaults to None.
+
+        Returns:
+            Tuple[None, None]: Returns None for both data and type_byte.
+        """
         self.log("session aborted")
         self.session_ended = time.time()
         self.set_state(ISS_State.ABORTED)

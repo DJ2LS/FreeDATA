@@ -4,7 +4,7 @@
 # and hardware information using winreg.
 #
 # Using winreg helps find virtual comports
-
+# Taken from https://github.com/pyserial/pyserial/pull/70 since pyserial isnt getting recent updates
 try:
     # Python 3.X
     import winreg
