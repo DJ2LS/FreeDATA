@@ -51,7 +51,23 @@ def send_wavelog_qso_data(config, event_manager, wavelog_data):
         except requests.exceptions.RequestException as e:
             log.warning(f"[WAVELOG ADIF API EXCEPTION]: {e}")
             #FIXME format the output to get the actual error
-            event_manager.freedata_logging(type="wavelog", status=False, message=f"{e}")
+            error_text = f"{e}"
+
+            if error_text.startswith("401 Client Error:") or error_text.startswith("Failed to parse:"):
+                error_first_line, _, remaining_string = error_text.partition(": ")
+                error_second_line, _, last_part = remaining_string.partition((": "))
+                error_formated = f"{error_first_line}<br>{error_second_line}<br>{last_part}"
+
+            elif error_text.startswith("HTTPConnectionPool"):
+                error_first_line, _, remaining_string = error_text.partition(": ")
+                error_second_line, _, second_part = remaining_string.partition((": "))
+                error_third_line, _, last_part = second_part.partition(("(Caused by NewConnectionError('"))
+                error_formated = f"{error_first_line}<br>{error_second_line}<br>{error_third_line}<br>{last_part.rstrip("'))")}"
+
+            else:
+                error_formated = f"{e}"
+
+            event_manager.freedata_logging(type="wavelog", status=False, message=f"{error_formated}")
 
     # Run the API call in a background thread to avoid blocking the main thread
     thread = threading.Thread(target=send_api, daemon=True)
