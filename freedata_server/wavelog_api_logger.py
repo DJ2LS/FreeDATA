@@ -38,7 +38,7 @@ def send_wavelog_qso_data(config, event_manager, wavelog_data):
     data = {
         "key": wavelog_api_key,
         "station_profile_id": "1",
-        "type": "wavelog",
+        "type": "adif",
         "string": wavelog_data
     }
 
