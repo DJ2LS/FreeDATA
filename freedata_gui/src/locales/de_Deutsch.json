@@ -58,7 +58,7 @@
     },		   
     "grid": {
         "frequencydescription": "Häufig verwendete Frequenzen sind hier aufgelistet, alle in USB. Klicke einfach auf einen Eintrag oder gebe manuell eine Frequenz in das Textfeld ein, um den Transceiver abzustimmen. Nur bei aktivierter Hamlib-Steuerung.",
-        "frequencyselection": "Auswah der Frequenz",
+        "frequencyselection": "Auswahl der Frequenz",
         "savepreset": "Voreinstellung speichern",
         "savepreset_help": "Speichern des aktuellen Rasterlayouts als Voreinstellung. Kann mit der Schaltfläche Voreinstellung laden wiederhergestellt werden.",
         "restorepreset": "Voreinstellung laden",

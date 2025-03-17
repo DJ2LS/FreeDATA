@@ -865,9 +865,9 @@ onMounted(() => {
   </div>
 
   <div class="offcanvas offcanvas-end text-start"     data-bs-scroll="true"
-    data-bs-backdrop="false" tabindex="-1" id="offcanvasFrequency" aria-labelledby="offcanvasExampleLabel">
+    data-bs-backdrop="true" tabindex="-1" id="offcanvasFrequency" aria-labelledby="offcanvasFrequencyLabel">
   <div class="offcanvas-header">
-    <h5 class="offcanvas-title" id="offcanvasExampleLabel">{{ $t('grid.frequencyselection') }}</h5>
+    <h5 class="offcanvas-title">{{ $t('grid.frequencyselection') }}</h5>
       <button
         type="button"
         class="btn-close"
