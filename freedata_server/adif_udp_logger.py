@@ -25,16 +25,23 @@ def send_adif_qso_data(config, event_manager, adif_data):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # Set a timeout of 3 seconds to avoid blocking indefinitely
         sock.settimeout(3)
+
+        callsign_start = adif_data.find(f">") + 1
+        callsign_end = adif_data.find(f"<QSO_DATE", callsign_start)
+        call_value = adif_data[callsign_start:callsign_end]
+
         try:
             sock.sendto(adif_data.encode('utf-8'), (adif_log_host, adif_log_port))
             log.info(f"[CHAT] ADIF QSO data sent to: {adif_log_host}:{adif_log_port}")
-            event_manager.freedata_logging(type="udp", status=True)
+            event_manager.freedata_logging(type="udp", status=True, message=f" {call_value} ")
+
         except socket.timeout:
             log.info(f"[CHAT] Timeout occurred sending ADIF data to {adif_log_host}:{adif_log_port}")
-            event_manager.freedata_logging(type="udp", status=False)
+            event_manager.freedata_logging(type="udp", status=True, message=f" {call_value} ")
         except Exception as e:
             log.info(f"[CHAT] Error sending ADIF data: {e}")
-            event_manager.freedata_logging(type="udp", status=False)
+            event_manager.freedata_logging(type="udp", status=True, message=f" {call_value} ")
+
         finally:
             sock.close()
 

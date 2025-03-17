@@ -34,10 +34,10 @@
         "transmissionfailedwith": "Transmission FAILED with",
         "confirmingtransmissionwith": "Confirming transmission with",
         "receivedbytes": "Received Bytes",
-        "wavelogposted": "Wavelog API",
-        "wavelogqsowith": "QSO with",
-        "wavelogqsoadded": "added to the log.",
-        "wavelogerror": "Wavelog failed"
+        "adiflog_header": "ADIF",
+        "adiflog_text1": "QSO with",
+        "adiflog_text2": "added to the log.",
+        "adiflog_error": "ADIF export error"
     },
     "navbar": {
         "frequency_help": "What's the frequency, Kenneth?",

@@ -154,14 +154,14 @@ export function eventDispatcher(data) {
       return;
 
     case "message-logging":
-      if (data.endpoint === "wavelog") {
+      if (data.endpoint === "wavelog" || data.endpoint === "udp") {
         if (data.status === true) {
             const message = `
             <div>
-                <strong>${i18next.t('popups.wavelogposted')}:</strong>
-                <span class="badge bg-success">${i18next.t('popups.wavelogqsowith')}${data.message}${i18next.t('popups.wavelogqsoadded')}</span>
+                <strong>${i18next.t('popups.adiflog_header')}:</strong>
+                <span class="badge bg-success">${i18next.t('popups.adiflog_text1')}${data.message}${i18next.t('popups.adiflog_text2')}</span>
                 <div class="mt-2">
-                <span class="badge bg-secondary">${i18next.t('popups.wavelogposted')}</span>
+                <span class="badge bg-secondary">${data.endpoint} ${i18next.t('popups.adiflog_header')}</span>
                 </div>
             </div>
           `;
@@ -169,10 +169,10 @@ export function eventDispatcher(data) {
         } else {
             const message = `
             <div>
-                <strong>${i18next.t('popups.wavelogerror')}:</strong>
+                <strong>${i18next.t('popups.adiflog_header')}:</strong>
                 <span class="badge bg-danger">${data.message}</span>
                 <div class="mt-2">
-                <span class="badge bg-secondary">${i18next.t('popups.wavelogerror')}</span>
+                <span class="badge bg-secondary">${data.endpoint} ${i18next.t('popups.adiflog_error')}</span>
                 </div>
             </div>
                   `;
