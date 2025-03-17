@@ -1,8 +1,9 @@
 import requests
-import re
+import threading
 import structlog
 
-def send_wavelog_qso_data(config, wavelog_data):
+
+def send_wavelog_qso_data(config, event_manager, wavelog_data):
     """
     Sends wavelog QSO data to the specified server via API call.
 
@@ -41,9 +42,21 @@ def send_wavelog_qso_data(config, wavelog_data):
         "string": wavelog_data
     }
 
-    try:
-        response = requests.post(url, headers=headers, json=data)
-        response.raise_for_status()  # Raise an error for bad status codes
-        log.info(f"[CHAT] Wavelog API: {wavelog_data}")
-    except requests.exceptions.RequestException as e:
-        log.warning(f"[WAVELOG ADIF API EXCEPTION]: {e}")
+    def send_api():
+        try:
+            response = requests.post(url, headers=headers, json=data)
+            response.raise_for_status()  # Raise an error for bad status codes
+            log.info(f"[CHAT] Wavelog API: {wavelog_data}")
+
+            callsign_start = wavelog_data.find(f">") + 1
+            callsign_end = wavelog_data.find(f"<QSO_DATE", callsign_start)
+            call_value = wavelog_data[callsign_start:callsign_end]
+
+            event_manager.freedata_logging(type="wavelog", status=True, message=f" {call_value} ")
+
+        except Exception as e:
+            event_manager.freedata_logging(type="wavelog", status=False, message=f"{e}")
+
+    # Run the API call in a background thread to avoid blocking the main thread
+    thread = threading.Thread(target=send_api, daemon=True)
+    thread.start()

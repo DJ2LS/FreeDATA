@@ -33,7 +33,11 @@
         "bytesperminute": "Bytes per minute",
         "transmissionfailedwith": "Transmission FAILED with",
         "confirmingtransmissionwith": "Confirming transmission with",
-        "receivedbytes": "Received Bytes"
+        "receivedbytes": "Received Bytes",
+        "adiflogheader": "ADIF",
+        "adiflogtext1": "QSO with",
+        "adiflogtext2": "added to the log.",
+        "adiflogerror": "ADIF export error"
     },
     "navbar": {
         "frequency_help": "What's the frequency, Kenneth?",

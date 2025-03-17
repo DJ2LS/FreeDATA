@@ -239,3 +239,19 @@ class EventManager:
             message_id (any, optional): The ID of the changed message. Defaults to None.
         """
         self.broadcast({"message-db": "changed", "message_id": message_id})
+
+    def freedata_logging(self, type, status, message):
+        """Broadcasts a FreeDATA logging event.
+
+        This method broadcasts an event related to FreeDATA logging,
+        indicating the type of logging endpoint and its status. It is
+        used to inform other parts of the application about logging
+        activities.
+
+        Args:
+            type (str): The type of logging endpoint (e.g., "file", "websocket").
+            status (any): The status of the logging operation.
+            message (str): The message to be displayed
+        """
+
+        self.broadcast({"type": "message-logging", "endpoint": type, "status": status, "message": message})
