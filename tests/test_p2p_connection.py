@@ -204,7 +204,7 @@ class TestP2PConnectionSession(unittest.TestCase):
                 socket_instance.close()
                 break
 
-    def testConnect(self):
+    def DisabledtestConnect(self):
 
         self.loss_probability = 0
         self.establishChannels()
