@@ -148,7 +148,7 @@ class DISPATCHER:
                                               self.config,
                                               self.states,
                                               self.event_manager,
-                                              self.modem)
+                                              self.modem, self.socket_interface_manager)
         handler.handle(deconstructed_frame, snr, frequency_offset, freedv, bytes_per_frame)
 
     def get_id_from_frame(self, data):
