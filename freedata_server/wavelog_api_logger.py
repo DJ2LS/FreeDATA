@@ -44,7 +44,6 @@ def send_wavelog_qso_data(config, event_manager, wavelog_data):
     }
 
     def send_api():
-        print(wavelog_data)
         try:
             response = requests.post(url, headers=headers, json=data)
             response.raise_for_status()  # Raise an error for bad status codes
@@ -56,31 +55,8 @@ def send_wavelog_qso_data(config, event_manager, wavelog_data):
 
             event_manager.freedata_logging(type="wavelog", status=True, message=f"QSO with {call_value} added to log")
 
-        except requests.exceptions.RequestException as e:
-            log.warning(f"[WAVELOG ADIF API EXCEPTION]: {e}")
-            #FIXME format the output to get the actual error
-            error_text = f"{e}"
-
-            if error_text.startswith("401 Client Error:") or error_text.startswith("Failed to parse:"):
-                error_first_line, _, remaining_string = error_text.partition(": ")
-                error_second_line, _, last_part = remaining_string.partition((": "))
-                error_formated = f"{error_first_line}<br>{error_second_line}<br>{last_part}"
-
-            elif error_text.startswith("HTTPConnectionPool"):
-                error_first_line, _, remaining_string = error_text.partition(": ")
-                error_second_line, _, second_part = remaining_string.partition((": "))
-                error_third_line, _, last_part = second_part.partition(("(Caused by NewConnectionError('"))
-                error_formated = f"{error_first_line}<br>{error_second_line}<br>{error_third_line}<br>{last_part.rstrip("'))")}"
-
-            elif error_text.startswith("400 Client Error:"):
-                #TODO maybe use https://github.com/wavelog/wavelog/wiki/API#apilogbook_check_callsign
-                #to check for duplicate in log then format a proper error message.
-                #if its not in the log return a regular 400 client error
-                error_formated = f"400 Client Error: duplicate log?"
-            else:
-                error_formated = f"{e}"
-
-            event_manager.freedata_logging(type="wavelog", status=False, message=f"{error_formated}")
+        except Exception as e:
+            event_manager.freedata_logging(type="wavelog", status=False, message=f"{e}")
 
     # Run the API call in a background thread to avoid blocking the main thread
     thread = threading.Thread(target=send_api, daemon=True)
