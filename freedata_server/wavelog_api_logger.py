@@ -1,6 +1,7 @@
 import requests
 import threading
 import structlog
+import re
 
 
 def send_wavelog_qso_data(config, event_manager, wavelog_data):
@@ -43,11 +44,18 @@ def send_wavelog_qso_data(config, event_manager, wavelog_data):
     }
 
     def send_api():
+        print(wavelog_data)
         try:
             response = requests.post(url, headers=headers, json=data)
             response.raise_for_status()  # Raise an error for bad status codes
             log.info(f"[CHAT] Wavelog API: {wavelog_data}")
-            event_manager.freedata_logging(type="wavelog", status=True, message=f"QSO added")
+
+            callsign_start = wavelog_data.find(f">") + 1
+            callsign_end = wavelog_data.find(f"<QSO_DATE", callsign_start)
+            call_value = wavelog_data[callsign_start:callsign_end]
+
+            event_manager.freedata_logging(type="wavelog", status=True, message=f"QSO with {call_value} added to log")
+
         except requests.exceptions.RequestException as e:
             log.warning(f"[WAVELOG ADIF API EXCEPTION]: {e}")
             #FIXME format the output to get the actual error
@@ -64,6 +72,11 @@ def send_wavelog_qso_data(config, event_manager, wavelog_data):
                 error_third_line, _, last_part = second_part.partition(("(Caused by NewConnectionError('"))
                 error_formated = f"{error_first_line}<br>{error_second_line}<br>{error_third_line}<br>{last_part.rstrip("'))")}"
 
+            elif error_text.startswith("400 Client Error:"):
+                #TODO maybe use https://github.com/wavelog/wavelog/wiki/API#apilogbook_check_callsign
+                #to check for duplicate in log then format a proper error message.
+                #if its not in the log return a regular 400 client error
+                error_formated = f"400 Client Error: duplicate log?"
             else:
                 error_formated = f"{e}"
 

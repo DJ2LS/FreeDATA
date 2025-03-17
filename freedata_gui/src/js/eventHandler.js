@@ -159,7 +159,7 @@ export function eventDispatcher(data) {
             const message = `
             <div>
                 <strong>${i18next.t('Wavelog posted')}:</strong>
-                <span class="badge bg-success">${data.endpoint}</span>
+                <span class="badge bg-success">${data.message}</span>
                 <div class="mt-2">
                 <span class="badge bg-secondary">${i18next.t('Wavelog posted')}</span>
                 </div>
@@ -169,7 +169,7 @@ export function eventDispatcher(data) {
         } else {
             const message = `
             <div>
-                <strong>${i18next.t('Wavelog post failed')}:</strong>
+                <strong>${i18next.t('Wavelog error')}:</strong>
                 <span class="badge bg-danger">${data.message}</span>
                 <div class="mt-2">
                 <span class="badge bg-secondary">${i18next.t('Wavelog post failed')}</span>

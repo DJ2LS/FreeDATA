@@ -251,6 +251,7 @@ class EventManager:
         Args:
             type (str): The type of logging endpoint (e.g., "file", "websocket").
             status (any): The status of the logging operation.
+            message (str): The message to be displayed
         """
 
         self.broadcast({"type": "message-logging", "endpoint": type, "status": status, "message": message})
