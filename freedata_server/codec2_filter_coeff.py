@@ -5,7 +5,21 @@ import ctypes
 testFilter = (ctypes.c_float * 3)(1.000000,1.000000,1.000000)
 
 def generate_filter_coefficients(Fs_Hz, bandwidth_Hz, taps):
-    # ported from https://github.com/drowe67/misc/blob/master/radio_ae/rx.py#L73
+    """Generates filter coefficients for a sinc filter.
+
+    This function calculates the coefficients for a sinc filter based on the
+    provided sampling frequency, bandwidth, and number of taps. The
+    coefficients are returned as a ctypes array of floats, with real and
+    imaginary parts interleaved.
+
+    Args:
+        Fs_Hz (float): The sampling frequency in Hz.
+        bandwidth_Hz (float): The bandwidth of the filter in Hz.
+        taps (int): The number of taps for the filter.
+
+    Returns:
+        ctypes.c_float array: The filter coefficients as a ctypes array.
+    """
     B = bandwidth_Hz / Fs_Hz
     Ntap = taps
     h = np.zeros(Ntap, dtype=np.csingle)

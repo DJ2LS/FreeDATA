@@ -45,6 +45,18 @@ def get_audio_devices():
 
 
 def device_crc(device) -> str:
+    """Generates a CRC16 checksum for an audio device.
+
+    This function creates a unique identifier for an audio device based on its
+    name and host API. It uses a CRC16 checksum to generate a hexadecimal
+    representation of the combined device name and host API.
+
+    Args:
+        device (dict): A dictionary containing the device 'name' and 'hostapi'.
+
+    Returns:
+        str: The hexadecimal representation of the CRC16 checksum.
+    """
     crc_hwid = helpers.get_crc_16(bytes(f"{device['name']}.{device['hostapi']}", encoding="utf-8"))
     crc_hwid = crc_hwid.hex()
     return crc_hwid
@@ -104,11 +116,20 @@ def fetch_audio_devices(input_devices, output_devices):
     return input_devices, output_devices
 
 
-# FreeData uses the crc as id inside the configuration
-# SD lib uses a numerical id which is essentially an 
-# index of the device within the list
-# returns (id, name)
 def get_device_index_from_crc(crc, isInput: bool):
+    """Retrieves the native device index and name from the provided CRC.
+
+    This function searches for an audio device with the given CRC and returns
+    its native index and name. It handles both input and output devices based
+    on the isInput flag.
+
+    Args:
+        crc (str): The CRC of the audio device.
+        isInput (bool): True if searching for an input device, False for an output device.
+
+    Returns:
+        tuple: A tuple containing the native device index and name, or (None, None) if not found.
+    """
     try:
         in_devices = []
         out_devices = []
@@ -129,6 +150,19 @@ def get_device_index_from_crc(crc, isInput: bool):
         return [None, None]
 
 def test_audio_devices(input_id: str, output_id: str) -> list:
+    """Tests the specified input and output audio devices.
+
+    This function checks the validity and settings of the given input and
+    output audio devices. It uses the device CRC to identify the devices
+    and attempts to check their settings using sounddevice.
+
+    Args:
+        input_id (str): The CRC of the input audio device.
+        output_id (str): The CRC of the output audio device.
+
+    Returns:
+        list: A list of booleans indicating the test results for input and output devices, respectively.
+    """
     test_result = [False, False]
     try:
         result = get_device_index_from_crc(input_id, True)
@@ -315,6 +349,18 @@ def calculate_rms_dbfs(data):
 
 
 def calculate_fft(data, fft_queue, states) -> None:
+    """Calculates the FFT of audio data and updates channel busy status.
+
+    This function performs FFT on the provided audio data, identifies
+    significant frequency components, and updates the channel busy status
+    based on activity within predefined frequency slots. It also calculates
+    and updates the RMS level of the audio data.
+
+    Args:
+        data (np.ndarray): The audio data as a NumPy array.
+        fft_queue (queue.Queue): A queue to store FFT results for visualization.
+        states (StateManager): The state manager object to update channel busy status.
+    """
     global CHANNEL_BUSY_DELAY, last_rms_time
 
     try:
@@ -419,6 +465,11 @@ def calculate_fft(data, fft_queue, states) -> None:
 
 
 def terminate():
+    """Terminates the audio instance.
+
+    This function terminates the sounddevice instance if it's initialized,
+    releasing audio resources and preventing potential issues during shutdown.
+    """
     log.warning("[SHUTDOWN] terminating audio instance...")
     if sd._initialized:
         sd._terminate()

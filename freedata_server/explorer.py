@@ -15,7 +15,24 @@ from constants import EXPLORER_API_URL
 log = structlog.get_logger("explorer")
 
 class Explorer:
+    """Pushes station and last heard data to the FreeDATA explorer.
+
+    This class collects station information, including callsign, gridsquare,
+    frequency, signal strength, version, bandwidth, beacon status, and
+    last heard stations, and pushes this data to the FreeDATA explorer API.
+    """
     def __init__(self, modem_version, config_manager, states):
+        """Initializes the Explorer.
+
+        This method initializes the Explorer with the modem version,
+        configuration manager, state manager, and the URL of the FreeDATA
+        explorer API.
+
+        Args:
+            modem_version (str): The version of the FreeDATA modem.
+            config_manager (ConfigManager): The configuration manager object.
+            states (StateManager): The state manager object.
+        """
         self.modem_version = modem_version
         self.config_manager = config_manager
         self.config = self.config_manager.read()
@@ -23,6 +40,13 @@ class Explorer:
         self.explorer_url = EXPLORER_API_URL
 
     def push(self):
+        """Pushes station and last heard data to the explorer.
+
+        This method collects station information from the configuration and
+        state manager, formats it as JSON, and sends it to the FreeDATA
+        explorer API. It includes error handling and logging for successful
+        pushes, failed pushes, and connection issues.
+        """
         self.config = self.config_manager.read()
 
         frequency = 0 if self.states.radio_frequency is None else self.states.radio_frequency
