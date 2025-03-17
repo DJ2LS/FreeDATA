@@ -352,10 +352,81 @@ function savePreset() {
   console.log("Saved grid preset");
 }
 
+function downloadPreset() {
+  let data = settingsStore.local.grid_layout;
+
+  // Remove leading and trailing double quotes if they exist
+  if (data.startsWith('"') && data.endsWith('"')) {
+    data = data.slice(1, -1);
+  }
+
+  // Create a Blob from the processed data
+  const blob = new Blob([data], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  // Create a temporary anchor element to trigger the download
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "FreeDATA_GUI_preset.freedata";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  console.log("Downloaded preset as FreeDATA_preset.gui");
+}
+
+
+function uploadPreset() {
+  // Create a hidden file input element
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.freedata';
+
+  // Listen for when a file is selected
+  input.addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (!file) {
+      console.log("No file selected, using custom preset.");
+      restoreGridLayoutFromConfig();
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+      try {
+        const content = e.target.result;
+
+        // Store the file content into the settingsStore
+        clearAllItems()
+        settingsStore.local.grid_preset = content;
+        loadPreset();
+        console.log("Preset uploaded and stored.");
+      } catch (err) {
+        console.error("Error processing the preset", err);
+      }
+
+    };
+
+    reader.onerror = function() {
+      console.error("Error reading file, using custom preset.");
+    };
+
+    // Start reading the file as text
+    reader.readAsText(file);
+  });
+
+  // Trigger the file dialog
+  input.click();
+}
+
+
 function loadPreset() {
   clearAllItems();
   settingsStore.local.grid_layout = settingsStore.local.grid_preset;
   restoreGridLayoutFromConfig();
+  saveLocalSettingsToConfig();
   console.log("Restored grid preset");
 }
 
@@ -374,6 +445,7 @@ function onChange(event, changeItems) {
 function restoreGridLayoutFromConfig() {
   if (items.value.length === 0) {
     const savedGrid = JSON.parse(settingsStore.local.grid_layout || "[]");
+    console.log(savedGrid)
     savedGrid.forEach(([x, y, w, h, id]) => {
       const widget = gridWidgets.find((gw) => gw.id === id);
       if (widget) {
@@ -770,13 +842,32 @@ onMounted(() => {
       >
         {{ $t('grid.savepreset') }}
       </button>
+<hr/>
+      <button
+        class="btn btn-sm btn-outline-secondary"
+        type="button"
+        @click="downloadPreset"
+        :title="$t('grid.downloadpreset_help')"
+      >
+        {{ $t('grid.downloadpreset') }}<i class="ms-1 bi bi-download"></i>
+      </button>
+
+      <button
+        class="ms-2 btn btn-sm btn-outline-secondary"
+        type="button"
+        @click="uploadPreset"
+        :title="$t('grid.uploadpreset_help')"
+      >
+        {{ $t('grid.uploadpreset') }}<i class="ms-1 bi bi-upload"></i>
+      </button>
+
     </div>
   </div>
 
   <div class="offcanvas offcanvas-end text-start"     data-bs-scroll="true"
-    data-bs-backdrop="false" tabindex="-1" id="offcanvasFrequency" aria-labelledby="offcanvasExampleLabel">
+    data-bs-backdrop="true" tabindex="-1" id="offcanvasFrequency" aria-labelledby="offcanvasFrequencyLabel">
   <div class="offcanvas-header">
-    <h5 class="offcanvas-title" id="offcanvasExampleLabel">{{ $t('grid.frequencyselection') }}</h5>
+    <h5 class="offcanvas-title">{{ $t('grid.frequencyselection') }}</h5>
       <button
         type="button"
         class="btn-close"
