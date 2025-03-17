@@ -98,6 +98,7 @@
             "transmitting": "Sending...",
             "pingstation": "PING Station",
             "sendingcq": "Sending CQ...",
+            "sendingping": "Sending PING...",
             "callcq": "Call CQ",
             "cqcqcq": "CQ CQ CQ",
             "togglebeacon": "toggle beacon",

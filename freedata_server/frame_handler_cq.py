@@ -8,12 +8,25 @@ from message_system_db_messages import DatabaseManagerMessages
 import numpy as np
 
 class CQFrameHandler(frame_handler.FrameHandler):
+    """Handles received CQ frames.
+
+    This class processes received CQ (Calling Any Station) frames and sends
+    a QRV (Ready to Receive) frame as an acknowledgement if the station is
+    not currently busy with ARQ. It also checks for queued messages to be
+    sent based on the configuration.
+    """
 
     #def should_respond(self):
     #    self.logger.debug(f"Respond to CQ: {self.config['MODEM']['respond_to_cq']}")
     #    return bool(self.config['MODEM']['respond_to_cq'] and not self.states.getARQ())
 
     def follow_protocol(self):
+        """Processes the received CQ frame.
+
+        This method checks if the modem is currently busy with ARQ. If not,
+        it sends a QRV frame as an acknowledgement and checks for queued
+        messages to send.
+        """
 
         if self.states.getARQ():
             return

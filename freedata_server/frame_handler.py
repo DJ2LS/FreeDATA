@@ -13,10 +13,24 @@ TESTMODE = False
 
 
 class FrameHandler():
+    """Base class for handling received frames.
 
-    def __init__(self, name: str, config, states: StateManager, event_manager: EventManager, 
-                 modem, socket_interface_manager) -> None:
-        
+        This class provides common functionality for processing received frames,
+        including checking if the frame is addressed to the current station,
+        adding activity to the activity list, managing heard stations, emitting
+        events, and transmitting responses. Subclasses implement the
+        `follow_protocol` method to handle specific frame types and protocols.
+    """
+    def __init__(self, name: str, config, states: StateManager, event_manager: EventManager, modem, socket_interface_manager) -> None:
+        """Initializes a new FrameHandler instance.
+
+            Args:
+                name (str): The name of the frame handler.
+                config (dict): The configuration dictionary.
+                states (StateManager): The state manager object.
+                event_manager (EventManager): The event manager object.
+                modem: The modem object.
+        """
         self.name = name
         self.config = config
         self.states = states
@@ -101,17 +115,85 @@ class FrameHandler():
                 valid = True
 
         else:
+            """Checks if the received frame is addressed to this station.
+
+            This method checks if the received frame is intended for this
+            station by verifying the destination callsign CRC and SSID against
+            the station's configured callsign and SSID list. It also checks for
+            session IDs in the case of ARQ and P2P frames.
+
+            Returns:
+                bool: True if the frame is for this station, False otherwise.
+            """
+            call_with_ssid = self.config['STATION']['mycall'] + "-" + str(self.config['STATION']['myssid'])
+            ft = self.details['frame']['frame_type']
             valid = False
 
-        if not valid:
-            self.logger.info(f"[Frame handler] {ft} received but not for us.")
+            # Check for callsign checksum
+            if ft in ['ARQ_SESSION_OPEN', 'ARQ_SESSION_OPEN_ACK', 'PING', 'PING_ACK', 'P2P_CONNECTION_CONNECT']:
+                valid, mycallsign = helpers.check_callsign(
+                    call_with_ssid,
+                    self.details["frame"]["destination_crc"],
+                    self.config['STATION']['ssid_list'])
 
-        return valid
+            # Check for session id on IRS side
+            elif ft in ['ARQ_SESSION_INFO', 'ARQ_BURST_FRAME', 'ARQ_STOP']:
+                session_id = self.details['frame']['session_id']
+                if session_id in self.states.arq_irs_sessions:
+                    valid = True
+
+            # Check for session id on ISS side
+            elif ft in ['ARQ_SESSION_INFO_ACK', 'ARQ_BURST_ACK', 'ARQ_STOP_ACK']:
+                session_id = self.details['frame']['session_id']
+                if session_id in self.states.arq_iss_sessions:
+                    valid = True
+
+            # check for p2p connection
+            elif ft in ['P2P_CONNECTION_CONNECT']:
+                valid, mycallsign = helpers.check_callsign(
+                    call_with_ssid,
+                    self.details["frame"]["destination_crc"],
+                    self.config['STATION']['ssid_list'])
+
+            # check for p2p connection
+            elif ft in ['P2P_CONNECTION_CONNECT_ACK', 'P2P_CONNECTION_PAYLOAD', 'P2P_CONNECTION_PAYLOAD_ACK',
+                        'P2P_CONNECTION_DISCONNECT', 'P2P_CONNECTION_DISCONNECT_ACK']:
+                session_id = self.details['frame']['session_id']
+                if session_id in self.states.p2p_connection_sessions:
+                    valid = True
+
+            else:
+                valid = False
+
+            if not valid:
+                self.logger.info(f"[Frame handler] {ft} received but not for us.")
+
+            return valid
+
 
     def should_respond(self):
+        """Checks if the frame handler should respond to the received frame.
+
+        This method simply calls is_frame_for_me() to determine if a
+        response is necessary. It can be overridden by subclasses to
+        implement more complex response logic.
+
+        Returns:
+            bool: True if the handler should respond, False otherwise.
+        """
         return self.is_frame_for_me()
 
     def is_origin_on_blacklist(self):
+        """Checks if the origin callsign is on the blacklist.
+
+        This method checks if the origin callsign of the received frame is
+        present in the callsign blacklist defined in the configuration.
+        It handles callsigns with SSIDs by removing the suffix and performs
+        a case-insensitive comparison.
+
+        Returns:
+            bool: True if the origin callsign is blacklisted, False otherwise.
+        """
         origin_callsign = self.details["frame"]["origin"]
 
         # Remove the suffix after the hyphen if it exists
@@ -127,6 +209,13 @@ class FrameHandler():
 
 
     def add_to_activity_list(self):
+        """Adds the received frame to the activity list.
+
+        This method extracts relevant information from the received frame,
+        such as origin, destination, gridsquare, SNR, frequency offset,
+        activity type, session ID, and away-from-key status, and adds it
+        as a new activity to the state manager's activity list.
+        """
         frame = self.details['frame']
 
         activity = {
@@ -154,6 +243,14 @@ class FrameHandler():
         self.states.add_activity(activity)
 
     def add_to_heard_stations(self):
+        """Adds the received frame's origin station to the heard stations list.
+
+        This method extracts information from the received frame, including
+        callsign, gridsquare, signal strength, frequency offset, and
+        away-from-key status, and adds it to the heard stations list in the
+        state manager. It also calculates the distance between the current
+        station and the received station if gridsquares are available.
+        """
         frame = self.details['frame']
 
         if 'origin' not in frame:
@@ -188,6 +285,16 @@ class FrameHandler():
             away_from_key=away_from_key
         )
     def make_event(self):
+        """Creates a frame received event dictionary.
+
+        This method constructs a dictionary containing information about the
+        received frame, including timestamps, callsigns, gridsquares, signal
+        strength, and distance. This dictionary is used for emitting events
+        related to frame reception.
+
+        Returns:
+            dict: A dictionary containing the event data.
+        """
 
         event = {
             "type": "frame-handler",
@@ -216,26 +323,75 @@ class FrameHandler():
         return event
 
     def emit_event(self):
+        """Emits a frame received event.
+
+        This method creates an event dictionary containing information about
+        the received frame, such as the frame type, timestamp, callsigns,
+        gridsquare, SNR, distance, and away-from-key status. It then
+        broadcasts this event through the event manager.
+        """
         event_data = self.make_event()
         print(event_data)
         self.event_manager.broadcast(event_data)
 
     def get_tx_mode(self):
+        """Returns the transmission mode for acknowledgements.
+
+        This method returns the FreeDV mode used for transmitting
+        acknowledgement frames. Currently, it always returns the signalling
+        mode.
+
+        Returns:
+            FREEDV_MODE: The FreeDV mode for transmissions.
+        """
         return FREEDV_MODE.signalling
 
     def transmit(self, frame):
+        """Transmits a frame using the modem.
+
+        This method transmits the given frame using the modem. In test mode,
+        it broadcasts the frame through the event manager instead of using
+        the modem.
+
+        Args:
+            frame: The frame to transmit.
+        """
         if not TESTMODE:
             self.modem.transmit(self.get_tx_mode(), 1, 0, frame)
         else:
             self.event_manager.broadcast(frame)
 
     def follow_protocol(self):
+        """Handles protocol-specific actions for the received frame.
+
+        This method is intended to be overridden by subclasses to implement
+        specific protocol handling logic for different frame types. The base
+        implementation does nothing.
+        """
         pass
 
     def log(self):
+        """Logs the frame type being handled."""
         self.logger.info(f"[Frame Handler] Handling frame {self.details['frame']['frame_type']}")
 
     def handle(self, frame, snr, frequency_offset, freedv_inst, bytes_per_frame):
+        """Handles a received frame.
+
+        This method processes the received frame, updates internal state,
+        performs blacklist checks, adds the frame to activity lists and heard
+        stations, emits an event, and calls the follow_protocol method for
+        subclass-specific handling.
+
+        Args:
+            frame (dict): The received frame data.
+            snr (float): The signal-to-noise ratio of the received frame.
+            frequency_offset (float): The frequency offset of the received frame.
+            freedv_inst: The FreeDV instance.
+            bytes_per_frame (int): The number of bytes per frame.
+
+        Returns:
+            bool: True if the frame was processed successfully, False if it was blocked due to blacklisting.
+        """
         self.details['frame'] = frame
         self.details['snr'] = snr
         self.details['frequency_offset'] = frequency_offset
@@ -284,3 +440,4 @@ class FrameHandler():
         self.add_to_activity_list()
         self.emit_event()
         self.follow_protocol()
+        return True

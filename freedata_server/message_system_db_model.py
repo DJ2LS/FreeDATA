@@ -6,6 +6,13 @@ from sqlalchemy.orm import declarative_base, relationship
 Base = declarative_base()
 
 class MessageAttachment(Base):
+    """Represents the association between a message and an attachment.
+
+    This association object links P2PMessage and Attachment records in
+    the database, representing a many-to-many relationship between
+    messages and attachments. It uses foreign keys and cascading deletes
+    to maintain data integrity.
+    """
     __tablename__ = 'message_attachment'
     message_id = Column(String, ForeignKey('p2p_message.id', ondelete='CASCADE'), primary_key=True)
     attachment_id = Column(Integer, ForeignKey('attachment.id', ondelete='CASCADE'), primary_key=True)
@@ -14,18 +21,36 @@ class MessageAttachment(Base):
     attachment = relationship('Attachment', back_populates='message_attachments')
 
 class Config(Base):
+    """Represents a configuration setting in the database.
+
+    This class maps to the 'config' table in the database and stores
+    configuration settings. It currently only stores the database
+    version.
+    """
     __tablename__ = 'config'
     db_variable = Column(String, primary_key=True)  # Unique identifier for the configuration setting
     db_version = Column(String)
 
     def to_dict(self):
+        """Converts the Config object to a dictionary.
+
+        Returns:
+            dict: A dictionary representation of the Config object.
+        """
         return {
             'db_variable': self.db_variable,
-            'db_settings': self.db_settings
+            'db_version': self.db_version
         }
 
 
 class Beacon(Base):
+    """Represents a beacon signal received by the station.
+
+    This class maps to the 'beacon' table and stores information about
+    received beacon signals, including the timestamp, signal-to-noise
+    ratio (SNR), and the callsign of the transmitting station. It is
+    linked to the Station table via a foreign key.
+    """
     __tablename__ = 'beacon'
     id = Column(Integer, primary_key=True)
     timestamp = Column(DateTime)
@@ -36,6 +61,13 @@ class Beacon(Base):
     Index('idx_beacon_callsign', 'callsign')
 
 class Station(Base):
+    """Represents a station in the network.
+
+    This class maps to the 'station' table and stores information about
+    stations, including their callsign, checksum, location (as JSON),
+    and additional info (as JSON). It has a relationship with the Beacon
+    table, representing the beacons received from this station.
+    """
     __tablename__ = 'station'
     callsign = Column(String, primary_key=True)
     checksum = Column(String, nullable=True)
@@ -46,6 +78,11 @@ class Station(Base):
     Index('idx_station_callsign_checksum', 'callsign', 'checksum')
 
     def to_dict(self):
+        """Converts the Station object to a dictionary.
+
+        Returns:
+            dict: A dictionary representation of the Station object.
+        """
         return {
             'callsign': self.callsign,
             'checksum': self.checksum,
@@ -54,11 +91,26 @@ class Station(Base):
 
         }
 class Status(Base):
+    """Represents the status of a P2P message.
+
+    This class maps to the 'status' table and stores the possible
+    statuses a message can have (e.g., 'queued', 'transmitted',
+    'received', 'failed'). The `name` field is unique to prevent
+    duplicate status entries.
+    """
     __tablename__ = 'status'
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
 
 class P2PMessage(Base):
+    """Represents a peer-to-peer (P2P) message.
+
+    This class maps to the 'p2p_message' table and stores information
+    about P2P messages, including sender, recipient, message body,
+    attachments, transmission attempts, timestamp, status, priority,
+    direction, statistics (JSON), and read status. It has relationships
+    with the Station, Status, and Attachment tables.
+    """
     __tablename__ = 'p2p_message'
     id = Column(String, primary_key=True)
     origin_callsign = Column(String, ForeignKey('station.callsign'))
@@ -77,9 +129,21 @@ class P2PMessage(Base):
     statistics = Column(JSON, nullable=True)
     is_read = Column(Boolean, default=True)
 
-    Index('idx_p2p_message_origin_timestamp', 'origin_callsign', 'via_callsign', 'destination_callsign', 'timestamp', 'attachments')
+    Index('idx_p2p_message_origin_timestamp', 'origin_callsign', 'via_callsign', 'destination_callsign', 'timestamp')
 
     def to_dict(self):
+        """Converts the P2PMessage object to a dictionary.
+
+        This method converts the P2PMessage object and its associated
+        attachments to a dictionary format, suitable for serialization or
+        other data processing. It retrieves the attachment data using
+        the to_dict method of each attachment object. It formats the
+        timestamp as an ISO 8601 string.
+
+        Returns:
+            dict: A dictionary representation of the P2PMessage object,
+            including its attachments.
+        """
         attachments_list = [ma.attachment.to_dict() for ma in self.message_attachments]
 
         return {
@@ -99,6 +163,13 @@ class P2PMessage(Base):
         }
 
 class Attachment(Base):
+    """Represents a file attachment associated with a message.
+
+    This class maps to the 'attachment' table and stores information
+    about attachments, including their name, data type, data content,
+    CRC32 checksum, and SHA-512 hash. It has a relationship with the
+    MessageAttachment association table.
+    """
     __tablename__ = 'attachment'
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -111,6 +182,11 @@ class Attachment(Base):
     Index('idx_attachments_id_message_id', 'id', 'hash_sha512')
 
     def to_dict(self):
+        """Converts the Attachment object to a dictionary.
+
+        Returns:
+            dict: A dictionary representation of the Attachment object.
+        """
         return {
             'id': self.id,
             'name': self.name,

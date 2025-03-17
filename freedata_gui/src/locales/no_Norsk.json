@@ -98,6 +98,7 @@
             "broadcasts": "Sendinger",
             "transmitting": "Sender...",
             "pingstation": "PING stasjon",
+            "sendingping": "Sending PING...",
             "sendingcq": "Sender CQ...",
             "callcq": "Send CQ",
             "cqcqcq": "CQ CQ CQ",

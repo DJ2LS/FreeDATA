@@ -23,11 +23,27 @@ import modulator
 TESTMODE = False
 
 class RF:
-    """Class to encapsulate interactions between the audio device and codec2"""
+    """Handles FreeDATA modem functionality.
+
+    This class manages the audio interface, modulation, demodulation, and
+    transmission of FreeDATA signals. It interacts with the demodulator,
+    modulator, audio devices, and radio manager to handle data transmission
+    and reception.
+    """
 
     log = structlog.get_logger("RF")
 
     def __init__(self, config, event_manager, fft_queue, service_queue, states, radio_manager) -> None:
+        """Initializes the RF modem.
+
+        Args:
+            config (dict): Configuration dictionary.
+            event_manager (EventManager): Event manager instance.
+            fft_queue (Queue): Queue for FFT data.
+            service_queue (Queue): Queue for freedata_server service commands.
+            states (StateManager): State manager instance.
+            radio_manager (RadioManager): Radio manager instance.
+        """
         self.config = config
         self.service_queue = service_queue
         self.states = states
@@ -84,6 +100,18 @@ class RF:
         self.modulator = modulator.Modulator(self.config)
 
     def start_modem(self):
+        """Starts the modem.
+
+        This method initializes the audio devices and starts the demodulator.
+        In test mode, it bypasses audio initialization. It raises a
+        RuntimeError if audio initialization fails.
+
+        Returns:
+            bool: True if the modem started successfully.
+
+        Raises:
+            RuntimeError: If audio device initialization fails.
+        """
         if TESTMODE:
             return True
         else:
@@ -94,6 +122,11 @@ class RF:
         return True
 
     def stop_modem(self):
+        """Stops the modem.
+
+        This method stops the FreeDATA freedata_server service, closes audio input and
+        output streams, and handles any exceptions during the process.
+        """
         try:
             # let's stop the freedata_server service
             self.service_queue.put("stop")
@@ -107,6 +140,18 @@ class RF:
             self.log.error("[MDM] Error stopping freedata_server", e=e)
 
     def init_audio(self):
+        """Initializes the audio input and output streams.
+
+        This method retrieves the audio device indices based on their CRC
+        checksums from the configuration, sets up the default audio
+        parameters, initializes the Codec2 resampler, and starts the
+        SoundDevice input and output streams with appropriate callbacks and
+        buffer sizes. It logs information about the selected audio devices
+        and handles potential exceptions during initialization.
+
+        Returns:
+            bool: True if audio initialization was successful, False otherwise.
+        """
         self.log.info(f"[MDM] init: get audio devices", input_device=self.audio_input_device,
                       output_device=self.audio_output_device)
         try:
@@ -197,6 +242,20 @@ class RF:
         self.log.debug("[MDM] Stopped transmitting sine")
 
     def transmit_morse(self, repeats, repeat_delay, frames):
+        """Transmits Morse code.
+
+        This method transmits the station's callsign as Morse code. It waits
+        for any ongoing transmissions to complete, sets the transmitting
+        state, generates the Morse code audio signal, normalizes it, and
+        enqueues it for output. It logs the transmission mode and on-air
+        time. The repeats, repeat_delay, and frames arguments are not
+        currently used in this method.
+
+        Args:
+            repeats: Currently unused.
+            repeat_delay: Currently unused.
+            frames: Currently unused.
+        """
         self.states.waitForTransmission()
         self.states.setTransmitting(True)
         # if we're transmitting FreeDATA signals, reset channel busy state
@@ -216,7 +275,21 @@ class RF:
 
     def transmit(
             self, mode, repeats: int, repeat_delay: int, frames: bytearray
-    ) -> bool:
+    ) -> None:
+        """Transmits data using the specified mode and parameters.
+
+        This method transmits data using the given FreeDV mode, number of
+        repeats, repeat delay, and frames. It handles synchronization with
+        other transmissions, creates the modulated burst, resamples the
+        audio, sets the transmit audio level, enqueues the audio for
+        output, and logs transmission details.
+
+        Args:
+            mode: The FreeDV mode to use for transmission.
+            repeats (int): The number of times to repeat the frames.
+            repeat_delay (int): The delay between repetitions in milliseconds.
+            frames (bytearray): The data frames to transmit.
+        """
 
         self.demodulator.reset_data_sync()
         # Wait for some other thread that might be transmitting
@@ -231,9 +304,9 @@ class RF:
         x = np.frombuffer(txbuffer, dtype=np.int16)
         x = audio.normalize_audio(x)
         x = audio.set_audio_volume(x, self.tx_audio_level)
-
+        txbuffer_out = self.resampler.resample8_to_48(x)
         # transmit audio
-        self.enqueue_audio_out(x)
+        self.enqueue_audio_out(txbuffer_out)
 
         end_of_transmission = time.time()
         transmission_time = end_of_transmission - start_of_transmission
@@ -242,6 +315,17 @@ class RF:
 
 
     def enqueue_audio_out(self, audio_48k) -> None:
+        """Enqueues audio data for output.
+
+        This method enqueues the provided 48kHz audio data for output. It
+        handles PTT activation, event signaling, slicing the audio into
+        blocks, and adding the blocks to the output queue. It also manages
+        the transmitting state and waits for the transmission to complete
+        before deactivating PTT.
+
+        Args:
+            audio_48k (numpy.ndarray): The 48kHz audio data to enqueue.
+        """
         self.enqueuing_audio = True
         if not self.states.isTransmitting():
             self.states.setTransmitting(True)
@@ -269,6 +353,20 @@ class RF:
         return
 
     def sd_output_audio_callback(self, outdata: np.ndarray, frames: int, time, status) -> None:
+        """Callback function for the audio output stream.
+
+        This method is called by the SoundDevice output stream to provide
+        audio data for playback. It retrieves audio chunks from the output
+        queue, resamples them to 8kHz, calculates the FFT, and sends the
+        data to the output stream. It also manages the transmitting state
+        and handles exceptions during audio processing.
+
+        Args:
+            outdata (np.ndarray): The output audio buffer.
+            frames (int): The number of frames to output.
+            time: The current time.
+            status: The status of the output stream.
+        """
 
         try:
             if not self.audio_out_queue.empty() and not self.enqueuing_audio:
@@ -289,35 +387,49 @@ class RF:
             outdata.fill(0)
 
     def sd_input_audio_callback(self, indata: np.ndarray, frames: int, time, status) -> None:
-            if status:
-                self.log.warning("[AUDIO STATUS]", status=status, time=time, frames=frames)
-                # FIXME on windows input overflows crashing the rx audio stream. Lets restart the server then
-                #if status.input_overflow:
-                #    self.service_queue.put("restart")
-                return
-            try:
-                audio_48k = np.frombuffer(indata, dtype=np.int16)
-                audio_8k = self.resampler.resample48_to_8(audio_48k)
+        """Callback function for the audio input stream.
 
-                audio_8k_level_adjusted = audio.set_audio_volume(audio_8k, self.rx_audio_level)
+        This method is called by the SoundDevice input stream when audio
+        data is available. It resamples the incoming 48kHz audio to 8kHz,
+        adjusts the audio level, calculates FFT data if not transmitting,
+        and pushes the audio data to the appropriate demodulator buffers.
+        It handles buffer overflows and logs audio exceptions.
 
-                if not self.states.isTransmitting():
-                    audio.calculate_fft(audio_8k_level_adjusted, self.fft_queue, self.states)
+        Args:
+            indata (np.ndarray): Input audio data buffer.
+            frames (int): Number of frames received.
+            time: Current time.
+            status: Input stream status.
+        """
+        if status:
+            self.log.warning("[AUDIO STATUS]", status=status, time=time, frames=frames)
+            # FIXME on windows input overflows crashing the rx audio stream. Lets restart the server then
+            #if status.input_overflow:
+            #    self.service_queue.put("restart")
+            return
+        try:
+            audio_48k = np.frombuffer(indata, dtype=np.int16)
+            audio_8k = self.resampler.resample48_to_8(audio_48k)
 
-                length_audio_8k_level_adjusted = len(audio_8k_level_adjusted)
-                # Avoid buffer overflow by filling only if buffer for
-                # selected datachannel mode is not full
-                index = 0
-                for mode in self.demodulator.MODE_DICT:
-                    mode_data = self.demodulator.MODE_DICT[mode]
-                    audiobuffer = mode_data['audio_buffer']
-                    decode = mode_data['decode']
-                    index += 1
-                    if audiobuffer:
-                        if (audiobuffer.nbuffer + length_audio_8k_level_adjusted) > audiobuffer.size:
-                            self.demodulator.buffer_overflow_counter[index] += 1
-                            self.event_manager.send_buffer_overflow(self.demodulator.buffer_overflow_counter)
-                        elif decode:
-                            audiobuffer.push(audio_8k_level_adjusted)
-            except Exception as e:
-                self.log.warning("[AUDIO EXCEPTION]", status=status, time=time, frames=frames, e=e)
+            audio_8k_level_adjusted = audio.set_audio_volume(audio_8k, self.rx_audio_level)
+
+            if not self.states.isTransmitting():
+                audio.calculate_fft(audio_8k_level_adjusted, self.fft_queue, self.states)
+
+            length_audio_8k_level_adjusted = len(audio_8k_level_adjusted)
+            # Avoid buffer overflow by filling only if buffer for
+            # selected datachannel mode is not full
+            index = 0
+            for mode in self.demodulator.MODE_DICT:
+                mode_data = self.demodulator.MODE_DICT[mode]
+                audiobuffer = mode_data['audio_buffer']
+                decode = mode_data['decode']
+                index += 1
+                if audiobuffer:
+                    if (audiobuffer.nbuffer + length_audio_8k_level_adjusted) > audiobuffer.size:
+                        self.demodulator.buffer_overflow_counter[index] += 1
+                        self.event_manager.send_buffer_overflow(self.demodulator.buffer_overflow_counter)
+                    elif decode:
+                        audiobuffer.push(audio_8k_level_adjusted)
+        except Exception as e:
+            self.log.warning("[AUDIO EXCEPTION]", status=status, time=time, frames=frames, e=e)

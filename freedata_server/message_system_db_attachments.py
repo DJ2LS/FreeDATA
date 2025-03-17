@@ -6,11 +6,40 @@ import os
 
 
 class DatabaseManagerAttachments(DatabaseManager):
+    """Manages database operations for message attachments.
+
+    This class extends the DatabaseManager and provides methods for adding,
+    retrieving, and deleting message attachments in the database. It also
+    handles orphaned attachments and database sessions.
+    """
     def __init__(self, event_manager):
+        """Initializes DatabaseManagerAttachments.
+
+        Args:
+            event_manager (EventManager): The event manager instance.
+        """
         super().__init__(event_manager)
 
 
     def add_attachment(self, session, message, attachment_data):
+        """Adds an attachment to the database and links it to a message.
+
+        This method adds a new attachment to the database if it doesn't
+        already exist, based on its SHA-512 hash. It then creates a link
+        between the message and the attachment using the MessageAttachment
+        association table. It handles cases where the attachment already
+        exists and logs appropriate messages.
+
+        Args:
+            session: The database session object.
+            message: The message object to link the attachment to.
+            attachment_data (dict): A dictionary containing the attachment
+                data, including 'name', 'type', 'data', and optionally
+                'checksum_crc32'.
+
+        Returns:
+            Attachment: The Attachment object that was added or found.
+        """
         hash_sha512 = hashlib.sha512(attachment_data['data'].encode()).hexdigest()
         existing_attachment = session.query(Attachment).filter_by(hash_sha512=hash_sha512).first()
 
@@ -37,6 +66,20 @@ class DatabaseManagerAttachments(DatabaseManager):
         return attachment
 
     def get_attachments_by_message_id(self, message_id):
+        """Retrieves attachments associated with a message ID.
+
+        This method retrieves all attachments linked to a given message ID
+        from the database. It returns a list of dictionaries, where each
+        dictionary represents an attachment. It handles cases where no
+        message or attachments are found and logs any database errors.
+
+        Args:
+            message_id: The ID of the message whose attachments are to be retrieved.
+
+        Returns:
+            list: A list of dictionaries, each representing an attachment,
+            or an empty list if no attachments or message are found.
+        """
         session = self.get_thread_scoped_session()
         try:
             # Fetch the message by its ID
@@ -54,10 +97,37 @@ class DatabaseManagerAttachments(DatabaseManager):
             session.remove()
 
     def get_attachments_by_message_id_json(self, message_id):
+        """Retrieves attachments for a message as a JSON string.
+
+        This method retrieves attachments associated with a given message ID
+        and returns them as a JSON-formatted string. It calls
+        get_attachments_by_message_id to fetch the attachments and then
+        serializes them to JSON.
+
+        Args:
+            message_id: The ID of the message.
+
+        Returns:
+            str: A JSON string representing the attachments.
+        """
         attachments = self.get_attachments_by_message_id(message_id)
         return json.dumps(attachments)
 
     def get_attachment_by_sha512(self, hash_sha512):
+        """Retrieves an attachment by its SHA-512 hash.
+
+        This method queries the database for an attachment matching the
+        provided SHA-512 hash. If found, it returns the attachment data as
+        a dictionary; otherwise, it returns None. It handles potential
+        database errors and logs appropriate messages.
+
+        Args:
+            hash_sha512 (str): The SHA-512 hash of the attachment to retrieve.
+
+        Returns:
+            dict or None: The attachment data as a dictionary if found,
+            None otherwise.
+        """
         session = self.get_thread_scoped_session()
         try:
             attachment = session.query(Attachment).filter_by(hash_sha512=hash_sha512).first()

@@ -8,7 +8,24 @@ from socket_interface import SocketInterfaceHandler
 import queue
 
 class SM:
+    """Manages the FreeDATA server services.
+
+    This class controls the starting, stopping, and restarting of the modem,
+    radio manager, and socket interface. It handles commands from the modem
+    service queue and performs actions based on the received commands.
+    """
     def __init__(self, app):
+        """Initializes the service manager.
+
+        This method sets up the service manager with references to the main
+        application object and its components, including the config manager,
+        modem, radio manager, state manager, event manager, and schedule
+        manager. It also initializes the socket interface manager if enabled
+        in the configuration and starts the runner thread.
+
+        Args:
+            app: The main application object.
+        """
         self.log = structlog.get_logger("service manager")
         self.app = app
         self.modem = False
@@ -32,6 +49,13 @@ class SM:
 
 
     def runner(self):
+        """Main loop for handling service commands.
+
+        This method continuously monitors the modem service queue for
+        commands and executes the corresponding actions. It handles starting,
+        stopping, and restarting the modem, radio manager, and socket
+        interface.
+        """
         while not self.shutdown_flag.is_set():
             try:
                 cmd = self.modem_service.get()
@@ -91,6 +115,15 @@ class SM:
             self.modem_service.queue.clear()
 
     def start_modem(self):
+        """Starts the FreeDATA modem.
+
+        This method initializes and starts the RF modem, frame dispatcher,
+        and schedule manager. It performs checks for valid callsign and
+        audio device functionality before starting the modem.
+
+        Returns:
+            bool: True if the modem started successfully, False otherwise.
+        """
 
         if self.config['STATION']['mycall'] in ['XX1XXX']:
             self.log.warning("wrong callsign in config! interrupting startup")
@@ -126,6 +159,14 @@ class SM:
         return True
         
     def stop_modem(self):
+        """Stops the FreeDATA modem and related services.
+
+        This method stops the RF modem, frame dispatcher, and schedule
+        manager. It also updates the modem running state and emits a
+        'modem_stopped' event. It handles potential AttributeErrors that
+        may occur during the stopping process if components are not
+        initialized.
+        """
         self.log.warning("stopping modem....")
         try:
             if self.modem and hasattr(self.app, 'modem_service'):
@@ -149,6 +190,18 @@ class SM:
         self.event_manager.modem_stopped()
 
     def test_audio(self):
+        """Tests the configured audio devices.
+
+        This method tests the input and output audio devices specified in
+        the configuration. It logs the test results and returns a list
+        indicating whether each device passed the test.
+
+        Returns:
+            list: A list of booleans, where the first element represents the
+            input device test result and the second element represents the
+            output device test result. Returns [False, False] if an error
+            occurs during testing.
+        """
         try:
             audio_test = audio.test_audio_devices(self.config['AUDIO']['input_device'],
                                                   self.config['AUDIO']['output_device'])
@@ -160,14 +213,32 @@ class SM:
             return [False, False]
 
     def start_radio_manager(self):
+
+        """Starts the radio manager.
+
+        This method initializes and starts the RadioManager, which handles
+        communication with the radio.
+        """
         self.app.radio_manager = radio_manager.RadioManager(self.config, self.state_manager, self.event_manager, self.socket_interface_manager)
 
     def stop_radio_manager(self):
+        """Stops the radio manager.
+
+        This method stops the RadioManager and releases the associated
+        resources. It handles potential AttributeErrors if the radio manager
+        has not been initialized.
+        """
         if hasattr(self.app, 'radio_manager'):
             self.app.radio_manager.stop()
             del self.app.radio_manager
 
     def shutdown(self):
+        """Shuts down the service manager.
+
+        This method stops the modem, sets the shutdown flag, and waits for
+        the runner thread to finish. This ensures a clean shutdown of all
+        managed services.
+        """
         self.log.warning("[SHUTDOWN] stopping service manager....")
         self.modem_service.put("stop")
         threading.Event().wait(2) # we need some time before processing with the shutdown_event_flag

@@ -6,7 +6,18 @@ import os
 
 
 class DatabaseManagerStations(DatabaseManager):
+    """Manages database operations for stations.
+
+    This class extends the DatabaseManager and provides methods for
+    retrieving, creating, and updating station information in the database.
+    It handles database sessions and logging.
+    """
     def __init__(self, event_manager):
+        """Initializes DatabaseManagerStations.
+
+        Args:
+            event_manager (EventManager): The event manager instance.
+        """
         super().__init__(event_manager)
 
     def get_station(self, callsign):
