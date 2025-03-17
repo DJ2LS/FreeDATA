@@ -258,6 +258,7 @@ def main():
     app.schedule_manager = ScheduleManager(app.MODEM_VERSION, app.config_manager, app.state_manager, app.event_manager)
     app.service_manager = service_manager.SM(app)
     app.modem_service.put("start")
+    DatabaseManager(app.event_manager).check_database_version()
     DatabaseManager(app.event_manager).initialize_default_values()
     DatabaseManager(app.event_manager).database_repair_and_cleanup()
     DatabaseManagerAttachments(app.event_manager).clean_orphaned_attachments()
