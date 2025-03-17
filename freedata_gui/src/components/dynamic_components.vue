@@ -754,7 +754,7 @@ onMounted(() => {
       </button>
       <hr/>
       <button
-        class="btn btn-sm btn-outline-dark"
+        class="btn btn-sm btn-outline-secondary"
         type="button"
         @click="loadPreset"
         :title="$t('grid.restorepreset_help')"
@@ -763,7 +763,7 @@ onMounted(() => {
         {{ $t('grid.restorepreset') }}
       </button>&nbsp;
       <button
-        class="btn btn-sm btn-outline-dark"
+        class="btn btn-sm btn-outline-secondary"
         type="button"
         @click="savePreset"
         :title="$t('grid.savepreset_help')"

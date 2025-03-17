@@ -74,7 +74,22 @@ const transmissionSpeedChartOptions = {
         drawOnChartArea: false, // only want the grid lines for one axis to show up
       },
     },
-    x: { ticks: { beginAtZero: true } },
+    x: {
+      ticks: {
+        beginAtZero: true
+      },
+      grid:{
+        color:"rgb(158,158,158, 1.0)",
+      }
+    },
+    y: {
+      ticks: {
+        display: false
+      },
+      grid:{
+        color:"rgb(158,158,158, 1.0)",
+      }
+    },
   },
 };
 
@@ -118,6 +133,7 @@ const scatterChartOptions = {
       type: "linear",
       position: "bottom",
       grid: {
+        color:"rgb(158,158,158, 1.0)",
         display: true,
         lineWidth: (context) => {
           // Make the zero line thick (3) and other grid lines thin (1)
@@ -132,6 +148,7 @@ const scatterChartOptions = {
       type: "linear",
       position: "left",
       grid: {
+        color:"rgb(158,158,158, 1.0)",
         display: true,
         lineWidth: (context) => {
           return context.tick.value === 0 ? 3 : 1;
