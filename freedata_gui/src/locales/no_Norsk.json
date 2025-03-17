@@ -34,10 +34,10 @@
         "transmissionfailedwith": "Overføring MISLYKKET med",
         "confirmingtransmissionwith": "Bekrefter overføring med",
         "receivedbytes": "Mottatte bytes",
-        "adiflog_header": "ADIF",
-        "adiflog_text1": "QSO med",
-        "adiflog_text2": "lagt til i loggen.",
-        "adiflog_error": "ADIF export feilet"
+        "adiflogheader": "ADIF",
+        "adiflogtext1": "QSO med",
+        "adiflogtext2": "lagt til i loggen.",
+        "adiflogerror": "ADIF export feilet"
     },
     "navbar": {
         "frequency_help": "Hva er frekvensen, Kenneth?",
