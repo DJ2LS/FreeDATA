@@ -76,6 +76,10 @@
         "radiocontrol": "Radio control/Status",
         "statistics": "Statistics",
         "other": "Other",
+        "uploadpreset": "Upload Preset",
+        "uploadpreset_help": "Upload a preset file",
+        "downloadpreset": "Download Preset",
+        "downloadpreset_help": "Download preset file for sharing or saving",
         "components": {
             "tune": "Tune",
             "stop_help": "Abort session and stop transmissions",
