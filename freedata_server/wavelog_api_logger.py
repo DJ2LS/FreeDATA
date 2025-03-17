@@ -1,7 +1,6 @@
 import requests
 import threading
 import structlog
-import re
 
 
 def send_wavelog_qso_data(config, event_manager, wavelog_data):
@@ -53,7 +52,8 @@ def send_wavelog_qso_data(config, event_manager, wavelog_data):
             callsign_end = wavelog_data.find(f"<QSO_DATE", callsign_start)
             call_value = wavelog_data[callsign_start:callsign_end]
 
-            event_manager.freedata_logging(type="wavelog", status=True, message=f"QSO with {call_value} added to log")
+#            event_manager.freedata_logging(type="wavelog", status=True, message=f"QSO with {call_value} added to log")
+            event_manager.freedata_logging(type="wavelog", status=True, message=f" {call_value} ")
 
         except Exception as e:
             event_manager.freedata_logging(type="wavelog", status=False, message=f"{e}")

@@ -33,7 +33,11 @@
         "bytesperminute": "Bytes per minute",
         "transmissionfailedwith": "Transmission FAILED with",
         "confirmingtransmissionwith": "Confirming transmission with",
-        "receivedbytes": "Received Bytes"
+        "receivedbytes": "Received Bytes",
+        "wavelogposted": "Wavelog API",
+        "wavelogqsowith": "QSO with",
+        "wavelogqsoadded": "added to the log.",
+        "wavelogerror": "Wavelog failed"
     },
     "navbar": {
         "frequency_help": "What's the frequency, Kenneth?",

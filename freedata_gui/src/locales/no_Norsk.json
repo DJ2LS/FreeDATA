@@ -33,7 +33,11 @@
         "bytesperminute": "Byte per minutt",
         "transmissionfailedwith": "Overføring MISLYKKET med",
         "confirmingtransmissionwith": "Bekrefter overføring med",
-        "receivedbytes": "Mottatte bytes"
+        "receivedbytes": "Mottatte bytes",
+        "wavelogposted": "Wavelog API",
+        "wavelogqsowith": "QSO med",
+        "wavelogqsoadded": "lagt til i loggen.",
+        "wavelogerror": "Wavelog feilet"
     },
     "navbar": {
         "frequency_help": "Hva er frekvensen, Kenneth?",

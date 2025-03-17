@@ -158,10 +158,10 @@ export function eventDispatcher(data) {
         if (data.status === true) {
             const message = `
             <div>
-                <strong>${i18next.t('Wavelog posted')}:</strong>
-                <span class="badge bg-success">${data.message}</span>
+                <strong>${i18next.t('popups.wavelogposted')}:</strong>
+                <span class="badge bg-success">${i18next.t('popups.wavelogqsowith')}${data.message}${i18next.t('popups.wavelogqsoadded')}</span>
                 <div class="mt-2">
-                <span class="badge bg-secondary">${i18next.t('Wavelog posted')}</span>
+                <span class="badge bg-secondary">${i18next.t('popups.wavelogposted')}</span>
                 </div>
             </div>
           `;
@@ -169,10 +169,10 @@ export function eventDispatcher(data) {
         } else {
             const message = `
             <div>
-                <strong>${i18next.t('Wavelog error')}:</strong>
+                <strong>${i18next.t('popups.wavelogerror')}:</strong>
                 <span class="badge bg-danger">${data.message}</span>
                 <div class="mt-2">
-                <span class="badge bg-secondary">${i18next.t('Wavelog post failed')}</span>
+                <span class="badge bg-secondary">${i18next.t('popups.wavelogerror')}</span>
                 </div>
             </div>
                   `;
