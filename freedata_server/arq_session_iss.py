@@ -464,14 +464,17 @@ class ARQSessionISS(arq_session.ARQSession):
         Returns:
             Tuple[None, None]: Returns None for both data and type_byte.
         """
-        self.log("session aborted")
-        self.session_ended = time.time()
-        self.set_state(ISS_State.ABORTED)
-        # break actual retries
-        self.event_frame_received.set()
 
-        self.event_manager.send_arq_session_finished(
-            True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
-        #self.state_manager.remove_arq_iss_session(self.id)
-        self.states.setARQ(False)
+        # Only run this part, if we are not already aborted or ended the session.
+        if self.state not in [ISS_State.ABORTED, ISS_State.ENDED]:
+            self.log("session aborted")
+            self.session_ended = time.time()
+            self.set_state(ISS_State.ABORTED)
+            # break actual retries
+            self.event_frame_received.set()
+
+            self.event_manager.send_arq_session_finished(
+                True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
+            #self.state_manager.remove_arq_iss_session(self.id)
+            self.states.setARQ(False)
         return None, None

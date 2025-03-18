@@ -18,9 +18,12 @@
         <i class="bi bi-info-circle"></i>
       </button>
 
-      <button class="btn btn-outline-secondary border-0" @click="deleteMessage">
+      <button class="btn btn-outline-secondary border-0"
+        @click="deleteMessage"
+        :disabled="['transmitting', 'queued'].includes(message.status)">
         <i class="bi bi-trash"></i>
       </button>
+
 
       <button class="btn btn-outline-secondary border-0" @click="sendADIF">
         ADIF

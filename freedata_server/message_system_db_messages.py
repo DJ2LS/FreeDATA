@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timedelta
 import json
 import os
-
+from exceptions import MessageStatusError
 
 class DatabaseManagerMessages(DatabaseManager):
     """Manages database operations for P2P messages.
@@ -337,6 +337,10 @@ class DatabaseManagerMessages(DatabaseManager):
         try:
             message = session.query(P2PMessage).filter_by(id=message_id).first()
             if message:
+
+                if message.to_dict()["status"] in ["transmitting", "queued"]:
+                    raise MessageStatusError("Message is queued or transmitting")
+
                 session.delete(message)
                 session.commit()
 
@@ -349,6 +353,11 @@ class DatabaseManagerMessages(DatabaseManager):
             session.rollback()
             self.log(f"Error deleting message with ID {message_id}: {e}", isWarning=True)
             return {'status': 'failure', 'message': 'error deleting message'}
+        except MessageStatusError as e:
+            session.rollback()
+            self.log(f"Error deleting message with ID {message_id}: {e}", isWarning=True)
+            return {'status': 'failure', 'message': e}
+
         finally:
             session.remove()
 
