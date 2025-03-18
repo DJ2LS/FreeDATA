@@ -36,7 +36,6 @@ class PingFrameHandler(frame_handler.FrameHandler):
             f"[Modem] Responding to request from [{self.details['frame']['origin']}]",
             snr=self.details['snr'],
         )
-
         self.send_ack()
 
         self.check_for_queued_message()

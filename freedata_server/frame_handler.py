@@ -21,8 +21,7 @@ class FrameHandler():
         events, and transmitting responses. Subclasses implement the
         `follow_protocol` method to handle specific frame types and protocols.
     """
-    def __init__(self, name: str, config, states: StateManager, event_manager: EventManager, 
-                 modem) -> None:
+    def __init__(self, name: str, config, states: StateManager, event_manager: EventManager, modem, socket_interface_manager) -> None:
         """Initializes a new FrameHandler instance.
 
             Args:
@@ -36,6 +35,7 @@ class FrameHandler():
         self.config = config
         self.states = states
         self.event_manager = event_manager
+        self.socket_interface_manager = socket_interface_manager
         self.modem = modem
         self.logger = structlog.get_logger("Frame Handler")
 
@@ -48,60 +48,89 @@ class FrameHandler():
         }
 
     def is_frame_for_me(self):
-            """Checks if the received frame is addressed to this station.
+        """Checks if the received frame is addressed to this station.
 
-            This method checks if the received frame is intended for this
-            station by verifying the destination callsign CRC and SSID against
-            the station's configured callsign and SSID list. It also checks for
-            session IDs in the case of ARQ and P2P frames.
+        This method checks if the received frame is intended for this
+        station by verifying the destination callsign CRC and SSID against
+        the station's configured callsign and SSID list. It also checks for
+        session IDs in the case of ARQ and P2P frames.
 
-            Returns:
-                bool: True if the frame is for this station, False otherwise.
-            """
-            call_with_ssid = self.config['STATION']['mycall'] + "-" + str(self.config['STATION']['myssid'])
-            ft = self.details['frame']['frame_type']
+        Returns:
+            bool: True if the frame is for this station, False otherwise.
+        """
+        call_with_ssid = self.config['STATION']['mycall'] + "-" + str(self.config['STATION']['myssid'])
+        ft = self.details['frame']['frame_type']
+        valid = False
+                
+        # Check for callsign checksum
+        if ft in ['ARQ_SESSION_OPEN', 'ARQ_SESSION_OPEN_ACK', 'PING', 'PING_ACK']:
+
+            valid, mycallsign = helpers.check_callsign(
+                call_with_ssid,
+                self.details["frame"]["destination_crc"],
+                self.config['STATION']['ssid_list'])
+
+        # Check for session id on IRS side
+        elif ft in ['ARQ_SESSION_INFO', 'ARQ_BURST_FRAME', 'ARQ_STOP']:
+            session_id = self.details['frame']['session_id']
+            if session_id in self.states.arq_irs_sessions:
+                valid = True
+
+        # Check for session id on ISS side
+        elif ft in ['ARQ_SESSION_INFO_ACK', 'ARQ_BURST_ACK', 'ARQ_STOP_ACK']:
+            session_id = self.details['frame']['session_id']
+            if session_id in self.states.arq_iss_sessions:
+                valid = True
+
+        # check for p2p connection
+        elif ft in ['P2P_CONNECTION_CONNECT']:
+            #Need to make sure this does not affect any other features in FreeDATA.
+            #This will allow the client to respond to any call sent in the "MYCALL" command
+
+            #print("check......")
+            #self.details["frame"]["mycallsign_crc"] = helpers.get_crc_24(self.details["frame"]["mycallsign"])
+            #print("Jaaaa?")
+
+            print(self.details)
+
+            self.details["frame"]["destination_crc"] = helpers.get_crc_24(self.details["frame"]["destination"])
+
+            print(helpers.get_crc_24(self.details["frame"]["destination"]))
+
+            print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+            if self.socket_interface_manager and self.socket_interface_manager.socket_interface_callsigns:
+                print("checking callsings....")
+                print(self.socket_interface_manager.socket_interface_callsigns)
+                for callsign in self.socket_interface_manager.socket_interface_callsigns:
+                    print("check:", callsign)
+                    valid, mycallsign = helpers.check_callsign(
+                        callsign,
+                        self.details["frame"]["destination_crc"].hex(),
+                        self.config['STATION']['ssid_list'])
+                    if valid is True:
+                        break
+            else:
+                print("no socket interface manager")
+                valid, mycallsign = helpers.check_callsign(
+                    call_with_ssid,
+                    self.details["frame"]["destination_crc"].hex(),
+                    self.config['STATION']['ssid_list'])
+            print("check done .... ")
+
+
+        #check for p2p connection
+        elif ft in ['P2P_CONNECTION_CONNECT_ACK', 'P2P_CONNECTION_PAYLOAD', 'P2P_CONNECTION_PAYLOAD_ACK', 'P2P_CONNECTION_DISCONNECT', 'P2P_CONNECTION_DISCONNECT_ACK']:
+            session_id = self.details['frame']['session_id']
+            if session_id in self.states.p2p_connection_sessions:
+                valid = True
+
+        else:
             valid = False
 
-            # Check for callsign checksum
-            if ft in ['ARQ_SESSION_OPEN', 'ARQ_SESSION_OPEN_ACK', 'PING', 'PING_ACK', 'P2P_CONNECTION_CONNECT']:
-                valid, mycallsign = helpers.check_callsign(
-                    call_with_ssid,
-                    self.details["frame"]["destination_crc"],
-                    self.config['STATION']['ssid_list'])
+        if not valid:
+            self.logger.info(f"[Frame handler] {ft} received but not for us.")
 
-            # Check for session id on IRS side
-            elif ft in ['ARQ_SESSION_INFO', 'ARQ_BURST_FRAME', 'ARQ_STOP']:
-                session_id = self.details['frame']['session_id']
-                if session_id in self.states.arq_irs_sessions:
-                    valid = True
-
-            # Check for session id on ISS side
-            elif ft in ['ARQ_SESSION_INFO_ACK', 'ARQ_BURST_ACK', 'ARQ_STOP_ACK']:
-                session_id = self.details['frame']['session_id']
-                if session_id in self.states.arq_iss_sessions:
-                    valid = True
-
-            # check for p2p connection
-            elif ft in ['P2P_CONNECTION_CONNECT']:
-                valid, mycallsign = helpers.check_callsign(
-                    call_with_ssid,
-                    self.details["frame"]["destination_crc"],
-                    self.config['STATION']['ssid_list'])
-
-            # check for p2p connection
-            elif ft in ['P2P_CONNECTION_CONNECT_ACK', 'P2P_CONNECTION_PAYLOAD', 'P2P_CONNECTION_PAYLOAD_ACK',
-                        'P2P_CONNECTION_DISCONNECT', 'P2P_CONNECTION_DISCONNECT_ACK']:
-                session_id = self.details['frame']['session_id']
-                if session_id in self.states.p2p_connection_sessions:
-                    valid = True
-
-            else:
-                valid = False
-
-            if not valid:
-                self.logger.info(f"[Frame handler] {ft} received but not for us.")
-
-            return valid
+        return valid
 
 
     def should_respond(self):

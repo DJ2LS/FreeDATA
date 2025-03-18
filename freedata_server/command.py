@@ -14,7 +14,7 @@ class TxCommand:
     and transmission via the modem.
     """
 
-    def __init__(self, config: dict, state_manager: StateManager, event_manager, apiParams:dict = {}, socket_command_handler=None):
+    def __init__(self, config: dict, state_manager: StateManager, event_manager, apiParams:dict = {}, socket_interface_manager=None):
         """Initializes a new TxCommand instance.
 
         This method sets up the command with the given configuration, state
@@ -36,7 +36,7 @@ class TxCommand:
         self.set_params_from_api(apiParams)
         self.frame_factory = DataFrameFactory(config)
         self.arq_data_type_handler = ARQDataTypeHandler(event_manager, state_manager)
-        self.socket_command_handler = socket_command_handler
+        self.socket_interface_manager = socket_interface_manager
 
     def log(self, message, isWarning = False):
         """Logs a message with the command's name.

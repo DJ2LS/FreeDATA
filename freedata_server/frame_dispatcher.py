@@ -58,7 +58,8 @@ class DISPATCHER:
         #FR_TYPE.FEC_WAKEUP.value: {"class": FrameHandler, "name":  "FEC WAKEUP"},
     }
 
-    def __init__(self, config, event_manager, states, modem):
+    def __init__(self, config, event_manager, states, modem, socket_interface_manager):
+
         """Initializes the frame dispatcher.
 
         This method sets up the frame dispatcher with the provided
@@ -77,7 +78,7 @@ class DISPATCHER:
         self.config = config
         self.states = states
         self.event_manager = event_manager
-
+        self.socket_interface_manager = socket_interface_manager
         self.stop_event = threading.Event()
 
         self._initialize_handlers(config, states)
@@ -147,7 +148,7 @@ class DISPATCHER:
                                               self.config,
                                               self.states,
                                               self.event_manager,
-                                              self.modem)
+                                              self.modem, self.socket_interface_manager)
         handler.handle(deconstructed_frame, snr, frequency_offset, freedv, bytes_per_frame)
 
     def get_id_from_frame(self, data):
