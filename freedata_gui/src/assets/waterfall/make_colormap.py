@@ -2,7 +2,7 @@
 
 import matplotlib.pyplot as plt
 
-colormaps = ('viridis', 'inferno', 'magma', 'jet', 'binary')
+colormaps = ('viridis', 'inferno', 'magma', 'jet', 'binary', 'plasma', 'turbo','rainbow', 'ocean')
 for c in colormaps:
     cmap_name = c
     cmap = plt.get_cmap(cmap_name)
