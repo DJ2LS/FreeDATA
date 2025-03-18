@@ -40,7 +40,7 @@ class RadioManager:
         # send ptt state via socket interface
         try:
             if self.config['SOCKET_INTERFACE']['enable'] and self.socket_interface_manager:
-            self.socket_interface_manager.command_server.command_handler.socket_respond_ptt(state)
+                self.socket_interface_manager.command_server.command_handler.socket_respond_ptt(state)
         except Exception as e:
             print(e)
 
