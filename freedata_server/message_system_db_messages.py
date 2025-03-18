@@ -234,9 +234,6 @@ class DatabaseManagerMessages(DatabaseManager):
                 status = message_dict.get("status", "")
                 statistics = message_dict.get("statistics", {})
 
-                print(message_dict)
-                print(statistics)
-
                 # Determine the CALL based on the direction
                 if direction == "receive":
                     call = origin.split("-")[0]  # Take the part before the "-" if it exists
@@ -273,15 +270,18 @@ class DatabaseManagerMessages(DatabaseManager):
                 else:
                     grid = ""
 
-
                 # Extract and adjust the frequency (Hz to MHz)
                 frequency_hz = statistics.get("frequency")  # Get the frequency, may be None
                 if frequency_hz is not None:
-                    frequency_mhz = round(frequency_hz / 1_000_000,
-                                          3)  # Convert Hz to MHz and round to 3 decimal places
-                    frequency_str = str(frequency_mhz)  # Convert to string for ADIF format
+                    try:
+                        # Convert frequency_hz to float if it's a string
+                        frequency_value = float(frequency_hz)
+                    except ValueError:
+                        frequency_value = 0.0
+                    frequency_mhz = round(frequency_value / 1_000_000, 3)  # Convert Hz to MHz
+                    frequency_str = str(frequency_mhz)
                 else:
-                    frequency_str = "14.000000"  # Default to "0.000" MHz if frequency is missing
+                    frequency_str = "14.000000"  # Default if frequency is missing
 
                 # Construct the ADIF message
                 adif_fields = [
