@@ -33,6 +33,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Install SCons on Windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: choco install scons -y
+
       - uses: robinraju/release-downloader@v1.11
         with:
           repository: "Hamlib/Hamlib"

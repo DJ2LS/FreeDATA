@@ -50,7 +50,7 @@ jobs:
       - name: Install Linux dependencies
         if: ${{startsWith(matrix.os, 'ubuntu')}}
         run: |
-          sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake patchelf
+          sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake patchelf scons
 
       - name: Install MacOS pyAudio
         if: ${{startsWith(matrix.os, 'macos')}}
