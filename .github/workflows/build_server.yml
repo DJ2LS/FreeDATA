@@ -34,7 +34,7 @@ jobs:
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Vue Builder
         working-directory: freedata_gui
@@ -42,15 +42,15 @@ jobs:
           npm i
           npm run build
 
-      - name: Set up Python 3.13
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.12"
 
       - name: Install Linux dependencies
         if: ${{startsWith(matrix.os, 'ubuntu')}}
         run: |
-          sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2 patchelf
+          sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake patchelf
 
       - name: Install MacOS pyAudio
         if: ${{startsWith(matrix.os, 'macos')}}
