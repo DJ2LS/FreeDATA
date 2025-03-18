@@ -92,6 +92,7 @@
             "onair": "on air",
             "ping": "Ping",
             "ping_help": "Send a ping request to a remote station",
+            "newmessage_help": "Send a new message to a remote station",
             "heardstations": "Heard Stations",
             "time": "Time",
             "freq": "Freq",
