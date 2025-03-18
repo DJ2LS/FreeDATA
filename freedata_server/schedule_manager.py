@@ -144,6 +144,11 @@ class ScheduleManager:
     def push_to_explorer(self):
         
         self.config = self.config_manager.read()
+
+        # check before if self.config has a loaded config dict
+        if not isinstance(self.config, dict):
+            return
+
         if self.config['STATION']['enable_explorer'] and self.state_manager.is_modem_running:
             try:
                 explorer.Explorer(self.modem_version, self.config_manager, self.state_manager).push()
