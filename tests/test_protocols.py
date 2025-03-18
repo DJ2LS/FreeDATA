@@ -60,6 +60,7 @@ class TestProtocols(unittest.TestCase):
         self.assertEventReceivedType('PING')
 
         event_frame = self.event_queue.get()
+        print(event_frame)
         # Check ACK
         self.shortcutTransmission(event_frame)
         self.assertEventReceivedType('PING_ACK')
