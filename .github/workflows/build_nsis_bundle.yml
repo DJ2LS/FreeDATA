@@ -57,6 +57,7 @@ jobs:
       - name: Build binaries
         working-directory: freedata_server
         run: |
+          scons CCFLAGS='/Zm1000'
           python3 -m nuitka `
             --remove-output `
             --assume-yes-for-downloads `
