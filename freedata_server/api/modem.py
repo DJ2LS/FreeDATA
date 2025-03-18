@@ -785,18 +785,10 @@ async def post_modem_stop_transmission(request:Request):
     Raises:
         HTTPException: If the modem is not running or an error occurs.
     """
-    if not request.app.state_manager.is_modem_running:
-        api_abort("Modem not running", 503)
-    if request.app.state_manager.getARQ():
-        try:
-            for session in request.app.state_manager.arq_irs_sessions.values():
-                # session.abort_transmission()
-                session.transmission_aborted()
-            for session in request.app.state_manager.arq_iss_sessions.values():
-                session.abort_transmission(send_stop=False)
-                session.transmission_aborted()
-        except Exception as e:
-            print(f"Error during transmission stopping: {e}")
+    try:
+        request.app.state_manager.stop_transmission()
+    except Exception as e:
+        print(f"Error during transmission stopping: {e}")
     return api_ok()
 
 
