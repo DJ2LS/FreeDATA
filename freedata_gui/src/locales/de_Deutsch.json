@@ -110,6 +110,7 @@
 	    "sendingping": "Sende PING...",
             "callcq": "CQ rufen",
             "cqcqcq": "CQ CQ CQ",
+            "cqcqcq_help": "Sende ein CQ",
             "togglebeacon": "Bake einschalten",
             "togglebeacon_help": "Umschalten auf Baken-Modus. Im Baken-Modus kann man Ping-Anfragen empfangen und einen Datenkanal öffnen. Wenn ein Datenkanal geöffnet wird, wird das aussenden von Baken pausiert.",
             "enablebeacon": "Bake einschalten",
