@@ -103,7 +103,7 @@ window.addEventListener(
           class="btn btn-outline-secondary ms-1"
           id="sendCQ"
           type="button"
-          title="Send a CQ to the world"
+          :title=" $t('grid.components.cqcqcq_help')"
           @click="handleSendCQ"
         >
           <span v-if="!isCQButtonDisabled">{{ $t('grid.components.callcq') }}</span>
