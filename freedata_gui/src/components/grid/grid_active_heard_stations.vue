@@ -136,7 +136,7 @@ function transmitPing(callsign) {
                   data-bs-toggle="modal"
                   type="button"
                   data-bs-trigger="hover"
-                  :data-bs-title="$t('grid.components.newmessage_help')"
+                  :title="$t('grid.components.newmessage_help')"
                   @click="startNewChat(item.origin)"
                 >
                   <i class="bi bi-pencil-square"></i>
