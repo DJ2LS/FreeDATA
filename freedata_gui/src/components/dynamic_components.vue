@@ -589,7 +589,7 @@ onMounted(() => {
   >
    <!-- <i class="bi bi-grip-vertical h5">      </i>-->
 
-  <span class="me-4 text-white" style="writing-mode: vertical-rl; transform: rotate(180deg);">
+  <span class="text-white" style="writing-mode: vertical-rl; transform: rotate(180deg);">
     {{ $t('grid.gridedit') }}
   </span>
 
