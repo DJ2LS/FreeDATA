@@ -150,7 +150,7 @@
         "audiotuning": "Audio tuning",
         "audiotuninginfo": "Audiopegel einstellen. Wert in dB. Standardwert ist 0",
         "testframe": "Test frame",
-        "testframetransmit": "Senden ( 5s )",
+        "testframetransmit": "Senden (5s)",
         "audiotuningrxlevel": "RX Pegel",
         "audiotuningtxlevel": "TX Pegel",
         "audiotuningtransmitsine": "Sinus senden",
