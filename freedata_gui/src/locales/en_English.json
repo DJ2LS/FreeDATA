@@ -93,6 +93,7 @@
             "ping": "Ping",
             "ping_help": "Send a ping request to a remote station",
             "newmessage_help": "Send a new message to a remote station",
+            "startnewchat_help":
             "heardstations": "Heard Stations",
             "time": "Time",
             "freq": "Freq",
@@ -143,6 +144,7 @@
         "furtheroptions": "Further options",
         "deletechat": "Delete chat",
         "startnewchat": "Start a new chat",
+        "startnewchat2": "Start a new chat (enter dx call sign first)",
         "newchatline1": "Enter destination callsign",
         "newchatline2": "Enter a first message",
         "newchatline3": "Click START NEW CHAT",
