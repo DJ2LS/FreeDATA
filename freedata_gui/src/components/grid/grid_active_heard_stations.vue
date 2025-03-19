@@ -133,7 +133,7 @@ function transmitPing(callsign) {
                 <button
                   class="btn btn-sm border-0 btn-outline-primary"
                   data-bs-target="#newChatModal"
-                  data-bs-toggle="modal"
+                  data-bs-toggle="tooltip"
                   type="button"
                   data-bs-trigger="hover"
                   :data-bs-title="$t('grid.components.newmessage_help')"
