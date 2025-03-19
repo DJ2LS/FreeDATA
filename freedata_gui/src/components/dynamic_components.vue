@@ -581,7 +581,7 @@ onMounted(() => {
 
 <template>
   <button
-    class="btn btn-secondary fixed-middle-right rounded-0 rounded-start-4 p-1 pt-4 pb-4"
+    class="btn btn-secondary shadow fixed-middle-right rounded-0 rounded-start-4 p-1 pt-4 pb-4"
     type="button"
     data-bs-toggle="offcanvas"
     data-bs-target="#offcanvasGridItems"
