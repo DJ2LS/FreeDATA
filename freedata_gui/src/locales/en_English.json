@@ -93,7 +93,7 @@
             "ping": "Ping",
             "ping_help": "Send a ping request to a remote station",
             "newmessage_help": "Send a new message to a remote station",
-            "startnewchat_help":
+            "startnewchat_help": "Start or continue a conversation with another station", 
             "heardstations": "Heard Stations",
             "time": "Time",
             "freq": "Freq",
