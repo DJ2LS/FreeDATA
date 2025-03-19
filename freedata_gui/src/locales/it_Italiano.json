@@ -33,7 +33,11 @@
         "bytesperminute": "Bytes per minuto",
         "transmissionfailedwith": "Trasmissione FALLITA con",
         "confirmingtransmissionwith": "Trasmissione confermata con",
-        "receivedbytes": "Bytes ricevuti"
+        "receivedbytes": "Bytes ricevuti",
+        "adiflogheader": "ADIF",
+        "adiflogtext1": "QSO con",
+        "adiflogtext2": "aggiunto al log.",
+        "adiflogerror": "errore esportando ADIF"
     },
     "navbar": {
         "frequency_help": "Quale è la frequenza?",
@@ -76,6 +80,10 @@
         "radiocontrol": "Controllo/Stato della radio",
         "statistics": "Statistiche",
         "other": "Altro",
+        "uploadpreset": "Carica Preselezioni",
+        "uploadpreset_help": "Carica un file di preselezioni",
+        "downloadpreset": "Scarica preselezioni",
+        "downloadpreset_help": "Scarica un file di preselezioni fer salvataggio o condivisione",
         "components": {
             "tune": "Sintonizza",
             "stop_help": "Interrompi la sessione e chiudi la trasmissione",
@@ -84,6 +92,7 @@
             "onair": "in aria",
             "ping": "Ping",
             "ping_help": "Manda una richiesta di ping a una stazione remota",
+            "newmessage_help": "Invia un nuovo messaggio a una stazione remota",
             "heardstations": "Stazioni ricevute",
             "time": "Tempo",
             "freq": "Freq",
