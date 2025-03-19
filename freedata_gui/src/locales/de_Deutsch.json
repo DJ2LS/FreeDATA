@@ -148,7 +148,7 @@
         "newchatline4": "Überprüfe die Chat-Registerkarte auf der linken Seite auf Nachrichten",
         "firstmessage": "Erste Nachricht",
         "audiotuning": "Audio tuning",
-        "audiotuninginfo": "Audiopegel einstellen. Wert in dB. Standardwert ist 0",
+        "audiotuninginfo": "Audiopegel einstellen: Wert in dB, Standardwert ist 0.",
         "testframe": "Test frame",
         "testframetransmit": "Senden (5s)",
         "audiotuningrxlevel": "RX Pegel",
