@@ -110,6 +110,7 @@
             "sendingping": "Sending PING...",
             "callcq": "Call CQ",
             "cqcqcq": "CQ CQ CQ",
+            "cqcqcq_help": "Send a CQ TO THE WORLD",
             "togglebeacon": "toggle beacon",
             "togglebeacon_help": "Toggle beacon mode. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses.",
             "enablebeacon": "Enable beacon",
