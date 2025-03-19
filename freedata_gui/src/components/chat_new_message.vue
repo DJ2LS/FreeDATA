@@ -289,10 +289,9 @@ function applyMarkdown(formatType) {
 
         <button
           class="btn btn-sm btn-secondary ms-1 me-2 rounded-pill"
-          type="button"
-          :title=" $t('grid.components.newmessage_help')"
           @click="transmitNewMessage()"
-                  >
+          type="button"
+        >
           <i class="bi bi-send ms-4 me-4" style="font-size: 1.2rem"></i>
         </button>
       </div>
