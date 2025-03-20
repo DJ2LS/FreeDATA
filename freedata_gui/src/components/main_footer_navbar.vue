@@ -11,7 +11,7 @@ const state = useStateStore(pinia);
 </script>
 
 <template>
-  <nav class="navbar navbar-expand-xl bg-body-secondary border-top border-1 p-2">
+  <nav class="navbar navbar-expand-xl bg-body-secondary sticky-bottom border-top border-1 p-2">
     <div class="col">
       <div class="btn-toolbar" role="toolbar">
         <div class="btn-group btn-group-sm me-1" role="group">
