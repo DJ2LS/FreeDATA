@@ -59,7 +59,6 @@
         "settings_help": "Innstillinger",
         "station": "Stasjon",
         "station_help": "Stasjonsinformasjon"
-
     },
     "grid": {
         "frequencydescription": "Vanlig brukte frekvenser er oppført her, og er alle USB. Bare klikk på en oppføring eller skriv inn en frekvens manuelt i tekstboksen for å justere riggen din hvis riggkontroll er aktivert.",
@@ -81,6 +80,10 @@
         "radiocontrol": "Radiokontroll/Status",
         "statistics": "Statistikk",
         "other": "Annet",
+        "uploadpreset": "Last opp forhåndsinnstilling",
+        "uploadpreset_help": "Last opp en forhåndsinnstilt fil",
+        "downloadpreset": "Last ned forhåndsinnstilling",
+        "downloadpreset_help": "Last ned forhåndsinnstilt fil for deling eller lagring",
         "components": {
             "tune": "Tune",
             "stop_help": "Avbryt økten og stopp overføringer",
@@ -89,6 +92,8 @@
             "onair": "på lufta",
             "ping": "Ping",
             "ping_help": "Send en ping-forespørsel til en ekstern stasjon",
+            "newmessage_help": "Send en ny melding til en ekstern stasjon",
+            "startnewchat_help": "Start eller fortsett en samtale med en annen stasjon",
             "heardstations": "Hørte stasjoner",
             "time": "Tid",
             "freq": "Frek",
@@ -114,13 +119,11 @@
             "radiocontrolmode": "Mode",
             "powerpercent": "% Effekt",
             "tuner": "Tuner",
-            "activity": "Aktivitet",
-            "beacon": "Beacon",
+            "activity": "Aktivitet", "beacon": "Beacon",
             "active": "Aktiv",
             "inactive": "Inaktiv",
             "connected": "Tilkoblet",
-            "disconnected": "Koblet fra",
-            "online": "Online",
+            "disconnected": "Koblet fra", "online": "Online",
             "offline": "Frakoblet",
             "received": "mottatt",
             "transmitted": "overført",
@@ -128,7 +131,6 @@
             "msgstatustransmitted": "transmitted",
             "msgstatusfailed": "mislyktes",
             "msgstatusqueued": "i kø"
-
         }
     },
     "modals": {
