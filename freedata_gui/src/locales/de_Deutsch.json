@@ -85,7 +85,7 @@
         "downloadpreset": "Preset Herunterladen",
         "downloadpreset_help": "Lade eine Preset-Date herunter um sie zu speichern und zu teilen",
         "components": {
-            "tune": "Abstimmen",
+            "tune": "Tune",
             "stop_help": "Sitzung abbrechen und Aussendung beenden",
             "transmissioncharts": "Übertragungs-Diagramme",
             "scatterdiagram": "Streuungs-Diagramm",
