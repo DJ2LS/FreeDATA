@@ -54,6 +54,9 @@ import pinia from '../store/index';
 import { useChatStore } from '../store/chatStore.js';
 import { getBeaconDataByCallsign, setFreedataMessageAsRead, getFreedataMessages } from '../js/api.js';
 import { ref } from 'vue';
+import { useIsMobile } from '../js/mobile_devices.js';
+const { isMobile } = useIsMobile(720);
+
 
 setActivePinia(pinia);
 
@@ -65,7 +68,24 @@ function chatSelected(callsign) {
   chat.triggerScrollToBottom();
   processBeaconData(callsign);
   setMessagesAsRead(callsign);
+
+
+  const currentIsMobile = window.innerWidth < 768;
+  console.log("Direct check isMobile:", currentIsMobile);
+
+
+console.log("Initial isMobile:", isMobile.value);
+
 }
+
+
+import { watch } from 'vue';
+
+watch(isMobile, (newVal) => {
+  console.log("isMobile changed to:", newVal);
+});
+
+
 
 async function setMessagesAsRead(callsign) {
   const messages = chat.sorted_chat_list[callsign];

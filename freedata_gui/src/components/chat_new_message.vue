@@ -217,7 +217,7 @@ function applyMarkdown(formatType) {
 
       <!-- File Attachment Preview Area -->
       <div class="container-fluid">
-        <div class="d-flex flex-row overflow-auto bg-light">
+        <div class="d-flex flex-row overflow-auto bg-body-tertiary">
           <div v-for="(file, index) in selectedFiles" :key="index" class="p-2">
             <div class="card" style="min-width: 10rem; max-width: 10rem;">
               <!-- Card Header with Remove Button -->

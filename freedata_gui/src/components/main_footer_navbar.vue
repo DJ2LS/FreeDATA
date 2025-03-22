@@ -11,7 +11,7 @@ const state = useStateStore(pinia);
 </script>
 
 <template>
-  <nav class="navbar navbar-expand-xl bg-body-secondary border-top border-1 p-2">
+  <nav class="navbar navbar-expand-xl bg-body-secondary border-top border-1 p-2 col-11 col-lg-auto">
     <div class="col">
       <div class="btn-toolbar" role="toolbar">
         <div class="btn-group btn-group-sm me-1" role="group">
@@ -51,7 +51,7 @@ const state = useStateStore(pinia);
           </button>
         </div>
 
-        <div class="btn-group btn-group-sm me-1 d-none d-md-inline-block" role="group">
+        <div class="btn-group btn-group-sm me-1 d-none d-lg-inline-block" role="group">
 
           <button
             class="btn btn-sm btn-secondary me-4 disabled"
@@ -66,7 +66,7 @@ const state = useStateStore(pinia);
           </button>
         </div>
 
-        <div class="btn-group btn-group-sm me-1 d-none d-md-inline-block" role="group">
+        <div class="btn-group btn-group-sm me-1 d-none d-lg-inline-block" role="group">
           <button
             class="btn btn-sm btn-secondary me-0"
             type="button"
@@ -98,7 +98,7 @@ const state = useStateStore(pinia);
           </button>
         </div>
 
-        <div class="btn-group btn-group-sm me-1 d-none d-md-inline-block" role="group">
+        <div class="btn-group btn-group-sm me-1 d-none d-lg-inline-block" role="group">
           <button
             class="btn btn-sm btn-secondary me-0"
             type="button"
@@ -161,7 +161,7 @@ const state = useStateStore(pinia);
       </div>
     </div>
 
-    <div class="col-lg-4 col-md-3 col-sm-2 col-xs-1 col-4">
+    <div class="col-lg-4 col-lg-3 col-sm-2 col-xs-1 col-4">
       <div class="progress w-100 bg-secondary me-2" style="height: 30px;">
         <div
           class="progress-bar progress-bar-striped bg-primary force-gpu"

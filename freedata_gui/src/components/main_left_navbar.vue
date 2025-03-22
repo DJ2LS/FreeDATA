@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 
 import { getOverallHealth } from '../js/eventHandler.js';
 import { getFreedataMessages } from '../js/api';
@@ -12,10 +12,6 @@ setActivePinia(pinia);
 import { useChatStore } from '../store/chatStore.js';
 const chat = useChatStore(pinia);
 
-const isTextVisible = ref(false); // Initially, the text is invisible
-function toggleTextVisibility() {
-  isTextVisible.value = !isTextVisible.value; // Toggle the visibility
-}
 
 // Network state computation
 import { useStateStore } from '../store/stateStore.js';
@@ -28,16 +24,7 @@ const isNetworkTraffic = computed(() => state.is_network_traffic);
 </script>
 
 <template>
-  <!-- Button -->
-  <div class="btn-group" role="group" aria-label="Basic example">
-    <button
-        class="btn btn-outline-secondary border-0 ms-2 mb-3"
-        type="button"
-        @click="toggleTextVisibility"
-    >
-      <span class="fw-semibold"><i class="bi bi-text-paragraph"></i></span>
-    </button>
-  </div>
+
 
   <!-- Health Status/Spinner -->
   <div class="btn-group list-group-item" role="group" aria-label="">
@@ -64,7 +51,6 @@ const isNetworkTraffic = computed(() => state.is_network_traffic);
       <template v-else>
         <i class="h3 bi bi-activity p-1"></i>
       </template>
-      <span class="ms-2" v-if="isTextVisible">{{ $t('navbar.modemcheck') }}</span>
     </button>
   </div>
 
@@ -87,7 +73,6 @@ const isNetworkTraffic = computed(() => state.is_network_traffic);
         :class="{ disabled: isNetworkDisconnected }"
     >
       <i class="bi bi-columns-gap h3"></i>
-      <span class="ms-2" v-if="isTextVisible">{{ $t('navbar.home') }}</span>
     </a>
 
     <a
@@ -102,7 +87,6 @@ const isNetworkTraffic = computed(() => state.is_network_traffic);
         @click="isNetworkDisconnected ? null : getFreedataMessages"
     >
       <i class="bi bi-chat-text h3"></i>
-      <span class="ms-2" v-if="isTextVisible">{{ $t('navbar.chat') }}</span>
       <span
           v-if="chat.totalUnreadMessages > 0"
           class="badge bg-danger position-absolute top-0 end-0 mt-1 me-1"
@@ -120,7 +104,6 @@ const isNetworkTraffic = computed(() => state.is_network_traffic);
         aria-controls="list-mesh"
     >
       <i class="bi bi-rocket h3"></i>
-      <span class="ms-2" v-if="isTextVisible">Mesh</span>
     </a>
 
     <a
@@ -135,7 +118,6 @@ const isNetworkTraffic = computed(() => state.is_network_traffic);
         @click="isNetworkDisconnected ? null : loadAllData()"
     >
       <i class="bi bi-gear-wide-connected h3"></i>
-      <span class="ms-2" v-if="isTextVisible">{{ $t('navbar.settings') }}</span>
     </a>
   </div>
 
@@ -148,6 +130,5 @@ const isNetworkTraffic = computed(() => state.is_network_traffic);
       disabled
   >
     <i class="bi bi-person-circle h3"></i>
-    <span class="ms-2" v-if="isTextVisible">{{ $t('navbar.station') }}</span>
   </button>
 </template>
