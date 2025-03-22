@@ -8,9 +8,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, windows-latest] # removed macos-latest as it's broken for now
+        os: [ubuntu-24.04, windows-latest] # removed macos-latest as it's broken for now
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-24.04
             zip_name: freedata-server_ubuntu
             generator: Unix Makefiles
             modem_binary_name: freedata_server
@@ -34,7 +34,7 @@ jobs:
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Vue Builder
         working-directory: freedata_gui
@@ -48,10 +48,9 @@ jobs:
           python-version: "3.11"
 
       - name: Install Linux dependencies
-        # if: matrix.os == 'ubuntu-20.04'
         if: ${{startsWith(matrix.os, 'ubuntu')}}
         run: |
-          sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2 patchelf
+          sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake patchelf
 
       - name: Install MacOS pyAudio
         if: ${{startsWith(matrix.os, 'macos')}}

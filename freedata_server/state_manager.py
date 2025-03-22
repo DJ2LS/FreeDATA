@@ -412,6 +412,28 @@ class StateManager:
         if id in self.arq_irs_sessions:
             del self.arq_irs_sessions[id]
 
+    def stop_transmission(self):
+        """Stops any ongoing ARQ transmissions.
+
+        This method iterates through all active ARQ Information Sending Station (ISS)
+        and Information Receiving Station (IRS) sessions and aborts their transmissions.
+        ISS sessions are removed after being stopped, while IRS sessions are retained
+        to allow for potential resumption.
+        """
+        # Stop and remove IRS sessions
+        for session_id in list(self.arq_irs_sessions.keys()):
+            session = self.arq_irs_sessions[session_id]
+            session.transmission_aborted()
+            # For now, we don't remove IRS session because of resuming transmissions. 
+            #self.remove_arq_irs_session(session_id)
+
+        # Stop and remove ISS sessions
+        for session_id in list(self.arq_iss_sessions.keys()):
+            session = self.arq_iss_sessions[session_id]
+            session.abort_transmission(send_stop=False)
+            session.transmission_aborted()
+            self.remove_arq_iss_session(session_id)
+
     def add_activity(self, activity_data):
         """Adds a new activity to the activities list.
 

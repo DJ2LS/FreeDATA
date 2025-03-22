@@ -33,7 +33,11 @@
         "bytesperminute": "Bytes pro Minute",
         "transmissionfailedwith": "Übertragung FEHLGESCHLAGEN mit",
         "confirmingtransmissionwith": "Bestätige Übertragung mit",
-        "receivedbytes": "Empfangene Bytes"
+        "receivedbytes": "Empfangene Bytes",
+	"adiflogheader": "ADIF",
+        "adiflogtext1": "QSO mit",
+        "adiflogtext2": "Zum Log hinzugefügt.",
+        "adiflogerror": "ADIF Export-Fehler"
     },
     "navbar": {
         "frequency_help": "Wie ist die Frequenz?",
@@ -88,6 +92,7 @@
             "onair": "on air",
             "ping": "Ping",
             "ping_help": "Sende eine Ping-Anfrage an eine entfernte Station",
+	    "newmessage_help": "Sende eine neue Nachricht an eine entfernte Station",
             "heardstations": "gehörte Stationen",
             "time": "Zeit",
             "freq": "Freq",

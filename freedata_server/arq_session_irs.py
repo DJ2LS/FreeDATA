@@ -486,15 +486,16 @@ class ARQSessionIRS(arq_session.ARQSession):
         Returns:
             Tuple[None, None]: Returns None for both data and type_byte.
         """
-        self.log("session aborted")
-        self.session_ended = time.time()
-        self.set_state(IRS_State.ABORTED)
-        # break actual retries
-        self.event_frame_received.set()
+        if self.state not in [IRS_State.ABORTED, IRS_State.ENDED]:
+            self.log("session aborted")
+            self.session_ended = time.time()
+            self.set_state(IRS_State.ABORTED)
+            # break actual retries
+            self.event_frame_received.set()
 
 
-        #self.modem.demodulator.set_decode_mode()
-        self.event_manager.send_arq_session_finished(
-            True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.received_bytes, self.total_length))
-        self.states.setARQ(False)
+            #self.modem.demodulator.set_decode_mode()
+            self.event_manager.send_arq_session_finished(
+                True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.received_bytes, self.total_length))
+            self.states.setARQ(False)
         return None, None
