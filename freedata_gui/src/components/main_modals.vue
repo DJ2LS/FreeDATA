@@ -540,7 +540,8 @@ const beaconHistogramData = computed(() => ({
                   id="createNewChatButton"
                   type="button"
                   data-bs-dismiss="modal"
-                  title="Start a new chat (enter dx call sign first)"
+                  data-bs-trigger="hover"
+                  :title="$t('modals.startnewchat2')"
                   @click="newChat()"
                   >
                {{ $t('modals.startnewchat').toUpperCase() }}

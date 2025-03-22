@@ -26,9 +26,6 @@ class RadioManager:
         elif self.radiocontrol == "serial_ptt":
             self.radio = serial_ptt.radio(self.config, self.state_manager)
 
-        elif self.radiocontrol == "tci":
-            raise NotImplementedError
-            # self.radio = self.tci_module
         else:
             self.radio = rigdummy.radio()
 
@@ -40,10 +37,9 @@ class RadioManager:
         if not state:
             self.radio.set_ptt(state)
 
-        print(vars(self.socket_interface_manager.command_server))
         # send ptt state via socket interface
         try:
-            if self.socket_interface_manager:
+            if self.config['SOCKET_INTERFACE']['enable'] and self.socket_interface_manager:
                 self.socket_interface_manager.command_server.command_handler.socket_respond_ptt(state)
         except Exception as e:
             print(e)

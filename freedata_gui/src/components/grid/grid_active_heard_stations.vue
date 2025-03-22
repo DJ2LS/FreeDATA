@@ -136,7 +136,7 @@ function transmitPing(callsign) {
                   data-bs-toggle="modal"
                   type="button"
                   data-bs-trigger="hover"
-                  data-bs-title="$t('grid.components.newmessage_help') "
+                  :title="$t('grid.components.newmessage_help')"
                   @click="startNewChat(item.origin)"
                 >
                   <i class="bi bi-pencil-square"></i>
@@ -148,7 +148,7 @@ function transmitPing(callsign) {
                   type="button"
                   data-bs-toggle="tooltip"
                   data-bs-trigger="hover"
-                  :data-bs-title="$t('grid.components.ping_help') "
+                  :data-bs-title="$t('grid.components.ping_help')"
                   @click="transmitPing(item.origin)"
                 >
                   <i class="bi bi-arrow-left-right"></i>

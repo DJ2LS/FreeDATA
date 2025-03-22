@@ -78,6 +78,9 @@
       <option value="4">Magma</option>
       <option value="5">Jet</option>
       <option value="6">Binary</option>
+      <option value="7">Plasma</option>
+      <option value="8">Rainbow</option>
+      <option value="9">Ocean</option>
     </select>
   </div>
 

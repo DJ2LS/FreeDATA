@@ -117,7 +117,7 @@ window.addEventListener(
               class="btn btn-sm btn-outline-secondary w-100"
               id="sendCQ"
               type="button"
-              title="Send a CQ to the world"
+              :title=" $t('grid.components.cqcqcq_help')"
               @click="handleSendCQ"
               :disabled="isCQButtonDisabled"
             >
