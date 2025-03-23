@@ -11,7 +11,7 @@
   <div class="container-fluid d-flex flex-column min-vh-100">
     <div class="row flex-nowrap flex-grow-1">
       <!-- Left Navbar -->
-      <div class="col-1 col-lg-auto p-0 bg-body-secondary border-end d-flex flex-column">
+      <div class="col-1 col-lg-auto p-0 bg-body-secondary border-end d-flex flex-column" style="min-width: 65px;">
         <div class="flex-shrink-0 m-1 m-lg-3">
             <main_left_navbar />
         </div>

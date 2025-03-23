@@ -14,6 +14,8 @@ import DOMPurify from 'dompurify';
 import ImageCompressor from 'js-image-compressor'; // Import the compressor
 import { displayToast } from "../js/popupHandler";
 
+import { useIsMobile } from '../js/mobile_devices.js';
+const { isMobile } = useIsMobile(992);
 
 
 // Emoji Handling
@@ -251,6 +253,8 @@ function applyMarkdown(formatType) {
       <!-- Message Input Area -->
       <div class="input-group bottom-0 ms-2">
         <button
+
+            v-if="!isMobile"
           type="button"
           class="btn btn-outline-secondary border-0 rounded-pill me-1"
           data-bs-toggle="modal"
@@ -270,12 +274,12 @@ function applyMarkdown(formatType) {
           <i class="bi bi-paperclip" style="font-size: 1.2rem"></i>
         </button>
 
-        <div class="vr mx-2"></div>
+        <div v-if="!isMobile" class="vr mx-2"></div>
 
         <!-- Markdown Formatting Buttons -->
-        <button class="btn btn-outline-secondary border-0 rounded-pill" @click="applyMarkdown('bold')"><b>B</b></button>
-        <button class="btn btn-outline-secondary border-0 rounded-pill" @click="applyMarkdown('italic')"><i>I</i></button>
-        <button class="btn btn-outline-secondary border-0 rounded-pill" @click="applyMarkdown('underline')"><u>U</u></button>
+        <button v-if="!isMobile" class="btn btn-outline-secondary border-0 d-md-block rounded-pill" @click="applyMarkdown('bold')"><b>B</b></button>
+        <button v-if="!isMobile" class="btn btn-outline-secondary border-0 rounded-pill" @click="applyMarkdown('italic')"><i>I</i></button>
+        <button v-if="!isMobile" class="btn btn-outline-secondary border-0 rounded-pill" @click="applyMarkdown('underline')"><u>U</u></button>
 
         <textarea
           class="form-control border rounded-pill"
@@ -292,7 +296,7 @@ function applyMarkdown(formatType) {
           @click="transmitNewMessage()"
           type="button"
         >
-          <i class="bi bi-send ms-4 me-4" style="font-size: 1.2rem"></i>
+          <i class="bi bi-send ms-2 me-2" style="font-size: 1.2rem"></i>
         </button>
       </div>
     </div>

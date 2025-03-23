@@ -3,6 +3,12 @@ import { setActivePinia } from 'pinia';
 import pinia from '../store/index';
 import { useStateStore } from '../store/stateStore.js';
 
+import { useIsMobile } from '../js/mobile_devices.js';
+const { isMobile } = useIsMobile(992);
+
+import { useChatStore } from '../store/chatStore.js';
+const chat = useChatStore(pinia);
+
 // Set the active Pinia store
 setActivePinia(pinia);
 
@@ -11,9 +17,13 @@ const state = useStateStore(pinia);
 </script>
 
 <template>
-  <nav class="navbar navbar-expand-xl bg-body-secondary border-top sticky-bottom border-1 p-2 col-11 col-lg-auto">
-
-    <div class="col">
+<nav
+  :class="[
+    'navbar bg-body-secondary border-top sticky-bottom border-1 p-2',
+    (isMobile && chat.selectedCallsign) ? 'col-11' : 'col-12',
+    'col-lg-auto'
+  ]">
+    <div class="col-lg-8 col-md-9 col-sm-10 col-xs-11 col-8">
       <div class="btn-toolbar" role="toolbar">
         <div class="btn-group btn-group-sm me-1" role="group">
           <button
@@ -162,7 +172,7 @@ const state = useStateStore(pinia);
       </div>
     </div>
 
-    <div class="col-lg-4 col-lg-3 col-sm-2 col-xs-1 col-4">
+    <div class="col-lg-4 col-md-3 col-sm-2 col-xs-1 col-1">
       <div class="progress w-100 bg-secondary me-2" style="height: 30px;">
         <div
           class="progress-bar progress-bar-striped bg-primary force-gpu"
@@ -173,11 +183,19 @@ const state = useStateStore(pinia);
           aria-valuemin="0"
           aria-valuemax="100"
         ></div>
-        <p class="justify-content-center m-0 d-flex position-absolute w-100 mt-1 text-light">
+        <p v-if="!isMobile" class="justify-content-center m-0 d-flex position-absolute w-100 mt-1 text-light">
           {{state.arq_transmission_percent}}% [ {{ state.arq_bytes_per_minute || '---' }}
     bpm / {{ state.arq_bits_per_second || '--' }}
     bps ]
         </p>
+
+        <p v-if="isMobile" class="justify-content-center m-0 d-flex position-absolute w-100 mt-1 text-light">
+          {{state.arq_transmission_percent}}%
+        </p>
+
+
+
+
       </div>
 
       <!-- TODO: This code block can be removed I think, DJ2LS -->
