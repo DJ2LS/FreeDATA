@@ -20,7 +20,7 @@ const state = useStateStore(pinia);
 <nav
   :class="[
     'navbar bg-body-secondary border-top sticky-bottom border-1 p-2',
-    (isMobile && chat.selectedCallsign) ? 'col-11' : 'col-12',
+    (isMobile && chat.selectedCallsign) ? 'col-12' : 'col-12',
     'col-lg-auto'
   ]">
     <div class="col-lg-8 col-md-9 col-sm-10 col-xs-11 col-8">
