@@ -31,10 +31,11 @@
           <div class="col-9 text-truncate">
             <strong>{{ callsign }}</strong>
             <span v-if="details.unread_messages > 0" class="ms-1 badge bg-danger">
-              {{ details.unread_messages }} new
+              {{ details.unread_messages }} {{ $t('chat.new') }}
             </span>
             <br />
-            <small>{{ sanitizeBody(details.body) || '<file>' }}</small>
+            <small>{{ sanitizeBody(details.body) || "\u003Cfile\u003E" }}</small>
+
           </div>
           <div class="col-3 text-end">
             <small>{{ getDateTime(details.timestamp) }}</small>

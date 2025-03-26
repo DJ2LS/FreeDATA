@@ -135,11 +135,6 @@ function resetChat() {
   </div>
 </div>
 
-
-
-
-
-
       </nav>
 
       <!-- Chat Messages Area -->
@@ -148,7 +143,7 @@ function resetChat() {
           <chat_messages />
         </div>
         <div v-else class="d-flex align-items-center justify-content-center h-100">
-          <p class="text-muted">Please select a chat</p>
+          <p class="text-muted">{{ $t('chat.selectChat') }}</p>
         </div>
       </div>
 
