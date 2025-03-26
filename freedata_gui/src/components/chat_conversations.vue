@@ -17,10 +17,9 @@
     id="chat-list-tab"
     role="tablist"
   >
-    <template v-for="(details, callsign, index) in chat.callsign_list" :key="callsign">
+    <template v-for="(details, callsign) in chat.callsign_list" :key="callsign">
       <a
         class="list-group-item list-group-item-action list-group-item-secondary rounded-2 border-0 mb-2"
-        :class="{ active: index === 0 }"
         :id="`list-chat-list-${callsign}`"
         data-bs-toggle="list"
         :href="`#list-${callsign}-messages`"
@@ -68,14 +67,6 @@ function chatSelected(callsign) {
   chat.triggerScrollToBottom();
   processBeaconData(callsign);
   setMessagesAsRead(callsign);
-
-
-  const currentIsMobile = window.innerWidth < 768;
-  console.log("Direct check isMobile:", currentIsMobile);
-
-
-console.log("Initial isMobile:", isMobile.value);
-
 }
 
 

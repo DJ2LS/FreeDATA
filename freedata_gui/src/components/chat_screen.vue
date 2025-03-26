@@ -144,8 +144,14 @@ function resetChat() {
 
       <!-- Chat Messages Area -->
       <div class="overflow-auto flex-grow-1" ref="messagesContainer" style="min-height: 0;">
-        <chat_messages />
+        <div v-if="chat.selectedCallsign">
+          <chat_messages />
+        </div>
+        <div v-else class="d-flex align-items-center justify-content-center h-100">
+          <p class="text-muted">Please select a chat</p>
+        </div>
       </div>
+
 
       <!-- New Message Input Area -->
       <div class="p-0">
