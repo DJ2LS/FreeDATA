@@ -17,6 +17,21 @@
     id="chat-list-tab"
     role="tablist"
   >
+
+
+    <!-- Show loading message if we're waiting -->
+    <div v-if="chat.loading" class="text-center p-2">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">{{ $t('chat.loadingMessages') }}</span>
+      </div>
+    </div>
+
+    <!-- Show 'no conversations' message if not loading and no conversations exist -->
+    <div v-else-if="!chat.callsign_list || Object.keys(chat.callsign_list).length === 0" class="text-center p-2">
+      {{ $t('chat.noConversations') }}
+    </div>
+
+
     <template v-for="(details, callsign) in chat.callsign_list" :key="callsign">
       <a
         class="list-group-item list-group-item-action list-group-item-secondary rounded-2 border-0 mb-2"

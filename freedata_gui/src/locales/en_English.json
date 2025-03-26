@@ -203,7 +203,9 @@
         "utc": "UTC",
         "adif": "ADIF",
         "new": "new",
-        "selectChat": "Please select or create a chat"
+        "selectChat": "Please select or create a chat",
+        "noConversations": "No conversations, yet",
+        "loadingMessages": "Loading messages..."
     },
     "settings": {
         "enable": "Enable",

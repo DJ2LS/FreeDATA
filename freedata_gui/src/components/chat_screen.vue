@@ -91,7 +91,7 @@ function resetChat() {
         class="border-start p-0 d-flex flex-column h-100"
       >
       <!-- Top Navbar -->
-      <nav class="navbar sticky-top z-0 bg-body-tertiary border-bottom p-1">
+      <nav v-if="chat.selectedCallsign" class="navbar sticky-top z-0 bg-body-tertiary border-bottom p-1">
         <div class="row align-items-center">
   <!-- Column for the callsign button -->
   <div class="col-auto">
@@ -149,7 +149,7 @@ function resetChat() {
 
 
       <!-- New Message Input Area -->
-      <div class="p-0">
+      <div v-if="chat.selectedCallsign" class="p-0">
         <chat_new_message />
       </div>
     </div>
