@@ -13,6 +13,8 @@ import {
   getFreedataMessageById,
   postFreedataMessageADIF,
 } from "./api";
+import {useIsMobile} from "@/js/mobile_devices";
+const { isMobile } = useIsMobile(768);
 
 /**
  * Process FreeDATA messages and update chat store.
@@ -23,9 +25,12 @@ export async function processFreedataMessages(data) {
     chatStore.callsign_list = createCallsignListFromAPI(data);
     chatStore.sorted_chat_list = createSortedMessagesList(data);
 
-    if (!chatStore.selectedCallsign) {
+    if (!chatStore.selectedCallsign && !isMobile) {
       chatStore.selectedCallsign = Object.keys(chatStore.sorted_chat_list)[0];
     }
+
+
+
   }
 }
 

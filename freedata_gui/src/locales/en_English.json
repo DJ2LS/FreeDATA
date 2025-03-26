@@ -201,7 +201,11 @@
         "entermessage_placeholder": "Message - Send with [Enter]",
         "attempt": "attempt",
         "utc": "UTC",
-        "adif": "ADIF"
+        "adif": "ADIF",
+        "new": "new",
+        "selectChat": "Please select or create a chat",
+        "noConversations": "No conversations, yet",
+        "loadingMessages": "Loading messages..."
     },
     "settings": {
         "enable": "Enable",

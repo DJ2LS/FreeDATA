@@ -1,9 +1,10 @@
 <template>
   <div class="tab-content p-3" id="nav-tabContent-chat-messages">
-    <template v-for="(details, callsign, key) in chat.callsign_list" :key="callsign">
+    <template v-for="(details, callsign) in chat.callsign_list" :key="callsign">
       <div
         class="tab-pane fade"
-        :class="{ active: key === 0, show: key === 0 }"
+
+        :class="{ 'active show': chat.selectedCallsign === callsign }"
         :id="`list-${callsign}-messages`"
         role="tabpanel"
         :aria-labelledby="`list-chat-list-${callsign}`"

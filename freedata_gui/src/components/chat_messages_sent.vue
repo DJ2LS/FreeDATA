@@ -81,34 +81,6 @@
             | <span class="badge text-bg-light mr-2"> {{ $t('chat.attempt') }}: {{ message.attempt + 1 }} </span>|<span class="badge text-bg-light mr-2"> {{ getDateTime }} {{ $t('chat.utc') }}</span>
           </p>
         </div>
-
-        <div
-          class="card-footer p-0 border-top-0"
-          v-if="message.percent < 100 || message.status === 'failed'"
-        >
-          <div
-            class="progress rounded-0 rounded-bottom"
-            hidden
-            :class="{
-              'bg-danger': message.status == 'failed',
-              'bg-primary': message.status == 'transmitting',
-              'bg-secondary': message.status == 'transmitted',
-              'bg-secondary': message.status == 'queued',
-            }"
-          >
-            <div
-              class="progress-bar progress-bar-striped overflow-visible"
-              role="progressbar"
-              :style="{ width: message.percent + '%', height: '10px' }"
-              :aria-valuenow="message.percent"
-              aria-valuemin="0"
-              aria-valuemax="100"
-            >
-              {{ message.percent }} % with {{ message.bytesperminute }} bpm (
-              {{ message.status }} )
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -198,9 +170,9 @@ export default {
     messageWidthClass() {
       // Calculate a Bootstrap grid class based on message length
       if (this.message.body.length <= 50) {
-        return "col-5";
+        return "col-7";
       } else if (this.message.body.length <= 100) {
-        return "col-6";
+        return "col-7";
       } else {
         return "col-8";
       }
