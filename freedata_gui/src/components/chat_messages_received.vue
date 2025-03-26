@@ -141,9 +141,9 @@ export default {
     messageWidthClass() {
       // Calculate a Bootstrap grid class based on message length
       if (this.message.body.length <= 50) {
-        return "col-4";
-      } else if (this.message.body.length <= 100) {
         return "col-6";
+      } else if (this.message.body.length <= 100) {
+        return "col-7";
       } else {
         return "col-9";
       }
