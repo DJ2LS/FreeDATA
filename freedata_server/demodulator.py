@@ -152,9 +152,11 @@ class Demodulator():
                 threading.Event().wait(0.01)
                 if audiobuffer.nbuffer >= nin and not self.shutdown_flag.is_set():
                     # demodulate audio
-                    nbytes = codec2.api.freedv_rawdatarx(
-                        freedv, bytes_out, audiobuffer.buffer.ctypes
-                    )
+                    if not self.states.isTransmitting():
+                        nbytes = codec2.api.freedv_rawdatarx(
+                            freedv, bytes_out, audiobuffer.buffer.ctypes
+                        )
+
                     # get current freedata_server states and write to list
                     # 1 trial
                     # 2 sync
