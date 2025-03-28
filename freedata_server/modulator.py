@@ -1,6 +1,8 @@
 import ctypes
 import codec2
 import structlog
+from codec2 import FREEDV_MODE
+from freedata_server.codec2 import FREEDV_ADVANCED_FSK
 
 
 class Modulator:
@@ -48,6 +50,8 @@ class Modulator:
         self.data_ofdm_500_tx = codec2.open_instance(codec2.FREEDV_MODE.data_ofdm_500.value)
         self.data_ofdm_1700_tx = codec2.open_instance(codec2.FREEDV_MODE.data_ofdm_1700.value)
         self.data_ofdm_2438_tx = codec2.open_instance(codec2.FREEDV_MODE.data_ofdm_2438.value)
+        self.data_vhf_1 = codec2.open_instance(codec2.FREEDV_MODE.data_vhf_1.value)
+
         #self.freedv_qam16c2_tx = codec2.open_instance(codec2.FREEDV_MODE.qam16c2.value)
         #self.data_qam_2438_tx = codec2.open_instance(codec2.FREEDV_MODE.data_qam_2438.value)
 
@@ -207,6 +211,7 @@ class Modulator:
             codec2.FREEDV_MODE.data_ofdm_2438: self.data_ofdm_2438_tx,
             #codec2.FREEDV_MODE.qam16c2: self.freedv_qam16c2_tx,
             #codec2.FREEDV_MODE.data_qam_2438: self.freedv_data_qam_2438_tx,
+            codec2.FREEDV_MODE.data_vhf_1: self.data_vhf_1
         }
         if mode in mode_transition:
             freedv = mode_transition[mode]
@@ -234,9 +239,11 @@ class Modulator:
 
             # Create modulation for all frames in the list
             for frame in frames:
-                txbuffer = self.transmit_add_preamble(txbuffer, freedv)
+                if self.MODE not in [FREEDV_MODE.data_vhf_1]:
+                    txbuffer = self.transmit_add_preamble(txbuffer, freedv)
                 txbuffer = self.transmit_create_frame(txbuffer, freedv, frame)
-                txbuffer = self.transmit_add_postamble(txbuffer, freedv)
+                if self.MODE not in [FREEDV_MODE.data_vhf_1]:
+                    txbuffer = self.transmit_add_postamble(txbuffer, freedv)
 
             # Add delay to end of frames
             txbuffer = self.transmit_add_silence(txbuffer, repeat_delay)

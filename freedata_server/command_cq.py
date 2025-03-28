@@ -17,3 +17,6 @@ class CQCommand(TxCommand):
             bytearray: The built CQ frame.
         """
         return self.frame_factory.build_cq()
+
+    def get_tx_mode(self):
+        return FREEDV_MODE.data_vhf_1
