@@ -158,14 +158,11 @@ class FrameHandler():
         """
         origin_callsign = self.details["frame"]["origin"]
 
-        # Remove the suffix after the hyphen if it exists
-        if '-' in origin_callsign:
-            origin_callsign = origin_callsign.split('-')[0]
-
         for blacklist_callsign in self.config["STATION"]["callsign_blacklist"]:
+            if helpers.get_crc_24(origin_callsign).hex() == helpers.get_crc_24(blacklist_callsign).hex():
+                return True
 
-            # Check if both callsigns have the same length and then check for an exact match
-            if len(origin_callsign) == len(blacklist_callsign) and origin_callsign == blacklist_callsign:
+            if origin_callsign == blacklist_callsign or origin_callsign.startswith(blacklist_callsign):
                 return True
         return False
 
@@ -354,6 +351,7 @@ class FrameHandler():
         Returns:
             bool: True if the frame was processed successfully, False if it was blocked due to blacklisting.
         """
+
         self.details['frame'] = frame
         self.details['snr'] = snr
         self.details['frequency_offset'] = frequency_offset
