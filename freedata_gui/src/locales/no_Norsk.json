@@ -107,8 +107,8 @@
             "broadcasts": "Sendinger",
             "transmitting": "Sender...",
             "pingstation": "PING stasjon",
-            "sendingping": "Sending PING...",
             "sendingcq": "Sender CQ...",
+            "sendingping": "Sending PING...",
             "callcq": "Send CQ",
             "cqcqcq": "CQ CQ CQ",
             "togglebeacon": "veksle beacon",
@@ -197,7 +197,11 @@
         "entermessage_placeholder": "Melding - Send med [Enter]",
         "attempt": "forsøk",
         "utc": "UTC",
-        "adif": "ADIF"
+        "adif": "ADIF",
+        "new": "ny",
+        "selectChat": "Velg eller start en ny chat",
+        "noConversations": "Ingen meldinger...",
+        "loadingMessages": "Henter meldinger..."
     },
     "settings": {
         "enable": "Aktiver",
