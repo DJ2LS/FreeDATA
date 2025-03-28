@@ -156,6 +156,8 @@ class Demodulator():
                         nbytes = codec2.api.freedv_rawdatarx(
                             freedv, bytes_out, audiobuffer.buffer.ctypes
                         )
+                    else:
+                        nbytes = 0
 
                     # get current freedata_server states and write to list
                     # 1 trial
