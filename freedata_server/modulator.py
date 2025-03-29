@@ -2,7 +2,7 @@ import ctypes
 import codec2
 import structlog
 from codec2 import FREEDV_MODE
-from freedata_server.codec2 import FREEDV_ADVANCED_FSK
+from codec2 import FREEDV_ADVANCED_FSK
 
 
 class Modulator:
@@ -239,11 +239,11 @@ class Modulator:
 
             # Create modulation for all frames in the list
             for frame in frames:
-                if self.MODE not in [FREEDV_MODE.data_vhf_1]:
-                    txbuffer = self.transmit_add_preamble(txbuffer, freedv)
+                #if self.MODE not in [FREEDV_MODE.data_vhf_1]:
+                txbuffer = self.transmit_add_preamble(txbuffer, freedv)
                 txbuffer = self.transmit_create_frame(txbuffer, freedv, frame)
-                if self.MODE not in [FREEDV_MODE.data_vhf_1]:
-                    txbuffer = self.transmit_add_postamble(txbuffer, freedv)
+                #if self.MODE not in [FREEDV_MODE.data_vhf_1]:
+                txbuffer = self.transmit_add_postamble(txbuffer, freedv)
 
             # Add delay to end of frames
             txbuffer = self.transmit_add_silence(txbuffer, repeat_delay)

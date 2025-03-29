@@ -576,13 +576,13 @@ def create_default_fsk_config():
         )
 
 data_vhf_1_config = create_default_fsk_config()
-data_vhf_1_config.interleave_frames = 0
+data_vhf_1_config.interleave_frames = 1
 data_vhf_1_config.M = 4
-data_vhf_1_config.Rs = 1000
+data_vhf_1_config.Rs = 200
 data_vhf_1_config.Fs = 8000
-data_vhf_1_config.first_tone = 1150
-data_vhf_1_config.tone_spacing = 200
-data_vhf_1_config.codename = "H_1024_2048_4f".encode("utf-8")
+data_vhf_1_config.first_tone = 1500
+data_vhf_1_config.tone_spacing = 400
+data_vhf_1_config.codename = "H_256_512_4".encode("utf-8")
 
 # ---------------- OFDM 500 Hz Bandwidth ---------------#
 
