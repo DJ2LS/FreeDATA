@@ -55,7 +55,7 @@
     "@vue/cli-plugin-babel": "~5.0.8",
     "@vue/cli-plugin-eslint": "~5.0.8",
     "@vue/cli-service": "~5.0.8",
-    "eslint": "^8.0.0",
+    "eslint": "^9.23.0",
     "eslint-plugin-vue": "^9.28.0",
     "globals": "^16.0.0"
   },
