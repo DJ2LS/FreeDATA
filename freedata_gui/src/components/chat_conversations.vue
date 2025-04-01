@@ -127,10 +127,27 @@ function getDateTime(input) {
     date = new Date(input);
   }
 
-  const hours = date.getHours().toString().padStart(2, '0');
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  return `${hours}:${minutes}`;
+  const now = new Date();
+  const isSameDay = date.getDate() === now.getDate() &&
+                    date.getMonth() === now.getMonth() &&
+                    date.getFullYear() === now.getFullYear();
+
+  if (isSameDay) {
+    // Use the browser's locale to format time only
+    return date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  } else {
+    // Use the browser's locale to format both date and time
+    const datePart = date.toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: 'numeric' });
+    //const timePart = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    //return `${datePart} ${timePart}`;
+    return `${datePart}`;
+  }
 }
+
+
+
+
+
 
 
 function newChat() {

@@ -47,13 +47,14 @@ setActivePinia(pinia);
 const chat = useChatStore(pinia);
 
 function getDate(timestampRaw) {
-  // Parsing the timestamp and returning the date part as YYYY-MM-DD
   const date = new Date(timestampRaw);
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return date.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
 }
+
 
 function showDateSeparator(index, currentTimestamp, messages) {
   if (index === 0) return true; // Always show the date for the first message
