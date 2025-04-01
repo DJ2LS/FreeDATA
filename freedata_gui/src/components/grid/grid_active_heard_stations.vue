@@ -44,33 +44,33 @@ function pushToPing(origin) {
   );
 }
 
-function getActivityInfo(activityType) {
-  switch (activityType) {
-    case 'ARQ_SESSION_INFO':
-    case 'ARQ_SESSION_OPEN':
-    case 'ARQ_SESSION_OPEN_ACK':
-    case 'ARQ_BURST':
-    case 'ARQ_BURST_ACK':
-      return { iconClass: 'bi bi-file-earmark-binary', description: activityType };
-    case 'P2P_CONNECTION_CONNECT':
-    case 'P2P_CONNECTION_CONNECT_ACK':
-    case 'P2P_CONNECTION_PAYLOAD':
-    case 'P2P_CONNECTION_PAYLOAD_ACK':
-    case 'P2P_CONNECTION_DISCONNECT':
-    case 'P2P_CONNECTION_DISCONNECT_ACK':
+const activityIcons = {
+  ARQ_SESSION_INFO: 'bi bi-file-earmark-binary',
+  ARQ_SESSION_OPEN: 'bi bi-file-earmark-binary',
+  ARQ_SESSION_OPEN_ACK: 'bi bi-file-earmark-binary',
+  ARQ_BURST: 'bi bi-file-earmark-binary',
+  ARQ_BURST_ACK: 'bi bi-file-earmark-binary',
+  P2P_CONNECTION_CONNECT: 'bi bi-arrow-left-right',
+  P2P_CONNECTION_CONNECT_ACK: 'bi bi-arrow-left-right',
+  P2P_CONNECTION_PAYLOAD: 'bi bi-arrow-left-right',
+  P2P_CONNECTION_PAYLOAD_ACK: 'bi bi-arrow-left-right',
+  P2P_CONNECTION_DISCONNECT: 'bi bi-arrow-left-right',
+  P2P_CONNECTION_DISCONNECT_ACK: 'bi bi-arrow-left-right',
+  QRV: 'bi bi-person-raised-hand',
+  CQ: 'bi bi-megaphone',
+  BEACON: 'bi bi-globe',
+  PING_ACK: 'bi bi-check-square'
+};
 
-      return { iconClass: 'bi bi-arrow-left-right', description: activityType };
-    case 'QRV':
-      return { iconClass: 'bi bi-person-raised-hand', description: activityType };
-    case 'CQ':
-      return { iconClass: 'bi bi-megaphone', description: activityType };
-    case 'BEACON':
-      return { iconClass: 'bi bi-globe', description: activityType };
-    case 'PING_ACK':
-      return { iconClass: 'bi bi-check-square', description: activityType };
-    default:
-      return { iconClass: '', description: activityType };
+function getActivityInfo(activityType) {
+  if (!activityType) {
+    return { iconClass: 'bi bi-question-circle', description: 'Unknown activity' };
   }
+
+  return {
+    iconClass: activityIcons[activityType] || 'bi bi-question-circle',
+    description: activityType
+  };
 }
 
 function startNewChat(callsign) {
