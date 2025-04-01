@@ -49,7 +49,7 @@
               {{ details.unread_messages }} {{ $t('chat.new') }}
             </span>
             <br />
-            <small>{{ sanitizeBody(details.body) || "\u003Cfile\u003E" }}</small>
+            <small>{{ sanitizeBody(details.body.substring(0, 35) + '...') || "\u003Cfile\u003E" }}</small>
 
           </div>
           <div class="col-3 text-end">
