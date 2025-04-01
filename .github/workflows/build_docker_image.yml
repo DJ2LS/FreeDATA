@@ -1,18 +1,45 @@
-name: Build and push docker image when tagged
-on:
-  push:
-    tags:
-      - "*"
+name: Build and Release Docker Image
+on: [push]
+
 
 jobs:
-  build-and-release:
+  build:
     runs-on: ubuntu-latest
+    name: Build image and upload artifact
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Build a single-architecture image (using linux/amd64) so we can load it locally.
+      - name: Build Docker image for artifact
+        run: |
+          docker buildx build --platform linux/amd64 --load -t ghcr.io/dj2ls/freedata:latest .
+
+      # Save the built image as a tarball.
+      - name: Save Docker image to tar file
+        run: |
+          docker save ghcr.io/dj2ls/freedata:latest -o freedata.tar
+
+      # Upload the image tarball as an artifact.
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: freedata-image
+          path: freedata.tar
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    name: Build and Publish Release
     permissions:
       packages: write
       contents: read
-
     steps:
-      - name: Clone Repo
+      - name: Checkout Repo
         uses: actions/checkout@v4
 
       - name: Set up QEMU
@@ -21,14 +48,14 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to the GitHub Container registry
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker images
+      - name: Build and push multi-arch Docker images
         uses: docker/build-push-action@v5
         with:
           context: .
