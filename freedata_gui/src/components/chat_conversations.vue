@@ -43,7 +43,7 @@
         @click="chatSelected(callsign)"
       >
         <div class="row">
-          <div class="col-9 text-truncate">
+          <div class="col-7 text-truncate">
             <strong>{{ callsign }}</strong>
             <span v-if="details.unread_messages > 0" class="ms-1 badge bg-danger">
               {{ details.unread_messages }} {{ $t('chat.new') }}
@@ -52,7 +52,7 @@
             <small>{{ sanitizeBody(details.body.substring(0, 35) + '...') || "\u003Cfile\u003E" }}</small>
 
           </div>
-          <div class="col-3 text-end">
+          <div class="col-5 text-end">
             <small>{{ getDateTime(details.timestamp) }}</small>
 
           </div>
