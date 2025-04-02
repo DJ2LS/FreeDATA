@@ -87,7 +87,7 @@ function resetChat() {
      <!-- On mobile: Show if a chat is selected; On desktop: Always show -->
       <div
         v-if="!isMobile || chat.selectedCallsign"
-        :class="isMobile ? 'col-12' : 'col-lg-8 col-xl-9'"
+        :class="isMobile ? 'col-12' : 'col-lg-9 col-xl-9'"
         class="border-start p-0 d-flex flex-column h-100"
       >
       <!-- Top Navbar -->
