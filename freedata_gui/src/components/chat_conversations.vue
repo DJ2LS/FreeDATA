@@ -7,35 +7,45 @@
       data-bs-toggle="modal"
       @click="startNewChat"
     >
-      <i class="bi bi-pencil-square"></i> {{ $t('chat.startnewchat') }}
+      <i class="bi bi-pencil-square" /> {{ $t('chat.startnewchat') }}
     </button>
   </nav>
 
   <!-- List of chats -->
   <div
-    class="list-group m-0 p-1"
     id="chat-list-tab"
+    class="list-group m-0 p-1"
     role="tablist"
   >
-
-
     <!-- Show loading message if we're waiting -->
-    <div v-if="chat.loading" class="text-center p-2">
-      <div class="spinner-border" role="status">
+    <div
+      v-if="chat.loading"
+      class="text-center p-2"
+    >
+      <div
+        class="spinner-border"
+        role="status"
+      >
         <span class="visually-hidden">{{ $t('chat.loadingMessages') }}</span>
       </div>
     </div>
 
     <!-- Show 'no conversations' message if not loading and no conversations exist -->
-    <div v-else-if="!chat.callsign_list || Object.keys(chat.callsign_list).length === 0" class="text-center p-2">
+    <div
+      v-else-if="!chat.callsign_list || Object.keys(chat.callsign_list).length === 0"
+      class="text-center p-2"
+    >
       {{ $t('chat.noConversations') }}
     </div>
 
 
-    <template v-for="(details, callsign) in chat.callsign_list" :key="callsign">
+    <template
+      v-for="(details, callsign) in chat.callsign_list"
+      :key="callsign"
+    >
       <a
-        class="list-group-item list-group-item-action list-group-item-secondary rounded-2 border-0 mb-2"
         :id="`list-chat-list-${callsign}`"
+        class="list-group-item list-group-item-action list-group-item-secondary rounded-2 border-0 mb-2"
         data-bs-toggle="list"
         :href="`#list-${callsign}-messages`"
         role="tab"
@@ -45,10 +55,13 @@
         <div class="row">
           <div class="col-7 text-truncate">
             <strong>{{ callsign }}</strong>
-            <span v-if="details.unread_messages > 0" class="ms-1 badge bg-danger">
+            <span
+              v-if="details.unread_messages > 0"
+              class="ms-1 badge bg-danger"
+            >
               {{ details.unread_messages }} {{ $t('chat.new') }}
             </span>
-            <br />
+            <br>
             <small>{{ sanitizeBody(details.body.substring(0, 35) + '...') || "\u003Cfile\u003E" }}</small>
 
           </div>

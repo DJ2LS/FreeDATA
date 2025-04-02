@@ -6,7 +6,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "npm i && vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "npx eslint ."
   },
   "repository": {
     "type": "git",
@@ -52,26 +52,10 @@
     "@babel/core": "^7.25.2",
     "@babel/eslint-parser": "^7.25.1",
     "@eslint/js": "^9.10.0",
-    "@vue/cli-plugin-babel": "~5.0.8",
-    "@vue/cli-plugin-eslint": "~5.0.8",
     "@vue/cli-service": "~5.0.8",
-    "eslint": "^8.0.0",
-    "eslint-plugin-vue": "^9.28.0",
+    "eslint": "^9.0.0",
+    "eslint-plugin-vue": "^10.0.0",
     "globals": "^16.0.0"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/vue3-essential",
-      "eslint:recommended"
-    ],
-    "parserOptions": {
-      "parser": "@babel/eslint-parser"
-    },
-    "rules": {}
   },
   "browserslist": [
     "> 1%",

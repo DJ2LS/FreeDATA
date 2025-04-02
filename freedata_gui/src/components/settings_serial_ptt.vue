@@ -9,48 +9,48 @@
         data-bs-toggle="tooltip"
         :title="$t('settings.radio.serialpttcomport_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <select
+      v-model="settings.remote.RADIO.ptt_port"
       class="form-select form-select-sm w-50"
       @change="onChange"
-      v-model="settings.remote.RADIO.ptt_port"
     >
       <option
         v-for="device in serialStore.serialDevices"
-        :value="device.port"
         :key="device.port"
+        :value="device.port"
       >
         {{ device.description }}
       </option>
     </select>
   </div>
 
-          <!-- Radio Custom Port -->
-    <div class="input-group input-group-sm mb-1">
-      <label class="input-group-text w-50 text-wrap">
-        {{ $t('settings.radio.serialpttcustomcomport') }}
-        <button
-          type="button"
-          class="btn btn-link p-0 ms-2"
-          data-bs-toggle="tooltip"
-          :title="$t('settings.radio.serialpttcustomcomport_help')"
-        >
-          <i class="bi bi-question-circle"></i>
-        </button>
-      </label>
+  <!-- Radio Custom Port -->
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50 text-wrap">
+      {{ $t('settings.radio.serialpttcustomcomport') }}
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        :title="$t('settings.radio.serialpttcustomcomport_help')"
+      >
+        <i class="bi bi-question-circle" />
+      </button>
+    </label>
 
-      <input
-        type="text"
-        class="form-control"
-        placeholder="settings.remote.RADIO.ptt_port.port"
-        id="rigctldIp"
-        aria-label="Rigctld IP"
-        @change="onChange"
-        v-model="settings.remote.RADIO.ptt_port"
-      />
-    </div>
+    <input
+      id="rigctldIp"
+      v-model="settings.remote.RADIO.ptt_port"
+      type="text"
+      class="form-control"
+      placeholder="settings.remote.RADIO.ptt_port.port"
+      aria-label="Rigctld IP"
+      @change="onChange"
+    >
+  </div>
   <!-- PTT via DTR Selector -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
@@ -61,18 +61,24 @@
         data-bs-toggle="tooltip"
         :title="$t('settings.radio.serialpttviadtr_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <select
-      class="form-select form-select-sm w-50"
       id="pttDtrSelect"
-      @change="onChange"
       v-model="settings.remote.RADIO.serial_dtr"
+      class="form-select form-select-sm w-50"
+      @change="onChange"
     >
-      <option value="ignore">-- Disabled --</option>
-      <option value="OFF">LOW</option>
-      <option value="ON">HIGH</option>
+      <option value="ignore">
+        -- Disabled --
+      </option>
+      <option value="OFF">
+        LOW
+      </option>
+      <option value="ON">
+        HIGH
+      </option>
     </select>
   </div>
 
@@ -86,18 +92,24 @@
         data-bs-toggle="tooltip"
         :title="$t('settings.radio.serialpttviarts_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <select
-      class="form-select form-select-sm w-50"
       id="pttRtsSelect"
-      @change="onChange"
       v-model="settings.remote.RADIO.serial_rts"
+      class="form-select form-select-sm w-50"
+      @change="onChange"
     >
-      <option value="ignore">-- Disabled --</option>
-      <option value="OFF">LOW</option>
-      <option value="ON">HIGH</option>
+      <option value="ignore">
+        -- Disabled --
+      </option>
+      <option value="OFF">
+        LOW
+      </option>
+      <option value="ON">
+        HIGH
+      </option>
     </select>
   </div>
 </template>

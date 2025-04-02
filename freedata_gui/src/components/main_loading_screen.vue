@@ -1,7 +1,7 @@
 <!-- src/components/main_loading_screen.vue -->
 <template>
   <div class="loading-screen">
-    <div class="spinner"></div>
+    <div class="spinner" />
     <p>Loading...</p>
   </div>
 </template>

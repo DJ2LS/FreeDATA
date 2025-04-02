@@ -1,19 +1,26 @@
 <template>
   <main_modals />
 
-  <div aria-live="polite" aria-atomic="true" class="position-relative z-3">
+  <div
+    aria-live="polite"
+    aria-atomic="true"
+    class="position-relative z-3"
+  >
     <div
-      class="toast-container position-absolute top-0 end-0 p-3"
       id="mainToastContainer"
-    ></div>
+      class="toast-container position-absolute top-0 end-0 p-3"
+    />
   </div>
 
   <div class="container-fluid d-flex flex-column min-vh-100">
     <div class="row flex-nowrap flex-grow-1">
       <!-- Left Navbar -->
-      <div class="col-1 col-lg-auto p-0 bg-body-secondary border-end d-flex flex-column" style="min-width: 65px;">
+      <div
+        class="col-1 col-lg-auto p-0 bg-body-secondary border-end d-flex flex-column"
+        style="min-width: 65px;"
+      >
         <div class="flex-shrink-0 m-1 m-lg-3">
-            <main_left_navbar />
+          <main_left_navbar />
         </div>
       </div>
 
@@ -23,24 +30,24 @@
           <div class="tab-content flex-grow-1">
             <!-- Tab Panes -->
             <div
-              class="tab-pane fade show active"
               id="list-grid"
+              class="tab-pane fade show active"
               role="tabpanel"
               aria-labelledby="list-grid-list"
             >
               <Dynamic_components />
             </div>
             <div
-              class="tab-pane fade"
               id="list-chat"
+              class="tab-pane fade"
               role="tabpanel"
               aria-labelledby="list-chat-list"
             >
               <chat />
             </div>
             <div
-              class="tab-pane fade"
               id="list-settings"
+              class="tab-pane fade"
               role="tabpanel"
               aria-labelledby="list-settings-list"
             >
