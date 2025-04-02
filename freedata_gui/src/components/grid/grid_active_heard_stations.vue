@@ -87,24 +87,70 @@ function transmitPing(callsign) {
   <div class="card h-100">
     <!--325px-->
     <div class="card-header">
-      <i class="bi bi-list-columns-reverse" style="font-size: 1.2rem"></i>&nbsp;
+      <i
+        class="bi bi-list-columns-reverse"
+        style="font-size: 1.2rem"
+      />&nbsp;
       <strong>{{ $t('grid.components.heardstations') }}</strong>
     </div>
 
     <div class="card-body overflow-auto p-0">
       <div class="table-responsive">
         <!-- START OF TABLE FOR HEARD STATIONS -->
-        <table class="table table-sm table-striped" id="tblHeardStationList">
+        <table
+          id="tblHeardStationList"
+          class="table table-sm table-striped"
+        >
           <thead>
             <tr>
-              <th scope="col" id="thTime">{{ $t('grid.components.time') }}</th>
-              <th scope="col" id="thFreq">{{ $t('grid.components.freq') }}</th>
-              <th scope="col" id="thDxcall">{{ $t('grid.components.dxcall') }}</th>
-              <th scope="col" id="thDxgrid">{{ $t('grid.components.grid') }}</th>
-              <th scope="col" id="thDist">{{ $t('grid.components.dist') }}</th>
-              <th scope="col" id="thType">{{ $t('grid.components.type') }}</th>
-              <th scope="col" id="thSnr">{{ $t('grid.components.snr') }}</th>
-              <th scope="col" id="thSnr">{{ $t('grid.components.afk') }}</th>
+              <th
+                id="thTime"
+                scope="col"
+              >
+                {{ $t('grid.components.time') }}
+              </th>
+              <th
+                id="thFreq"
+                scope="col"
+              >
+                {{ $t('grid.components.freq') }}
+              </th>
+              <th
+                id="thDxcall"
+                scope="col"
+              >
+                {{ $t('grid.components.dxcall') }}
+              </th>
+              <th
+                id="thDxgrid"
+                scope="col"
+              >
+                {{ $t('grid.components.grid') }}
+              </th>
+              <th
+                id="thDist"
+                scope="col"
+              >
+                {{ $t('grid.components.dist') }}
+              </th>
+              <th
+                id="thType"
+                scope="col"
+              >
+                {{ $t('grid.components.type') }}
+              </th>
+              <th
+                id="thSnr"
+                scope="col"
+              >
+                {{ $t('grid.components.snr') }}
+              </th>
+              <th
+                id="thSnr"
+                scope="col"
+              >
+                {{ $t('grid.components.afk') }}
+              </th>
             </tr>
           </thead>
           <tbody id="gridHeardStations">
@@ -115,8 +161,7 @@ function transmitPing(callsign) {
               @click="pushToPing(item.origin)"
             >
               <td>
-                                  <span class="badge text-bg-secondary">{{ getDateTime(item.timestamp) }}</span>
-
+                <span class="badge text-bg-secondary">{{ getDateTime(item.timestamp) }}</span>
               </td>
               <td><small>{{ item.frequency / 1000 }} kHz</small></td>
               <td>
@@ -124,8 +169,8 @@ function transmitPing(callsign) {
                   class="btn btn-sm btn-outline-secondary ms-2 border-0"
                   data-bs-target="#dxStationInfoModal"
                   data-bs-toggle="modal"
-                  @click="getStationInfoByCallsign(item.origin)"
                   disabled
+                  @click="getStationInfoByCallsign(item.origin)"
                 >
                   <span class="badge text-bg-primary">{{ item.origin }}</span>
                 </button>
@@ -139,7 +184,7 @@ function transmitPing(callsign) {
                   :title="$t('grid.components.newmessage_help')"
                   @click="startNewChat(item.origin)"
                 >
-                  <i class="bi bi-pencil-square"></i>
+                  <i class="bi bi-pencil-square" />
                 </button>
 
                 <button
@@ -151,7 +196,7 @@ function transmitPing(callsign) {
                   :data-bs-title="$t('grid.components.ping_help')"
                   @click="transmitPing(item.origin)"
                 >
-                  <i class="bi bi-arrow-left-right"></i>
+                  <i class="bi bi-arrow-left-right" />
                 </button>
               </td>
               <td>
@@ -163,14 +208,20 @@ function transmitPing(callsign) {
                   :class="getActivityInfo(item.activity_type).iconClass"
                   data-bs-toggle="tooltip"
                   :title="getActivityInfo(item.activity_type).description"
-                ></i>
+                />
               </td>
               <td>
                 <small>{{ item.snr }}</small>
               </td>
               <td>
-                <i v-if="item.away_from_key" class="bi bi-house-x"></i>
-                <i v-else class="bi bi-house-check-fill"></i>
+                <i
+                  v-if="item.away_from_key"
+                  class="bi bi-house-x"
+                />
+                <i
+                  v-else
+                  class="bi bi-house-check-fill"
+                />
               </td>
             </tr>
           </tbody>
