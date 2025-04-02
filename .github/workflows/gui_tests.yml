@@ -16,8 +16,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - node-version: "16"
-          - node-version: "18"
+          #- node-version: "16" # EOL
+          #- node-version: "18" # EOL
           - node-version: "20"
           - node-version: "22"
 

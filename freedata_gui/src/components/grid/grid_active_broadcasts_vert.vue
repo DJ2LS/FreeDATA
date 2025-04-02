@@ -71,7 +71,10 @@ window.addEventListener(
 <template>
   <div class="card h-100">
     <div class="card-header">
-      <i class="bi bi-broadcast" style="font-size: 1.2rem"></i>&nbsp;
+      <i
+        class="bi bi-broadcast"
+        style="font-size: 1.2rem"
+      />&nbsp;
       <strong>{{ $t('grid.components.broadcasts') }}</strong>
     </div>
     <div class="card-body overflow-auto p-0">
@@ -81,28 +84,28 @@ window.addEventListener(
             <div class="input-group w-100">
               <div class="form-floating">
                 <input
+                  id="floatingInput"
+                  v-model="dxcallPing"
                   type="text"
                   class="form-control"
                   style="text-transform: uppercase"
-                  id="floatingInput"
                   placeholder="dx-callsign"
-                  v-model="dxcallPing"
                   maxlength="11"
                   pattern="[A-Z]*"
-                />
+                >
                 <label for="floatingInput">{{ $t('grid.components.dxcall') }}</label>
               </div>
               <button
-                class="btn btn-sm btn-outline-secondary"
                 id="sendPing"
+                class="btn btn-sm btn-outline-secondary"
                 type="button"
                 data-bs-placement="bottom"
                 data-bs-toggle="tooltip"
                 data-bs-trigger="hover"
                 data-bs-html="false"
                 :title="$t('grid.components.ping_help') "
-                @click="transmitPing"
                 :disabled="isPingButtonDisabled"
+                @click="transmitPing"
               >
                 <strong v-if="!isPingButtonDisabled">{{ $t('grid.components.pingstation') }}</strong>
                 <strong v-else>{{ $t('grid.components.sendingping') }}</strong>
@@ -114,12 +117,12 @@ window.addEventListener(
         <div class="row">
           <div class="col">
             <button
-              class="btn btn-sm btn-outline-secondary w-100"
               id="sendCQ"
+              class="btn btn-sm btn-outline-secondary w-100"
               type="button"
               :title=" $t('grid.components.cqcqcq_help')"
-              @click="handleSendCQ"
               :disabled="isCQButtonDisabled"
+              @click="handleSendCQ"
             >
               <h3>
                 <span v-if="!isCQButtonDisabled">{{ $t('grid.components.cqcqcq') }}</span>
@@ -133,28 +136,34 @@ window.addEventListener(
           <div class="col">
             <div class="form-check form-switch">
               <input
+                id="flexSwitchBeacon"
+                v-model="state.beacon_state"
                 class="form-check-input"
                 type="checkbox"
                 role="switch"
-                id="flexSwitchBeacon"
-                v-model="state.beacon_state"
                 @click="startStopBeacon"
-              />
-              <label class="form-check-label" for="flexSwitchBeacon">{{ $t('grid.components.enablebeacon') }}</label>
+              >
+              <label
+                class="form-check-label"
+                for="flexSwitchBeacon"
+              >{{ $t('grid.components.enablebeacon') }}</label>
             </div>
           </div>
 
           <div class="col">
             <div class="form-check form-switch">
               <input
+                id="flexSwitchAFK"
+                v-model="state.away_from_key"
                 class="form-check-input"
                 type="checkbox"
                 role="switch"
-                id="flexSwitchAFK"
-                v-model="state.away_from_key"
                 @change="setAwayFromKey"
-              />
-              <label class="form-check-label" for="flexSwitchAFK">{{ $t('grid.components.awayfromkey') }}</label>
+              >
+              <label
+                class="form-check-label"
+                for="flexSwitchAFK"
+              >{{ $t('grid.components.awayfromkey') }}</label>
             </div>
           </div>
         </div>

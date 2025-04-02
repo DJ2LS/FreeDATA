@@ -1,20 +1,53 @@
 <template>
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-      <div class="btn-group btn-group-sm rounded" role="group">
-        <button @click="zoomIn" class="btn btn-sm btn-outline-secondary"><i class="bi bi-plus-square"></i></button>
-        <button @click="centerMap" class="btn btn-sm btn-secondary"><i class="bi bi-house-door"></i></button>
-        <button @click="zoomOut" class="btn btn-sm btn-outline-secondary"><i class="bi bi-dash-square"></i></button>
-
+      <div
+        class="btn-group btn-group-sm rounded"
+        role="group"
+      >
+        <button
+          class="btn btn-sm btn-outline-secondary"
+          @click="zoomIn"
+        >
+          <i class="bi bi-plus-square" />
+        </button>
+        <button
+          class="btn btn-sm btn-secondary"
+          @click="centerMap"
+        >
+          <i class="bi bi-house-door" />
+        </button>
+        <button
+          class="btn btn-sm btn-outline-secondary"
+          @click="zoomOut"
+        >
+          <i class="bi bi-dash-square" />
+        </button>
       </div>
-<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
       <div class="input-group input-group-sm ms-2">
-        <input type="text" class="form-control w-100" placeholder="Station" aria-label="Username" aria-describedby="basic-addon1" v-model="infoText" disabled>
+        <input
+          v-model="infoText"
+          type="text"
+          class="form-control w-100"
+          placeholder="Station"
+          aria-label="Username"
+          aria-describedby="basic-addon1"
+          disabled
+        >
       </div>
     </div>
     <div class="card-body p-0">
-      <div ref="mapContainer" class="map-container"></div>
-      <div :style="popupStyle" class="popup">{{ infoText }}</div>
+      <div
+        ref="mapContainer"
+        class="map-container"
+      />
+      <div
+        :style="popupStyle"
+        class="popup"
+      >
+        {{ infoText }}
+      </div>
     </div>
   </div>
 </template>
