@@ -5,6 +5,8 @@ import structlog
 import threading
 import audio
 import itertools
+from audio_buffer import CircularBuffer
+
 
 TESTMODE = False
 
@@ -84,7 +86,10 @@ class Demodulator():
         codec2.api.freedv_set_frames_per_burst(c2instance, 1)
 
         # init audio buffer
-        audio_buffer = codec2.audio_buffer(2 * self.AUDIO_FRAMES_PER_BUFFER_RX)
+        #audio_buffer = codec2.audio_buffer(2 * self.AUDIO_FRAMES_PER_BUFFER_RX)
+        audio_buffer = CircularBuffer(2 * self.AUDIO_FRAMES_PER_BUFFER_RX)
+
+
 
         # get initial nin
         nin = codec2.api.freedv_nin(c2instance)
