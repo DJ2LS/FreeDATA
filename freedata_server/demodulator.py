@@ -58,6 +58,7 @@ class Demodulator():
         # enable decoding of signalling modes
         self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
         self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
+        self.MODE_DICT[codec2.FREEDV_MODE.data_ofdm_2438.value]["decode"] = True
 
 
     def init_codec2(self):
@@ -87,7 +88,7 @@ class Demodulator():
 
         # init audio buffer
         #audio_buffer = codec2.audio_buffer(2 * self.AUDIO_FRAMES_PER_BUFFER_RX)
-        audio_buffer = CircularBuffer(2 * self.AUDIO_FRAMES_PER_BUFFER_RX)
+        audio_buffer = CircularBuffer(2*self.AUDIO_FRAMES_PER_BUFFER_RX)
 
 
 
