@@ -42,18 +42,7 @@ class CircularBuffer:
             self.cond.notify_all()
 
     def pop(self, n):
-        """Pop samples from the buffer.
-
-        Args:
-            n: The number of samples to pop from the buffer.
-
-        Returns:
-            A NumPy array containing the popped samples.
-
-        Blocks until there are enough samples in the buffer.
-        """
         with self.cond:
-            # Block until enough samples are available.
             while self.nbuffer < n:
                 self.cond.wait()
             end_space = self.size - self.head
@@ -64,7 +53,18 @@ class CircularBuffer:
                     self.buffer[self.head:].copy(),
                     self.buffer[:n - end_space].copy()
                 ))
+            # Update head and count.
             self.head = (self.head + n) % self.size
             self.nbuffer -= n
+            if self.nbuffer > 0:
+                # Reassemble the valid data contiguously at the start.
+                if self.head + self.nbuffer <= self.size:
+                    self.buffer[:self.nbuffer] = self.buffer[self.head:self.head + self.nbuffer]
+                else:
+                    part1 = self.size - self.head
+                    self.buffer[:part1] = self.buffer[self.head:]
+                    self.buffer[part1:self.nbuffer] = self.buffer[:self.nbuffer - part1]
+                self.head = 0
+                self.tail = self.nbuffer
             self.cond.notify_all()
             return result
