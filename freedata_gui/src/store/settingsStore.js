@@ -12,8 +12,8 @@ const defaultConfig = {
     grid_layout: "[]",
     grid_preset: "[]",
     grid_enabled: true,
-    language:"en",
-    colormode:"light"
+    language: "en",
+    colormode: "light",
   },
   remote: {
     AUDIO: {
