@@ -4,10 +4,11 @@ import serial_ptt
 import threading
 
 class RadioManager:
-    def __init__(self, config, state_manager, event_manager):
+    def __init__(self, config, state_manager, event_manager, socket_interface_manager):
         self.config = config
         self.state_manager = state_manager
         self.event_manager = event_manager
+        self.socket_interface_manager = socket_interface_manager
 
         self.radiocontrol = config['RADIO']['control']
         self.rigctld_ip = config['RIGCTLD']['ip']
@@ -25,9 +26,6 @@ class RadioManager:
         elif self.radiocontrol == "serial_ptt":
             self.radio = serial_ptt.radio(self.config, self.state_manager)
 
-        elif self.radiocontrol == "tci":
-            raise NotImplementedError
-            # self.radio = self.tci_module
         else:
             self.radio = rigdummy.radio()
 
@@ -39,6 +37,12 @@ class RadioManager:
         if not state:
             self.radio.set_ptt(state)
 
+        # send ptt state via socket interface
+        try:
+            if self.config['SOCKET_INTERFACE']['enable'] and self.socket_interface_manager:
+                self.socket_interface_manager.command_server.command_handler.socket_respond_ptt(state)
+        except Exception as e:
+            print(e)
 
     def set_tuner(self, state):
         self.radio.set_tuner(state)

@@ -57,7 +57,6 @@ class TestIntegration(unittest.TestCase):
         self.assertIn('STATION', config)
         self.assertIn('AUDIO', config)
         self.assertIn('MODEM', config)
-        self.assertIn('TCI', config)
         self.assertIn('RADIO', config)
 
     def test_config_post(self):

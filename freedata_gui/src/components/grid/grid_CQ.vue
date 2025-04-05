@@ -25,11 +25,14 @@ async function handleCQCall() {
 </script>
 
 <template>
-  <div class="fill h-100" style="width: calc(100% - 24px)">
+  <div
+    class="fill h-100"
+    style="width: calc(100% - 24px)"
+  >
     <a
       class="btn btn-sm btn-secondary d-flex justify-content-center align-items-center object-fill border rounded w-100 h-100"
+      :title="$t('grid.components.callcq') "
       @click="handleCQCall"
-      title="Send a CQ call!"
     >
       <span v-if="!isCQButtonDisabled">CQ</span>
       <span v-else>...</span>

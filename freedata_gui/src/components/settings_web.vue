@@ -9,37 +9,46 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 
 <template>
   <!-- Top Info Area for Explorer Settings -->
-  <div class="alert alert-info" role="alert">
-    <strong><i class="bi bi-gear-wide-connected me-1"></i>Explorer</strong> related settings, including enabling <strong>Explorer publishing</strong> and <strong>Explorer stats publishing</strong>.
+  <div
+    class="alert alert-info"
+    role="alert"
+  >
+    <strong><i class="bi bi-gear-wide-connected me-1" /></strong>{{ $t('settings.web.introduction') }}
   </div>
 
-    <div class="alert alert-light" role="alert">
-    Publish information like your frequency or heard stations to <strong>https://explorer.freedata.app</strong>, so other users can see your stations status. Publishing stats is currently under development and might be broken.
+  <div
+    class="alert alert-light"
+    role="alert"
+  >
+    {{ $t('settings.web.description') }}
   </div>
 
   <!-- Explorer Publishing -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      publish station status
+      {{ $t('settings.web.enableexplorer') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Share your station's status with FreeDATA web service"
+        :title="$t('settings.web.enableexplorer_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
         <input
+          id="ExplorerSwitch"
+          v-model="settings.remote.STATION.enable_explorer"
           class="form-check-input"
           type="checkbox"
-          id="ExplorerSwitch"
           @change="onChange"
-          v-model="settings.remote.STATION.enable_explorer"
-        />
-        <label class="form-check-label" for="ExplorerSwitch">Enable</label>
+        >
+        <label
+          class="form-check-label"
+          for="ExplorerSwitch"
+        >{{ $t('settings.enable') }}</label>
       </div>
     </label>
   </div>
@@ -47,26 +56,29 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
   <!-- Explorer Stats Publishing -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      publish statistics
+      {{ $t('settings.web.enablestats') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Share your station's statistics with FreeDATA web service"
+        :title="$t('settings.web.enablestats_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
         <input
+          id="ExplorerStatsSwitch"
+          v-model="settings.remote.STATION.enable_stats"
           class="form-check-input"
           type="checkbox"
-          id="ExplorerStatsSwitch"
           @change="onChange"
-          v-model="settings.remote.STATION.enable_stats"
-        />
-        <label class="form-check-label" for="ExplorerStatsSwitch">Enable</label>
+        >
+        <label
+          class="form-check-label"
+          for="ExplorerStatsSwitch"
+        >{{ $t('settings.enable') }}</label>
       </div>
     </label>
   </div>

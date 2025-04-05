@@ -2,78 +2,114 @@
   <!-- PTT COM Port Selector -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      PTT COM port
+      {{ $t('settings.radio.serialpttcomport') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Select the COM port connected to your radio for PTT control"
+        :title="$t('settings.radio.serialpttcomport_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <select
+      v-model="settings.remote.RADIO.ptt_port"
       class="form-select form-select-sm w-50"
       @change="onChange"
-      v-model="settings.remote.RADIO.ptt_port"
     >
       <option
         v-for="device in serialStore.serialDevices"
-        :value="device.port"
         :key="device.port"
+        :value="device.port"
       >
         {{ device.description }}
       </option>
     </select>
   </div>
 
-  <!-- PTT via DTR Selector -->
+  <!-- Radio Custom Port -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      PTT via DTR
+      {{ $t('settings.radio.serialpttcustomcomport') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Configure DTR line behavior for PTT control"
+        :title="$t('settings.radio.serialpttcustomcomport_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
+      </button>
+    </label>
+
+    <input
+      id="rigctldIp"
+      v-model="settings.remote.RADIO.ptt_port"
+      type="text"
+      class="form-control"
+      placeholder="settings.remote.RADIO.ptt_port.port"
+      aria-label="Rigctld IP"
+      @change="onChange"
+    >
+  </div>
+  <!-- PTT via DTR Selector -->
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50 text-wrap">
+      {{ $t('settings.radio.serialpttviadtr') }}
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        :title="$t('settings.radio.serialpttviadtr_help')"
+      >
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <select
-      class="form-select form-select-sm w-50"
       id="pttDtrSelect"
-      @change="onChange"
       v-model="settings.remote.RADIO.serial_dtr"
+      class="form-select form-select-sm w-50"
+      @change="onChange"
     >
-      <option value="ignore">-- Disabled --</option>
-      <option value="OFF">LOW</option>
-      <option value="ON">HIGH</option>
+      <option value="ignore">
+        -- Disabled --
+      </option>
+      <option value="OFF">
+        LOW
+      </option>
+      <option value="ON">
+        HIGH
+      </option>
     </select>
   </div>
 
   <!-- PTT via RTS Selector -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      PTT via RTS
+      {{ $t('settings.radio.serialpttviarts') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        title="Configure RTS line behavior for PTT control"
+        :title="$t('settings.radio.serialpttviarts_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <select
-      class="form-select form-select-sm w-50"
       id="pttRtsSelect"
-      @change="onChange"
       v-model="settings.remote.RADIO.serial_rts"
+      class="form-select form-select-sm w-50"
+      @change="onChange"
     >
-      <option value="ignore">-- Disabled --</option>
-      <option value="OFF">LOW</option>
-      <option value="ON">HIGH</option>
+      <option value="ignore">
+        -- Disabled --
+      </option>
+      <option value="OFF">
+        LOW
+      </option>
+      <option value="ON">
+        HIGH
+      </option>
     </select>
   </div>
 </template>

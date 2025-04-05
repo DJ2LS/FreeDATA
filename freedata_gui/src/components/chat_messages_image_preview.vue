@@ -1,13 +1,17 @@
 <template>
   <div v-if="isImage">
-    <img :src="imageUrl" alt="Image Preview" class="img-fluid border rounded-top bg-light w-100" />
+    <img
+      :src="imageUrl"
+      alt="Image Preview"
+      class="img-fluid border rounded-top w-100"
+    >
   </div>
 </template>
 
 <script setup>
 import { computed, toRefs } from 'vue';
 
-// eslint-disable-next-line
+ 
 const props = defineProps(['attachment'])
 const { attachment } = toRefs(props);
 

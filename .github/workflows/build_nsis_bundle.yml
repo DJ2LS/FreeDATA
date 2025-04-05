@@ -17,7 +17,7 @@ jobs:
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Vue Builder
         working-directory: freedata_gui
@@ -33,7 +33,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - uses: robinraju/release-downloader@v1.11
+      - uses: robinraju/release-downloader@v1.12
         with:
           repository: "Hamlib/Hamlib"
           fileName: "hamlib-w64-*.zip"

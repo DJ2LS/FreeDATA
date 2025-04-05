@@ -54,10 +54,6 @@ class CONFIG:
             'arguments': str,
             'enable_vfo': bool,
         },
-        'TCI': {
-            'tci_ip': str,
-            'tci_port': int,
-        },
         'MODEM': {
             'enable_morse_identifier': bool,
             'maximum_bandwidth': int,
@@ -94,13 +90,22 @@ class CONFIG:
     }
 
     def __init__(self, configfile: str):
+        """Initializes a new CONFIG instance.
+
+        This method initializes the configuration handler with the specified
+        config file. It sets up the logger, config parser, and validates
+        the config file's existence and structure.
+
+        Args:
+            configfile (str): The path to the configuration file.
+        """
 
         # set up logger
         self.log = structlog.get_logger(type(self).__name__)
 
         # init configparser
         self.parser = configparser.ConfigParser(inline_comment_prefixes="#", allow_no_value=True)
-        
+
         try:
             self.config_name = configfile
         except Exception:
@@ -113,10 +118,16 @@ class CONFIG:
 
         # validate config structure
         self.validate_config()
-
+        
     def config_exists(self):
-        """
-        check if config file exists
+        """Checks if the configuration file exists and can be read.
+
+        This method attempts to read the configuration file and returns True
+        if successful, False otherwise. It logs any errors encountered during
+        the reading process.
+
+        Returns:
+            bool: True if the config file exists and is readable, False otherwise.
         """
         try:
             return bool(self.parser.read(self.config_name, None))
@@ -126,6 +137,18 @@ class CONFIG:
 
     # Validates config data
     def validate_data(self, data):
+        """Validates the data types of configuration settings.
+
+        This method checks if the provided data matches the expected data
+        types defined in config_types. It raises a ValueError if a data type
+        mismatch is found.
+
+        Args:
+            data (dict): The configuration data to validate.
+
+        Raises:
+            ValueError: If a data type mismatch is found.
+        """
         for section in data:
             for setting in data[section]:
                 if not isinstance(data[section][setting], self.config_types[section][setting]):
@@ -134,9 +157,16 @@ class CONFIG:
                     raise ValueError(message)
 
     def validate_config(self):
-        """
-        Updates the configuration file to match exactly what is defined in self.config_types.
-        It removes sections and settings not defined there and adds missing sections and settings.
+        """Validates and updates the configuration file structure.
+
+        This method checks the existing configuration file against the
+        defined config_types. It removes any undefined sections or settings,
+        adds missing sections and settings with default values, and then
+        writes the updated configuration back to the file.
+
+        Returns:
+            dict or bool: A dictionary containing the updated configuration
+            data if successful, False otherwise.
         """
         existing_sections = self.parser.sections()
 
@@ -166,10 +196,24 @@ class CONFIG:
 
         return self.write_to_file()
 
-    # Handle special setting data type conversion
-    # is_writing means data from a dict being writen to the config file
-    # if False, it means the opposite direction
     def handle_setting(self, section, setting, value, is_writing=False):
+        """Handles special data type conversions for config settings.
+
+        This method performs data type conversions for specific config settings,
+        such as lists and booleans, when reading from or writing to the config
+        file. It also handles KeyErrors if a setting is not found in the
+        config_types dictionary.
+
+        Args:
+            section (str): The config section name.
+            setting (str): The config setting name.
+            value: The value to be converted.
+            is_writing (bool, optional): True if writing to the config file,
+                False if reading from it. Defaults to False.
+
+        Returns:
+            The converted value, or the original value if no conversion is needed.
+        """
         try:
             if self.config_types[section][setting] == list:
                 if is_writing:
@@ -196,6 +240,20 @@ class CONFIG:
 
     # Sets and writes config data from a dict containing data settings
     def write(self, data):
+        """Writes the provided data to the configuration file.
+
+        This method validates the input data, converts it to the appropriate
+        types, writes it to the configuration file, and returns the updated
+        configuration as a dictionary. It logs any errors encountered
+        during the writing process.
+
+        Args:
+            data (dict): A dictionary containing the configuration data to write.
+
+        Returns:
+            dict or bool: A dictionary containing the updated configuration
+            data if successful, False otherwise.
+        """
         # Validate config data before writing
         print(data)
         self.validate_data(data)
@@ -214,7 +272,17 @@ class CONFIG:
         return self.write_to_file()
 
     def write_to_file(self):
-        # Write config data to file
+        """Writes the current configuration to the config file.
+
+        This method writes the in-memory configuration data to the
+        configuration file. It then rereads and returns the updated
+        configuration. It logs any errors encountered during the writing
+        process.
+
+        Returns:
+            dict or bool: A dictionary containing the updated configuration
+            data if successful, False otherwise.
+        """
         try:
             with open(self.config_name, 'w') as configfile:
                 self.parser.write(configfile)
@@ -224,20 +292,30 @@ class CONFIG:
             return False
 
     def read(self):
-        """
-        read config file
+        """Reads the configuration file.
+
+        This method reads the configuration file, handles special setting data
+        type conversions, and returns the configuration as a dictionary.
+        It logs any errors encountered during the reading process.
+
+        Returns:
+            dict or bool: A dictionary containing the configuration data if
+            successful, False otherwise.
         """
         # self.log.info("[CFG] reading...")
         if not self.config_exists():
             return False
-        
-        # at first just copy the config as read from file
-        result = {s: dict(self.parser.items(s)) for s in self.parser.sections()}
+        try:
+            # at first just copy the config as read from file
+            result = {s: dict(self.parser.items(s)) for s in self.parser.sections()}
 
-        # handle the special settings
-        for section in result:
-            for setting in result[section]:
-                result[section][setting] = self.handle_setting(
-                   section, setting, result[section][setting], False)
+            # handle the special settings
+            for section in result:
+                for setting in result[section]:
+                    result[section][setting] = self.handle_setting(
+                       section, setting, result[section][setting], False)
+            return result
+        except Exception as conferror:
+            self.log.error("[CFG] reading logfile", e=conferror)
+            return False
 
-        return result

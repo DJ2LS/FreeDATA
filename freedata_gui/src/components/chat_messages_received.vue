@@ -1,38 +1,46 @@
 <template>
   <div class="row justify-content-start mb-2">
     <div :class="messageWidthClass">
-      <div class="card bg-light border rounded-top text-dark">
+      <div class="card border rounded-top ">
         <div
           v-for="attachment in message.attachments"
           :key="attachment.id"
           class="card-header"
         >
-
           <chat_messages_image_preview :attachment="attachment" />
 
-          <div class="btn-group w-100" role="group">
-            <button class="btn btn-light border rounded-bottom text-truncate" disabled>
+          <div
+            class="btn-group w-100"
+            role="group"
+          >
+            <button
+              class="btn w-75 btn-secondary text-truncate"
+              disabled
+            >
               {{ attachment.name }}
             </button>
             <button
+              class="btn btn-secondary w-25"
               @click="
                 downloadAttachment(attachment.hash_sha512, attachment.name)
               "
-              class="btn btn-light border rounded-bottom w-25"
             >
-              <i class="bi bi-download strong"></i>
+              <i class="bi bi-download strong" />
             </button>
           </div>
         </div>
 
         <div class="card-body">
           <!-- Render parsed markdown with v-html -->
-          <p class="card-text text-break" v-html="parsedMessageBody"></p>
+          <p
+            class="card-text text-break"
+            v-html="parsedMessageBody"
+          />
         </div>
 
         <div class="card-footer p-0 border-top-0">
-          <p class="p-0 m-0 me-1 text-end text-dark">
-            <span class="badge badge-secondary mr-2 text-dark">{{ getDateTime }} UTC</span>
+          <p class="p-0 m-0 me-1 text-end ">
+            <span class="mr-2 ">{{ getDateTime }} {{ $t('chat.utc') }}</span>
           </p>
           <!-- Display formatted timestamp in card-footer -->
         </div>
@@ -43,19 +51,25 @@
     <div class="col-auto">
       <button
         class="btn btn-outline-secondary border-0 me-1"
-        @click="showMessageInfo"
         data-bs-target="#messageInfoModal"
         data-bs-toggle="modal"
+        @click="showMessageInfo"
       >
-        <i class="bi bi-info-circle"></i>
+        <i class="bi bi-info-circle" />
       </button>
 
-      <button class="btn btn-outline-secondary border-0" @click="sendADIF">
-        ADIF
+      <button
+        class="btn btn-outline-secondary border-0"
+        @click="sendADIF"
+      >
+        {{ $t('chat.adif') }}
       </button>
 
-      <button class="btn btn-outline-secondary border-0" @click="deleteMessage">
-        <i class="bi bi-trash"></i>
+      <button
+        class="btn btn-outline-secondary border-0"
+        @click="deleteMessage"
+      >
+        <i class="bi bi-trash" />
       </button>
     </div>
   </div>
@@ -87,6 +101,48 @@ export default {
 
   props: {
     message: Object,
+  },
+
+  computed: {
+    messageWidthClass() {
+      // Calculate a Bootstrap grid class based on message length
+      if (this.message.body.length <= 50) {
+        return "col-6";
+      } else if (this.message.body.length <= 100) {
+        return "col-7";
+      } else {
+        return "col-9";
+      }
+    },
+
+    getDateTime() {
+      let date = new Date(this.message.timestamp);
+      let hours = date.getHours().toString().padStart(2, "0");
+      let minutes = date.getMinutes().toString().padStart(2, "0");
+      let seconds = date.getSeconds().toString().padStart(2, "0");
+      return `${hours}:${minutes}:${seconds}`;
+    },
+
+    parsedMessageBody() {
+    // Parse markdown to HTML
+  let parsedHTML = marked.parse(this.message.body);
+
+  // Sanitize the HTML
+  let sanitizedHTML = DOMPurify.sanitize(parsedHTML);
+
+  // Create a temporary DOM element to manipulate the sanitized output
+  let tempDiv = document.createElement("div");
+  tempDiv.innerHTML = sanitizedHTML;
+
+  // Modify all links to open in a new tab
+  tempDiv.querySelectorAll("a").forEach(link => {
+    link.setAttribute("target", "_blank");
+    link.setAttribute("rel", "noopener noreferrer"); // Security best practice
+  });
+
+  // Return the updated HTML
+  return tempDiv.innerHTML;
+  },
   },
 
   methods: {
@@ -135,48 +191,6 @@ export default {
         console.error("Failed to download the attachment:", error);
       }
     },
-  },
-
-  computed: {
-    messageWidthClass() {
-      // Calculate a Bootstrap grid class based on message length
-      if (this.message.body.length <= 50) {
-        return "col-4";
-      } else if (this.message.body.length <= 100) {
-        return "col-6";
-      } else {
-        return "col-9";
-      }
-    },
-
-    getDateTime() {
-      let date = new Date(this.message.timestamp);
-      let hours = date.getHours().toString().padStart(2, "0");
-      let minutes = date.getMinutes().toString().padStart(2, "0");
-      let seconds = date.getSeconds().toString().padStart(2, "0");
-      return `${hours}:${minutes}:${seconds}`;
-    },
-
-    parsedMessageBody() {
-    // Parse markdown to HTML
-  let parsedHTML = marked.parse(this.message.body);
-
-  // Sanitize the HTML
-  let sanitizedHTML = DOMPurify.sanitize(parsedHTML);
-
-  // Create a temporary DOM element to manipulate the sanitized output
-  let tempDiv = document.createElement("div");
-  tempDiv.innerHTML = sanitizedHTML;
-
-  // Modify all links to open in a new tab
-  tempDiv.querySelectorAll("a").forEach(link => {
-    link.setAttribute("target", "_blank");
-    link.setAttribute("rel", "noopener noreferrer"); // Security best practice
-  });
-
-  // Return the updated HTML
-  return tempDiv.innerHTML;
-  },
   },
 };
 </script>

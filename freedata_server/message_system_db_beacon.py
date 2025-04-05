@@ -7,10 +7,35 @@ from datetime import timezone, timedelta, datetime
 import os
 
 class DatabaseManagerBeacon(DatabaseManager):
+    """Manages database operations for beacon signals.
+
+    This class extends the DatabaseManager and provides methods for
+    interacting with beacon data in the database. It includes
+    functionality for adding, retrieving, and cleaning up beacon records.
+    """
     def __init__(self, event_manager):
+        """Initializes the DatabaseManagerBeacon.
+
+        Args:
+            event_manager (EventManager): The event manager instance.
+        """
         super().__init__(event_manager)
 
     def add_beacon(self, timestamp, callsign, snr, gridsquare):
+        """Adds a new beacon record to the database.
+
+        This method adds a new beacon record to the database, associating
+        it with the given callsign, timestamp, SNR, and gridsquare. It
+        creates the station if it doesn't exist and updates the station's
+        location if the gridsquare has changed. It handles potential
+        database errors and performs rollbacks if necessary.
+
+        Args:
+            timestamp (datetime): The timestamp of the beacon signal.
+            callsign (str): The callsign of the station transmitting the beacon.
+            snr (float): The signal-to-noise ratio of the beacon signal.
+            gridsquare (str): The gridsquare of the station.
+        """
         session = None
         try:
             session = self.get_thread_scoped_session()
@@ -41,6 +66,21 @@ class DatabaseManagerBeacon(DatabaseManager):
                 session.remove()
 
     def get_beacons_by_callsign(self, callsign):
+        """Retrieves beacon records for a specific callsign.
+
+        This method retrieves all beacon records associated with the given
+        callsign from the database. It returns a list of dictionaries,
+        where each dictionary represents a beacon record, including its
+        ID, timestamp, SNR, and gridsquare. It handles cases where no
+        station or beacons are found and logs any database errors.
+
+        Args:
+            callsign (str): The callsign of the station.
+
+        Returns:
+            list: A list of dictionaries, each representing a beacon
+            record, or an empty list if no beacons or station are found.
+        """
         session = self.get_thread_scoped_session()
         try:
             # Query the station by callsign
@@ -66,6 +106,18 @@ class DatabaseManagerBeacon(DatabaseManager):
             session.remove()
 
     def get_all_beacons(self):
+        """Retrieves all beacon records from the database.
+
+        This method retrieves all beacon records from the database,
+        including their associated gridsquare information. It returns a
+        list of dictionaries, where each dictionary represents a beacon
+        record. It handles potential database errors and logs appropriate
+        messages.
+
+        Returns:
+            list: A list of dictionaries, each representing a beacon
+            record, or an empty list if an error occurs.
+        """
         session = None
         try:
             session = self.get_thread_scoped_session()
@@ -97,6 +149,18 @@ class DatabaseManagerBeacon(DatabaseManager):
                 session.remove()
 
     def beacon_cleanup_older_than_days(self, days):
+        """Deletes beacon records older than a specified number of days.
+
+        This method cleans up old beacon records from the database by
+        deleting entries older than the specified number of days. It
+        handles database errors and performs rollbacks if necessary.
+
+        Args:
+            days (int): The number of days old a beacon must be to be deleted.
+
+        Returns:
+            int: The number of deleted beacon records, or 0 if an error occurred.
+        """
         session = None
         try:
             session = self.get_thread_scoped_session()

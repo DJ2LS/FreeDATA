@@ -16,12 +16,29 @@ class SendMessageCommand(TxCommand):
     """
 
     def set_params_from_api(self, apiParams):
+        """Sets parameters from the API request.
+
+        This method creates a MessageP2P object from the API parameters,
+        and adds the message to the database with the status 'queued'.
+
+        Args:
+            apiParams (dict): A dictionary containing the API parameters.
+        """
         origin = f"{self.config['STATION']['mycall']}-{self.config['STATION']['myssid']}"
         self.message = MessageP2P.from_api_params(origin, apiParams)
         DatabaseManagerMessages(self.event_manager).add_message(self.message.to_dict(), statistics={}, direction='transmit', status='queued', frequency=self.state_manager.radio_frequency)
 
     def transmit(self, modem):
+        """Transmits the first queued message using ARQ.
 
+        This method retrieves the first queued message from the database,
+        prepares the data using the ARQ data type handler, creates an
+        ARQSessionISS, and starts the transmission. It includes error
+        handling and logging.
+
+        Args:
+            modem: The modem object.
+        """
         if self.state_manager.getARQ():
             self.log("Modem busy, waiting until ready...")
             return
@@ -29,7 +46,6 @@ class SendMessageCommand(TxCommand):
         if not modem:
             self.log("Modem not running...", isWarning=True)
             return
-
 
         first_queued_message = DatabaseManagerMessages(self.event_manager).get_first_queued_message()
         if not first_queued_message:

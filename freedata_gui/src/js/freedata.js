@@ -122,3 +122,24 @@ export function removeFromLocalStorage(key) {
     console.error("Failed to remove data from localStorage:", error);
   }
 }
+
+/**
+ * Set GUI Color Mode.
+ * @param {string} colorMOde - The colormode, light, dark, auto.
+ */
+export function applyColorMode(colorMode){
+  // If set to "auto", detect the OS preference using matchMedia
+
+  console.log(colorMode);
+  if (colorMode === "auto") {
+    colorMode = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  // If it's an empty string, default to "light"
+  else if (colorMode === "") {
+    colorMode = "light";
+  }
+
+  // Apply the theme by setting the attribute on the document element
+  document.documentElement.setAttribute("data-bs-theme", colorMode);
+
+}

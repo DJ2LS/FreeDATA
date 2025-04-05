@@ -12,6 +12,8 @@ const defaultConfig = {
     grid_layout: "[]",
     grid_preset: "[]",
     grid_enabled: true,
+    language:"en",
+    colormode:"light"
   },
   remote: {
     AUDIO: {
@@ -62,10 +64,6 @@ const defaultConfig = {
       respond_to_cq: false,
       enable_callsign_blacklist: false,
       callsign_blacklist: [],
-    },
-    TCI: {
-      tci_ip: "127.0.0.1",
-      tci_port: 0,
     },
     MESSAGES: {
       enable_auto_repeat: false,

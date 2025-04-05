@@ -352,10 +352,81 @@ function savePreset() {
   console.log("Saved grid preset");
 }
 
+function downloadPreset() {
+  let data = settingsStore.local.grid_layout;
+
+  // Remove leading and trailing double quotes if they exist
+  if (data.startsWith('"') && data.endsWith('"')) {
+    data = data.slice(1, -1);
+  }
+
+  // Create a Blob from the processed data
+  const blob = new Blob([data], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  // Create a temporary anchor element to trigger the download
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "FreeDATA_GUI_preset.freedata";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  console.log("Downloaded preset as FreeDATA_preset.gui");
+}
+
+
+function uploadPreset() {
+  // Create a hidden file input element
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.freedata';
+
+  // Listen for when a file is selected
+  input.addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (!file) {
+      console.log("No file selected, using custom preset.");
+      restoreGridLayoutFromConfig();
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+      try {
+        const content = e.target.result;
+
+        // Store the file content into the settingsStore
+        clearAllItems()
+        settingsStore.local.grid_preset = content;
+        loadPreset();
+        console.log("Preset uploaded and stored.");
+      } catch (err) {
+        console.error("Error processing the preset", err);
+      }
+
+    };
+
+    reader.onerror = function() {
+      console.error("Error reading file, using custom preset.");
+    };
+
+    // Start reading the file as text
+    reader.readAsText(file);
+  });
+
+  // Trigger the file dialog
+  input.click();
+}
+
+
 function loadPreset() {
   clearAllItems();
   settingsStore.local.grid_layout = settingsStore.local.grid_preset;
   restoreGridLayoutFromConfig();
+  saveLocalSettingsToConfig();
   console.log("Restored grid preset");
 }
 
@@ -374,6 +445,7 @@ function onChange(event, changeItems) {
 function restoreGridLayoutFromConfig() {
   if (items.value.length === 0) {
     const savedGrid = JSON.parse(settingsStore.local.grid_layout || "[]");
+    console.log(savedGrid)
     savedGrid.forEach(([x, y, w, h, id]) => {
       const widget = gridWidgets.find((gw) => gw.id === id);
       if (widget) {
@@ -509,41 +581,45 @@ onMounted(() => {
 
 <template>
   <button
-    class="btn btn-secondary fixed-middle-right rounded-0 rounded-start-4 p-1 pt-4 pb-4"
+    class="btn btn-secondary shadow fixed-middle-right border border-2 border-end-0 border-light rounded-0 rounded-start-4 ps-2 pe-4 pt-4 pb-4"
     type="button"
     data-bs-toggle="offcanvas"
     data-bs-target="#offcanvasGridItems"
     aria-controls="offcanvasGridItems"
   >
-   <!-- <i class="bi bi-grip-vertical h5">      </i>-->
+    <!-- <i class="bi bi-grip-vertical h5">      </i>-->
 
-  <span class="me-4 text-white" style="writing-mode: vertical-rl; transform: rotate(180deg);">
-    grid edit
-  </span>
-
-
+    <span
+      class="text-white"
+      style="writing-mode: vertical-rl; transform: rotate(180deg);"
+    >
+      {{ $t('grid.gridedit') }}
+    </span>
   </button>
 
-  <div class="grid-container z-0" style="height: calc(100vh - 51px);">
+  <div
+    class="grid-container z-0"
+    style="height: calc(100vh - 51px);"
+  >
     <div class="grid-stack z-0">
       <div
         v-for="(w) in items"
+        :id="w.id"
+        :key="w.id"
         class="grid-stack-item"
         :gs-x="w.x"
         :gs-y="w.y"
         :gs-w="w.w"
         :gs-h="w.h"
         :gs-id="w.id"
-        :id="w.id"
-        :key="w.id"
         :gs-auto-position="w.autoPlace"
       >
         <div class="grid-stack-item-content">
           <button
-            @click="remove(w)"
             class="btn-close grid-stack-floaty-btn"
             :class="settingsStore.local.grid_enabled === true ? 'visible':'invisible'"
-          ></button>
+            @click="remove(w)"
+          />
           <component :is="w.component2" />
         </div>
       </div>
@@ -551,24 +627,30 @@ onMounted(() => {
   </div>
 
   <div
+    id="offcanvasGridItems"
     class="offcanvas offcanvas-end"
     data-bs-scroll="true"
     data-bs-backdrop="true"
     tabindex="-1"
-    id="offcanvasGridItems"
     aria-labelledby="offcanvasGridItemsLabel"
   >
     <div class="offcanvas-header">
-      <h5 class="offcanvas-title" id="offcanvasGridItemsLabel">
-        Manage grid widgets &nbsp;<button
-        class="btn btn-sm"
-        :class="settingsStore.local.grid_enabled == true ? 'btn-outline-success' : 'btn-outline-danger'"
-        type="button"
-        @click="toggleGridEdit"
-        title="Lock/unloack changes to grid"
+      <h5
+        id="offcanvasGridItemsLabel"
+        class="offcanvas-title"
       >
-        <i class="bi" :class="settingsStore.local.grid_enabled == true ? 'bi-unlock-fill' : 'bi-lock-fill'"></i>
-      </button>&nbsp;
+        {{ $t('grid.managegridwidgets') }} &nbsp;<button
+          class="btn btn-sm"
+          :class="settingsStore.local.grid_enabled == true ? 'btn-outline-success' : 'btn-outline-danger'"
+          type="button"
+          title="Lock/unloack changes to grid"
+          @click="toggleGridEdit"
+        >
+          <i
+            class="bi"
+            :class="settingsStore.local.grid_enabled == true ? 'bi-unlock-fill' : 'bi-lock-fill'"
+          />
+        </button>&nbsp;
       </h5>
 
       <button
@@ -576,11 +658,11 @@ onMounted(() => {
         class="btn-close"
         data-bs-dismiss="offcanvas"
         aria-label="Close"
-      ></button>
+      />
     </div>
     <div class="offcanvas-body">
       <p>
-        Grid widgets allow you to customize the display. You may add additional widgets to fit your needs. You can move and resize the individual widgets!
+        {{ $t('grid.gridwidgetsdescription') }}
       </p>
       <div>
         <button
@@ -588,22 +670,28 @@ onMounted(() => {
           type="button"
           @click="quickfill"
         >
-          Fill grid with common widgets
+          {{ $t('grid.fillgrid') }}
         </button>
         <button
           class="btn btn-outline-primary"
           type="button"
           @click="quickfillSM"
         >
-          Fill grid for small screens
+          {{ $t('grid.fillgridsmallscreen') }}
         </button>
       </div>
-      <hr />
+      <hr>
       <!-- Begin widget selector -->
-      <div class="accordion" id="accordionExample">
+      <div
+        id="accordionExample"
+        class="accordion"
+      >
         <!-- Heard Stations -->
         <div class="accordion-item">
-          <h2 class="accordion-header" id="headingHeardStations">
+          <h2
+            id="headingHeardStations"
+            class="accordion-header"
+          >
             <button
               class="accordion-button"
               type="button"
@@ -612,7 +700,7 @@ onMounted(() => {
               aria-expanded="true"
               aria-controls="collapseHeardStations"
             >
-              <strong>Activity</strong>
+              <strong>{{ $t('grid.activity') }}</strong>
             </button>
           </h2>
           <div
@@ -621,13 +709,19 @@ onMounted(() => {
             aria-labelledby="headingHeardStations"
             data-bs-parent="#accordionExample"
           >
-            <div class="accordion-body" id="activityBody"></div>
+            <div
+              id="activityBody"
+              class="accordion-body"
+            />
           </div>
         </div>
 
         <!-- Activities -->
         <div class="accordion-item">
-          <h2 class="accordion-header" id="headingActivities">
+          <h2
+            id="headingActivities"
+            class="accordion-header"
+          >
             <button
               class="accordion-button collapsed"
               type="button"
@@ -636,7 +730,7 @@ onMounted(() => {
               aria-expanded="false"
               aria-controls="collapseActivities"
             >
-              <strong>Audio</strong>
+              <strong>{{ $t('grid.audio') }}</strong>
             </button>
           </h2>
           <div
@@ -645,12 +739,18 @@ onMounted(() => {
             aria-labelledby="headingActivities"
             data-bs-parent="#accordionExample"
           >
-            <div class="accordion-body" id="audioBody"></div>
+            <div
+              id="audioBody"
+              class="accordion-body"
+            />
           </div>
         </div>
         <!-- Broadcasts -->
         <div class="accordion-item">
-          <h2 class="accordion-header" id="headingBroadcasts">
+          <h2
+            id="headingBroadcasts"
+            class="accordion-header"
+          >
             <button
               class="accordion-button collapsed"
               type="button"
@@ -659,7 +759,7 @@ onMounted(() => {
               aria-expanded="false"
               aria-controls="collapseBroadcasts"
             >
-              <strong>Broadcasts</strong>
+              <strong>{{ $t('grid.broadcasts') }}</strong>
             </button>
           </h2>
           <div
@@ -668,12 +768,18 @@ onMounted(() => {
             aria-labelledby="headingBroadcasts"
             data-bs-parent="#accordionExample"
           >
-            <div class="accordion-body" id="broadcastsBody"></div>
+            <div
+              id="broadcastsBody"
+              class="accordion-body"
+            />
           </div>
         </div>
         <!-- Radio Control -->
         <div class="accordion-item">
-          <h2 class="accordion-header" id="headingRadioControl">
+          <h2
+            id="headingRadioControl"
+            class="accordion-header"
+          >
             <button
               class="accordion-button collapsed"
               type="button"
@@ -682,7 +788,7 @@ onMounted(() => {
               aria-expanded="false"
               aria-controls="collapseRadioControl"
             >
-              <strong>Radio Control/Status</strong>
+              <strong>{{ $t('grid.radiocontrol') }}</strong>
             </button>
           </h2>
           <div
@@ -691,13 +797,19 @@ onMounted(() => {
             aria-labelledby="headingRadioControl"
             data-bs-parent="#accordionExample"
           >
-            <div class="accordion-body" id="rigBody"></div>
+            <div
+              id="rigBody"
+              class="accordion-body"
+            />
           </div>
         </div>
 
         <!-- Audio Control -->
         <div class="accordion-item">
-          <h2 class="accordion-header" id="headingAudioControl">
+          <h2
+            id="headingAudioControl"
+            class="accordion-header"
+          >
             <button
               class="accordion-button collapsed"
               type="button"
@@ -706,7 +818,7 @@ onMounted(() => {
               aria-expanded="false"
               aria-controls="collapseAudioControl"
             >
-              <strong>Statistics</strong>
+              <strong>{{ $t('grid.statistics') }}</strong>
             </button>
           </h2>
           <div
@@ -715,13 +827,19 @@ onMounted(() => {
             aria-labelledby="headingAudioControl"
             data-bs-parent="#accordionExample"
           >
-            <div class="accordion-body" id="statsBody"></div>
+            <div
+              id="statsBody"
+              class="accordion-body"
+            />
           </div>
         </div>
 
         <!-- Statistics -->
         <div class="accordion-item">
-          <h2 class="accordion-header" id="headingStatistics">
+          <h2
+            id="headingStatistics"
+            class="accordion-header"
+          >
             <button
               class="accordion-button collapsed"
               type="button"
@@ -730,7 +848,7 @@ onMounted(() => {
               aria-expanded="false"
               aria-controls="collapseStatistics"
             >
-              <strong>Other</strong>
+              <strong>{{ $t('grid.other') }}</strong>
             </button>
           </h2>
           <div
@@ -739,168 +857,234 @@ onMounted(() => {
             aria-labelledby="headingStatistics"
             data-bs-parent="#accordionExample"
           >
-            <div class="accordion-body" id="otherBody"></div>
+            <div
+              id="otherBody"
+              class="accordion-body"
+            />
           </div>
         </div>
       </div>
-      <hr />
+      <hr>
       <button
         class="btn btn-sm btn-outline-warning"
         type="button"
+        :title="$t('grid.cleargrid_help')"
         @click="clearAllItems"
-        title="Clear all items from the grid"
       >
-        Clear grid
+        {{ $t('grid.cleargrid') }}
       </button>
-      <hr/>
+      <hr>
       <button
-        class="btn btn-sm btn-outline-dark"
+        class="btn btn-sm btn-outline-secondary"
         type="button"
+        :title="$t('grid.restorepreset_help')"
         @click="loadPreset"
-        title="Restore your saved grid preset (clears current grid)"
       >
-
-        Restore preset
+        {{ $t('grid.restorepreset') }}
       </button>&nbsp;
       <button
-        class="btn btn-sm btn-outline-dark"
+        class="btn btn-sm btn-outline-secondary"
         type="button"
+        :title="$t('grid.savepreset_help')"
         @click="savePreset"
-        title="Save current grid layout as a preset that can be restored using restore preset button"
       >
-        Save preset
+        {{ $t('grid.savepreset') }}
+      </button>
+      <hr>
+      <button
+        class="btn btn-sm btn-outline-secondary"
+        type="button"
+        :title="$t('grid.downloadpreset_help')"
+        @click="downloadPreset"
+      >
+        {{ $t('grid.downloadpreset') }}<i class="ms-1 bi bi-download" />
+      </button>
+
+      <button
+        class="ms-2 btn btn-sm btn-outline-secondary"
+        type="button"
+        :title="$t('grid.uploadpreset_help')"
+        @click="uploadPreset"
+      >
+        {{ $t('grid.uploadpreset') }}<i class="ms-1 bi bi-upload" />
       </button>
     </div>
   </div>
 
-  <div class="offcanvas offcanvas-end text-start"     data-bs-scroll="true"
-    data-bs-backdrop="false" tabindex="-1" id="offcanvasFrequency" aria-labelledby="offcanvasExampleLabel">
-  <div class="offcanvas-header">
-    <h5 class="offcanvas-title" id="offcanvasExampleLabel">Frequency selection</h5>
+  <div
+    id="offcanvasFrequency"
+    class="offcanvas offcanvas-end text-start"
+    data-bs-scroll="true"
+    data-bs-backdrop="true"
+    tabindex="-1"
+    aria-labelledby="offcanvasFrequencyLabel"
+  >
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title">
+        {{ $t('grid.frequencyselection') }}
+      </h5>
       <button
         type="button"
         class="btn-close"
         data-bs-dismiss="offcanvas"
         aria-label="Close"
-      ></button>
-
-
-
-  </div>
-  <div class="offcanvas-body">
-    <p>
-    Commonly used frequencies are listed here, and are all USB.&nbsp; Simply click on a entry or manually enter a frequency in the textbox to tune your rig if rig control is enabled.
-    </p>
-    <ul
-              class="list-group"
-              aria-labelledby="dropdownMenuButton"
-              style="z-index: 50"
+      />
+    </div>
+    <div class="offcanvas-body">
+      <p>
+        {{ $t('grid.frequencydescription') }}
+      </p>
+      <ul
+        class="list-group"
+        aria-labelledby="dropdownMenuButton"
+        style="z-index: 50"
+      >
+        <li class="list-group-item">
+          <div class="input-group p-1">
+            <span class="input-group-text">{{ $t('general.frequency') }}</span>
+            <input
+              v-model="state.new_frequency"
+              style="max-width: 8rem"
+              pattern="[0-9]*"
+              type="text"
+              class="form-control form-control-sm"
+              :class="{
+                disabled: state.hamlib_status === 'disconnected',
+              }"
+              placeholder="Type frequency..."
+              aria-label="Frequency"
             >
-              <li class="list-group-item">
-                <div class="input-group p-1">
-                  <span class="input-group-text">frequency</span>
-                  <input
-                    v-model="state.new_frequency"
-                    style="max-width: 8rem"
-                    pattern="[0-9]*"
-                    type="text"
-                    class="form-control form-control-sm"
-                    v-bind:class="{
-                      disabled: state.hamlib_status === 'disconnected',
-                    }"
-                    placeholder="Type frequency..."
-                    aria-label="Frequency"
-                  />
-                  <button
-                    class="btn btn-sm btn-outline-success"
-                    type="button"
-                    @click="updateFrequencyAndApply(state.new_frequency)"
-                    v-bind:class="{
-                      disabled: state.hamlib_status === 'disconnected',
-                    }"
-                  >
-                    <i class="bi bi-check-square"></i>
-                  </button>
-                </div>
-              </li>
+            <button
+              class="btn btn-sm btn-outline-success"
+              type="button"
+              :class="{
+                disabled: state.hamlib_status === 'disconnected',
+              }"
+              @click="updateFrequencyAndApply(state.new_frequency)"
+            >
+              <i class="bi bi-check-square" />
+            </button>
+          </div>
+        </li>
 
-              <!-- Dropdown Divider -->
-              <li class="list-group-item"><hr class="dropdown-divider" /></li>
-              <!-- Dropdown Items -->
-  <a href="#" class="list-group-item list-group-item-action" @click="updateFrequencyAndApply(50616000)">
-    <div class="d-flex w-100 justify-content-between">
-      <h5 class="mb-1">50.616 MHz</h5>
-      <small>EU / US</small>
-      <h6>6m</h6>
+        <!-- Dropdown Divider -->
+        <li class="list-group-item">
+          <hr class="dropdown-divider">
+        </li>
+        <!-- Dropdown Items -->
+        <a
+          href="#"
+          class="list-group-item list-group-item-action"
+          @click="updateFrequencyAndApply(50616000)"
+        >
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">50.616 MHz</h5>
+            <small>EU / US</small>
+            <h6>6m</h6>
+          </div>
+        </a>
+        <a
+          href="#"
+          class="list-group-item list-group-item-action"
+          @click="updateFrequencyAndApply(50308000)"
+        >
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">50.308 MHz</h5>
+            <small>US</small>
+            <h6>6m</h6>
+          </div>
+        </a>
+        <a
+          href="#"
+          class="list-group-item list-group-item-action"
+          @click="updateFrequencyAndApply(28093000)"
+        >
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">28.093 MHz</h5>
+            <small>EU / US</small>
+            <h6>10m</h6>
+          </div>
+        </a>
+        <a
+          href="#"
+          class="list-group-item list-group-item-action"
+          @click="updateFrequencyAndApply(27265000)"
+        >
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">27.265 MHz</h5>
+            <small>Ch 26</small>
+            <h6>11m</h6>
+          </div>
+        </a>
+        <a
+          href="#"
+          class="list-group-item list-group-item-action"
+          @click="updateFrequencyAndApply(27245000)"
+        >
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">27.245 MHz</h5>
+            <small>Ch 25</small>
+            <h6>11m</h6>
+          </div>
+        </a>
+        <a
+          href="#"
+          class="list-group-item list-group-item-action"
+          @click="updateFrequencyAndApply(24908000)"
+        >
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">24.908 MHz</h5>
+            <small>EU / US</small>
+            <h6>12m</h6>
+          </div>
+        </a>
+        <a
+          href="#"
+          class="list-group-item list-group-item-action"
+          @click="updateFrequencyAndApply(21093000)"
+        >
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">21.093 MHz</h5>
+            <small>EU / US</small>
+            <h6>15m</h6>
+          </div>
+        </a>
+        <a
+          href="#"
+          class="list-group-item list-group-item-action"
+          @click="updateFrequencyAndApply(18106000)"
+        >
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">18.106 MHz</h5>
+            <small>EU / US</small>
+            <h6>17m</h6>
+          </div>
+        </a>
+        <a
+          href="#"
+          class="list-group-item list-group-item-action"
+          @click="updateFrequencyAndApply(14093000)"
+        >
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">14.093 MHz</h5>
+            <small>EU / US</small>
+            <h6>20m</h6>
+          </div>
+        </a>
+        <a
+          href="#"
+          class="list-group-item list-group-item-action"
+          @click="updateFrequencyAndApply(7053000)"
+        >
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">7.053 MHz</h5>
+            <small>EU / US</small>
+            <h6>40m</h6>
+          </div>
+        </a>
+      </ul>
     </div>
-  </a>
-  <a href="#" class="list-group-item list-group-item-action" @click="updateFrequencyAndApply(50308000)">
-    <div class="d-flex w-100 justify-content-between">
-      <h5 class="mb-1">50.308 MHz</h5>
-      <small>US</small>
-      <h6>6m</h6>
-    </div>
-  </a>
-  <a href="#" class="list-group-item list-group-item-action" @click="updateFrequencyAndApply(28093000)">
-    <div class="d-flex w-100 justify-content-between">
-      <h5 class="mb-1">28.093 MHz</h5>
-      <small>EU / US</small>
-      <h6>10m</h6>
-    </div>
-  </a>
-  <a href="#" class="list-group-item list-group-item-action" @click="updateFrequencyAndApply(27265000)">
-    <div class="d-flex w-100 justify-content-between">
-      <h5 class="mb-1">27.265 MHz</h5>
-      <small>Ch 26</small>
-      <h6>11m</h6>
-    </div>
-  </a>
-  <a href="#" class="list-group-item list-group-item-action" @click="updateFrequencyAndApply(27245000)">
-    <div class="d-flex w-100 justify-content-between">
-      <h5 class="mb-1">27.245 MHz</h5>
-      <small>Ch 25</small>
-      <h6>11m</h6>
-    </div>
-  </a>
-  <a href="#" class="list-group-item list-group-item-action" @click="updateFrequencyAndApply(24908000)">
-    <div class="d-flex w-100 justify-content-between">
-      <h5 class="mb-1">24.908 MHz</h5>
-      <small>EU / US</small>
-      <h6>12m</h6>
-    </div>
-  </a>
-  <a href="#" class="list-group-item list-group-item-action" @click="updateFrequencyAndApply(21093000)">
-    <div class="d-flex w-100 justify-content-between">
-      <h5 class="mb-1">21.093 MHz</h5>
-      <small>EU / US</small>
-      <h6>15m</h6>
-    </div>
-  </a>
-  <a href="#" class="list-group-item list-group-item-action" @click="updateFrequencyAndApply(18106000)">
-    <div class="d-flex w-100 justify-content-between">
-      <h5 class="mb-1">18.106 MHz</h5>
-      <small>EU / US</small>
-      <h6>17m</h6>
-    </div>
-  </a>
-  <a href="#" class="list-group-item list-group-item-action" @click="updateFrequencyAndApply(14093000)">
-    <div class="d-flex w-100 justify-content-between">
-      <h5 class="mb-1">14.093 MHz</h5>
-      <small>EU / US</small>
-      <h6>20m</h6>
-    </div>
-  </a>
-  <a href="#" class="list-group-item list-group-item-action" @click="updateFrequencyAndApply(7053000)">
-    <div class="d-flex w-100 justify-content-between">
-      <h5 class="mb-1">7.053 MHz</h5>
-      <small>EU / US</small>
-      <h6>40m</h6>
-    </div>
-  </a>
-            </ul>
   </div>
-</div>
-
 </template>
 
 <style>

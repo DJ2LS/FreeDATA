@@ -8,15 +8,19 @@ setActivePinia(pinia);
 
 <template>
   <!-- Top Warning Area -->
-  <div class="alert alert-danger" role="alert">
-    <strong><i class="bi bi-shield-exclamation me-1"></i>WARNING:</strong> These features may be incomplete. They are for <u>experienced</u> users ONLY!
+  <div
+    class="alert alert-danger"
+    role="alert"
+  >
+    <strong><i class="bi bi-shield-exclamation me-1" /></strong> {{ $t('settings.exp.introduction') }}
   </div>
 
 
-  <div class="alert alert-info" role="alert">
-    <strong><i class="bi bi-info-circle me-1"></i>Info:</strong> No features published for testing, yet.
+  <div
+    class="alert alert-info"
+    role="alert"
+  >
+    <strong><i class="bi bi-info-circle me-1" /></strong>{{ $t('settings.exp.info') }}
   </div>
-
-
 </template>
 

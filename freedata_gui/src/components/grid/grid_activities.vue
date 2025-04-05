@@ -25,21 +25,40 @@ function getDateTime(timestampRaw) {
 <template>
   <div class="card h-100">
     <div class="card-header">
-      <i class="bi bi-card-list" style="font-size: 1.2rem"></i>&nbsp;
-      <strong>Activity</strong>
+      <i
+        class="bi bi-card-list"
+        style="font-size: 1.2rem"
+      />&nbsp;
+      <strong>{{ $t('grid.components.activity') }}</strong>
     </div>
-    <div class="card-body overflow-auto m-0" style="align-items: start">
-      <div v-for="item in state.activities" :key="item[0]">
-        <h6 style="text-align: start" class="mb-0">
-        <span class="badge text-bg-primary">{{ item[1].origin }}</span>
+    <div
+      class="card-body overflow-auto m-0"
+      style="align-items: start"
+    >
+      <div
+        v-for="item in state.activities"
+        :key="item[0]"
+      >
+        <h6
+          style="text-align: start"
+          class="mb-0"
+        >
+          <span class="badge text-bg-primary">{{ item[1].origin }}</span>
           -
-          <span class="badge text-bg-secondary">{{getDateTime(item[1].timestamp) }}</span>
-
-
+          <span class="badge text-bg-secondary">{{ getDateTime(item[1].timestamp) }}</span>
         </h6>
 
-        <p class="mb-2" style="text-align: start; font-size: smaller">
-          <small>{{ item[1].activity_type }} - {{ item[1].direction }}</small>
+
+        <p
+          class="mb-2"
+          style="text-align: start; font-size: smaller"
+        >
+          <small>
+            {{ item[1].activity_type }} -
+            {{ item[1].direction === 'received'
+              ? $t('grid.components.received')
+              : $t('grid.components.transmitted') }}
+          </small>
         </p>
       </div>
     </div>

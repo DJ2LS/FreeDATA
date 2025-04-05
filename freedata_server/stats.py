@@ -9,21 +9,36 @@ Created on 05.11.23
 import requests
 import json
 import structlog
+from constants import MODEM_VERSION, STATS_API_URL
 
 log = structlog.get_logger("stats")
 
-#  we have to move the modem version, its a duplicate
-MODEM_VERSION = "0.16.9-alpha"
+class stats:
+    """Handles the collection and submission of FreeData session statistics.
 
-
-class stats():
+    This class collects various statistics about FreeData sessions, including
+    SNR, data rate, file size, and duration. It then pushes these statistics
+    to a remote API endpoint for aggregation and analysis.
+    """
     def __init__(self, config, event_manager, states):
-        self.api_url = "https://api.freedata.app/stats.php"
+        self.api_url = STATS_API_URL
         self.states = states
         self.config = config
         self.event_manager = event_manager
     def push(self, status, session_statistics, dxcall, receiving=True):
-        # get avg snr
+        """Pushes session statistics to the remote API endpoint.
+
+        This method collects session statistics, including average SNR, bytes
+        per minute, file size, duration, and status, and sends them as a JSON
+        payload to the configured API endpoint. It also includes histogram data
+        for time, SNR, and BPM.
+
+        Args:
+            status (str): The status of the session (e.g., 'ENDED', 'FAILED').
+            session_statistics (dict): A dictionary containing session statistics.
+            dxcall (str): The callsign of the remote station.
+            receiving (bool, optional): True if the session was receiving data, False otherwise. Defaults to True.
+        """
         try:
             snr_raw = [item["snr"] for item in self.states.arq_speed_list]
             avg_snr = round(sum(snr_raw) / len(snr_raw), 2)

@@ -22,39 +22,6 @@ async def get_freedata_message(message_id: str, request: Request):
     return api_response(message)
 
 
-@router.post("/messages", summary="Transmit Message", tags=["FreeDATA"], responses={
-    200: {
-        "description": "Message transmitted successfully.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "destination": "XX1XXX-6",
-                    "body": "Hello FreeDATA"
-                }
-            }
-        }
-    },
-    404: {
-        "description": "The requested resource was not found.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "Resource not found."
-                }
-            }
-        }
-    },
-    503: {
-        "description": "Modem not running or busy.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "Modem not running."
-                }
-            }
-        }
-    }
-})
 async def post_freedata_message(request: Request):
     """
     Transmit a FreeDATA message.
@@ -118,9 +85,9 @@ async def post_freedata_message_adif_log(message_id: str, request:Request):
     if not adif_output:
         return
 
-    # Send the ADIF data via UDP
-    adif_udp_logger.send_adif_qso_data(request.app.config_manager.read(), adif_output)
-    wavelog_api_logger.send_wavelog_qso_data(request.app.config_manager.read(), adif_output)
+    # Send the ADIF data via UDP and/or wavelog
+    adif_udp_logger.send_adif_qso_data(request.app.config_manager.read(), request.app.event_manager, adif_output)
+    wavelog_api_logger.send_wavelog_qso_data(request.app.config_manager.read(), request.app.event_manager, adif_output)
     return api_response(adif_output)
 
 @router.patch("/messages/{message_id}", summary="Update Message by ID", tags=["FreeDATA"], responses={

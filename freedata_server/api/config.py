@@ -62,10 +62,6 @@ router = APIRouter()
                         "myssid": 0,
                         "ssid_list": [0,1,2,3,4,5,6,7,8,9],
                         "respond_to_cq": True,
-                    },
-                    "TCI": {
-                        "tci_ip": "127.0.0.1",
-                        "tci_port": 50001
                     }
                 }
             }

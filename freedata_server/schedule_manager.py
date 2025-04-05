@@ -15,7 +15,23 @@ from arq_session_irs import IRS_State
 from arq_session_iss import ISS_State
 
 class ScheduleManager:
+    """Manages scheduled tasks for the FreeDATA modem.
+
+    This class schedules and executes various tasks related to the FreeDATA
+    modem, including checking for queued messages, publishing to the
+    explorer, transmitting beacons, cleaning up old beacons, and updating
+    transmission states. It uses the `sched` module for scheduling and
+    runs tasks in a separate thread.
+    """
     def __init__(self, modem_version, config_manager, state_manger, event_manager):
+        """Initializes the ScheduleManager.
+
+        Args:
+            modem_version (str): The version of the FreeDATA modem.
+            config_manager (ConfigManager): The configuration manager instance.
+            state_manger (StateManager): The state manager instance.
+            event_manager (EventManager): The event manager instance.
+        """
         self.log = structlog.get_logger("SCHEDULE_MANAGER")
 
         self.modem_version = modem_version
@@ -38,13 +54,32 @@ class ScheduleManager:
         self.modem = None
 
     def schedule_event(self, event_function, interval):
-        """Schedule an event and automatically reschedule it after execution."""
+        """Schedules and executes a recurring event.
+
+        This method executes the given event function and then reschedules
+        it to run again after the specified interval, as long as the
+        ScheduleManager is still running.
+
+        Args:
+            event_function (function): The function to execute.
+            interval (int): The time interval between executions in seconds.
+        """
         event_function()  # Execute the event function
         if self.running:  # Only reschedule if still running
             self.scheduler.enter(interval, 1, self.schedule_event, (event_function, interval))
 
     def start(self, modem):
-        """Start scheduling events and run the scheduler in a separate thread."""
+        """Starts the scheduled tasks.
+
+        This method initializes and starts the scheduler in a separate
+        thread. It waits for a short period to allow the freedata_server to
+        initialize, retrieves the freedata_server instance, sets the running
+        flag, schedules the initial events, and starts the scheduler
+        thread.
+
+        Args:
+            modem: The FreeDATA modem instance.
+        """
 
         # wait some time for the modem to be ready
         threading.Event().wait(timeout=0.1)
@@ -62,7 +97,13 @@ class ScheduleManager:
         self.scheduler_thread.start()
 
     def stop(self):
-        """Stop scheduling new events and terminate the scheduler thread."""
+        """Stops the scheduler and its associated thread.
+
+        This method stops the scheduler by setting the running flag to
+        False, canceling any pending scheduled events, and waiting for the
+        scheduler thread to finish. It logs messages indicating the
+        shutdown process.
+        """
         self.log.warning("[SHUTDOWN] stopping schedule manager....")
         self.running = False  # Clear the running flag to stop scheduling new events
         # Clear scheduled events to break the scheduler out of its waiting state
@@ -74,6 +115,13 @@ class ScheduleManager:
             self.scheduler_thread.join(1)
         self.log.warning("[SHUTDOWN] schedule manager stopped")
     def transmit_beacon(self):
+        """Transmits a beacon signal.
+
+        This method transmits a beacon signal if beacon transmission is
+        enabled, the freedata_server is running, and no ARQ transmission is in
+        progress. It handles potential exceptions during beacon
+        transmission.
+        """
         try:
             if not self.state_manager.getARQ() and self.state_manager.is_beacon_running and self.state_manager.is_modem_running:
                     cmd = command_beacon.BeaconCommand(self.config, self.state_manager, self.event_manager)
@@ -82,13 +130,25 @@ class ScheduleManager:
             print(e)
 
     def delete_beacons(self):
+        """Deletes old beacon records from the database.
+
+        This method periodically cleans up old beacon records from the
+        database that are older than two days. It handles potential
+        exceptions during the cleanup process.
+        """
         try:
             DatabaseManagerBeacon(self.event_manager).beacon_cleanup_older_than_days(2)
         except Exception as e:
             print(e)
 
     def push_to_explorer(self):
+        
         self.config = self.config_manager.read()
+
+        # check before if self.config has a loaded config dict
+        if not isinstance(self.config, dict):
+            return
+
         if self.config['STATION']['enable_explorer'] and self.state_manager.is_modem_running:
             try:
                 explorer.Explorer(self.modem_version, self.config_manager, self.state_manager).push()
@@ -96,6 +156,14 @@ class ScheduleManager:
                 print(e)
 
     def check_for_queued_messages(self):
+        """Checks for and sends queued messages.
+
+        This method checks for queued messages in the database and transmits
+        the first queued message if the freedata_server is running, not currently
+        transmitting other data (ARQ or Codec2), and a queued message is
+        available. It handles potential exceptions during message retrieval
+        and transmission.
+        """
         if not self.state_manager.getARQ() and not self.state_manager.is_receiving_codec2_signal() and self.state_manager.is_modem_running:
             try:
                 if first_queued_message := DatabaseManagerMessages(
@@ -109,6 +177,14 @@ class ScheduleManager:
         return
 
     def update_transmission_state(self):
+        """Updates and cleans up ARQ session states.
+
+        This method periodically checks the state of active ARQ sessions.
+        It sets inactive IRS (Information Receiving Station) sessions to
+        RESUME, deletes successfully completed or failed/aborted sessions,
+        and handles potential exceptions during state updates and session
+        deletion.
+        """
 
         session_to_be_deleted = set()
 

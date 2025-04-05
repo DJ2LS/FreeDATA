@@ -6,8 +6,21 @@ from modem_frametypes import FRAME_TYPE as FR
 from p2p_connection import P2PConnection
 
 class P2PConnectionFrameHandler(frame_handler.FrameHandler):
+    """Handles P2P connection frames.
+
+    This class processes P2P connection frames, manages P2P connections,
+    and dispatches frames to the appropriate connection based on their
+    type and session ID.
+    """
 
     def follow_protocol(self):
+        """Processes received P2P connection frames.
+
+        This method handles different P2P frame types, including connection
+        requests, acknowledgements, payload data, disconnections, and payload
+        acknowledgements. It manages connection creation, retrieval, and
+        updates based on the frame type and session ID.
+        """
 
         if not self.should_respond():
             return
@@ -32,8 +45,8 @@ class P2PConnectionFrameHandler(frame_handler.FrameHandler):
                 session = P2PConnection(self.config,
                                         self.modem,
                                         frame['origin'],
-                                        frame['destination_crc'],
-                                        self.states, self.event_manager)
+                                        frame['destination'],
+                                        self.states, self.event_manager, self.socket_interface_manager)
                 session.session_id = session_id
                 self.states.register_p2p_connection_session(session)
 

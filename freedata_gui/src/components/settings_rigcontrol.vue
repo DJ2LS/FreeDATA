@@ -1,50 +1,67 @@
 <template>
   <!-- Top Info Area for Rig Control Settings -->
-  <div class="alert alert-info" role="alert">
-    <strong><i class="bi bi-gear-wide-connected me-1"></i>Rig Control</strong> related settings, including selecting your rig control method and configuring specific settings.
+  <div
+    class="alert alert-info"
+    role="alert"
+  >
+    <strong><i class="bi bi-gear-wide-connected me-1" /></strong>{{ $t('settings.radio.introduction') }}
   </div>
 
-    <div class="alert alert-warning" role="alert">
-    Please select <strong>Rig Control</strong> first.
+  <div
+    class="alert alert-warning"
+    role="alert"
+  >
+    {{ $t('settings.radio.info') }}
   </div>
 
 
   <!-- Rig Control Selection -->
-<div class="input-group mb-1">
-  <label class="input-group-text w-50 text-wrap">
-    Rig Control
-    <button
-      type="button"
-      class="btn btn-link p-0 ms-2"
-      data-bs-toggle="tooltip"
-      title="Choose how the software controls your radio"
+  <div class="input-group mb-1">
+    <label class="input-group-text w-50 text-wrap">
+      {{ $t('settings.radio.rigcontroltype') }}
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        :title="$t('settings.radio.rigcontroltype_help')"
+      >
+        <i class="bi bi-question-circle" />
+      </button>
+    </label>
+    <select
+      id="rigcontrol_radiocontrol"
+      v-model="settings.remote.RADIO.control"
+      class="form-select form-select-sm w-50"
+      @change="onChange"
     >
-      <i class="bi bi-question-circle"></i>
-    </button>
-  </label>
-  <select
-    class="form-select form-select-sm w-50"
-    id="rigcontrol_radiocontrol"
-    @change="onChange"
-    v-model="settings.remote.RADIO.control"
-  >
-    <option value="disabled">Disabled / VOX (no rig control - use with VOX)</option>
-    <option value="serial_ptt">Serial PTT via DTR/RTS</option>
-    <option value="rigctld">Rigctld (external Hamlib)</option>
-    <option value="rigctld_bundle">Rigctld (internal Hamlib)</option>
-    <option value="tci">TCI</option>
-  </select>
-</div>
+      <option value="disabled">
+        Disabled / VOX (no rig control - use with VOX)
+      </option>
+      <option value="serial_ptt">
+        Serial PTT via DTR/RTS
+      </option>
+      <option value="rigctld">
+        Rigctld (external Hamlib)
+      </option>
+      <option value="rigctld_bundle">
+        Rigctld (internal Hamlib)
+      </option>
+    </select>
+  </div>
 
 
-  <hr class="m-2" />
+  <hr class="m-2">
 
   <!-- Tab Navigation -->
   <nav>
-    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+    <div
+      id="nav-tab"
+      class="nav nav-tabs"
+      role="tablist"
+    >
       <button
-        class="nav-link active"
         id="nav-hamlib-tab"
+        class="nav-link active"
         data-bs-toggle="tab"
         data-bs-target="#nav-hamlib"
         type="button"
@@ -52,23 +69,12 @@
         aria-controls="nav-hamlib"
         aria-selected="true"
       >
-        Hamlib
+        {{ $t('settings.radio.tabhamlib') }}
       </button>
+
       <button
-        class="nav-link"
-        id="nav-tci-tab"
-        data-bs-toggle="tab"
-        data-bs-target="#nav-tci"
-        type="button"
-        role="tab"
-        aria-controls="nav-tci"
-        aria-selected="false"
-      >
-        TCI
-      </button>
-      <button
-        class="nav-link"
         id="nav-serial-tab"
+        class="nav-link"
         data-bs-toggle="tab"
         data-bs-target="#nav-serial"
         type="button"
@@ -76,17 +82,20 @@
         aria-controls="nav-serial"
         aria-selected="false"
       >
-        Serial
+        {{ $t('settings.radio.tabserial') }}
       </button>
     </div>
   </nav>
 
   <!-- Tab Content -->
-  <div class="tab-content mt-2" id="nav-tabContent">
+  <div
+    id="nav-tabContent"
+    class="tab-content mt-2"
+  >
     <!-- Hamlib Settings -->
     <div
-      class="tab-pane fade show active"
       id="nav-hamlib"
+      class="tab-pane fade show active"
       role="tabpanel"
       aria-labelledby="nav-hamlib-tab"
       tabindex="0"
@@ -94,21 +103,10 @@
       <settings_hamlib />
     </div>
 
-    <!-- TCI Settings -->
-    <div
-      class="tab-pane fade"
-      id="nav-tci"
-      role="tabpanel"
-      aria-labelledby="nav-tci-tab"
-      tabindex="1"
-    >
-      <settings_tci />
-    </div>
-
     <!-- Serial PTT Settings -->
     <div
-      class="tab-pane fade"
       id="nav-serial"
+      class="tab-pane fade"
       role="tabpanel"
       aria-labelledby="nav-serial-tab"
       tabindex="2"
@@ -117,28 +115,26 @@
     </div>
   </div>
 
-  <hr class="m-2" />
+  <hr class="m-2">
 </template>
 
 <script>
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 import settings_hamlib from "./settings_hamlib.vue";
-import settings_tci from "./settings_tci.vue";
 import settings_serial_ptt from "./settings_serial_ptt.vue";
 
 export default {
   components: {
     settings_hamlib,
-    settings_tci,
     settings_serial_ptt
-  },
-  methods: {
-    onChange
   },
   computed: {
     settings() {
       return settings;
     }
+  },
+  methods: {
+    onChange
   }
 };
 </script>

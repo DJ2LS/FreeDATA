@@ -13,14 +13,14 @@ function stopAllTransmissions() {
 
 <template>
   <a
-    class="btn btn-outline-danger d-flex border justify-content-center align-items-center object-fill rounded w-100 h-100"
     id="stop_transmission_connection"
+    class="btn btn-outline-danger d-flex border justify-content-center align-items-center object-fill rounded w-100 h-100"
     data-bs-toggle="tooltip"
     data-bs-trigger="hover"
     data-bs-html="false"
+    :title="$t('grid.components.stop_help')"
     @click="stopAllTransmissions"
-    title="Abort session and stop transmissions"
   >
-    <i class="bi bi-sign-stop-fill h1"></i>
+    <i class="bi bi-sign-stop-fill h1" />
   </a>
 </template>

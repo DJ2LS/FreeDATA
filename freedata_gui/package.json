@@ -1,12 +1,12 @@
 {
   "name": "FreeDATA",
-  "version": "0.16.10-alpha",
+  "version": "0.17.0-beta",
   "description": "FreeDATA Client application for connecting to FreeDATA server",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "npm i && vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "npx eslint ."
   },
   "repository": {
     "type": "git",
@@ -28,16 +28,19 @@
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
-    "bootstrap-vue-next": "^0.26.7",
+    "bootstrap-vue-next": "^0.28.3",
     "chart.js": "^4.4.3",
     "chartjs-plugin-annotation": "^3.0.1",
     "core-js": "^3.8.3",
     "d3": "^7.9.0",
     "dompurify": "^3.1.6",
+    "gettext-parser": "^8.0.0",
     "gridstack": "^11.0.1",
+    "i18next": "^24.2.2",
+    "i18next-vue": "^5.2.0",
     "js-image-compressor": "^2.0.0",
     "marked": "^15.0.3",
-    "pinia": "^2.1.7",
+    "pinia": "^3.0.1",
     "qth-locator": "^2.1.0",
     "topojson-client": "^3.1.0",
     "uuid": "^11.0.2",
@@ -49,26 +52,10 @@
     "@babel/core": "^7.25.2",
     "@babel/eslint-parser": "^7.25.1",
     "@eslint/js": "^9.10.0",
-    "@vue/cli-plugin-babel": "~5.0.8",
-    "@vue/cli-plugin-eslint": "~5.0.8",
     "@vue/cli-service": "~5.0.8",
-    "eslint": "^8.0.0",
-    "eslint-plugin-vue": "^9.28.0",
-    "globals": "^15.9.0"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/vue3-essential",
-      "eslint:recommended"
-    ],
-    "parserOptions": {
-      "parser": "@babel/eslint-parser"
-    },
-    "rules": {}
+    "eslint": "^9.0.0",
+    "eslint-plugin-vue": "^9.0.0",
+    "globals": "^16.0.0"
   },
   "browserslist": [
     "> 1%",

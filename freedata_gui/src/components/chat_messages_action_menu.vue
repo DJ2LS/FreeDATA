@@ -1,8 +1,14 @@
 <template>
   <div class="message-actions-menu">
-    <button @click="onDelete">Delete</button>
-    <button @click="onCopy">Copy</button>
-    <button @click="onQuote">Quote</button>
+    <button @click="onDelete">
+      Delete
+    </button>
+    <button @click="onCopy">
+      Copy
+    </button>
+    <button @click="onQuote">
+      Quote
+    </button>
   </div>
 </template>
 
