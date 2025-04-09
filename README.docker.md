@@ -4,9 +4,9 @@ This image was built to allow FreeDATA to be run on MacOS. These instructions ar
 
 ## Prerequisites
 
-* An install of Docker (eg. [Docker Desktop for MacOS](https://docs.docker.com/desktop/setup/install/mac-install/)).
-* Some familiarity with the command line (eg: via `Terminal.app`).
-* [Brew](https://brew.sh/) - I've tried to avoid this as a requirement but it is the easiest way to install `pulseaudio` on MacOS.
+- An install of Docker (eg. [Docker Desktop for MacOS](https://docs.docker.com/desktop/setup/install/mac-install/)).
+- Some familiarity with the command line (eg: via `Terminal.app`).
+- [Brew](https://brew.sh/) - I've tried to avoid this as a requirement but it is the easiest way to install `pulseaudio` on MacOS.
 
 ## Setting up
 
@@ -21,31 +21,37 @@ brew install pulseaudio
 ```
 
 Now run the daemon.
+
 ```bash
 pulseaudio --load=module-native-protocol-tcp --exit-idle-time=-1 --daemon
 ```
 
 Confirm it is running.
+
 ```bash
 pulseaudio --check -v
 ```
 
 Setup the audio output, this will list your audio output devices. The `*` will show the default output.
+
 ```bash
 pacmd list-sinks | grep -e 'name:' -e 'index:' -e 'card:'
 ```
 
 If you need to change your default output then this can be done by specifying the index:
+
 ```bash
 pacmd set-default-sink 1
 ```
 
 As will above, setup the the audio source.
+
 ```bash
 pacmd list-sources | grep -e 'name:' -e 'index:' -e 'card:'
 ```
 
 Any updates to sources can be triggered with:
+
 ```bash
 pacmd set-default-source 1
 ```

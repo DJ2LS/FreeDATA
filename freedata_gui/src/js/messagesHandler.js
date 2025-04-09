@@ -13,7 +13,7 @@ import {
   getFreedataMessageById,
   postFreedataMessageADIF,
 } from "./api";
-import {useIsMobile} from "@/js/mobile_devices";
+import { useIsMobile } from "@/js/mobile_devices";
 const { isMobile } = useIsMobile(768);
 
 /**
@@ -28,9 +28,6 @@ export async function processFreedataMessages(data) {
     if (!chatStore.selectedCallsign && !isMobile) {
       chatStore.selectedCallsign = Object.keys(chatStore.sorted_chat_list)[0];
     }
-
-
-
   }
 }
 
@@ -44,7 +41,8 @@ function createCallsignListFromAPI(data) {
   chatStore.totalUnreadMessages = 0;
 
   data.messages.forEach((message) => {
-    const callsign = message.direction === "receive" ? message.origin : message.destination;
+    const callsign =
+      message.direction === "receive" ? message.origin : message.destination;
 
     // Increment global unread count if the message is not read.
     if (!message.is_read) {
@@ -64,7 +62,9 @@ function createCallsignListFromAPI(data) {
         callsignList[callsign].unread_messages++;
       }
       // Update stored details if this message is newer.
-      if (new Date(message.timestamp) > new Date(callsignList[callsign].timestamp)) {
+      if (
+        new Date(message.timestamp) > new Date(callsignList[callsign].timestamp)
+      ) {
         callsignList[callsign].timestamp = message.timestamp;
         callsignList[callsign].body = message.body;
       }
@@ -73,7 +73,8 @@ function createCallsignListFromAPI(data) {
 
   // Get the keys sorted in descending order by timestamp.
   const sortedKeys = Object.keys(callsignList).sort(
-    (a, b) => new Date(callsignList[b].timestamp) - new Date(callsignList[a].timestamp)
+    (a, b) =>
+      new Date(callsignList[b].timestamp) - new Date(callsignList[a].timestamp),
   );
 
   // Rebuild the object with keys in sorted order.
@@ -95,7 +96,8 @@ function createSortedMessagesList(data) {
 
   data.messages.forEach((message) => {
     // Determine the callsign based on message direction.
-    const callsign = message.direction === "receive" ? message.origin : message.destination;
+    const callsign =
+      message.direction === "receive" ? message.origin : message.destination;
 
     if (!callsignMessages[callsign]) {
       callsignMessages[callsign] = [];
