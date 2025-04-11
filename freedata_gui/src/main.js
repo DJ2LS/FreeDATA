@@ -8,7 +8,7 @@ import { Chart, Filler } from "chart.js";
 import { getRemote, settingsStore as settings } from "./store/settingsStore";
 import { initConnections } from "./js/event_sock.js";
 import { getModemState } from "./js/api";
-import {applyColorMode} from './js/freedata.js'
+import { applyColorMode } from "./js/freedata.js";
 
 // Register the Filler plugin globally
 Chart.register(Filler);
@@ -35,5 +35,4 @@ getRemote().then(() => {
 
   //Apply Color Mode to gui
   applyColorMode(settings.local.colormode);
-
 });

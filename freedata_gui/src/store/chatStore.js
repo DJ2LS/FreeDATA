@@ -62,6 +62,6 @@ export const useChatStore = defineStore("chatStore", () => {
     arq_speed_list_timestamp,
     scrollTrigger,
     triggerScrollToBottom,
-    loading
+    loading,
   };
 });

@@ -51,9 +51,9 @@ class ARQSessionISS(arq_session.ARQSession):
     # DJ2LS: 3 seconds seems to be too small for radios with a too slow PTT toggle time
     # DJ2LS: 3.5 seconds is working well WITHOUT a channel busy detection delay
     TIMEOUT_CHANNEL_BUSY = 0
-    TIMEOUT_CONNECT_ACK = 3.5 + TIMEOUT_CHANNEL_BUSY
-    TIMEOUT_TRANSFER = 2.5 + TIMEOUT_CHANNEL_BUSY
-    TIMEOUT_STOP_ACK = 3.5 + TIMEOUT_CHANNEL_BUSY
+    TIMEOUT_CONNECT_ACK = 4.5 + TIMEOUT_CHANNEL_BUSY
+    TIMEOUT_TRANSFER = 3.5 + TIMEOUT_CHANNEL_BUSY
+    TIMEOUT_STOP_ACK = 4.5 + TIMEOUT_CHANNEL_BUSY
 
     STATE_TRANSITION = {
         ISS_State.OPEN_SENT: {

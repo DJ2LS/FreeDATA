@@ -195,10 +195,13 @@ onMounted(() => {
 <template>
   <div class="card h-100">
     <div class="card-header">
-      <div class="btn-group" role="group">
+      <div
+        class="btn-group"
+        role="group"
+      >
         <div
-          class="list-group bg-body-tertiary list-group-horizontal"
           id="list-tab"
+          class="list-group bg-body-tertiary list-group-horizontal"
           role="tablist"
         >
           <a
@@ -209,7 +212,7 @@ onMounted(() => {
             :class="{ active: localSpectrumView == 'waterfall' }"
             @click="selectStatsControl('wf')"
           >
-            <strong><i class="bi bi-water"></i></strong>
+            <strong><i class="bi bi-water" /></strong>
           </a>
           <a
             class="py-0 list-group-item list-group-item-light list-group-item-action"
@@ -219,7 +222,7 @@ onMounted(() => {
             :class="{ active: localSpectrumView == 'scatter' }"
             @click="selectStatsControl('scatter')"
           >
-            <strong><i class="bi bi-border-outer"></i></strong>
+            <strong><i class="bi bi-border-outer" /></strong>
           </a>
           <a
             class="py-0 list-group-item list-group-item-light list-group-item-action"
@@ -229,21 +232,26 @@ onMounted(() => {
             :class="{ active: localSpectrumView == 'chart' }"
             @click="selectStatsControl('chart')"
           >
-            <strong><i class="bi bi-graph-up-arrow"></i></strong>
+            <strong><i class="bi bi-graph-up-arrow" /></strong>
           </a>
         </div>
       </div>
-
     </div>
     <div class="card-body w-100 h-100 overflow-auto p-2">
-      <div class="tab-content h-100 w-100" id="nav-stats-tabContent">
+      <div
+        id="nav-stats-tabContent"
+        class="tab-content h-100 w-100"
+      >
         <div
           class="tab-pane fade h-100 w-100"
           :class="{ 'show active': localSpectrumView == 'waterfall' }"
           role="stats_tabpanel"
           aria-labelledby="list-waterfall-list"
         >
-          <canvas :id="localSpectrumID" class="force-gpu"></canvas>
+          <canvas
+            :id="localSpectrumID"
+            class="force-gpu"
+          />
         </div>
         <div
           class="tab-pane fade h-100 w-100"
@@ -251,7 +259,10 @@ onMounted(() => {
           role="tabpanel"
           aria-labelledby="list-scatter-list"
         >
-          <Scatter :data="scatterChartData" :options="scatterChartOptions" />
+          <Scatter
+            :data="scatterChartData"
+            :options="scatterChartOptions"
+          />
         </div>
         <div
           class="tab-pane fade h-100 w-100"
@@ -267,9 +278,15 @@ onMounted(() => {
       </div>
     </div>
 
-    <div class=card-footer p-1>
-
-    <div class="btn-group" role="group" aria-label="Busy indicators">
+    <div
+      class="card-footer"
+      p-1
+    >
+      <div
+        class="btn-group"
+        role="group"
+        aria-label="Busy indicators"
+      >
         <button
           class="btn btn-sm ms-1 p-1 disabled"
           type="button"
@@ -367,9 +384,5 @@ onMounted(() => {
         </button>
       </div>
     </div>
-
-
-
-
   </div>
 </template>

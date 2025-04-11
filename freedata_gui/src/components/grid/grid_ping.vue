@@ -22,8 +22,12 @@ window.addEventListener(
 </script>
 
 <template>
-  <div class="input-group" style="width: calc(100% - 24px)">
+  <div
+    class="input-group"
+    style="width: calc(100% - 24px)"
+  >
     <input
+      v-model="dxcallPing"
       type="text"
       class="form-control"
       style="min-width: 3rem; text-transform: uppercase; height: 31px"
@@ -32,12 +36,11 @@ window.addEventListener(
       maxlength="11"
       aria-label="Input group"
       aria-describedby="btnGroupAddon"
-      v-model="dxcallPing"
-    />
+    >
     <a
+      id="sendPing"
       class="btn btn-sm btn-secondary"
       style="max-width: 3em"
-      id="sendPing"
       type="button"
       data-bs-placement="bottom"
       data-bs-toggle="tooltip"

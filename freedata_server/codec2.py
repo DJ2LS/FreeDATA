@@ -300,6 +300,8 @@ class audio_buffer:
         self.mutex.release()
 
 
+
+
 # Resampler ---------------------------------------------------------
 
 # Oversampling rate
@@ -702,11 +704,11 @@ data_ofdm_2438_config.config.contents.amp_est_mode = 0
 data_ofdm_2438_config.config.contents.amp_scale = 106E3
 data_ofdm_2438_config.config.contents.codename = "H_16200_9720".encode('utf-8')
 data_ofdm_2438_config.config.contents.clip_gain1 = 3.3
-data_ofdm_2438_config.config.contents.clip_gain2 = 0.8
+data_ofdm_2438_config.config.contents.clip_gain2 = 1.5 #0.8 - a test in real world shows, 0.8 seems to be not enough for decoding. Lets test this some more time.
 data_ofdm_2438_config.config.contents.timing_mx_thresh = 0.10
 data_ofdm_2438_config.config.contents.tx_uw = create_tx_uw(data_ofdm_2438_config.config.contents.nuwbits, [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1])
 data_ofdm_2438_config.config.contents.tx_bpf_en = True
-data_ofdm_2438_config.config.contents.tx_bpf_proto = codec2_filter_coeff.generate_filter_coefficients(8000, 2500, 100)
+data_ofdm_2438_config.config.contents.tx_bpf_proto = codec2_filter_coeff.generate_filter_coefficients(8000, 2700, 100)
 data_ofdm_2438_config.config.contents.tx_bpf_proto_n = 100
 
 # ---------------- QAM 2438 Hz Bandwidth ---------------#

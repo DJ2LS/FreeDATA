@@ -1,21 +1,30 @@
 <template>
-  <div class="tab-content p-3" id="nav-tabContent-chat-messages">
-    <template v-for="(details, callsign) in chat.callsign_list" :key="callsign">
+  <div
+    id="nav-tabContent-chat-messages"
+    class="tab-content p-3"
+  >
+    <template
+      v-for="(details, callsign) in chat.callsign_list"
+      :key="callsign"
+    >
       <div
-        class="tab-pane fade"
-
-        :class="{ 'active show': chat.selectedCallsign === callsign }"
         :id="`list-${callsign}-messages`"
+
+        class="tab-pane fade"
+        :class="{ 'active show': chat.selectedCallsign === callsign }"
         role="tabpanel"
         :aria-labelledby="`list-chat-list-${callsign}`"
       >
-        <template v-for="(item, index) in chat.sorted_chat_list[callsign]" :key="item.timestamp">
+        <template
+          v-for="(item, index) in chat.sorted_chat_list[callsign]"
+          :key="item.timestamp"
+        >
           <!-- Date Separator -->
           <div v-if="showDateSeparator(index, item.timestamp, chat.sorted_chat_list[callsign])">
             <div class="d-flex align-items-center my-3">
-              <hr class="flex-grow-1" />
+              <hr class="flex-grow-1">
               <span class="mx-2 text-muted">{{ getDate(item.timestamp) }}</span>
-              <hr class="flex-grow-1" />
+              <hr class="flex-grow-1">
             </div>
           </div>
 
@@ -27,9 +36,7 @@
           <div v-else-if="item.direction === 'receive'">
             <ReceivedMessage :message="item" />
           </div>
-
         </template>
-
       </div>
     </template>
   </div>
@@ -47,13 +54,14 @@ setActivePinia(pinia);
 const chat = useChatStore(pinia);
 
 function getDate(timestampRaw) {
-  // Parsing the timestamp and returning the date part as YYYY-MM-DD
   const date = new Date(timestampRaw);
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return date.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
 }
+
 
 function showDateSeparator(index, currentTimestamp, messages) {
   if (index === 0) return true; // Always show the date for the first message

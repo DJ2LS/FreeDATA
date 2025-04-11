@@ -38,18 +38,18 @@ const settings = ref({
         data-bs-toggle="tooltip"
         :title="$t('settings.radio.hamlibrigctldhost_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <input
+      id="rigctldIp"
+      v-model="settings.remote.RIGCTLD.ip"
       type="text"
       class="form-control"
       :placeholder="$t('settings.radio.hamlibrigctldhost_placeholder')"
-      id="rigctldIp"
       aria-label="Rigctld IP"
       @change="onChange"
-      v-model="settings.remote.RIGCTLD.ip"
-    />
+    >
   </div>
 
   <!-- Rigctld Port -->
@@ -62,18 +62,18 @@ const settings = ref({
         data-bs-toggle="tooltip"
         :title="$t('settings.radio.hamlibrigctldport_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <input
+      id="rigctldPort"
+      v-model.number="settings.remote.RIGCTLD.port"
       type="number"
       class="form-control"
       :placeholder="$t('settings.radio.hamlibrigctldport_placeholder')"
-      id="rigctldPort"
       aria-label="Rigctld Port"
       @change="onChange"
-      v-model.number="settings.remote.RIGCTLD.port"
-    />
+    >
   </div>
 
   <!-- Rigctld VFO Parameter -->
@@ -86,24 +86,27 @@ const settings = ref({
         data-bs-toggle="tooltip"
         :title="$t('settings.radio.hamlibrigctldenablevfo_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
         <input
-          class="form-check-input"
-          type="checkbox"
           id="enableVfoSwitch"
           v-model="settings.remote.RIGCTLD.enable_vfo"
+          class="form-check-input"
+          type="checkbox"
           @change="onChange"
-        />
-        <label class="form-check-label" for="enableVfoSwitch">{{ $t('settings.enable') }}</label>
+        >
+        <label
+          class="form-check-label"
+          for="enableVfoSwitch"
+        >{{ $t('settings.enable') }}</label>
       </div>
     </label>
   </div>
 
-  <hr class="m-2" />
+  <hr class="m-2">
 
   <!-- Conditional Section for Rigctld Bundle -->
   <div :class="settings.remote.RADIO.control == 'rigctld_bundle' ? '' : 'd-none'">
@@ -117,38 +120,55 @@ const settings = ref({
           data-bs-toggle="tooltip"
           :title="$t('settings.radio.hamlibrigctldradiomodel_help')"
         >
-          <i class="bi bi-question-circle"></i>
+          <i class="bi bi-question-circle" />
         </button>
       </label>
       <select
+        id="radioModelSelect"
+        v-model.number="settings.remote.RADIO.model_id"
         class="form-select form-select-sm w-50"
         aria-label="Radio Model"
-        id="radioModelSelect"
         @change="onChange"
-        v-model.number="settings.remote.RADIO.model_id"
       >
         <!-- Your extensive list of options -->
-<option selected value="0">-- ignore --</option>
-        <option value="1">Hamlib Dummy</option>
-        <option value="2">Hamlib NET rigctl</option>
-        <option value="4">FLRig FLRig</option>
-        <option value="5">TRXManager TRXManager 5.7.630+</option>
-        <option value="6">Hamlib Dummy No VFO</option>
-        <option value="29001">ADAT www.adat.ch (29001)</option>
-        <option value="25016">AE9RB Si570 (25016)</option>
-        <option value="25017">AE9RB Si570 (25017)</option>
+        <option
+          selected
+          value="0"
+        >
+          -- ignore --
+        </option>
+        <option value="1">
+          Hamlib Dummy
+        </option>
+        <option value="2">
+          Hamlib NET rigctl
+        </option>
+        <option value="4">
+          FLRig FLRig
+        </option>
+        <option value="5">
+          TRXManager TRXManager 5.7.630+
+        </option>
+        <option value="6">
+          Hamlib Dummy No VFO
+        </option>
+        <option value="29001">ADAT www.adat.ch ADT-200A (29001)</option>
+        <option value="25016">AE9RB Si570 Peaberry V1 (25016)</option>
+        <option value="25017">AE9RB Si570 Peaberry V2 (25017)</option>
+        <option value="9">Airspy SDR#/gpredict (9)</option>
         <option value="17001">Alinco DX-77 (17001)</option>
         <option value="17002">Alinco DX-SR8 (17002)</option>
         <option value="25006">AmQRP DDS-60 (25006)</option>
-        <option value="25013">AMSAT-UK FUNcube (25013)</option>
-        <option value="25018">AMSAT-UK FUNcube (25018)</option>
+        <option value="25013">AMSAT-UK FUNcube Dongle (25013)</option>
+        <option value="25018">AMSAT-UK FUNcube Dongle Pro+ (25018)</option>
+        <option value="37001">AnyTone D578A (37001)</option>
         <option value="5008">AOR AR2700 (5008)</option>
         <option value="5006">AOR AR3000A (5006)</option>
         <option value="5005">AOR AR3030 (5005)</option>
         <option value="5004">AOR AR5000 (5004)</option>
         <option value="5014">AOR AR5000A (5014)</option>
         <option value="5003">AOR AR7030 (5003)</option>
-        <option value="5015">AOR AR7030 (5015)</option>
+        <option value="5015">AOR AR7030 Plus (5015)</option>
         <option value="5002">AOR AR8000 (5002)</option>
         <option value="5001">AOR AR8200 (5001)</option>
         <option value="5013">AOR AR8600 (5013)</option>
@@ -156,15 +176,18 @@ const settings = ref({
         <option value="32001">Barrett 2050 (32001)</option>
         <option value="32003">Barrett 4050 (32003)</option>
         <option value="32002">Barrett 950 (32002)</option>
+        <option value="2053">BG2FX FX4/C/CR/L (2053)</option>
         <option value="34001">CODAN Envoy (34001)</option>
         <option value="34002">CODAN NGT (34002)</option>
-        <option value="25003">Coding Technologies (25003)</option>
+        <option value="25003">Coding Technologies Digital World Traveller (25003)</option>
+        <option value="39001">Commradio CTX-10 (39001)</option>
+        <option value="2055">DL2MAN (tr)uSDX (2055)</option>
         <option value="31002">Dorji DRA818U (31002)</option>
         <option value="31001">Dorji DRA818V (31001)</option>
         <option value="9002">Drake R-8A (9002)</option>
         <option value="9003">Drake R-8B (9003)</option>
-        <option value="23003">DTTS Microwave (23003)</option>
-        <option value="23004">DTTS Microwave (23004)</option>
+        <option value="23003">DTTS Microwave Society DttSP IPC (23003)</option>
+        <option value="23004">DTTS Microwave Society DttSP UDP (23004)</option>
         <option value="33001">ELAD FDM-DUO (33001)</option>
         <option value="2021">Elecraft K2 (2021)</option>
         <option value="2029">Elecraft K3 (2029)</option>
@@ -173,17 +196,27 @@ const settings = ref({
         <option value="2044">Elecraft KX2 (2044)</option>
         <option value="2045">Elecraft KX3 (2045)</option>
         <option value="2038">Elecraft XG3 (2038)</option>
-        <option value="25001">Elektor Elektor (25001)</option>
-        <option value="25007">Elektor Elektor (25007)</option>
+        <option value="25001">Elektor Elektor 3/04 (25001)</option>
+        <option value="25007">Elektor Elektor SDR-USB (25007)</option>
         <option value="25012">FiFi FiFi-SDR (25012)</option>
         <option value="2036">FlexRadio 6xxx (2036)</option>
-        <option value="23001">Flex-radio SDR-1000 (23001)</option>
-        <option value="2048">FlexRadio/ANAN PowerSDR/Thetis (2048)</option>
+        <option value="23001">FlexRadio SDR-1000 (23001)</option>
+        <option value="23005">FlexRadio SmartSDR Slice A (23005)</option>
+        <option value="23006">FlexRadio SmartSDR Slice B (23006)</option>
+        <option value="23007">FlexRadio SmartSDR Slice C (23007)</option>
+        <option value="23008">FlexRadio SmartSDR Slice D (23008)</option>
+        <option value="23009">FlexRadio SmartSDR Slice E (23009)</option>
+        <option value="23010">FlexRadio SmartSDR Slice F (23010)</option>
+        <option value="23011">FlexRadio SmartSDR Slice G (23011)</option>
+        <option value="23012">FlexRadio SmartSDR Slice H (23012)</option>
+        <option value="2048">FlexRadio/Apache PowerSDR (2048)</option>
         <option value="25015">Funkamateur FA-SDR (25015)</option>
         <option value="35001">GOMSPACE GS100 (35001)</option>
+        <option value="1052">Guohe PMR-171 (1052)</option>
+        <option value="1051">Guohe Q900 (1051)</option>
         <option value="2046">Hilberling PT-8000A (2046)</option>
         <option value="25019">HobbyPCB RS-HFIQ (25019)</option>
-        <option value="3054">Icom IC (3054)</option>
+        <option value="3054">Icom IC ID-1 (3054)</option>
         <option value="3002">Icom IC-1275 (3002)</option>
         <option value="3003">Icom IC-271 (3003)</option>
         <option value="3072">Icom IC-2730 (3072)</option>
@@ -225,12 +258,14 @@ const settings = ref({
         <option value="3029">Icom IC-765 (3029)</option>
         <option value="3062">Icom IC-7700 (3062)</option>
         <option value="3030">Icom IC-775 (3030)</option>
+        <option value="3092">Icom IC-7760 (3092)</option>
         <option value="3045">Icom IC-78 (3045)</option>
         <option value="3056">Icom IC-7800 (3056)</option>
         <option value="3031">Icom IC-781 (3031)</option>
         <option value="3075">Icom IC-7850/7851 (3075)</option>
         <option value="3032">Icom IC-820H (3032)</option>
         <option value="3034">Icom IC-821H (3034)</option>
+        <option value="3090">Icom IC-905 (3090)</option>
         <option value="3044">Icom IC-910 (3044)</option>
         <option value="3068">Icom IC-9100 (3068)</option>
         <option value="3065">Icom IC-92D (3065)</option>
@@ -267,7 +302,7 @@ const settings = ref({
         <option value="6002">JRC JST-245 (6002)</option>
         <option value="6005">JRC NRD-525 (6005)</option>
         <option value="6006">JRC NRD-535D (6006)</option>
-        <option value="6007">JRC NRD-545 (6007)</option>
+        <option value="6007">JRC NRD-545 DSP (6007)</option>
         <option value="18001">Kachina 505DSP (18001)</option>
         <option value="2015">Kenwood R-5000 (2015)</option>
         <option value="2033">Kenwood TH-D72A (2033)</option>
@@ -304,46 +339,57 @@ const settings = ref({
         <option value="2012">Kenwood TS-950S (2012)</option>
         <option value="2013">Kenwood TS-950SDX (2013)</option>
         <option value="2039">Kenwood TS-990S (2039)</option>
-        <option value="25011">KTH-SDR kit (25011)</option>
+        <option value="25011">KTH-SDR kit Si570 PIC-USB (25011)</option>
         <option value="2050">Lab599 TX-500 (2050)</option>
         <option value="10004">Lowe HF-235 (10004)</option>
-        <option value="1045">M0NKA mcHF (1045)</option>
+        <option value="1045">M0NKA mcHF QRP (1045)</option>
         <option value="2049">Malachite DSP (2049)</option>
+        <option value="36001">MDS 4710 (36001)</option>
+        <option value="36002">MDS 9710 (36002)</option>
+        <option value="38001">Micom Micom 2/3 (38001)</option>
         <option value="3074">Microtelecom Perseus (3074)</option>
         <option value="25008">mRS miniVNA (25008)</option>
         <option value="25014">N2ADR HiQSDR (25014)</option>
+        <option value="10">N2ADR James Ahlstrom Quisk (10)</option>
+        <option value="8">N3FJP ACLog (8)</option>
         <option value="2040">OpenHPSDR PiHPSDR (2040)</option>
         <option value="3053">Optoelectronics OptoScan456 (3053)</option>
         <option value="3052">Optoelectronics OptoScan535 (3052)</option>
         <option value="28001">Philips/Simoco PRM8060 (28001)</option>
+        <option value="2052">QRPLabs QCX/QDX (2052)</option>
+        <option value="2057">QRPLabs QMX (2057)</option>
         <option value="11005">Racal RA3702 (11005)</option>
         <option value="11003">Racal RA6790/GM (11003)</option>
-        <option value="8004">Radio Shack (8004)</option>
+        <option value="8004">Radio Shack PRO-2052 (8004)</option>
         <option value="24001">RFT EKD-500 (24001)</option>
+        <option value="32004">Rhode&Schwarz 4100 (32004)</option>
         <option value="27002">Rohde&Schwarz EB200 (27002)</option>
         <option value="27004">Rohde&Schwarz EK895/6 (27004)</option>
         <option value="27001">Rohde&Schwarz ESMC (27001)</option>
         <option value="27003">Rohde&Schwarz XK2100 (27003)</option>
+        <option value="27005">Rohde&Schwarz XK852 (27005)</option>
         <option value="25002">SAT-Schneider DRT1 (25002)</option>
+        <option value="2056">SDR Radio SDRConsole (2056)</option>
         <option value="2051">SDRPlay SDRUno (2051)</option>
         <option value="2032">SigFox Transfox (2032)</option>
-        <option value="14004">Skanti TRP (14004)</option>
+        <option value="14004">Skanti TRP 8255 S R (14004)</option>
         <option value="14002">Skanti TRP8000 (14002)</option>
-        <option value="25009">SoftRock Si570 (25009)</option>
+        <option value="25009">SoftRock Si570 AVR-USB (25009)</option>
         <option value="22001">TAPR DSP-10 (22001)</option>
-        <option value="3064">Ten-Tec Delta (3064)</option>
-        <option value="3051">Ten-Tec Omni (3051)</option>
+        <option value="3064">Ten-Tec Delta II (3064)</option>
+        <option value="3051">Ten-Tec Omni VI Plus (3051)</option>
         <option value="16003">Ten-Tec RX-320 (16003)</option>
         <option value="16012">Ten-Tec RX-331 (16012)</option>
         <option value="16004">Ten-Tec RX-340 (16004)</option>
         <option value="16005">Ten-Tec RX-350 (16005)</option>
-        <option value="16007">Ten-Tec TT-516 (16007)</option>
-        <option value="16002">Ten-Tec TT-538 (16002)</option>
+        <option value="16007">Ten-Tec TT-516 Argonaut V (16007)</option>
+        <option value="16002">Ten-Tec TT-538 Jupiter (16002)</option>
         <option value="16001">Ten-Tec TT-550 (16001)</option>
-        <option value="16008">Ten-Tec TT-565 (16008)</option>
-        <option value="16009">Ten-Tec TT-585 (16009)</option>
-        <option value="16011">Ten-Tec TT-588 (16011)</option>
-        <option value="16013">Ten-Tec TT-599 (16013)</option>
+        <option value="16008">Ten-Tec TT-565/566 Orion I/II (16008)</option>
+        <option value="16009">Ten-Tec TT-585 Paragon (16009)</option>
+        <option value="16011">Ten-Tec TT-588 Omni VII (16011)</option>
+        <option value="16013">Ten-Tec TT-599 Eagle (16013)</option>
+        <option value="2054">Thetis  (2054)</option>
         <option value="8002">Uniden BC245xlt (8002)</option>
         <option value="8006">Uniden BC250D (8006)</option>
         <option value="8001">Uniden BC780xlt (8001)</option>
@@ -351,26 +397,19 @@ const settings = ref({
         <option value="8012">Uniden BC898T (8012)</option>
         <option value="8010">Uniden BCD-396T (8010)</option>
         <option value="8011">Uniden BCD-996T (8011)</option>
-        <option value="1033">Vertex Standard (1033)</option>
-        <option value="26001">Video4Linux SW/FM (26001)</option>
-        <option value="26002">Video4Linux2 SW/FM (26002)</option>
+        <option value="1033">Vertex Standard VX-1700 (1033)</option>
         <option value="12004">Watkins-Johnson WJ-8888 (12004)</option>
-        <option value="15001">Winradio WR-1000 (15001)</option>
-        <option value="15002">Winradio WR-1500 (15002)</option>
-        <option value="15003">Winradio WR-1550 (15003)</option>
-        <option value="15004">Winradio WR-3100 (15004)</option>
-        <option value="15005">Winradio WR-3150 (15005)</option>
-        <option value="15006">Winradio WR-3500 (15006)</option>
-        <option value="15007">Winradio WR-3700 (15007)</option>
         <option value="15009">Winradio WR-G313 (15009)</option>
         <option value="3088">Xiegu G90 (3088)</option>
         <option value="3076">Xiegu X108G (3076)</option>
         <option value="3089">Xiegu X5105 (3089)</option>
         <option value="3087">Xiegu X6100 (3087)</option>
+        <option value="3091">Xiegu X6200 (3091)</option>
         <option value="1017">Yaesu FRG-100 (1017)</option>
         <option value="1019">Yaesu FRG-8800 (1019)</option>
         <option value="1018">Yaesu FRG-9600 (1018)</option>
         <option value="1021">Yaesu FT-100 (1021)</option>
+        <option value="1002">Yaesu FT-1000 (1002)</option>
         <option value="1003">Yaesu FT-1000D (1003)</option>
         <option value="1024">Yaesu FT-1000MP (1024)</option>
         <option value="1029">Yaesu FT-2000 (1029)</option>
@@ -399,7 +438,7 @@ const settings = ref({
         <option value="1028">Yaesu FT-950 (1028)</option>
         <option value="1031">Yaesu FT-980 (1031)</option>
         <option value="1016">Yaesu FT-990 (1016)</option>
-        <option value="1048">Yaesu FT-990 (1048)</option>
+        <option value="1048">Yaesu FT-990 Old Rom (1048)</option>
         <option value="1035">Yaesu FT-991 (1035)</option>
         <option value="1042">Yaesu FTDX-10 (1042)</option>
         <option value="1040">Yaesu FTDX-101D (1040)</option>
@@ -408,8 +447,9 @@ const settings = ref({
         <option value="1037">Yaesu FTDX-3000 (1037)</option>
         <option value="1032">Yaesu FTDX-5000 (1032)</option>
         <option value="1030">Yaesu FTDX-9000 (1030)</option>
-        <option value="1004">Yaesu MARK-V (1004)</option>
-        <option value="1025">Yaesu MARK-V (1025)</option>
+        <option value="1050">Yaesu FTDX-9000 Old (1050)</option>
+        <option value="1025">Yaesu MARK-V Field FT-1000MP (1025)</option>
+        <option value="1004">Yaesu MARK-V FT-1000MP (1004)</option>
         <option value="1026">Yaesu VR-5000 (1026)</option>
       </select>
     </div>
@@ -424,25 +464,25 @@ const settings = ref({
           data-bs-toggle="tooltip"
           :title="$t('settings.radio.hamlibrigctldcomport_help')"
         >
-          <i class="bi bi-question-circle"></i>
+          <i class="bi bi-question-circle" />
         </button>
       </label>
       <select
+        v-model="settings.remote.RADIO.serial_port"
         class="form-select form-select-sm w-50"
         @change="onChange"
-        v-model="settings.remote.RADIO.serial_port"
       >
         <option
           v-for="device in serialStore.serialDevices"
-          :value="device.port"
           :key="device.port"
+          :value="device.port"
         >
           {{ device.description }}
         </option>
       </select>
     </div>
 
-        <!-- Radio Custom Port -->
+    <!-- Radio Custom Port -->
     <div class="input-group input-group-sm mb-1">
       <label class="input-group-text w-50 text-wrap">
         {{ $t('settings.radio.hamlibrigctldcustomcomport') }}
@@ -452,19 +492,19 @@ const settings = ref({
           data-bs-toggle="tooltip"
           :title="$t('settings.radio.hamlibrigctldcustomcomport_help')"
         >
-          <i class="bi bi-question-circle"></i>
+          <i class="bi bi-question-circle" />
         </button>
       </label>
 
       <input
+        id="rigctldIp"
+        v-model="settings.remote.RADIO.serial_port"
         type="text"
         class="form-control"
         placeholder="settings.remote.RADIO.serial_port.port"
-        id="rigctldIp"
         aria-label="Rigctld IP"
         @change="onChange"
-        v-model="settings.remote.RADIO.serial_port"
-      />
+      >
     </div>
 
     <!-- Serial Speed -->
@@ -477,24 +517,45 @@ const settings = ref({
           data-bs-toggle="tooltip"
           :title="$t('settings.radio.hamlibrigctldserialspeed_help')"
         >
-          <i class="bi bi-question-circle"></i>
+          <i class="bi bi-question-circle" />
         </button>
       </label>
       <select
-        class="form-select form-select-sm w-50"
         id="serialSpeedSelect"
-        @change="onChange"
         v-model.number="settings.remote.RADIO.serial_speed"
+        class="form-select form-select-sm w-50"
+        @change="onChange"
       >
-        <option selected value="0">-- ignore --</option>
-        <option value="1200">1200</option>
-        <option value="2400">2400</option>
-        <option value="4800">4800</option>
-        <option value="9600">9600</option>
-        <option value="19200">19200</option>
-        <option value="38400">38400</option>
-        <option value="57600">57600</option>
-        <option value="115200">115200</option>
+        <option
+          selected
+          value="0"
+        >
+          -- ignore --
+        </option>
+        <option value="1200">
+          1200
+        </option>
+        <option value="2400">
+          2400
+        </option>
+        <option value="4800">
+          4800
+        </option>
+        <option value="9600">
+          9600
+        </option>
+        <option value="19200">
+          19200
+        </option>
+        <option value="38400">
+          38400
+        </option>
+        <option value="57600">
+          57600
+        </option>
+        <option value="115200">
+          115200
+        </option>
       </select>
     </div>
 
@@ -508,18 +569,27 @@ const settings = ref({
           data-bs-toggle="tooltip"
           :title="$t('settings.radio.hamlibrigctlddatabits_help')"
         >
-          <i class="bi bi-question-circle"></i>
+          <i class="bi bi-question-circle" />
         </button>
       </label>
       <select
-        class="form-select form-select-sm w-50"
         id="dataBitsSelect"
-        @change="onChange"
         v-model.number="settings.remote.RADIO.data_bits"
+        class="form-select form-select-sm w-50"
+        @change="onChange"
       >
-        <option selected value="0">-- ignore --</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
+        <option
+          selected
+          value="0"
+        >
+          -- ignore --
+        </option>
+        <option value="7">
+          7
+        </option>
+        <option value="8">
+          8
+        </option>
       </select>
     </div>
 
@@ -533,18 +603,27 @@ const settings = ref({
           data-bs-toggle="tooltip"
           :title="$t('settings.radio.hamlibrigctldstopbits_help')"
         >
-          <i class="bi bi-question-circle"></i>
+          <i class="bi bi-question-circle" />
         </button>
       </label>
       <select
-        class="form-select form-select-sm w-50"
         id="stopBitsSelect"
-        @change="onChange"
         v-model.number="settings.remote.RADIO.stop_bits"
+        class="form-select form-select-sm w-50"
+        @change="onChange"
       >
-        <option selected value="0">-- ignore --</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
+        <option
+          selected
+          value="0"
+        >
+          -- ignore --
+        </option>
+        <option value="1">
+          1
+        </option>
+        <option value="2">
+          2
+        </option>
       </select>
     </div>
 
@@ -558,17 +637,24 @@ const settings = ref({
           data-bs-toggle="tooltip"
           :title="$t('settings.radio.hamlibrigctldhandshake_help')"
         >
-          <i class="bi bi-question-circle"></i>
+          <i class="bi bi-question-circle" />
         </button>
       </label>
       <select
-        class="form-select form-select-sm w-50"
         id="serialHandshakeSelect"
-        @change="onChange"
         v-model="settings.remote.RADIO.serial_handshake"
+        class="form-select form-select-sm w-50"
+        @change="onChange"
       >
-        <option selected value="ignore">-- ignore --</option>
-        <option value="None">None (Default)</option>
+        <option
+          selected
+          value="ignore"
+        >
+          -- ignore --
+        </option>
+        <option value="None">
+          None (Default)
+        </option>
         <!-- Add more options if needed -->
       </select>
     </div>
@@ -583,18 +669,18 @@ const settings = ref({
           data-bs-toggle="tooltip"
           :title="$t('settings.radio.hamlibrigctldpttdeviceport_help')"
         >
-          <i class="bi bi-question-circle"></i>
+          <i class="bi bi-question-circle" />
         </button>
       </label>
       <select
+        v-model="settings.remote.RADIO.ptt_port"
         class="form-select form-select-sm w-50"
         @change="onChange"
-        v-model="settings.remote.RADIO.ptt_port"
       >
         <option
           v-for="device in serialStore.serialDevices"
-          :value="device.port"
           :key="device.port"
+          :value="device.port"
         >
           {{ device.description }}
         </option>
@@ -611,23 +697,42 @@ const settings = ref({
           data-bs-toggle="tooltip"
           :title="$t('settings.radio.hamlibrigctldptttype_help')"
         >
-          <i class="bi bi-question-circle"></i>
+          <i class="bi bi-question-circle" />
         </button>
       </label>
       <select
-        class="form-select form-select-sm w-50"
         id="pttTypeSelect"
-        @change="onChange"
         v-model="settings.remote.RADIO.ptt_type"
+        class="form-select form-select-sm w-50"
+        @change="onChange"
       >
-        <option selected value="ignore">-- ignore --</option>
-        <option value="NONE">NONE</option>
-        <option value="RIG">RIG</option>
-        <option value="USB">USB</option>
-        <option value="RTS">Serial RTS</option>
-        <option value="PARALLEL">Rig PARALLEL</option>
-        <option value="MICDATA">Rig MICDATA</option>
-        <option value="CM108">Rig CM108</option>
+        <option
+          selected
+          value="ignore"
+        >
+          -- ignore --
+        </option>
+        <option value="NONE">
+          NONE
+        </option>
+        <option value="RIG">
+          RIG
+        </option>
+        <option value="USB">
+          USB
+        </option>
+        <option value="RTS">
+          Serial RTS
+        </option>
+        <option value="PARALLEL">
+          Rig PARALLEL
+        </option>
+        <option value="MICDATA">
+          Rig MICDATA
+        </option>
+        <option value="CM108">
+          Rig CM108
+        </option>
       </select>
     </div>
 
@@ -641,22 +746,39 @@ const settings = ref({
           data-bs-toggle="tooltip"
           :title="$t('settings.radio.hamlibrigctlddcd_help')"
         >
-          <i class="bi bi-question-circle"></i>
+          <i class="bi bi-question-circle" />
         </button>
       </label>
       <select
-        class="form-select form-select-sm w-50"
         id="dcdSelect"
-        @change="onChange"
         v-model="settings.remote.RADIO.serial_dcd"
+        class="form-select form-select-sm w-50"
+        @change="onChange"
       >
-        <option selected value="ignore">-- ignore --</option>
-        <option value="NONE">NONE</option>
-        <option value="RIG">RIG/CAT</option>
-        <option value="DSR">DSR</option>
-        <option value="CTS">CTS</option>
-        <option value="CD">CD</option>
-        <option value="PARALLEL">PARALLEL</option>
+        <option
+          selected
+          value="ignore"
+        >
+          -- ignore --
+        </option>
+        <option value="NONE">
+          NONE
+        </option>
+        <option value="RIG">
+          RIG/CAT
+        </option>
+        <option value="DSR">
+          DSR
+        </option>
+        <option value="CTS">
+          CTS
+        </option>
+        <option value="CD">
+          CD
+        </option>
+        <option value="PARALLEL">
+          PARALLEL
+        </option>
       </select>
     </div>
 
@@ -670,18 +792,27 @@ const settings = ref({
           data-bs-toggle="tooltip"
           :title="$t('settings.radio.hamlibrigctlddtr_help')"
         >
-          <i class="bi bi-question-circle"></i>
+          <i class="bi bi-question-circle" />
         </button>
       </label>
       <select
-        class="form-select form-select-sm w-50"
         id="dtrSelect"
-        @change="onChange"
         v-model="settings.remote.RADIO.serial_dtr"
+        class="form-select form-select-sm w-50"
+        @change="onChange"
       >
-        <option selected value="ignore">-- ignore --</option>
-        <option value="OFF">OFF</option>
-        <option value="ON">ON</option>
+        <option
+          selected
+          value="ignore"
+        >
+          -- ignore --
+        </option>
+        <option value="OFF">
+          OFF
+        </option>
+        <option value="ON">
+          ON
+        </option>
       </select>
     </div>
 
@@ -695,23 +826,26 @@ const settings = ref({
           data-bs-toggle="tooltip"
           :title="$t('settings.radio.hamlibrigctldcommand_help')"
         >
-          <i class="bi bi-question-circle"></i>
+          <i class="bi bi-question-circle" />
         </button>
       </label>
       <input
+        id="rigctldCommand"
         type="text"
         class="form-control"
-        id="rigctldCommand"
         aria-label="Rigctld Command"
         disabled
         :placeholder="$t('settings.radio.hamlibrigctldcommand_placeholder')"
-      />
+      >
       <button
+        id="btnHamlibCopyCommand"
         class="btn btn-outline-secondary"
         type="button"
-        id="btnHamlibCopyCommand"
       >
-        <i id="btnHamlibCopyCommandBi" class="bi bi-clipboard"></i>
+        <i
+          id="btnHamlibCopyCommandBi"
+          class="bi bi-clipboard"
+        />
       </button>
     </div>
 
@@ -725,18 +859,18 @@ const settings = ref({
           data-bs-toggle="tooltip"
           :title="$t('settings.radio.hamlibrigctldcustomarguments_help')"
         >
-          <i class="bi bi-question-circle"></i>
+          <i class="bi bi-question-circle" />
         </button>
       </label>
       <input
+        id="rigctldCustomArgs"
+        v-model="settings.remote.RIGCTLD.arguments"
         type="text"
         class="form-control"
         :placeholder="$t('settings.radio.hamlibrigctldcustomarguments_placeholder')"
-        id="rigctldCustomArgs"
         aria-label="Rigctld Custom Arguments"
         @change="onChange"
-        v-model="settings.remote.RIGCTLD.arguments"
-      />
+      >
     </div>
   </div>
 </template>

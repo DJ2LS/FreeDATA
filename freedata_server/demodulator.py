@@ -5,6 +5,8 @@ import structlog
 import threading
 import audio
 import itertools
+from audio_buffer import CircularBuffer
+
 
 from codec2 import (FREEDV_MODE)
 
@@ -64,9 +66,8 @@ class Demodulator():
     def init_codec2(self):
         # Open codec2 instances
         for mode in codec2.FREEDV_MODE:
-            print(mode)
             self.init_codec2_mode(mode.value)
-            print("done")
+
 
     def init_codec2_mode(self, mode):
         """
@@ -93,11 +94,14 @@ class Demodulator():
         codec2.api.freedv_set_frames_per_burst(c2instance, 1)
         print("frames per burst: Done")
         # init audio buffer
-        audio_buffer = codec2.audio_buffer(2 * self.AUDIO_FRAMES_PER_BUFFER_RX)
-        print("buffer: Done")
+        #audio_buffer = codec2.audio_buffer(2 * self.AUDIO_FRAMES_PER_BUFFER_RX)
+        audio_buffer = CircularBuffer(2*self.AUDIO_FRAMES_PER_BUFFER_RX)
+
+
+
         # get initial nin
         nin = codec2.api.freedv_nin(c2instance)
-        print("nin: Done")
+
         # Additional Datac0-specific information - these are not referenced anywhere else.
         # self.signalling_datac0_payload_per_frame = self.signalling_datac0_bytes_per_frame - 2
         # self.signalling_datac0_n_nom_modem_samples = codec2.api.freedv_get_n_nom_modem_samples(
@@ -161,10 +165,12 @@ class Demodulator():
                 threading.Event().wait(0.01)
                 if audiobuffer.nbuffer >= nin and not self.shutdown_flag.is_set():
                     # demodulate audio
-                    #if not self.states.isTransmitting():
-                    nbytes = codec2.api.freedv_rawdatarx(
-                        freedv, bytes_out, audiobuffer.buffer.ctypes
-                    )
+                    if not self.states.isTransmitting():
+                        nbytes = codec2.api.freedv_rawdatarx(
+                            freedv, bytes_out, audiobuffer.buffer.ctypes
+                        )
+                    else:
+                        nbytes = 0
 
                     # get current freedata_server states and write to list
                     # 1 trial
