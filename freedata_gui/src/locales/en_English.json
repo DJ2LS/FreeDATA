@@ -307,7 +307,7 @@
             "info": "Info: No features publishes for testing, yet",
             "enableringbuffer": "Enable ring buffer",
             "enableringbuffer_help": "Enable an experimental ring buffer which can be more efficient on low power CPU",
-            "enablevhf": "Enable VHF modes -- broken --",
+            "enablevhf": "Enable VHF modes -- only CQ for now --",
             "enablevhf_help": "Enable experimental VHF modes for testing and playing"
         },
         "radio": {
