@@ -304,7 +304,9 @@
         },
         "exp": {
             "introduction": "Warning: These features may be incomplete. They are for experienced users ONLY!",
-            "info": "Info: No features publishes for testing, yet"
+            "info": "Info: No features publishes for testing, yet",
+            "enableringbuffer": "Enable ring buffer",
+            "enableringbuffer_help": "Enable an experimental ring buffer which can be more efficient on low power CPU"
         },
         "radio": {
             "introduction": "Rig Control related settings, including selecting your rig control method and configuring specific settings.",
