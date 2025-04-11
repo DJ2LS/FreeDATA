@@ -19,7 +19,7 @@ class CircularBuffer:
         self.nbuffer = 0  # Number of samples stored.
         self.lock = threading.Lock()
         self.cond = threading.Condition(self.lock)
-        log.debug("[C2 ] Creating audio buffer", size=size)
+        log.debug("[BUF] Creating ring buffer", size=size)
 
     def push(self, samples):
         """Push samples onto the buffer.
