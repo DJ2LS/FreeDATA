@@ -58,9 +58,14 @@ class Demodulator():
         self.init_codec2()
 
         # enable decoding of signalling modes
-        self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
-        self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
-        self.MODE_DICT[codec2.FREEDV_MODE.data_vhf_1.value]["decode"] = True
+        if self.config['EXP'].get('enable_vhf'):
+            self.MODE_DICT[codec2.FREEDV_MODE.data_vhf_1.value]["decode"] = True
+            self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
+            self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
+        else:
+            self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
+            self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
+
 
 
     def init_codec2(self):
@@ -333,6 +338,11 @@ class Demodulator():
 
         # signalling is always true
         self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
+
+        if self.config['EXP'].get('enable_vhf'):
+            self.MODE_DICT[codec2.FREEDV_MODE.data_vhf_1.value]["decode"] = True
+
+
         # we only need to decode signalling ack as ISS or within P2P Connection
         if is_arq_irs and not is_p2p_connection:
             self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = False
