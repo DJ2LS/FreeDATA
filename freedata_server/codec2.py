@@ -39,6 +39,8 @@ class FREEDV_MODE(Enum):
     data_ofdm_500 = 21500
     data_ofdm_1700 = 211700
     data_ofdm_2438 = 2124381
+    data_vhf_1 = 201
+
     #data_qam_2438 = 2124382
     #qam16c2 = 22
 
@@ -395,6 +397,17 @@ def open_instance(mode: int) -> ctypes.c_void_p:
                     ),
                     ctypes.c_void_p,
                 )
+
+    elif mode in [FREEDV_MODE.data_vhf_1.value]:
+        fsk_custom = 9
+        custom_params = fsk_configurations[mode]
+        return ctypes.cast(
+            api.freedv_open_advanced(
+                fsk_custom,
+                ctypes.byref(custom_params),
+            ),
+            ctypes.c_void_p,
+        )
     else:
         if mode not in [data_custom]:
             return ctypes.cast(api.freedv_open(mode), ctypes.c_void_p)
@@ -468,6 +481,17 @@ class FREEDV_ADVANCED(ctypes.Structure):
         ("config", ctypes.POINTER(OFDM_CONFIG))
     ]
 
+class FREEDV_ADVANCED_FSK(ctypes.Structure):
+    """Advanced structure for fsk and ofdm modes"""
+    _fields_ = [
+        ("interleave_frames", ctypes.c_int),
+        ("M", ctypes.c_int),
+        ("Rs", ctypes.c_int),
+        ("Fs", ctypes.c_int),
+        ("first_tone", ctypes.c_int),
+        ("tone_spacing", ctypes.c_int),
+        ("codename", ctypes.c_char_p),
+    ]
 
 api.freedv_open_advanced.argtypes = [ctypes.c_int, ctypes.POINTER(FREEDV_ADVANCED)]
 api.freedv_open_advanced.restype = ctypes.c_void_p
@@ -539,6 +563,47 @@ def create_tx_uw(nuwbits, uw_sequence):
     for i in range(min(len(uw_sequence), MAX_UW_BITS)):
         tx_uw_array[i] = uw_sequence[i]
     return tx_uw_array
+
+
+def create_default_fsk_config():
+    return FREEDV_ADVANCED(
+            interleave_frames = 0,
+            M = 2,
+            Rs = 100,
+            Fs = 8000,
+            first_tone = 1000,
+            tone_spacing = 200,
+            codename = "H_256_512_4".encode("utf-8"),
+            config = None
+        )
+
+def get_centered_first_tone(config, center=1500):
+    """
+    Calculate and return the first tone frequency so that the set of tones
+    is centered at the given center frequency.
+
+    The tones are assumed to be spaced equally based on config.tone_spacing,
+    and config.M is the total number of tones.
+
+    Args:
+        config: A configuration object with the following attributes:
+            - M (int): Total number of tones.
+            - tone_spacing (float): Spacing between consecutive tones.
+        center (float): Desired center frequency (default is 1500 Hz).
+
+    Returns:
+        float: The computed value for the first tone.
+    """
+    return int(center - ((config.M - 1) * config.tone_spacing) // 2)
+
+
+data_vhf_1_config = create_default_fsk_config()
+data_vhf_1_config.interleave_frames = 1
+data_vhf_1_config.M = 4
+data_vhf_1_config.Rs = 200
+data_vhf_1_config.tone_spacing = 400
+data_vhf_1_config.codename = "H_256_512_4".encode("utf-8")
+data_vhf_1_config.first_tone = get_centered_first_tone(data_vhf_1_config)
 
 # ---------------- OFDM 500 Hz Bandwidth ---------------#
 
@@ -693,6 +758,8 @@ ofdm_configurations = {
     FREEDV_MODE.data_ofdm_500.value: data_ofdm_500_config,
     FREEDV_MODE.data_ofdm_1700.value: data_ofdm_1700_config,
     FREEDV_MODE.data_ofdm_2438.value: data_ofdm_2438_config,
-    #FREEDV_MODE.data_qam_2438.value: data_qam_2438_config
-
+    #FREEDV_MODE.data_qam_2438.value: data_qam_2438_config,
+}
+fsk_configurations = {
+    FREEDV_MODE.data_vhf_1.value: data_vhf_1_config
 }

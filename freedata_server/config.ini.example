@@ -68,4 +68,5 @@ auto_run_browser = True
 
 [EXP]
 enable_ring_buffer = False
+enable_vhf = False
 

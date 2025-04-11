@@ -1,5 +1,7 @@
 from command import TxCommand
 import codec2
+from codec2 import FREEDV_MODE
+
 
 class TestCommand(TxCommand):
     """Command for transmitting test frames.
@@ -28,4 +30,9 @@ class TestCommand(TxCommand):
         Returns:
             codec2.FREEDV_MODE: The FreeDV mode for test frames.
         """
-        return codec2.FREEDV_MODE.data_ofdm_500
+        if self.config['EXP'].get('enable_vhf'):
+            mode = FREEDV_MODE.data_vhf_1
+        else:
+            mode = FREEDV_MODE.data_ofdm_500
+
+        return mode
