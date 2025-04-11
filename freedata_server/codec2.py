@@ -577,14 +577,33 @@ def create_default_fsk_config():
             config = None
         )
 
+def get_centered_first_tone(config, center=1500):
+    """
+    Calculate and return the first tone frequency so that the set of tones
+    is centered at the given center frequency.
+
+    The tones are assumed to be spaced equally based on config.tone_spacing,
+    and config.M is the total number of tones.
+
+    Args:
+        config: A configuration object with the following attributes:
+            - M (int): Total number of tones.
+            - tone_spacing (float): Spacing between consecutive tones.
+        center (float): Desired center frequency (default is 1500 Hz).
+
+    Returns:
+        float: The computed value for the first tone.
+    """
+    return int(center - ((config.M - 1) * config.tone_spacing) // 2)
+
+
 data_vhf_1_config = create_default_fsk_config()
 data_vhf_1_config.interleave_frames = 1
 data_vhf_1_config.M = 4
 data_vhf_1_config.Rs = 200
-data_vhf_1_config.Fs = 8000
-data_vhf_1_config.first_tone = 1500
 data_vhf_1_config.tone_spacing = 400
 data_vhf_1_config.codename = "H_256_512_4".encode("utf-8")
+data_vhf_1_config.first_tone = get_centered_first_tone(data_vhf_1_config)
 
 # ---------------- OFDM 500 Hz Bandwidth ---------------#
 
