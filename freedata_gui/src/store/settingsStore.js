@@ -88,7 +88,8 @@ const defaultConfig = {
       auto_run_browser: true,
     },
     EXP: {
-      enable_ring_buffer: true,
+      enable_ring_buffer: false,
+      enable_vhf: false,
     },
   },
 };

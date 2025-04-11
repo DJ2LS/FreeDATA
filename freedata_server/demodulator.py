@@ -75,24 +75,17 @@ class Demodulator():
         """
 
         # create codec2 instance
-        #c2instance = ctypes.cast(
         c2instance = codec2.open_instance(mode)
-        print("instance: Done")
-        if mode not in [FREEDV_MODE.data_vhf_1]:
-            print("neeee is fsk")
 
-        print(c2instance)
         # get bytes per frame
         bytes_per_frame = int(
             codec2.api.freedv_get_bits_per_modem_frame(c2instance) / 8
         )
-        print("bpf: Done")
         # create byte out buffer
         bytes_out = ctypes.create_string_buffer(bytes_per_frame)
-        print("bytes out: Done")
         # set initial frames per burst
         codec2.api.freedv_set_frames_per_burst(c2instance, 1)
-        print("frames per burst: Done")
+
         # init audio buffer
         if self.config['EXP'].get('enable_ring_buffer'):
             self.log.debug("[MDM] [buffer]", enable_ring_buffer=True)

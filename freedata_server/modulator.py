@@ -239,11 +239,11 @@ class Modulator:
 
             # Create modulation for all frames in the list
             for frame in frames:
-                #if self.MODE not in [FREEDV_MODE.data_vhf_1]:
-                txbuffer = self.transmit_add_preamble(txbuffer, freedv)
+                if not self.config['EXP'].get('enable_vhf'):
+                    txbuffer = self.transmit_add_preamble(txbuffer, freedv)
                 txbuffer = self.transmit_create_frame(txbuffer, freedv, frame)
-                #if self.MODE not in [FREEDV_MODE.data_vhf_1]:
-                txbuffer = self.transmit_add_postamble(txbuffer, freedv)
+                if not self.config['EXP'].get('enable_vhf'):
+                    txbuffer = self.transmit_add_postamble(txbuffer, freedv)
 
             # Add delay to end of frames
             txbuffer = self.transmit_add_silence(txbuffer, repeat_delay)
