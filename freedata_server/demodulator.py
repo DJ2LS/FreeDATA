@@ -86,8 +86,14 @@ class Demodulator():
         codec2.api.freedv_set_frames_per_burst(c2instance, 1)
 
         # init audio buffer
-        #audio_buffer = codec2.audio_buffer(2 * self.AUDIO_FRAMES_PER_BUFFER_RX)
-        audio_buffer = CircularBuffer(2*self.AUDIO_FRAMES_PER_BUFFER_RX)
+        if self.config['EXP'].get('enable_ring_buffer'):
+            self.log.debug("[MDM] [buffer]", enable_ring_buffer=True)
+            audio_buffer = CircularBuffer(2 * self.AUDIO_FRAMES_PER_BUFFER_RX)
+        else:
+            self.log.debug("[MDM] [buffer]", enable_ring_buffer=False)
+            audio_buffer = codec2.audio_buffer(2 * self.AUDIO_FRAMES_PER_BUFFER_RX)
+
+
 
 
 
