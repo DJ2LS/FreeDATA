@@ -304,7 +304,11 @@
         },
         "exp": {
             "introduction": "Warnung: Diese Funktionen können unvollständig sein. Sie sind NUR für erfahrene Benutzer!",
-            "info": "Info: Noch keine Funktionen zum Testen veröffentlicht"
+            "info": "Info: Noch keine Funktionen zum Testen veröffentlicht",
+	    "enableringbuffer": "Ringpuffer einschalten",
+            "enableringbuffer_help": "Aktivieren eines experimentellen Ringpuffers, der bei einer leistungsschwachen CPU effizienter sein kann",
+            "enablevhf": "UKW-Modus aktivieren -- derzeit nur CQ --",
+            "enablevhf_help": "Aktiviert den experimentellen UKW-Modus zum Testen"
         },
         "radio": {
             "introduction": "Einstellungen für die Transceiversteuerung, einschließlich der Auswahl der Rig-Control Methode und der Konfiguration spezifischer Einstellungen.",

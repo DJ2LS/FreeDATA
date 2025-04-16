@@ -87,6 +87,10 @@ const defaultConfig = {
     GUI: {
       auto_run_browser: true,
     },
+    EXP: {
+      enable_ring_buffer: false,
+      enable_vhf: false,
+    },
   },
 };
 

@@ -116,7 +116,13 @@ class TxCommand:
         Returns:
             FREEDV_MODE: The transmission mode.
         """
-        return FREEDV_MODE.signalling
+
+        if self.config['EXP'].get('enable_vhf'):
+            mode = FREEDV_MODE.data_vhf_1
+        else:
+            mode = FREEDV_MODE.signalling
+
+        return mode
     
     def make_modem_queue_item(self, mode, repeat, repeat_delay, frame):
         """Creates a dictionary representing a modem queue item.
