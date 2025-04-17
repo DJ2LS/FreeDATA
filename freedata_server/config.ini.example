@@ -66,3 +66,7 @@ adif_wavelog_api_key = API-KEY
 [GUI]
 auto_run_browser = True
 
+[EXP]
+enable_ring_buffer = False
+enable_vhf = False
+

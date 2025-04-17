@@ -34,7 +34,7 @@
         "transmissionfailedwith": "Übertragung FEHLGESCHLAGEN mit",
         "confirmingtransmissionwith": "Bestätige Übertragung mit",
         "receivedbytes": "Empfangene Bytes",
-	"adiflogheader": "ADIF",
+	    "adiflogheader": "ADIF",
         "adiflogtext1": "QSO mit",
         "adiflogtext2": "Zum Log hinzugefügt.",
         "adiflogerror": "ADIF Export-Fehler"
@@ -85,14 +85,15 @@
         "downloadpreset": "Preset Herunterladen",
         "downloadpreset_help": "Lade eine Preset-Date herunter um sie zu speichern und zu teilen",
         "components": {
-            "tune": "Abstimmen",
+            "tune": "Tune",
             "stop_help": "Sitzung abbrechen und Aussendung beenden",
             "transmissioncharts": "Übertragungs-Diagramme",
             "scatterdiagram": "Streuungs-Diagramm",
             "onair": "on air",
             "ping": "Ping",
             "ping_help": "Sende eine Ping-Anfrage an eine entfernte Station",
-	    "newmessage_help": "Sende eine neue Nachricht an eine entfernte Station",
+            "newmessage_help": "Sende eine neue Nachricht an eine entfernte Station",
+            "startnewchat_help": "Beginne oder setze einen Chat mit einer entfernten Station fort", 
             "heardstations": "gehörte Stationen",
             "time": "Zeit",
             "freq": "Freq",
@@ -129,7 +130,7 @@
             "offline": "Offline",
             "received": "empfangen",
             "transmitted": "gesendet",
- 	    "msgstatustransmitting": "Übermittlung",
+ 	        "msgstatustransmitting": "Übermittlung",
             "msgstatustransmitted": "Übermittelt",
             "msgstatusfailed": "Fehlgeschlagen",
             "msgstatusqueued": "Warteschlange"
@@ -143,7 +144,7 @@
         "furtheroptions": "Weitere Optionen",
         "deletechat": "Chat löschen",
         "startnewchat": "Neuen Chat starten",
-	"startnewchat2": "Neuen Chat starten (zuerst entferntes Rufzeichen eingeben)",
+	    "startnewchat2": "Neuen Chat starten (zuerst entferntes Rufzeichen eingeben)",
         "newchatline1": "Zielrufzeichen eingeben",
         "newchatline2": "Erste Nachricht eingeben",
         "newchatline3": "Klicke NEUEN CHAT STARTEN",
@@ -200,7 +201,11 @@
         "entermessage_placeholder": "Nachricht - Senden mit [Enter]",
         "attempt": "Versuch",
         "utc": "UTC",
-        "adif": "ADIF"
+        "adif": "ADIF",
+	"new": "neui",
+        "selectChat": "Bitte starte oder wähle einen Chat aus",
+        "noConversations": "bislang noch kein Chat hier",
+        "loadingMessages": "Lade Nachrichten..."
     },
     "settings": {
         "enable": "Aktivieren",
@@ -222,7 +227,7 @@
             "selectlanguage_help": "Wähle eine Sprache für die grafische Oberfläche",
             "waterfalltheme": "Wasserfall-Farbgebung",
             "waterfalltheme_help": "Wähle ein Farbthema für das Wasserfalldiagramm",
-	    "colormode": "Farbmodus",
+	        "colormode": "Farbmodus",
             "colormode_help": "Farbmodus der GUI einstellen",
             "colormodelight": "hell",
             "colormodedark": "dunkel",
@@ -299,7 +304,11 @@
         },
         "exp": {
             "introduction": "Warnung: Diese Funktionen können unvollständig sein. Sie sind NUR für erfahrene Benutzer!",
-            "info": "Info: Noch keine Funktionen zum Testen veröffentlicht"
+            "info": "Info: Noch keine Funktionen zum Testen veröffentlicht",
+	    "enableringbuffer": "Ringpuffer einschalten",
+            "enableringbuffer_help": "Aktivieren eines experimentellen Ringpuffers, der bei einer leistungsschwachen CPU effizienter sein kann",
+            "enablevhf": "UKW-Modus aktivieren -- derzeit nur CQ --",
+            "enablevhf_help": "Aktiviert den experimentellen UKW-Modus zum Testen"
         },
         "radio": {
             "introduction": "Einstellungen für die Transceiversteuerung, einschließlich der Auswahl der Rig-Control Methode und der Konfiguration spezifischer Einstellungen.",

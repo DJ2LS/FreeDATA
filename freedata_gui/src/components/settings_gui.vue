@@ -1,7 +1,10 @@
 <template>
   <!-- Top Info Area for GUI Settings -->
-  <div class="alert alert-info" role="alert">
-    <strong><i class="bi bi-gear-wide-connected me-1"></i></strong> {{ $t('settings.gui.introduction') }}
+  <div
+    class="alert alert-info"
+    role="alert"
+  >
+    <strong><i class="bi bi-gear-wide-connected me-1" /></strong> {{ $t('settings.gui.introduction') }}
   </div>
 
 
@@ -16,17 +19,25 @@
         data-bs-toggle="tooltip"
         :title="$t('settings.gui.selectlanguage_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </span>
-    <select class="form-select form-select-sm w-50" v-model="settings.local.language" @change="updateLanguage">
-      <option v-for="lang in availableLanguages" :key="lang.iso" :value="lang.iso">
+    <select
+      v-model="settings.local.language"
+      class="form-select form-select-sm w-50"
+      @change="updateLanguage"
+    >
+      <option
+        v-for="lang in availableLanguages"
+        :key="lang.iso"
+        :value="lang.iso"
+      >
         {{ lang.iso.toUpperCase() }} - {{ lang.name }}
       </option>
     </select>
   </div>
 
-    <!-- Colormode Selector -->
+  <!-- Colormode Selector -->
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-50 text-wrap">
       {{ $t('settings.gui.colormode') }}
@@ -36,19 +47,24 @@
         data-bs-toggle="tooltip"
         :title="$t('settings.gui.colormode_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </span>
-     <select
-      class="form-select form-select-sm w-50"
+    <select
       id="colormode_selector"
-      @change="updateColormode"
       v-model="settings.local.colormode"
+      class="form-select form-select-sm w-50"
+      @change="updateColormode"
     >
-      <option value="light">{{ $t('settings.gui.colormodelight') }}</option>
-      <option value="dark">{{ $t('settings.gui.colormodedark') }}</option>
-      <option value="auto">{{ $t('settings.gui.colormodeauto') }}</option>
-
+      <option value="light">
+        {{ $t('settings.gui.colormodelight') }}
+      </option>
+      <option value="dark">
+        {{ $t('settings.gui.colormodedark') }}
+      </option>
+      <option value="auto">
+        {{ $t('settings.gui.colormodeauto') }}
+      </option>
     </select>
   </div>
 
@@ -62,25 +78,45 @@
         data-bs-toggle="tooltip"
         :title="$t('settings.gui.waterfalltheme_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </span>
     <select
-      class="form-select form-select-sm w-50"
       id="wftheme_selector"
-      @change="saveSettings"
       v-model="settings.local.wf_theme"
+      class="form-select form-select-sm w-50"
+      @change="saveSettings"
     >
-      <option value="2">{{ $t('settings.default') }}</option>
-      <option value="0">Turbo</option>
-      <option value="1">Fosphor</option>
-      <option value="3">Inferno</option>
-      <option value="4">Magma</option>
-      <option value="5">Jet</option>
-      <option value="6">Binary</option>
-      <option value="7">Plasma</option>
-      <option value="8">Rainbow</option>
-      <option value="9">Ocean</option>
+      <option value="2">
+        {{ $t('settings.default') }}
+      </option>
+      <option value="0">
+        Turbo
+      </option>
+      <option value="1">
+        Fosphor
+      </option>
+      <option value="3">
+        Inferno
+      </option>
+      <option value="4">
+        Magma
+      </option>
+      <option value="5">
+        Jet
+      </option>
+      <option value="6">
+        Binary
+      </option>
+      <option value="7">
+        Plasma
+      </option>
+      <option value="8">
+        Rainbow
+      </option>
+      <option value="9">
+        Ocean
+      </option>
     </select>
   </div>
 
@@ -95,19 +131,22 @@
         data-bs-toggle="tooltip"
         :title="$t('settings.gui.browserautolaunch_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
         <input
+          id="autoLaunchBrowserSwitch"
+          v-model="settings.remote.GUI.auto_run_browser"
           class="form-check-input"
           type="checkbox"
-          id="autoLaunchBrowserSwitch"
           @change="onChange"
-          v-model="settings.remote.GUI.auto_run_browser"
-        />
-        <label class="form-check-label" for="autoLaunchBrowserSwitch">{{ $t('settings.enable') }}</label>
+        >
+        <label
+          class="form-check-label"
+          for="autoLaunchBrowserSwitch"
+        >{{ $t('settings.enable') }}</label>
       </div>
     </label>
   </div>

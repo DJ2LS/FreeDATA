@@ -24,12 +24,18 @@ function reloadModem(){
 
 <template>
   <!-- Top Info Area for Modem and Audio Settings -->
-  <div class="alert alert-info" role="alert">
-    <strong><i class="bi bi-gear-wide-connected me-1"></i></strong>{{ $t('settings.modem.introduction') }}
+  <div
+    class="alert alert-info"
+    role="alert"
+  >
+    <strong><i class="bi bi-gear-wide-connected me-1" /></strong>{{ $t('settings.modem.introduction') }}
   </div>
 
-  <div class="alert alert-light" role="alert">
-  <span class="text-danger">{{ $t('settings.modem.serverrestart_notification') }}</span>
+  <div
+    class="alert alert-light"
+    role="alert"
+  >
+    <span class="text-danger">{{ $t('settings.modem.serverrestart_notification') }}</span>
   </div>
 
   <!-- Start and Stop Modem Buttons -->
@@ -43,7 +49,7 @@ function reloadModem(){
         data-bs-toggle="tooltip"
         :title="$t('settings.modem.restartserver_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <div class="w-50 d-flex justify-content-between">
@@ -54,10 +60,9 @@ function reloadModem(){
         title="Start the Modem"
         @click="reloadModem"
       >
-        <i class="bi bi-arrow-clockwise"></i>
+        <i class="bi bi-arrow-clockwise" />
         {{ $t('settings.reload') }}
       </button>
-
     </div>
   </div>
   <!-- Modem Port -->
@@ -70,20 +75,20 @@ function reloadModem(){
         data-bs-toggle="tooltip"
         :title="$t('settings.modem.modemport_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <input
+      id="modem_port"
+      v-model.number="settings.remote.NETWORK.modemport"
       type="number"
       class="form-control"
       placeholder="Enter modem port"
-      id="modem_port"
       maxlength="5"
       max="65534"
       min="1025"
       @change="onChange"
-      v-model.number="settings.remote.NETWORK.modemport"
-    />
+    >
   </div>
 
   <!-- Modem Host -->
@@ -96,18 +101,24 @@ function reloadModem(){
         data-bs-toggle="tooltip"
         :title="$t('settings.modem.modemhost_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <select
-      class="form-select form-select-sm w-50"
       id="modem_host"
-      @change="onChange"
       v-model="settings.remote.NETWORK.modemaddress"
+      class="form-select form-select-sm w-50"
+      @change="onChange"
     >
-      <option value="127.0.0.1">127.0.0.1 (Local operation)</option>
-      <option value="localhost">localhost (Local operation)</option>
-      <option value="0.0.0.0">0.0.0.0 (Remote operation)</option>
+      <option value="127.0.0.1">
+        127.0.0.1 (Local operation)
+      </option>
+      <option value="localhost">
+        localhost (Local operation)
+      </option>
+      <option value="0.0.0.0">
+        0.0.0.0 (Remote operation)
+      </option>
     </select>
   </div>
 
@@ -121,15 +132,19 @@ function reloadModem(){
         data-bs-toggle="tooltip"
         :title="$t('settings.modem.audioinputdevice_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <select
+      v-model="settings.remote.AUDIO.input_device"
       class="form-select form-select-sm w-50"
       @change="onChange"
-      v-model="settings.remote.AUDIO.input_device"
     >
-      <option v-for="device in audioStore.audioInputs" :key="device.id" :value="device.id">
+      <option
+        v-for="device in audioStore.audioInputs"
+        :key="device.id"
+        :value="device.id"
+      >
         {{ device.name }} [{{ device.api }}]
       </option>
     </select>
@@ -145,15 +160,19 @@ function reloadModem(){
         data-bs-toggle="tooltip"
         :title="$t('settings.modem.audiooutputdevice_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <select
+      v-model="settings.remote.AUDIO.output_device"
       class="form-select form-select-sm w-50"
       @change="onChange"
-      v-model="settings.remote.AUDIO.output_device"
     >
-      <option v-for="device in audioStore.audioOutputs" :key="device.id" :value="device.id">
+      <option
+        v-for="device in audioStore.audioOutputs"
+        :key="device.id"
+        :value="device.id"
+      >
         {{ device.name }} [{{ device.api }}]
       </option>
     </select>
@@ -169,7 +188,7 @@ function reloadModem(){
         data-bs-toggle="tooltip"
         :title="$t('settings.modem.rxaudiolevel_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <div class="input-group-text w-25">
@@ -177,15 +196,15 @@ function reloadModem(){
     </div>
     <div class="w-25">
       <input
+        id="audioLevelRX"
+        v-model.number="settings.remote.AUDIO.rx_audio_level"
         type="range"
         class="form-range"
         min="-30"
         max="20"
         step="1"
-        id="audioLevelRX"
         @change="onChange"
-        v-model.number="settings.remote.AUDIO.rx_audio_level"
-      />
+      >
     </div>
   </div>
 
@@ -199,7 +218,7 @@ function reloadModem(){
         data-bs-toggle="tooltip"
         :title="$t('settings.modem.txaudiolevel_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <div class="input-group-text w-25">
@@ -207,15 +226,15 @@ function reloadModem(){
     </div>
     <div class="w-25">
       <input
+        id="audioLevelTX"
+        v-model.number="settings.remote.AUDIO.tx_audio_level"
         type="range"
         class="form-range"
         min="-30"
         max="20"
         step="1"
-        id="audioLevelTX"
         @change="onChange"
-        v-model.number="settings.remote.AUDIO.tx_audio_level"
-      />
+      >
     </div>
   </div>
 
@@ -229,36 +248,78 @@ function reloadModem(){
         data-bs-toggle="tooltip"
         :title="$t('settings.modem.txdelay_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <select
-      class="form-select form-select-sm w-50"
       id="tx_delay"
-      @change="onChange"
       v-model.number="settings.remote.MODEM.tx_delay"
+      class="form-select form-select-sm w-50"
+      @change="onChange"
     >
-      <option value="0">0</option>
-      <option value="50">50</option>
-      <option value="100">100</option>
-      <option value="150">150</option>
-      <option value="200">200</option>
-      <option value="250">250</option>
-      <option value="300">300</option>
-      <option value="350">350</option>
-      <option value="400">400</option>
-      <option value="450">450</option>
-      <option value="500">500</option>
-      <option value="550">550</option>
-      <option value="600">600</option>
-      <option value="650">650</option>
-      <option value="700">700</option>
-      <option value="750">750</option>
-      <option value="800">800</option>
-      <option value="850">850</option>
-      <option value="900">900</option>
-      <option value="950">950</option>
-      <option value="1000">1000</option>
+      <option value="0">
+        0
+      </option>
+      <option value="50">
+        50
+      </option>
+      <option value="100">
+        100
+      </option>
+      <option value="150">
+        150
+      </option>
+      <option value="200">
+        200
+      </option>
+      <option value="250">
+        250
+      </option>
+      <option value="300">
+        300
+      </option>
+      <option value="350">
+        350
+      </option>
+      <option value="400">
+        400
+      </option>
+      <option value="450">
+        450
+      </option>
+      <option value="500">
+        500
+      </option>
+      <option value="550">
+        550
+      </option>
+      <option value="600">
+        600
+      </option>
+      <option value="650">
+        650
+      </option>
+      <option value="700">
+        700
+      </option>
+      <option value="750">
+        750
+      </option>
+      <option value="800">
+        800
+      </option>
+      <option value="850">
+        850
+      </option>
+      <option value="900">
+        900
+      </option>
+      <option value="950">
+        950
+      </option>
+      <option value="1000">
+        1000
+      </option>
     </select>
   </div>
 
@@ -272,19 +333,27 @@ function reloadModem(){
         data-bs-toggle="tooltip"
         :title="$t('settings.modem.maximumbandwidth_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <select
-      class="form-select form-select-sm w-50"
       id="maximum_bandwidth"
-      @change="onChange"
       v-model.number="settings.remote.MODEM.maximum_bandwidth"
+      class="form-select form-select-sm w-50"
+      @change="onChange"
     >
-      <option value="250">250 Hz</option>
-      <option value="500">500 Hz</option>
-      <option value="1700">1700 Hz</option>
-      <option value="2438">2438 Hz</option>
+      <option value="250">
+        250 Hz
+      </option>
+      <option value="500">
+        500 Hz
+      </option>
+      <option value="1700">
+        1700 Hz
+      </option>
+      <option value="2438">
+        2438 Hz
+      </option>
     </select>
   </div>
 </template>

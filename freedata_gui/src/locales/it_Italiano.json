@@ -93,6 +93,7 @@
             "ping": "Ping",
             "ping_help": "Manda una richiesta di ping a una stazione remota",
             "newmessage_help": "Invia un nuovo messaggio a una stazione remota",
+            "startnewchat_help": "Inizia o continua una conversazione con un'altra stazione",
             "heardstations": "Stazioni ricevute",
             "time": "Tempo",
             "freq": "Freq",
@@ -110,6 +111,7 @@
             "sendingping": "Invio PING...",
             "callcq": "Chiamo CQ",
             "cqcqcq": "CQ CQ CQ",
+            "cqcqcq_help": "Trasmetti un CQ a tutti",
             "togglebeacon": "attiva/disattiva beacon",
             "togglebeacon_help": "Attiva/disattiva la modalità beacon. Mentre invii un beacon, puoi ricevere una richiesta di ping e aprire un canale per scambio di dati. If viene aperto uno scambio di dati il beacon entra in pausa.",
             "enablebeacon": "Attiva il beacon",
@@ -142,6 +144,7 @@
         "furtheroptions": "Altre opzioni",
         "deletechat": "Cancella la chat",
         "startnewchat": "Inizia una nuova chat",
+        "startnewchat2": "Inizia una nuova chat (prima digita il nominativo del destinatario)",
         "newchatline1": "Digita il callsign di destinazione",
         "newchatline2": "Digita il primo messaggio",
         "newchatline3": "Click su INIZIA UNA NUOVA CHAT",
@@ -150,7 +153,7 @@
         "audiotuning": "Regolazione audio",
         "audiotuninginfo": "Regola il livello audio. Valori in dB. Valore di default 0",
         "testframe": "Test frame",
-        "testframetransmit": "Trasmetti ( 5s )",
+        "testframetransmit": "Trasmetti (5s)",
         "audiotuningrxlevel": "Livello RX",
         "audiotuningtxlevel": "Livello TX",
         "audiotuningtransmitsine": "Trasmetti un segnale sinusoidale",
@@ -167,7 +170,7 @@
         "radiocontrol": "Controllo della radio",
         "radiocontrolinfo": "Questo è solo una configurazione rapida! Per altre opzioni vai a configurazione/controllo radio",
         "rigcontrolmethod": "Metodo di controllo della radio",
-        "rigcontrolmethoddisabled": "Disabilitato ( nessun controllo della radio; usalo con VOX)",
+        "rigcontrolmethoddisabled": "Disabilitato (nessun controllo della radio; usalo con VOX)",
         "rigcontrolmethodserialptt": "PTT seriale con DTR/RTS",
         "rigcontrolmethodrigctld": "Rigctld (Hamlib esterna)",
         "rigcontrolmethodrigctldbundle": "Rigctld (Hamlib interna)",
@@ -198,7 +201,11 @@
         "entermessage_placeholder": "Messaggio - Invia con [Invio]",
         "attempt": "tentativo",
         "utc": "UTC",
-        "adif": "ADIF"
+        "adif": "ADIF",
+        "new": "nuovo",
+        "selectChat": "Seleziona o inizia una chat",
+        "noConversations": "Ancora nessuna conversazione",
+        "loadingMessages": "Caricamento messaggi..."
     },
     "settings": {
         "enable": "Abilita",
@@ -297,7 +304,9 @@
         },
         "exp": {
             "introduction": "Attenzione: Queste funzioni possono essere incomplete. Sono SOLO per utenti esperti!",
-            "info": "Info: Non sono ancora state rese disponibili funzioni per il test"
+            "info": "Info: Non sono ancora state rese disponibili funzioni per il test",
+            "enableringbuffer": "Attiva il ring buffer",
+            "enableringbuffer_help": "Attiva un ring buffer sperimentale che può essere più efficiente su CPU di bassa potenza"
         },
         "radio": {
             "introduction": "Parametri per il controllo della radio, compreso il metodo di controllo e le configurazioni specifiche del metodo.",

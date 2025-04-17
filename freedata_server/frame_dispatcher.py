@@ -139,7 +139,7 @@ class DISPATCHER:
         frametype = deconstructed_frame["frame_type_int"]
         if frametype not in self.FRAME_HANDLER:
             self.log.warning(
-                "[DISPATCHER] ARQ - other frame type", frametype=FR_TYPE(frametype).name)
+                "[DISPATCHER] unknown burst", frametype=FR_TYPE(frametype).name)
             return
 
         # instantiate handler

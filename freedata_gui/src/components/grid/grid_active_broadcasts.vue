@@ -68,12 +68,16 @@ window.addEventListener(
 <template>
   <div class="card h-100">
     <div class="card-header">
-      <i class="bi bi-broadcast" style="font-size: 1.2rem"></i>&nbsp;
+      <i
+        class="bi bi-broadcast"
+        style="font-size: 1.2rem"
+      />&nbsp;
       <strong>{{ $t('grid.componments.broadcasts') }}</strong>
     </div>
     <div class="card-body overflow-auto">
       <div class="input-group">
         <input
+          v-model="dxcallPing"
           type="text"
           class="form-control"
           style="max-width: 6rem; min-width: 3rem; text-transform: uppercase"
@@ -82,11 +86,10 @@ window.addEventListener(
           maxlength="11"
           aria-label="Input group"
           aria-describedby="btnGroupAddon"
-          v-model="dxcallPing"
-        />
+        >
         <button
-          class="btn btn-outline-secondary"
           id="sendPing"
+          class="btn btn-outline-secondary"
           type="button"
           data-bs-placement="bottom"
           data-bs-toggle="tooltip"
@@ -95,31 +98,31 @@ window.addEventListener(
           title="Send a ping request to a remote station"
           @click="transmitPing"
         >
-                          <strong v-if="!isPingButtonDisabled">{{ $t('grid.components.pingstation') }}</strong>
-                <strong v-else>{{ $t('grid.components.transmitting') }}</strong>
+          <strong v-if="!isPingButtonDisabled">{{ $t('grid.components.pingstation') }}</strong>
+          <strong v-else>{{ $t('grid.components.transmitting') }}</strong>
         </button>
 
         <button
-          class="btn btn-outline-secondary ms-1"
           id="sendCQ"
+          class="btn btn-outline-secondary ms-1"
           type="button"
           :title=" $t('grid.components.cqcqcq_help')"
           @click="handleSendCQ"
         >
           <span v-if="!isCQButtonDisabled">{{ $t('grid.components.callcq') }}</span>
-                <span v-else>{{ $t('grid.components.sendingcq') }}</span>
+          <span v-else>{{ $t('grid.components.sendingcq') }}</span>
         </button>
 
         <button
-          type="button"
           id="startBeacon"
+          type="button"
           class="btn ms-1"
-          @click="startStopBeacon"
           :class="{
             'btn-success': state.beacon_state,
             'btn-outline-secondary': !state.beacon_state,
           }"
           :title=" $t('grid.components.togglebeacon_help')"
+          @click="startStopBeacon"
         >
           {{ $t('grid.components.togglebeacon') }}
         </button>

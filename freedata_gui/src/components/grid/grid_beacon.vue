@@ -17,11 +17,14 @@ function startStopBeacon() {
 </script>
 
 <template>
-  <div class="fill h-100" style="width: calc(100% - 24px)">
+  <div
+    class="fill h-100"
+    style="width: calc(100% - 24px)"
+  >
     <a
       class="btn btn-sm btn-secondary d-flex justify-content-center align-items-center object-fill border rounded w-100 h-100"
-      @click="startStopBeacon"
       title="Enable/disable periodic beacons"
+      @click="startStopBeacon"
     >
       {{ $t('grid.components.beacon') }}&nbsp;
       <span
@@ -30,7 +33,7 @@ function startStopBeacon() {
           'spinner-grow spinner-grow-sm': state.beacon_state === true,
           'disabled': state.beacon_state === false,
         }"
-      ></span>
+      />
     </a>
   </div>
 </template>

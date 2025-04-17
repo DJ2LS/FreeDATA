@@ -6,32 +6,39 @@
         class="btn btn-outline-secondary border-0 me-1"
         @click="repeatMessage"
       >
-        <i class="bi bi-arrow-repeat"></i>
+        <i class="bi bi-arrow-repeat" />
       </button>
 
       <button
         class="btn btn-outline-secondary border-0 me-1"
-        @click="showMessageInfo"
         data-bs-target="#messageInfoModal"
         data-bs-toggle="modal"
+        @click="showMessageInfo"
       >
-        <i class="bi bi-info-circle"></i>
+        <i class="bi bi-info-circle" />
       </button>
 
-      <button class="btn btn-outline-secondary border-0"
+      <button
+        class="btn btn-outline-secondary border-0"
+        :disabled="['transmitting', 'queued'].includes(message.status)"
         @click="deleteMessage"
-        :disabled="['transmitting', 'queued'].includes(message.status)">
-        <i class="bi bi-trash"></i>
+      >
+        <i class="bi bi-trash" />
       </button>
 
 
-      <button class="btn btn-outline-secondary border-0" @click="sendADIF">
+      <button
+        class="btn btn-outline-secondary border-0"
+        @click="sendADIF"
+      >
         ADIF
       </button>
-
     </div>
     <!-- message area -->
-    <div :class="messageWidthClass" class="align-items-end">
+    <div
+      :class="messageWidthClass"
+      class="align-items-end"
+    >
       <div class="card">
         <div
           v-for="attachment in message.attachments"
@@ -39,75 +46,58 @@
           class="card-header"
         >
           <chat_messages_image_preview :attachment="attachment" />
-          <div class="btn-group w-100" role="group">
-            <button class="btn w-75 btn-secondary text-truncate" disabled>
+          <div
+            class="btn-group w-100"
+            role="group"
+          >
+            <button
+              class="btn w-75 btn-secondary text-truncate"
+              disabled
+            >
               {{ attachment.name }}
             </button>
             <button
+              class="btn btn-secondary w-25"
               @click="
                 downloadAttachment(attachment.hash_sha512, attachment.name)
               "
-              class="btn btn-secondary w-25"
             >
-              <i class="bi bi-download strong"></i>
+              <i class="bi bi-download strong" />
             </button>
           </div>
         </div>
 
         <div class="card-body">
           <!-- Render parsed markdown -->
-          <p class="card-text text-break" v-html="parsedMessageBody"></p>
+          <p
+            class="card-text text-break"
+            v-html="parsedMessageBody"
+          />
         </div>
 
         <div class="card-footer p-1 border-top-0">
           <p class="text p-0 m-0 mb-1 me-1 text-end">
-            <span class="badge mr-2" :class="{
+            <span
+              class="badge mr-2"
+              :class="{
                 'text-bg-danger': message.status === 'failed',
                 'text-bg-primary': message.status === 'transmitting',
                 'text-bg-secondary': message.status === 'transmitted' || message.status === 'queued'
               }"
             >
               {{
-                  message.status === 'failed'
-                    ? $t('grid.components.msgstatusfailed')
+                message.status === 'failed'
+                  ? $t('grid.components.msgstatusfailed')
                   : message.status === 'transmitting'
                     ? $t('grid.components.msgstatustransmitting')
-                  : message.status === 'transmitted'
-                    ? $t('grid.components.msgstatustransmitted')
-                  : message.status === 'queued'
-                    ? $t('grid.components.msgstatusqueued')
-                  : message.status }}
+                    : message.status === 'transmitted'
+                      ? $t('grid.components.msgstatustransmitted')
+                      : message.status === 'queued'
+                        ? $t('grid.components.msgstatusqueued')
+                        : message.status }}
             </span>
             | <span class="badge text-bg-light mr-2"> {{ $t('chat.attempt') }}: {{ message.attempt + 1 }} </span>|<span class="badge text-bg-light mr-2"> {{ getDateTime }} {{ $t('chat.utc') }}</span>
           </p>
-        </div>
-
-        <div
-          class="card-footer p-0 border-top-0"
-          v-if="message.percent < 100 || message.status === 'failed'"
-        >
-          <div
-            class="progress rounded-0 rounded-bottom"
-            hidden
-            :class="{
-              'bg-danger': message.status == 'failed',
-              'bg-primary': message.status == 'transmitting',
-              'bg-secondary': message.status == 'transmitted',
-              'bg-secondary': message.status == 'queued',
-            }"
-          >
-            <div
-              class="progress-bar progress-bar-striped overflow-visible"
-              role="progressbar"
-              :style="{ width: message.percent + '%', height: '10px' }"
-              :aria-valuenow="message.percent"
-              aria-valuemin="0"
-              aria-valuemax="100"
-            >
-              {{ message.percent }} % with {{ message.bytesperminute }} bpm (
-              {{ message.status }} )
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -141,6 +131,50 @@ export default {
 
   props: {
     message: Object,
+  },
+
+  computed: {
+    messageWidthClass() {
+      // Calculate a Bootstrap grid class based on message length
+      if (this.message.body.length <= 50) {
+        return "col-7";
+      } else if (this.message.body.length <= 100) {
+        return "col-7";
+      } else {
+        return "col-8";
+      }
+    },
+
+    getDateTime() {
+      let date = new Date(this.message.timestamp);
+      let hours = date.getHours().toString().padStart(2, "0");
+      let minutes = date.getMinutes().toString().padStart(2, "0");
+      let seconds = date.getSeconds().toString().padStart(2, "0");
+      return `${hours}:${minutes}:${seconds}`;
+    },
+
+    parsedMessageBody() {
+     // Parse markdown to HTML
+  let parsedHTML = marked.parse(this.message.body);
+
+  // Sanitize the HTML
+  let sanitizedHTML = DOMPurify.sanitize(parsedHTML);
+
+  // Create a temporary DOM element to manipulate the sanitized output
+  let tempDiv = document.createElement("div");
+  tempDiv.innerHTML = sanitizedHTML;
+
+  // Modify all links to open in a new tab
+  tempDiv.querySelectorAll("a").forEach(link => {
+    link.setAttribute("target", "_blank");
+    link.setAttribute("rel", "noopener noreferrer"); // Security best practice
+  });
+
+  // Return the updated HTML
+  return tempDiv.innerHTML;
+
+
+    },
   },
 
   methods: {
@@ -191,50 +225,6 @@ export default {
       } catch (error) {
         console.error("Failed to download the attachment:", error);
       }
-    },
-  },
-
-  computed: {
-    messageWidthClass() {
-      // Calculate a Bootstrap grid class based on message length
-      if (this.message.body.length <= 50) {
-        return "col-5";
-      } else if (this.message.body.length <= 100) {
-        return "col-6";
-      } else {
-        return "col-8";
-      }
-    },
-
-    getDateTime() {
-      let date = new Date(this.message.timestamp);
-      let hours = date.getHours().toString().padStart(2, "0");
-      let minutes = date.getMinutes().toString().padStart(2, "0");
-      let seconds = date.getSeconds().toString().padStart(2, "0");
-      return `${hours}:${minutes}:${seconds}`;
-    },
-
-    parsedMessageBody() {
-     // Parse markdown to HTML
-  let parsedHTML = marked.parse(this.message.body);
-
-  // Sanitize the HTML
-  let sanitizedHTML = DOMPurify.sanitize(parsedHTML);
-
-  // Create a temporary DOM element to manipulate the sanitized output
-  let tempDiv = document.createElement("div");
-  tempDiv.innerHTML = sanitizedHTML;
-
-  // Modify all links to open in a new tab
-  tempDiv.querySelectorAll("a").forEach(link => {
-    link.setAttribute("target", "_blank");
-    link.setAttribute("rel", "noopener noreferrer"); // Security best practice
-  });
-
-  // Return the updated HTML
-  return tempDiv.innerHTML;
-
-
     },
   },
 };

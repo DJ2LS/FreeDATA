@@ -8,6 +8,9 @@ export const useChatStore = defineStore("chatStore", () => {
   var newChatMessage = ref();
   var totalUnreadMessages = ref(0);
 
+  // Indicator if we are loading data
+  var loading = ref(false);
+
   /* ------------------------------------------------ */
   // Scroll to bottom functions
   const scrollTrigger = ref(0);
@@ -59,5 +62,6 @@ export const useChatStore = defineStore("chatStore", () => {
     arq_speed_list_timestamp,
     scrollTrigger,
     triggerScrollToBottom,
+    loading,
   };
 });

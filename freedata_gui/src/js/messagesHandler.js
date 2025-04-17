@@ -13,6 +13,8 @@ import {
   getFreedataMessageById,
   postFreedataMessageADIF,
 } from "./api";
+import { useIsMobile } from "@/js/mobile_devices";
+const { isMobile } = useIsMobile(768);
 
 /**
  * Process FreeDATA messages and update chat store.
@@ -23,7 +25,7 @@ export async function processFreedataMessages(data) {
     chatStore.callsign_list = createCallsignListFromAPI(data);
     chatStore.sorted_chat_list = createSortedMessagesList(data);
 
-    if (!chatStore.selectedCallsign) {
+    if (!chatStore.selectedCallsign && !isMobile) {
       chatStore.selectedCallsign = Object.keys(chatStore.sorted_chat_list)[0];
     }
   }
@@ -36,39 +38,52 @@ export async function processFreedataMessages(data) {
  */
 function createCallsignListFromAPI(data) {
   const callsignList = {};
-
   chatStore.totalUnreadMessages = 0;
 
   data.messages.forEach((message) => {
-    let callsign =
+    const callsign =
       message.direction === "receive" ? message.origin : message.destination;
 
-    if (
-      !callsignList[callsign] ||
-      callsignList[callsign].timestamp < message.timestamp
-    ) {
-      let unreadCounter = 0;
+    // Increment global unread count if the message is not read.
+    if (!message.is_read) {
+      chatStore.totalUnreadMessages++;
+    }
 
-      if (callsignList[callsign]) {
-        unreadCounter = callsignList[callsign].unread_messages;
-      }
-
-      if (!message.is_read) {
-        unreadCounter++;
-        chatStore.totalUnreadMessages++;
-      }
-
+    // Create or update the callsign entry.
+    if (!callsignList[callsign]) {
       callsignList[callsign] = {
         timestamp: message.timestamp,
         body: message.body,
-        unread_messages: unreadCounter,
+        unread_messages: !message.is_read ? 1 : 0,
       };
-    } else if (!message.is_read) {
-      chatStore.totalUnreadMessages++;
+    } else {
+      // Update the unread count if the message is unread.
+      if (!message.is_read) {
+        callsignList[callsign].unread_messages++;
+      }
+      // Update stored details if this message is newer.
+      if (
+        new Date(message.timestamp) > new Date(callsignList[callsign].timestamp)
+      ) {
+        callsignList[callsign].timestamp = message.timestamp;
+        callsignList[callsign].body = message.body;
+      }
     }
   });
 
-  return callsignList;
+  // Get the keys sorted in descending order by timestamp.
+  const sortedKeys = Object.keys(callsignList).sort(
+    (a, b) =>
+      new Date(callsignList[b].timestamp) - new Date(callsignList[a].timestamp),
+  );
+
+  // Rebuild the object with keys in sorted order.
+  const sortedCallsignList = {};
+  sortedKeys.forEach((key) => {
+    sortedCallsignList[key] = callsignList[key];
+  });
+
+  return sortedCallsignList;
 }
 
 /**
@@ -80,7 +95,8 @@ function createSortedMessagesList(data) {
   const callsignMessages = {};
 
   data.messages.forEach((message) => {
-    let callsign =
+    // Determine the callsign based on message direction.
+    const callsign =
       message.direction === "receive" ? message.origin : message.destination;
 
     if (!callsignMessages[callsign]) {

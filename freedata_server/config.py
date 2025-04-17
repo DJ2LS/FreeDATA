@@ -79,6 +79,10 @@ class CONFIG:
 
         'GUI': {
             'auto_run_browser': bool,
+        },
+        'EXP': {
+            'enable_ring_buffer': bool,
+            'enable_vhf': bool,
         }
     }
 

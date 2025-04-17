@@ -351,7 +351,6 @@ def check_callsign(callsign: str, crc_to_check: bytes, ssid_list):
         [True, Callsign + SSID]
         False
     """
-    print(callsign)
     if not isinstance(callsign, (bytes)):
         callsign = bytes(callsign,'utf-8')
 

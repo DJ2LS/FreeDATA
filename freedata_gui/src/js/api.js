@@ -11,6 +11,8 @@ import {
 import { processFreedataMessages } from "./messagesHandler";
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
+import { useChatStore } from "../store/chatStore.js";
+const chatStore = useChatStore(pinia);
 
 // Build URL with adjusted port if needed
 function buildURL(endpoint) {
@@ -260,8 +262,17 @@ export async function getRadioStatus() {
 }
 
 export async function getFreedataMessages() {
-  let res = await apiGet("/freedata/messages");
-  if (res) processFreedataMessages(res);
+  chatStore.loading = true;
+  try {
+    const res = await apiGet("/freedata/messages");
+    if (res) {
+      processFreedataMessages(res);
+    }
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+  } finally {
+    chatStore.loading = false;
+  }
 }
 
 export async function getFreedataMessageById(id) {

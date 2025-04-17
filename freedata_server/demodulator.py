@@ -5,6 +5,10 @@ import structlog
 import threading
 import audio
 import itertools
+from audio_buffer import CircularBuffer
+
+
+from codec2 import (FREEDV_MODE)
 
 TESTMODE = False
 
@@ -54,8 +58,14 @@ class Demodulator():
         self.init_codec2()
 
         # enable decoding of signalling modes
-        self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
-        self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
+        if self.config['EXP'].get('enable_vhf'):
+            self.MODE_DICT[codec2.FREEDV_MODE.data_vhf_1.value]["decode"] = True
+            self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
+            self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
+        else:
+            self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
+            self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
+
 
 
     def init_codec2(self):
@@ -70,7 +80,6 @@ class Demodulator():
         """
 
         # create codec2 instance
-        #c2instance = ctypes.cast(
         c2instance = codec2.open_instance(mode)
 
         # get bytes per frame
@@ -79,12 +88,20 @@ class Demodulator():
         )
         # create byte out buffer
         bytes_out = ctypes.create_string_buffer(bytes_per_frame)
-
         # set initial frames per burst
         codec2.api.freedv_set_frames_per_burst(c2instance, 1)
 
         # init audio buffer
-        audio_buffer = codec2.audio_buffer(2 * self.AUDIO_FRAMES_PER_BUFFER_RX)
+        if self.config['EXP'].get('enable_ring_buffer'):
+            self.log.debug("[MDM] [buffer]", enable_ring_buffer=True)
+            audio_buffer = CircularBuffer(2 * self.AUDIO_FRAMES_PER_BUFFER_RX)
+        else:
+            self.log.debug("[MDM] [buffer]", enable_ring_buffer=False)
+            audio_buffer = codec2.audio_buffer(2 * self.AUDIO_FRAMES_PER_BUFFER_RX)
+
+
+
+
 
         # get initial nin
         nin = codec2.api.freedv_nin(c2instance)
@@ -152,9 +169,13 @@ class Demodulator():
                 threading.Event().wait(0.01)
                 if audiobuffer.nbuffer >= nin and not self.shutdown_flag.is_set():
                     # demodulate audio
-                    nbytes = codec2.api.freedv_rawdatarx(
-                        freedv, bytes_out, audiobuffer.buffer.ctypes
-                    )
+                    if not self.states.isTransmitting():
+                        nbytes = codec2.api.freedv_rawdatarx(
+                            freedv, bytes_out, audiobuffer.buffer.ctypes
+                        )
+                    else:
+                        nbytes = 0
+
                     # get current freedata_server states and write to list
                     # 1 trial
                     # 2 sync
@@ -317,6 +338,11 @@ class Demodulator():
 
         # signalling is always true
         self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
+
+        if self.config['EXP'].get('enable_vhf'):
+            self.MODE_DICT[codec2.FREEDV_MODE.data_vhf_1.value]["decode"] = True
+
+
         # we only need to decode signalling ack as ISS or within P2P Connection
         if is_arq_irs and not is_p2p_connection:
             self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = False

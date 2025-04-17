@@ -1,6 +1,10 @@
 <template>
-  <div class="alert alert-info" role="alert">
-    <strong><i class="bi bi-gear-wide-connected me-1"></i></strong>{{ $t('settings.station.introduction') }}   </div>
+  <div
+    class="alert alert-info"
+    role="alert"
+  >
+    <strong><i class="bi bi-gear-wide-connected me-1" /></strong>{{ $t('settings.station.introduction') }}
+  </div>
 
   <!-- Station Callsign -->
   <div class="input-group input-group-sm mb-1">
@@ -12,19 +16,19 @@
         data-bs-toggle="tooltip"
         :title="$t('settings.station.callsign_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </span>
     <input
+      id="myCall"
+      v-model="settings.remote.STATION.mycall"
       type="text"
       class="form-control"
       style="text-transform: uppercase"
       :placeholder="$t('settings.station.callsign_placeholder')"
-      id="myCall"
       aria-label="Station Callsign"
-      v-model="settings.remote.STATION.mycall"
       @change="validateCall"
-    />
+    >
   </div>
 
   <!-- Station SSID -->
@@ -37,31 +41,63 @@
         data-bs-toggle="tooltip"
         :title="$t('settings.station.callsignssid_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </span>
     <select
-      class="form-select form-select-sm w-50"
       id="myCallSSID"
-      @change="onChange"
       v-model.number="settings.remote.STATION.myssid"
+      class="form-select form-select-sm w-50"
+      @change="onChange"
     >
-      <option value="0">0</option>
-      <option value="1">1</option>
-      <option value="2">2</option>
-      <option value="3">3</option>
-      <option value="4">4</option>
-      <option value="5">5</option>
-      <option value="6">6</option>
-      <option value="7">7</option>
-      <option value="8">8</option>
-      <option value="9">9</option>
-      <option value="10">10</option>
-      <option value="11">11</option>
-      <option value="12">12</option>
-      <option value="13">13</option>
-      <option value="14">14</option>
-      <option value="15">15</option>
+      <option value="0">
+        0
+      </option>
+      <option value="1">
+        1
+      </option>
+      <option value="2">
+        2
+      </option>
+      <option value="3">
+        3
+      </option>
+      <option value="4">
+        4
+      </option>
+      <option value="5">
+        5
+      </option>
+      <option value="6">
+        6
+      </option>
+      <option value="7">
+        7
+      </option>
+      <option value="8">
+        8
+      </option>
+      <option value="9">
+        9
+      </option>
+      <option value="10">
+        10
+      </option>
+      <option value="11">
+        11
+      </option>
+      <option value="12">
+        12
+      </option>
+      <option value="13">
+        13
+      </option>
+      <option value="14">
+        14
+      </option>
+      <option value="15">
+        15
+      </option>
     </select>
   </div>
 
@@ -75,19 +111,19 @@
         data-bs-toggle="tooltip"
         :title="$t('settings.station.locator_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </span>
     <input
+      id="myGrid"
+      v-model="settings.remote.STATION.mygrid"
       type="text"
       class="form-control"
       :placeholder="$t('settings.station.locator_placeholder')"
-      id="myGrid"
       maxlength="6"
       aria-label="Station Grid Locator"
       @change="onChange"
-      v-model="settings.remote.STATION.mygrid"
-    />
+    >
   </div>
 
   <!-- Respond to CQ Callings -->
@@ -100,19 +136,22 @@
         data-bs-toggle="tooltip"
         :title="$t('settings.station.respondtocq_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
         <input
-          class="form-check-input"
-          type="checkbox"
           id="respondCQSwitch"
           v-model="settings.remote.STATION.respond_to_cq"
+          class="form-check-input"
+          type="checkbox"
           @change="onChange"
-        />
-        <label class="form-check-label" for="respondCQSwitch">{{ $t('settings.enable') }}</label>
+        >
+        <label
+          class="form-check-label"
+          for="respondCQSwitch"
+        >{{ $t('settings.enable') }}</label>
       </div>
     </label>
   </div>
@@ -127,19 +166,22 @@
         data-bs-toggle="tooltip"
         :title="$t('settings.station.enablecallsignblacklist_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
         <input
-          class="form-check-input"
-          type="checkbox"
           id="respondEnableBlacklistSwitch"
           v-model="settings.remote.STATION.enable_callsign_blacklist"
+          class="form-check-input"
+          type="checkbox"
           @change="onChange"
-        />
-        <label class="form-check-label" for="respondEnableBlacklistSwitch">{{ $t('settings.enable') }}</label>
+        >
+        <label
+          class="form-check-label"
+          for="respondEnableBlacklistSwitch"
+        >{{ $t('settings.enable') }}</label>
       </div>
     </label>
   </div>
@@ -154,19 +196,19 @@
         data-bs-toggle="tooltip"
         :title="$t('settings.station.callsignblacklist_help')"
       >
-        <i class="bi bi-question-circle"></i>
+        <i class="bi bi-question-circle" />
       </button>
     </label>
     <div class="w-50">
       <div class="form-floating">
         <textarea
+          id="callsignBlacklistfloatingTextarea"
+          v-model="settings.remote.STATION.callsign_blacklist"
           class="form-control"
           :placeholder="$t('settings.station.callsignblacklist_placeholder')"
-          id="callsignBlacklistfloatingTextarea"
           style="height: 150px"
-          v-model="settings.remote.STATION.callsign_blacklist"
           @change="onChange"
-        ></textarea>
+        />
         <label for="callsignBlacklistfloatingTextarea">{{ $t('settings.station.callsignblacklist_help') }}</label>
       </div>
     </div>

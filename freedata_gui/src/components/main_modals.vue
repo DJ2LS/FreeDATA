@@ -229,589 +229,600 @@ const beaconHistogramData = computed(() => ({
 
 </script>
 <template>
-   <main_startup_check />
-   <!-- Station Info Modal -->
-   <div
-      class="modal fade"
-      ref=modalElement
-      id="dxStationInfoModal"
-      tabindex="-1"
-      aria-hidden="true"
-      >
-      <div class="modal-dialog">
-         <div class="modal-content">
-            <div class="modal-header">
-               <h4 class="p-0 m-0">{{ station.stationInfo.callsign }}</h4>
-               <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                  ></button>
-            </div>
-            <div class="modal-body">
-               <div class="alert alert-primary" role="alert">
-                  <strong> Please note:</strong> This is a preview to show you the
-                  direction, FreeDATA is going somewhen. For now you can save only
-                  your personal data, so we can optimize and improve the database. In
-                  future this data can be requested by a remote station.
-               </div>
-               <ul>
-                  <li v-for="(value, key) in station.stationInfo.info" :key="key">
-                     <strong>{{ key }}:</strong> {{ value }}
-                  </li>
-               </ul>
-            </div>
-            <div class="modal-footer">
-               <button
-                  type="button"
-                  class="btn btn-secondary"
-                  data-bs-dismiss="modal"
-                  >
-               Close
-               </button>
-            </div>
-         </div>
-      </div>
-   </div>
-   <!-- updater release notes-->
-   <div
-      class="modal fade"
-      ref=modalElement
-      id="updaterReleaseNotes"
-      tabindex="-1"
-      aria-hidden="true"
-      >
-      <div class="modal-dialog">
-         <div class="modal-content">
-            <div class="modal-header">
-               <span class="input-group-text" id="updater_last_version"></span>
-               <span class="input-group-text ms-1" id="updater_last_update"></span>
-               <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                  ></button>
-            </div>
-            <div class="modal-body">
-               <div class="modal-dialog modal-dialog-scrollable">
-                  <div class="" id="updater_release_notes"></div>
-               </div>
-            </div>
-            <div class="modal-footer">
-               <button
-                  type="button"
-                  class="btn btn-secondary"
-                  data-bs-dismiss="modal"
-                  >
-               {{ $t('modals.close') }}
-               </button>
-            </div>
-         </div>
-      </div>
-   </div>
-   <!-- delete chat modal -->
-   <div
-      class="modal fade"
-      ref=modalElement
-      id="deleteChatModal"
-      tabindex="-1"
-      aria-labelledby="exampleModalLabel"
-      aria-hidden="true"
-      >
-      <div class="modal-dialog">
-         <div class="modal-content">
-            <div class="modal-header">
-               <h1 class="modal-title fs-5" id="deleteChatModalLabel">
-                   {{ chat.selectedCallsign }} {{ $t('modals.options') }}
-               </h1>
-               <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                  ></button>
-            </div>
-            <div class="modal-body">
-
-
-
-            <div class="card">
-  <div class="card-header">
-    <strong>{{ $t('modals.beaconhistogram') }}</strong>
-  </div>
-  <div class="card-body">
-    <Bar
-          :data="beaconHistogramData"
-          :options="beaconHistogramOptions"
-          width="300"
-          height="100"
-        />
-  </div>
-</div>
-
-
-            <div class="card mt-3">
-  <div class="card-header">
-    <strong>{{ $t('modals.furtheroptions') }}</strong>
-  </div>
-  <div class="card-body">
-    <button
-                  type="button"
-                  class="btn btn-danger"
-                  @click="deleteChat"
-                  data-bs-dismiss="modal"
-                  >
-               {{ $t('modals.deletechat') }}
-               </button>
-  </div>
-</div>
-
-
-
-
-            </div>
-            <div class="modal-footer">
-               <button
-                  type="button"
-                  class="btn btn-secondary"
-                  data-bs-dismiss="modal"
-                  >
-               {{ $t('modals.close') }}
-               </button>
-
-            </div>
-         </div>
-      </div>
-   </div>
-   <!-- Message Info Modal -->
-   <div
-      class="modal fade"
-      ref=modalElement
-      id="messageInfoModal"
-      tabindex="-1"
-      aria-hidden="true"
-      >
-      <div class="modal-dialog">
-         <div class="modal-content">
-            <div class="modal-header">
-               <h1 class="modal-title fs-5" id="messageInfoModalLabel">
-                  {{ chat.selectedCallsign }}
-
-               </h1>
-               <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                  ></button>
-            </div>
-            <div class="modal-body">
-
-              <div class="card mt-2">
-                  <div class="card-header">{{ $t('general.statistics') }}</div>
-<div class="card-body">
-  <div class="container">
-    <div class="row">
-      <!-- Bytes per Minute -->
-      <div class="auto mb-2">
-        <div class="input-group">
-          <span class="input-group-text">{{ $t('general.speed') }}</span>
-          <span class="input-group-text">{{ chat.messageInfoById?.statistics?.bytes_per_minute ?? 'NaN' }} bpm / {{ chat.messageInfoById?.statistics?.bits_per_second ?? 'NaN' }} bps</span>
+  <main_startup_check />
+  <!-- Station Info Modal -->
+  <div
+    id="dxStationInfoModal"
+    ref="modalElement"
+    class="modal fade"
+    tabindex="-1"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="p-0 m-0">
+            {{ station.stationInfo.callsign }}
+          </h4>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          />
         </div>
-      </div>
-    </div>
-
-    <div class="row">
-
-      <!-- Duration [s] -->
-      <div class="col-auto mb-2">
-        <div class="input-group">
-          <span class="input-group-text">{{ $t('general.duration') }}</span>
-          <span class="input-group-text">{{ Math.round(chat.messageInfoById?.statistics?.duration) ?? 'NaN' }}</span>
+        <div class="modal-body">
+          <div
+            class="alert alert-primary"
+            role="alert"
+          >
+            <strong> Please note:</strong> This is a preview to show you the
+            direction, FreeDATA is going somewhen. For now you can save only
+            your personal data, so we can optimize and improve the database. In
+            future this data can be requested by a remote station.
+          </div>
+          <ul>
+            <li
+              v-for="(value, key) in station.stationInfo.info"
+              :key="key"
+            >
+              <strong>{{ key }}:</strong> {{ value }}
+            </li>
+          </ul>
         </div>
-      </div>
-      <!-- Size -->
-      <div class="col-auto mb-2">
-        <div class="input-group">
-          <span class="input-group-text">{{ $t('general.size') }}</span>
-          <span class="input-group-text">{{ chat.messageInfoById?.statistics?.total_bytes ?? 'NaN'  }} {{ $t('general.bytes') }}</span>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Close
+          </button>
         </div>
       </div>
     </div>
   </div>
-</div>
+  <!-- updater release notes-->
+  <div
+    id="updaterReleaseNotes"
+    ref="modalElement"
+    class="modal fade"
+    tabindex="-1"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span
+            id="updater_last_version"
+            class="input-group-text"
+          />
+          <span
+            id="updater_last_update"
+            class="input-group-text ms-1"
+          />
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          />
+        </div>
+        <div class="modal-body">
+          <div class="modal-dialog modal-dialog-scrollable">
+            <div
+              id="updater_release_notes"
+              class=""
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            {{ $t('modals.close') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- delete chat modal -->
+  <div
+    id="deleteChatModal"
+    ref="modalElement"
+    class="modal fade"
+    tabindex="-1"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1
+            id="deleteChatModalLabel"
+            class="modal-title fs-5"
+          >
+            {{ chat.selectedCallsign }} {{ $t('modals.options') }}
+          </h1>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          />
+        </div>
+        <div class="modal-body">
+          <div class="card">
+            <div class="card-header">
+              <strong>{{ $t('modals.beaconhistogram') }}</strong>
+            </div>
+            <div class="card-body">
+              <Bar
+                :data="beaconHistogramData"
+                :options="beaconHistogramOptions"
+                width="300"
+                height="100"
+              />
+            </div>
+          </div>
 
 
-
-
-               </div>
-
-
-                              <div class="card mt-2">
-                  <div class="card-header">{{ $t('general.chart') }}</div>
-                  <div class="card-body">
-                     <Line
-                        :data="transmissionSpeedChartDataMessageInfo"
-                        :options="transmissionSpeedChartOptionsMessageInfo"
-                        />
+          <div class="card mt-3">
+            <div class="card-header">
+              <strong>{{ $t('modals.furtheroptions') }}</strong>
+            </div>
+            <div class="card-body">
+              <button
+                type="button"
+                class="btn btn-danger"
+                data-bs-dismiss="modal"
+                @click="deleteChat"
+              >
+                {{ $t('modals.deletechat') }}
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            {{ $t('modals.close') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Message Info Modal -->
+  <div
+    id="messageInfoModal"
+    ref="modalElement"
+    class="modal fade"
+    tabindex="-1"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1
+            id="messageInfoModalLabel"
+            class="modal-title fs-5"
+          >
+            {{ chat.selectedCallsign }}
+          </h1>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          />
+        </div>
+        <div class="modal-body">
+          <div class="card mt-2">
+            <div class="card-header">
+              {{ $t('general.statistics') }}
+            </div>
+            <div class="card-body">
+              <div class="container">
+                <div class="row">
+                  <!-- Bytes per Minute -->
+                  <div class="auto mb-2">
+                    <div class="input-group">
+                      <span class="input-group-text">{{ $t('general.speed') }}</span>
+                      <span class="input-group-text">{{ chat.messageInfoById?.statistics?.bytes_per_minute ?? 'NaN' }} bpm / {{ chat.messageInfoById?.statistics?.bits_per_second ?? 'NaN' }} bps</span>
+                    </div>
                   </div>
-               </div>
-            </div>
-            <div class="modal-footer">
-               <button
-                  type="button"
-                  class="btn btn-secondary"
-                  data-bs-dismiss="modal"
-                  >
-               {{ $t('modals.close') }}
-               </button>
-            </div>
-         </div>
-      </div>
-   </div>
-   <div
-      class="modal fade"
-      ref=modalElement
-      id="newChatModal"
-      tabindex="-1"
-      aria-hidden="true"
-      >
-      <div class="modal-dialog">
-         <div class="modal-content">
-            <div class="modal-header">
-               <h1 class="modal-title fs-5" id="deleteChatModalLabel">
-                  {{ $t('modals.startnewchat') }}
-               </h1>
-               <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                  ></button>
-            </div>
-            <div class="modal-body">
-               <div class="alert alert-info" role="alert">
-                  1. {{ $t('modals.newchatline1') }}
-                  <br />
-                  2. {{ $t('modals.newchatline2') }}
-                  <br />
-                  3. {{ $t('modals.newchatline3') }}
-                  <br />
-                  4. {{ $t('modals.newchatline4') }}
-               </div>
-               <div class="form-floating mb-3">
-                  <input
-                     type="text"
-                     class="form-control"
-                     id="floatingInputDestination"
-                     placeholder="dxcallsign / destination"
-                     maxlength="9"
-                     style="text-transform: uppercase"
-                     @keypress.enter="newChat()"
-                     v-model="chat.newChatCallsign"
-                     />
-                  <label for="floatingInputDestination"
-                     >{{ $t('general.dxcallsign') }} / {{ $t('general.destination') }}</label
-                     >
-               </div>
-               <div class="form-floating">
-                  <textarea
-                     class="form-control"
-                     placeholder="Your first message"
-                     id="floatingTextareaNewChatMessage"
-                     style="height: 100px"
-                     v-model="chat.newChatMessage"
-                     ></textarea>
-                  <label for="floatingTextareaNewChatMessage">{{ $t('modals.firstmessage') }}</label>
-               </div>
-            </div>
-            <div class="modal-footer">
-               <button
-                  type="button"
-                  class="btn btn-secondary"
-                  data-bs-dismiss="modal"
-                  >
-               {{ $t('modals.close') }}
-               </button>
-               <button
-                  class="btn btn-sm btn-outline-success"
-                  id="createNewChatButton"
-                  type="button"
-                  data-bs-dismiss="modal"
-                  data-bs-trigger="hover"
-                  :title="$t('modals.startnewchat2')"
-                  @click="newChat()"
-                  >
-               {{ $t('modals.startnewchat').toUpperCase() }}
-               <i class="bi bi-pencil-square" style="font-size: 1.2rem"></i>
-               </button>
-            </div>
-         </div>
-      </div>
-   </div>
-   <!-- AUDIO MODAL -->
-   <div
-      class="modal fade"
-      data-bs-backdrop="static"
-      tabindex="-1"
-      id="audioModal"
-      >
-      <div class="modal-dialog modal-dialog-scrollable">
-         <div class="modal-content">
-            <div class="modal-header">
-               <h5 class="modal-title">{{ $t('modals.audiotuning') }}</h5>
-               <button
-                  type="button"
-                  class="btn btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                  ></button>
-            </div>
-            <div class="modal-body">
-               <div class="alert alert-info" role="alert">
-                  {{ $t('modals.audiotuninginfo') }}
-               </div>
-               <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text">{{ $t('modals.testframe') }}</span>
-                  <button
-                     type="button"
-                     id="sendTestFrame"
-                     @click="sendModemTestFrame()"
-                     class="btn btn-danger"
-                     >
-                  {{ $t('modals.testframetransmit') }}
-                  </button>
-               </div>
-               <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text">{{ $t('modals.audiotuningrxlevel') }}</span>
-                  <span class="input-group-text">{{
-                  settings.remote.AUDIO.rx_audio_level
-                  }}</span>
-                  <span class="input-group-text w-75">
-                  <input
-                     type="range"
-                     class="form-range"
-                     min="-30"
-                     max="20"
-                     step="1"
-                     id="audioLevelRX"
-                     @change="onChange"
-                     v-model.number="settings.remote.AUDIO.rx_audio_level"
-                     /></span>
-               </div>
-               <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text">{{ $t('modals.audiotuningtxlevel') }}</span>
-                  <span class="input-group-text">{{
-                  settings.remote.AUDIO.tx_audio_level
-                  }}</span>
-                  <span class="input-group-text w-75">
-                  <input
-                     type="range"
-                     class="form-range"
-                     min="-30"
-                     max="20"
-                     step="1"
-                     id="audioLevelTX"
-                     @change="onChange"
-                     v-model.number="settings.remote.AUDIO.tx_audio_level"
-                     /></span>
-               </div>
+                </div>
 
-
-              <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text">{{ $t('modals.audiotuningtransmitsine') }}</span>
-                  <button
-                     type="button"
-                     id="sendTestFrame"
-                     @click="sendSineTone(true)"
-                     class="btn btn-success"
-                     >
-                  {{ $t('modals.audiotuningtransmitsine30s') }}
-                  </button>
-
-                                <button
-                     type="button"
-                     id="sendTestFrame"
-                     @click="sendSineTone(false)"
-                     class="btn btn-danger"
-                     >
-                  {{ $t('general.stop') }}
-                  </button>
-
-               </div>
-
-
-
-
-            </div>
-         </div>
-      </div>
-   </div>
-   <!-- STATION INFO MODAL -->
-   <div
-      class="modal fade"
-      id="stationInfoModal"
-      tabindex="-1"
-      aria-labelledby="stationInfoModal"
-      aria-hidden="true"
-      >
-      <div class="modal-dialog modal-dialog-scrollable">
-         <div class="modal-content">
-            <div class="modal-header">
-               <h1 class="modal-title fs-5">
-                  {{ settingsStore.remote.STATION.mycall }}
-                  -
-                  {{ settingsStore.remote.STATION.myssid }}
-               </h1>
-               <span class="badge text-bg-secondary ms-3">{{
-               settingsStore.remote.STATION.mygrid
-               }}</span>
-               <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                  ></button>
-            </div>
-            <div class="modal-body">
-               <div class="alert alert-primary" role="alert">
-                  <strong> Please note:</strong> This is a preview to show you the
-                  direction, FreeDATA is going somewhen. For now you can save only
-                  your personal data, so we can optimize and improve the database. In
-                  future this data can be requested by a remote station.
-               </div>
-               <!-- Name -->
-               <div class="input-group mb-1">
-                  <span class="input-group-text"
-                     ><i class="bi bi-person-fill"></i
-                     ></span>
-                  <input
-                     type="text"
-                     class="form-control"
-                     placeholder="Name"
-                     v-model="station.stationInfo.info.name"
-                     />
-               </div>
-               <!-- City -->
-               <div class="input-group mb-1">
-                  <span class="input-group-text"
-                     ><i class="bi bi-geo-alt-fill"></i
-                     ></span>
-                  <input
-                     type="text"
-                     class="form-control"
-                     placeholder="City"
-                     v-model="station.stationInfo.info.city"
-                     />
-               </div>
-               <!-- Age -->
-               <div class="input-group mb-3">
-                  <span class="input-group-text"
-                     ><i class="bi bi-person-fill"></i
-                     ></span>
-                  <input
-                     type="text"
-                     class="form-control"
-                     placeholder="Age"
-                     v-model="station.stationInfo.info.age"
-                     />
-               </div>
-               <!-- Radio -->
-               <div class="input-group mb-1">
-                  <span class="input-group-text"
-                     ><i class="bi bi-broadcast-pin"></i
-                     ></span>
-                  <input
-                     type="text"
-                     class="form-control"
-                     placeholder="Radio"
-                     v-model="station.stationInfo.info.radio"
-                     />
-               </div>
-               <!-- Antenna -->
-               <div class="input-group mb-3">
-                  <span class="input-group-text"
-                     ><i class="bi bi-cone-striped"></i
-                     ></span>
-                  <input
-                     type="text"
-                     class="form-control"
-                     placeholder="Antenna"
-                     v-model="station.stationInfo.info.antenna"
-                     />
-               </div>
-               <!-- Website -->
-               <div class="input-group mb-1">
-                  <span class="input-group-text"><i class="bi bi-globe"></i></span>
-                  <input
-                     type="url"
-                     class="form-control"
-                     placeholder="Website"
-                     v-model="station.stationInfo.info.website"
-                     />
-               </div>
-               <!-- Email -->
-               <div class="input-group mb-3">
-                  <span class="input-group-text"
-                     ><i class="bi bi-envelope-fill"></i
-                     ></span>
-                  <input
-                     type="email"
-                     class="form-control"
-                     placeholder="Email"
-                     v-model="station.stationInfo.info.email"
-                     />
-               </div>
-               <!-- Social Media Inputs -->
-               <div class="mb-3">
-                  <div
-                     v-for="(url, platform) in station.stationInfo.info.socialMedia"
-                     :key="platform"
-                     >
-                     <div class="input-group mb-1">
-                        <span class="input-group-text">
-                        <i :class="`bi bi-${platform}`"></i>
-                        </span>
-                        <input
-                           type="url"
-                           class="form-control"
-                           :placeholder="`${platform.charAt(0).toUpperCase() + platform.slice(1)} URL`"
-                           v-model="station.stationInfo.info.socialMedia[platform]"
-                           />
-                     </div>
+                <div class="row">
+                  <!-- Duration [s] -->
+                  <div class="col-auto mb-2">
+                    <div class="input-group">
+                      <span class="input-group-text">{{ $t('general.duration') }}</span>
+                      <span class="input-group-text">{{ Math.round(chat.messageInfoById?.statistics?.duration) ?? 'NaN' }}</span>
+                    </div>
                   </div>
-               </div>
-               <!-- Comments -->
-               <div class="mb-3">
-                  <label class="input-group-text" for="comments"
-                     ><i class="bi bi-textarea-resize"></i> Comments</label
-                     >
-                  <textarea
-                     class="form-control"
-                     rows="3"
-                     v-model="station.stationInfo.info.comments"
-                     ></textarea>
-               </div>
+                  <!-- Size -->
+                  <div class="col-auto mb-2">
+                    <div class="input-group">
+                      <span class="input-group-text">{{ $t('general.size') }}</span>
+                      <span class="input-group-text">{{ chat.messageInfoById?.statistics?.total_bytes ?? 'NaN' }} {{ $t('general.bytes') }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="modal-footer">
-               <button
-                  type="button"
-                  class="btn btn-secondary"
-                  data-bs-dismiss="modal"
-                  >
-               {{ $t('modals.close') }}
-               </button>
-               <button
-                  type="button"
-                  class="btn btn-primary"
-                  @click="updateStationInfo"
-                  >
-               {{ $t('modals.savechanges') }}
-               </button>
+          </div>
+
+
+          <div class="card mt-2">
+            <div class="card-header">
+              {{ $t('general.chart') }}
             </div>
-         </div>
+            <div class="card-body">
+              <Line
+                :data="transmissionSpeedChartDataMessageInfo"
+                :options="transmissionSpeedChartOptionsMessageInfo"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            {{ $t('modals.close') }}
+          </button>
+        </div>
       </div>
-   </div>
+    </div>
+  </div>
+  <div
+    id="newChatModal"
+    ref="modalElement"
+    class="modal fade"
+    tabindex="-1"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1
+            id="deleteChatModalLabel"
+            class="modal-title fs-5"
+          >
+            {{ $t('modals.startnewchat') }}
+          </h1>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          />
+        </div>
+        <div class="modal-body">
+          <div
+            class="alert alert-info"
+            role="alert"
+          >
+            1. {{ $t('modals.newchatline1') }}
+            <br>
+            2. {{ $t('modals.newchatline2') }}
+            <br>
+            3. {{ $t('modals.newchatline3') }}
+            <br>
+            4. {{ $t('modals.newchatline4') }}
+          </div>
+          <div class="form-floating mb-3">
+            <input
+              id="floatingInputDestination"
+              v-model="chat.newChatCallsign"
+              type="text"
+              class="form-control"
+              placeholder="dxcallsign / destination"
+              maxlength="9"
+              style="text-transform: uppercase"
+              @keypress.enter="newChat()"
+            >
+            <label for="floatingInputDestination">{{ $t('general.dxcallsign') }} / {{ $t('general.destination') }}</label>
+          </div>
+          <div class="form-floating">
+            <textarea
+              id="floatingTextareaNewChatMessage"
+              v-model="chat.newChatMessage"
+              class="form-control"
+              placeholder="Your first message"
+              style="height: 100px"
+            />
+            <label for="floatingTextareaNewChatMessage">{{ $t('modals.firstmessage') }}</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            {{ $t('modals.close') }}
+          </button>
+          <button
+            id="createNewChatButton"
+            class="btn btn-sm btn-outline-success"
+            type="button"
+            data-bs-dismiss="modal"
+            data-bs-trigger="hover"
+            :title="$t('modals.startnewchat2')"
+            @click="newChat()"
+          >
+            {{ $t('modals.startnewchat').toUpperCase() }}
+            <i
+              class="bi bi-pencil-square"
+              style="font-size: 1.2rem"
+            />
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- AUDIO MODAL -->
+  <div
+    id="audioModal"
+    class="modal fade"
+    data-bs-backdrop="static"
+    tabindex="-1"
+  >
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            {{ $t('modals.audiotuning') }}
+          </h5>
+          <button
+            type="button"
+            class="btn btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          />
+        </div>
+        <div class="modal-body">
+          <div
+            class="alert alert-info"
+            role="alert"
+          >
+            {{ $t('modals.audiotuninginfo') }}
+          </div>
+          <div class="input-group input-group-sm mb-1">
+            <span class="input-group-text">{{ $t('modals.testframe') }}</span>
+            <button
+              id="sendTestFrame"
+              type="button"
+              class="btn btn-danger"
+              @click="sendModemTestFrame()"
+            >
+              {{ $t('modals.testframetransmit') }}
+            </button>
+          </div>
+          <div class="input-group input-group-sm mb-1">
+            <span class="input-group-text">{{ $t('modals.audiotuningrxlevel') }}</span>
+            <span class="input-group-text">{{
+              settings.remote.AUDIO.rx_audio_level
+            }}</span>
+            <span class="input-group-text w-75">
+              <input
+                id="audioLevelRX"
+                v-model.number="settings.remote.AUDIO.rx_audio_level"
+                type="range"
+                class="form-range"
+                min="-30"
+                max="20"
+                step="1"
+                @change="onChange"
+              ></span>
+          </div>
+          <div class="input-group input-group-sm mb-1">
+            <span class="input-group-text">{{ $t('modals.audiotuningtxlevel') }}</span>
+            <span class="input-group-text">{{
+              settings.remote.AUDIO.tx_audio_level
+            }}</span>
+            <span class="input-group-text w-75">
+              <input
+                id="audioLevelTX"
+                v-model.number="settings.remote.AUDIO.tx_audio_level"
+                type="range"
+                class="form-range"
+                min="-30"
+                max="20"
+                step="1"
+                @change="onChange"
+              ></span>
+          </div>
+
+
+          <div class="input-group input-group-sm mb-1">
+            <span class="input-group-text">{{ $t('modals.audiotuningtransmitsine') }}</span>
+            <button
+              id="sendTestFrame"
+              type="button"
+              class="btn btn-success"
+              @click="sendSineTone(true)"
+            >
+              {{ $t('modals.audiotuningtransmitsine30s') }}
+            </button>
+
+            <button
+              id="sendTestFrame"
+              type="button"
+              class="btn btn-danger"
+              @click="sendSineTone(false)"
+            >
+              {{ $t('general.stop') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- STATION INFO MODAL -->
+  <div
+    id="stationInfoModal"
+    class="modal fade"
+    tabindex="-1"
+    aria-labelledby="stationInfoModal"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5">
+            {{ settingsStore.remote.STATION.mycall }}
+            -
+            {{ settingsStore.remote.STATION.myssid }}
+          </h1>
+          <span class="badge text-bg-secondary ms-3">{{
+            settingsStore.remote.STATION.mygrid
+          }}</span>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          />
+        </div>
+        <div class="modal-body">
+          <div
+            class="alert alert-primary"
+            role="alert"
+          >
+            <strong> Please note:</strong> This is a preview to show you the
+            direction, FreeDATA is going somewhen. For now you can save only
+            your personal data, so we can optimize and improve the database. In
+            future this data can be requested by a remote station.
+          </div>
+          <!-- Name -->
+          <div class="input-group mb-1">
+            <span class="input-group-text"><i class="bi bi-person-fill" /></span>
+            <input
+              v-model="station.stationInfo.info.name"
+              type="text"
+              class="form-control"
+              placeholder="Name"
+            >
+          </div>
+          <!-- City -->
+          <div class="input-group mb-1">
+            <span class="input-group-text"><i class="bi bi-geo-alt-fill" /></span>
+            <input
+              v-model="station.stationInfo.info.city"
+              type="text"
+              class="form-control"
+              placeholder="City"
+            >
+          </div>
+          <!-- Age -->
+          <div class="input-group mb-3">
+            <span class="input-group-text"><i class="bi bi-person-fill" /></span>
+            <input
+              v-model="station.stationInfo.info.age"
+              type="text"
+              class="form-control"
+              placeholder="Age"
+            >
+          </div>
+          <!-- Radio -->
+          <div class="input-group mb-1">
+            <span class="input-group-text"><i class="bi bi-broadcast-pin" /></span>
+            <input
+              v-model="station.stationInfo.info.radio"
+              type="text"
+              class="form-control"
+              placeholder="Radio"
+            >
+          </div>
+          <!-- Antenna -->
+          <div class="input-group mb-3">
+            <span class="input-group-text"><i class="bi bi-cone-striped" /></span>
+            <input
+              v-model="station.stationInfo.info.antenna"
+              type="text"
+              class="form-control"
+              placeholder="Antenna"
+            >
+          </div>
+          <!-- Website -->
+          <div class="input-group mb-1">
+            <span class="input-group-text"><i class="bi bi-globe" /></span>
+            <input
+              v-model="station.stationInfo.info.website"
+              type="url"
+              class="form-control"
+              placeholder="Website"
+            >
+          </div>
+          <!-- Email -->
+          <div class="input-group mb-3">
+            <span class="input-group-text"><i class="bi bi-envelope-fill" /></span>
+            <input
+              v-model="station.stationInfo.info.email"
+              type="email"
+              class="form-control"
+              placeholder="Email"
+            >
+          </div>
+          <!-- Social Media Inputs -->
+          <div class="mb-3">
+            <div
+              v-for="(url, platform) in station.stationInfo.info.socialMedia"
+              :key="platform"
+            >
+              <div class="input-group mb-1">
+                <span class="input-group-text">
+                  <i :class="`bi bi-${platform}`" />
+                </span>
+                <input
+                  v-model="station.stationInfo.info.socialMedia[platform]"
+                  type="url"
+                  class="form-control"
+                  :placeholder="`${platform.charAt(0).toUpperCase() + platform.slice(1)} URL`"
+                >
+              </div>
+            </div>
+          </div>
+          <!-- Comments -->
+          <div class="mb-3">
+            <label
+              class="input-group-text"
+              for="comments"
+            ><i class="bi bi-textarea-resize" /> Comments</label>
+            <textarea
+              v-model="station.stationInfo.info.comments"
+              class="form-control"
+              rows="3"
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            {{ $t('modals.close') }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            @click="updateStationInfo"
+          >
+            {{ $t('modals.savechanges') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>

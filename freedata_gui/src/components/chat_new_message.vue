@@ -14,6 +14,8 @@ import DOMPurify from 'dompurify';
 import ImageCompressor from 'js-image-compressor'; // Import the compressor
 import { displayToast } from "../js/popupHandler";
 
+import { useIsMobile } from '../js/mobile_devices.js';
+const { isMobile } = useIsMobile(992);
 
 
 // Emoji Handling
@@ -210,32 +212,53 @@ function applyMarkdown(formatType) {
 </script>
 
 <template>
-  <nav class="navbar sticky-bottom bg-body-tertiary border-top" @dragover.prevent @drop="handleDrop">
+  <nav
+    class="navbar sticky-bottom bg-body-tertiary border-top"
+    @dragover.prevent
+    @drop="handleDrop"
+  >
     <div class="container-fluid p-0">
       <!-- Hidden file input -->
-      <input type="file" multiple ref="fileInput" @change="handleFileSelection" style="display: none;" />
+      <input
+        ref="fileInput"
+        type="file"
+        multiple
+        style="display: none;"
+        @change="handleFileSelection"
+      >
 
       <!-- File Attachment Preview Area -->
       <div class="container-fluid">
-        <div class="d-flex flex-row overflow-auto bg-light">
-          <div v-for="(file, index) in selectedFiles" :key="index" class="p-2">
-            <div class="card" style="min-width: 10rem; max-width: 10rem;">
+        <div class="d-flex flex-row overflow-auto bg-body-tertiary">
+          <div
+            v-for="(file, index) in selectedFiles"
+            :key="index"
+            class="p-2"
+          >
+            <div
+              class="card"
+              style="min-width: 10rem; max-width: 10rem;"
+            >
               <!-- Card Header with Remove Button -->
               <div class="card-header d-flex justify-content-between align-items-center">
                 <span class="text-truncate">{{ file.name }}</span>
-                <button class="btn btn-close" @click="removeFile(index)"></button>
+                <button
+                  class="btn btn-close"
+                  @click="removeFile(index)"
+                />
               </div>
 
               <!-- Conditional Image Preview -->
-        <div v-if="file.type.startsWith('image/')" class="p-2">
-          <img
-  :src="`data:${file.type};base64,${file.content}`"
-  class="img-fluid"
-  alt="Image Preview">
-
-
-
-        </div>
+              <div
+                v-if="file.type.startsWith('image/')"
+                class="p-2"
+              >
+                <img
+                  :src="`data:${file.type};base64,${file.content}`"
+                  class="img-fluid"
+                  alt="Image Preview"
+                >
+              </div>
 
               <div class="card-footer text-muted">
                 {{ file.type }}
@@ -251,6 +274,8 @@ function applyMarkdown(formatType) {
       <!-- Message Input Area -->
       <div class="input-group bottom-0 ms-2">
         <button
+
+          v-if="!isMobile"
           type="button"
           class="btn btn-outline-secondary border-0 rounded-pill me-1"
           data-bs-toggle="modal"
@@ -258,7 +283,11 @@ function applyMarkdown(formatType) {
           data-bs-backdrop="false"
           @click="$refs.chatModuleMessage.focus()"
         >
-          <i id="emojipickerbutton" class="bi bi-emoji-smile p-0" style="font-size: 1rem"></i>
+          <i
+            id="emojipickerbutton"
+            class="bi bi-emoji-smile p-0"
+            style="font-size: 1rem"
+          />
         </button>
 
         <!-- Trigger file selection modal -->
@@ -267,48 +296,87 @@ function applyMarkdown(formatType) {
           class="btn btn-outline-secondary border-0 rounded-pill me-1"
           @click="triggerFileInput(), $event.target.blur(), $refs.chatModuleMessage.focus()"
         >
-          <i class="bi bi-paperclip" style="font-size: 1.2rem"></i>
+          <i
+            class="bi bi-paperclip"
+            style="font-size: 1.2rem"
+          />
         </button>
 
-        <div class="vr mx-2"></div>
+        <div
+          v-if="!isMobile"
+          class="vr mx-2"
+        />
 
         <!-- Markdown Formatting Buttons -->
-        <button class="btn btn-outline-secondary border-0 rounded-pill" @click="applyMarkdown('bold')"><b>B</b></button>
-        <button class="btn btn-outline-secondary border-0 rounded-pill" @click="applyMarkdown('italic')"><i>I</i></button>
-        <button class="btn btn-outline-secondary border-0 rounded-pill" @click="applyMarkdown('underline')"><u>U</u></button>
+        <button
+          v-if="!isMobile"
+          class="btn btn-outline-secondary border-0 d-md-block rounded-pill"
+          @click="applyMarkdown('bold')"
+        >
+          <b>B</b>
+        </button>
+        <button
+          v-if="!isMobile"
+          class="btn btn-outline-secondary border-0 rounded-pill"
+          @click="applyMarkdown('italic')"
+        >
+          <i>I</i>
+        </button>
+        <button
+          v-if="!isMobile"
+          class="btn btn-outline-secondary border-0 rounded-pill"
+          @click="applyMarkdown('underline')"
+        >
+          <u>U</u>
+        </button>
 
         <textarea
+          ref="chatModuleMessage"
+          v-model="chat.inputText"
           class="form-control border rounded-pill"
           rows="1"
-          ref="chatModuleMessage"
           :placeholder="$t('chat.entermessage_placeholder')"
-          v-model="chat.inputText"
-          @keyup.enter="transmitNewMessage()"
           style="resize: none;"
-        ></textarea>
+          @keyup.enter="transmitNewMessage()"
+        />
 
         <button
           class="btn btn-sm btn-secondary ms-1 me-2 rounded-pill"
-          @click="transmitNewMessage()"
           type="button"
+          @click="transmitNewMessage()"
         >
-          <i class="bi bi-send ms-4 me-4" style="font-size: 1.2rem"></i>
+          <i
+            class="bi bi-send ms-2 me-2"
+            style="font-size: 1.2rem"
+          />
         </button>
       </div>
     </div>
   </nav>
 
   <!-- Emoji Picker Modal -->
-  <div class="modal fade" id="emojiPickerModal" aria-hidden="true">
+  <div
+    id="emojiPickerModal"
+    class="modal fade"
+    aria-hidden="true"
+  >
     <div class="modal-dialog modal-dialog-centered modal">
       <div class="modal-content">
         <div class="modal-header">
-        <h5 class="modal-title">{{ $t('chat.insertemoji') }}</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-target="#emojiPickerModal" aria-label="Close"></button>
-      </div>
+          <h5 class="modal-title">
+            {{ $t('chat.insertemoji') }}
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            data-bs-target="#emojiPickerModal"
+            aria-label="Close"
+          />
+        </div>
 
         <div class="modal-body">
-          <VuemojiPicker @emojiClick="handleEmojiClick"/>
+          <VuemojiPicker @emoji-click="handleEmojiClick" />
         </div>
       </div>
     </div>

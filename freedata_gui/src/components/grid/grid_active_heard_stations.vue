@@ -44,33 +44,33 @@ function pushToPing(origin) {
   );
 }
 
-function getActivityInfo(activityType) {
-  switch (activityType) {
-    case 'ARQ_SESSION_INFO':
-    case 'ARQ_SESSION_OPEN':
-    case 'ARQ_SESSION_OPEN_ACK':
-    case 'ARQ_BURST':
-    case 'ARQ_BURST_ACK':
-      return { iconClass: 'bi bi-file-earmark-binary', description: activityType };
-    case 'P2P_CONNECTION_CONNECT':
-    case 'P2P_CONNECTION_CONNECT_ACK':
-    case 'P2P_CONNECTION_PAYLOAD':
-    case 'P2P_CONNECTION_PAYLOAD_ACK':
-    case 'P2P_CONNECTION_DISCONNECT':
-    case 'P2P_CONNECTION_DISCONNECT_ACK':
+const activityIcons = {
+  ARQ_SESSION_INFO: 'bi bi-file-earmark-binary',
+  ARQ_SESSION_OPEN: 'bi bi-file-earmark-binary',
+  ARQ_SESSION_OPEN_ACK: 'bi bi-file-earmark-binary',
+  ARQ_BURST: 'bi bi-file-earmark-binary',
+  ARQ_BURST_ACK: 'bi bi-file-earmark-binary',
+  P2P_CONNECTION_CONNECT: 'bi bi-arrow-left-right',
+  P2P_CONNECTION_CONNECT_ACK: 'bi bi-arrow-left-right',
+  P2P_CONNECTION_PAYLOAD: 'bi bi-arrow-left-right',
+  P2P_CONNECTION_PAYLOAD_ACK: 'bi bi-arrow-left-right',
+  P2P_CONNECTION_DISCONNECT: 'bi bi-arrow-left-right',
+  P2P_CONNECTION_DISCONNECT_ACK: 'bi bi-arrow-left-right',
+  QRV: 'bi bi-person-raised-hand',
+  CQ: 'bi bi-megaphone',
+  BEACON: 'bi bi-globe',
+  PING_ACK: 'bi bi-check-square'
+};
 
-      return { iconClass: 'bi bi-arrow-left-right', description: activityType };
-    case 'QRV':
-      return { iconClass: 'bi bi-person-raised-hand', description: activityType };
-    case 'CQ':
-      return { iconClass: 'bi bi-megaphone', description: activityType };
-    case 'BEACON':
-      return { iconClass: 'bi bi-globe', description: activityType };
-    case 'PING_ACK':
-      return { iconClass: 'bi bi-check-square', description: activityType };
-    default:
-      return { iconClass: '', description: activityType };
+function getActivityInfo(activityType) {
+  if (!activityType) {
+    return { iconClass: 'bi bi-question-circle', description: 'Unknown activity' };
   }
+
+  return {
+    iconClass: activityIcons[activityType] || 'bi bi-question-circle',
+    description: activityType
+  };
 }
 
 function startNewChat(callsign) {
@@ -87,24 +87,70 @@ function transmitPing(callsign) {
   <div class="card h-100">
     <!--325px-->
     <div class="card-header">
-      <i class="bi bi-list-columns-reverse" style="font-size: 1.2rem"></i>&nbsp;
+      <i
+        class="bi bi-list-columns-reverse"
+        style="font-size: 1.2rem"
+      />&nbsp;
       <strong>{{ $t('grid.components.heardstations') }}</strong>
     </div>
 
     <div class="card-body overflow-auto p-0">
       <div class="table-responsive">
         <!-- START OF TABLE FOR HEARD STATIONS -->
-        <table class="table table-sm table-striped" id="tblHeardStationList">
+        <table
+          id="tblHeardStationList"
+          class="table table-sm table-striped"
+        >
           <thead>
             <tr>
-              <th scope="col" id="thTime">{{ $t('grid.components.time') }}</th>
-              <th scope="col" id="thFreq">{{ $t('grid.components.freq') }}</th>
-              <th scope="col" id="thDxcall">{{ $t('grid.components.dxcall') }}</th>
-              <th scope="col" id="thDxgrid">{{ $t('grid.components.grid') }}</th>
-              <th scope="col" id="thDist">{{ $t('grid.components.dist') }}</th>
-              <th scope="col" id="thType">{{ $t('grid.components.type') }}</th>
-              <th scope="col" id="thSnr">{{ $t('grid.components.snr') }}</th>
-              <th scope="col" id="thSnr">{{ $t('grid.components.afk') }}</th>
+              <th
+                id="thTime"
+                scope="col"
+              >
+                {{ $t('grid.components.time') }}
+              </th>
+              <th
+                id="thFreq"
+                scope="col"
+              >
+                {{ $t('grid.components.freq') }}
+              </th>
+              <th
+                id="thDxcall"
+                scope="col"
+              >
+                {{ $t('grid.components.dxcall') }}
+              </th>
+              <th
+                id="thDxgrid"
+                scope="col"
+              >
+                {{ $t('grid.components.grid') }}
+              </th>
+              <th
+                id="thDist"
+                scope="col"
+              >
+                {{ $t('grid.components.dist') }}
+              </th>
+              <th
+                id="thType"
+                scope="col"
+              >
+                {{ $t('grid.components.type') }}
+              </th>
+              <th
+                id="thSnr"
+                scope="col"
+              >
+                {{ $t('grid.components.snr') }}
+              </th>
+              <th
+                id="thSnr"
+                scope="col"
+              >
+                {{ $t('grid.components.afk') }}
+              </th>
             </tr>
           </thead>
           <tbody id="gridHeardStations">
@@ -115,8 +161,7 @@ function transmitPing(callsign) {
               @click="pushToPing(item.origin)"
             >
               <td>
-                                  <span class="badge text-bg-secondary">{{ getDateTime(item.timestamp) }}</span>
-
+                <span class="badge text-bg-secondary">{{ getDateTime(item.timestamp) }}</span>
               </td>
               <td><small>{{ item.frequency / 1000 }} kHz</small></td>
               <td>
@@ -124,8 +169,8 @@ function transmitPing(callsign) {
                   class="btn btn-sm btn-outline-secondary ms-2 border-0"
                   data-bs-target="#dxStationInfoModal"
                   data-bs-toggle="modal"
-                  @click="getStationInfoByCallsign(item.origin)"
                   disabled
+                  @click="getStationInfoByCallsign(item.origin)"
                 >
                   <span class="badge text-bg-primary">{{ item.origin }}</span>
                 </button>
@@ -139,7 +184,7 @@ function transmitPing(callsign) {
                   :title="$t('grid.components.newmessage_help')"
                   @click="startNewChat(item.origin)"
                 >
-                  <i class="bi bi-pencil-square"></i>
+                  <i class="bi bi-pencil-square" />
                 </button>
 
                 <button
@@ -151,7 +196,7 @@ function transmitPing(callsign) {
                   :data-bs-title="$t('grid.components.ping_help')"
                   @click="transmitPing(item.origin)"
                 >
-                  <i class="bi bi-arrow-left-right"></i>
+                  <i class="bi bi-arrow-left-right" />
                 </button>
               </td>
               <td>
@@ -163,14 +208,20 @@ function transmitPing(callsign) {
                   :class="getActivityInfo(item.activity_type).iconClass"
                   data-bs-toggle="tooltip"
                   :title="getActivityInfo(item.activity_type).description"
-                ></i>
+                />
               </td>
               <td>
                 <small>{{ item.snr }}</small>
               </td>
               <td>
-                <i v-if="item.away_from_key" class="bi bi-house-x"></i>
-                <i v-else class="bi bi-house-check-fill"></i>
+                <i
+                  v-if="item.away_from_key"
+                  class="bi bi-house-x"
+                />
+                <i
+                  v-else
+                  class="bi bi-house-check-fill"
+                />
               </td>
             </tr>
           </tbody>
