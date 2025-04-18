@@ -280,7 +280,7 @@ def normalize_audio(datalist: np.ndarray) -> np.ndarray:
     # Debug information: normalization factor, loudest value before, and after normalization
     loudest_before = max_value
     loudest_after = np.max(np.abs(normalized_data))
-    print(f"[AUDIO] Normalization factor: {normalization_factor:.6f}, Loudest before: {loudest_before}, Loudest after: {loudest_after}")
+    # print(f"[AUDIO] Normalization factor: {normalization_factor:.6f}, Loudest before: {loudest_before}, Loudest after: {loudest_after}")
 
     return normalized_data
 
