@@ -249,12 +249,12 @@ def normalize_audio(datalist: np.ndarray) -> np.ndarray:
     :rtype: np.ndarray
     """
     if not isinstance(datalist, np.ndarray):
-        print("[MDM] Invalid datalist type. Expected np.ndarray.")
+        #print("[MDM] Invalid datalist type. Expected np.ndarray.")
         return datalist
 
     # Ensure datalist is not empty
     if datalist.size == 0:
-        print("[MDM] Datalist is empty. Returning unmodified.")
+        #print("[MDM] Datalist is empty. Returning unmodified.")
         return datalist
 
     # Find the maximum absolute value in the data
@@ -262,7 +262,7 @@ def normalize_audio(datalist: np.ndarray) -> np.ndarray:
 
     # If max_value is 0, return the datalist (avoid division by zero)
     if max_value == 0:
-        print("[MDM] Max value is zero. Cannot normalize. Returning unmodified.")
+        #print("[MDM] Max value is zero. Cannot normalize. Returning unmodified.")
         return datalist
 
     # Define the target max value as 95% of the maximum for np.int16
@@ -280,7 +280,7 @@ def normalize_audio(datalist: np.ndarray) -> np.ndarray:
     # Debug information: normalization factor, loudest value before, and after normalization
     loudest_before = max_value
     loudest_after = np.max(np.abs(normalized_data))
-    print(f"[AUDIO] Normalization factor: {normalization_factor:.6f}, Loudest before: {loudest_before}, Loudest after: {loudest_after}")
+    # print(f"[AUDIO] Normalization factor: {normalization_factor:.6f}, Loudest before: {loudest_before}, Loudest after: {loudest_after}")
 
     return normalized_data
 
