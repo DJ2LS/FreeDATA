@@ -31,6 +31,8 @@ class CONFIG:
             'output_device': str,
             'rx_audio_level': int,
             'tx_audio_level': int,
+            'rx_auto_audio_level': bool,
+            'tx_auto_audio_level': bool,
         },
         'RADIO': {
             'control': str,

@@ -302,7 +302,9 @@ class RF:
 
         # Re-sample back up to 48k (resampler works on np.int16)
         x = np.frombuffer(txbuffer, dtype=np.int16)
-        x = audio.normalize_audio(x)
+        
+        if self.config['AUDIO'].get('tx_auto_audio_level'):
+            x = audio.normalize_audio(x)
         x = audio.set_audio_volume(x, self.tx_audio_level)
         txbuffer_out = self.resampler.resample8_to_48(x)
         # transmit audio
@@ -410,9 +412,10 @@ class RF:
         try:
             audio_48k = np.frombuffer(indata, dtype=np.int16)
             audio_8k = self.resampler.resample48_to_8(audio_48k)
-            audio_normalized = audio.normalize_audio(audio_8k)
+            if self.config['AUDIO'].get('rx_auto_audio_level'):
+                audio_8k = audio.normalize_audio(audio_8k)
 
-            audio_8k_level_adjusted = audio.set_audio_volume(audio_normalized, self.rx_audio_level)
+            audio_8k_level_adjusted = audio.set_audio_volume(audio_8k, self.rx_audio_level)
 
             if not self.states.isTransmitting():
                 audio.calculate_fft(audio_8k_level_adjusted, self.fft_queue, self.states)
