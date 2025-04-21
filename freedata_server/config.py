@@ -54,6 +54,10 @@ class CONFIG:
             'arguments': str,
             'enable_vfo': bool,
         },
+        'FLRIG': {
+            'ip': str,
+            'port': int,
+        },
         'MODEM': {
             'enable_morse_identifier': bool,
             'maximum_bandwidth': int,

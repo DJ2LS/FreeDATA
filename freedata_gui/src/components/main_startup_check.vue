@@ -228,6 +228,9 @@
                       <option value="rigctld_bundle">
                         Rigctld (internal Hamlib)
                       </option>
+                      <option value="flrig">
+                        flrig
+                      </option>
                     </select>
                   </div>
                   <!-- Shown when rigctld_bundle is selected -->

@@ -27,6 +27,10 @@ command =
 arguments = 
 enable_vfo = False
 
+[FLRIG]
+ip = 127.0.0.1
+port = 12345
+
 [RADIO]
 control = disabled
 model_id = 1001

@@ -360,7 +360,11 @@
             "hamlibrigctldcommand_placeholder": "Auto-populated from above settings",
             "hamlibrigctldcustomarguments": " Rigctld custom arguments",
             "hamlibrigctldcustomarguments_help": "Additional arguments for rigctld (usually not needed)",
-            "hamlibrigctldcustomarguments_placeholder": "Optional custom arguments"
+            "hamlibrigctldcustomarguments_placeholder": "Optional custom arguments",
+            "flrigport": "Flrig port",
+            "flrigport_help": "Set the port where the flrig server is listening ( Default: 12345)",
+            "flrigip": "Flrig host",
+            "flrigip_help": "Set the host adress of the server, mostly localhost or 127.0.0.1"
         }
     }
 }
