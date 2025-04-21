@@ -105,7 +105,7 @@ class radio:
                 self.connected = False
 
     def get_level(self):
-        return self.parameters['level']
+        return None
 
     def get_alc(self):
         return None
