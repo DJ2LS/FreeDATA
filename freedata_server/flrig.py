@@ -76,6 +76,11 @@ class radio:
         self.parameters['frequency'] = self.server.rig.get_vfo()
         return self.parameters['frequency']
 
+    def get_rf(self):
+        self.parameters['rf'] = self.server.rig.get_power()
+        return self.parameters['rf']
+
+
     def set_frequency(self, frequency):
         self.parameters['frequency'] = frequency
         if self.connected:
@@ -100,8 +105,6 @@ class radio:
                 self.connected = False
 
     def get_level(self):
-        self.parameters['rf'] = self.server.rig.get_rf()
-
         return self.parameters['level']
 
     def get_alc(self):
