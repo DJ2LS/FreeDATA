@@ -159,7 +159,10 @@ class radio:
         self.parameters['ptt'] = state
         if self.connected:
             try:
-                self.server.rig.set_ptt(state)
+                if state:
+                    self.server.rig.set_ptt(1)
+                else:
+                    self.server.rig.set_ptt(0) 
             except Exception as e:
                 self.logger.error(f"Set PTT failed: {e}")
         return state
