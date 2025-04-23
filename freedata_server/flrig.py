@@ -136,7 +136,7 @@ class radio:
                 max_power = self.server.rig.get_maxpwr()
 
                 # Calculate absolute power in watts (rounded to int)
-                power_watts = int(float(rf) * float(max_power))
+                power_watts = int((float(rf) / 100) * float(max_power))
 
                 # Set power level in watts
                 self.server.rig.set_power(power_watts)
