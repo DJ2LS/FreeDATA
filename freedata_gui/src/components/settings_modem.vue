@@ -238,6 +238,66 @@ function reloadModem(){
     </div>
   </div>
 
+<!-- RX Audio Auto Adjust -->
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50 text-wrap">
+      {{ $t('settings.modem.enablerxautoadjust') }}
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        :title="$t('settings.modem.enablerxautoadjust_help')"
+      >
+        <i class="bi bi-question-circle" />
+      </button>
+    </label>
+    <label class="input-group-text w-50">
+      <div class="form-check form-switch form-check-inline">
+        <input
+          id="enableRXAutoAudioSwitch"
+          v-model="settings.remote.AUDIO.rx_auto_audio_level"
+          class="form-check-input"
+          type="checkbox"
+          @change="onChange"
+        >
+        <label
+          class="form-check-label"
+          for="enableRXAutoAudioSwitch"
+        >{{ $t('settings.enable') }}</label>
+      </div>
+    </label>
+  </div>
+
+<!-- TX Audio Auto Adjust -->
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50 text-wrap">
+      {{ $t('settings.modem.enabletxautoadjust') }}
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        :title="$t('settings.modem.enabletxautoadjust_help')"
+      >
+        <i class="bi bi-question-circle" />
+      </button>
+    </label>
+    <label class="input-group-text w-50">
+      <div class="form-check form-switch form-check-inline">
+        <input
+          id="enableTXAutoAudioSwitch"
+          v-model="settings.remote.AUDIO.tx_auto_audio_level"
+          class="form-check-input"
+          type="checkbox"
+          @change="onChange"
+        >
+        <label
+          class="form-check-label"
+          for="enableTXAutoAudioSwitch"
+        >{{ $t('settings.enable') }}</label>
+      </div>
+    </label>
+  </div>
+
   <!-- TX Delay -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
