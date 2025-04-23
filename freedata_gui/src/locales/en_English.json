@@ -322,6 +322,7 @@
             "rigcontroltype_help": "Choose how the software controls your radio",
             "tabhamlib": "Hamlib",
             "tabserial": "Serial",
+            "tabflrig": "flrig",
             "serialpttcomport": "PTT Com port",
             "serialpttcomport_help": "Select the COM port connected to your radio for PTT control",
             "serialpttcustomcomport": "PTT Custom COM port",
