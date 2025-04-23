@@ -81,7 +81,7 @@ class radio:
         current_power_level = self.server.rig.get_power()
         max_power_level = self.server.rig.get_maxpwr()
         power_percentage = int(current_power_level) / int(max_power_level)
-        self.parameters['rf'] = power_percentage
+        self.parameters['rf'] = round(power_percentage, 1)
         return self.parameters['rf']
 
 
