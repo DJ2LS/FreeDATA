@@ -77,7 +77,11 @@ class radio:
         return self.parameters['frequency']
 
     def get_rf(self):
-        self.parameters['rf'] = self.server.rig.get_power()
+
+        current_power_level = self.server.rig.get_power()
+        max_power_level = self.server.rig.get_maxpwr()
+        power_percentage = int(current_power_level) / int(max_power_level)
+        self.parameters['rf'] = power_percentage
         return self.parameters['rf']
 
 
@@ -105,7 +109,7 @@ class radio:
                 self.connected = False
 
     def get_level(self):
-        return None
+        self.parameters['strength'] = self.server.rig.get_smeter()
 
     def get_alc(self):
         return None
@@ -128,7 +132,8 @@ class radio:
     def set_rf_level(self, rf):
         if self.connected:
             try:
-                self.server.rig.set_power(int(rf))
+                # flrig expects power in watt
+                self.server.rig.set_power(int(rf * 100))
 
             except Exception as e:
                 self.logger.error(f"Set bandwidth failed: {e}")
@@ -160,9 +165,9 @@ class radio:
         if self.connected:
             try:
                 if state:
-                    self.server.rig.set_ptt(1)
+                    result = self.server.rig.set_ptt(1)
                 else:
-                    self.server.rig.set_ptt(0) 
+                    result = self.server.rig.set_ptt(0)
             except Exception as e:
                 self.logger.error(f"Set PTT failed: {e}")
         return state
