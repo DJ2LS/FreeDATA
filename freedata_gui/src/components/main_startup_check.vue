@@ -417,6 +417,7 @@ function getRigControlStatus() {
     case 'serial_ptt':
     case 'rigctld':
     case 'rigctld_bundle':
+    case 'flrig':
       return state.radio_status;
     default:
       console.error('Unknown radio control mode ' + settings.remote.RADIO.control);
