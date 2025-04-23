@@ -132,15 +132,18 @@ class radio:
     def set_rf_level(self, rf):
         if self.connected:
             try:
-                # flrig expects power in watt
-                self.server.rig.set_power(int(rf * 100))
+                # Get max power from rig
+                max_power = self.server.rig.get_maxpwr()
+
+                # Calculate absolute power in watts (rounded to int)
+                power_watts = int(float(rf) * float(max_power))
+
+                # Set power level in watts
+                self.server.rig.set_power(power_watts)
 
             except Exception as e:
-                self.logger.error(f"Set bandwidth failed: {e}")
+                self.logger.error(f"Set RF level failed: {e}")
                 self.connected = False
-
-
-
 
     def get_strength(self):
         return self.parameters['strength']
