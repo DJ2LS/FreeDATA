@@ -56,6 +56,10 @@ const defaultConfig = {
       arguments: "",
       enable_vfo: false,
     },
+    FLRIG: {
+      ip: "127.0.0.1",
+      port: 12345,
+    },
     STATION: {
       enable_explorer: false,
       enable_stats: false,

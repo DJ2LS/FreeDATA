@@ -80,10 +80,10 @@
         "radiocontrol": "Transceiversteuerung/Status",
         "statistics": "Statistik",
         "other": "Diverses",
-        "uploadpreset": "Preset Hochladen",
-        "uploadpreset_help": "Lade eine Preset Datei hoch.",
-        "downloadpreset": "Preset Herunterladen",
-        "downloadpreset_help": "Lade eine Preset-Date herunter um sie zu speichern und zu teilen",
+        "uploadpreset": "Einstell. Hochladen",
+        "uploadpreset_help": "Lade eine Datei mit GUI-Einstellungen hoch",
+        "downloadpreset": "Eintell. Herunterladen",
+        "downloadpreset_help": "Lade die GUI-Einstellungen herunter um sie zu speichern und zu teilen",
         "components": {
             "tune": "Tune",
             "stop_help": "Sitzung abbrechen und Aussendung beenden",
@@ -292,7 +292,11 @@
             "txdelay": "TX-Verzögerung in ms",
             "txdelay_help": "Sendeverzögerung, in Millisekuinden",
             "maximumbandwidth": "Maximale Bandbreite",
-            "maximumbandwidth_help": "Wähle die maximale Bandbreite, die das Modem nutzen soll"
+            "maximumbandwidth_help": "Wähle die maximale Bandbreite, die das Modem nutzen soll",
+	    "enabletxautoadjust": "Auto TX Audio Pegel", 
+            "enablerxautoadjust": "Auto RX Audio Pegel",
+            "enabletxautoadjust_help": "Automatische Einstellung des Sendepegels auf den höchstmöglichen Wert" , 
+            "enablerxautoadjust_help": "Automatische Einstellung des Empfangspegels auf den höchstmöglichen Wert"
         },
         "web": {
             "introduction": "Explorer-bezogene Einstellungen, einschließlich der Aktivierung der Explorer-Veröffentlichung und der Veröffentlichung von Explorer-Statistiken.",
