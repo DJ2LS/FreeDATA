@@ -363,8 +363,8 @@
             "hamlibrigctldcustomarguments_placeholder": "Optional custom arguments",
             "flrigport": "Flrig port",
             "flrigport_help": "Set the port where the flrig server is listening ( Default: 12345)",
-            "flrigip": "Flrig host",
-            "flrigip_help": "Set the host adress of the server, mostly localhost or 127.0.0.1"
+            "flrighost": "Flrig host",
+            "flrighost_help": "Set the host adress of the server, mostly localhost or 127.0.0.1"
         }
     }
 }
