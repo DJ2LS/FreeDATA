@@ -228,6 +228,9 @@
                       <option value="rigctld_bundle">
                         Rigctld (internal Hamlib)
                       </option>
+                      <option value="flrig">
+                        flrig
+                      </option>
                     </select>
                   </div>
                   <!-- Shown when rigctld_bundle is selected -->
@@ -414,6 +417,7 @@ function getRigControlStatus() {
     case 'serial_ptt':
     case 'rigctld':
     case 'rigctld_bundle':
+    case 'flrig':
       return state.radio_status;
     default:
       console.error('Unknown radio control mode ' + settings.remote.RADIO.control);

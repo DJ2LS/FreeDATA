@@ -46,6 +46,9 @@
       <option value="rigctld_bundle">
         Rigctld (internal Hamlib)
       </option>
+      <option value="flrig">
+        flrig
+      </option>
     </select>
   </div>
 
@@ -84,6 +87,19 @@
       >
         {{ $t('settings.radio.tabserial') }}
       </button>
+
+      <button
+        id="nav-flrig-tab"
+        class="nav-link"
+        data-bs-toggle="tab"
+        data-bs-target="#nav-flrig"
+        type="button"
+        role="tab"
+        aria-controls="nav-flrig"
+        aria-selected="false"
+      >
+        {{ $t('settings.radio.tabflrig') }}
+      </button>
     </div>
   </nav>
 
@@ -113,6 +129,19 @@
     >
       <settings_serial_ptt />
     </div>
+
+    <!-- Flrig settings -->
+    <div
+      id="nav-flrig"
+      class="tab-pane fade"
+      role="tabpanel"
+      aria-labelledby="nav-flrig-tab"
+      tabindex="2"
+    >
+      <settings_flrig />
+    </div>
+
+
   </div>
 
   <hr class="m-2">
@@ -122,11 +151,13 @@
 import { settingsStore as settings, onChange } from "../store/settingsStore.js";
 import settings_hamlib from "./settings_hamlib.vue";
 import settings_serial_ptt from "./settings_serial_ptt.vue";
+import settings_flrig from "./settings_flrig.vue";
 
 export default {
   components: {
     settings_hamlib,
-    settings_serial_ptt
+    settings_serial_ptt,
+    settings_flrig
   },
   computed: {
     settings() {
