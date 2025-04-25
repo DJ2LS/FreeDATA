@@ -22,6 +22,8 @@ const defaultConfig = {
       output_device: "",
       rx_audio_level: 0,
       tx_audio_level: 0,
+      rx_auto_audio_level: true,
+      tx_auto_audio_level: false 
     },
     MODEM: {
       tx_delay: 0,
@@ -53,6 +55,10 @@ const defaultConfig = {
       command: "",
       arguments: "",
       enable_vfo: false,
+    },
+    FLRIG: {
+      ip: "127.0.0.1",
+      port: 12345,
     },
     STATION: {
       enable_explorer: false,

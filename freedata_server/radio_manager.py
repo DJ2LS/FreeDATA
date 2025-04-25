@@ -1,4 +1,5 @@
 import rigctld
+import flrig
 import rigdummy
 import serial_ptt
 import threading
@@ -25,7 +26,8 @@ class RadioManager:
             self.radio = rigctld.radio(self.config, self.state_manager, hostname=self.rigctld_ip,port=self.rigctld_port)
         elif self.radiocontrol == "serial_ptt":
             self.radio = serial_ptt.radio(self.config, self.state_manager)
-
+        elif self.radiocontrol == "flrig":
+            self.radio = flrig.radio(self.config, self.state_manager)
         else:
             self.radio = rigdummy.radio()
 

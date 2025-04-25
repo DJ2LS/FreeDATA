@@ -31,6 +31,8 @@ class CONFIG:
             'output_device': str,
             'rx_audio_level': int,
             'tx_audio_level': int,
+            'rx_auto_audio_level': bool,
+            'tx_auto_audio_level': bool,
         },
         'RADIO': {
             'control': str,
@@ -53,6 +55,10 @@ class CONFIG:
             'command': str,
             'arguments': str,
             'enable_vfo': bool,
+        },
+        'FLRIG': {
+            'ip': str,
+            'port': int,
         },
         'MODEM': {
             'enable_morse_identifier': bool,
