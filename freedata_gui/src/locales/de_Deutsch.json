@@ -365,7 +365,7 @@
             "hamlibrigctldcommand_placeholder": "Wird automatisch aus den obigen Einstellungen ausgefüllt",
             "hamlibrigctldcustomarguments": "Rigctld benutzerdefinierte Argumente",
             "hamlibrigctldcustomarguments_help": "Zusätzliche Argumente für rigctld (normalerweise nicht erforderlich)",
-            "hamlibrigctldcustomarguments_placeholder": "Optionale benutzerdefinierte Argumente"
+            "hamlibrigctldcustomarguments_placeholder": "Optionale benutzerdefinierte Argumente",
 	    "flrigport": "Flrig Port",
             "flrigport_help": "Lege den flrig-Port fest, auf den der flrig-Server hört (Standard: 12345)",
             "flrighost": "Flrig Host",
