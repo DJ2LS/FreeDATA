@@ -292,7 +292,12 @@
             "txdelay": "TX delay in ms",
             "txdelay_help": "Delay before transmitting, in milliseconds",
             "maximumbandwidth": "Maximum used bandwidth",
-            "maximumbandwidth_help": "Select the maximum bandwidth the modem will use"
+            "maximumbandwidth_help": "Select the maximum bandwidth the modem will use",
+            "enabletxautoadjust": "Auto TX audio level", 
+            "enablerxautoadjust": "Auto RX audio level",
+            "enabletxautoadjust_help": "Set TX audio level automatically to highest possible value" , 
+            "enablerxautoadjust_help": "Set RX audio level automatically to highest possible value"
+            
         },
         "web": {
             "introduction": "Explorer related settings, including enabling Explorer publishing and Explorer stats publishing.",
@@ -317,6 +322,7 @@
             "rigcontroltype_help": "Choose how the software controls your radio",
             "tabhamlib": "Hamlib",
             "tabserial": "Serial",
+            "tabflrig": "flrig",
             "serialpttcomport": "PTT Com port",
             "serialpttcomport_help": "Select the COM port connected to your radio for PTT control",
             "serialpttcustomcomport": "PTT Custom COM port",
