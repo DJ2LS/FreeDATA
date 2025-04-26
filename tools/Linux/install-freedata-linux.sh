@@ -20,6 +20,9 @@
 #
 #
 # Changelog:
+# 2.4:	26 Apr 2025 (petrkr)
+# 	Add python3-dev package for debian based distros. Fixes build PyAudio
+#
 # 2.3:	01 Feb 2025 (deej)
 # 	Add untested additions for Linux Mint 21.3
 #
@@ -114,7 +117,7 @@ case $osname in
    "Debian GNU/Linux")
 	case $osversion in
 	   "11" | "12")
-		sudo apt install --upgrade -y fonts-noto-color-emoji git build-essential cmake python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama python3-venv wget
+		sudo apt install --upgrade -y fonts-noto-color-emoji git build-essential cmake python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama python3-venv wget python3-dev
 	   ;;
 
 	   *)
@@ -132,7 +135,7 @@ case $osname in
    "Ubuntu" | "Linux Mint")
 	case $osversion in
 	   "21.3" | "22.04" | "24.04")
-		sudo apt install --upgrade -y fonts-noto-color-emoji git build-essential cmake python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama python3-venv wget
+		sudo apt install --upgrade -y fonts-noto-color-emoji git build-essential cmake python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama python3-venv wget python3-dev
 	   ;;
 
 	   *)
