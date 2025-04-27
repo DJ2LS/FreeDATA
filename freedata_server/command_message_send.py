@@ -9,6 +9,7 @@ from message_system_db_manager import DatabaseManager
 from message_system_db_messages import DatabaseManagerMessages
 import threading
 import numpy as np
+import time
 
 
 class SendMessageCommand(TxCommand):
@@ -26,6 +27,7 @@ class SendMessageCommand(TxCommand):
         """
         origin = f"{self.config['STATION']['mycall']}-{self.config['STATION']['myssid']}"
         self.message = MessageP2P.from_api_params(origin, apiParams)
+        print(self.message)
         DatabaseManagerMessages(self.event_manager).add_message(self.message.to_dict(), statistics={}, direction='transmit', status='queued', frequency=self.state_manager.radio_frequency)
 
     def transmit(self, modem):
@@ -53,16 +55,32 @@ class SendMessageCommand(TxCommand):
             return
         try:
             self.log(f"Queued message found: {first_queued_message['id']}")
-            DatabaseManagerMessages(self.event_manager).update_message(first_queued_message["id"], update_data={'status': 'transmitting'}, frequency=self.state_manager.radio_frequency)
+            #DatabaseManagerMessages(self.event_manager).update_message(first_queued_message["id"], update_data={'status': 'transmitting'}, frequency=self.state_manager.radio_frequency)
             message_dict = DatabaseManagerMessages(self.event_manager).get_message_by_id(first_queued_message["id"])
             message = MessageP2P.from_api_params(message_dict['origin'], message_dict)
 
             # wait some random time and wait if we have an ongoing codec2 transmission
             # on our channel. This should prevent some packet collision
-            random_delay = np.random.randint(0, 6)
+            random_delay = np.random.randint(0, 10)
             threading.Event().wait(random_delay)
             while self.state_manager.is_receiving_codec2_signal():
                 threading.Event().wait(0.1)
+
+            # we are going to wait and check if we received any other codec2 signal within 10s.
+            # if so, we are returning, message stays queued.
+            # this helps to avoid packet collisions.
+            time_to_wait = 10
+            time_waiting_for_free_channel = time.time() + time_to_wait
+            self.log(f"Checking channel if free for {time_to_wait}s", isWarning=False)
+            while time.time() < time_waiting_for_free_channel:
+                threading.Event().wait(0.1)
+                if self.state_manager.is_receiving_codec2_signal():
+                    self.log(f"Codec2 signal found, skipping  message until next cycle", isWarning=True)
+                    return
+
+            # If we came until here, we are setting status to transmitting, otherwise it stays in queued
+            DatabaseManagerMessages(self.event_manager).update_message(first_queued_message["id"], update_data={'status': 'transmitting'}, frequency=self.state_manager.radio_frequency)
+
 
             # Convert JSON string to bytes (using UTF-8 encoding)
             payload = message.to_payload().encode('utf-8')

@@ -42,7 +42,7 @@ class ScheduleManager:
 
         self.scheduler = sched.scheduler(time.time, threading.Event().wait)
         self.events = {
-            'check_for_queued_messages': {'function': self.check_for_queued_messages, 'interval': 5},
+            'check_for_queued_messages': {'function': self.check_for_queued_messages, 'interval': 15},
             'explorer_publishing': {'function': self.push_to_explorer, 'interval': 60},
             'transmitting_beacon': {'function': self.transmit_beacon, 'interval': 600},
             'beacon_cleanup': {'function': self.delete_beacons, 'interval': 600},
@@ -164,7 +164,8 @@ class ScheduleManager:
         available. It handles potential exceptions during message retrieval
         and transmission.
         """
-        if not self.state_manager.getARQ() and not self.state_manager.is_receiving_codec2_signal() and self.state_manager.is_modem_running:
+
+        if not self.state_manager.getARQ() and not self.state_manager.channel_busy_event.is_set() and  self.state_manager.is_modem_running:
             try:
                 if first_queued_message := DatabaseManagerMessages(
                     self.event_manager
