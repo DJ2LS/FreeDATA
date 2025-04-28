@@ -46,6 +46,8 @@ class P2PConnection:
         },
         States.PAYLOAD_SENT: {
             FRAME_TYPE.P2P_CONNECTION_PAYLOAD_ACK.value: 'transmitted_data',
+            FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
+
         },
         States.DISCONNECTING: {
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
@@ -222,7 +224,7 @@ class P2PConnection:
             self.socket_interface_manager.command_server.command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
 
     def connected_irs(self, frame):
-        self.log("CONNECTED IRS...........................")
+        self.log(f"CONNECTED IRS...........................")
         self.state_manager.register_p2p_connection_session(self)
         self.socket_interface_manager.command_server.command_handler.session = self
         self.set_state(States.CONNECTED)
@@ -230,7 +232,10 @@ class P2PConnection:
         self.origin = frame["origin"]
         self.destination = frame["destination"]
         self.destination_crc = frame["destination_crc"]
-        self.log(frame)
+        #self.log(frame)
+
+        self.log(f"destination: {self.destination} - origin: {self.origin}")
+
 
         if self.socket_interface_manager and hasattr(self.socket_interface_manager.command_server, "command_handler"):
             self.socket_interface_manager.command_server.command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
@@ -325,8 +330,14 @@ class P2PConnection:
 
         """
         self.set_state(States.ARQ_SESSION)
+        if self.is_ISS:
+            arq_destination = self.destination
+        else:
+            arq_destination = self.origin
+
+        self.log(f"ARQ Destination: {self.destination}")
         prepared_data, type_byte = self.arq_data_type_handler.prepare(data, ARQ_SESSION_TYPES.p2p_connection)
-        iss = ARQSessionISS(self.config, self.modem, self.destination, self.state_manager, prepared_data, type_byte)
+        iss = ARQSessionISS(self.config, self.modem, arq_destination, self.state_manager, prepared_data, type_byte)
         iss.id = self.session_id
         if iss.id:
             self.state_manager.register_arq_iss_session(iss)
