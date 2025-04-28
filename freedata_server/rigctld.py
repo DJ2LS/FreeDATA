@@ -382,7 +382,7 @@ class radio:
         purposes. It handles potential errors during command execution.
         """
         try:
-            vfo_response = self.send_command('\\dump_caps')
+            vfo_response = self.send_command(r'\dump_caps')
             print(vfo_response)
 
         except Exception as e:
@@ -397,7 +397,7 @@ class radio:
         check.
         """
         try:
-            vfo_response = self.send_command(r'\\chk_vfo')
+            vfo_response = self.send_command(r'\chk_vfo')
             if vfo_response in [1, "1"]:
                 self.parameters['chk_vfo'] = True
             else:
