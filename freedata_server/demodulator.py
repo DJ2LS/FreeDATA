@@ -173,32 +173,33 @@ class Demodulator():
                         nbytes = codec2.api.freedv_rawdatarx(
                             freedv, bytes_out, audiobuffer.buffer.ctypes
                         )
+
+                        # get current freedata_server states and write to list
+                        # 1 trial
+                        # 2 sync
+                        # 3 trial sync
+                        # 6 decoded
+                        # 10 error decoding == NACK
+                        rx_status = codec2.api.freedv_get_rx_status(freedv)
+
+                        if rx_status not in [0]:
+                            self.is_codec2_traffic_counter = self.is_codec2_traffic_cooldown
+                            self.log.debug(
+                                f"[MDM] [demod_audio] [mode={mode_name}]", rx_status=rx_status,
+                                sync_flag=codec2.api.rx_sync_flags_to_text[rx_status]
+                            )
+
+                        # decrement codec traffic counter for making state smoother
+                        if self.is_codec2_traffic_counter > 0:
+                            self.is_codec2_traffic_counter -= 1
+                            self.states.set_channel_busy_condition_codec2(True)
+                        else:
+                            self.states.set_channel_busy_condition_codec2(False)
+                        if rx_status == 10:
+                            state_buffer.append(rx_status)
                     else:
                         nbytes = 0
 
-                    # get current freedata_server states and write to list
-                    # 1 trial
-                    # 2 sync
-                    # 3 trial sync
-                    # 6 decoded
-                    # 10 error decoding == NACK
-                    rx_status = codec2.api.freedv_get_rx_status(freedv)
-
-                    if rx_status not in [0]:
-                        self.is_codec2_traffic_counter = self.is_codec2_traffic_cooldown
-                        self.log.debug(
-                            "[MDM] [demod_audio] freedata_server state", mode=mode_name, rx_status=rx_status,
-                            sync_flag=codec2.api.rx_sync_flags_to_text[rx_status]
-                        )
-
-                    # decrement codec traffic counter for making state smoother
-                    if self.is_codec2_traffic_counter > 0:
-                        self.is_codec2_traffic_counter -= 1
-                        self.states.set_channel_busy_condition_codec2(True)
-                    else:
-                        self.states.set_channel_busy_condition_codec2(False)
-                    if rx_status == 10:
-                        state_buffer.append(rx_status)
 
                     audiobuffer.pop(nin)
                     nin = codec2.api.freedv_nin(freedv)
