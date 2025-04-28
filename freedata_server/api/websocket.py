@@ -5,14 +5,14 @@ router = APIRouter()
 @router.websocket("/events")
 async def websocket_events(websocket: WebSocket):
     await websocket.accept()
-    await websocket.app.wsm.handle_connection(websocket, websocket.app.wsm.events_client_list, websocket.app.modem_events)
+    await websocket.app.ctx.wsm.handle_connection(websocket, websocket.app.ctx.wsm.events_client_list, websocket.app.ctx.modem_events)
 
 @router.websocket("/fft")
 async def websocket_fft(websocket: WebSocket):
     await websocket.accept()
-    await websocket.app.wsm.handle_connection(websocket, websocket.app.wsm.fft_client_list, websocket.app.modem_fft)
+    await websocket.app.ctx.wsm.handle_connection(websocket, websocket.app.ctx.wsm.fft_client_list, websocket.app.ctx.modem_fft)
 
 @router.websocket("/states")
 async def websocket_states(websocket: WebSocket):
     await websocket.accept()
-    await websocket.app.wsm.handle_connection(websocket, websocket.app.wsm.states_client_list, websocket.app.state_queue)
+    await websocket.app.ctx.wsm.handle_connection(websocket, websocket.app.ctx.wsm.states_client_list, websocket.app.ctx.state_queue)

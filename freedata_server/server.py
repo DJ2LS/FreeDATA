@@ -23,11 +23,6 @@ import websocket_manager
 import event_manager
 import structlog
 
-
-from message_system_db_manager import DatabaseManager
-from message_system_db_attachments import DatabaseManagerAttachments
-from schedule_manager import ScheduleManager
-
 from api.general import router as general_router
 from api.config import router as config_router
 from api.devices import router as devices_router
@@ -40,6 +35,10 @@ from constants import CONFIG_ENV_VAR, DEFAULT_CONFIG_FILE, MODEM_VERSION, API_VE
 # adjust asyncio for windows usage for avoiding a Assertion Error
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+
+
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -247,28 +246,44 @@ def main():
     app.API_VERSION = API_VERSION
 
     config_file = set_config()
-    app.config_manager = CONFIG(config_file)
-    app.p2p_data_queue = queue.Queue()
-    app.state_queue = queue.Queue()
-    app.modem_events = queue.Queue()
-    app.modem_fft = queue.Queue()
-    app.modem_service = queue.Queue()
-    app.event_manager = event_manager.EventManager([app.modem_events])
-    app.state_manager = state_manager.StateManager(app.state_queue)
-    app.schedule_manager = ScheduleManager(app.MODEM_VERSION, app.config_manager, app.state_manager, app.event_manager)
-    app.service_manager = service_manager.SM(app)
-    app.modem_service.put("start")
-    DatabaseManager(app.event_manager).check_database_version()
-    DatabaseManager(app.event_manager).initialize_default_values()
-    DatabaseManager(app.event_manager).database_repair_and_cleanup()
-    DatabaseManagerAttachments(app.event_manager).clean_orphaned_attachments()
+    #app.config_manager = CONFIG(config_file)
+    #app.p2p_data_queue = queue.Queue()
+    #app.state_queue = queue.Queue()
+    #app.modem_events = queue.Queue()
+    #app.modem_fft = queue.Queue()
+    #app.modem_service = queue.Queue()
+    #app.event_manager = event_manager.EventManager([app.modem_events])
+    #app.state_manager = state_manager.StateManager(app.state_queue)
+    #app.service_manager = service_manager.SM(app)
+    #app.modem_service.put("start")
+    #DatabaseManager(app.event_manager).check_database_version()
+    #DatabaseManager(app.event_manager).initialize_default_values()
+    #DatabaseManager(app.event_manager).database_repair_and_cleanup()
+    #DatabaseManagerAttachments(app.event_manager).clean_orphaned_attachments()
 
-    app.wsm = websocket_manager.wsm()
-    app.wsm.startWorkerThreads(app)
+    # beginn app context
+    from context import AppContext
+    _ctx = AppContext(config_file)
+    #_ctx.state_queue = app.state_queue
+    #_ctx.modem_events = app.modem_events
+    #_ctx.modem_fft = app.modem_fft
+    #_ctx.modem_service = app.modem_service
+    #_ctx.event_manager = app.event_manager
+    #_ctx.state_manager = app.state_manager
+    #_ctx.schedule_manager = app.schedule_manager
+    #_ctx.service_manager = app.service_manager
+    #_ctx.config_manager = app.config_manager
+    #_ctx.p2p_data_queue = app.p2p_data_queue
 
-    conf = app.config_manager.read()
-    modemaddress = conf['NETWORK'].get('modemaddress', '127.0.0.1')
-    modemport = int(conf['NETWORK'].get('modemport', 5000))
+    _ctx.startup()
+    app.ctx = _ctx
+    # ende app context
+
+    #app.wsm = websocket_manager.wsm()
+    #app.wsm.startWorkerThreads(app)
+
+    modemaddress = _ctx.config_manager.config['NETWORK'].get('modemaddress', '127.0.0.1')
+    modemport = int(_ctx.config_manager.config['NETWORK'].get('modemport', 5000))
 
     # check if modemadress is empty - known bug caused by older versions
     if modemaddress in ['', None]:
@@ -287,7 +302,7 @@ def main():
         logger.info("                                                   ")
         logger.info("---------------------------------------------------")
 
-        if conf['GUI'].get('auto_run_browser', True):
+        if _ctx.config_manager.config['GUI'].get('auto_run_browser', True):
             threading.Thread(target=open_browser_after_delay, args=(url, 2)).start()
 
     uvicorn.run(app, host=modemaddress, port=modemport, log_config=None, log_level="info")

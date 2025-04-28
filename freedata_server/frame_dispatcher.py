@@ -58,7 +58,7 @@ class DISPATCHER:
         #FR_TYPE.FEC_WAKEUP.value: {"class": FrameHandler, "name":  "FEC WAKEUP"},
     }
 
-    def __init__(self, config, event_manager, states, modem, socket_interface_manager):
+    def __init__(self, ctx):
 
         """Initializes the frame dispatcher.
 
@@ -73,26 +73,14 @@ class DISPATCHER:
             modem: The modem object.
         """
         self.log = structlog.get_logger("frame_dispatcher")
-
+        self.ctx = ctx
         self.log.info("loading frame dispatcher.....\n")
-        self.config = config
-        self.states = states
-        self.event_manager = event_manager
-        self.socket_interface_manager = socket_interface_manager
         self.stop_event = threading.Event()
 
-        self._initialize_handlers(config, states)
-
-        self.modem = modem
-        self.data_queue_received = modem.data_queue_received
+        self.frame_factory = DataFrameFactory(self.ctx)
 
         self.arq_sessions = []
 
-
-    def _initialize_handlers(self, config, states):
-        """Initializes various data handlers."""
-
-        self.frame_factory = DataFrameFactory(config)
 
     def start(self):
         """Starts worker threads for transmit and receive operations."""
@@ -105,7 +93,7 @@ class DISPATCHER:
         """Queue received data for processing"""
         while not self.stop_event.is_set():
             try:
-                data = self.data_queue_received.get(timeout=1)
+                data = self.ctx.rf_modem.data_queue_received.get(timeout=1)
                 if data:
                     self.process_data(
                         data['payload'],
@@ -144,11 +132,7 @@ class DISPATCHER:
 
         # instantiate handler
         handler_class = self.FRAME_HANDLER[frametype]['class']
-        handler: FrameHandler = handler_class(self.FRAME_HANDLER[frametype]['name'],
-                                              self.config,
-                                              self.states,
-                                              self.event_manager,
-                                              self.modem, self.socket_interface_manager)
+        handler: FrameHandler = handler_class(self.FRAME_HANDLER[frametype]['name'], self.ctx)
         handler.handle(deconstructed_frame, snr, frequency_offset, freedv, bytes_per_frame)
 
     def get_id_from_frame(self, data):

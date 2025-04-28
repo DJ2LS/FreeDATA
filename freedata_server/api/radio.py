@@ -42,7 +42,7 @@ async def get_radio(request: Request):
     Returns:
         dict: A JSON object containing radio parameters.
     """
-    return request.app.state_manager.get_radio_status()
+    return request.app.ctx.state_manager.get_radio_status()
 
 
 @router.post("/", summary="Set Radio Parameters", tags=["Radio"], responses={
@@ -94,7 +94,7 @@ async def post_radio(request: Request):
         dict: A JSON object containing the updated radio parameters.
     """
     data = await request.json()
-    radio_manager = request.app.radio_manager
+    radio_manager = request.app.ctx.radio_manager
     if "radio_frequency" in data:
         radio_manager.set_frequency(data['radio_frequency'])
     if "radio_mode" in data:
@@ -176,12 +176,12 @@ async def post_radio_tune(request: Request):
     data = await request.json()
     if "enable_tuning" in data:
         if data['enable_tuning']:
-            if not request.app.state_manager.is_modem_running:
+            if not request.app.ctx.state_manager.is_modem_running:
                 api_abort("Modem not running", 503)
-            await enqueue_tx_command(request.app, command_transmit_sine.TransmitSine)
+            await enqueue_tx_command(request.app.ctx, command_transmit_sine.TransmitSine)
         else:
-            request.app.service_manager.modem.stop_sine()
+            request.app.ctx.service_manager.modem.stop_sine()
     else:
-        request.app.service_manager.modem.stop_sine()
+        request.app.ctx.service_manager.modem.stop_sine()
 
     return api_response(data)

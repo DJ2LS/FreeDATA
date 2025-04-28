@@ -15,7 +15,7 @@ class radio:
 
     log = structlog.get_logger("radio (rigctld)")
 
-    def __init__(self, config, states, hostname="localhost", port=4532, timeout=3):
+    def __init__(self, ctx):
         """Initializes the radio controller.
 
         Args:
@@ -28,12 +28,11 @@ class radio:
             timeout (int, optional): Timeout for socket operations in
                 seconds. Defaults to 3.
         """
-        self.hostname = hostname
-        self.port = port
-        self.timeout = timeout
-        self.states = states
-        self.config = config
 
+        self.ctx = ctx
+        self.hostname = self.ctx.config_manager.config['RIGCTLD']['ip']
+        self.port = self.ctx.config_manager.config['RIGCTLD']['port']
+        self.timeout = 3
         self.rigctld_process = None
 
         self.connection = None
@@ -57,7 +56,7 @@ class radio:
         }
 
         # start rigctld...
-        if self.config["RADIO"]["control"] in ["rigctld_bundle"]:
+        if self.ctx.config_manager.config["RADIO"]["control"] in ["rigctld_bundle"]:
             self.start_service()
 
         # connect to radio
@@ -80,7 +79,7 @@ class radio:
             # wait some time for hopefully solving the hamlib warmup problems
             threading.Event().wait(2)
             self.connected = True
-            self.states.set_radio("radio_status", True)
+            self.ctx.state_manager.set_radio("radio_status", True)
             self.log.info(f"[RIGCTLD] Connected to rigctld at {self.hostname}:{self.port}")
             #self.dump_caps()
             self.check_vfo()
@@ -88,7 +87,7 @@ class radio:
         except Exception as err:
             self.log.warning(f"[RIGCTLD] Failed to connect to rigctld: {err}")
             self.connected = False
-            self.states.set_radio("radio_status", False)
+            self.ctx.state_manager.set_radio("radio_status", False)
 
     def disconnect(self):
         """Disconnects from the rigctld server.
@@ -103,7 +102,7 @@ class radio:
             self.connection.close()
         del self.connection
         self.connection = None
-        self.states.set_radio("radio_status", False)
+        self.ctx.state_manager.set_radio("radio_status", False)
         self.parameters = {
             'frequency': '---',
             'mode': '---',
@@ -626,8 +625,8 @@ class radio:
         Returns:
             list: A list of strings representing the formatted rigctld arguments.
         """
-        config = self.config['RADIO']
-        config_rigctld = self.config['RIGCTLD']
+        config = self.ctx.config_manager.config['RADIO']
+        config_rigctld = self.ctx.config_manager.config['RIGCTLD']
         args = []
 
         # Helper function to check if the value should be ignored
@@ -661,7 +660,7 @@ class radio:
         if not should_ignore(config.get('stop_bits')):
             args += ['--set-conf', f'stop_bits={config["stop_bits"]}']
 
-        if self.config['RIGCTLD']['enable_vfo']:
+        if self.ctx.config_manager.config['RIGCTLD']['enable_vfo']:
             args += ['--vfo']
 
         # Fixme        #rts_state

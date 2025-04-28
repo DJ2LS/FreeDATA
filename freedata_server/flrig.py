@@ -5,13 +5,11 @@ import time
 import logging
 
 class radio:
-    def __init__(self, config, state_manager, host='127.0.0.1', port=12345, poll_interval=1.0):
+    def __init__(self, ctx):
         self.logger = logging.getLogger(__name__)
-        self.config = config
-        self.state_manager = state_manager
-        self.host = self.config["FLRIG"]["ip"]
-        self.port = self.config["FLRIG"]["port"]
-        self.poll_interval = poll_interval
+        self.host = self.ctx.config_manager.config["FLRIG"]["ip"]
+        self.port = self.ctx.config_manager.config["FLRIG"]["port"]
+        self.poll_interval = 1.0
 
         self.server = None
         self.connected = False
@@ -37,20 +35,20 @@ class radio:
             self.server = xmlrpc.client.ServerProxy(f"http://{self.host}:{self.port}")
             self.connected = True
             self.logger.info("Connected to FLRig")
-            self.state_manager.set_radio("radio_status", True)
+            self.ctx.state_manager.set_radio("radio_status", True)
             return True
         except Exception as e:
             self.logger.error(f"FLRig connection failed: {e}")
             self.connected = False
             self.server = None
-            self.state_manager.set_radio("radio_status", False)
+            self.ctx.state_manager.set_radio("radio_status", False)
             return False
 
     def disconnect(self, **kwargs):
         self.logger.info("Disconnected from FLRig")
         self.connected = False
         self.server = None
-        self.state_manager.set_radio("radio_status", False)
+        self.ctx.state_manager.set_radio("radio_status", False)
         return True
 
     def _poll_loop(self):

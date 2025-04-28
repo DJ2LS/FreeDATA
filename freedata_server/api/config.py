@@ -85,7 +85,7 @@ async def get_config(request: Request):
     Returns:
         dict: The modem configuration settings.
     """
-    return request.app.config_manager.read()
+    return request.app.ctx.config_manager
 
 
 @router.post("/", summary="Update Modem Configuration", tags=["Configuration"], responses={
@@ -153,10 +153,10 @@ async def post_config(request: Request):
     print(config)
     if not validations.validate_remote_config(config):
         api_abort("Invalid config", 400)
-    if request.app.config_manager.read() == config:
+    if request.app.ctx.config_manager == config:
         return config
-    set_config = request.app.config_manager.write(config)
+    set_config = request.app.ctx.config_manager.write(config)
     if not set_config:
         api_abort("Error writing config", 500)
-    request.app.modem_service.put("restart")
+    request.app.ctx.modem_service.put("restart")
     return set_config

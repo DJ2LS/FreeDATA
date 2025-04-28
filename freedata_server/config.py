@@ -99,7 +99,7 @@ class CONFIG:
         str: '',
     }
 
-    def __init__(self, configfile: str):
+    def __init__(self, ctx, configfile: str):
         """Initializes a new CONFIG instance.
 
         This method initializes the configuration handler with the specified
@@ -109,7 +109,7 @@ class CONFIG:
         Args:
             configfile (str): The path to the configuration file.
         """
-
+        self.ctx = ctx
         # set up logger
         self.log = structlog.get_logger(type(self).__name__)
 
@@ -128,6 +128,9 @@ class CONFIG:
 
         # validate config structure
         self.validate_config()
+
+        # read config
+        self.config = self.read()
         
     def config_exists(self):
         """Checks if the configuration file exists and can be read.
@@ -203,7 +206,6 @@ class CONFIG:
 
                     self.parser.set(section, setting, str(default_value))
                     self.log.info(f"[CFG] Adding missing setting: {section}.{setting}")
-
         return self.write_to_file()
 
     def handle_setting(self, section, setting, value, is_writing=False):
@@ -296,7 +298,9 @@ class CONFIG:
         try:
             with open(self.config_name, 'w') as configfile:
                 self.parser.write(configfile)
-                return self.read()
+                self.ctx.config = self.read()
+
+                return
         except Exception as conferror:
             self.log.error("[CFG] reading logfile", e=conferror)
             return False
@@ -324,6 +328,10 @@ class CONFIG:
                 for setting in result[section]:
                     result[section][setting] = self.handle_setting(
                        section, setting, result[section][setting], False)
+
+            # store config in config manager instance
+            self.config = result
+
             return result
         except Exception as conferror:
             self.log.error("[CFG] reading logfile", e=conferror)

@@ -33,38 +33,35 @@ class RF:
 
     log = structlog.get_logger("RF")
 
-    def __init__(self, config, event_manager, fft_queue, service_queue, states, radio_manager) -> None:
+    def __init__(self, ctx) -> None:
         """Initializes the RF modem.
 
         Args:
-            config (dict): Configuration dictionary.
+            self.ctx.config_manager (dict): self.ctx.config_manageruration dictionary.
             event_manager (EventManager): Event manager instance.
             fft_queue (Queue): Queue for FFT data.
-            service_queue (Queue): Queue for freedata_server service commands.
+            self.ctx.modem_service (Queue): Queue for freedata_server service commands.
             states (StateManager): State manager instance.
             radio_manager (RadioManager): Radio manager instance.
         """
-        self.config = config
-        self.service_queue = service_queue
-        self.states = states
-        self.event_manager = event_manager
-        self.radio = radio_manager
+        
+        self.ctx = ctx
         self.sampler_avg = 0
         self.buffer_avg = 0
 
         # these are crc ids now
-        self.audio_input_device = config['AUDIO']['input_device']
-        self.audio_output_device = config['AUDIO']['output_device']
+        self.audio_input_device = self.ctx.config_manager.config['AUDIO']['input_device']
+        self.audio_output_device = self.ctx.config_manager.config['AUDIO']['output_device']
 
 
 
-        self.radiocontrol = config['RADIO']['control']
-        self.rigctld_ip = config['RIGCTLD']['ip']
-        self.rigctld_port = config['RIGCTLD']['port']
+        self.ctx.radio_managercontrol = self.ctx.config_manager.config['RADIO']['control']
+        self.rigctld_ip = self.ctx.config_manager.config['RIGCTLD']['ip']
+        self.rigctld_port = self.ctx.config_manager.config['RIGCTLD']['port']
 
 
-        self.tx_audio_level = config['AUDIO']['tx_audio_level']
-        self.rx_audio_level = config['AUDIO']['rx_audio_level']
+        self.tx_audio_level = self.ctx.config_manager.config['AUDIO']['tx_audio_level']
+        self.rx_audio_level = self.ctx.config_manager.config['AUDIO']['rx_audio_level']
 
 
         self.ptt_state = False
@@ -84,20 +81,10 @@ class RF:
         # Make sure our resampler will work
         assert (self.AUDIO_SAMPLE_RATE / self.modem_sample_rate) == codec2.api.FDMDV_OS_48  # type: ignore
 
-        self.audio_received_queue = queue.Queue()
         self.data_queue_received = queue.Queue()
-        self.fft_queue = fft_queue
 
-        self.demodulator = demodulator.Demodulator(self.config, 
-                                            self.audio_received_queue, 
-                                            self.data_queue_received,
-                                            self.states,
-                                            self.event_manager,
-                                            self.service_queue,
-                                            self.fft_queue
-                                                   )
-
-        self.modulator = modulator.Modulator(self.config)
+        self.demodulator = demodulator.Demodulator(self.ctx)
+        self.modulator = modulator.Modulator(self.ctx)
 
     def start_modem(self):
         """Starts the modem.
@@ -129,7 +116,7 @@ class RF:
         """
         try:
             # let's stop the freedata_server service
-            self.service_queue.put("stop")
+            self.self.ctx.modem_service.put("stop")
             # simulate audio class active state for reducing cli output
             # self.stream = lambda: None
             # self.stream.active = False
@@ -143,7 +130,7 @@ class RF:
         """Initializes the audio input and output streams.
 
         This method retrieves the audio device indices based on their CRC
-        checksums from the configuration, sets up the default audio
+        checksums from the self.ctx.config_manageruration, sets up the default audio
         parameters, initializes the Codec2 resampler, and starts the
         SoundDevice input and output streams with appropriate callbacks and
         buffer sizes. It logs information about the selected audio devices
@@ -207,7 +194,7 @@ class RF:
 
     def transmit_sine(self):
         """ Transmit a sine wave for audio tuning """
-        self.states.setTransmitting(True)
+        self.ctx.state_manager.setTransmitting(True)
         self.log.info("[MDM] TRANSMIT", mode="SINE")
         start_of_transmission = time.time()
 
@@ -230,7 +217,7 @@ class RF:
 
         end_of_transmission = time.time()
         transmission_time = end_of_transmission - start_of_transmission
-        self.states.setTransmitting(False)
+        self.ctx.state_manager.setTransmitting(False)
 
         self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
 
@@ -238,7 +225,7 @@ class RF:
         """ Stop transmitting sine wave"""
         # clear audio out queue
         self.audio_out_queue.queue.clear()
-        self.states.setTransmitting(False)
+        self.ctx.state_manager.setTransmitting(False)
         self.log.debug("[MDM] Stopped transmitting sine")
 
     def transmit_morse(self, repeats, repeat_delay, frames):
@@ -256,14 +243,14 @@ class RF:
             repeat_delay: Currently unused.
             frames: Currently unused.
         """
-        self.states.waitForTransmission()
-        self.states.setTransmitting(True)
+        self.ctx.state_manager.waitForTransmission()
+        self.ctx.state_manager.setTransmitting(True)
         # if we're transmitting FreeDATA signals, reset channel busy state
         self.log.debug(
             "[MDM] TRANSMIT", mode="MORSE"
         )
         start_of_transmission = time.time()
-        txbuffer_out = cw.MorseCodePlayer().text_to_signal(self.config['STATION'].get('mycall'))
+        txbuffer_out = cw.MorseCodePlayer().text_to_signal(self.ctx.config_manager.config['STATION'].get('mycall'))
         txbuffer_out = audio.normalize_audio(txbuffer_out)
         # transmit audio
         self.enqueue_audio_out(txbuffer_out)
@@ -293,9 +280,9 @@ class RF:
 
         self.demodulator.reset_data_sync()
         # Wait for some other thread that might be transmitting
-        self.states.waitForTransmission()
-        self.states.setTransmitting(True)
-        # self.states.channel_busy_event.wait()
+        self.ctx.state_manager.waitForTransmission()
+        self.ctx.state_manager.setTransmitting(True)
+        # self.ctx.state_manager.channel_busy_event.wait()
 
         start_of_transmission = time.time()
         txbuffer = self.modulator.create_burst(mode, repeats, repeat_delay, frames)
@@ -303,7 +290,7 @@ class RF:
         # Re-sample back up to 48k (resampler works on np.int16)
         x = np.frombuffer(txbuffer, dtype=np.int16)
         
-        if self.config['AUDIO'].get('tx_auto_audio_level'):
+        if self.ctx.config_manager.config['AUDIO'].get('tx_auto_audio_level'):
             x = audio.normalize_audio(x)
         x = audio.set_audio_volume(x, self.tx_audio_level)
         txbuffer_out = self.resampler.resample8_to_48(x)
@@ -329,12 +316,12 @@ class RF:
             audio_48k (numpy.ndarray): The 48kHz audio data to enqueue.
         """
         self.enqueuing_audio = True
-        if not self.states.isTransmitting():
-            self.states.setTransmitting(True)
+        if not self.ctx.state_manager.isTransmitting():
+            self.ctx.state_manager.setTransmitting(True)
 
-        self.radio.set_ptt(True)
+        self.ctx.radio_manager.set_ptt(True)
 
-        self.event_manager.send_ptt_change(True)
+        self.ctx.event_manager.send_ptt_change(True)
 
         # slice audio data to needed blocklength
         block_size = self.sd_output_stream.blocksize
@@ -347,10 +334,10 @@ class RF:
 
 
         self.enqueuing_audio = False
-        self.states.transmitting_event.wait()
+        self.ctx.state_manager.transmitting_event.wait()
 
-        self.radio.set_ptt(False)
-        self.event_manager.send_ptt_change(False)
+        self.ctx.radio_manager.set_ptt(False)
+        self.ctx.event_manager.send_ptt_change(False)
 
         return
 
@@ -374,14 +361,14 @@ class RF:
             if not self.audio_out_queue.empty() and not self.enqueuing_audio:
                 chunk = self.audio_out_queue.get_nowait()
                 audio_8k = self.resampler.resample48_to_8(chunk)
-                audio.calculate_fft(audio_8k, self.fft_queue, self.states)
+                audio.calculate_fft(audio_8k, self.ctx.modem_fft, self.ctx.state_manager)
                 outdata[:] = chunk.reshape(outdata.shape)
 
             else:
                 # reset transmitting state only, if we are not actively processing audio
                 # for avoiding a ptt toggle state bug
                 if self.audio_out_queue.empty() and not self.enqueuing_audio:
-                    self.states.setTransmitting(False)
+                    self.ctx.state_manager.setTransmitting(False)
                 # Fill with zeros if the queue is empty
                 outdata.fill(0)
         except Exception as e:
@@ -407,18 +394,18 @@ class RF:
             self.log.warning("[AUDIO STATUS]", status=status, time=time, frames=frames)
             # FIXME on windows input overflows crashing the rx audio stream. Lets restart the server then
             #if status.input_overflow:
-            #    self.service_queue.put("restart")
+            #    self.self.ctx.modem_service.put("restart")
             return
         try:
             audio_48k = np.frombuffer(indata, dtype=np.int16)
             audio_8k = self.resampler.resample48_to_8(audio_48k)
-            if self.config['AUDIO'].get('rx_auto_audio_level'):
+            if self.ctx.config_manager.config['AUDIO'].get('rx_auto_audio_level'):
                 audio_8k = audio.normalize_audio(audio_8k)
 
             audio_8k_level_adjusted = audio.set_audio_volume(audio_8k, self.rx_audio_level)
 
-            if not self.states.isTransmitting():
-                audio.calculate_fft(audio_8k_level_adjusted, self.fft_queue, self.states)
+            if not self.ctx.state_manager.isTransmitting():
+                audio.calculate_fft(audio_8k_level_adjusted, self.ctx.modem_fft, self.ctx.state_manager)
 
             length_audio_8k_level_adjusted = len(audio_8k_level_adjusted)
             # Avoid buffer overflow by filling only if buffer for
@@ -432,7 +419,7 @@ class RF:
                 if audiobuffer:
                     if (audiobuffer.nbuffer + length_audio_8k_level_adjusted) > audiobuffer.size:
                         self.demodulator.buffer_overflow_counter[index] += 1
-                        self.event_manager.send_buffer_overflow(self.demodulator.buffer_overflow_counter)
+                        self.ctx.event_manager.send_buffer_overflow(self.demodulator.buffer_overflow_counter)
                     elif decode:
                         audiobuffer.push(audio_8k_level_adjusted)
         except Exception as e:

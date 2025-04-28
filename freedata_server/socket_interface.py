@@ -18,15 +18,10 @@ import io
 
 class CommandSocket(socketserver.BaseRequestHandler):
     #def __init__(self, request, client_address, server):
-    def __init__(self, request, client_address, server, modem=None, state_manager=None, event_manager=None, config_manager=None, socket_interface_manager=None):
-        self.state_manager = state_manager
-        self.event_manager = event_manager
-        self.config_manager = config_manager
-        self.modem = modem
+    def __init__(self, request, client_address, server):
         self.logger = structlog.get_logger(type(self).__name__)
-        self.socket_interface_manager = socket_interface_manager
 
-        self.command_handler = SocketCommandHandler(request, self.modem, self.config_manager, self.state_manager, self.event_manager, self.socket_interface_manager)
+        self.command_handler = SocketCommandHandler(request, self.ctx)
 
         self.handlers = {
             'CONNECT': self.command_handler.handle_connect,
@@ -43,8 +38,8 @@ class CommandSocket(socketserver.BaseRequestHandler):
 
         }
         # Register this CommandSocket's command_handler with the command_server
-        if hasattr(self.socket_interface_manager, 'command_server'):
-            self.socket_interface_manager.command_server.command_handler = self.command_handler
+        if hasattr(self.ctx.socket_interface_manager, 'command_server'):
+            self.ctx.socket_interface_manager.command_server.command_handler = self.command_handler
         super().__init__(request, client_address, server)
 
     def log(self, message, isWarning = False):
@@ -116,20 +111,16 @@ class CommandSocket(socketserver.BaseRequestHandler):
 
 class DataSocket(socketserver.BaseRequestHandler):
     #def __init__(self, request, client_address, server):
-    def __init__(self, request, client_address, server, modem=None, state_manager=None, event_manager=None, config_manager=None, socket_interface_manager=None):
-        self.state_manager = state_manager
-        self.event_manager = event_manager
-        self.config_manager = config_manager
-        self.modem = modem
-        self.socket_interface_manager = socket_interface_manager
+    def __init__(self, request, client_address, server):
 
-        self.data_handler = SocketDataHandler(request, self.modem, self.config_manager, self.state_manager, self.event_manager, self.socket_interface_manager)
+
+        self.data_handler = SocketDataHandler(request, self.ctx)
 
         self.logger = structlog.get_logger(type(self).__name__)
 
         # not sure if we really need this
-        if hasattr(self.socket_interface_manager, 'data_server'):
-            self.socket_interface_manager.data_server.data_handler = self.data_handler
+        if hasattr(self.ctx.socket_interface_manager, 'data_server'):
+            self.ctx.socket_interface_manager.data_server.data_handler = self.data_handler
 
 
         super().__init__(request, client_address, server)
@@ -155,10 +146,10 @@ class DataSocket(socketserver.BaseRequestHandler):
                         self.log(f"Data received from {self.client_address}: [{len(self.data)}] - {self.data}")
 
 
-                    for session_id in self.state_manager.p2p_connection_sessions:
-                        session = self.state_manager.p2p_connection_sessions[session_id]
+                    for session_id in self.ctx.state_manager.p2p_connection_sessions:
+                        session = self.ctx.state_manager.p2p_connection_sessions[session_id]
 
-                        print(f"sessions: {self.state_manager.p2p_connection_sessions}")
+                        print(f"sessions: {self.ctx.state_manager.p2p_connection_sessions}")
                         print(f"session_id: {session_id}")
                         print(f"session: {session}")
                         print(f"data to send: {self.data}")
@@ -171,8 +162,8 @@ class DataSocket(socketserver.BaseRequestHandler):
                 """
                 TODO This part isnt needed anymore, since socket_interface_data.py handles this
                 
-                for session_id in self.state_manager.p2p_connection_sessions:
-                    session = self.state_manager.get_p2p_connection_session(session_id)
+                for session_id in self.ctx.state_manager.p2p_connection_sessions:
+                    session = self.ctx.state_manager.get_p2p_connection_session(session_id)
                     if not session.p2p_data_rx_queue.empty():
                         data_to_send = session.p2p_data_rx_queue.get_nowait()  # Use get_nowait to avoid blocking
                         self.request.sendall(data_to_send)
@@ -199,16 +190,15 @@ class CustomThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServe
         self.RequestHandlerClass(request, client_address, self, **self.extra_args)
 
 class SocketInterfaceHandler:
-    def __init__(self, modem, config_manager, state_manager, event_manager):
-        self.modem = modem
-        self.config_manager = config_manager
-        self.config = self.config_manager.read()
-        self.state_manager = state_manager
-        self.event_manager = event_manager
+    #def __init__(self, modem, config_manager, state_manager, event_manager):
+    def __init__(self, ctx):
+        self.ctx = ctx
+        
         self.logger = structlog.get_logger(type(self).__name__)
-        self.ip = self.config["SOCKET_INTERFACE"]["host"]
-        self.command_port = self.config["SOCKET_INTERFACE"]["cmd_port"]
-        self.data_port = self.config["SOCKET_INTERFACE"]["data_port"]
+
+        self.ip = self.ctx.config_manager.config["SOCKET_INTERFACE"]["host"]
+        self.command_port = self.ctx.config_manager.config["SOCKET_INTERFACE"]["cmd_port"]
+        self.data_port = self.ctx.config_manager.config["SOCKET_INTERFACE"]["data_port"]
         self.command_server = None
         self.data_server = None
         self.command_server_thread = None
@@ -249,7 +239,7 @@ class SocketInterfaceHandler:
 
     def run_server(self,ip, port, handler):
         try:
-            with CustomThreadedTCPServer((ip, port), handler, modem=self.modem, state_manager=self.state_manager, event_manager=self.event_manager, config_manager=self.config_manager, socket_interface_manager = self) as server:
+            with CustomThreadedTCPServer((ip, port), handler, modem=self.ctx.rf_modem, state_manager=self.ctx.state_manager, event_manager=self.ctx.event_manager, config_manager=self.ctx.config_manager, socket_interface_manager = self) as server:
                 self.log(f"Server starting on ip:port: {ip}:{port}")
                 if port == self.command_port:
                     self.command_server = server

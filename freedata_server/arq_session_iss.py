@@ -79,7 +79,7 @@ class ARQSessionISS(arq_session.ARQSession):
         }
     }
 
-    def __init__(self, config: dict, modem, dxcall: str, state_manager, data: bytearray, type_byte: bytes):
+    def __init__(self, ctx, dxcall: str, data: bytearray, type_byte: bytes):
         """Initializes a new ARQ session on the Information Sending Station (ISS) side.
 
         This method sets up the ARQ session for the ISS, initializing session

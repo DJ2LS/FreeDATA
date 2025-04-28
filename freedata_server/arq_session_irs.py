@@ -88,7 +88,7 @@ class ARQSessionIRS(arq_session.ARQSession):
 
     }
 
-    def __init__(self, config: dict, modem, dxcall: str, session_id: int, state_manager):
+    def __init__(self, ctx, dxcall: str, session_id: int):
         """Initializes a new ARQ session on the Information Receiving Station (IRS) side.
 
         This method initializes an ARQSessionIRS object, setting up the session
@@ -100,10 +100,9 @@ class ARQSessionIRS(arq_session.ARQSession):
             modem: The modem object.
             dxcall (str): The DX call sign.
             session_id (int): The unique ID of the session.
-            state_manager: The state manager object.
         """
-        super().__init__(config, modem, dxcall, state_manager)
-
+        super().__init__(ctx)
+        
         self.id = session_id
         self.dxcall = dxcall
         self.version = 1
@@ -202,7 +201,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.maximum_bandwidth = open_frame['maximum_bandwidth']
         self.log(f"Negotiated transmission bandwidth {self.maximum_bandwidth}Hz")
 
-        self.event_manager.send_arq_session_new(
+        self.ctx.event_manager.send_arq_session_new(
             False, self.id, self.dxcall, 0, self.state.name)
 
         if open_frame['protocol_version'] not in [self.protocol_version]:
@@ -245,7 +244,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.calibrate_speed_settings()
 
         self.log(f"New transfer of {self.total_length} bytes, received_bytes: {self.received_bytes}")
-        self.event_manager.send_arq_session_new(False, self.id, self.dxcall, self.total_length, self.state.name)
+        self.ctx.event_manager.send_arq_session_new(False, self.id, self.dxcall, self.total_length, self.state.name)
 
         info_ack = self.frame_factory.build_arq_session_info_ack(
             self.id, self.received_bytes, self.snr,
@@ -292,7 +291,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         #self.received_bytes += len(data_part)
         self.received_bytes = len(self.received_data)
         self.log(f"Received {self.received_bytes}/{self.total_length} bytes")
-        self.event_manager.send_arq_session_progress(
+        self.ctx.event_manager.send_arq_session_progress(
             False, self.id, self.dxcall, self.received_bytes, self.total_length, self.state.name, self.speed_level, self.calculate_session_statistics(self.received_bytes, self.total_length))
 
         return True
@@ -323,7 +322,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             )
 
             self.set_state(IRS_State.BURST_REPLY_SENT)
-            self.event_manager.send_arq_session_progress(False, self.id, self.dxcall, self.received_bytes,
+            self.ctx.event_manager.send_arq_session_progress(False, self.id, self.dxcall, self.received_bytes,
                                                          self.total_length, self.state.name, self.speed_level,
                                                          statistics=self.calculate_session_statistics(
                                                              self.received_bytes, self.total_length))
@@ -442,7 +441,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.states.setARQ(False)
         session_stats = self.calculate_session_statistics(self.received_bytes, self.total_length)
 
-        self.event_manager.send_arq_session_finished(
+        self.ctx.event_manager.send_arq_session_finished(
                 False, self.id, self.dxcall, False, self.state.name, statistics=session_stats)
         if self.config['STATION']['enable_stats']:
             self.statistics.push(self.state.name, session_stats, self.dxcall)
@@ -469,7 +468,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         #self.modem.demodulator.set_decode_mode()
         session_stats = self.calculate_session_statistics(self.received_bytes, self.total_length)
 
-        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=session_stats)
+        self.ctx.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=session_stats)
         if self.config['STATION']['enable_stats']:
             self.statistics.push(self.state.name, session_stats, self.dxcall)
 
@@ -495,7 +494,7 @@ class ARQSessionIRS(arq_session.ARQSession):
 
 
             #self.modem.demodulator.set_decode_mode()
-            self.event_manager.send_arq_session_finished(
+            self.ctx.event_manager.send_arq_session_finished(
                 True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.received_bytes, self.total_length))
             self.states.setARQ(False)
         return None, None

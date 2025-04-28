@@ -18,7 +18,7 @@ router = APIRouter()
     404: {"description": "Message not found."}
 })
 async def get_freedata_message(message_id: str, request: Request):
-    message = DatabaseManagerMessages(request.app.event_manager).get_message_by_id_json(message_id)
+    message = DatabaseManagerMessages(request.app.ctx.event_manager).get_message_by_id_json(message_id)
     return api_response(message)
 
 
@@ -33,7 +33,7 @@ async def post_freedata_message(request: Request):
         dict: A JSON object containing the transmitted message details.
     """
     data = await request.json()
-    await enqueue_tx_command(request.app, command_message_send.SendMessageCommand, data)
+    await enqueue_tx_command(request.app.ctx, command_message_send.SendMessageCommand, data)
     return api_response(data)
 
 @router.post("/messages/{message_id}/adif", summary="Send Message ADIF Log", tags=["FreeDATA"], responses={
@@ -79,15 +79,15 @@ async def post_freedata_message(request: Request):
     }
 })
 async def post_freedata_message_adif_log(message_id: str, request:Request):
-    adif_output = DatabaseManagerMessages(request.app.event_manager).get_message_by_id_adif(message_id)
+    adif_output = DatabaseManagerMessages(request.app.ctx.event_manager).get_message_by_id_adif(message_id)
 
     # if message not found do not send adif as the return then is not valid
     if not adif_output:
         return
 
     # Send the ADIF data via UDP and/or wavelog
-    adif_udp_logger.send_adif_qso_data(request.app.config_manager.read(), request.app.event_manager, adif_output)
-    wavelog_api_logger.send_wavelog_qso_data(request.app.config_manager.read(), request.app.event_manager, adif_output)
+    adif_udp_logger.send_adif_qso_data(request.app.ctx.config_manager.read(), request.app.ctx.event_manager, adif_output)
+    wavelog_api_logger.send_wavelog_qso_data(request.app.ctx.config_manager.read(), request.app.ctx.event_manager, adif_output)
     return api_response(adif_output)
 
 @router.patch("/messages/{message_id}", summary="Update Message by ID", tags=["FreeDATA"], responses={
@@ -136,10 +136,10 @@ async def patch_freedata_message(message_id: str, request: Request):
     data = await request.json()
 
     if data.get("action") == "retransmit":
-        result = DatabaseManagerMessages(request.app.event_manager).update_message(message_id, update_data={'status': 'queued'})
-        DatabaseManagerMessages(request.app.event_manager).increment_message_attempts(message_id)
+        result = DatabaseManagerMessages(request.app.ctx.event_manager).update_message(message_id, update_data={'status': 'queued'})
+        DatabaseManagerMessages(request.app.ctx.event_manager).increment_message_attempts(message_id)
     else:
-        result = DatabaseManagerMessages(request.app.event_manager).update_message(message_id, update_data=data)
+        result = DatabaseManagerMessages(request.app.ctx.event_manager).update_message(message_id, update_data=data)
 
     return api_response(result)
 
@@ -203,7 +203,7 @@ async def patch_freedata_message(message_id: str, request: Request):
 })
 async def get_freedata_messages(request: Request):
     filters = {k: v for k, v in request.query_params.items() if v}
-    result = DatabaseManagerMessages(request.app.event_manager).get_all_messages_json(filters=filters)
+    result = DatabaseManagerMessages(request.app.ctx.event_manager).get_all_messages_json(filters=filters)
     return api_response(result)
 
 
@@ -241,7 +241,7 @@ async def post_freedata_message(request: Request):
         dict: A JSON object containing the transmitted message details.
     """
     data = await request.json()
-    await enqueue_tx_command(request.app, command_message_send.SendMessageCommand, data)
+    await enqueue_tx_command(request.app.ctx, command_message_send.SendMessageCommand, data)
     return api_response(data)
 
 
@@ -271,7 +271,7 @@ async def post_freedata_message(request: Request):
     }
 })
 async def delete_freedata_message(message_id: str, request:Request):
-    result = DatabaseManagerMessages(request.app.event_manager).delete_message(message_id)
+    result = DatabaseManagerMessages(request.app.ctx.event_manager).delete_message(message_id)
     if result:
         return api_response({"message": f"{message_id} deleted", "status": "success"})
     else:
@@ -326,7 +326,7 @@ async def delete_freedata_message(message_id: str, request:Request):
     }
 })
 async def get_message_attachments(message_id: str, request:Request):
-    attachments = DatabaseManagerAttachments(request.app.event_manager).get_attachments_by_message_id_json(message_id)
+    attachments = DatabaseManagerAttachments(request.app.ctx.event_manager).get_attachments_by_message_id_json(message_id)
     return api_response(attachments)
 
 
@@ -367,7 +367,7 @@ async def get_message_attachments(message_id: str, request:Request):
     }
 })
 async def get_message_attachment(data_sha512: str, request:Request):
-    attachment = DatabaseManagerAttachments(request.app.event_manager).get_attachment_by_sha512(data_sha512)
+    attachment = DatabaseManagerAttachments(request.app.ctx.event_manager).get_attachment_by_sha512(data_sha512)
     return api_response(attachment)
 
 
@@ -459,7 +459,7 @@ async def get_message_attachment(data_sha512: str, request:Request):
     }
 })
 async def get_all_beacons(request:Request):
-    beacons = DatabaseManagerBeacon(request.app.event_manager).get_all_beacons()
+    beacons = DatabaseManagerBeacon(request.app.ctx.event_manager).get_all_beacons()
     return api_response(beacons)
 
 
@@ -550,7 +550,7 @@ async def get_all_beacons(request:Request):
     }
 })
 async def get_beacons_by_callsign(callsign: str, request:Request):
-    beacons = DatabaseManagerBeacon(request.app.event_manager).get_beacons_by_callsign(callsign)
+    beacons = DatabaseManagerBeacon(request.app.ctx.event_manager).get_beacons_by_callsign(callsign)
     return api_response(beacons)
 
 
@@ -612,7 +612,7 @@ async def get_beacons_by_callsign(callsign: str, request:Request):
     }
 })
 async def get_station_info(callsign: str, request: Request):
-    station = DatabaseManagerStations(request.app.event_manager).get_station(callsign)
+    station = DatabaseManagerStations(request.app.ctx.event_manager).get_station(callsign)
     return api_response(station)
 
 
@@ -675,5 +675,5 @@ async def get_station_info(callsign: str, request: Request):
 })
 async def set_station_info(callsign: str, request: Request):
     data = await request.json()
-    result = DatabaseManagerStations(request.app.event_manager).update_station_info(callsign, new_info=data["info"])
+    result = DatabaseManagerStations(request.app.ctx.event_manager).update_station_info(callsign, new_info=data["info"])
     return api_response(result)

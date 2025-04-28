@@ -29,25 +29,17 @@ class Demodulator():
                 'decoding_thread': None
             }
 
-    def __init__(self, config, audio_rx_q, data_q_rx, states, event_manager, service_queue, fft_queue):
+    def __init__(self, ctx):
+        self.ctx = ctx
+        
         self.log = structlog.get_logger("Demodulator")
-        self.config = config
 
         self.shutdown_flag = threading.Event()
 
-        self.service_queue = service_queue
         self.AUDIO_FRAMES_PER_BUFFER_RX = 4800
         self.buffer_overflow_counter = [0] * len(codec2.FREEDV_MODE)
         self.is_codec2_traffic_counter = 0
         self.is_codec2_traffic_cooldown = 5
-
-        self.audio_received_queue = audio_rx_q
-        self.data_queue_received = data_q_rx
-
-        self.states = states
-        self.event_manager = event_manager
-
-        self.fft_queue = fft_queue
 
         # Audio Stream object
         self.stream = None
@@ -58,7 +50,7 @@ class Demodulator():
         self.init_codec2()
 
         # enable decoding of signalling modes
-        if self.config['EXP'].get('enable_vhf'):
+        if self.ctx.config_manager.config['EXP'].get('enable_vhf'):
             self.MODE_DICT[codec2.FREEDV_MODE.data_vhf_1.value]["decode"] = True
             self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
             self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
@@ -92,7 +84,7 @@ class Demodulator():
         codec2.api.freedv_set_frames_per_burst(c2instance, 1)
 
         # init audio buffer
-        if self.config['EXP'].get('enable_ring_buffer'):
+        if self.ctx.config_manager.config['EXP'].get('enable_ring_buffer'):
             self.log.debug("[MDM] [buffer]", enable_ring_buffer=True)
             audio_buffer = CircularBuffer(2 * self.AUDIO_FRAMES_PER_BUFFER_RX)
         else:
@@ -169,7 +161,7 @@ class Demodulator():
                 threading.Event().wait(0.01)
                 if audiobuffer.nbuffer >= nin and not self.shutdown_flag.is_set():
                     # demodulate audio
-                    if not self.states.isTransmitting():
+                    if not self.ctx.state_manager.isTransmitting():
                         nbytes = codec2.api.freedv_rawdatarx(
                             freedv, bytes_out, audiobuffer.buffer.ctypes
                         )
@@ -194,9 +186,9 @@ class Demodulator():
                     # decrement codec traffic counter for making state smoother
                     if self.is_codec2_traffic_counter > 0:
                         self.is_codec2_traffic_counter -= 1
-                        self.states.set_channel_busy_condition_codec2(True)
+                        self.ctx.state_manager.set_channel_busy_condition_codec2(True)
                     else:
-                        self.states.set_channel_busy_condition_codec2(False)
+                        self.ctx.state_manager.set_channel_busy_condition_codec2(False)
                     if rx_status == 10:
                         state_buffer.append(rx_status)
 
@@ -218,7 +210,7 @@ class Demodulator():
                             'mode_name': mode_name
                         }
 
-                        self.data_queue_received.put(item)
+                        self.ctx.rf_modem.data_queue_received.put(item)
 
 
                         state_buffer = []
@@ -315,11 +307,11 @@ class Demodulator():
 
         # Send all the data if we have too-few samples, otherwise send a sampling
         if 150 > len(scatterdata) > 0:
-            self.event_manager.send_scatter_change(scatterdata)
+            self.ctx.event_manager.send_scatter_change(scatterdata)
 
         else:
             # only take every tenth data point
-            self.event_manager.send_scatter_change(scatterdata[::10])
+            self.ctx.event_manager.send_scatter_change(scatterdata[::10])
 
     def reset_data_sync(self) -> None:
         """
@@ -339,7 +331,7 @@ class Demodulator():
         # signalling is always true
         self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
 
-        if self.config['EXP'].get('enable_vhf'):
+        if self.ctx.config_manager.config['EXP'].get('enable_vhf'):
             self.MODE_DICT[codec2.FREEDV_MODE.data_vhf_1.value]["decode"] = True
 
 
