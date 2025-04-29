@@ -438,7 +438,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         stop_ack = self.frame_factory.build_arq_stop_ack(self.id)
         self.launch_transmit_and_wait(stop_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling_ack)
         self.set_state(IRS_State.ABORTED)
-        self.states.setARQ(False)
+        self.ctx.state_manager.setARQ(False)
         session_stats = self.calculate_session_statistics(self.received_bytes, self.total_length)
 
         self.ctx.event_manager.send_arq_session_finished(
@@ -472,7 +472,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         if self.ctx.config_manager.config['STATION']['enable_stats']:
             self.statistics.push(self.state.name, session_stats, self.dxcall)
 
-        self.states.setARQ(False)
+        self.ctx.state_manager.setARQ(False)
         return None, None
 
     def transmission_aborted(self):
@@ -496,5 +496,5 @@ class ARQSessionIRS(arq_session.ARQSession):
             #self.ctx.rf_modem.demodulator.set_decode_mode()
             self.ctx.event_manager.send_arq_session_finished(
                 True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.received_bytes, self.total_length))
-            self.states.setARQ(False)
+            self.ctx.state_manager.setARQ(False)
         return None, None

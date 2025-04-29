@@ -174,9 +174,6 @@ class DataSocket(socketserver.BaseRequestHandler):
             self.log(f"Data connection closed with {self.client_address}")
 
 
-#class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
-#    allow_reuse_address = True
-
 
 class CustomThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     allow_reuse_address = True
@@ -190,7 +187,6 @@ class CustomThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServe
         self.RequestHandlerClass(request, client_address, self, **self.extra_args)
 
 class SocketInterfaceHandler:
-    #def __init__(self, modem, config_manager, state_manager, event_manager):
     def __init__(self, ctx):
         self.ctx = ctx
         
@@ -239,7 +235,7 @@ class SocketInterfaceHandler:
 
     def run_server(self,ip, port, handler):
         try:
-            with CustomThreadedTCPServer((ip, port), handler, modem=self.ctx.rf_modem, state_manager=self.ctx.state_manager, event_manager=self.ctx.event_manager, config_manager=self.ctx.config_manager, socket_interface_manager = self) as server:
+            with CustomThreadedTCPServer((ip, port), handler, ctx=self.ctx, socket_interface_manager = self) as server:
                 self.log(f"Server starting on ip:port: {ip}:{port}")
                 if port == self.command_port:
                     self.command_server = server

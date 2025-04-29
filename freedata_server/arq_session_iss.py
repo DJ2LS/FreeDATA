@@ -129,7 +129,7 @@ class ARQSessionISS(arq_session.ARQSession):
             if session_data.data_crc == self.data_crc and session_data.state in [ISS_State.FAILED, ISS_State.ABORTED]:
                 # If a matching CRC is found, use this session ID
                 self.log(f"Matching CRC found, deleting existing session and resuming transmission", isWarning=True)
-                self.states.remove_arq_iss_session(session_id)
+                self.ctx.state_manager.remove_arq_iss_session(session_id)
                 return session_id
         self.log(f"No matching CRC found, creating new session id", isWarning=False)
 
@@ -374,7 +374,7 @@ class ARQSessionISS(arq_session.ARQSession):
         self.arq_data_type_handler.transmitted(self.type_byte, self.data, session_stats)
 
         self.ctx.state_manager.remove_arq_iss_session(self.id)
-        self.states.setARQ(False)
+        self.ctx.state_manager.setARQ(False)
         return None, None
 
     def transmission_failed(self, irs_frame=None):
@@ -398,7 +398,7 @@ class ARQSessionISS(arq_session.ARQSession):
         session_stats=self.calculate_session_statistics(self.confirmed_bytes, self.total_length)
         self.ctx.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, session_stats)
 
-        self.states.setARQ(False)
+        self.ctx.state_manager.setARQ(False)
 
         self.arq_data_type_handler.failed(self.type_byte, self.data, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
         return None, None
@@ -427,7 +427,7 @@ class ARQSessionISS(arq_session.ARQSession):
         self.event_frame_received.set()
 
         # wait for transmit function to be ready before setting event
-        while self.states.isTransmitting():
+        while self.ctx.state_manager.isTransmitting():
             threading.Event().wait(0.100)
 
         # break actual retries
@@ -438,7 +438,7 @@ class ARQSessionISS(arq_session.ARQSession):
             threading.Event().wait(self.TIMEOUT_STOP_ACK)
             self.send_stop()
 
-        self.states.setARQ(False)
+        self.ctx.state_manager.setARQ(False)
 
     def send_stop(self):
         """Sends an ARQ stop frame.
@@ -475,5 +475,5 @@ class ARQSessionISS(arq_session.ARQSession):
             self.ctx.event_manager.send_arq_session_finished(
                 True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
             #self.ctx.state_manager.remove_arq_iss_session(self.id)
-            self.states.setARQ(False)
+            self.ctx.state_manager.setARQ(False)
         return None, None
