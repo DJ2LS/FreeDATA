@@ -127,7 +127,6 @@ class FrameHandler():
 
         if not valid:
             self.logger.info(f"[Frame handler] {ft} received but not for us.")
-
         return valid
 
 
@@ -365,16 +364,16 @@ class FrameHandler():
 
         # look in database for a full callsign if only crc is present
         if 'origin' not in self.details['frame'] and 'origin_crc' in self.details['frame']:
-            self.details['frame']['origin'] = DatabaseManager(self.ctx.event_manager).get_callsign_by_checksum(frame['origin_crc'])
+            self.details['frame']['origin'] = DatabaseManager(self.ctx).get_callsign_by_checksum(frame['origin_crc'])
 
         if "location" in self.details['frame'] and "gridsquare" in self.details['frame']['location']:
-            DatabaseManagerStations(self.ctx.event_manager).update_station_location(self.details['frame']['origin'], frame['gridsquare'])
+            DatabaseManagerStations(self.ctx).update_station_location(self.details['frame']['origin'], frame['gridsquare'])
 
 
         if 'origin' in self.details['frame']:
             # try to find station info in database
             try:
-                station = DatabaseManagerStations(self.ctx.event_manager).get_station(self.details['frame']['origin'])
+                station = DatabaseManagerStations(self.ctx).get_station(self.details['frame']['origin'])
                 if station and station["location"] and "gridsquare" in station["location"]:
                     dxgrid = station["location"]["gridsquare"]
                 else:

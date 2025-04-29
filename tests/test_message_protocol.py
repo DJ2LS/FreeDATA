@@ -54,8 +54,11 @@ class TestMessageProtocol(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ctx = AppContext('freedata_server/config.ini.example')
-        cls.ctx.config_manager.read()
+        cls.ctxISS = AppContext('freedata_server/config.ini.example')
+        cls.ctxISS.config_manager.read()
+
+        cls.ctxIRS = AppContext('freedata_server/config.ini.example')
+        cls.ctxIRS.config_manager.read()
 
         cls.config = cls.ctx.config_manager.config
         cls.logger = structlog.get_logger("TESTS")

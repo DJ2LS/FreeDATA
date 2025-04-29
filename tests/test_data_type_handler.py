@@ -21,7 +21,6 @@ class TestDispatcher(unittest.TestCase):
         # Clean shutdown after all tests
         cls.ctx.shutdown()
 
-
     def test_data_type_handler_raw(self):
         example_data = b"Hello FreeDATA!"
         formatted_data, type_byte = self.arq_data_type_handler.prepare(example_data, ARQ_SESSION_TYPES.raw)

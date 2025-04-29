@@ -4,7 +4,6 @@ import shlex, os
 import requests
 import time
 import json
-import fastapi
 # API Server integration testst
 class TestIntegration(unittest.TestCase):
 

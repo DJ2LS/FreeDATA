@@ -132,7 +132,7 @@ class DISPATCHER:
 
         # instantiate handler
         handler_class = self.FRAME_HANDLER[frametype]['class']
-        handler: FrameHandler = handler_class(self.FRAME_HANDLER[frametype]['name'], self.ctx)
+        handler: FrameHandler = handler_class(self.ctx, self.FRAME_HANDLER[frametype]['name'])
         handler.handle(deconstructed_frame, snr, frequency_offset, freedv, bytes_per_frame)
 
     def get_id_from_frame(self, data):

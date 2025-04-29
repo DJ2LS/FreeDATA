@@ -47,10 +47,6 @@ class AppContext:
         db.database_repair_and_cleanup()
         DatabaseManagerAttachments(self).clean_orphaned_attachments()
 
-
-        # Audio cleanup on shutdown
-        self._audio = audio
-
     def shutdown(self):
         try:
             for s in self.state_manager.arq_irs_sessions.values():
@@ -64,7 +60,8 @@ class AppContext:
         self.schedule_manager.stop()
         self.service_manager.shutdown()
         #self._audio.terminate()
-
+        import os
+        os._exit(0)
 # Dependency provider for FastAPI (HTTP & WebSocket)
 def get_ctx(request: Request = None, websocket: WebSocket = None) -> AppContext:
     """

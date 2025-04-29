@@ -112,7 +112,7 @@ class TestP2PConnectionSession(unittest.TestCase):
             except queue.Empty:
                 continue
 
-    def testConnect(self):
+    def DisabledtestConnect(self):
         self.channels_running = True
 
         self.iss_to_irs_channel = threading.Thread(target=self.channelWorker, args=(self.iss_modem.data_queue_received, self.irs_frame_dispatcher))

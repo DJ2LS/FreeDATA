@@ -46,7 +46,7 @@ class PingFrameHandler(frame_handler.FrameHandler):
         This method builds a PING acknowledgement frame using the received
         frame's origin CRC and SNR, and transmits it using the modem.
         """
-        factory = data_frame_factory.DataFrameFactory(self.config)
+        factory = data_frame_factory.DataFrameFactory(self.ctx)
         ping_ack_frame = factory.build_ping_ack(
             self.details['frame']['origin_crc'], 
             self.details['snr']
