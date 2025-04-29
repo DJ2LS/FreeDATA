@@ -133,10 +133,8 @@ export function onChange() {
 
   setConfig(remote_config).then((conf) => {
     settingsStore.remote = conf;
-    console.log(conf)
-    console.log("jaaaaaaa")
-    //settingsStore.remote.STATION.callsign_blacklist =
-    //  conf.STATION.callsign_blacklist.join("\n");
+    settingsStore.remote.STATION.callsign_blacklist =
+      conf.STATION.callsign_blacklist.join("\n");
   });
 }
 
