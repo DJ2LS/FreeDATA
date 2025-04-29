@@ -70,9 +70,6 @@ class SM:
                     else:
                         self.ctx.socket_interface_manager = None
 
-
-
-
                 elif cmd in ['stop'] and self.ctx.rf_modem:
                     self.stop_modem()
                     self.stop_radio_manager()

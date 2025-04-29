@@ -116,7 +116,7 @@ class RF:
         """
         try:
             # let's stop the freedata_server service
-            self.self.ctx.modem_service.put("stop")
+            self.ctx.modem_service.put("stop")
             # simulate audio class active state for reducing cli output
             # self.stream = lambda: None
             # self.stream.active = False

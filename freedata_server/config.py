@@ -267,7 +267,6 @@ class CONFIG:
             data if successful, False otherwise.
         """
         # Validate config data before writing
-        print(data)
         self.validate_data(data)
         for section in data:
             # init section if it doesn't exist yet
@@ -300,7 +299,7 @@ class CONFIG:
                 self.parser.write(configfile)
                 self.ctx.config = self.read()
 
-                return
+                return self.ctx.config
         except Exception as conferror:
             self.log.error("[CFG] reading logfile", e=conferror)
             return False
