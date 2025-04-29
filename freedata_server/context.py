@@ -63,7 +63,7 @@ class AppContext:
         self.websocket_manager.shutdown()
         self.schedule_manager.stop()
         self.service_manager.shutdown()
-        self._audio.terminate()
+        #self._audio.terminate()
 
 # Dependency provider for FastAPI (HTTP & WebSocket)
 def get_ctx(request: Request = None, websocket: WebSocket = None) -> AppContext:

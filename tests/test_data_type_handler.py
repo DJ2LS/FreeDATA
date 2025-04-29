@@ -1,44 +1,46 @@
 import sys
-sys.path.append('freedata_server')
-
 import unittest
 import queue
+
+sys.path.append('freedata_server')
+
+from context import AppContext
 from arq_data_type_handler import ARQDataTypeHandler, ARQ_SESSION_TYPES
-from event_manager import EventManager
-from state_manager import StateManager
 
 class TestDispatcher(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.event_queue = queue.Queue()
-        cls.state_queue = queue.Queue()
-        cls.event_manager = EventManager([cls.event_queue])
-        cls.state_manager = StateManager([cls.state_queue])
-        cls.arq_data_type_handler = ARQDataTypeHandler(cls.event_manager, cls.state_manager)
+        cls.ctx = AppContext('freedata_server/config.ini.example')
+        cls.event_manager = cls.ctx.event_manager
+        cls.state_manager = cls.ctx.state_manager
+        cls.arq_data_type_handler = ARQDataTypeHandler(cls.ctx)
+
+    @classmethod
+    def tearDownClass(cls):
+        # Clean shutdown after all tests
+        cls.ctx.shutdown()
 
 
-    def testDataTypeHevent_managerandlerRaw(self):
-        # Example usage
+    def test_data_type_handler_raw(self):
         example_data = b"Hello FreeDATA!"
         formatted_data, type_byte = self.arq_data_type_handler.prepare(example_data, ARQ_SESSION_TYPES.raw)
         dispatched_data = self.arq_data_type_handler.dispatch(type_byte, formatted_data, statistics={})
         self.assertEqual(example_data, dispatched_data)
 
-    def testDataTypeHandlerLZMA(self):
-        # Example usage
-        example_data = b"Hello FreeDATA!"
+    def test_data_type_handler_lzma(self):
+        example_data = b"Hello FreeDATA! " * 50
         formatted_data, type_byte = self.arq_data_type_handler.prepare(example_data, ARQ_SESSION_TYPES.raw_lzma)
+        self.assertLess(len(formatted_data), len(example_data), "LZMA komprimiert nicht richtig!")
         dispatched_data = self.arq_data_type_handler.dispatch(type_byte, formatted_data, statistics={})
         self.assertEqual(example_data, dispatched_data)
 
-    def testDataTypeHandlerGZIP(self):
-        # Example usage
-        example_data = b"Hello FreeDATA!"
+    def test_data_type_handler_gzip(self):
+        example_data = b"Hello FreeDATA! " * 50
         formatted_data, type_byte = self.arq_data_type_handler.prepare(example_data, ARQ_SESSION_TYPES.raw_gzip)
+        self.assertLess(len(formatted_data), len(example_data), "GZIP komprimiert nicht richtig!")
         dispatched_data = self.arq_data_type_handler.dispatch(type_byte, formatted_data, statistics={})
         self.assertEqual(example_data, dispatched_data)
-
 
 if __name__ == '__main__':
     unittest.main()

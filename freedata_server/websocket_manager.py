@@ -113,7 +113,10 @@ class wsm:
         """
         self.log.warning("[SHUTDOWN] closing websockets...")
         self.shutdown_flag.set()
-        self.events_thread.join(0.5)
-        self.states_thread.join(0.5)
-        self.fft_thread.join(0.5)
+        if self.events_thread:
+            self.events_thread.join(0.5)
+        if self.states_thread:
+            self.states_thread.join(0.5)
+        if self.states_thread:
+            self.fft_thread.join(0.5)
         self.log.warning("[SHUTDOWN] websockets closed")
