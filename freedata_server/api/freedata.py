@@ -14,16 +14,16 @@ router = APIRouter()
 
 
 def _mgr_msgs(ctx: AppContext):
-    return DatabaseManagerMessages(ctx.event_manager)
+    return DatabaseManagerMessages(ctx)
 
 def _mgr_attach(ctx: AppContext):
-    return DatabaseManagerAttachments(ctx.event_manager)
+    return DatabaseManagerAttachments(ctx)
 
 def _mgr_beacon(ctx: AppContext):
-    return DatabaseManagerBeacon(ctx.event_manager)
+    return DatabaseManagerBeacon(ctx)
 
 def _mgr_stations(ctx: AppContext):
-    return DatabaseManagerStations(ctx.event_manager)
+    return DatabaseManagerStations(ctx)
 
 
 

@@ -18,11 +18,12 @@ import io
 
 class CommandSocket(socketserver.BaseRequestHandler):
     #def __init__(self, request, client_address, server):
-    def __init__(self, request, client_address, server):
+    def setup(self):
+        super().setup()
         self.logger = structlog.get_logger(type(self).__name__)
-
-        self.command_handler = SocketCommandHandler(request, self.ctx)
-
+        self.ctx = self.server.ctx
+        self.command_handler = SocketCommandHandler(self.request, self.ctx)
+        self.server.command_handler = self.command_handler
         self.handlers = {
             'CONNECT': self.command_handler.handle_connect,
             'DISCONNECT': self.command_handler.handle_disconnect,
@@ -38,34 +39,14 @@ class CommandSocket(socketserver.BaseRequestHandler):
 
         }
         # Register this CommandSocket's command_handler with the command_server
-        if hasattr(self.ctx.socket_interface_manager, 'command_server'):
-            self.ctx.socket_interface_manager.command_server.command_handler = self.command_handler
-        super().__init__(request, client_address, server)
+        #if hasattr(self.ctx.socket_interface_manager, 'command_server'):
+        #    self.ctx.socket_interface_manager.command_server.command_handler = self.command_handler
+
 
     def log(self, message, isWarning = False):
         msg = f"[{type(self).__name__}]: {message}"
         logger = self.logger.warn if isWarning else self.logger.info
         logger(msg)
-
-    def handle2(self):
-        self.log(f"Client connected: {self.client_address}")
-        try:
-
-            file_obj = self.request.makefile('rb')
-
-            text_file = io.TextIOWrapper(file_obj, encoding='utf-8', newline='\r')
-
-            # Continuously read data until the connection is closed.
-            while True:
-                line = text_file.readline()
-                print(line)
-
-                if line == "":
-                    break
-                self.log(f"<<<<< {line}")
-                self.parse_command(line)
-        finally:
-            self.log(f"Command connection closed with {self.client_address}")
 
     def handle(self):
         self.log(f"Client connected: {self.client_address}")
@@ -111,19 +92,16 @@ class CommandSocket(socketserver.BaseRequestHandler):
 
 class DataSocket(socketserver.BaseRequestHandler):
     #def __init__(self, request, client_address, server):
-    def __init__(self, request, client_address, server):
-
-
-        self.data_handler = SocketDataHandler(request, self.ctx)
-
+    def setup(self):
+        super().setup()
+        self.ctx = self.server.ctx
+        self.data_handler = SocketDataHandler(self.request, self.ctx)
+        self.server.data_handler = self.data_handler
         self.logger = structlog.get_logger(type(self).__name__)
 
         # not sure if we really need this
-        if hasattr(self.ctx.socket_interface_manager, 'data_server'):
-            self.ctx.socket_interface_manager.data_server.data_handler = self.data_handler
-
-
-        super().__init__(request, client_address, server)
+        #if hasattr(self.ctx.socket_interface_manager, 'data_server'):
+        #    self.ctx.socket_interface_manager.data_server.data_handler = self.data_handler
 
     def log(self, message, isWarning = False):
         msg = f"[{type(self).__name__}]: {message}"
@@ -180,11 +158,13 @@ class CustomThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServe
     allow_reuse_port = True
 
     def __init__(self, server_address, RequestHandlerClass, bind_and_activate=True, **kwargs):
-        self.extra_args = kwargs
+        # add all paramters to class
+        for k,v in kwargs.items():
+            setattr(self, k, v)
         super().__init__(server_address, RequestHandlerClass, bind_and_activate=bind_and_activate)
 
-    def finish_request(self, request, client_address):
-        self.RequestHandlerClass(request, client_address, self, **self.extra_args)
+    #def finish_request(self, request, client_address):
+    #    self.RequestHandlerClass(request, client_address, self, **self.extra_args)
 
 class SocketInterfaceHandler:
     def __init__(self, ctx):
@@ -218,17 +198,23 @@ class SocketInterfaceHandler:
         if self.data_port == 0:
             self.data_port = 8301
 
-        # Method to start both command and data server threads
-        self.command_server_thread = threading.Thread(target=self.run_server, args=(self.ip, self.command_port, CommandSocket))
-        self.data_server_thread = threading.Thread(target=self.run_server, args=(self.ip, self.data_port, DataSocket))
+        # in your SocketInterfaceHandler.start_servers():
+        self.command_server = CustomThreadedTCPServer(
+            (self.ip, self.command_port),
+            CommandSocket,
+            ctx=self.ctx,
+            socket_interface_manager=self
+        )
+        threading.Thread(target=self.command_server.serve_forever, daemon=True).start()
 
-        self.command_server_thread.start()
-        self.data_server_thread.start()
-
-        # this might not work
-        #self.command_server = self.command_server_thread._target.__self__
-        #self.data_server = self.data_server_thread._target.__self__
-
+        self.data_server = CustomThreadedTCPServer(
+            (self.ip, self.data_port),
+            DataSocket,
+            ctx=self.ctx,
+            socket_interface_manager=self
+        )
+        threading.Thread(target=self.data_server.serve_forever, daemon=True).start()
+        self.command_server.command_handler = None
 
         self.log(f"Interfaces started")
         return self

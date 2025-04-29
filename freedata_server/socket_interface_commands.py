@@ -8,6 +8,7 @@ class SocketCommandHandler:
         self.logger = structlog.get_logger(type(self).__name__)
         self.cmd_request = cmd_request
         self.session = None
+        self.ctx = ctx
 
     def log(self, message, isWarning = False):
         msg = f"[{type(self).__name__}]: {message}"
