@@ -120,10 +120,9 @@ async def post_freedata_message_adif_log(
     adif = _mgr_msgs(ctx).get_message_by_id_adif(message_id)
     if not adif:
         api_abort("Message not found or ADIF unavailable", 404)
-    cfg = ctx.config_manager.read()
     # send logs
-    adif_udp_logger.send_adif_qso_data(cfg, ctx.event_manager, adif)
-    wavelog_api_logger.send_wavelog_qso_data(cfg, ctx.event_manager, adif)
+    adif_udp_logger.send_adif_qso_data(ctx, adif)
+    wavelog_api_logger.send_wavelog_qso_data(ctx, adif)
     return api_response({"adif_output": adif})
 
 @router.patch("/messages/{message_id}", summary="Update Message by ID", tags=["FreeDATA"], responses={

@@ -94,8 +94,7 @@ class ARQSessionISS(arq_session.ARQSession):
             data (bytearray): The data to be transmitted.
             type_byte (bytes): The type byte of the data.
         """
-        super().__init__(config, modem, dxcall, state_manager)
-        self.state_manager = state_manager
+        super().__init__(ctx, dxcall)
         self.data = data
         self.total_length = len(data)
         self.data_crc = helpers.get_crc_32(self.data)
@@ -110,9 +109,9 @@ class ARQSessionISS(arq_session.ARQSession):
         self.is_IRS = False
 
         # enable decoder for signalling ACK bursts
-        self.modem.demodulator.set_decode_mode(modes_to_decode=None, is_arq_irs=False)
+        self.ctx.rf_modem.demodulator.set_decode_mode(modes_to_decode=None, is_arq_irs=False)
 
-        self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
+        self.frame_factory = data_frame_factory.DataFrameFactory(self.ctx)
 
     def generate_id(self):
         """Generates a unique session ID.
@@ -126,7 +125,7 @@ class ARQSessionISS(arq_session.ARQSession):
             int: The generated session ID (1-255), or False if all IDs are exhausted.
         """
         # Iterate through existing sessions to find a matching CRC
-        for session_id, session_data in self.state_manager.arq_iss_sessions.items():
+        for session_id, session_data in self.ctx.state_manager.arq_iss_sessions.items():
             if session_data.data_crc == self.data_crc and session_data.state in [ISS_State.FAILED, ISS_State.ABORTED]:
                 # If a matching CRC is found, use this session ID
                 self.log(f"Matching CRC found, deleting existing session and resuming transmission", isWarning=True)
@@ -140,15 +139,15 @@ class ARQSessionISS(arq_session.ARQSession):
         random_int = checksum_int % 256
 
         # Check if the generated 8-bit integer can be used
-        if random_int not in self.state_manager.arq_iss_sessions:
+        if random_int not in self.ctx.state_manager.arq_iss_sessions:
             return random_int
 
         # If the generated ID is already used, generate a new random ID
         while True:
             random_int = random.randint(1, 255)
-            if random_int not in self.state_manager.arq_iss_sessions:
+            if random_int not in self.ctx.state_manager.arq_iss_sessions:
                 return random_int
-            if len(self.state_manager.arq_iss_sessions) >= 255:
+            if len(self.ctx.state_manager.arq_iss_sessions) >= 255:
                 # Return False if all possible session IDs are exhausted
                 return False
 
@@ -217,9 +216,9 @@ class ARQSessionISS(arq_session.ARQSession):
         to the IRS and setting the session state to OPEN_SENT. It also sends
         an ARQ session new event.
         """
-        maximum_bandwidth = self.config['MODEM']['maximum_bandwidth']
+        maximum_bandwidth = self.ctx.config_manager.config['MODEM']['maximum_bandwidth']
         print(maximum_bandwidth)
-        self.event_manager.send_arq_session_new(
+        self.ctx.event_manager.send_arq_session_new(
             True, self.id, self.dxcall, self.total_length, self.state.name)
         session_open_frame = self.frame_factory.build_arq_session_open(self.dxcall, self.id, maximum_bandwidth, self.protocol_version)
         self.launch_twr(session_open_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
@@ -318,7 +317,7 @@ class ARQSessionISS(arq_session.ARQSession):
             self.confirmed_bytes = self.expected_byte_offset
 
         self.log(f"IRS confirmed {self.confirmed_bytes}/{self.total_length} bytes")
-        self.event_manager.send_arq_session_progress(True, self.id, self.dxcall, self.confirmed_bytes, self.total_length, self.state.name, self.speed_level, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
+        self.ctx.event_manager.send_arq_session_progress(True, self.id, self.dxcall, self.confirmed_bytes, self.total_length, self.state.name, self.speed_level, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
 
         # check if we received an abort flag
         if irs_frame["flag"]["ABORT"]:
@@ -367,14 +366,14 @@ class ARQSessionISS(arq_session.ARQSession):
         self.session_ended = time.time()
         self.set_state(ISS_State.ENDED)
         self.log(f"All data transfered! flag_final={irs_frame['flag']['FINAL']}, flag_checksum={irs_frame['flag']['CHECKSUM']}")
-        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,True, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
+        self.ctx.event_manager.send_arq_session_finished(True, self.id, self.dxcall,True, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
 
-        #print(self.state_manager.p2p_connection_sessions)
+        #print(self.ctx.state_manager.p2p_connection_sessions)
         #print(self.arq_data_type_handler.state_manager.p2p_connection_sessions)
         session_stats = self.calculate_session_statistics(self.confirmed_bytes, self.total_length)
         self.arq_data_type_handler.transmitted(self.type_byte, self.data, session_stats)
 
-        self.state_manager.remove_arq_iss_session(self.id)
+        self.ctx.state_manager.remove_arq_iss_session(self.id)
         self.states.setARQ(False)
         return None, None
 
@@ -397,7 +396,7 @@ class ARQSessionISS(arq_session.ARQSession):
         self.set_state(ISS_State.FAILED)
         self.log("Transmission failed!")
         session_stats=self.calculate_session_statistics(self.confirmed_bytes, self.total_length)
-        self.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, session_stats)
+        self.ctx.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, session_stats)
 
         self.states.setARQ(False)
 
@@ -418,11 +417,11 @@ class ARQSessionISS(arq_session.ARQSession):
         self.log("aborting transmission...")
         self.set_state(ISS_State.ABORTING)
 
-        self.event_manager.send_arq_session_finished(
+        self.ctx.event_manager.send_arq_session_finished(
             True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
 
         # clear audio out queue
-        self.modem.audio_out_queue.queue.clear()
+        self.ctx.rf_modem.audio_out_queue.queue.clear()
 
         # break actual retries
         self.event_frame_received.set()
@@ -473,8 +472,8 @@ class ARQSessionISS(arq_session.ARQSession):
             # break actual retries
             self.event_frame_received.set()
 
-            self.event_manager.send_arq_session_finished(
+            self.ctx.event_manager.send_arq_session_finished(
                 True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length))
-            #self.state_manager.remove_arq_iss_session(self.id)
+            #self.ctx.state_manager.remove_arq_iss_session(self.id)
             self.states.setARQ(False)
         return None, None

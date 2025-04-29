@@ -29,9 +29,9 @@ class TxCommand:
             apiParams (dict, optional): API parameters for the command. Defaults to {}.
             socket_command_handler (optional): The socket command handler object. Defaults to None.
         """
+        self.ctx = ctx
         self.logger = structlog.get_logger(type(self).__name__)
         self.set_params_from_api(apiParams)
-        self.ctx = ctx
         self.frame_factory = DataFrameFactory(self.ctx)
         self.arq_data_type_handler = ARQDataTypeHandler(self.ctx)
 

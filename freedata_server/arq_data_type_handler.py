@@ -420,7 +420,7 @@ class ARQDataTypeHandler:
         decompressed_data += decompressor.flush()
 
         self.log(f"Handling ZLIB compressed P2PMSG data: {len(decompressed_data)} Bytes from {len(data)} Bytes")
-        message_received(self.ctx.event_manager, self.ctx.state_manager, decompressed_data, statistics)
+        message_received(self.ctx, decompressed_data, statistics)
         return decompressed_data
 
     def failed_p2pmsg_zlib(self, data, statistics):
@@ -441,7 +441,7 @@ class ARQDataTypeHandler:
         decompressed_data += decompressor.flush()
 
         self.log(f"Handling failed ZLIB compressed P2PMSG data: {len(decompressed_data)} Bytes from {len(data)} Bytes", isWarning=True)
-        message_failed(self.ctx.event_manager, self.ctx.state_manager, decompressed_data, statistics)
+        message_failed(self.ctx, decompressed_data, statistics)
         return decompressed_data
 
     def transmitted_p2pmsg_zlib(self, data, statistics):
@@ -463,7 +463,7 @@ class ARQDataTypeHandler:
         decompressed_data = decompressor.decompress(data)
         decompressed_data += decompressor.flush()
 
-        message_transmitted(self.ctx.event_manager, self.ctx.state_manager, decompressed_data, statistics)
+        message_transmitted(self.ctx, decompressed_data, statistics)
         return decompressed_data
     
     

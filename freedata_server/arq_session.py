@@ -66,7 +66,7 @@ class ARQSession:
             state_manager: The state manager object.
         """
         self.logger = structlog.get_logger(type(self).__name__)
-
+        self.ctx = ctx
         #self.ctx.state_manager = freedata_server.states
         self.ctx.state_manager.setARQ(True)
 

@@ -30,7 +30,7 @@ class TestCommand(TxCommand):
         Returns:
             codec2.FREEDV_MODE: The FreeDV mode for test frames.
         """
-        if self.config['EXP'].get('enable_vhf'):
+        if self.ctx.config_manager.config['EXP'].get('enable_vhf'):
             mode = FREEDV_MODE.data_vhf_1
         else:
             mode = FREEDV_MODE.data_ofdm_500

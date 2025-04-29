@@ -6,7 +6,7 @@ class TransmitSine(TxCommand):
     This command instructs the modem to transmit a continuous sine wave,
     which can be used for testing and calibration.
     """
-    def transmit(self, modem):
+    def transmit(self):
         """Transmits a sine wave.
 
         This method instructs the modem to transmit a sine wave.  It is used
@@ -15,6 +15,6 @@ class TransmitSine(TxCommand):
         Args:
             modem: The modem object.
         """
-        modem.transmit_sine()
+        self.ctx.rf_modem.transmit_sine()
         # Code for debugging morse stuff...
         #modem.transmit_morse(0,0,[b''])

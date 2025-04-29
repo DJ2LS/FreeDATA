@@ -121,8 +121,8 @@ class ScheduleManager:
         """
         try:
             if not self.ctx.state_manager.getARQ() and self.ctx.state_manager.is_beacon_running and self.ctx.state_manager.is_modem_running:
-                    cmd = command_beacon.BeaconCommand(self.ctx.config_manager.config, self.ctx.state_manager, self.ctx.event_manager)
-                    cmd.run(self.ctx.event_manager, self.modem)
+                    cmd = command_beacon.BeaconCommand(self.ctx)
+                    cmd.run()
         except Exception as e:
             print(e)
 
@@ -134,7 +134,7 @@ class ScheduleManager:
         exceptions during the cleanup process.
         """
         try:
-            DatabaseManagerBeacon(self.ctx.event_manager).beacon_cleanup_older_than_days(2)
+            DatabaseManagerBeacon(self.ctx).beacon_cleanup_older_than_days(2)
         except Exception as e:
             print(e)
 
@@ -143,7 +143,7 @@ class ScheduleManager:
 
         if self.ctx.config_manager.config['STATION']['enable_explorer'] and self.ctx.state_manager.is_modem_running:
             try:
-                explorer.Explorer(self.ctx.constants.MODEM_VERSION, self.ctx.config_manager, self.ctx.state_manager).push()
+                explorer.Explorer(self.ctx).push()
             except Exception as e:
                 print(e)
 
@@ -158,9 +158,9 @@ class ScheduleManager:
         """
         if not self.ctx.state_manager.getARQ() and not self.ctx.state_manager.channel_busy_event.is_set() and self.ctx.state_manager.is_modem_running:
             try:
-                if first_queued_message := DatabaseManagerMessages(self.ctx.event_manager).get_first_queued_message():
-                    command = command_message_send.SendMessageCommand(self.ctx.config_manager.read(), self.ctx.state_manager, self.ctx.event_manager, first_queued_message)
-                    command.transmit(self.modem)
+                if first_queued_message := DatabaseManagerMessages(self.ctx).get_first_queued_message():
+                    command = command_message_send.SendMessageCommand(self.ctx,first_queued_message)
+                    command.transmit()
             except Exception as e:
                 print(e)
         return

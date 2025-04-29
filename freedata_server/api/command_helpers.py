@@ -22,15 +22,10 @@ async def enqueue_tx_command(
     params = params or {}
     try:
         # Instantiate the command with required components
-        command = cmd_class(
-            ctx.config_manager.read(),
-            ctx.state_manager,
-            ctx.event_manager,
-            params
-        )
+        command = cmd_class(ctx, params)
         logger.info("Enqueueing transmit command", command=command.get_name())
         # Run in a thread to avoid blocking the event loop
-        result = await asyncio.to_thread(command.run,ctx)
+        result = await asyncio.to_thread(command.run)
         return bool(result)
     except Exception as e:
         logger.error("Command execution failed", error=str(e))

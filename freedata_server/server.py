@@ -134,4 +134,4 @@ if __name__ == "__main__":
         if ctx.config_manager.config['GUI'].get('auto_run_browser', True):
             threading.Thread(target=open_browser_after_delay, args=(url, 2)).start()
 
-    uvicorn.run(app, host=host, port=port, log_level="info")
+    uvicorn.run(app, host=host, port=port, log_config=None, log_level="info")

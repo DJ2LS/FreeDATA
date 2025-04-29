@@ -27,8 +27,8 @@ class AppContext:
 
         self.socket_interface_manager = None # Socket interface instance, We start it as we need it
         self.rf_modem = None # Modem instnace, we start it as we need it
-        self.message_system_db_manager = DatabaseManager(self.event_manager)
-        self.message_system_db_attachments = DatabaseManagerAttachments(self.event_manager)
+        self.message_system_db_manager = DatabaseManager(self)
+        self.message_system_db_attachments = DatabaseManagerAttachments(self)
 
     def startup(self):
 
@@ -45,7 +45,7 @@ class AppContext:
         db.check_database_version()
         db.initialize_default_values()
         db.database_repair_and_cleanup()
-        DatabaseManagerAttachments(self.event_manager).clean_orphaned_attachments()
+        DatabaseManagerAttachments(self).clean_orphaned_attachments()
 
 
         # Audio cleanup on shutdown

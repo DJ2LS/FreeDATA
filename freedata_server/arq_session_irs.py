@@ -195,8 +195,8 @@ class ARQSessionIRS(arq_session.ARQSession):
             Tuple[None, None]: Returns None for both data and type_byte as this method doesn't handle data.
         """
         # check for maximum bandwidth. If ISS bandwidth is higher than own, then use own
-        if open_frame['maximum_bandwidth'] > self.config['MODEM']['maximum_bandwidth']:
-            self.maximum_bandwidth = self.config['MODEM']['maximum_bandwidth']
+        if open_frame['maximum_bandwidth'] > self.ctx.config_manager.config['MODEM']['maximum_bandwidth']:
+            self.maximum_bandwidth = self.ctx.config_manager.config['MODEM']['maximum_bandwidth']
         else:
             self.maximum_bandwidth = open_frame['maximum_bandwidth']
         self.log(f"Negotiated transmission bandwidth {self.maximum_bandwidth}Hz")
@@ -406,7 +406,7 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         self.log(f"Modes to Decode: {list(modes_to_decode.keys())}", isWarning=True)
         # Apply the new decode mode based on the updated and previous speed levels
-        self.modem.demodulator.set_decode_mode(modes_to_decode)
+        self.ctx.rf_modem.demodulator.set_decode_mode(modes_to_decode)
 
         # finally update the speed level to the appropriate one
         self.speed_level = appropriate_speed_level
@@ -443,7 +443,7 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         self.ctx.event_manager.send_arq_session_finished(
                 False, self.id, self.dxcall, False, self.state.name, statistics=session_stats)
-        if self.config['STATION']['enable_stats']:
+        if self.ctx.config_manager.config['STATION']['enable_stats']:
             self.statistics.push(self.state.name, session_stats, self.dxcall)
 
         return None, None
@@ -465,11 +465,11 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.session_ended = time.time()
         self.set_state(IRS_State.FAILED)
         self.log("Transmission failed!")
-        #self.modem.demodulator.set_decode_mode()
+        #self.ctx.rf_modem.demodulator.set_decode_mode()
         session_stats = self.calculate_session_statistics(self.received_bytes, self.total_length)
 
         self.ctx.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=session_stats)
-        if self.config['STATION']['enable_stats']:
+        if self.ctx.config_manager.config['STATION']['enable_stats']:
             self.statistics.push(self.state.name, session_stats, self.dxcall)
 
         self.states.setARQ(False)
@@ -493,7 +493,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.event_frame_received.set()
 
 
-            #self.modem.demodulator.set_decode_mode()
+            #self.ctx.rf_modem.demodulator.set_decode_mode()
             self.ctx.event_manager.send_arq_session_finished(
                 True, self.id, self.dxcall, False, self.state.name, statistics=self.calculate_session_statistics(self.received_bytes, self.total_length))
             self.states.setARQ(False)

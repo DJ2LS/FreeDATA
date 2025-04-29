@@ -185,6 +185,6 @@ async def post_radio_tune(
             api_abort("Modem not running", 503)
         await enqueue_tx_command(ctx, command_transmit_sine.TransmitSine)
     else:
-        ctx.service_manager.modem.stop_sine()
+        ctx.rf_modem.stop_sine()
     return api_response(params)
     return api_response(data)
