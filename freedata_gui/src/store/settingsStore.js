@@ -110,6 +110,7 @@ export const settingsStore = reactive({ ...defaultConfig, local: localConfig });
 // Function to handle remote configuration changes
 
 export function onChange() {
+  console.log("hier sind wir.....")
   let remote_config = settingsStore.remote;
   let blacklistContent = remote_config.STATION.callsign_blacklist;
   // Check if the content is a string
@@ -132,8 +133,10 @@ export function onChange() {
 
   setConfig(remote_config).then((conf) => {
     settingsStore.remote = conf;
-    settingsStore.remote.STATION.callsign_blacklist =
-      conf.STATION.callsign_blacklist.join("\n");
+    console.log(conf)
+    console.log("jaaaaaaa")
+    //settingsStore.remote.STATION.callsign_blacklist =
+    //  conf.STATION.callsign_blacklist.join("\n");
   });
 }
 

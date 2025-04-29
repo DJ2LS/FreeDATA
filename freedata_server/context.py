@@ -9,6 +9,7 @@ from message_system_db_attachments import DatabaseManagerAttachments
 from websocket_manager import wsm as WebsocketManager
 import audio
 import constants
+from fastapi import Request, WebSocket
 class AppContext:
     def __init__(self, config_file: str):
         self.config_manager   = CONFIG(self, config_file)
@@ -23,6 +24,7 @@ class AppContext:
         self.schedule_manager = ScheduleManager(self)
         self.service_manager  = ServiceManager(self)
         self.websocket_manager = WebsocketManager(self)
+
         self.socket_interface_manager = None # Socket interface instance, We start it as we need it
         self.rf_modem = None # Modem instnace, we start it as we need it
         self.message_system_db_manager = DatabaseManager(self.event_manager)
@@ -33,6 +35,8 @@ class AppContext:
         # initially read config
         self.config_manager.read()
 
+        self.websocket_manager.startWorkerThreads(self)
+
         # start modem service
         self.modem_service.put("start")
 
@@ -42,9 +46,7 @@ class AppContext:
         db.initialize_default_values()
         db.database_repair_and_cleanup()
         DatabaseManagerAttachments(self.event_manager).clean_orphaned_attachments()
-        # Websocket workers
-        self.wsm = WebsocketManager(self)
-        self.wsm.startWorkerThreads(self)
+
 
         # Audio cleanup on shutdown
         self._audio = audio
@@ -58,7 +60,20 @@ class AppContext:
                 s.transmission_aborted()
         except Exception:
             pass
-        self.wsm.shutdown()
+        self.websocket_manager.shutdown()
         self.schedule_manager.stop()
         self.service_manager.shutdown()
         self._audio.terminate()
+
+# Dependency provider for FastAPI (HTTP & WebSocket)
+def get_ctx(request: Request = None, websocket: WebSocket = None) -> AppContext:
+    """
+    Provide the application context for HTTP requests or WebSocket connections.
+
+    FastAPI will pass either a Request or WebSocket instance.
+
+    Returns:
+        AppContext: The application context stored in state.
+    """
+    conn = request or websocket
+    return conn.app.state.ctx

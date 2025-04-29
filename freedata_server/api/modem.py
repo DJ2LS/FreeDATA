@@ -1,15 +1,12 @@
-from fastapi import APIRouter, Request
-from api.common import api_response, api_abort, api_ok, validate
+from fastapi import APIRouter, Depends, HTTPException
+from api.common import api_response, api_abort, api_ok
 from api.command_helpers import enqueue_tx_command
-import command_cq
-import command_beacon
-import command_ping
-import command_fec
-import command_test
-import command_arq_raw
+import command_cq, command_beacon, command_ping, command_test, command_fec, command_arq_raw
 import api_validations as validations
+from context import AppContext, get_ctx
 
 router = APIRouter()
+
 
 
 @router.get("/state", summary="Get Modem State", tags=["Modem"], responses={
@@ -122,15 +119,17 @@ router = APIRouter()
         }
     }
 })
-async def get_modem_state(request:Request):
+async def get_modem_state(ctx: AppContext = Depends(get_ctx)):
     """
     Retrieve the current state of the modem.
 
     Returns:
         dict: A JSON object containing modem state information.
     """
-    return request.app.ctx.state_manager.sendState()
-
+    state = ctx.state_manager.sendState()
+    if state is None:
+        api_abort("Modem state not available", 404)
+    return api_response(state)
 
 @router.post("/cqcqcq", summary="Send CQ Command", tags=["Modem"], responses={
     200: {
@@ -164,19 +163,13 @@ async def get_modem_state(request:Request):
         }
     }
 })
-async def post_cqcqcq(request:Request):
+async def post_cq(ctx: AppContext = Depends(get_ctx)):
     """
     Trigger the modem to send a CQ.
-
-    Returns:
-        dict: A JSON object indicating success.
-
-    Raises:
-        HTTPException: If the modem is not running.
     """
-    if not request.app.ctx.state_manager.is_modem_running:
+    if not ctx.state_manager.is_modem_running:
         api_abort("Modem not running", 503)
-    await enqueue_tx_command(request.app.ctx, command_cq.CQCommand)
+    await enqueue_tx_command(ctx, command_cq.CQCommand)
     return api_ok()
 
 
@@ -223,32 +216,24 @@ async def post_cqcqcq(request:Request):
         }
     }
 })
-async def post_beacon(request: Request):
+async def post_beacon(
+    payload: dict,
+    ctx: AppContext = Depends(get_ctx),
+):
     """
     Enable or disable the modem beacon.
-
-    Parameters:
-        request (Request): The HTTP request containing the following JSON keys:
-            - 'enabled' (bool): True to enable the beacon, False to disable.
-            - 'away_from_key' (bool): True if away from key, False otherwise.
-
-    Returns:
-        dict: A JSON object indicating the beacon status.
-
-    Raises:
-        HTTPException: If parameters are invalid or modem is not running.
     """
-    data = await request.json()
-    if not isinstance(data.get('enabled'), bool) or not isinstance(data.get('away_from_key'), bool):
-        api_abort("Incorrect value for 'enabled' or 'away_from_key'. Should be bool.", 400)
-    if not request.app.ctx.state_manager.is_modem_running:
+    enabled = payload.get('enabled')
+    away = payload.get('away_from_key')
+    if not isinstance(enabled, bool) or not isinstance(away, bool):
+        api_abort("Expected booleans for 'enabled' and 'away_from_key'", 400)
+    if not ctx.state_manager.is_modem_running:
         api_abort("Modem not running", 503)
-    request.app.ctx.state_manager.set('is_beacon_running', data['enabled'])
-    request.app.ctx.state_manager.set('is_away_from_key', data['away_from_key'])
-    if not request.app.ctx.state_manager.getARQ() and data['enabled']:
-        await enqueue_tx_command(request.app.ctx, command_beacon.BeaconCommand, data)
-    return api_response({"enabled": data['enabled'], "away_from_key": data['away_from_key']})
-
+    ctx.state_manager.set('is_beacon_running', enabled)
+    ctx.state_manager.set('is_away_from_key', away)
+    if enabled and not ctx.state_manager.getARQ():
+        await enqueue_tx_command(ctx, command_beacon.BeaconCommand, payload)
+    return api_response({"enabled": enabled, "away_from_key": away})
 
 @router.post("/ping_ping", summary="Trigger Modem to PING a Station", tags=["Modem"], responses={
     200: {
@@ -292,27 +277,19 @@ async def post_beacon(request: Request):
         }
     }
 })
-async def post_ping(request: Request):
+async def post_ping(
+    payload: dict,
+    ctx: AppContext = Depends(get_ctx),
+):
     """
     Trigger the modem to send a PING to a station.
-
-    Parameters:
-        request (Request): The HTTP request containing the following JSON key:
-            - 'dxcall' (str): Callsign of the station to ping.
-
-    Returns:
-        dict: A JSON object indicating success.
-
-    Raises:
-        HTTPException: If parameters are invalid or modem is not running.
     """
-    data = await request.json()
-    if not request.app.ctx.state_manager.is_modem_running:
+    if not ctx.state_manager.is_modem_running:
         api_abort("Modem not running", 503)
-    dxcall = data.get('dxcall')
+    dxcall = payload.get('dxcall')
     if not dxcall or not validations.validate_freedata_callsign(dxcall):
         api_abort("Invalid 'dxcall' parameter.", 400)
-    await enqueue_tx_command(request.app.ctx, command_ping.PingCommand, data)
+    await enqueue_tx_command(ctx, command_ping.PingCommand, payload)
     return api_response({"message": True})
 
 
@@ -348,19 +325,15 @@ async def post_ping(request: Request):
         }
     }
 })
-async def post_send_test_frame(request:Request):
+async def post_send_test(
+    ctx: AppContext = Depends(get_ctx),
+):
     """
     Trigger the modem to send a test frame.
-
-    Returns:
-        dict: A JSON object indicating success.
-
-    Raises:
-        HTTPException: If the modem is not running.
     """
-    if not request.app.ctx.state_manager.is_modem_running:
+    if not ctx.state_manager.is_modem_running:
         api_abort("Modem not running", 503)
-    await enqueue_tx_command(request.app.ctx, command_test.TestCommand)
+    await enqueue_tx_command(ctx, command_test.TestCommand)
     return api_ok()
 
 @router.post("/fec_transmit", summary="FEC Transmit", tags=["Modem"], responses={
@@ -415,89 +388,19 @@ async def post_send_test_frame(request:Request):
         }
     }
 })
-async def post_send_fec_frame(request: Request):
+async def post_fec(
+    payload: dict,
+    ctx: AppContext = Depends(get_ctx),
+):
     """
-    Trigger the modem to transmit a Forward Error Correction (FEC) frame.
-
-    Parameters:
-        request (Request): The HTTP request containing transmission parameters in JSON format.
-
-    Returns:
-        dict: A JSON object indicating success.
-
-    Raises:
-        HTTPException: If the modem is not running, the request is malformed, or an internal error occurs.
+    Trigger FEC frame transmission.
     """
-    if not request.app.ctx.state_manager.is_modem_running:
+    if not ctx.state_manager.is_modem_running:
         api_abort("Modem not running", 503)
-
-    try:
-        data = await request.json()
-    except Exception:
-        api_abort("Invalid parameters.", 400)
-
-    # Validate required parameters (adjust based on actual requirements)
-    if 'message' not in data:
-        api_abort("Invalid parameters: 'message' field is required.", 400)
-
-    # Enqueue the FEC transmission command
-    try:
-        await enqueue_tx_command(request.app.ctx, command_fec.FecCommand, data)
-        return api_response({"message": "FEC transmission started."})
-    except Exception as e:
-        # Log the exception if necessary
-        api_abort("Internal server error.", 500)
-
-
-from fastapi import HTTPException
-
-@router.get("/fec_is_writing", summary="Indicate User is Typing (FEC)", tags=["Modem"], responses={
-    501: {
-        "description": "Feature not implemented.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "Feature not implemented yet."
-                }
-            }
-        }
-    },
-    404: {
-        "description": "The requested resource was not found.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "Resource not found."
-                }
-            }
-        }
-    },
-    503: {
-        "description": "Modem not running.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "Modem not running."
-                }
-            }
-        }
-    }
-})
-async def get_fec_is_writing(request:Request):
-    """
-    Trigger the modem to inform over RF that the user is typing a message.
-
-    Returns:
-        dict: A JSON object indicating that the feature is not implemented.
-
-    Raises:
-        HTTPException: If the modem is not running or the feature is not implemented.
-    """
-    if not request.app.ctx.state_manager.is_modem_running:
-        api_abort("Modem not running", 503)
-
-    # Since the feature is not implemented yet, return a 501 Not Implemented error
-    raise HTTPException(status_code=501, detail="Feature not implemented yet.")
+    if 'message' not in payload:
+        api_abort("Field 'message' required.", 400)
+    await enqueue_tx_command(ctx, command_fec.FecCommand, payload)
+    return api_response({"message": "FEC transmission started."})
 
 
 @router.post("/start", summary="Start Modem", tags=["Modem"], responses={
@@ -553,27 +456,14 @@ async def get_fec_is_writing(request:Request):
         }
     }
 })
-async def post_modem_start(request: Request):
+async def post_start(ctx: AppContext = Depends(get_ctx)):
     """
     Trigger the modem to start.
-
-    Parameters:
-        request (Request): The HTTP request
-    Returns:
-        dict: A JSON object indicating the modem has started.
-
-    Raises:
-        HTTPException: If parameters are invalid or an error occurs.
     """
-
-    try:
-        if not request.app.ctx.state_manager.is_modem_running:
-            request.app.ctx.modem_service.put("start")
-            return api_response({"modem": "started"})
-        else:
-            api_abort("Modem already running", 503)
-    except Exception as e:
-        api_abort(f"Internal server error. {e}", 500)
+    if ctx.state_manager.is_modem_running:
+        api_abort("Modem already running", 503)
+    ctx.modem_service.put("start")
+    return api_response({"modem": "started"})
 
 
 @router.post("/stop", summary="Stop Modem", tags=["Modem"], responses={
@@ -619,24 +509,14 @@ async def post_modem_start(request: Request):
         }
     }
 })
-async def post_modem_stop(request:Request):
+async def post_stop(ctx: AppContext = Depends(get_ctx)):
     """
     Trigger the modem to stop.
-
-    Returns:
-        dict: A JSON object indicating the modem has stopped.
-
-    Raises:
-        HTTPException: If the modem is not running or an error occurs.
     """
-    #if not request.app.ctx.state_manager.is_modem_running:
-    #    api_abort("Modem not running", 503)
-
-    try:
-        request.app.ctx.modem_service.put("stop")
-        return api_response({"modem": "stopped"})
-    except Exception as e:
-        api_abort(f"Internal server error. {e}", 500)
+    if not ctx.state_manager.is_modem_running:
+        api_abort("Modem not running", 503)
+    ctx.modem_service.put("stop")
+    return api_response({"modem": "stopped"})
 
 
 
@@ -685,43 +565,28 @@ async def post_modem_stop(request:Request):
         }
     }
 })
-async def post_send_arq_raw(request: Request):
+async def post_arq_raw(
+    payload: dict,
+    ctx: AppContext = Depends(get_ctx),
+):
     """
     Send ARQ raw data to a specified station.
-
-    Parameters:
-        request (Request): The HTTP request containing the following JSON keys:
-            - 'dxcall' (str): Callsign of the station to send data to.
-            - 'type' (str): Data type ('raw', 'raw_lzma', 'raw_gzip').
-            - 'data' (str): Base64 encoded data to send.
-
-    Returns:
-        dict: A JSON object echoing the sent data.
-
-    Raises:
-        HTTPException: If parameters are invalid or modem is not running/busy.
     """
-    if not request.app.ctx.state_manager.is_modem_running:
+    if not ctx.state_manager.is_modem_running:
         api_abort("Modem not running.", 503)
-    if request.app.ctx.state_manager.is_modem_busy:
+    if ctx.state_manager.is_modem_busy:
         api_abort("Modem Busy.", 503)
-    data = await request.json()
-    dxcall = data.get('dxcall')
-    data_type = data.get('type')
-    raw_data = data.get('data')
+    dxcall = payload.get('dxcall')
+    data_type = payload.get('type')
+    raw_data = payload.get('data')
     if not dxcall or not validations.validate_freedata_callsign(dxcall):
         api_abort("Invalid 'dxcall' parameter.", 400)
-    if data_type not in ['raw', 'raw_lzma', 'raw_gzip']:
+    if data_type not in ['raw','raw_lzma','raw_gzip']:
         api_abort("Invalid 'type' parameter.", 400)
     if not raw_data:
         api_abort("Missing 'data' parameter.", 400)
-    await enqueue_tx_command(request.app.ctx, command_arq_raw.SendARQRawCommand, data)
-    return api_response({
-        "data": raw_data,
-        "dxcall": dxcall,
-        "type": data_type
-    })
-
+    await enqueue_tx_command(ctx, command_arq_raw.SendARQRawCommand, payload)
+    return api_response({"data": raw_data, "dxcall": dxcall, "type": data_type})
 
 @router.post("/stop_transmission", summary="Stop Transmission", tags=["Modem"], responses={
     200: {
@@ -775,21 +640,12 @@ async def post_send_arq_raw(request: Request):
         }
     }
 })
-async def post_modem_stop_transmission(request:Request):
+async def post_stop_transmission(ctx: AppContext = Depends(get_ctx)):
     """
     Stop the current transmission.
-
-    Returns:
-        dict: A JSON object indicating success.
-
-    Raises:
-        HTTPException: If the modem is not running or an error occurs.
     """
     try:
-        request.app.ctx.state_manager.stop_transmission()
-    except Exception as e:
-        print(f"Error during transmission stopping: {e}")
+        ctx.state_manager.stop_transmission()
+    except Exception:
+        pass
     return api_ok()
-
-
-
