@@ -15,14 +15,16 @@ class Modulator:
     """
     log = structlog.get_logger("RF")
 
-    def __init__(self, config):
+    def __init__(self, ctx):
         """Initializes the Modulator with configuration parameters.
 
         Args:
             config (dict): Configuration dictionary containing modem settings.
         """
-        self.config = config
-        self.tx_delay = config['MODEM']['tx_delay']
+
+        self.ctx = ctx
+
+        self.tx_delay = self.ctx.config_manager.config['MODEM']['tx_delay']
         self.modem_sample_rate = codec2.api.FREEDV_FS_8000
 
         # Initialize codec2, rig control, and data threads
@@ -239,10 +241,10 @@ class Modulator:
 
             # Create modulation for all frames in the list
             for frame in frames:
-                if not self.config['EXP'].get('enable_vhf'):
+                if not self.ctx.config_manager.config['EXP'].get('enable_vhf'):
                     txbuffer = self.transmit_add_preamble(txbuffer, freedv)
                 txbuffer = self.transmit_create_frame(txbuffer, freedv, frame)
-                if not self.config['EXP'].get('enable_vhf'):
+                if not self.ctx.config_manager.config['EXP'].get('enable_vhf'):
                     txbuffer = self.transmit_add_postamble(txbuffer, freedv)
 
             # Add delay to end of frames

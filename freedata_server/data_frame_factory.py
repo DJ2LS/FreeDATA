@@ -23,10 +23,11 @@ class DataFrameFactory:
         'AWAY_FROM_KEY': 0,  # Bit-position for indicating the AWAY FROM KEY state
     }
 
-    def __init__(self, config):
+    def __init__(self, ctx):
+        self.ctx = ctx
 
-        self.myfullcall = f"{config['STATION']['mycall']}-{config['STATION']['myssid']}"
-        self.mygrid = maidenhead.generate_full_maidenhead(config["STATION"]["mygrid"])
+        self.myfullcall = f"{self.ctx.config_manager.config['STATION']['mycall']}-{self.ctx.config_manager.config['STATION']['myssid']}"
+        self.mygrid = maidenhead.generate_full_maidenhead(self.ctx.config_manager.config["STATION"]["mygrid"])
 
         # table for holding our frame templates
         self.template_list = {}

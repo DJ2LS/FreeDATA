@@ -33,22 +33,20 @@ class P2PConnectionFrameHandler(frame_handler.FrameHandler):
         if frame['frame_type_int'] == FR.P2P_CONNECTION_CONNECT.value:
 
             # Lost OPEN_ACK case .. ISS will retry opening a session
-            if session_id in self.states.arq_irs_sessions:
-                session = self.states.p2p_connection_sessions[session_id]
+            if session_id in self.ctx.state_manager.arq_irs_sessions:
+                session = self.ctx.state_manager.p2p_connection_sessions[session_id]
 
             # Normal case when receiving a SESSION_OPEN for the first time
             else:
-            #    if self.states.check_if_running_arq_session():
+            #    if self.ctx.state_manager.check_if_running_arq_session():
             #        self.logger.warning("DISCARDING SESSION OPEN because of ongoing ARQ session ", frame=frame)
             #        return
-                print(frame)
-                session = P2PConnection(self.config,
-                                        self.modem,
+                session = P2PConnection(self.ctx,
                                         frame['origin'],
                                         frame['destination'],
-                                        self.states, self.event_manager, self.socket_interface_manager)
+                                        )
                 session.session_id = session_id
-                self.states.register_p2p_connection_session(session)
+                self.ctx.state_manager.register_p2p_connection_session(session)
 
         elif frame['frame_type_int'] in [
             FR.P2P_CONNECTION_CONNECT_ACK.value,
@@ -57,7 +55,7 @@ class P2PConnectionFrameHandler(frame_handler.FrameHandler):
             FR.P2P_CONNECTION_PAYLOAD.value,
             FR.P2P_CONNECTION_PAYLOAD_ACK.value,
         ]:
-            session = self.states.get_p2p_connection_session(session_id)
+            session = self.ctx.state_manager.get_p2p_connection_session(session_id)
 
         else:
             self.logger.warning("DISCARDING FRAME", frame=frame)

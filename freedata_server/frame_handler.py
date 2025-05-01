@@ -21,7 +21,7 @@ class FrameHandler():
         events, and transmitting responses. Subclasses implement the
         `follow_protocol` method to handle specific frame types and protocols.
     """
-    def __init__(self, name: str, config, states: StateManager, event_manager: EventManager, modem, socket_interface_manager) -> None:
+    def __init__(self, ctx, name: str) -> None:
         """Initializes a new FrameHandler instance.
 
             Args:
@@ -31,12 +31,10 @@ class FrameHandler():
                 event_manager (EventManager): The event manager object.
                 modem: The modem object.
         """
+        
+        self.ctx = ctx
+        
         self.name = name
-        self.config = config
-        self.states = states
-        self.event_manager = event_manager
-        self.socket_interface_manager = socket_interface_manager
-        self.modem = modem
         self.logger = structlog.get_logger("Frame Handler")
 
         self.details = {
@@ -58,7 +56,7 @@ class FrameHandler():
         Returns:
             bool: True if the frame is for this station, False otherwise.
         """
-        call_with_ssid = self.config['STATION']['mycall'] + "-" + str(self.config['STATION']['myssid'])
+        call_with_ssid = self.ctx.config_manager.config['STATION']['mycall'] + "-" + str(self.ctx.config_manager.config['STATION']['myssid'])
         ft = self.details['frame']['frame_type']
         valid = False
                 
@@ -68,18 +66,18 @@ class FrameHandler():
             valid, mycallsign = helpers.check_callsign(
                 call_with_ssid,
                 self.details["frame"]["destination_crc"],
-                self.config['STATION']['ssid_list'])
+                self.ctx.config_manager.config['STATION']['ssid_list'])
 
         # Check for session id on IRS side
         elif ft in ['ARQ_SESSION_INFO', 'ARQ_BURST_FRAME', 'ARQ_STOP']:
             session_id = self.details['frame']['session_id']
-            if session_id in self.states.arq_irs_sessions:
+            if session_id in self.ctx.state_manager.arq_irs_sessions:
                 valid = True
 
         # Check for session id on ISS side
         elif ft in ['ARQ_SESSION_INFO_ACK', 'ARQ_BURST_ACK', 'ARQ_STOP_ACK']:
             session_id = self.details['frame']['session_id']
-            if session_id in self.states.arq_iss_sessions:
+            if session_id in self.ctx.state_manager.arq_iss_sessions:
                 valid = True
 
         # check for p2p connection
@@ -87,26 +85,17 @@ class FrameHandler():
             #Need to make sure this does not affect any other features in FreeDATA.
             #This will allow the client to respond to any call sent in the "MYCALL" command
 
-            #print("check......")
-            #self.details["frame"]["mycallsign_crc"] = helpers.get_crc_24(self.details["frame"]["mycallsign"])
-            #print("Jaaaa?")
-
-            print(self.details)
 
             self.details["frame"]["destination_crc"] = helpers.get_crc_24(self.details["frame"]["destination"])
-
-            print(helpers.get_crc_24(self.details["frame"]["destination"]))
-
-            print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-            if self.socket_interface_manager and self.socket_interface_manager.socket_interface_callsigns:
+            if self.ctx.socket_interface_manager and self.ctx.socket_interface_manager.socket_interface_callsigns:
                 print("checking callsings....")
-                print(self.socket_interface_manager.socket_interface_callsigns)
-                for callsign in self.socket_interface_manager.socket_interface_callsigns:
+                print(self.ctx.socket_interface_manager.socket_interface_callsigns)
+                for callsign in self.ctx.socket_interface_manager.socket_interface_callsigns:
                     print("check:", callsign)
                     valid, mycallsign = helpers.check_callsign(
                         callsign,
                         self.details["frame"]["destination_crc"].hex(),
-                        self.config['STATION']['ssid_list'])
+                        self.ctx.config_manager.config['STATION']['ssid_list'])
                     if valid is True:
                         break
             else:
@@ -114,14 +103,14 @@ class FrameHandler():
                 valid, mycallsign = helpers.check_callsign(
                     call_with_ssid,
                     self.details["frame"]["destination_crc"].hex(),
-                    self.config['STATION']['ssid_list'])
+                    self.ctx.config_manager.config['STATION']['ssid_list'])
             print("check done .... ")
 
 
         #check for p2p connection
         elif ft in ['P2P_CONNECTION_CONNECT_ACK', 'P2P_CONNECTION_PAYLOAD', 'P2P_CONNECTION_PAYLOAD_ACK', 'P2P_CONNECTION_DISCONNECT', 'P2P_CONNECTION_DISCONNECT_ACK']:
             session_id = self.details['frame']['session_id']
-            if session_id in self.states.p2p_connection_sessions:
+            if session_id in self.ctx.state_manager.p2p_connection_sessions:
                 valid = True
 
         else:
@@ -129,7 +118,6 @@ class FrameHandler():
 
         if not valid:
             self.logger.info(f"[Frame handler] {ft} received but not for us.")
-
         return valid
 
 
@@ -158,7 +146,7 @@ class FrameHandler():
         """
         origin_callsign = self.details["frame"]["origin"]
 
-        for blacklist_callsign in self.config["STATION"]["callsign_blacklist"]:
+        for blacklist_callsign in self.ctx.config_manager.config["STATION"]["callsign_blacklist"]:
             if helpers.get_crc_24(origin_callsign).hex() == helpers.get_crc_24(blacklist_callsign).hex():
                 return True
 
@@ -199,7 +187,7 @@ class FrameHandler():
             if "AWAY_FROM_KEY" in frame["flag"]:
                 activity["away_from_key"] = frame["flag"]["AWAY_FROM_KEY"]
 
-        self.states.add_activity(activity)
+        self.ctx.state_manager.add_activity(activity)
 
     def add_to_heard_stations(self):
         """Adds the received frame's origin station to the heard stations list.
@@ -222,7 +210,7 @@ class FrameHandler():
         distance_km = None
         distance_miles = None
         if dxgrid != "------":
-            distance_dict = maidenhead.distance_between_locators(self.config['STATION']['mygrid'], dxgrid)
+            distance_dict = maidenhead.distance_between_locators(self.ctx.config_manager.config['STATION']['mygrid'], dxgrid)
             distance_km = distance_dict['kilometers']
             distance_miles = distance_dict['miles']
 
@@ -237,8 +225,8 @@ class FrameHandler():
             self.name,
             self.details['snr'],
             self.details['frequency_offset'],
-            self.states.radio_frequency,
-            self.states.heard_stations,
+            self.ctx.state_manager.radio_frequency,
+            self.ctx.state_manager.heard_stations,
             distance_km=distance_km,  # Pass the kilometer distance
             distance_miles=distance_miles,  # Pass the miles distance
             away_from_key=away_from_key
@@ -259,8 +247,8 @@ class FrameHandler():
             "type": "frame-handler",
             "received": self.details['frame']['frame_type'],
             "timestamp": int(time.time()),
-            "mycallsign": self.config['STATION']['mycall'],
-            "myssid": self.config['STATION']['myssid'],
+            "mycallsign": self.ctx.config_manager.config['STATION']['mycall'],
+            "myssid": self.ctx.config_manager.config['STATION']['myssid'],
             "snr": str(self.details['snr']),
         }
         if 'origin' in self.details['frame']:
@@ -269,7 +257,7 @@ class FrameHandler():
         if 'gridsquare' in self.details['frame']:
             event['gridsquare'] = self.details['frame']['gridsquare']
             if event['gridsquare'] != "------":
-                distance = maidenhead.distance_between_locators(self.config['STATION']['mygrid'], self.details['frame']['gridsquare'])
+                distance = maidenhead.distance_between_locators(self.ctx.config_manager.config['STATION']['mygrid'], self.details['frame']['gridsquare'])
                 event['distance_kilometers'] = distance['kilometers']
                 event['distance_miles'] = distance['miles']
             else:
@@ -291,7 +279,7 @@ class FrameHandler():
         """
         event_data = self.make_event()
         print(event_data)
-        self.event_manager.broadcast(event_data)
+        self.ctx.event_manager.broadcast(event_data)
 
     def get_tx_mode(self):
         """Returns the transmission mode for acknowledgements.
@@ -316,9 +304,9 @@ class FrameHandler():
             frame: The frame to transmit.
         """
         if not TESTMODE:
-            self.modem.transmit(self.get_tx_mode(), 1, 0, frame)
+            self.ctx.rf_modem.transmit(self.get_tx_mode(), 1, 0, frame)
         else:
-            self.event_manager.broadcast(frame)
+            self.ctx.event_manager.broadcast(frame)
 
     def follow_protocol(self):
         """Handles protocol-specific actions for the received frame.
@@ -361,22 +349,22 @@ class FrameHandler():
         print(self.details)
 
         if 'origin' not in self.details['frame'] and 'session_id' in self.details['frame']:
-            dxcall = self.states.get_dxcall_by_session_id(self.details['frame']['session_id'])
+            dxcall = self.ctx.state_manager.get_dxcall_by_session_id(self.details['frame']['session_id'])
             if dxcall:
                 self.details['frame']['origin'] = dxcall
 
         # look in database for a full callsign if only crc is present
         if 'origin' not in self.details['frame'] and 'origin_crc' in self.details['frame']:
-            self.details['frame']['origin'] = DatabaseManager(self.event_manager).get_callsign_by_checksum(frame['origin_crc'])
+            self.details['frame']['origin'] = DatabaseManager(self.ctx).get_callsign_by_checksum(frame['origin_crc'])
 
         if "location" in self.details['frame'] and "gridsquare" in self.details['frame']['location']:
-            DatabaseManagerStations(self.event_manager).update_station_location(self.details['frame']['origin'], frame['gridsquare'])
+            DatabaseManagerStations(self.ctx).update_station_location(self.details['frame']['origin'], frame['gridsquare'])
 
 
         if 'origin' in self.details['frame']:
             # try to find station info in database
             try:
-                station = DatabaseManagerStations(self.event_manager).get_station(self.details['frame']['origin'])
+                station = DatabaseManagerStations(self.ctx).get_station(self.details['frame']['origin'])
                 if station and station["location"] and "gridsquare" in station["location"]:
                     dxgrid = station["location"]["gridsquare"]
                 else:
@@ -390,7 +378,7 @@ class FrameHandler():
                 self.logger.info(f"[Frame Handler] Error getting gridsquare from callsign info: {e}")
 
         # check if callsign is blacklisted
-        if self.config["STATION"]["enable_callsign_blacklist"]:
+        if self.ctx.config_manager.config["STATION"]["enable_callsign_blacklist"]:
             if self.is_origin_on_blacklist():
                 self.logger.info(f"[Frame Handler] Callsign blocked: {self.details['frame']['origin']}")
                 return False

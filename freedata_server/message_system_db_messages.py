@@ -16,15 +16,16 @@ class DatabaseManagerMessages(DatabaseManager):
     updating, deleting messages, handling attachments, and managing
     message statuses.
     """
-    def __init__(self, event_manager):
+    def __init__(self, ctx):
         """Initializes DatabaseManagerMessages.
 
         Args:
-            event_manager (EventManager): The event manager instance.
+            ctx (EventManager): The event manager instance.
         """
-        super().__init__(event_manager)
-        self.attachments_manager = DatabaseManagerAttachments(event_manager)
-        self.stations_manager = DatabaseManagerStations(event_manager)
+        super().__init__(ctx)
+
+        self.attachments_manager = DatabaseManagerAttachments(self.ctx)
+        self.stations_manager = DatabaseManagerStations(self.ctx)
 
     def add_message(self, message_data, statistics, direction='receive', status=None, is_read=True, frequency=None):
         """Adds a new P2P message to the database.
@@ -83,7 +84,7 @@ class DatabaseManagerMessages(DatabaseManager):
 
             session.commit()
             self.log(f"Added data to database: {new_message.id}")
-            self.event_manager.freedata_message_db_change(message_id=new_message.id)
+            self.ctx.event_manager.freedata_message_db_change(message_id=new_message.id)
             return new_message.id
         except IntegrityError as e:
             session.rollback()  # Roll back the session to a clean state
@@ -345,7 +346,7 @@ class DatabaseManagerMessages(DatabaseManager):
                 session.commit()
 
                 self.log(f"Deleted: {message_id}")
-                self.event_manager.freedata_message_db_change(message_id=message_id)
+                self.ctx.event_manager.freedata_message_db_change(message_id=message_id)
                 return {'status': 'success', 'message': f'Message {message_id} deleted'}
             else:
                 return {'status': 'failure', 'message': 'Message not found'}
@@ -400,7 +401,7 @@ class DatabaseManagerMessages(DatabaseManager):
 
                 session.commit()
                 self.log(f"Updated: {message_id}")
-                self.event_manager.freedata_message_db_change(message_id=message_id)
+                self.ctx.event_manager.freedata_message_db_change(message_id=message_id)
                 return {'status': 'success', 'message': f'Message {message_id} updated'}
             else:
                 return {'status': 'failure', 'message': 'Message not found'}

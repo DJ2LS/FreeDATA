@@ -3,13 +3,12 @@ import time
 import threading
 
 import command_message_send
-from message_system_db_manager import DatabaseManager
+#from freedata_server.context import AppContext
+#from message_system_db_manager import DatabaseManager
 from message_system_db_messages import DatabaseManagerMessages
 from message_system_db_beacon import DatabaseManagerBeacon
 import explorer
 import command_beacon
-import atexit
-import numpy as np
 import structlog
 from arq_session_irs import IRS_State
 from arq_session_iss import ISS_State
@@ -23,7 +22,9 @@ class ScheduleManager:
     transmission states. It uses the `sched` module for scheduling and
     runs tasks in a separate thread.
     """
-    def __init__(self, modem_version, config_manager, state_manger, event_manager):
+    #def __init__(self, modem_version, config_manager, state_manger, event_manager):
+    def __init__(self, ctx):
+
         """Initializes the ScheduleManager.
 
         Args:
@@ -34,11 +35,7 @@ class ScheduleManager:
         """
         self.log = structlog.get_logger("SCHEDULE_MANAGER")
 
-        self.modem_version = modem_version
-        self.config_manager = config_manager
-        self.state_manager = state_manger
-        self.event_manager = event_manager
-        self.config = self.config_manager.read()
+        self.ctx = ctx
 
         self.scheduler = sched.scheduler(time.time, threading.Event().wait)
         self.events = {
@@ -123,9 +120,9 @@ class ScheduleManager:
         transmission.
         """
         try:
-            if not self.state_manager.getARQ() and self.state_manager.is_beacon_running and self.state_manager.is_modem_running:
-                    cmd = command_beacon.BeaconCommand(self.config, self.state_manager, self.event_manager)
-                    cmd.run(self.event_manager, self.modem)
+            if not self.ctx.state_manager.getARQ() and self.ctx.state_manager.is_beacon_running and self.ctx.state_manager.is_modem_running:
+                    cmd = command_beacon.BeaconCommand(self.ctx)
+                    cmd.run()
         except Exception as e:
             print(e)
 
@@ -137,21 +134,16 @@ class ScheduleManager:
         exceptions during the cleanup process.
         """
         try:
-            DatabaseManagerBeacon(self.event_manager).beacon_cleanup_older_than_days(2)
+            DatabaseManagerBeacon(self.ctx).beacon_cleanup_older_than_days(2)
         except Exception as e:
             print(e)
 
     def push_to_explorer(self):
-        
-        self.config = self.config_manager.read()
 
-        # check before if self.config has a loaded config dict
-        if not isinstance(self.config, dict):
-            return
 
-        if self.config['STATION']['enable_explorer'] and self.state_manager.is_modem_running:
+        if self.ctx.config_manager.config['STATION']['enable_explorer'] and self.ctx.state_manager.is_modem_running:
             try:
-                explorer.Explorer(self.modem_version, self.config_manager, self.state_manager).push()
+                explorer.Explorer(self.ctx).push()
             except Exception as e:
                 print(e)
 
@@ -164,11 +156,11 @@ class ScheduleManager:
         available. It handles potential exceptions during message retrieval
         and transmission.
         """
-        if not self.state_manager.getARQ() and not self.state_manager.channel_busy_event.is_set() and self.state_manager.is_modem_running:
+        if not self.ctx.state_manager.getARQ() and not self.ctx.state_manager.channel_busy_event.is_set() and self.ctx.state_manager.is_modem_running:
             try:
-                if first_queued_message := DatabaseManagerMessages(self.event_manager).get_first_queued_message():
-                    command = command_message_send.SendMessageCommand(self.config_manager.read(), self.state_manager, self.event_manager, first_queued_message)
-                    command.transmit(self.modem)
+                if first_queued_message := DatabaseManagerMessages(self.ctx).get_first_queued_message():
+                    command = command_message_send.SendMessageCommand(self.ctx,first_queued_message)
+                    command.transmit()
             except Exception as e:
                 print(e)
         return
@@ -185,8 +177,8 @@ class ScheduleManager:
 
         session_to_be_deleted = set()
 
-        for session_id in self.state_manager.arq_irs_sessions:
-            session = self.state_manager.arq_irs_sessions[session_id]
+        for session_id in self.ctx.state_manager.arq_irs_sessions:
+            session = self.ctx.state_manager.arq_irs_sessions[session_id]
 
             # set an IRS session to RESUME for being ready getting the data again
             if session.is_IRS and session.last_state_change_timestamp + 90 < time.time():
@@ -205,8 +197,8 @@ class ScheduleManager:
                 except Exception as e:
                     self.log.warning("[SCHEDULE] error setting ARQ state", error=e)
 
-        for session_id in self.state_manager.arq_iss_sessions:
-            session = self.state_manager.arq_iss_sessions[session_id]
+        for session_id in self.ctx.state_manager.arq_iss_sessions:
+            session = self.ctx.state_manager.arq_iss_sessions[session_id]
             if not session.is_IRS and session.last_state_change_timestamp + 90 < time.time() and session.state in [
                 ISS_State.ABORTED, ISS_State.FAILED]:
                 session_to_be_deleted.add(session)
@@ -215,9 +207,9 @@ class ScheduleManager:
         try:
             for session in session_to_be_deleted:
                 if session.is_IRS:
-                    self.state_manager.remove_arq_irs_session(session.id)
+                    self.ctx.state_manager.remove_arq_irs_session(session.id)
                 else:
-                    self.state_manager.remove_arq_iss_session(session.id)
+                    self.ctx.state_manager.remove_arq_iss_session(session.id)
 
         except Exception as e:
             self.log.warning("[SCHEDULE] error deleting ARQ session", error=e)

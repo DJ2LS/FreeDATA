@@ -12,13 +12,13 @@ class DatabaseManagerStations(DatabaseManager):
     retrieving, creating, and updating station information in the database.
     It handles database sessions and logging.
     """
-    def __init__(self, event_manager):
+    def __init__(self, ctx):
         """Initializes DatabaseManagerStations.
 
         Args:
             event_manager (EventManager): The event manager instance.
         """
-        super().__init__(event_manager)
+        super().__init__(ctx)
 
     def get_station(self, callsign):
         """
