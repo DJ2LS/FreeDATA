@@ -121,6 +121,10 @@ class P2PConnection:
                     self.disconnect()
                     return
 
+                if time.time() > self.last_data_timestamp + 6 and self.state is States.CONNECTED:
+                    # start sending data
+                    self.iss_buffer_empty.set()
+
                 if not self.p2p_data_tx_queue.empty() and self.state == States.CONNECTED:
                     self.process_data_queue()
                 threading.Event().wait(0.500)
@@ -225,7 +229,7 @@ class P2PConnection:
         self.set_state(States.CONNECTED)
         self.is_ISS = True
 
-        # iss starts sending data
+        # start sending data
         self.iss_buffer_empty.set()
 
         self.log(frame)
@@ -251,7 +255,6 @@ class P2PConnection:
 
         session_open_frame = self.frame_factory.build_p2p_connection_connect_ack(self.destination, self.origin, self.session_id)
         self.launch_twr_irs(session_open_frame, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
-
 
     def session_failed(self):
         self.set_state(States.FAILED)
