@@ -85,7 +85,8 @@ class SocketCommandHandler:
 
     def handle_winlink_session(self, data):
         # Logic for handling WINLINK SESSION command
-        self.send_response(f"NOT IMPLEMENTED: {data}")
+        #self.send_response(f"NOT IMPLEMENTED: {data}")
+        self.send_response(f"OK")
 
     def handle_version(self, data):
         # Logic for handling VERSION command

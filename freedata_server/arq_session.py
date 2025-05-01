@@ -115,7 +115,7 @@ class ARQSession:
             message: The message to be logged.
             isWarning: A boolean indicating whether the message should be logged as a warning.
         """
-        msg = f"[{type(self).__name__}][id={self.id}][state={self.state}]: {message}"
+        msg = f"[{type(self).__name__}][id={self.id}][{self.dxcall}][state={self.state}]: {message}"
         logger = self.logger.warn if isWarning else self.logger.info
         logger(msg)
 

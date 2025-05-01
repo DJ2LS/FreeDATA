@@ -46,6 +46,8 @@ class P2PConnection:
         },
         States.PAYLOAD_SENT: {
             FRAME_TYPE.P2P_CONNECTION_PAYLOAD_ACK.value: 'transmitted_data',
+            FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
+
         },
         States.DISCONNECTING: {
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
@@ -226,7 +228,10 @@ class P2PConnection:
         self.origin = frame["origin"]
         self.destination = frame["destination"]
         self.destination_crc = frame["destination_crc"]
-        self.log(frame)
+        #self.log(frame)
+
+        self.log(f"destination: {self.destination} - origin: {self.origin}")
+
 
         if self.ctx.socket_interface_manager and hasattr(self.ctx.socket_interface_manager.command_server, "command_handler"):
             self.ctx.socket_interface_manager.command_server.command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
@@ -321,8 +326,14 @@ class P2PConnection:
 
         """
         self.set_state(States.ARQ_SESSION)
+        if self.is_ISS:
+            arq_destination = self.destination
+        else:
+            arq_destination = self.origin
+
+        self.log(f"ARQ Destination: {self.destination}")
         prepared_data, type_byte = self.arq_data_type_handler.prepare(data, ARQ_SESSION_TYPES.p2p_connection)
-        iss = ARQSessionISS(self.ctx.config_manager.config, self.ctx.rf_modem, self.destination, self.ctx.state_manager, prepared_data, type_byte)
+        iss = ARQSessionISS(self.ctx, arq_destination, prepared_data, type_byte)
         iss.id = self.session_id
         if iss.id:
             self.ctx.state_manager.register_arq_iss_session(iss)
