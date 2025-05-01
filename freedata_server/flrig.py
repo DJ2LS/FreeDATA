@@ -6,6 +6,7 @@ import logging
 
 class radio:
     def __init__(self, ctx):
+        self.ctx = ctx
         self.logger = logging.getLogger(__name__)
         self.host = self.ctx.config_manager.config["FLRIG"]["ip"]
         self.port = self.ctx.config_manager.config["FLRIG"]["port"]
