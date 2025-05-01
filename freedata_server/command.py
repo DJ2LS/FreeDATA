@@ -71,7 +71,7 @@ class TxCommand:
         """
         return type(self).__name__
 
-    def emit_event(self, event_queue):
+    def emit_event(self):
         """Emits an event to the event queue.
 
         This method is a placeholder for emitting events related to the

@@ -49,6 +49,11 @@ class P2PConnection:
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
 
         },
+        States.ARQ_SESSION: {
+            FRAME_TYPE.P2P_CONNECTION_PAYLOAD_ACK.value: 'transmitted_data',
+            FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
+
+        },
         States.DISCONNECTING: {
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT_ACK.value: 'received_disconnect_ack',
@@ -236,8 +241,6 @@ class P2PConnection:
         if self.ctx.socket_interface_manager and hasattr(self.ctx.socket_interface_manager.command_server, "command_handler"):
             self.ctx.socket_interface_manager.command_server.command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
 
-
-        #If these 2 lines are not here, the receiving station does not reply back with an ACK to a P2P_CONNECTION_CONNECT packet. Is this intentional? Leaving here for testing for now.
         session_open_frame = self.frame_factory.build_p2p_connection_connect_ack(self.destination, self.origin, self.session_id)
         self.launch_twr_irs(session_open_frame, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
 

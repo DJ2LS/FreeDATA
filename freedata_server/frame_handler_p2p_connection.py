@@ -41,7 +41,6 @@ class P2PConnectionFrameHandler(frame_handler.FrameHandler):
             #    if self.ctx.state_manager.check_if_running_arq_session():
             #        self.logger.warning("DISCARDING SESSION OPEN because of ongoing ARQ session ", frame=frame)
             #        return
-                print(frame)
                 session = P2PConnection(self.ctx,
                                         frame['origin'],
                                         frame['destination'],

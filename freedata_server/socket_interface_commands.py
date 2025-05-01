@@ -30,7 +30,7 @@ class SocketCommandHandler:
             }
 
             cmd = P2PConnectionCommand(self.ctx, params)
-            self.session = cmd.run(self.ctx.event_manager.queues, self.ctx.rf_modem)
+            self.session = cmd.run()
             self.send_response(f"OK")
             self.send_response(f"REGISTERED {data[0]}")
             self.send_response(f"UNENCRYPTED LINK")

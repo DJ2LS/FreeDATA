@@ -85,17 +85,8 @@ class FrameHandler():
             #Need to make sure this does not affect any other features in FreeDATA.
             #This will allow the client to respond to any call sent in the "MYCALL" command
 
-            #print("check......")
-            #self.details["frame"]["mycallsign_crc"] = helpers.get_crc_24(self.details["frame"]["mycallsign"])
-            #print("Jaaaa?")
-
-            print(self.details)
 
             self.details["frame"]["destination_crc"] = helpers.get_crc_24(self.details["frame"]["destination"])
-
-            print(helpers.get_crc_24(self.details["frame"]["destination"]))
-
-            print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
             if self.ctx.socket_interface_manager and self.ctx.socket_interface_manager.socket_interface_callsigns:
                 print("checking callsings....")
                 print(self.ctx.socket_interface_manager.socket_interface_callsigns)
