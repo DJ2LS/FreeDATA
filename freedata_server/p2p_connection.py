@@ -47,6 +47,7 @@ class P2PConnection:
         States.PAYLOAD_SENT: {
             FRAME_TYPE.P2P_CONNECTION_PAYLOAD_ACK.value: 'transmitted_data',
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
+            FRAME_TYPE.P2P_CONNECTION_HEARTBEAT.value: 'received_heartbeat',
 
         },
         States.ARQ_SESSION: {
@@ -95,6 +96,9 @@ class P2PConnection:
         self.session_id = self.generate_id()
 
         self.event_frame_received = threading.Event()
+        # set if iss buffer is empty
+        self.iss_buffer_empty = threading.Event()
+
 
         self.RETRIES_CONNECT = 3
         self.TIMEOUT_CONNECT = 5
@@ -221,6 +225,9 @@ class P2PConnection:
         self.set_state(States.CONNECTED)
         self.is_ISS = True
 
+        # iss starts sending data
+        self.iss_buffer_empty.set()
+
         self.log(frame)
         if self.ctx.socket_interface_manager and hasattr(self.ctx.socket_interface_manager.command_server, "command_handler"):
             self.ctx.socket_interface_manager.command_server.command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
@@ -254,7 +261,16 @@ class P2PConnection:
 
     def process_data_queue(self, frame=None):
         if self.p2p_data_tx_queue.empty():
+            print("buffer empty....")
+            payload = self.frame_factory.build_p2p_connection_heartbeat(self.session_id, flag_buffer_empty=True)
+            self.launch_twr(payload, self.TIMEOUT_DATA, self.RETRIES_DATA, mode=FREEDV_MODE.signalling_ack)
+            self.set_state(States.PAYLOAD_SENT)
+            time.sleep(5)
             return
+
+        if not self.iss_buffer_empty.is_set():
+            return
+
         print("processing data....")
 
         data = self.p2p_data_tx_queue.get()
@@ -277,6 +293,8 @@ class P2PConnection:
     def received_data(self, frame):
         self.log(f"received data...: {frame}")
 
+        self.iss_buffer_empty = threading.Event()
+
         ack_data = self.frame_factory.build_p2p_connection_payload_ack(self.session_id, 0)
         self.launch_twr_irs(ack_data, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling_ack)
 
@@ -295,6 +313,12 @@ class P2PConnection:
     def transmitted_data(self, frame):
         print("transmitted data...")
         self.set_state(States.CONNECTED)
+
+    def received_heartbeat(self, frame):
+        print(frame)
+        print("received heartbeat...")
+        self.iss_buffer_empty.set()
+
 
     def disconnect(self):
         if self.state not in [States.DISCONNECTING, States.DISCONNECTED]:

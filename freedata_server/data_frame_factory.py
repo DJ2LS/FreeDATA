@@ -23,6 +23,10 @@ class DataFrameFactory:
         'AWAY_FROM_KEY': 0,  # Bit-position for indicating the AWAY FROM KEY state
     }
 
+    P2P_FLAGS = {
+        'BUFFER_EMPTY': 0,  # Bit-position for indicating the BUFFER EMPTY state
+    }
+
     def __init__(self, ctx):
         self.ctx = ctx
 
@@ -170,8 +174,9 @@ class DataFrameFactory:
         
         # heartbeat for "is alive"
         self.template_list[FR_TYPE.P2P_CONNECTION_HEARTBEAT.value] = {
-            "frame_length": self.LENGTH_SIG1_FRAME,
+            "frame_length": self.LENGTH_ACK_FRAME,
             "session_id": 1,
+            "flag": 1
         }
 
         # ack heartbeat
@@ -185,6 +190,16 @@ class DataFrameFactory:
             "frame_length": None,
             "session_id": 1,
             "sequence_id": 1,
+            "flag": 1,
+            "data": "dynamic",
+        }
+
+        # p2p payload frames
+        self.template_list[FR_TYPE.P2P_CONNECTION_PAYLOAD.value] = {
+            "frame_length": None,
+            "session_id": 1,
+            "sequence_id": 1,
+            "flag": 1,
             "data": "dynamic",
         }
 
@@ -305,6 +320,12 @@ class DataFrameFactory:
                         # get_flag returns True or False based on the bit value at the flag's position
                         extracted_data[key][flag] = helpers.get_flag(data, flag, flag_dict)
 
+                if frametype in [FR_TYPE.P2P_CONNECTION_PAYLOAD.value, FR_TYPE.P2P_CONNECTION_HEARTBEAT]:
+                    flag_dict = self.P2P_FLAGS
+                    for flag in flag_dict:
+                        # Update extracted_data with the status of each flag
+                        # get_flag returns True or False based on the bit value at the flag's position
+                        extracted_data[key][flag] = helpers.get_flag(data, flag, flag_dict)
 
             else:
                 extracted_data[key] = data
@@ -519,9 +540,14 @@ class DataFrameFactory:
         }
         return self.construct(FR_TYPE.P2P_CONNECTION_CONNECT_ACK, payload)
     
-    def build_p2p_connection_heartbeat(self, session_id):
+    def build_p2p_connection_heartbeat(self, session_id, flag_buffer_empty=False):
+        flag = 0b00000000
+        if flag_buffer_empty:
+            flag = helpers.set_flag(flag, 'BUFFER_EMPTY', True, self.P2P_FLAGS)
+
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),
+            "flag": flag.to_bytes(1, 'big'),
         }
         return self.construct(FR_TYPE.P2P_CONNECTION_HEARTBEAT, payload)
     
@@ -531,10 +557,16 @@ class DataFrameFactory:
         }
         return self.construct(FR_TYPE.P2P_CONNECTION_HEARTBEAT_ACK, payload)
     
-    def build_p2p_connection_payload(self, freedv_mode: codec2.FREEDV_MODE, session_id: int, sequence_id: int, data: bytes):
+    def build_p2p_connection_payload(self, freedv_mode: codec2.FREEDV_MODE, session_id: int, sequence_id: int, data: bytes, flag_buffer_empty=False):
+        flag = 0b00000000
+        if flag_buffer_empty:
+            flag = helpers.set_flag(flag, 'BUFFER_EMPTY', True, self.P2P_FLAGS)
+
+
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),
             "sequence_id": sequence_id.to_bytes(1, 'big'),
+            "flag": flag.to_bytes(1, 'big'),
             "data": data,
         }
         print(self.get_bytes_per_frame(freedv_mode))
