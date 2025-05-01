@@ -9,7 +9,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='freedata',
-    version='0.17.2',
+    version='0.17.3',
     packages=find_packages(where='.'),
     package_dir={'': '.'},
     install_requires=required,

@@ -296,8 +296,7 @@
             "enabletxautoadjust": "Auto TX audio level", 
             "enablerxautoadjust": "Auto RX audio level",
             "enabletxautoadjust_help": "Set TX audio level automatically to highest possible value" , 
-            "enablerxautoadjust_help": "Set RX audio level automatically to highest possible value"
-            
+            "enablerxautoadjust_help": "Set RX audio level automatically to highest possible value"            
         },
         "web": {
             "introduction": "Explorer related settings, including enabling Explorer publishing and Explorer stats publishing.",
@@ -368,7 +367,7 @@
             "hamlibrigctldcustomarguments_help": "Additional arguments for rigctld (usually not needed)",
             "hamlibrigctldcustomarguments_placeholder": "Optional custom arguments",
             "flrigport": "Flrig port",
-            "flrigport_help": "Set the port where the flrig server is listening ( Default: 12345)",
+            "flrigport_help": "Set the port where the flrig server is listening (Default: 12345)",
             "flrighost": "Flrig host",
             "flrighost_help": "Set the host adress of the server, mostly localhost or 127.0.0.1"
         }

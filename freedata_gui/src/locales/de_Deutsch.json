@@ -82,7 +82,7 @@
         "other": "Diverses",
         "uploadpreset": "Einstell. Hochladen",
         "uploadpreset_help": "Lade eine Datei mit GUI-Einstellungen hoch",
-        "downloadpreset": "Eintell. Herunterladen",
+        "downloadpreset": "Einstell. Herunterladen",
         "downloadpreset_help": "Lade die GUI-Einstellungen herunter um sie zu speichern und zu teilen",
         "components": {
             "tune": "Tune",
@@ -321,6 +321,7 @@
             "rigcontroltype_help": "Auswählen, wie die Software deinen Transceiver steuert",
             "tabhamlib": "Hamlib",
             "tabserial": "Seriell",
+	    "tabflrig": "flrig",
             "serialpttcomport": "PTT COM-Port",
             "serialpttcomport_help": "Wähle  den COM-Port, der mit dem Transceiver für die PTT-Steuerung verbunden ist.",
             "serialpttcustomcomport": "PTT Benutzerdefinierter COM-Port",
@@ -364,7 +365,11 @@
             "hamlibrigctldcommand_placeholder": "Wird automatisch aus den obigen Einstellungen ausgefüllt",
             "hamlibrigctldcustomarguments": "Rigctld benutzerdefinierte Argumente",
             "hamlibrigctldcustomarguments_help": "Zusätzliche Argumente für rigctld (normalerweise nicht erforderlich)",
-            "hamlibrigctldcustomarguments_placeholder": "Optionale benutzerdefinierte Argumente"
+            "hamlibrigctldcustomarguments_placeholder": "Optionale benutzerdefinierte Argumente",
+	    "flrigport": "Flrig Port",
+            "flrigport_help": "Lege den flrig-Port fest, auf den der flrig-Server hört (Standard: 12345)",
+            "flrighost": "Flrig Host",
+            "flrighost_help": "Lege die Hostadresse des flrig-Servers fest. Meist localhost oder 127.0.0.1"
         }
     }
 }

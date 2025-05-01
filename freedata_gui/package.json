@@ -1,6 +1,6 @@
 {
   "name": "FreeDATA",
-  "version": "0.17.2-beta",
+  "version": "0.17.3-beta",
   "description": "FreeDATA Client application for connecting to FreeDATA server",
   "private": true,
   "scripts": {
@@ -26,7 +26,7 @@
   "homepage": "https://freedata.app",
   "dependencies": {
     "@popperjs/core": "^2.11.8",
-    "bootstrap": "^5.3.3",
+    "bootstrap": "^5.3.5",
     "bootstrap-icons": "^1.11.3",
     "bootstrap-vue-next": "^0.28.3",
     "chart.js": "^4.4.3",
