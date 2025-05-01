@@ -101,11 +101,10 @@ class ARQSessionIRS(arq_session.ARQSession):
             dxcall (str): The DX call sign.
             session_id (int): The unique ID of the session.
         """
-        super().__init__(ctx)
-        
+        super().__init__(ctx, dxcall)
         self.id = session_id
         self.dxcall = dxcall
-        self.version = 1
+        self.version = self.ctx.CONSTANTS.ARQ_PROTOCOL_VERSION
         self.is_IRS = True
 
         self.state = IRS_State.NEW

@@ -72,7 +72,7 @@ class ARQSession:
 
         self.is_IRS = False # state for easy check "is IRS" or is "ISS"
 
-        self.protocol_version = 1
+        self.protocol_version = self.ctx.constants.ARQ_PROTOCOL_VERSION
 
         self.snr = []
 
