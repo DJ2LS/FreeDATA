@@ -79,7 +79,7 @@ class P2PConnection:
         self.destination = destination
         self.destination_crc = helpers.get_crc_24(destination)
         self.origin = origin
-        self.bandwidth = 0
+        self.bandwidth = 2300
 
         if self.ctx.rf_modem:
             self.ctx.rf_modem.demodulator.set_decode_mode(is_p2p_connection=True)
@@ -100,7 +100,7 @@ class P2PConnection:
         self.TIMEOUT_CONNECT = 5
         self.TIMEOUT_DATA = 5
         self.RETRIES_DATA = 5
-        self.ENTIRE_CONNECTION_TIMEOUT = 100
+        self.ENTIRE_CONNECTION_TIMEOUT = 180
 
         self.is_ISS = False # Indicator, if we are ISS or IRS
 
@@ -220,6 +220,7 @@ class P2PConnection:
         self.log("CONNECTED ISS...........................")
         self.set_state(States.CONNECTED)
         self.is_ISS = True
+
         self.log(frame)
         if self.ctx.socket_interface_manager and hasattr(self.ctx.socket_interface_manager.command_server, "command_handler"):
             self.ctx.socket_interface_manager.command_server.command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
@@ -249,6 +250,7 @@ class P2PConnection:
         self.set_state(States.FAILED)
         if self.ctx.socket_interface_manager and hasattr(self.ctx.socket_interface_manager.command_server, "command_handler"):
             self.ctx.socket_interface_manager.command_server.command_handler.socket_respond_disconnected()
+
 
     def process_data_queue(self, frame=None):
         if self.p2p_data_tx_queue.empty():
@@ -338,6 +340,9 @@ class P2PConnection:
         prepared_data, type_byte = self.arq_data_type_handler.prepare(data, ARQ_SESSION_TYPES.p2p_connection)
         iss = ARQSessionISS(self.ctx, arq_destination, prepared_data, type_byte)
         iss.id = self.session_id
+        # register p2p connection to arq session
+        iss.running_p2p_connection = self
+
         if iss.id:
             self.ctx.state_manager.register_arq_iss_session(iss)
             iss.start()

@@ -127,14 +127,14 @@ class DataSocket(socketserver.BaseRequestHandler):
                     for session_id in self.ctx.state_manager.p2p_connection_sessions:
                         session = self.ctx.state_manager.p2p_connection_sessions[session_id]
 
-                        print(f"sessions: {self.ctx.state_manager.p2p_connection_sessions}")
-                        print(f"session_id: {session_id}")
-                        print(f"session: {session}")
-                        print(f"data to send: {self.data}")
+                        #print(f"sessions: {self.ctx.state_manager.p2p_connection_sessions}")
+                        #print(f"session_id: {session_id}")
+                        #print(f"session: {session}")
+                        #print(f"data to send: {self.data}")
 
-                        print(session.p2p_data_tx_queue.empty())
+                        #print(session.p2p_data_tx_queue.empty())
                         session.p2p_data_tx_queue.put(self.data)
-                        print(session.p2p_data_tx_queue.empty())
+                        #print(session.p2p_data_tx_queue.empty())
 
                 # Check if there's something to send from the queue, without blocking
                 """
@@ -179,8 +179,6 @@ class SocketInterfaceHandler:
         self.data_server = None
         self.command_server_thread = None
         self.data_server_thread = None
-        #Not sure if this will be the permanent home for these items. This will allow us to use several callsigns.
-        #Bandwidth is also sent to the command socket by the client. Not sure how to translate this info to freedata yet.
         self.socket_interface_callsigns = None
         self.connecting_callsign = None
         self.socket_interface_bandwidth = None

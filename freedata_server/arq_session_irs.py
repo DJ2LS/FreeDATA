@@ -111,6 +111,9 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.state = IRS_State.NEW
         self.state_enum = IRS_State  # needed for access State enum from outside
 
+        # instance of p2p connection
+        self.running_p2p_connection = None
+
         self.type_byte = None
         self.total_length = 0
         self.total_crc = ''
@@ -276,6 +279,10 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.received_bytes = frame['offset']
 
             #return False
+
+        # update p2p connection timeout
+        if self.running_p2p_connection:
+            self.running_p2p_connection.last_data_timestamp = time.time()
 
         remaining_data_length = self.total_length - self.received_bytes
         self.log(f"Remaining data: {remaining_data_length}", isWarning=True)

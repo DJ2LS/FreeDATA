@@ -104,6 +104,9 @@ class ARQSessionISS(arq_session.ARQSession):
         self.confirmed_bytes = 0
         self.expected_byte_offset = 0
 
+        # instance of p2p connection
+        self.running_p2p_connection = None
+
         self.state = ISS_State.NEW
         self.state_enum = ISS_State # needed for access State enum from outside
         self.id = self.generate_id()
@@ -312,6 +315,10 @@ class ARQSessionISS(arq_session.ARQSession):
         # update statistics
         self.update_histograms(self.confirmed_bytes, self.total_length)
         self.update_speed_level(irs_frame)
+
+        # update p2p connection timeout
+        if self.running_p2p_connection:
+            self.running_p2p_connection.last_data_timestamp = time.time()
 
         if self.expected_byte_offset > self.total_length:
             self.confirmed_bytes = self.total_length

@@ -57,7 +57,7 @@ class SocketCommandHandler:
 
     def handle_bw(self, data):
         # Logic for handling BW command
-        #self.ctx.socket_interface_manager.bandwidth = data
+        self.ctx.socket_interface_manager.socket_interface_bandwidth = int(data[0])
         self.send_response(f"OK")
 
     def handle_abort(self, data):
