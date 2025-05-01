@@ -39,7 +39,7 @@ class CQFrameHandler(frame_handler.FrameHandler):
         self.send_ack()
 
     def send_ack(self):
-        factory = data_frame_factory.DataFrameFactory(self.ctx.config_manager.config)
+        factory = data_frame_factory.DataFrameFactory(self.ctx)
         qrv_frame = factory.build_qrv(self.details['snr'])
 
         # wait some random time and wait if we have an ongoing codec2 transmission
