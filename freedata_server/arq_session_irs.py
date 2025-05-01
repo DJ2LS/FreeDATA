@@ -102,9 +102,10 @@ class ARQSessionIRS(arq_session.ARQSession):
             session_id (int): The unique ID of the session.
         """
         super().__init__(ctx, dxcall)
+        self.ctx = ctx
         self.id = session_id
         self.dxcall = dxcall
-        self.version = self.ctx.CONSTANTS.ARQ_PROTOCOL_VERSION
+        self.version = self.ctx.constants.ARQ_PROTOCOL_VERSION
         self.is_IRS = True
 
         self.state = IRS_State.NEW

@@ -95,6 +95,8 @@ class ARQSessionISS(arq_session.ARQSession):
             type_byte (bytes): The type byte of the data.
         """
         super().__init__(ctx, dxcall)
+        self.ctx = ctx
+        self.dxcall = dxcall
         self.data = data
         self.total_length = len(data)
         self.data_crc = helpers.get_crc_32(self.data)
