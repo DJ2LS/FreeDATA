@@ -30,7 +30,7 @@ class PingFrameHandler(frame_handler.FrameHandler):
         the modem is not busy with ARQ. If both conditions are met, it sends
         a PING acknowledgement and checks for queued messages to send.
         """
-        if not bool(self.is_frame_for_me() and not self.states.getARQ()):
+        if not bool(self.is_frame_for_me() and not self.ctx.state_manager.getARQ()):
             return
         self.logger.debug(
             f"[Modem] Responding to request from [{self.details['frame']['origin']}]",
