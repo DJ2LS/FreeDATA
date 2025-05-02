@@ -99,7 +99,8 @@ class SocketCommandHandler:
     def socket_respond_connected(self, origin, destination, bandwidth):
         print("[socket interface_commands] socket_respond_connected")
         if self.ctx.socket_interface_manager.connecting_callsign:
-            message = f"CONNECTED {self.ctx.socket_interface_manager.connecting_callsign} {destination} {bandwidth}"
+            #message = f"CONNECTED {self.ctx.socket_interface_manager.connecting_callsign} {destination} {bandwidth}"
+            message = f"CONNECTED {origin} {destination} {bandwidth}"
         else:
             message = f"CONNECTED {origin} {destination} {bandwidth}"
         self.send_response(f"UNENCRYPTED LINK")

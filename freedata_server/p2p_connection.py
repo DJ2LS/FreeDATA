@@ -273,7 +273,11 @@ class P2PConnection:
             self.is_Master = False
             payload = self.frame_factory.build_p2p_connection_heartbeat(self.session_id, flag_buffer_empty=True)
             self.launch_twr(payload, self.TIMEOUT_DATA, self.RETRIES_DATA, mode=FREEDV_MODE.signalling)
-            self.set_state(States.PAYLOAD_SENT)
+            # just send burst without expecting an answer
+            self.set_state(States.CONNECTED)
+            self.last_data_timestamp = time.time()
+            self.event_frame_received.set()
+
             return
 
         print("processing data....")
@@ -321,6 +325,7 @@ class P2PConnection:
 
     def received_heartbeat(self, frame):
         print(frame)
+        print(frame['flag'])
         print("received heartbeat...")
         self.iss_buffer_empty.set()
 
