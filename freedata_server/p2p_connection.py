@@ -124,12 +124,13 @@ class P2PConnection:
                     self.disconnect()
                     return
 
-                if time.time() > self.last_data_timestamp + 6 and self.state is States.CONNECTED:
-                    # start sending data
-                    self.iss_buffer_empty.set()
+                if time.time() > self.last_data_timestamp + 15 and self.state is States.CONNECTED:
+                    print("no data within last 15s. Taking master status")
+                    self.is_Master = True
 
                 if self.state == States.CONNECTED and self.is_Master:
                     self.process_data_queue()
+
                 threading.Event().wait(0.500)
 
 
@@ -153,7 +154,7 @@ class P2PConnection:
         self.frequency_offset = frequency_offset
 
     def log(self, message, isWarning = False):
-        msg = f"[{type(self).__name__}][id={self.session_id}][state={self.state}][ISS={bool(self.is_ISS)}]: {message}"
+        msg = f"[{type(self).__name__}][id={self.session_id}][state={self.state}][ISS={bool(self.is_ISS)}][Master={bool(self.is_Master)}]: {message}"
         logger = self.logger.warn if isWarning else self.logger.info
         logger(msg)
 
@@ -272,7 +273,9 @@ class P2PConnection:
             print("buffer empty....", "setting isMaster = False", "sending heartbeat")
             self.is_Master = False
             payload = self.frame_factory.build_p2p_connection_heartbeat(self.session_id, flag_buffer_empty=True)
-            self.launch_twr(payload, self.TIMEOUT_DATA, self.RETRIES_DATA, mode=FREEDV_MODE.signalling)
+            #self.launch_twr(payload, self.TIMEOUT_DATA, self.RETRIES_DATA, mode=FREEDV_MODE.signalling)
+            self.transmit_frame([payload], FREEDV_MODE.signalling)
+
             # just send burst without expecting an answer
             self.set_state(States.CONNECTED)
             self.last_data_timestamp = time.time()
