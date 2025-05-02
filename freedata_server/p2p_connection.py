@@ -110,7 +110,7 @@ class P2PConnection:
         self.ENTIRE_CONNECTION_TIMEOUT = 180
 
         self.is_ISS = False # Indicator, if we are ISS or IRS
-
+        self.is_Master = False # Indicator, if we are Maste or Not
         self.last_data_timestamp= time.time()
         self.start_data_processing_worker()
 
@@ -128,7 +128,7 @@ class P2PConnection:
                     # start sending data
                     self.iss_buffer_empty.set()
 
-                if not self.p2p_data_tx_queue.empty() and self.state == States.CONNECTED:
+                if self.state == States.CONNECTED and self.is_Master:
                     self.process_data_queue()
                 threading.Event().wait(0.500)
 
@@ -231,6 +231,7 @@ class P2PConnection:
         self.log("CONNECTED ISS...........................")
         self.set_state(States.CONNECTED)
         self.is_ISS = True
+        self.is_Master = True
 
         # start sending data
         self.iss_buffer_empty.set()
@@ -245,6 +246,7 @@ class P2PConnection:
         self.ctx.socket_interface_manager.command_server.command_handler.session = self
         self.set_state(States.CONNECTED)
         self.is_ISS = False
+        self.is_Master = False
         self.origin = frame["origin"]
         self.destination = frame["destination"]
         self.destination_crc = frame["destination_crc"]
@@ -267,14 +269,11 @@ class P2PConnection:
 
     def process_data_queue(self, frame=None):
         if self.p2p_data_tx_queue.empty():
-            print("buffer empty....")
+            print("buffer empty....", "setting isMaster = False", "sending heartbeat")
+            self.is_Master = False
             payload = self.frame_factory.build_p2p_connection_heartbeat(self.session_id, flag_buffer_empty=True)
-            self.launch_twr(payload, self.TIMEOUT_DATA, self.RETRIES_DATA, mode=FREEDV_MODE.signalling_ack)
+            self.launch_twr(payload, self.TIMEOUT_DATA, self.RETRIES_DATA, mode=FREEDV_MODE.signalling)
             self.set_state(States.PAYLOAD_SENT)
-            time.sleep(5)
-            return
-
-        if not self.iss_buffer_empty.is_set():
             return
 
         print("processing data....")

@@ -54,6 +54,8 @@ class P2PConnectionFrameHandler(frame_handler.FrameHandler):
             FR.P2P_CONNECTION_DISCONNECT_ACK.value,
             FR.P2P_CONNECTION_PAYLOAD.value,
             FR.P2P_CONNECTION_PAYLOAD_ACK.value,
+            FR.P2P_CONNECTION_HEARTBEAT.value,
+
         ]:
             session = self.ctx.state_manager.get_p2p_connection_session(session_id)
 

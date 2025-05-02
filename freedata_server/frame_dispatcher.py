@@ -41,7 +41,8 @@ class DISPATCHER:
                                                    "name": "P2P Connection PAYLOAD"},
         FR_TYPE.P2P_CONNECTION_PAYLOAD_ACK.value: {"class": P2PConnectionFrameHandler,
                                                    "name": "P2P Connection PAYLOAD ACK"},
-
+        FR_TYPE.P2P_CONNECTION_HEARTBEAT.value: {"class": P2PConnectionFrameHandler,
+                                                   "name": "P2P Connection HEARTBEAT"},
         #FR_TYPE.ARQ_CONNECTION_HB.value: {"class": ARQFrameHandler, "name": "ARQ HEARTBEAT"},
         #FR_TYPE.ARQ_CONNECTION_OPEN.value: {"class": ARQFrameHandler, "name": "ARQ OPEN SESSION"},
         FR_TYPE.ARQ_STOP.value: {"class": ARQFrameHandler, "name": "ARQ STOP"},
