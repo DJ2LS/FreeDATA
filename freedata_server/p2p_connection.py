@@ -99,8 +99,7 @@ class P2PConnection:
         self.session_id = self.generate_id()
 
         self.event_frame_received = threading.Event()
-        # set if iss buffer is empty
-        self.iss_buffer_empty = threading.Event()
+
 
 
         self.RETRIES_CONNECT = 3
@@ -234,8 +233,6 @@ class P2PConnection:
         self.is_ISS = True
         self.is_Master = True
 
-        # start sending data
-        self.iss_buffer_empty.set()
 
         self.log(frame)
         if self.ctx.socket_interface_manager and hasattr(self.ctx.socket_interface_manager.command_server, "command_handler"):
@@ -305,8 +302,6 @@ class P2PConnection:
     def received_data(self, frame):
         self.log(f"received data...: {frame}")
 
-        self.iss_buffer_empty = threading.Event()
-
         ack_data = self.frame_factory.build_p2p_connection_payload_ack(self.session_id, 0)
         self.launch_twr_irs(ack_data, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling_ack)
 
@@ -329,8 +324,11 @@ class P2PConnection:
     def received_heartbeat(self, frame):
         print(frame)
         print(frame['flag'])
+        if frame['flag']['BUFFER_EMPTY']:
+            print("other stations buffer is empty. We can become master now")
+            self.is_Master = True
+
         print("received heartbeat...")
-        self.iss_buffer_empty.set()
 
 
     def disconnect(self):

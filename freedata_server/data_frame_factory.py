@@ -174,7 +174,7 @@ class DataFrameFactory:
         
         # heartbeat for "is alive"
         self.template_list[FR_TYPE.P2P_CONNECTION_HEARTBEAT.value] = {
-            "frame_length": self.LENGTH_ACK_FRAME,
+            "frame_length": self.LENGTH_SIG1_FRAME,
             "session_id": 1,
             "flag": 1
         }
