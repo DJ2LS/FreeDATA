@@ -10,7 +10,7 @@
 # Currently tested in Debian [11, 12], Ubuntu [22.04, 24.04], Fedora [40,41]
 # Untested additions for Linux Mint [21.3]
 # 
-# First option passed is the version of FreeDATA to run.  Defaults to main.
+# First option passed is the branch of FreeDATA to run.  Defaults to main.
 # Second option passed is the version of Hamlib to use.  Defaults to 4.5.5.
 #
 # Run this script by typing in the terminal (without the quotes):
