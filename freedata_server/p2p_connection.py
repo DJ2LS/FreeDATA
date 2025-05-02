@@ -44,18 +44,20 @@ class P2PConnection:
             FRAME_TYPE.P2P_CONNECTION_PAYLOAD.value: 'received_data',
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
             FRAME_TYPE.P2P_CONNECTION_HEARTBEAT.value: 'received_heartbeat',
+            FRAME_TYPE.P2P_CONNECTION_HEARTBEAT_ACK.value: 'received_heartbeat_ack',
 
         },
         States.PAYLOAD_SENT: {
             FRAME_TYPE.P2P_CONNECTION_PAYLOAD_ACK.value: 'transmitted_data',
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
             FRAME_TYPE.P2P_CONNECTION_HEARTBEAT.value: 'received_heartbeat',
+            FRAME_TYPE.P2P_CONNECTION_HEARTBEAT_ACK.value: 'received_heartbeat_ack',
 
         },
         States.ARQ_SESSION: {
             FRAME_TYPE.P2P_CONNECTION_PAYLOAD_ACK.value: 'transmitted_data',
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
-            FRAME_TYPE.P2P_CONNECTION_HEARTBEAT.value: 'received_heartbeat',
+            FRAME_TYPE.P2P_CONNECTION_HEARTBEAT_ACK.value: 'received_heartbeat_ack',
 
         },
         States.DISCONNECTING: {
@@ -322,13 +324,22 @@ class P2PConnection:
         self.set_state(States.CONNECTED)
 
     def received_heartbeat(self, frame):
-        print(frame)
-        print(frame['flag'])
+        print("received heartbeat...")
+
         if frame['flag']['BUFFER_EMPTY']:
             print("other stations buffer is empty. We can become master now")
             self.is_Master = True
+        if frame['flag']['ANNOUNCE_ARQ']:
+            print("other station announced arq, changing state")
+            self.is_Master = False
+            self.set_state(States.ARQ_SESSION)
 
-        print("received heartbeat...")
+    def received_heartbeat_ack(self, frame):
+        print("received heartbeat ack...")
+
+        self.event_frame_received.set()
+        self.set_state(States.ARQ_SESSION)
+
 
 
     def disconnect(self):
@@ -371,7 +382,14 @@ class P2PConnection:
         else:
             arq_destination = self.origin
 
-        self.log(f"ARQ Destination: {self.destination}")
+        self.log(f"ANNOUNCING ARQ to destination: {self.destination}")
+        heartbeat = self.frame_factory.build_p2p_connection_heartbeat(self.session_id, flag_buffer_empty=False, flag_announce_arq=True)
+        self.launch_twr(heartbeat, 15, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
+        self.event_frame_received.wait()
+
+        self.log(f"ARQ destination: {self.destination}")
+
+
         prepared_data, type_byte = self.arq_data_type_handler.prepare(data, ARQ_SESSION_TYPES.p2p_connection)
         iss = ARQSessionISS(self.ctx, arq_destination, prepared_data, type_byte)
         iss.id = self.session_id

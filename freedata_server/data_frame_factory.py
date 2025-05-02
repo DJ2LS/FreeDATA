@@ -25,6 +25,7 @@ class DataFrameFactory:
 
     P2P_FLAGS = {
         'BUFFER_EMPTY': 0,  # Bit-position for indicating the BUFFER EMPTY state
+        'ANNOUNCE_ARQ': 1, # Bit-position for announcing an ARQ session
     }
 
     def __init__(self, ctx):
@@ -540,10 +541,12 @@ class DataFrameFactory:
         }
         return self.construct(FR_TYPE.P2P_CONNECTION_CONNECT_ACK, payload)
     
-    def build_p2p_connection_heartbeat(self, session_id, flag_buffer_empty=False):
+    def build_p2p_connection_heartbeat(self, session_id, flag_buffer_empty=False, flag_announce_arq=False):
         flag = 0b00000000
         if flag_buffer_empty:
             flag = helpers.set_flag(flag, 'BUFFER_EMPTY', True, self.P2P_FLAGS)
+        if flag_announce_arq:
+            flag = helpers.set_flag(flag, 'ANNOUNCE_ARQ', True, self.P2P_FLAGS)
 
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),
