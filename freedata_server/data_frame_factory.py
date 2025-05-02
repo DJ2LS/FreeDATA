@@ -245,9 +245,9 @@ class DataFrameFactory:
             if not isinstance(item_length, int):
                 item_length = len(content[key])
 
-            print(frame_length)
-            print(item_length)
-            print(content)
+            #print(frame_length)
+            #print(item_length)
+            #print(content)
             if buffer_position + item_length > frame_length:
                 raise OverflowError("Frame data overflow!")
             frame[buffer_position: buffer_position + item_length] = content[key]

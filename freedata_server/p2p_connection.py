@@ -43,6 +43,8 @@ class P2PConnection:
             FRAME_TYPE.P2P_CONNECTION_CONNECT_ACK.value: 'connected_iss',
             FRAME_TYPE.P2P_CONNECTION_PAYLOAD.value: 'received_data',
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
+            FRAME_TYPE.P2P_CONNECTION_HEARTBEAT.value: 'received_heartbeat',
+
         },
         States.PAYLOAD_SENT: {
             FRAME_TYPE.P2P_CONNECTION_PAYLOAD_ACK.value: 'transmitted_data',
@@ -53,6 +55,7 @@ class P2PConnection:
         States.ARQ_SESSION: {
             FRAME_TYPE.P2P_CONNECTION_PAYLOAD_ACK.value: 'transmitted_data',
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
+            FRAME_TYPE.P2P_CONNECTION_HEARTBEAT.value: 'received_heartbeat',
 
         },
         States.DISCONNECTING: {
