@@ -25,7 +25,7 @@ class DataFrameFactory:
 
     P2P_FLAGS = {
         'BUFFER_EMPTY': 0,  # Bit-position for indicating the BUFFER EMPTY state
-        'ANNOUNCE_ARQ': 1, # Bit-position for announcing an ARQ session
+        'ANNOUNCE_ARQ': 1,  # Bit-position for announcing an ARQ session
     }
 
     def __init__(self, ctx):
