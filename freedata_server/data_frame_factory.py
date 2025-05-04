@@ -322,7 +322,7 @@ class DataFrameFactory:
                         # get_flag returns True or False based on the bit value at the flag's position
                         extracted_data[key][flag] = helpers.get_flag(data, flag, flag_dict)
 
-                if frametype in [FR_TYPE.P2P_CONNECTION_PAYLOAD.value, FR_TYPE.P2P_CONNECTION_HEARTBEAT]:
+                if frametype in [FR_TYPE.P2P_CONNECTION_PAYLOAD.value, FR_TYPE.P2P_CONNECTION_HEARTBEAT, FR_TYPE.P2P_CONNECTION_HEARTBEAT_ACK]:
                     flag_dict = self.P2P_FLAGS
                     for flag in flag_dict:
                         # Update extracted_data with the status of each flag
