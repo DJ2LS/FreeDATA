@@ -340,19 +340,23 @@ class P2PConnection:
     def received_heartbeat(self, frame):
         print("received heartbeat...")
         self.last_data_timestamp = time.time()
-        if bool(frame.get('flag', {}).get('BUFFER_EMPTY', False)) and self.buffer_empty:
-            print("other stations buffer is empty as well. We wont become data master now")
-            self.is_Master = False
 
-        if bool(frame.get('flag', {}).get('BUFFER_EMPTY', False)) and not self.buffer_empty:
-            print("other stations buffer is empty. We can become data master now")
-            self.is_Master = True
+        buffer_empty_flag = frame.get('flag', {}).get('BUFFER_EMPTY', False)
+        announce_arq_flag = frame.get('flag', {}).get('ANNOUNCE_ARQ', False)
 
-        if bool(frame.get('flag', {}).get('ANNOUNCE_ARQ', False)) :
-            print("other station announced arq, changing state")
+        if buffer_empty_flag:
+            if self.buffer_empty:
+                print("other station's buffer is empty as well. We won't become data master now")
+                self.is_Master = False
+            else:
+                print("other station's buffer is empty. We can become data master now")
+                self.is_Master = True
+
+        if announce_arq_flag:
+            print("other station announced ARQ, changing state")
             self.is_Master = False
             self.set_state(States.ARQ_SESSION)
-
+        print("transmit heartbeat ack")
         self.transmit_heartbeat_ack()
 
     def received_heartbeat_ack(self, frame):
