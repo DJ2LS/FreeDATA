@@ -238,9 +238,6 @@ class P2PConnection:
         self.set_state(States.CONNECTED)
         self.is_ISS = True
         self.is_Master = True
-
-
-        self.log(frame)
         if self.ctx.socket_interface_manager and hasattr(self.ctx.socket_interface_manager.command_server, "command_handler"):
             self.ctx.socket_interface_manager.command_server.command_handler.socket_respond_connected(self.origin, self.destination, self.bandwidth)
 
@@ -322,26 +319,29 @@ class P2PConnection:
 
     def transmit_heartbeat(self, buffer_empty=False, announce_arq=False):
         # heartbeats will be transmit by ISS only, therefore only IRS can reveice heartbeat ack
+        self.last_data_timestamp = time.time()
         heartbeat = self.frame_factory.build_p2p_connection_heartbeat(self.session_id, flag_buffer_empty=buffer_empty, flag_announce_arq=announce_arq)
-        self.launch_twr(heartbeat, self.TIMEOUT_CONNECT, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
+        self.launch_twr(heartbeat, 6, 10, mode=FREEDV_MODE.signalling)
 
     def transmit_heartbeat_ack(self):
+        self.last_data_timestamp = time.time()
         heartbeat_ack = self.frame_factory.build_p2p_connection_heartbeat(self.session_id, flag_buffer_empty=self.buffer_empty,
                                                                       flag_announce_arq=self.announce_arq)
         self.transmit_frame([heartbeat_ack], FREEDV_MODE.signalling)
 
     def received_heartbeat(self, frame):
         print("received heartbeat...")
-
-        if frame['flag']['BUFFER_EMPTY'] and self.buffer_empty:
+        self.last_data_timestamp = time.time()
+        print(frame)
+        if bool(frame.get('flag', {}).get('BUFFER_EMPTY', False)) and self.buffer_empty:
             print("other stations buffer is empty as well. We wont become data master now")
             self.is_Master = False
 
-        if frame['flag']['BUFFER_EMPTY'] and not self.buffer_empty:
+        if bool(frame.get('flag', {}).get('BUFFER_EMPTY', False)) and not self.buffer_empty:
             print("other stations buffer is empty. We can become data master now")
             self.is_Master = True
 
-        if frame['flag']['ANNOUNCE_ARQ']:
+        if bool(frame.get('flag', {}).get('ANNOUNCE_ARQ', False)) :
             print("other station announced arq, changing state")
             self.is_Master = False
             self.set_state(States.ARQ_SESSION)
@@ -349,6 +349,7 @@ class P2PConnection:
         self.transmit_heartbeat_ack()
 
     def received_heartbeat_ack(self, frame):
+        self.last_data_timestamp = time.time()
         print("received heartbeat ack from IRS...")
         if frame['flag']['BUFFER_EMPTY']:
             print("other stations buffer is empty. We can become data master now")
