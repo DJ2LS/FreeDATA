@@ -112,12 +112,16 @@ class P2PConnection:
 
         self.is_ISS = False # Indicator, if we are ISS or IRS
         self.is_Master = False # Indicator, if we are Maste or Not
+        self.announce_arq = False
+        self.buffer_empty = False
+
         self.last_data_timestamp= time.time()
         self.start_data_processing_worker()
 
         self.flag_buffer_empty = False
         self.flag_announce_arq = False
 
+        self.transmission_in_progress = False # indicatews, if we are waiting for an ongoing transmission
 
     def start_data_processing_worker(self):
         """Starts a worker thread to monitor the transmit data queue and process data."""
@@ -129,7 +133,7 @@ class P2PConnection:
                     return
 
                 # thats our heartbeat logic, only ISS will run it
-                if time.time() > self.last_data_timestamp + 15 and self.state is States.CONNECTED and self.is_ISS and self.state is not States.ARQ_SESSION:
+                if time.time() > self.last_data_timestamp + 15 and self.state is States.CONNECTED and self.is_ISS and not self.transmission_in_progress:
                     print("no data within last 15s. Sending heartbeat")
                     self.transmit_heartbeat()
 
@@ -194,6 +198,7 @@ class P2PConnection:
     def transmit_wait_and_retry(self, frame_or_burst, timeout, retries, mode):
         while retries > 0:
             self.event_frame_received = threading.Event()
+            self.transmission_in_progress = True
             if isinstance(frame_or_burst, list): burst = frame_or_burst
             else: burst = [frame_or_burst]
             for f in burst:
@@ -201,6 +206,7 @@ class P2PConnection:
             self.event_frame_received.clear()
             self.log(f"Waiting {timeout} seconds...")
             if self.event_frame_received.wait(timeout):
+                self.transmission_in_progress = False
                 return
             self.log("Timeout!")
             retries = retries - 1
@@ -324,15 +330,16 @@ class P2PConnection:
         self.launch_twr(heartbeat, 6, 10, mode=FREEDV_MODE.signalling)
 
     def transmit_heartbeat_ack(self):
+        print("transmit heartbeat ack")
         self.last_data_timestamp = time.time()
-        heartbeat_ack = self.frame_factory.build_p2p_connection_heartbeat(self.session_id, flag_buffer_empty=self.buffer_empty,
-                                                                      flag_announce_arq=self.announce_arq)
-        self.transmit_frame([heartbeat_ack], FREEDV_MODE.signalling)
+        heartbeat_ack = self.frame_factory.build_p2p_connection_heartbeat_ack(self.session_id, flag_buffer_empty=self.buffer_empty,flag_announce_arq=self.announce_arq)
+        print(heartbeat_ack)
+        self.launch_twr_irs(heartbeat_ack, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
+
 
     def received_heartbeat(self, frame):
         print("received heartbeat...")
         self.last_data_timestamp = time.time()
-        print(frame)
         if bool(frame.get('flag', {}).get('BUFFER_EMPTY', False)) and self.buffer_empty:
             print("other stations buffer is empty as well. We wont become data master now")
             self.is_Master = False
