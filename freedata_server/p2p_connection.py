@@ -10,6 +10,7 @@ import time
 from arq_data_type_handler import ARQDataTypeHandler, ARQ_SESSION_TYPES
 from arq_session_iss import ARQSessionISS
 import helpers
+import zlib
 
 class States(Enum):
     NEW = 0
@@ -292,15 +293,18 @@ class P2PConnection:
         self.is_Master = True
         print("processing data....")
 
-        data = self.p2p_data_tx_queue.get()
+        raw_data = self.p2p_data_tx_queue.get()
         sequence_id = random.randint(0,255)
+
+        compressor = zlib.compressobj(level=6, wbits=-zlib.MAX_WBITS, strategy=zlib.Z_FILTERED)
+        data = compressor.compress(raw_data) + compressor.flush()
 
         if  len(data) <= 11:
             mode = FREEDV_MODE.signalling
         elif 11 < len(data) <= 32:
             mode = FREEDV_MODE.datac4
         else:
-            self.transmit_arq(data)
+            self.transmit_arq(raw_data)
             return
 
         if self.p2p_data_tx_queue.empty():
@@ -322,9 +326,16 @@ class P2PConnection:
 
         if not frame["flag"]["HAS_DATA"] and self.is_ISS:
             self.set_state(States.CONNECTED)
+        else:
+            self.set_state(States.AWAITING_DATA)
 
         try:
             received_data = frame['data'].rstrip(b'\x00')
+
+            decompressor = zlib.decompressobj(wbits=-zlib.MAX_WBITS)
+            received_data = decompressor.decompress(received_data)
+            received_data += decompressor.flush()
+
             if self.ctx.socket_interface_manager and hasattr(self.ctx.socket_interface_manager.data_server, "data_handler"):
                 self.log(f"sending {len(received_data)} bytes to data socket client")
                 self.ctx.socket_interface_manager.data_server.data_handler.send_data_to_client(received_data)
@@ -360,6 +371,9 @@ class P2PConnection:
         self.launch_twr_irs(heartbeat_ack, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
 
     def received_heartbeat(self, frame):
+        # we don't accept heartbeats as ISS
+        if self.is_ISS:
+            return
         print("received heartbeat...")
         self.last_data_timestamp = time.time()
 
@@ -441,6 +455,8 @@ class P2PConnection:
         if self.ctx.socket_interface_manager:
             self.ctx.socket_interface_manager.command_server.command_handler.socket_respond_disconnected()
 
+
+
     def transmit_arq(self, data):
         """
         This function needs to be fixed - we want to send ARQ data within a p2p connection
@@ -458,7 +474,7 @@ class P2PConnection:
         #self.launch_twr(heartbeat, 5, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         #self.event_frame_received.wait()
         #self.log(f"ARQ destination: {self.destination}")
-        self.transmit_heartbeat(announce_arq=True)
+        #self.transmit_heartbeat(announce_arq=True)
         print("wait some time until ARQ starts....")
         threading.Event().wait(5)
 
@@ -476,6 +492,7 @@ class P2PConnection:
     def transmitted_arq(self, transmitted_data):
         self.last_data_timestamp = time.time()
         self.set_state(States.CONNECTED)
+        self.is_Master = True
 
     def received_arq(self, received_data):
         self.last_data_timestamp = time.time()
