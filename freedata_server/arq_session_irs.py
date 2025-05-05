@@ -298,6 +298,8 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.received_data[frame['offset']:] = data_part
         #self.received_bytes += len(data_part)
         self.received_bytes = len(self.received_data)
+        print(self.received_bytes)
+        print(self.received_data)
         self.log(f"Received {self.received_bytes}/{self.total_length} bytes")
         self.ctx.event_manager.send_arq_session_progress(
             False, self.id, self.dxcall, self.received_bytes, self.total_length, self.state.name, self.speed_level, self.calculate_session_statistics(self.received_bytes, self.total_length))
@@ -356,7 +358,7 @@ class ARQSessionIRS(arq_session.ARQSession):
                                                          flag_final=True,
                                                          flag_checksum=False)
             self.transmit_frame(ack, mode=FREEDV_MODE.signalling_ack)
-            self.log("CRC fail at the end of transmission!")
+            self.log("CRC fail at the end of transmission!", isWarning=True)
             return self.transmission_failed()
 
 
@@ -475,7 +477,8 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.log("Transmission failed!")
         #self.ctx.rf_modem.demodulator.set_decode_mode()
         session_stats = self.calculate_session_statistics(self.received_bytes, self.total_length)
-
+        self.received_data = None
+        self.received_bytes = 0
         self.ctx.event_manager.send_arq_session_finished(True, self.id, self.dxcall,False, self.state.name, statistics=session_stats)
         if self.ctx.config_manager.config['STATION']['enable_stats']:
             self.statistics.push(self.state.name, session_stats, self.dxcall)
