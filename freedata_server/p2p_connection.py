@@ -149,7 +149,7 @@ class P2PConnection:
                     return
 
                 # thats our heartbeat logic, only ISS will run it
-                if time.time() > self.last_data_timestamp + 10 and self.state in [States.CONNECTED, States.PAYLOAD_SENT] and self.is_ISS and not self.transmission_in_progress:
+                if time.time() > self.last_data_timestamp + 5 and self.state in [States.CONNECTED, States.PAYLOAD_SENT] and self.is_ISS and not self.transmission_in_progress:
                     print("no data within last 15s. Sending heartbeat")
 
                     if self.p2p_data_tx_queue.empty():
@@ -159,10 +159,10 @@ class P2PConnection:
                     self.transmit_heartbeat(has_data=self.flag_has_data)
 
                 if self.state in [States.CONNECTED, States.PAYLOAD_SENT] and self.is_Master:
-                    threading.Event().wait(3)
+                    threading.Event().wait(0.5)
                     self.process_data_queue()
 
-                threading.Event().wait(0.500)
+                threading.Event().wait(0.100)
 
 
 
