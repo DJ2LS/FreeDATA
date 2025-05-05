@@ -63,7 +63,10 @@ class SocketCommandHandler:
     def handle_abort(self, data):
         # Logic for handling ABORT command
         self.send_response(f"OK")
-        self.session.abort_connection()
+        try:
+            self.session.abort_connection()
+        except Exception as e:
+            self.send_response(f"ERR: {e}")
         self.send_response(f"DISCONNECTED")
 
     def handle_public(self, data):

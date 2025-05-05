@@ -138,7 +138,7 @@ class P2PConnection:
         self.flag_announce_arq = False
 
         self.transmission_in_progress = False # indicatews, if we are waiting for an ongoing transmission
-
+        self.running_arq_session = None
     def start_data_processing_worker(self):
         """Starts a worker thread to monitor the transmit data queue and process data."""
 
@@ -461,6 +461,9 @@ class P2PConnection:
     def disconnect(self):
         if self.state not in [States.DISCONNECTING, States.DISCONNECTED, States.ARQ_SESSION]:
             self.set_state(States.DISCONNECTING)
+
+            self.abort_arq()
+
             disconnect_frame = self.frame_factory.build_p2p_connection_disconnect(self.session_id)
             self.launch_twr(disconnect_frame, self.TIMEOUT_CONNECT, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
         return
@@ -468,12 +471,25 @@ class P2PConnection:
     def abort_connection(self):
         # abort is a dirty disconnect
         self.log("ABORTING...............")
+
+        self.abort_arq()
+
         self.event_frame_received.set()
         self.set_state(States.DISCONNECTED)
+
+    def abort_arq(self):
+        try:
+            if self.running_arq_session:
+                self.running_arq_session.abort_transmission()
+        except Exception as e:
+            self.log(f"Error stopping ARQ session {e}")
 
     def received_disconnect(self, frame):
         self.log("DISCONNECTED...............")
         self.set_state(States.DISCONNECTED)
+
+        self.abort_arq()
+
         if self.ctx.socket_interface_manager:
             self.ctx.socket_interface_manager.command_server.command_handler.socket_respond_disconnected()
         self.is_ISS = False
@@ -514,7 +530,7 @@ class P2PConnection:
         iss.id = self.session_id
         # register p2p connection to arq session
         iss.running_p2p_connection = self
-
+        self.running_arq_session = iss
         if iss.id:
             self.ctx.state_manager.register_arq_iss_session(iss)
             iss.start()
@@ -524,11 +540,12 @@ class P2PConnection:
         self.last_data_timestamp = time.time()
         self.set_state(States.CONNECTED)
         self.is_Master = True
+        self.running_arq_session = None
 
     def received_arq(self, received_data):
         self.last_data_timestamp = time.time()
         self.set_state(States.CONNECTED)
-
+        self.running_arq_session = None
         try:
             if self.ctx.socket_interface_manager and hasattr(self.ctx.socket_interface_manager.data_server, "data_handler"):
                 self.log(f"sending {len(received_data)} bytes to data socket client")

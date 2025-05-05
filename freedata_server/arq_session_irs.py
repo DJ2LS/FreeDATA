@@ -283,6 +283,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         # update p2p connection timeout
         if self.running_p2p_connection:
             self.running_p2p_connection.last_data_timestamp = time.time()
+            self.running_p2p_connection.running_arq_session = self
 
         remaining_data_length = self.total_length - self.received_bytes
         self.log(f"Remaining data: {remaining_data_length}", isWarning=True)
