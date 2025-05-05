@@ -243,7 +243,6 @@ class DataFrameFactory:
         for key, item_length in frame_template.items():
             if key == "frame_length":
                 continue
-
             if not isinstance(item_length, int):
                 item_length = len(content[key])
 
@@ -272,7 +271,6 @@ class DataFrameFactory:
             frame_template = self.template_list.get(frametype)
 
         extracted_data = {"frame_type": FR_TYPE(frametype).name, "frame_type_int": frametype}
-
         for key, item_length in frame_template.items():
             if key == "frame_length":
                 continue
@@ -322,7 +320,7 @@ class DataFrameFactory:
                         # get_flag returns True or False based on the bit value at the flag's position
                         extracted_data[key][flag] = helpers.get_flag(data, flag, flag_dict)
 
-                if frametype in [FR_TYPE.P2P_CONNECTION_PAYLOAD.value, FR_TYPE.P2P_CONNECTION_HEARTBEAT, FR_TYPE.P2P_CONNECTION_HEARTBEAT_ACK]:
+                if frametype in [FR_TYPE.P2P_CONNECTION_PAYLOAD.value, FR_TYPE.P2P_CONNECTION_HEARTBEAT.value, FR_TYPE.P2P_CONNECTION_HEARTBEAT_ACK.value]:
                     flag_dict = self.P2P_FLAGS
                     for flag in flag_dict:
                         # Update extracted_data with the status of each flag
