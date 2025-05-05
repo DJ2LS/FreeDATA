@@ -554,7 +554,7 @@ class StateManager:
             bool: True if the session was registered, False otherwise.
         """
         if session.session_id in self.p2p_connection_sessions:
-            print("session already registered...")
+            print("session already registered...", session.session_id)
             return False
         self.p2p_connection_sessions[session.session_id] = session
         return True

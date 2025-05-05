@@ -19,8 +19,7 @@ class States(Enum):
     CONNECT_ACK_SENT = 3
     CONNECTED = 4
     AWAITING_DATA = 5
-    #HEARTBEAT_SENT = 5
-    #HEARTBEAT_ACK_SENT = 6
+    PAYLOAD_TRANSMISSION = 6
     PAYLOAD_SENT = 7
     ARQ_SESSION = 8
     DISCONNECTING = 9
@@ -43,6 +42,13 @@ class P2PConnection:
             FRAME_TYPE.P2P_CONNECTION_CONNECT.value: 'connected_irs',
             FRAME_TYPE.P2P_CONNECTION_CONNECT_ACK.value: 'connected_iss',
             FRAME_TYPE.P2P_CONNECTION_PAYLOAD.value: 'received_data',
+            FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
+            FRAME_TYPE.P2P_CONNECTION_HEARTBEAT.value: 'received_heartbeat',
+            FRAME_TYPE.P2P_CONNECTION_HEARTBEAT_ACK.value: 'received_heartbeat_ack',
+
+        },
+        States.PAYLOAD_TRANSMISSION: {
+            FRAME_TYPE.P2P_CONNECTION_PAYLOAD_ACK.value: 'transmitted_data',
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
             FRAME_TYPE.P2P_CONNECTION_HEARTBEAT.value: 'received_heartbeat',
             FRAME_TYPE.P2P_CONNECTION_HEARTBEAT_ACK.value: 'received_heartbeat_ack',
@@ -77,8 +83,12 @@ class P2PConnection:
 
         },
         States.ABORTED:{
+            FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
+            FRAME_TYPE.P2P_CONNECTION_DISCONNECT_ACK.value: 'received_disconnect_ack',
         },
         States.FAILED: {
+            FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
+            FRAME_TYPE.P2P_CONNECTION_DISCONNECT_ACK.value: 'received_disconnect_ack',
         },
     }
 
@@ -134,12 +144,12 @@ class P2PConnection:
 
         def data_processing_worker():
             while True:
-                if time.time() > self.last_data_timestamp + self.ENTIRE_CONNECTION_TIMEOUT and self.state not in [States.DISCONNECTING, States.DISCONNECTED, States.ARQ_SESSION, States.FAILED]:
+                if time.time() > self.last_data_timestamp + self.ENTIRE_CONNECTION_TIMEOUT and self.state not in [States.DISCONNECTING, States.DISCONNECTED, States.ARQ_SESSION, States.FAILED, States.PAYLOAD_TRANSMISSION]:
                     self.disconnect()
                     return
 
                 # thats our heartbeat logic, only ISS will run it
-                if time.time() > self.last_data_timestamp + 10 and self.state is States.CONNECTED and self.is_ISS and not self.transmission_in_progress:
+                if time.time() > self.last_data_timestamp + 10 and self.state in [States.CONNECTED, States.PAYLOAD_SENT] and self.is_ISS and not self.transmission_in_progress:
                     print("no data within last 15s. Sending heartbeat")
 
                     if self.p2p_data_tx_queue.empty():
@@ -148,7 +158,7 @@ class P2PConnection:
                         self.flag_has_data = True
                     self.transmit_heartbeat(has_data=self.flag_has_data)
 
-                if self.state in [States.CONNECTED] and self.is_Master:
+                if self.state in [States.CONNECTED, States.PAYLOAD_SENT] and self.is_Master:
                     threading.Event().wait(3)
                     self.process_data_queue()
 
@@ -317,7 +327,7 @@ class P2PConnection:
             return
 
         self.log("Using burst for sending data...")
-
+        self.set_state(States.PAYLOAD_TRANSMISSION)
         if self.p2p_data_tx_queue.empty():
             self.flag_has_data = False
         else:
@@ -325,7 +335,7 @@ class P2PConnection:
 
         payload = self.frame_factory.build_p2p_connection_payload(mode, self.session_id, sequence_id, data, flag_has_data=self.flag_has_data)
         self.launch_twr(payload, self.TIMEOUT_DATA, self.RETRIES_DATA, mode=mode)
-        self.set_state(States.PAYLOAD_SENT)
+
 
         return
 
@@ -358,8 +368,8 @@ class P2PConnection:
 
 
     def transmitted_data(self, frame):
-        print("transmitted data...")
-        #self.set_state(States.CONNECTED)
+        self.log("Transmitted data...")
+        self.set_state(States.PAYLOAD_SENT)
 
     def transmit_heartbeat(self, has_data=False, announce_arq=False):
         # heartbeats will be transmit by ISS only, therefore only IRS can reveice heartbeat ack
