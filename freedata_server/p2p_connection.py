@@ -386,10 +386,14 @@ class P2PConnection:
         self.last_data_timestamp = time.time()
         print("received heartbeat ack from IRS...")
 
-        if frame["flag"]["HAS_DATA"]:
-            print("other station has data")
+        if frame["flag"]["HAS_DATA"] and not self.flag_has_data:
+            print("other station has data, we are not")
             self.is_Master = False
             self.set_state(States.AWAITING_DATA)
+        elif frame["flag"]["HAS_DATA"] and self.flag_has_data:
+            print("other station has data and we as well, we become master")
+            self.is_Master = True
+            self.set_state(States.CONNECTED)
         else:
             print("other station has no data, we become master now")
             self.is_Master = True
