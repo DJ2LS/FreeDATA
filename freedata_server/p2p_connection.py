@@ -139,7 +139,7 @@ class P2PConnection:
                     return
 
                 # thats our heartbeat logic, only ISS will run it
-                if time.time() > self.last_data_timestamp + 15 and self.state is States.CONNECTED and self.is_ISS and not self.transmission_in_progress:
+                if time.time() > self.last_data_timestamp + 10 and self.state is States.CONNECTED and self.is_ISS and not self.transmission_in_progress:
                     print("no data within last 15s. Sending heartbeat")
 
                     if self.p2p_data_tx_queue.empty():
@@ -154,7 +154,7 @@ class P2PConnection:
                 threading.Event().wait(0.500)
 
                 if self.state is not States.ARQ_SESSION and self.is_Master:
-                    threading.Event().wait(5)
+                    threading.Event().wait(2)
                     self.process_data_queue()
 
 
@@ -293,21 +293,32 @@ class P2PConnection:
             return
 
         self.is_Master = True
-        print("processing data....")
 
         raw_data = self.p2p_data_tx_queue.get()
         sequence_id = random.randint(0,255)
 
+
         compressor = zlib.compressobj(level=6, wbits=-zlib.MAX_WBITS, strategy=zlib.Z_FILTERED)
         data = compressor.compress(raw_data) + compressor.flush()
+
+        self.log(f"Processing data....{len(data)} Bytes - {raw_data}")
+
 
         if  len(data) <= 11:
             mode = FREEDV_MODE.signalling
         elif 11 < len(data) <= 32:
             mode = FREEDV_MODE.datac4
         else:
+            self.log("Using ARQ for sending data...")
+            self.set_state(States.ARQ_SESSION)
             self.transmit_arq(raw_data)
             return
+
+        # Additional return statement for avoiding wrong data.
+        if self.state is States.ARQ_SESSION:
+            return
+
+        self.log("Using burst for sending data...")
 
         if self.p2p_data_tx_queue.empty():
             self.flag_has_data = False
@@ -315,7 +326,7 @@ class P2PConnection:
             self.flag_has_data = True
 
         payload = self.frame_factory.build_p2p_connection_payload(mode, self.session_id, sequence_id, data, flag_has_data=self.flag_has_data)
-        self.launch_twr(payload, self.TIMEOUT_DATA, self.RETRIES_DATA,mode=mode)
+        self.launch_twr(payload, self.TIMEOUT_DATA, self.RETRIES_DATA, mode=mode)
         self.set_state(States.PAYLOAD_SENT)
 
         return
