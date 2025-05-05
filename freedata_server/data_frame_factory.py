@@ -556,7 +556,7 @@ class DataFrameFactory:
     def build_p2p_connection_heartbeat_ack(self, session_id,  flag_has_data=False, flag_announce_arq=False):
         flag = 0b00000000
         if flag_has_data:
-            flag = helpers.set_flag(flag, 'has_data', True, self.P2P_FLAGS)
+            flag = helpers.set_flag(flag, 'HAS_DATA', True, self.P2P_FLAGS)
         if flag_announce_arq:
             flag = helpers.set_flag(flag, 'ANNOUNCE_ARQ', True, self.P2P_FLAGS)
 
@@ -569,7 +569,7 @@ class DataFrameFactory:
     def build_p2p_connection_payload(self, freedv_mode: codec2.FREEDV_MODE, session_id: int, sequence_id: int, data: bytes, flag_has_data=False):
         flag = 0b00000000
         if flag_has_data:
-            flag = helpers.set_flag(flag, 'has_data', True, self.P2P_FLAGS)
+            flag = helpers.set_flag(flag, 'HAS_DATA', True, self.P2P_FLAGS)
 
 
         payload = {
