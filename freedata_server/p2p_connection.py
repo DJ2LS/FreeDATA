@@ -340,12 +340,12 @@ class P2PConnection:
         return
 
     def received_data(self, frame):
-        self.log(f"received data...: {frame}")
+        self.log(f"received data...")
 
         ack_data = self.frame_factory.build_p2p_connection_payload_ack(self.session_id, 0)
         self.launch_twr_irs(ack_data, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling_ack)
 
-        if not frame["flag"]["HAS_DATA"] and self.is_ISS:
+        if not frame["flag"]["HAS_DATA"]:
             self.set_state(States.CONNECTED)
         else:
             self.set_state(States.AWAITING_DATA)
@@ -358,7 +358,7 @@ class P2PConnection:
             received_data += decompressor.flush()
 
             if self.ctx.socket_interface_manager and hasattr(self.ctx.socket_interface_manager.data_server, "data_handler"):
-                self.log(f"sending {len(received_data)} bytes to data socket client")
+                self.log(f"sending {len(received_data)} bytes to data socket client: {received_data}")
                 self.ctx.socket_interface_manager.data_server.data_handler.send_data_to_client(received_data)
 
         except Exception as e:
