@@ -369,7 +369,12 @@ class P2PConnection:
 
     def transmitted_data(self, frame):
         self.log("Transmitted data...")
-        self.set_state(States.PAYLOAD_SENT)
+        if self.p2p_data_tx_queue.empty():
+            self.log("Transmitted all data...")
+            self.set_state(States.CONNECTED)
+        else:
+            self.log("Moving to next payload...")
+            self.set_state(States.PAYLOAD_SENT)
 
     def transmit_heartbeat(self, has_data=False, announce_arq=False):
         # heartbeats will be transmit by ISS only, therefore only IRS can reveice heartbeat ack
@@ -379,7 +384,7 @@ class P2PConnection:
         self.launch_twr(heartbeat, 6, 10, mode=FREEDV_MODE.signalling)
 
     def transmit_heartbeat_ack(self):
-        print("transmit heartbeat ack")
+        self.log("Transmitting heartbeat ACK")
 
         if self.p2p_data_tx_queue.empty():
             self.flag_has_data = False
@@ -400,7 +405,7 @@ class P2PConnection:
         if self.state is States.NEW:
             self.connected_irs()
 
-        print("received heartbeat...")
+        self.log("Received heartbeat...")
         self.last_data_timestamp = time.time()
 
         if frame["flag"]["HAS_DATA"]:
