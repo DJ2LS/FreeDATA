@@ -33,6 +33,8 @@ class P2PConnection:
     STATE_TRANSITION = {
         States.NEW: {
             FRAME_TYPE.P2P_CONNECTION_CONNECT.value: 'connected_irs',
+            FRAME_TYPE.P2P_CONNECTION_HEARTBEAT.value: 'received_heartbeat',
+
         },
         States.CONNECTING: {
             FRAME_TYPE.P2P_CONNECTION_CONNECT_ACK.value: 'connected_iss',
@@ -56,6 +58,7 @@ class P2PConnection:
         States.AWAITING_DATA: {
             FRAME_TYPE.P2P_CONNECTION_PAYLOAD.value: 'transmitted_data',
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
+            FRAME_TYPE.P2P_CONNECTION_HEARTBEAT.value: 'received_heartbeat',
             FRAME_TYPE.P2P_CONNECTION_HEARTBEAT_ACK.value: 'received_heartbeat_ack',
         },
         States.ARQ_SESSION: {
@@ -374,6 +377,11 @@ class P2PConnection:
         # we don't accept heartbeats as ISS
         if self.is_ISS:
             return
+
+        # ensure we have correct state
+        if self.state is States.NEW:
+            self.connected_irs()
+
         print("received heartbeat...")
         self.last_data_timestamp = time.time()
 
