@@ -24,7 +24,7 @@ class DataFrameFactory:
     }
 
     P2P_FLAGS = {
-        'BUFFER_EMPTY': 0,  # Bit-position for indicating the BUFFER EMPTY state
+        'HAS_DATA': 0,  # Bit-position for indicating the BUFFER EMPTY state
         'ANNOUNCE_ARQ': 1,  # Bit-position for announcing an ARQ session
     }
 
@@ -540,10 +540,10 @@ class DataFrameFactory:
         }
         return self.construct(FR_TYPE.P2P_CONNECTION_CONNECT_ACK, payload)
     
-    def build_p2p_connection_heartbeat(self, session_id, flag_buffer_empty=False, flag_announce_arq=False):
+    def build_p2p_connection_heartbeat(self, session_id, flag_has_data=False, flag_announce_arq=False):
         flag = 0b00000000
-        if flag_buffer_empty:
-            flag = helpers.set_flag(flag, 'BUFFER_EMPTY', True, self.P2P_FLAGS)
+        if flag_has_data:
+            flag = helpers.set_flag(flag, 'has_data', True, self.P2P_FLAGS)
         if flag_announce_arq:
             flag = helpers.set_flag(flag, 'ANNOUNCE_ARQ', True, self.P2P_FLAGS)
 
@@ -553,10 +553,10 @@ class DataFrameFactory:
         }
         return self.construct(FR_TYPE.P2P_CONNECTION_HEARTBEAT, payload)
     
-    def build_p2p_connection_heartbeat_ack(self, session_id,  flag_buffer_empty=False, flag_announce_arq=False):
+    def build_p2p_connection_heartbeat_ack(self, session_id,  flag_has_data=False, flag_announce_arq=False):
         flag = 0b00000000
-        if flag_buffer_empty:
-            flag = helpers.set_flag(flag, 'BUFFER_EMPTY', True, self.P2P_FLAGS)
+        if flag_has_data:
+            flag = helpers.set_flag(flag, 'has_data', True, self.P2P_FLAGS)
         if flag_announce_arq:
             flag = helpers.set_flag(flag, 'ANNOUNCE_ARQ', True, self.P2P_FLAGS)
 
@@ -566,10 +566,10 @@ class DataFrameFactory:
         }
         return self.construct(FR_TYPE.P2P_CONNECTION_HEARTBEAT_ACK, payload)
     
-    def build_p2p_connection_payload(self, freedv_mode: codec2.FREEDV_MODE, session_id: int, sequence_id: int, data: bytes, flag_buffer_empty=False):
+    def build_p2p_connection_payload(self, freedv_mode: codec2.FREEDV_MODE, session_id: int, sequence_id: int, data: bytes, flag_has_data=False):
         flag = 0b00000000
-        if flag_buffer_empty:
-            flag = helpers.set_flag(flag, 'BUFFER_EMPTY', True, self.P2P_FLAGS)
+        if flag_has_data:
+            flag = helpers.set_flag(flag, 'has_data', True, self.P2P_FLAGS)
 
 
         payload = {
