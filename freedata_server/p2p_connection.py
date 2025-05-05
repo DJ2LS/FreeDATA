@@ -148,14 +148,12 @@ class P2PConnection:
                         self.flag_has_data = True
                     self.transmit_heartbeat(has_data=self.flag_has_data)
 
-                if self.state == States.CONNECTED and self.is_Master:
+                if self.state in [States.CONNECTED] and self.is_Master:
+                    threading.Event().wait(3)
                     self.process_data_queue()
 
                 threading.Event().wait(0.500)
 
-                if self.state is not States.ARQ_SESSION and self.is_Master:
-                    threading.Event().wait(2)
-                    self.process_data_queue()
 
 
 
@@ -361,7 +359,7 @@ class P2PConnection:
 
     def transmitted_data(self, frame):
         print("transmitted data...")
-        self.set_state(States.CONNECTED)
+        #self.set_state(States.CONNECTED)
 
     def transmit_heartbeat(self, has_data=False, announce_arq=False):
         # heartbeats will be transmit by ISS only, therefore only IRS can reveice heartbeat ack
