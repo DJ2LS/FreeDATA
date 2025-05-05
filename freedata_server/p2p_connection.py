@@ -52,6 +52,11 @@ class P2PConnection:
             FRAME_TYPE.P2P_CONNECTION_HEARTBEAT_ACK.value: 'received_heartbeat_ack',
 
         },
+        States.AWAITING_DATA: {
+            FRAME_TYPE.P2P_CONNECTION_PAYLOAD.value: 'transmitted_data',
+            FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
+            FRAME_TYPE.P2P_CONNECTION_HEARTBEAT_ACK.value: 'received_heartbeat_ack',
+        },
         States.ARQ_SESSION: {
             FRAME_TYPE.P2P_CONNECTION_PAYLOAD_ACK.value: 'transmitted_data',
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
@@ -125,7 +130,7 @@ class P2PConnection:
 
         def data_processing_worker():
             while True:
-                if time.time() > self.last_data_timestamp + self.ENTIRE_CONNECTION_TIMEOUT and self.state is not States.ARQ_SESSION:
+                if time.time() > self.last_data_timestamp + self.ENTIRE_CONNECTION_TIMEOUT and self.state not in [States.DISCONNECTING, States.DISCONNECTED, States.ARQ_SESSION, States.FAILED]:
                     self.disconnect()
                     return
 
@@ -409,7 +414,7 @@ class P2PConnection:
 
 
     def disconnect(self):
-        if self.state not in [States.DISCONNECTING, States.DISCONNECTED]:
+        if self.state not in [States.DISCONNECTING, States.DISCONNECTED, States.ARQ_SESSION]:
             self.set_state(States.DISCONNECTING)
             disconnect_frame = self.frame_factory.build_p2p_connection_disconnect(self.session_id)
             self.launch_twr(disconnect_frame, self.TIMEOUT_CONNECT, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
