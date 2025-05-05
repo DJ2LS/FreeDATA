@@ -56,7 +56,7 @@ class P2PConnection:
 
         },
         States.AWAITING_DATA: {
-            FRAME_TYPE.P2P_CONNECTION_PAYLOAD.value: 'transmitted_data',
+            FRAME_TYPE.P2P_CONNECTION_PAYLOAD.value: 'received_data',
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
             FRAME_TYPE.P2P_CONNECTION_HEARTBEAT.value: 'received_heartbeat',
             FRAME_TYPE.P2P_CONNECTION_HEARTBEAT_ACK.value: 'received_heartbeat_ack',
@@ -197,7 +197,6 @@ class P2PConnection:
             if frame_type in self.STATE_TRANSITION[self.state]:
                 action_name = self.STATE_TRANSITION[self.state][frame_type]
                 response = getattr(self, action_name)(frame)
-
                 return
 
         self.log(f"Ignoring unknown transition from state {self.state.name} with frame {frame['frame_type']}")
