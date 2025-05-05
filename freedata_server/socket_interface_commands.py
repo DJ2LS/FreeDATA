@@ -46,7 +46,10 @@ class SocketCommandHandler:
 
     def handle_disconnect(self, data):
         self.send_response(f"OK")
-        self.session.disconnect()
+        try:
+            self.session.disconnect()
+        except Exception as e:
+            self.log(f"Error disconnecting socket: {e}", isWarning = True)
 
     def handle_mycall(self, data):
         #Storing all of the callsigns assigned by client, to make sure they are checked later in new frames.

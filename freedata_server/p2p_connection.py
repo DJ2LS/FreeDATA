@@ -148,9 +148,9 @@ class P2PConnection:
                     self.disconnect()
                     return
 
-                # thats our heartbeat logic, only ISS will run it
+                # this is our heartbeat logic, only ISS will run it
                 if time.time() > self.last_data_timestamp + 5 and self.state in [States.CONNECTED, States.PAYLOAD_SENT] and self.is_ISS and not self.transmission_in_progress:
-                    print("no data within last 15s. Sending heartbeat")
+                    self.log("Sending heartbeat")
 
                     if self.p2p_data_tx_queue.empty():
                         self.flag_has_data = False
@@ -393,7 +393,6 @@ class P2PConnection:
 
         self.last_data_timestamp = time.time()
         heartbeat_ack = self.frame_factory.build_p2p_connection_heartbeat_ack(self.session_id, flag_has_data=self.flag_has_data,flag_announce_arq=self.flag_announce_arq)
-        print(heartbeat_ack)
         self.launch_twr_irs(heartbeat_ack, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
 
     def received_heartbeat(self, frame):
@@ -409,48 +408,48 @@ class P2PConnection:
         self.last_data_timestamp = time.time()
 
         if frame["flag"]["HAS_DATA"]:
-            print("other station has data")
+            self.log("Opposite station has data")
             self.is_Master = False
 
         else:
 
             if self.p2p_data_tx_queue.empty():
-                print("other station's buffer is empty as well. We won't become data master now")
+                self.log("Opposite station's data buffer is empty as well -- We won't become data master now")
                 self.is_Master = False
                 self.flag_has_data = False
             else:
-                print("other station's buffer is empty. We can become data master now")
+                self.log("Opposite station's data buffer is empty. We can become data master now")
                 self.is_Master = True
                 self.flag_has_data = True
 
 
 
         if frame["flag"]["ANNOUNCE_ARQ"]:
-            print("other station announced ARQ, changing state")
+            self.log("Opposite station announced ARQ, changing state")
             self.is_Master = False
             self.set_state(States.ARQ_SESSION)
-        print("transmit heartbeat ack")
+        self.log("transmit heartbeat ack")
         self.transmit_heartbeat_ack()
 
     def received_heartbeat_ack(self, frame):
         self.last_data_timestamp = time.time()
-        print("received heartbeat ack from IRS...")
+        self.log("Received heartbeat ack from opposite...")
 
         if frame["flag"]["HAS_DATA"] and not self.flag_has_data:
-            print("other station has data, we are not")
+            self.log("other station has data, we are not")
             self.is_Master = False
             self.set_state(States.AWAITING_DATA)
         elif frame["flag"]["HAS_DATA"] and self.flag_has_data:
-            print("other station has data and we as well, we become master")
+            self.log("other station has data and we as well, we become master")
             self.is_Master = True
             self.set_state(States.CONNECTED)
         else:
-            print("other station has no data, we become master now")
+            self.log("other station has no data, we become master now")
             self.is_Master = True
             self.set_state(States.CONNECTED)
 
         if frame["flag"]["ANNOUNCE_ARQ"]:
-            print("other station announced arq, changing state")
+            self.log("other station announced arq, changing state")
             self.is_Master = False
             self.set_state(States.ARQ_SESSION)
 
@@ -516,14 +515,7 @@ class P2PConnection:
         else:
             arq_destination = self.origin
 
-        #self.log(f"ANNOUNCING ARQ to destination: {self.destination}")
-        #heartbeat = self.frame_factory.build_p2p_connection_heartbeat(self.session_id, flag_has_data=False, flag_announce_arq=True)
-        #self.launch_twr(heartbeat, 5, self.RETRIES_CONNECT, mode=FREEDV_MODE.signalling)
-        #self.event_frame_received.wait()
-        #self.log(f"ARQ destination: {self.destination}")
-        #self.transmit_heartbeat(announce_arq=True)
-        print("wait some time until ARQ starts....")
-        threading.Event().wait(5)
+        threading.Event().wait(3)
 
         prepared_data, type_byte = self.arq_data_type_handler.prepare(data, ARQ_SESSION_TYPES.p2p_connection)
         iss = ARQSessionISS(self.ctx, arq_destination, prepared_data, type_byte)

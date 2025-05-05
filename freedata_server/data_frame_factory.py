@@ -277,7 +277,7 @@ class DataFrameFactory:
 
             # data is always on the last payload slots
             if item_length in ["dynamic"] and key in["data"]:
-                print(len(frame))
+                #print(len(frame))
                 data = frame[buffer_position:-2]
                 item_length = len(data)
             else:
@@ -579,7 +579,7 @@ class DataFrameFactory:
             "flag": flag.to_bytes(1, 'big'),
             "data": data,
         }
-        print(self.get_bytes_per_frame(freedv_mode))
+        #print(self.get_bytes_per_frame(freedv_mode))
         return self.construct(
             FR_TYPE.P2P_CONNECTION_PAYLOAD,
             payload,
