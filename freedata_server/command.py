@@ -167,7 +167,7 @@ class TxCommand:
             event_queue (queue.Queue): The event queue.
             modem: The modem object.
         """
-        self.emit_event(self.ctx.modem_events)
+        self.emit_event()
         self.logger.info(self.log_message())
         self.transmit()
 
@@ -185,6 +185,6 @@ class TxCommand:
         Returns:
             bytearray: The built frame.
         """
-        self.emit_event(event_queue)
+        self.emit_event()
         self.logger.info(self.log_message())
         return self.build_frame()

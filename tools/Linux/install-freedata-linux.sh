@@ -3,23 +3,53 @@
 # Simple script to install FreeDATA in Linux
 # Dj Merrill - N1JOV
 #
+# Please note this script is not meant to cover all possible installations
+# but hopefully can be used as a guide if you are installing on other 
+# flavours of Linux
+#
 # Currently tested in Debian [11, 12], Ubuntu [22.04, 24.04], Fedora [40,41]
 # Untested additions for Linux Mint [21.3]
 # 
+# First option passed is the branch of FreeDATA to run.  Defaults to main.
+# Second option passed is the version of Hamlib to use.  Defaults to 4.5.5.
+#
 # Run this script by typing in the terminal (without the quotes):
-# "bash install-freedata-linux.sh" to install from the main branch 
-# "bash install-freedata-linux.sh develop" to install from the develop branch
+# "bash install-freedata-linux.sh (FreeDATA-branch) (hamlib-version)"
+#
+# Examples:
+#
+# Install FreeDATA main branch and default Hamlib version:
+# "bash install-freedata-linux.sh"
+#
+# Install FreeDATA develop branch and default Hamlib version:
+# "bash install-freedata-linux.sh develop"
+#
+# Install FreeDATA develop branch and Hamlib version 4.6.2:
+# "bash install-freedata-linux.sh develop 4.6.2"
+#
+# Install FreeDATA main branch and Hamlib version 4.6.2:
+# "bash install-freedata-linux.sh main 4.6.2"
 #
 # This script creates three subdirectories in the directory it is run
 # FreeDATA: Contains the FreeDATA software
 # FreeDATA-venv: Contains the Python virtual environment
 # FreeDATA-hamlib: Contains the hamlib libraries
 #
+# It also installs nvm and node into $HOME/.nvm
+#
 # FreeDATA config file is stored in $HOME/.config/FreeDATA/config.ini
 # See the run-freedata-linux.sh for more details
 #
 #
 # Changelog:
+# 2.6:	02 May 2025 (deej)
+# 	Allow any Hamlib released version as a second command line argument.
+#	Note this requires specifying the FreeDATA branch as the
+#	first argument
+#
+# 2.5:	29 Apr 2025 (deej)
+# 	Allow any FreeDATA branch
+#
 # 2.4:	26 Apr 2025 (petrkr)
 # 	Add python3-dev package for debian based distros. Fixes build PyAudio
 #
@@ -84,25 +114,29 @@ fi
 
 case $1 in
    "" | "main")
-	args="main"
+	branch="main"
    ;;
-   "develop")
-	args="develop"
-   ;;
-  v*)
-  args=$1
-  ;;
-  *)
-	echo "Argument" $1 "not valid.  Exiting."
-	exit 1
+   *)
+   branch=$1
    ;;
 esac
+
+if [ ! -z "$2" ];
+then
+	hamlibver=$2
+else
+	hamlibver="4.5.5"
+fi
 
 osname=`grep -E '^(NAME)=' /etc/os-release | cut -d\" -f2`
 osversion=`grep -E '^(VERSION_ID)=' /etc/os-release | cut -d\" -f2`
 
+echo ""
 echo "Running on" $osname "version" $osversion
+echo "Installing FreeDATA from branch" $branch "with Hamlib version" $hamlibver
+echo ""
 
+echo "*************************************************************************"
 echo "*************************************************************************"
 echo "Installing software prerequisites"
 echo "If prompted, enter your password to run the sudo command"
@@ -193,7 +227,7 @@ else
 fi
 
 echo "*************************************************************************"
-echo "Checking for hamlib 4.5.5 in FreeDATA-hamlib"
+echo "Checking for hamlib" $hamlibver "FreeDATA-hamlib"
 echo "*************************************************************************"
 
 if [ -d "FreeDATA-hamlib.old" ];
@@ -206,11 +240,11 @@ then
 	if [ -f "./FreeDATA-hamlib/bin/rigctl" ];
 	then
 		checkhamlibver=`./FreeDATA-hamlib/bin/rigctl --version | cut -f3 -d" "`
-		if [ "$checkhamlibver" != "4.5.5" ];
+		if [ "$checkhamlibver" != "$hamlibver" ];
 		then
 			mv FreeDATA-hamlib FreeDATA-hamlib.old
 		else
-			echo "Hamlib 4.5.5 found, no installation needed."
+			echo "Hamlib" $hamlibver "found, no installation needed."
 		fi
 	else
 		mv FreeDATA-hamlib FreeDATA-hamlib.old
@@ -219,25 +253,25 @@ fi
 
 if [ ! -d "FreeDATA-hamlib" ];
 then
-	echo "Installing hamlib 4.5.5 into FreeDATA-hamlib"
+	echo "Installing hamlib" $hamlibver "into FreeDATA-hamlib"
 	curdir=`pwd`
-	wget https://github.com/Hamlib/Hamlib/releases/download/4.5.5/hamlib-4.5.5.tar.gz
-	if [ -f "hamlib-4.5.5.tar.gz" ];
+	wget https://github.com/Hamlib/Hamlib/releases/download/$hamlibver/hamlib-$hamlibver.tar.gz
+	if [ -f "hamlib-$hamlibver.tar.gz" ];
 	then
-		tar -xplf hamlib-4.5.5.tar.gz
+		tar -xplf hamlib-$hamlibver.tar.gz
 	else
-		echo "Something went wrong.  hamlib-4.5.5.tar.gz not downloaded."
+		echo "Something went wrong.  hamlib-"$hamlibver".tar.gz not downloaded."
 		exit 1
 	fi
-	if [ -d "hamlib-4.5.5" ];
+	if [ -d "hamlib-$hamlibver" ];
 	then
-		cd hamlib-4.5.5
+		cd hamlib-$hamlibver
 		./configure --prefix=$curdir/FreeDATA-hamlib
 		make
 		make install
 		cd ..
 	else
-		echo "Something went wrong.  hamlib-4.5.5 directory not found."
+		echo "Something went wrong.  hamlib-"$hamlibver" directory not found."
 		exit 1
 	fi
 	if [ ! -f "$curdir/FreeDATA-hamlib/bin/rigctl" ];
@@ -246,8 +280,8 @@ then
                 exit 1
 	else
 		echo "Cleaning up files from hamlib build."
-		rm -f hamlib-4.5.5.tar.gz
-		rm -rf hamlib-4.5.5
+		rm -f hamlib-$hamlibver.tar.gz
+		rm -rf hamlib-$hamlibver
         fi
 fi
 
@@ -295,19 +329,13 @@ pip install --upgrade pip wheel
 echo "*************************************************************************"
 echo "Downloading the FreeDATA software from the git repo"
 echo "*************************************************************************"
-if [ "$args" == "develop" ];
+if [ "$branch" == "develop" ];
 then
   echo "Downloading development version"
   git clone https://github.com/DJ2LS/FreeDATA.git -b develop
-	git checkout develop
-elif [[ $args == v* ]];
-then
-    echo "Downloading specific version: $args"
-    git clone https://github.com/DJ2LS/FreeDATA.git -b $args
-else
-    echo "Downloading regular version"
-  git clone https://github.com/DJ2LS/FreeDATA.git
-
+else 
+    echo "Downloading specific version: $branch"
+    git clone https://github.com/DJ2LS/FreeDATA.git -b $branch
 fi
 
 echo "*************************************************************************"
