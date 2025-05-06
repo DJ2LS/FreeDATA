@@ -113,6 +113,12 @@ class SocketCommandHandler:
         self.send_response(f"LINK REGISTERED")
         self.send_response(message)
 
+    def socket_respond_iamalive(self):
+        self.send_response(f"IAMALIVE")
+
+    def socket_respond_buffer_size(self, buffer_size):
+        self.send_response(f"BUFFER {buffer_size}")
+
     def socket_respond_ptt(self, state):
         """ send the PTT state via command socket"""
         if state:

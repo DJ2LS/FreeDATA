@@ -89,6 +89,7 @@ class P2PConnection:
         States.FAILED: {
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT.value: 'received_disconnect',
             FRAME_TYPE.P2P_CONNECTION_DISCONNECT_ACK.value: 'received_disconnect_ack',
+            FRAME_TYPE.P2P_CONNECTION_HEARTBEAT.value: 'received_heartbeat',
         },
     }
 
@@ -143,13 +144,15 @@ class P2PConnection:
         """Starts a worker thread to monitor the transmit data queue and process data."""
 
         def data_processing_worker():
+            last_isalive = 0
             while True:
-                if time.time() > self.last_data_timestamp + self.ENTIRE_CONNECTION_TIMEOUT and self.state not in [States.DISCONNECTING, States.DISCONNECTED, States.ARQ_SESSION, States.FAILED, States.PAYLOAD_TRANSMISSION]:
+                now = time.time()
+                if now > self.last_data_timestamp + self.ENTIRE_CONNECTION_TIMEOUT and self.state not in [States.DISCONNECTING, States.DISCONNECTED, States.ARQ_SESSION, States.FAILED, States.PAYLOAD_TRANSMISSION]:
                     self.disconnect()
                     return
 
                 # this is our heartbeat logic, only ISS will run it
-                if time.time() > self.last_data_timestamp + 5 and self.state in [States.CONNECTED, States.PAYLOAD_SENT] and self.is_ISS and not self.transmission_in_progress:
+                if now > self.last_data_timestamp + 5 and self.state in [States.CONNECTED, States.PAYLOAD_SENT] and self.is_ISS and not self.transmission_in_progress:
                     self.log("Sending heartbeat")
 
                     if self.p2p_data_tx_queue.empty():
@@ -161,6 +164,13 @@ class P2PConnection:
                 if self.state in [States.CONNECTED, States.PAYLOAD_SENT] and self.is_Master:
                     threading.Event().wait(0.5)
                     self.process_data_queue()
+
+
+                # call every 60s
+                if now - last_isalive >= 60:
+                    self.ctx.socket_interface_manager.command_server.command_handler.socket_respond_iamalive()
+
+                    last_isalive = now
 
                 threading.Event().wait(0.100)
 
@@ -302,6 +312,9 @@ class P2PConnection:
 
         self.is_Master = True
 
+        buffer_size = self.get_tx_queue_buffer_size()
+        self.ctx.socket_interface_manager.command_server.command_handler.socket_respond_buffer_size(buffer_size)
+
         raw_data = self.p2p_data_tx_queue.get()
         sequence_id = random.randint(0,255)
 
@@ -375,6 +388,10 @@ class P2PConnection:
         else:
             self.log("Moving to next payload...")
             self.set_state(States.PAYLOAD_SENT)
+
+        buffer_size = self.get_tx_queue_buffer_size()
+        self.ctx.socket_interface_manager.command_server.command_handler.socket_respond_buffer_size(buffer_size)
+
 
     def transmit_heartbeat(self, has_data=False, announce_arq=False):
         # heartbeats will be transmit by ISS only, therefore only IRS can reveice heartbeat ack
@@ -572,3 +589,6 @@ class P2PConnection:
                 remove(session.id)
             except Exception as e:
                 self.log(f"Error handling ARQ {kind.upper()} session: {e}", isWarning=True)
+
+    def get_tx_queue_buffer_size(self):
+        return sum(len(item) for item in list(self.p2p_data_tx_queue.queue))

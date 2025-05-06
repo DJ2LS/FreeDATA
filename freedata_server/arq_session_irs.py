@@ -5,7 +5,7 @@ from modem_frametypes import FRAME_TYPE
 from codec2 import FREEDV_MODE
 from enum import Enum
 import time
-
+from p2p_connection import States as P2PStates
 
 class IRS_State(Enum):
     """Enumeration representing the states of an IRS (Information Receiving Station) ARQ session.
@@ -82,6 +82,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         },
         IRS_State.RESUME: {
             FRAME_TYPE.ARQ_SESSION_OPEN.value: 'send_open_ack',
+
         }
 
 
@@ -117,6 +118,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.running_p2p_connection = self.ctx.state_manager.get_p2p_connection_session(self.id)
             # register arq session in p2p connection
             self.running_p2p_connection.running_arq_session = self
+            self.running_p2p_connection.set_state(P2PStates.ARQ_SESSION)
         except Exception as e:
             self.log("Error getting p2p connection session")
 
@@ -288,8 +290,12 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         # update p2p connection timeout
         if self.running_p2p_connection:
-            self.running_p2p_connection.last_data_timestamp = time.time()
-            self.running_p2p_connection.running_arq_session = self
+            try:
+                self.running_p2p_connection.last_data_timestamp = time.time()
+                self.running_p2p_connection.running_arq_session = self
+                self.running_p2p_connection.set_state(P2PStates.ARQ_SESSION)
+            except Exception as e:
+                self.log(f"Error handling P2P states: {e}")
 
         remaining_data_length = self.total_length - self.received_bytes
         self.log(f"Remaining data: {remaining_data_length}", isWarning=True)
