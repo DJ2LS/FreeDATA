@@ -482,6 +482,8 @@ class P2PConnection:
                 self.running_arq_session.abort_transmission()
         except Exception as e:
             self.log(f"Error stopping ARQ session {e}")
+        finally:
+            self.delete_arq_session()
 
     def received_disconnect(self, frame):
         self.log("DISCONNECTED...............")
@@ -532,12 +534,16 @@ class P2PConnection:
         self.last_data_timestamp = time.time()
         self.set_state(States.CONNECTED)
         self.is_Master = True
+        self.delete_arq_session()
         self.running_arq_session = None
 
     def received_arq(self, received_data):
         self.last_data_timestamp = time.time()
         self.set_state(States.CONNECTED)
         self.running_arq_session = None
+
+        self.delete_arq_session()
+
         try:
             if self.ctx.socket_interface_manager and hasattr(self.ctx.socket_interface_manager.data_server, "data_handler"):
                 self.log(f"sending {len(received_data)} bytes to data socket client")
@@ -548,3 +554,21 @@ class P2PConnection:
 
     def failed_arq(self):
         self.set_state(States.CONNECTED)
+        self.delete_arq_session()
+
+    def delete_arq_session(self):
+        """
+        Delete both ARQ IRS and ISS sessions.
+        For each session type, retrieve the session by ID and then remove it.
+        Log any errors encountered during retrieval or removal.
+        """
+        for kind in ('irs', 'iss'):
+            get = getattr(self.ctx.state_manager, f"get_arq_{kind}_session")
+            remove = getattr(self.ctx.state_manager, f"remove_arq_{kind}_session")
+            try:
+                # Retrieve the session (may raise if not found)
+                session = get(self.session_id)
+                # Remove the session
+                remove(session.id)
+            except Exception as e:
+                self.log(f"Error handling ARQ {kind.upper()} session: {e}", isWarning=True)

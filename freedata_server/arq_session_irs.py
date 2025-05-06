@@ -113,6 +113,12 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         # instance of p2p connection
         self.running_p2p_connection = None
+        try:
+            self.running_p2p_connection = self.ctx.state_manager.get_p2p_connection_session(self.id)
+            # register arq session in p2p connection
+            self.running_p2p_connection.running_arq_session = self
+        except Exception as e:
+            self.log("Error getting p2p connection session")
 
         self.type_byte = None
         self.total_length = 0
