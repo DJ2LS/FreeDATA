@@ -20,11 +20,9 @@ class stats:
     SNR, data rate, file size, and duration. It then pushes these statistics
     to a remote API endpoint for aggregation and analysis.
     """
-    def __init__(self, config, event_manager, states):
+    def __init__(self, ctx):
         self.api_url = STATS_API_URL
-        self.states = states
-        self.config = config
-        self.event_manager = event_manager
+        self.ctx = ctx
     def push(self, status, session_statistics, dxcall, receiving=True):
         """Pushes session statistics to the remote API endpoint.
 
@@ -40,7 +38,7 @@ class stats:
             receiving (bool, optional): True if the session was receiving data, False otherwise. Defaults to True.
         """
         try:
-            snr_raw = [item["snr"] for item in self.states.arq_speed_list]
+            snr_raw = [item["snr"] for item in self.ctx.state_manager.arq_speed_list]
             avg_snr = round(sum(snr_raw) / len(snr_raw), 2)
         except Exception:
             avg_snr = 0
@@ -50,17 +48,17 @@ class stats:
         else:
             station = "ISS"
 
-        mycallsign = self.config['STATION']['mycall']
-        ssid = self.config['STATION']['myssid']
+        mycallsign = self.ctx.config_manager.config['STATION']['mycall']
+        ssid = self.ctx.config_manager.config['STATION']['myssid']
         full_callsign = f"{mycallsign}-{ssid}"
 
         headers = {"Content-Type": "application/json"}
         station_data = {
             'callsign': full_callsign,
             'dxcallsign': dxcall,
-            'gridsquare': self.config['STATION']['mygrid'],
-            'dxgridsquare': str(self.states.dxgrid, "utf-8"),
-            'frequency': 0 if self.states.radio_frequency is None else self.states.radio_frequency,
+            'gridsquare': self.ctx.config_manager.config['STATION']['mygrid'],
+            'dxgridsquare': str(self.ctx.state_manager.dxgrid, "utf-8"),
+            'frequency': 0 if self.ctx.state_manager.radio_frequency is None else self.ctx.state_manager.radio_frequency,
             'avgsnr': avg_snr,
             'bytesperminute': session_statistics['bytes_per_minute'],
             'filesize': session_statistics['total_bytes'],
@@ -74,7 +72,6 @@ class stats:
         }
 
         station_data = json.dumps(station_data)
-        print(station_data)
         try:
             response = requests.post(self.api_url, json=station_data, headers=headers)
             log.info("[STATS] push", code=response.status_code)

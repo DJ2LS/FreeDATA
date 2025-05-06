@@ -30,7 +30,7 @@ class PingFrameHandler(frame_handler.FrameHandler):
         the modem is not busy with ARQ. If both conditions are met, it sends
         a PING acknowledgement and checks for queued messages to send.
         """
-        if not bool(self.is_frame_for_me() and not self.states.getARQ()):
+        if not bool(self.is_frame_for_me() and not self.ctx.state_manager.getARQ()):
             return
         self.logger.debug(
             f"[Modem] Responding to request from [{self.details['frame']['origin']}]",
@@ -46,7 +46,7 @@ class PingFrameHandler(frame_handler.FrameHandler):
         This method builds a PING acknowledgement frame using the received
         frame's origin CRC and SNR, and transmits it using the modem.
         """
-        factory = data_frame_factory.DataFrameFactory(self.config)
+        factory = data_frame_factory.DataFrameFactory(self.ctx)
         ping_ack_frame = factory.build_ping_ack(
             self.details['frame']['origin_crc'], 
             self.details['snr']
@@ -65,5 +65,5 @@ class PingFrameHandler(frame_handler.FrameHandler):
         # only check for queued messages, if we have enabled this and if we have a minimum snr received
         if self.config["MESSAGES"]["enable_auto_repeat"] and self.details["snr"] >= -2:
             # set message to queued if beacon received
-            DatabaseManagerMessages(self.event_manager).set_message_to_queued_for_callsign(
+            DatabaseManagerMessages(self.ctx).set_message_to_queued_for_callsign(
                 self.details['frame']["origin"])

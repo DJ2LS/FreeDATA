@@ -13,13 +13,13 @@ class DatabaseManagerBeacon(DatabaseManager):
     interacting with beacon data in the database. It includes
     functionality for adding, retrieving, and cleaning up beacon records.
     """
-    def __init__(self, event_manager):
+    def __init__(self, ctx):
         """Initializes the DatabaseManagerBeacon.
 
         Args:
             event_manager (EventManager): The event manager instance.
         """
-        super().__init__(event_manager)
+        super().__init__(ctx)
 
     def add_beacon(self, timestamp, callsign, snr, gridsquare):
         """Adds a new beacon record to the database.

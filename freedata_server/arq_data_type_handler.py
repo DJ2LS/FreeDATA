@@ -31,10 +31,10 @@ class ARQ_SESSION_TYPES(Enum):
 
 
 class ARQDataTypeHandler:
-    def __init__(self, event_manager, state_manager):
+    def __init__(self, ctx):
         self.logger = structlog.get_logger(type(self).__name__)
-        self.event_manager = event_manager
-        self.state_manager = state_manager
+
+        self.ctx = ctx
 
         self.handlers = {
             ARQ_SESSION_TYPES.raw: {
@@ -105,7 +105,7 @@ class ARQDataTypeHandler:
         """
         session_type = self.get_session_type_from_value(type_byte)
 
-        self.state_manager.setARQ(False)
+        self.ctx.state_manager.setARQ(False)
 
         if session_type and session_type in self.handlers and 'handle' in self.handlers[session_type]:
             return self.handlers[session_type]['handle'](data, statistics)
@@ -129,7 +129,7 @@ class ARQDataTypeHandler:
         """
         session_type = self.get_session_type_from_value(type_byte)
 
-        self.state_manager.setARQ(False)
+        self.ctx.state_manager.setARQ(False)
 
         if session_type in self.handlers and 'failed' in self.handlers[session_type]:
             return self.handlers[session_type]['failed'](data, statistics)
@@ -172,7 +172,7 @@ class ARQDataTypeHandler:
         """
         session_type = self.get_session_type_from_value(type_byte)
 
-        self.state_manager.setARQ(False)
+        self.ctx.state_manager.setARQ(False)
 
         if session_type in self.handlers and 'transmitted' in self.handlers[session_type]:
             return self.handlers[session_type]['transmitted'](data, statistics)
@@ -393,7 +393,6 @@ class ARQDataTypeHandler:
         Returns:
             The ZLIB-compressed data as a bytearray.
         """
-        compressed_data = lzma.compress(data)
 
         compressor = zlib.compressobj(level=6, wbits=-zlib.MAX_WBITS, strategy=zlib.Z_FILTERED)
         compressed_data = compressor.compress(data) + compressor.flush()
@@ -420,7 +419,7 @@ class ARQDataTypeHandler:
         decompressed_data += decompressor.flush()
 
         self.log(f"Handling ZLIB compressed P2PMSG data: {len(decompressed_data)} Bytes from {len(data)} Bytes")
-        message_received(self.event_manager, self.state_manager, decompressed_data, statistics)
+        message_received(self.ctx, decompressed_data, statistics)
         return decompressed_data
 
     def failed_p2pmsg_zlib(self, data, statistics):
@@ -441,7 +440,7 @@ class ARQDataTypeHandler:
         decompressed_data += decompressor.flush()
 
         self.log(f"Handling failed ZLIB compressed P2PMSG data: {len(decompressed_data)} Bytes from {len(data)} Bytes", isWarning=True)
-        message_failed(self.event_manager, self.state_manager, decompressed_data, statistics)
+        message_failed(self.ctx, decompressed_data, statistics)
         return decompressed_data
 
     def transmitted_p2pmsg_zlib(self, data, statistics):
@@ -463,70 +462,54 @@ class ARQDataTypeHandler:
         decompressed_data = decompressor.decompress(data)
         decompressed_data += decompressor.flush()
 
-        message_transmitted(self.event_manager, self.state_manager, decompressed_data, statistics)
+        message_transmitted(self.ctx, decompressed_data, statistics)
         return decompressed_data
     
     
     def prepare_p2p_connection(self, data):
-        """Prepares P2P connection data for transmission using GZIP compression.
+        """Prepares P2P connection data for transmission using ZLIB compression.
 
-        This method compresses the given data using GZIP and logs the size of the
-        data before and after compression.
+        This method compresses the provided data using ZLIB with specific settings for
+        peer-to-peer connection sessions. It logs the size of the data before and after
+        compression and prints the current P2P connection sessions.
 
         Args:
             data: The bytearray containing the P2P connection data to be compressed.
 
         Returns:
-            The GZIP-compressed data as a bytearray.
+            The ZLIB-compressed data as a bytearray.
         """
-        compressed_data = gzip.compress(data)
-        self.log(f"Preparing gzip compressed P2P_CONNECTION data: {len(data)} Bytes >>> {len(compressed_data)} Bytes")
-        print(self.state_manager.p2p_connection_sessions)
+
+        compressor = zlib.compressobj(level=6, wbits=-zlib.MAX_WBITS, strategy=zlib.Z_FILTERED)
+        compressed_data = compressor.compress(data) + compressor.flush()
+
+        self.log(f"Preparing zlib compressed P2P_CONNECTION data: {len(data)} Bytes >>> {len(compressed_data)} Bytes")
+        print(self.ctx.state_manager.p2p_connection_sessions)
         return compressed_data
 
     def handle_p2p_connection(self, data, statistics):
-        """Handles GZIP compressed P2P connection data.
 
-        This method decompresses the provided GZIP data, logs size information,
-        and then distributes the decompressed data to active P2P connection sessions.
+        decompressor = zlib.decompressobj(wbits=-zlib.MAX_WBITS)
+        decompressed_data = decompressor.decompress(data)
+        decompressed_data += decompressor.flush()
 
-        Args:
-            data: The bytearray containing the GZIP compressed P2P connection data.
-            statistics: A dictionary containing statistics related to the ARQ session.
-        """
-        decompressed_data = gzip.decompress(data)
         self.log(f"Handling gzip compressed P2P_CONNECTION data: {len(decompressed_data)} Bytes from {len(data)} Bytes")
-        for session_id in self.state_manager.p2p_connection_sessions:
-            self.state_manager.p2p_connection_sessions[session_id].received_arq(decompressed_data)
+        for session_id in self.ctx.state_manager.p2p_connection_sessions:
+            self.ctx.state_manager.p2p_connection_sessions[session_id].received_arq(decompressed_data)
 
     def failed_p2p_connection(self, data, statistics):
-        """Handles failed GZIP compressed P2P connection data.
 
-        This method decompresses the provided GZIP data, logs size information
-        and an error message, and then returns the decompressed data.
-
-        Args:
-            data: The bytearray containing the GZIP compressed P2P connection data.
-            statistics: A dictionary containing statistics related to the ARQ session.
-
-        Returns:
-            The decompressed data as a bytearray.
-        """
-        decompressed_data = gzip.decompress(data)
+        decompressor = zlib.decompressobj(wbits=-zlib.MAX_WBITS)
+        decompressed_data = decompressor.decompress(data)
+        decompressed_data += decompressor.flush()
         self.log(f"Handling failed gzip compressed P2P_CONNECTION data: {len(decompressed_data)} Bytes from {len(data)} Bytes", isWarning=True)
-        for session_id in self.state_manager.p2p_connection_sessions:
-            self.state_manager.p2p_connection_sessions[session_id].failed_arq()
+        for session_id in self.ctx.state_manager.p2p_connection_sessions:
+            self.ctx.state_manager.p2p_connection_sessions[session_id].failed_arq()
 
     def transmitted_p2p_connection(self, data, statistics):
-        """Handles the successful transmission of GZIP compressed P2P connection data.
 
-        This method decompresses the provided GZIP data and then calls the
-        `transmitted_arq` method for each active P2P connection session.
-
-        Args:
-            data: The bytearray containing the GZIP compressed P2P connection data.
-            statistics: A dictionary containing statistics related to the ARQ session.
-        """
-        decompressed_data = gzip.decompress(data)
-        for session_id in self.state_manager.p2p_connection_sessions:
-            self.state_manager.p2p_connection_sessions[session_id].transmitted_arq(decompressed_data)
+        decompressor = zlib.decompressobj(wbits=-zlib.MAX_WBITS)
+        decompressed_data = decompressor.decompress(data)
+        decompressed_data += decompressor.flush()
+        for session_id in self.ctx.state_manager.p2p_connection_sessions:
+            self.ctx.state_manager.p2p_connection_sessions[session_id].transmitted_arq(decompressed_data)

@@ -21,7 +21,7 @@ class Explorer:
     frequency, signal strength, version, bandwidth, beacon status, and
     last heard stations, and pushes this data to the FreeDATA explorer API.
     """
-    def __init__(self, modem_version, config_manager, states):
+    def __init__(self, ctx):
         """Initializes the Explorer.
 
         This method initializes the Explorer with the modem version,
@@ -33,11 +33,9 @@ class Explorer:
             config_manager (ConfigManager): The configuration manager object.
             states (StateManager): The state manager object.
         """
-        self.modem_version = modem_version
-        self.config_manager = config_manager
-        self.config = self.config_manager.read()
-        self.states = states
-        self.explorer_url = EXPLORER_API_URL
+        self.ctx = ctx
+        self.modem_version = self.ctx.constants.MODEM_VERSION
+        self.explorer_url = self.ctx.constants.EXPLORER_API_URL
 
     def push(self):
         """Pushes station and last heard data to the explorer.
@@ -47,17 +45,16 @@ class Explorer:
         explorer API. It includes error handling and logging for successful
         pushes, failed pushes, and connection issues.
         """
-        self.config = self.config_manager.read()
 
-        frequency = 0 if self.states.radio_frequency is None else self.states.radio_frequency
+        frequency = 0 if self.ctx.state_manager.radio_frequency is None else self.ctx.state_manager.radio_frequency
         band = "USB"
-        callsign = f"{self.config['STATION']['mycall']}-{self.config['STATION']['myssid']}"
-        gridsquare = str(self.config['STATION']['mygrid'])
+        callsign = f"{self.ctx.config_manager.config['STATION']['mycall']}-{self.ctx.config_manager.config['STATION']['myssid']}"
+        gridsquare = str(self.ctx.config_manager.config['STATION']['mygrid'])
         version = str(self.modem_version)
-        bandwidth = str(self.config['MODEM']['maximum_bandwidth'])
-        beacon = str(self.states.is_beacon_running)
-        strength = str(self.states.s_meter_strength)
-        away_from_key = str(self.states.is_away_from_key)
+        bandwidth = str(self.ctx.config_manager.config['MODEM']['maximum_bandwidth'])
+        beacon = str(self.ctx.state_manager.is_beacon_running)
+        strength = str(self.ctx.state_manager.s_meter_strength)
+        away_from_key = str(self.ctx.state_manager.is_away_from_key)
 
         # Stop pushing if default callsign
         if callsign in ['AA1AAA-1', 'XX1XXX-6']:
@@ -77,7 +74,7 @@ class Explorer:
             "away_from_key": away_from_key
         }
 
-        for i in self.states.heard_stations:
+        for i in self.ctx.state_manager.heard_stations:
             try:
                 callsign = i[0]
                 grid = i[1]

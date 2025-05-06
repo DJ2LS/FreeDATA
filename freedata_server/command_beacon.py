@@ -16,7 +16,7 @@ class BeaconCommand(TxCommand):
         Returns:
             bytearray: The built beacon frame.
         """
-        beacon_state = self.state_manager.is_away_from_key
+        beacon_state = self.ctx.state_manager.is_away_from_key
         return self.frame_factory.build_beacon(beacon_state)
 
 

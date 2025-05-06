@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Request
-from api.common import api_response, api_abort, api_ok, validate
-router = APIRouter()
+from fastapi import APIRouter, Depends
+from api.common import api_response, api_abort
 import audio
 import serial_ports
+from context import AppContext, get_ctx
+
+router = APIRouter()
 
 
 @router.get("/audio", summary="Get Audio Devices", tags=["Devices"], responses={
@@ -88,17 +90,19 @@ import serial_ports
         }
     }
 })
-async def get_audio_devices():
+async def get_audio_devices(ctx: AppContext = Depends(get_ctx)):
     """
     Retrieve a list of available audio input and output devices.
 
     Returns:
         dict: A JSON object containing lists of input and output audio devices.
     """
-    # Uncomment the following line if using the actual function
-    # dev_in, dev_out = audio.get_audio_devices()
-    dev_in, dev_out = audio.fetch_audio_devices([], [])
-    return {'in': dev_in, 'out': dev_out}
+    try:
+        dev_in, dev_out = audio.fetch_audio_devices([], [])
+    except Exception as e:
+        api_abort(f"Error fetching audio devices: {e}", 503)
+    return api_response({'in': dev_in, 'out': dev_out})
+
 
 
 @router.get("/serial", summary="Get Serial Devices", tags=["Devices"], responses={
@@ -136,12 +140,15 @@ async def get_audio_devices():
         }
     }
 })
-async def get_serial_devices():
+async def get_serial_devices(ctx: AppContext = Depends(get_ctx)):
     """
     Retrieve a list of available serial devices (COM ports).
 
     Returns:
         list: A list of dictionaries containing serial port information.
     """
-    devices = serial_ports.get_ports()
-    return devices
+    try:
+        devices = serial_ports.get_ports()
+    except Exception as e:
+        api_abort(f"Error fetching serial ports: {e}", 503)
+    return api_response(devices)

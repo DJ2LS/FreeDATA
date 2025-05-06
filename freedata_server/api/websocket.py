@@ -1,18 +1,49 @@
-from fastapi import APIRouter, Request, WebSocket
+from fastapi import APIRouter, WebSocket, Depends
+from context import AppContext, get_ctx
+
 router = APIRouter()
 
-# WebSocket Event Handlers
 @router.websocket("/events")
-async def websocket_events(websocket: WebSocket):
+async def websocket_events(
+    websocket: WebSocket,
+    ctx: AppContext = Depends(get_ctx)
+):
+    """
+    WebSocket endpoint for event streams.
+    """
     await websocket.accept()
-    await websocket.app.wsm.handle_connection(websocket, websocket.app.wsm.events_client_list, websocket.app.modem_events)
+    await ctx.websocket_manager.handle_connection(
+        websocket,
+        ctx.websocket_manager.events_client_list,
+        ctx.modem_events
+    )
 
 @router.websocket("/fft")
-async def websocket_fft(websocket: WebSocket):
+async def websocket_fft(
+    websocket: WebSocket,
+    ctx: AppContext = Depends(get_ctx)
+):
+    """
+    WebSocket endpoint for FFT data streams.
+    """
     await websocket.accept()
-    await websocket.app.wsm.handle_connection(websocket, websocket.app.wsm.fft_client_list, websocket.app.modem_fft)
+    await ctx.websocket_manager.handle_connection(
+        websocket,
+        ctx.websocket_manager.fft_client_list,
+        ctx.modem_fft
+    )
 
 @router.websocket("/states")
-async def websocket_states(websocket: WebSocket):
+async def websocket_states(
+    websocket: WebSocket,
+    ctx: AppContext = Depends(get_ctx)
+):
+    """
+    WebSocket endpoint for state updates.
+    """
     await websocket.accept()
-    await websocket.app.wsm.handle_connection(websocket, websocket.app.wsm.states_client_list, websocket.app.state_queue)
+    await ctx.websocket_manager.handle_connection(
+        websocket,
+        ctx.websocket_manager.states_client_list,
+        ctx.state_queue
+    )

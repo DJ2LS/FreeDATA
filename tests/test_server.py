@@ -4,7 +4,6 @@ import shlex, os
 import requests
 import time
 import json
-
 # API Server integration testst
 class TestIntegration(unittest.TestCase):
 

@@ -14,7 +14,7 @@ class TxCommand:
     and transmission via the modem.
     """
 
-    def __init__(self, config: dict, state_manager: StateManager, event_manager, apiParams:dict = {}, socket_interface_manager=None):
+    def __init__(self, ctx, apiParams:dict = {}):
         """Initializes a new TxCommand instance.
 
         This method sets up the command with the given configuration, state
@@ -29,14 +29,11 @@ class TxCommand:
             apiParams (dict, optional): API parameters for the command. Defaults to {}.
             socket_command_handler (optional): The socket command handler object. Defaults to None.
         """
-        self.config = config
+        self.ctx = ctx
         self.logger = structlog.get_logger(type(self).__name__)
-        self.state_manager = state_manager
-        self.event_manager = event_manager
         self.set_params_from_api(apiParams)
-        self.frame_factory = DataFrameFactory(config)
-        self.arq_data_type_handler = ARQDataTypeHandler(event_manager, state_manager)
-        self.socket_interface_manager = socket_interface_manager
+        self.frame_factory = DataFrameFactory(self.ctx)
+        self.arq_data_type_handler = ARQDataTypeHandler(self.ctx)
 
     def log(self, message, isWarning = False):
         """Logs a message with the command's name.
@@ -74,7 +71,7 @@ class TxCommand:
         """
         return type(self).__name__
 
-    def emit_event(self, event_queue):
+    def emit_event(self):
         """Emits an event to the event queue.
 
         This method is a placeholder for emitting events related to the
@@ -117,7 +114,7 @@ class TxCommand:
             FREEDV_MODE: The transmission mode.
         """
 
-        if self.config['EXP'].get('enable_vhf'):
+        if self.ctx.config_manager.config['EXP'].get('enable_vhf'):
             mode = FREEDV_MODE.data_vhf_1
         else:
             mode = FREEDV_MODE.signalling
@@ -147,7 +144,7 @@ class TxCommand:
             'frame': frame,
         }
 
-    def transmit(self, modem):
+    def transmit(self):
         """Transmits the command frame via the modem.
 
         This method builds the command frame and transmits it once using the
@@ -157,9 +154,9 @@ class TxCommand:
             modem: The modem object.
         """
         frame = self.build_frame()
-        modem.transmit(self.get_tx_mode(), 1, 0, frame)
+        self.ctx.rf_modem.transmit(self.get_tx_mode(), 1, 0, frame)
 
-    def run(self, event_queue: queue.Queue, modem):
+    def run(self):
         """Runs the command.
 
         This method emits an event to the event queue, logs a message
@@ -170,9 +167,9 @@ class TxCommand:
             event_queue (queue.Queue): The event queue.
             modem: The modem object.
         """
-        self.emit_event(event_queue)
+        self.emit_event()
         self.logger.info(self.log_message())
-        self.transmit(modem)
+        self.transmit()
 
     def test(self, event_queue: queue.Queue):
         """Tests the command by building and returning the frame.
@@ -188,6 +185,6 @@ class TxCommand:
         Returns:
             bytearray: The built frame.
         """
-        self.emit_event(event_queue)
+        self.emit_event()
         self.logger.info(self.log_message())
         return self.build_frame()

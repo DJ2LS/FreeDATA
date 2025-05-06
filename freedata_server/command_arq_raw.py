@@ -37,7 +37,7 @@ class ARQRawCommand(TxCommand):
 
         self.data = base64.b64decode(apiParams['data'])
 
-    def run(self, event_queue: Queue, modem):
+    def run(self):
         """Executes the ARQ raw data transmission command.
 
         This method prepares the data for transmission, creates an ARQ session,
@@ -54,20 +54,20 @@ class ARQRawCommand(TxCommand):
             starts successfully, False otherwise.
         """
         try:
-            self.emit_event(event_queue)
+            self.emit_event()
             self.logger.info(self.log_message())
 
             # wait some random time and wait if we have an ongoing codec2 transmission
             # on our channel. This should prevent some packet collision
             random_delay = np.random.randint(0, 6)
             threading.Event().wait(random_delay)
-            self.state_manager.channel_busy_condition_codec2.wait(5)
+            self.ctx.state_manager.channel_busy_condition_codec2.wait(5)
 
             prepared_data, type_byte = self.arq_data_type_handler.prepare(self.data, self.type)
 
-            iss = ARQSessionISS(self.config, modem, self.dxcall, self.state_manager, prepared_data, type_byte)
+            iss = ARQSessionISS(self.ctx, self.dxcall, prepared_data, type_byte)
             if iss.id:
-                self.state_manager.register_arq_iss_session(iss)
+                self.ctx.state_manager.register_arq_iss_session(iss)
                 iss.start()
                 return iss
         except Exception as e:
