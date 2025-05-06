@@ -195,7 +195,7 @@ class Demodulator():
                     else:
                         nbytes = 0
                         self.reset_data_sync()
-                        audiobuffer.nbuffer = 0
+                        #audiobuffer.nbuffer = 0
 
 
 
