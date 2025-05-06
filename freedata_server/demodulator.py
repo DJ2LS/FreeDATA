@@ -156,6 +156,9 @@ class Demodulator():
         bytes_per_frame= self.MODE_DICT[mode]["bytes_per_frame"]
         state_buffer = self.MODE_DICT[mode]["state_buffer"]
         mode_name = self.MODE_DICT[mode]["name"]
+
+        last_rx_status = 0
+
         try:
             while self.stream and self.stream.active and not self.shutdown_flag.is_set():
                 threading.Event().wait(0.01)
@@ -176,10 +179,10 @@ class Demodulator():
 
                         if rx_status not in [0]:
                             self.is_codec2_traffic_counter = self.is_codec2_traffic_cooldown
-                            self.log.debug(
-                                f"[MDM] [demod_audio] [mode={mode_name}]", rx_status=rx_status,
-                                sync_flag=codec2.api.rx_sync_flags_to_text[rx_status]
-                            )
+
+                            if last_rx_status != rx_status:
+                                self.log.debug(f"[MDM] [DEMOD] [mode={mode_name}] [State: {last_rx_status} >>> {rx_status}]", sync_flag=codec2.api.rx_sync_flags_to_text[rx_status])
+                                last_rx_status = rx_status
 
                         # decrement codec traffic counter for making state smoother
                         if self.is_codec2_traffic_counter > 0:
@@ -191,6 +194,9 @@ class Demodulator():
                             state_buffer.append(rx_status)
                     else:
                         nbytes = 0
+                        self.reset_data_sync()
+                        audiobuffer.nbuffer = 0
+
 
 
                     audiobuffer.pop(nin)

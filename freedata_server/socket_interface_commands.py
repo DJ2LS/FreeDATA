@@ -114,8 +114,10 @@ class SocketCommandHandler:
         self.send_response(message)
 
     def socket_respond_iamalive(self):
-        self.send_response(f"IAMALIVE")
-
+        try:
+            self.send_response(f"IAMALIVE")
+        except Exception as e:
+            self.log(f"sending iamalive failed {e}")
     def socket_respond_buffer_size(self, buffer_size):
         self.send_response(f"BUFFER {buffer_size}")
 

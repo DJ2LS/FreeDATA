@@ -168,8 +168,10 @@ class P2PConnection:
 
                 # call every 60s
                 if now - last_isalive >= 60:
-                    self.ctx.socket_interface_manager.command_server.command_handler.socket_respond_iamalive()
-
+                    try:
+                        self.ctx.socket_interface_manager.command_server.command_handler.socket_respond_iamalive()
+                    except Exception as e:
+                        self.log("Failed to send IAMALIVE command", e)
                     last_isalive = now
 
                 threading.Event().wait(0.100)
@@ -243,7 +245,7 @@ class P2PConnection:
             retries = retries - 1
 
         #self.connected_iss() # override connection state for simulation purposes
-        self.session_failed()
+        #self.session_failed()
 
     def launch_twr(self, frame_or_burst, timeout, retries, mode):
         twr = threading.Thread(target = self.transmit_wait_and_retry, args=[frame_or_burst, timeout, retries, mode], daemon=True)
@@ -398,7 +400,7 @@ class P2PConnection:
         self.last_data_timestamp = time.time()
 
         heartbeat = self.frame_factory.build_p2p_connection_heartbeat(self.session_id, flag_has_data=has_data, flag_announce_arq=announce_arq)
-        self.launch_twr(heartbeat, 6, 10, mode=FREEDV_MODE.signalling)
+        self.launch_twr(heartbeat, 5, 10, mode=FREEDV_MODE.signalling)
 
     def transmit_heartbeat_ack(self):
         self.log("Transmitting heartbeat ACK")
