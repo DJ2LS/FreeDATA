@@ -293,8 +293,7 @@
             "enabletxautoadjust": "Auto TX audio nivå",
             "enablerxautoadjust": "Auto RX audio nivå",
             "enabletxautoadjust_help": "Sett TX-lydnivået automatisk til høyest mulig verdi" ,
-            "enablerxautoadjust_help": "Sett RX-lydnivået automatisk til høyest mulig verdi",
-
+            "enablerxautoadjust_help": "Sett RX-lydnivået automatisk til høyest mulig verdi"
         },
         "web": {
             "introduction": "Explorer-relaterte innstillinger, inkludert aktivering av Explorer-publisering og Explorer-statistikkpublisering.",
@@ -364,7 +363,6 @@
             "hamlibrigctldcustomarguments": "Rigctld egendefinerte argumenter",
             "hamlibrigctldcustomarguments_help": "Ytterligere argumenter for rigctld (vanligvis ikke ndvendig)",
             "hamlibrigctldcustomarguments_placeholder": "Valgfrie egendefinerte argumenter",
-            "hamlibrigctldcustomarguments_placeholder": "Valgfrie tilpassede argumenter",
             "flrigport": "Flrig port",
             "flrigport_help": "Angi porten der flrig-serveren lytter (standard: 12345)",
             "flrighost": "Flrig host",
