@@ -126,6 +126,7 @@ class P2PConnection:
         self.TIMEOUT_CONNECT = 5
         self.TIMEOUT_DATA = 5
         self.RETRIES_DATA = 5
+        self.TIMEOUT_HEARTBEAT = 10
         self.ENTIRE_CONNECTION_TIMEOUT = 180
 
         self.is_ISS = False # Indicator, if we are ISS or IRS
@@ -222,7 +223,6 @@ class P2PConnection:
         self.log(f"Ignoring unknown transition from state {self.state.name} with frame {frame['frame_type']}")
 
     def transmit_frame(self, frame: bytearray, mode='auto'):
-        self.log("Transmitting frame")
         if mode in ['auto']:
             mode = self.get_mode_by_speed_level(self.speed_level)
 
@@ -254,7 +254,7 @@ class P2PConnection:
     def transmit_and_wait_irs(self, frame, timeout, mode):
         self.event_frame_received.clear()
         self.transmit_frame(frame, mode)
-        self.log(f"Waiting {timeout} seconds...")
+        #self.log(f"Waiting {timeout} seconds...")
         #if not self.event_frame_received.wait(timeout):
         #    self.log("Timeout waiting for ISS. Session failed.")
         #    self.transmission_failed()
@@ -398,9 +398,10 @@ class P2PConnection:
     def transmit_heartbeat(self, has_data=False, announce_arq=False):
         # heartbeats will be transmit by ISS only, therefore only IRS can reveice heartbeat ack
         self.last_data_timestamp = time.time()
-
+        if self.ctx.state_manager.is_receiving_codec2_signal():
+            return
         heartbeat = self.frame_factory.build_p2p_connection_heartbeat(self.session_id, flag_has_data=has_data, flag_announce_arq=announce_arq)
-        self.launch_twr(heartbeat, 5, 10, mode=FREEDV_MODE.signalling)
+        self.launch_twr(heartbeat, self.TIMEOUT_HEARTBEAT, 10, mode=FREEDV_MODE.signalling)
 
     def transmit_heartbeat_ack(self):
         self.log("Transmitting heartbeat ACK")
@@ -447,7 +448,6 @@ class P2PConnection:
             self.log("Opposite station announced ARQ, changing state")
             self.is_Master = False
             self.set_state(States.ARQ_SESSION)
-        self.log("transmit heartbeat ack")
         self.transmit_heartbeat_ack()
 
     def received_heartbeat_ack(self, frame):
