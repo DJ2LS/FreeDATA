@@ -13,13 +13,15 @@ class radio:
 
     log = structlog.get_logger("radio (rigctld)")
 
-    def __init__(self, config, state_manager):
+    def __init__(self, ctx):
         """Initializes the serial PTT controller.
 
         Args:
             config (dict): Configuration dictionary.
             state_manager (StateManager): State manager instance.
         """
+        self.ctx = ctx
+        
         self.parameters = {
             'frequency': '---',
             'mode': '---',
@@ -31,15 +33,13 @@ class radio:
             'tuner': False,
             'swr': '---'
         }
-        self.config = config
-        self.state_manager = state_manager
-        self.serial_rts = self.config["RADIO"]["serial_rts"]
-        self.serial_dtr = self.config["RADIO"]["serial_dtr"]
-        self.serial_comport = self.config["RADIO"]["ptt_port"]
+        self.serial_rts = self.ctx.config_manager.config["RADIO"]["serial_rts"]
+        self.serial_dtr = self.ctx.config_manager.config["RADIO"]["serial_dtr"]
+        self.serial_comport = self.ctx.config_manager.config["RADIO"]["ptt_port"]
 
         try:
             if self.serial_comport in ["ignore"]:
-                self.state_manager.set_radio("radio_status", False)
+                self.ctx.state_manager.set_radio("radio_status", False)
                 raise serial.SerialException
             self.serial_connection = serial.Serial(self.serial_comport)
             # Set initial states for RTS and DTR based on config
@@ -47,10 +47,10 @@ class radio:
             self.set_dtr_state(self.serial_dtr)
             self.set_ptt(False)
 
-            self.state_manager.set_radio("radio_status", True)
+            self.ctx.state_manager.set_radio("radio_status", True)
         except serial.SerialException as e:
             self.log.warning(f"Error: could not open PTT port {self.serial_comport}: {e}")
-            self.state_manager.set_radio("radio_status", False)
+            self.ctx.state_manager.set_radio("radio_status", False)
             self.serial_connection = None
 
     def connect(self, **kwargs):

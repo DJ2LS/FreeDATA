@@ -141,6 +141,7 @@
         "furtheroptions": "Ytterligere alternativer",
         "deletechat": "Slett chat",
         "startnewchat": "Start en ny chat",
+        "startnewchat2": "Start en ny chat (skriv inn dx-kallesignalet først)",
         "newchatline1": "Angi destinasjonskallesignal",
         "newchatline2": "Skriv inn en første melding",
         "newchatline3": "Klikk START NY CHAT",
@@ -288,7 +289,11 @@
             "txdelay": "TX-forsinkelse i ms",
             "txdelay_help": "Forsinkelse før sending, i millisekunder",
             "maximumbandwidth": "Maksimal brukt båndbredde",
-            "maximumbandwidth_help": "Velg maksimal båndbredde modemet skal bruke"
+            "maximumbandwidth_help": "Velg maksimal båndbredde modemet skal bruke",
+            "enabletxautoadjust": "Auto TX audio nivå",
+            "enablerxautoadjust": "Auto RX audio nivå",
+            "enabletxautoadjust_help": "Sett TX-lydnivået automatisk til høyest mulig verdi" ,
+            "enablerxautoadjust_help": "Sett RX-lydnivået automatisk til høyest mulig verdi"
         },
         "web": {
             "introduction": "Explorer-relaterte innstillinger, inkludert aktivering av Explorer-publisering og Explorer-statistikkpublisering.",
@@ -300,7 +305,11 @@
         },
         "exp": {
             "introduction": "Advarsel: Disse funksjonene kan være ustabile. De er KUN for erfarne brukere!",
-            "info": "Info: Ingen funksjoner publiseres for testing ennå"
+            "info": "Info: Ingen funksjoner publiseres for testing ennå",
+            "enableringbuffer": "Aktiver ringbuffer",
+            "enableringbuffer_help": "Aktiver en eksperimentell ringbuffer som kan være mer effektiv på CPU med liten prosessor",
+            "enablevhf": "Aktiver VHF-moduser -- bare CQ foreløpig --",
+            "enablevhf_help": "Aktiver eksperimentelle VHF-moduser for testing"
         },
         "radio": {
             "introduction": "Riggkontrollrelaterte innstillinger, inkludert valg av riggkontrollmetode og konfigurering av spesifikke innstillinger.",
@@ -309,6 +318,7 @@
             "rigcontroltype_help": "Velg hvordan programvaren styrer radioen din",
             "tabhamlib": "Hamlib",
             "tabserial": "Seriell",
+            "tabflrig": "flrig",
             "serialpttcomport": "PTT Com port",
             "serialpttcomport_help": "Velg COM-porten koblet til radioen for PTT-kontroll",
             "serialpttcustomcomport": "PTT egendefinert COM port",
@@ -351,8 +361,12 @@
             "hamlibrigctldcommand_help": "Automatisk utfylt kommando basert på innstillinger",
             "hamlibrigctldcommand_placeholder": "Automatisk utfylt fra innstillingene ovenfor",
             "hamlibrigctldcustomarguments": "Rigctld egendefinerte argumenter",
-            "hamlibrigctldcustomarguments_help": "Ytterligere argumenter for rigctld (vanligvis ikke nødvendig)",
-            "hamlibrigctldcustomarguments_placeholder": "Valgfrie egendefinerte argumenter"
+            "hamlibrigctldcustomarguments_help": "Ytterligere argumenter for rigctld (vanligvis ikke ndvendig)",
+            "hamlibrigctldcustomarguments_placeholder": "Valgfrie egendefinerte argumenter",
+            "flrigport": "Flrig port",
+            "flrigport_help": "Angi porten der flrig-serveren lytter (standard: 12345)",
+            "flrighost": "Flrig host",
+            "flrighost_help": "Angi vertsadressen til serveren, vanligvis localhost eller 127.0.0.1"
         }
     }
 }

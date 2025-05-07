@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Request
-from api.common import api_response, api_abort, api_ok, validate
+from fastapi import APIRouter, Depends
+from api.common import api_response, api_abort
 from api.command_helpers import enqueue_tx_command
 import command_transmit_sine
+from context import AppContext, get_ctx
 
 router = APIRouter()
 
@@ -35,15 +36,17 @@ router = APIRouter()
         }
     }
 })
-async def get_radio(request: Request):
+async def get_radio(ctx: AppContext = Depends(get_ctx)):
     """
     Retrieve current radio parameters.
 
     Returns:
-        dict: A JSON object containing radio parameters.
+        dict: The current radio parameters.
     """
-    return request.app.state_manager.get_radio_status()
-
+    params = ctx.state_manager.get_radio_status()
+    if params is None:
+        api_abort("Radio parameters not found", 404)
+    return api_response(params)
 
 @router.post("/", summary="Set Radio Parameters", tags=["Radio"], responses={
     200: {
@@ -83,27 +86,30 @@ async def get_radio(request: Request):
         }
     }
 })
-async def post_radio(request: Request):
+async def post_radio(
+    new_params: dict,
+    ctx: AppContext = Depends(get_ctx),
+):
     """
-    Set radio parameters.
+    Set radio parameters: frequency, mode, RF level, tuner state.
 
     Parameters:
-        request (Request): The HTTP request containing the radio parameters in JSON format.
+        new_params (dict): The radio parameters to set.
+        ctx (AppContext): Injected application context.
 
     Returns:
-        dict: A JSON object containing the updated radio parameters.
+        dict: The applied radio parameters.
     """
-    data = await request.json()
-    radio_manager = request.app.radio_manager
-    if "radio_frequency" in data:
-        radio_manager.set_frequency(data['radio_frequency'])
-    if "radio_mode" in data:
-        radio_manager.set_mode(data['radio_mode'])
-    if "radio_rf_level" in data:
-        radio_manager.set_rf_level(int(data['radio_rf_level']))
-    if "radio_tuner" in data:
-        radio_manager.set_tuner(data['radio_tuner'])
-    return api_response(data)
+    radio_manager = ctx.radio_manager
+    if "radio_frequency" in new_params:
+        radio_manager.set_frequency(new_params["radio_frequency"])
+    if "radio_mode" in new_params:
+        radio_manager.set_mode(new_params["radio_mode"])
+    if "radio_rf_level" in new_params:
+        radio_manager.set_rf_level(int(new_params["radio_rf_level"]))
+    if "radio_tuner" in new_params:
+        radio_manager.set_tuner(new_params["radio_tuner"])
+    return api_response(new_params)
 
 
 @router.post("/tune", summary="Enable/Disable Radio Tuning", tags=["Radio"], responses={
@@ -159,29 +165,26 @@ async def post_radio(request: Request):
         }
     }
 })
-async def post_radio_tune(request: Request):
+async def post_radio_tune(
+    params: dict,
+    ctx: AppContext = Depends(get_ctx),
+):
     """
-    Trigger the modem to inform over RF that the user is typing a message.
+    Enable or disable radio tuning tone.
 
     Parameters:
-        request (Request): The HTTP request containing the following JSON key:
-            - 'enable_tuning' (bool): True to enable tuning, False to disable.
-
-    Returns:
-        dict: A JSON object echoing the tuning status.
+        params (dict): {'enable_tuning': bool}
+        ctx (AppContext): Injected application context.
 
     Raises:
-        HTTPException: If the modem is not running/busy or if parameters are invalid.
+        HTTPException via api_abort if modem not running or busy.
     """
-    data = await request.json()
-    if "enable_tuning" in data:
-        if data['enable_tuning']:
-            if not request.app.state_manager.is_modem_running:
-                api_abort("Modem not running", 503)
-            await enqueue_tx_command(request.app, command_transmit_sine.TransmitSine)
-        else:
-            request.app.service_manager.modem.stop_sine()
+    enable = params.get("enable_tuning")
+    if enable:
+        if not ctx.state_manager.is_modem_running:
+            api_abort("Modem not running", 503)
+        await enqueue_tx_command(ctx, command_transmit_sine.TransmitSine)
     else:
-        request.app.service_manager.modem.stop_sine()
-
+        ctx.rf_modem.stop_sine()
+    return api_response(params)
     return api_response(data)

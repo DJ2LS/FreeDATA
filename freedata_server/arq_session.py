@@ -52,7 +52,7 @@ class ARQSession:
         # },
     }
 
-    def __init__(self, config: dict, modem, dxcall: str, state_manager):
+    def __init__(self, ctx, dxcall: str):
         """Initializes a new ARQ session.
 
         This method sets up the ARQ session with the provided configuration,
@@ -66,32 +66,28 @@ class ARQSession:
             state_manager: The state manager object.
         """
         self.logger = structlog.get_logger(type(self).__name__)
-        self.config = config
-
-        self.event_manager: EventManager = modem.event_manager
-        #self.states = freedata_server.states
-        self.states = state_manager
-        self.states.setARQ(True)
+        self.ctx = ctx
+        #self.ctx.state_manager = freedata_server.states
+        self.ctx.state_manager.setARQ(True)
 
         self.is_IRS = False # state for easy check "is IRS" or is "ISS"
 
-        self.protocol_version = 1
+        self.protocol_version = self.ctx.constants.ARQ_PROTOCOL_VERSION
 
         self.snr = []
 
         self.dxcall = dxcall
         self.dx_snr = []
 
-        self.modem = modem
         self.speed_level = 0
         self.previous_speed_level = 0
 
         self.frames_per_burst = 1
 
-        self.frame_factory = data_frame_factory.DataFrameFactory(self.config)
+        self.frame_factory = data_frame_factory.DataFrameFactory(self.ctx)
         self.event_frame_received = threading.Event()
 
-        self.arq_data_type_handler = ARQDataTypeHandler(self.event_manager, self.states)
+        self.arq_data_type_handler = ARQDataTypeHandler(self.ctx)
         self.id = None
         self.session_started = time.time()
         self.session_ended = 0
@@ -101,7 +97,7 @@ class ARQSession:
         # we will use the schedule manager, for checking, how old is the state change for deciding, how we continue with the message
         self.last_state_change_timestamp = time.time()
 
-        self.statistics = stats.stats(self.config, self.event_manager, self.states)
+        self.statistics = stats.stats(self.ctx)
 
         # histogram lists for storing statistics
         self.snr_histogram = []
@@ -119,7 +115,7 @@ class ARQSession:
             message: The message to be logged.
             isWarning: A boolean indicating whether the message should be logged as a warning.
         """
-        msg = f"[{type(self).__name__}][id={self.id}][state={self.state}]: {message}"
+        msg = f"[{type(self).__name__}][id={self.id}][{self.dxcall}][state={self.state}]: {message}"
         logger = self.logger.warn if isWarning else self.logger.info
         logger(msg)
 
@@ -152,7 +148,7 @@ class ARQSession:
         if mode in ['auto']:
             mode = self.get_mode_by_speed_level(self.speed_level)
 
-        self.modem.transmit(mode, 1, 1, frame)
+        self.ctx.rf_modem.transmit(mode, 1, 1, frame)
 
     def set_state(self, state):
         """Sets the state of the ARQ session.
@@ -360,7 +356,7 @@ class ARQSession:
         """
         # Use default maximum bandwidth from configuration if not provided
         if maximum_bandwidth is None:
-            maximum_bandwidth = self.config['MODEM']['maximum_bandwidth']
+            maximum_bandwidth = self.ctx.config_manager.config['MODEM']['maximum_bandwidth']
 
         # Adjust maximum_bandwidth if set to 0 (use maximum available bandwidth from speed levels)
         if maximum_bandwidth == 0:
@@ -372,7 +368,7 @@ class ARQSession:
             mode_slots = details['slots'].value
             if (snr >= details['min_snr'] and
                 details['bandwidth'] <= maximum_bandwidth and
-                self.check_channel_busy(self.states.channel_busy_slot, mode_slots)):
+                self.check_channel_busy(self.ctx.state_manager.channel_busy_slot, mode_slots)):
                 return level
 
         # Return the lowest level if no higher level is found

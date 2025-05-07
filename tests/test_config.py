@@ -1,54 +1,79 @@
+import os
 import sys
-sys.path.append('freedata_server')
+import shutil
+import tempfile
 import unittest
+
+# Ensure freedata_server package is on the path
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'freedata_server'))
+sys.path.insert(0, ROOT)
+
 import config
+from context import AppContext
+
+class DummyCtx:
+    def __init__(self):
+        pass
 
 class TestConfigMethods(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
-        cls.config = config.CONFIG('freedata_server/config.ini.example')
+        # Copy example ini to a temp file so we don't overwrite the source
+        base = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'freedata_server'))
+        example_path = os.path.join(base, 'config.ini.example')
+        cls.temp_ini = tempfile.NamedTemporaryFile(delete=False, suffix='.ini').name
+        shutil.copy(example_path, cls.temp_ini)
+        cls.ctx = DummyCtx()
+        cls.config = config.CONFIG(cls.ctx, cls.temp_ini)
+
+    @classmethod
+    def tearDownClass(cls):
+        # Remove temp file
+        try:
+            os.remove(cls.temp_ini)
+        except OSError:
+            pass
 
     def test_config_exists(self):
-        c = config.CONFIG('freedata_server/config.ini.example')
-        self.assertTrue(c.config_exists())
+        # Should find the copied temp file
+        self.assertTrue(self.config.config_exists())
 
-        #c = config.CONFIG('freedata_server/nonexistant')
-        #self.assertFalse(c.config_exists())
 
     def test_read(self):
         data = self.config.read()
         self.assertIsInstance(data, dict)
-
-        self.assertIn('STATION', data.keys())
-        self.assertIn('AUDIO', data.keys())
-        self.assertIn('RADIO', data.keys())
+        self.assertIn('STATION', data)
+        self.assertIn('AUDIO', data)
+        self.assertIn('RADIO', data)
 
     def test_write(self):
-        c = self.config.read()       
-        oldcall = c['STATION']['mycall']
-        newcall = 'T1CALL'
-        self.assertNotEqual(oldcall, newcall)
+        data = self.config.read()
+        old_call = data['STATION']['mycall']
+        new_call = 'T1CALL'
+        self.assertNotEqual(old_call, new_call)
 
-        c['STATION']['mycall'] = newcall
-        new_conf = self.config.write(c)        
-        self.assertEqual(new_conf['STATION']['mycall'], newcall)
-        c = self.config.read()       
-        self.assertEqual(c['STATION']['mycall'], newcall)
+        # Update value and write
+        data['STATION']['mycall'] = new_call
+        updated = self.config.write(data)
+        self.assertEqual(updated['STATION']['mycall'], new_call)
 
-        # put it back as it was
-        c['STATION']['mycall'] = oldcall
-        last_conf = self.config.write(c)
-        self.assertEqual(last_conf['STATION']['mycall'], oldcall)
+        # Confirm persisted
+        reloaded = self.config.read()
+        self.assertEqual(reloaded['STATION']['mycall'], new_call)
+
+        # Restore original
+        reloaded['STATION']['mycall'] = old_call
+        restored = self.config.write(reloaded)
+        self.assertEqual(restored['STATION']['mycall'], old_call)
 
     def test_validate_data(self):
-        data = {'STATION': {'ssid_list': "abc"}}
+        # Invalid: ssid_list must be a list, not a string
         with self.assertRaises(ValueError):
-            self.config.validate_data(data)
+            self.config.validate_data({'STATION': {'ssid_list': 'abc'}})
 
-        data = {'STATION': {'ssid_list': [1, 2, 3]}}
-        self.assertIsNone(self.config.validate_data(data))
-        
+        # Valid case returns None
+        result = self.config.validate_data({'STATION': {'ssid_list': [1, 2, 3]}})
+        self.assertIsNone(result)
 
 if __name__ == '__main__':
     unittest.main()

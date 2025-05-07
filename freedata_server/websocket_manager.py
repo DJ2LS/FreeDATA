@@ -12,7 +12,7 @@ class wsm:
     data to connected clients via worker threads. It ensures a clean
     shutdown of WebSocket connections and related resources.
     """
-    def __init__(self):
+    def __init__(self, ctx):
         """Initializes the WebSocket manager.
 
         This method sets up the logger, shutdown flag, client lists for
@@ -20,6 +20,8 @@ class wsm:
         """
         self.log = structlog.get_logger("WEBSOCKET_MANAGER")
         self.shutdown_flag = threading.Event()
+
+        self.ctx = ctx
 
         # WebSocket client sets
         self.events_client_list = set()
@@ -93,13 +95,13 @@ class wsm:
         Args:
             app: The main application object containing the event queues and client lists.
         """
-        self.events_thread = threading.Thread(target=self.transmit_sock_data_worker, daemon=True, args=(self.events_client_list, app.modem_events))
+        self.events_thread = threading.Thread(target=self.transmit_sock_data_worker, daemon=True, args=(self.events_client_list, self.ctx.modem_events))
         self.events_thread.start()
 
-        self.states_thread = threading.Thread(target=self.transmit_sock_data_worker, daemon=True, args=(self.states_client_list, app.state_queue))
+        self.states_thread = threading.Thread(target=self.transmit_sock_data_worker, daemon=True, args=(self.states_client_list, self.ctx.state_queue))
         self.states_thread.start()
 
-        self.fft_thread = threading.Thread(target=self.transmit_sock_data_worker, daemon=True, args=(self.fft_client_list, app.modem_fft))
+        self.fft_thread = threading.Thread(target=self.transmit_sock_data_worker, daemon=True, args=(self.fft_client_list, self.ctx.modem_fft))
         self.fft_thread.start()
         
     def shutdown(self):
@@ -111,7 +113,10 @@ class wsm:
         """
         self.log.warning("[SHUTDOWN] closing websockets...")
         self.shutdown_flag.set()
-        self.events_thread.join(0.5)
-        self.states_thread.join(0.5)
-        self.fft_thread.join(0.5)
+        if self.events_thread:
+            self.events_thread.join(0.5)
+        if self.states_thread:
+            self.states_thread.join(0.5)
+        if self.states_thread:
+            self.fft_thread.join(0.5)
         self.log.warning("[SHUTDOWN] websockets closed")

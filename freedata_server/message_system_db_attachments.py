@@ -4,7 +4,6 @@ import json
 import hashlib
 import os
 
-
 class DatabaseManagerAttachments(DatabaseManager):
     """Manages database operations for message attachments.
 
@@ -12,14 +11,14 @@ class DatabaseManagerAttachments(DatabaseManager):
     retrieving, and deleting message attachments in the database. It also
     handles orphaned attachments and database sessions.
     """
-    def __init__(self, event_manager):
+    def __init__(self, ctx):
         """Initializes DatabaseManagerAttachments.
 
         Args:
             event_manager (EventManager): The event manager instance.
         """
-        super().__init__(event_manager)
-
+        #self.ctx = ctx
+        super().__init__(ctx)
 
     def add_attachment(self, session, message, attachment_data):
         """Adds an attachment to the database and links it to a message.

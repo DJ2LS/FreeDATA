@@ -10,6 +10,7 @@ class PingCommand(TxCommand):
     its callsign. It also updates the callsign database.
     """
 
+
     def set_params_from_api(self, apiParams):
         """Sets parameters from the API request.
 
@@ -26,9 +27,8 @@ class PingCommand(TxCommand):
         self.dxcall = apiParams['dxcall']
         if not api_validations.validate_freedata_callsign(self.dxcall):
             self.dxcall = f"{self.dxcall}-0"
-
         # update callsign database...
-        DatabaseManager(self.event_manager).get_or_create_station(self.dxcall)
+        DatabaseManager(self.ctx).get_or_create_station(self.dxcall)
 
         return super().set_params_from_api(apiParams)
 

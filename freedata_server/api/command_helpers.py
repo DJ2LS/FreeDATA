@@ -1,27 +1,33 @@
-# api/command_helpers.py
 import asyncio
+from context import AppContext
+import structlog
 
-
-async def enqueue_tx_command(app, cmd_class, params={}):
+logger = structlog.get_logger()
+async def enqueue_tx_command(
+    ctx: AppContext,
+    cmd_class,
+    params: dict = None
+) -> bool:
     """
-    Enqueue a transmit command using the app's managers.
+    Enqueue a transmit command using the application context's managers.
 
     Args:
-        app: The FastAPI app instance (e.g., request.app) containing config_manager, state_manager, etc.
+        ctx: AppContext containing config, state, event managers, etc.
         cmd_class: The command class to instantiate and run.
-        params: A dict of parameters for the command.
+        params: A dict of parameters for the command (optional).
 
     Returns:
-        True if the command was successfully enqueued and ran, False otherwise.
+        bool: True if the command ran successfully, False otherwise.
     """
+    params = params or {}
     try:
-        # Create an instance of the command using app components.
-        command = cmd_class(app.config_manager.read(), app.state_manager, app.event_manager, params)
-        print(f"Command {command.get_name()} running...")
-        # Run the command in a separate thread to avoid blocking the event loop.
-        result = await asyncio.to_thread(command.run, app.modem_events, app.service_manager.modem)
-        if result:
-            return True
+        # Instantiate the command with required components
+        command = cmd_class(ctx, params)
+        logger.info("Enqueueing transmit command", command=command.get_name())
+        # Run in a thread to avoid blocking the event loop
+        result = await asyncio.to_thread(command.run)
+        return bool(result)
     except Exception as e:
-        print(f"Command failed: {e}")
-    return False
+        logger.error("Command execution failed", error=str(e))
+        return False
+

@@ -1,32 +1,36 @@
 import sys
-sys.path.append('freedata_server')
+import unittest
+import queue
+import base64
 import numpy as np
 
-import unittest
-from config import CONFIG
+sys.path.append('freedata_server')
+
+from context import AppContext
 from message_p2p import MessageP2P
-from message_system_db_manager import DatabaseManager
 from message_system_db_messages import DatabaseManagerMessages
 from message_system_db_attachments import DatabaseManagerAttachments
 
-from event_manager import EventManager
-import queue
-import base64
-
-class TestDataFrameFactory(unittest.TestCase):
+class TestDatabaseMessageSystem(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        config_manager = CONFIG('freedata_server/config.ini.example')
-        cls.config = config_manager.read()
+        # echten Context bauen
+        cls.ctx = AppContext('freedata_server/config.ini.example')
+        cls.ctx.config_manager.read()
 
-        cls.event_queue = queue.Queue()
-        cls.event_manager = EventManager([cls.event_queue])
-        cls.mycall = f"{cls.config['STATION']['mycall']}-{cls.config['STATION']['myssid']}"
-        cls.database_manager = DatabaseManagerMessages(cls.event_manager)
-        cls.database_manager_attachments = DatabaseManagerAttachments(cls.event_manager)
+        # Komponenten über Context
+        cls.event_manager = cls.ctx.event_manager
+        cls.database_manager = DatabaseManagerMessages(cls.ctx)
+        cls.database_manager_attachments = DatabaseManagerAttachments(cls.ctx)
+        cls.mycall = f"{cls.ctx.config_manager.config['STATION']['mycall']}-{cls.ctx.config_manager.config['STATION']['myssid']}"
 
-    def testAddToDatabase(self):
+    @classmethod
+    def tearDownClass(cls):
+        # Clean shutdown after all tests
+        cls.ctx.shutdown()
+
+    def test_add_to_database(self):
         attachment = {
             'name': 'test.gif',
             'type': 'image/gif',
@@ -42,7 +46,7 @@ class TestDataFrameFactory(unittest.TestCase):
 
         self.assertEqual(result["destination"], message.destination)
 
-    def testDeleteFromDatabase(self):
+    def test_delete_from_database(self):
         attachment = {
             'name': 'test.gif',
             'type': 'image/gif',
@@ -55,14 +59,17 @@ class TestDataFrameFactory(unittest.TestCase):
         received_message_dict = MessageP2P.to_dict(received_message)
         self.database_manager.add_message(received_message_dict, statistics={})
 
-        result = self.database_manager.get_all_messages()
-        message_id = result[0]["id"]
+        messages = self.database_manager.get_all_messages()
+        self.assertTrue(messages, "No messages found to delete!")
+
+        message_id = messages[0]["id"]
         self.database_manager.delete_message(message_id)
 
-        result = self.database_manager.get_all_messages()
-        self.assertNotIn(message_id, result)
+        after_delete = self.database_manager.get_all_messages()
+        ids_after_delete = [m['id'] for m in after_delete]
+        self.assertNotIn(message_id, ids_after_delete)
 
-    def testUpdateMessage(self):
+    def test_update_message(self):
         attachment = {
             'name': 'test.gif',
             'type': 'image/gif',
@@ -74,50 +81,45 @@ class TestDataFrameFactory(unittest.TestCase):
         payload = message.to_payload()
         received_message = MessageP2P.from_payload(payload)
         received_message_dict = MessageP2P.to_dict(received_message)
-        print(received_message_dict)
+
         message_id = self.database_manager.add_message(received_message_dict, statistics={}, direction='receive')
-        print(message_id)
-        self.database_manager.update_message(message_id, {'body' : 'hello123'})
+        self.database_manager.update_message(message_id, {'body': 'hello123'})
 
         result = self.database_manager.get_message_by_id(message_id)
         self.assertIn('hello123', result['body'])
 
-    def testGetAttachments(self):
-        attachment1 = {
-            'name': 'test1.gif',
-            'type': 'image/gif',
-            'data': str(base64.b64encode(np.random.bytes(1024)), 'utf-8')
-        }
-        attachment2 = {
-            'name': 'test2.gif',
-            'type': 'image/gif',
-            'data': str(base64.b64encode(np.random.bytes(1024)), 'utf-8')
-        }
-        attachment3 = {
-            'name': 'test3.gif',
-            'type': 'image/gif',
-            'data': str(base64.b64encode(np.random.bytes(1024)), 'utf-8')
-        }
-        apiParams = {'destination': 'DJ2LS-3', 'body': 'Hello World!', 'attachments': [attachment1, attachment2, attachment3]}
+    def test_get_attachments(self):
+        attachments = []
+        for i in range(3):
+            attachments.append({
+                'name': f'test{i}.gif',
+                'type': 'image/gif',
+                'data': str(base64.b64encode(np.random.bytes(1024)), 'utf-8')
+            })
+
+        apiParams = {'destination': 'DJ2LS-3', 'body': 'Hello World!', 'attachments': attachments}
         message = MessageP2P.from_api_params(self.mycall, apiParams)
         payload = message.to_payload()
         received_message = MessageP2P.from_payload(payload)
         received_message_dict = MessageP2P.to_dict(received_message)
+
         message_id = self.database_manager.add_message(received_message_dict, statistics={})
         result = self.database_manager_attachments.get_attachments_by_message_id(message_id)
         attachment_names = [attachment['name'] for attachment in result]
-        self.assertIn('test1.gif', attachment_names)
-        self.assertIn('test2.gif', attachment_names)
-        self.assertIn('test3.gif', attachment_names)
 
-    def testIncrementAttempts(self):
+        for i in range(3):
+            self.assertIn(f'test{i}.gif', attachment_names)
+
+    def test_increment_attempts(self):
         apiParams = {'destination': 'DJ2LS-3', 'body': 'Hello World!', 'attachments': []}
         message = MessageP2P.from_api_params(self.mycall, apiParams)
         payload = message.to_payload()
         received_message = MessageP2P.from_payload(payload)
         received_message_dict = MessageP2P.to_dict(received_message)
-        message_id = self.database_manager.add_message(received_message_dict,statistics={},)
+
+        message_id = self.database_manager.add_message(received_message_dict, statistics={})
         self.database_manager.increment_message_attempts(message_id)
+
         result = self.database_manager.get_message_by_id(message_id)
         self.assertEqual(result["attempt"], 1)
 
