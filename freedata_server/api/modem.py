@@ -513,8 +513,8 @@ async def post_stop(ctx: AppContext = Depends(get_ctx)):
     """
     Trigger the modem to stop.
     """
-    if not ctx.state_manager.is_modem_running:
-        api_abort("Modem not running", 503)
+    #if not ctx.state_manager.is_modem_running:
+    #    api_abort("Modem not running", 503)
     ctx.modem_service.put("stop")
     return api_response({"modem": "stopped"})
 

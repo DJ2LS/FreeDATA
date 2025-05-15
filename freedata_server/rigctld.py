@@ -34,7 +34,8 @@ class radio:
         self.port = self.ctx.config_manager.config['RIGCTLD']['port']
         self.timeout = 3
         self.rigctld_process = None
-
+        self.max_connection_attempts = 60
+        self.restart_interval = 10
         self.connection = None
         self.connected = False
         self.shutdown = False
@@ -57,37 +58,72 @@ class radio:
 
         # start rigctld...
         if self.ctx.config_manager.config["RADIO"]["control"] in ["rigctld_bundle"]:
+            self.stop_service()
             self.start_service()
 
         # connect to radio
         self.connect()
 
     def connect(self):
-        """Connects to the rigctld server.
 
-        This method attempts to establish a connection to the rigctld
-        server. If successful, it sets the connected flag, updates the
-        radio status, logs the connection, checks VFO support, and gets
-        the current VFO. If the connection fails, it logs a warning and
-        updates the radio status accordingly.
-        """
         if self.shutdown:
             return
-        try:
-            self.connection = socket.create_connection((self.hostname, self.port), timeout=self.timeout)
-            self.connection.settimeout(self.timeout)
-            # wait some time for hopefully solving the hamlib warmup problems
-            threading.Event().wait(2)
-            self.connected = True
-            self.ctx.state_manager.set_radio("radio_status", True)
-            self.log.info(f"[RIGCTLD] Connected to rigctld at {self.hostname}:{self.port}")
-            #self.dump_caps()
-            self.check_vfo()
-            self.get_vfo()
-        except Exception as err:
-            self.log.warning(f"[RIGCTLD] Failed to connect to rigctld: {err}")
-            self.connected = False
-            self.ctx.state_manager.set_radio("radio_status", False)
+
+        if self.ctx.config_manager.config["RADIO"]["control"] not in ["rigctld", "rigctld_bundle"]:
+            return
+
+        for attempt in range(1, self.max_connection_attempts + 1):
+            try:
+                self.log.info(
+                    f"[RIGCTLD] Connection attempt {attempt}/{self.max_connection_attempts} "
+                    f"to {self.hostname}:{self.port}"
+                )
+                self.connection = socket.create_connection(
+                    (self.hostname, self.port), timeout=self.timeout
+                )
+                self.connection.settimeout(self.timeout)
+                # allow rigctld to warm up
+                threading.Event().wait(2)
+
+                # success path
+                self.connected = True
+                self.ctx.state_manager.set_radio("radio_status", True)
+                self.log.info(f"[RIGCTLD] Connected to rigctld at {self.hostname}:{self.port}")
+
+                self.check_vfo()
+                self.get_vfo()
+                return
+
+            except Exception as err:
+                self.connected = False
+                self.ctx.state_manager.set_radio("radio_status", False)
+                self.log.warning(f"[RIGCTLD] Attempt {attempt} failed: {err}")
+
+                # after every restart_interval failures, restart service
+                if attempt % self.restart_interval == 0 and attempt < self.max_connection_attempts and self.ctx.config_manager.config["RADIO"]["control"] in ["rigctld_bundle"]:
+                    self.log.info(
+                        f"[RIGCTLD] Reached {attempt} failures, "
+                        f"restarting rigctld service."
+                    )
+                    try:
+                        self.stop_service()
+                        self.start_service()
+                    except Exception as svc_err:
+                        self.log.error(
+                            f"[RIGCTLD] Failed to restart rigctld service: {svc_err}"
+                        )
+                    # give service a moment to start
+                    threading.Event().wait(5)
+                else:
+                    # brief pause before next attempt
+                    threading.Event().wait(1)
+
+        # if still not connected after all attempts
+        if not self.connected:
+            self.log.error(
+                f"[RIGCTLD] Could not establish connection after "
+                f"{self.max_connection_attempts} attempts"
+            )
 
     def disconnect(self):
         """Disconnects from the rigctld server.
@@ -143,8 +179,11 @@ class radio:
 
             try:
                 self.await_response.clear()  # Signal that a command is awaiting response
+                if self.connection:
+                    self.connection.sendall(command.encode('utf-8') + b"\n")
+                else:
+                    return None
 
-                self.connection.sendall(command.encode('utf-8') + b"\n")
                 response = self.connection.recv(1024)
                 self.await_response.set()  # Signal that the response has been received
                 stripped_result = response.decode('utf-8').strip()
@@ -586,7 +625,7 @@ class radio:
         binary_name = "rigctld"
         binary_paths = helpers.find_binary_paths(binary_name, search_system_wide=True)
         additional_args = self.format_rigctld_args()
-
+        print(binary_paths)
         if binary_paths:
             for binary_path in binary_paths:
                 try:

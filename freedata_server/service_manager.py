@@ -64,9 +64,6 @@ class SM:
 
                     if self.ctx.config_manager.config['SOCKET_INTERFACE']['enable']:
                         self.ctx.socket_interface_manager = SocketInterfaceHandler(self.ctx).start_servers()
-                        self.ctx.radio_manager.socket_interface_manager = self.ctx.socket_interface_manager
-                        #self.ctx.modem_service.socket_interface_manager = self.ctx.socket_interface_manager
-                        self.frame_dispatcher.socket_interface_manager = self.ctx.socket_interface_manager
                     else:
                         self.ctx.socket_interface_manager = None
 
@@ -84,15 +81,23 @@ class SM:
                     if self.ctx.config_manager.config['SOCKET_INTERFACE']['enable'] and self.ctx.socket_interface_manager:
                         self.ctx.socket_interface_manager.stop_servers()
                         del self.ctx.socket_interface_manager
-                        self.ctx.socket_interface_manager = SocketInterfaceHandler(self.ctx).start_servers()
+
                     # we need to wait a bit for avoiding a portaudio crash
                     threading.Event().wait(0.5)
-
+                    self.log.info("reading config...")
                     self.ctx.config_manager.read()
-                    self.start_radio_manager()
 
+                    self.log.info("starting modem")
                     if self.start_modem():
                         self.ctx.event_manager.modem_restarted()
+
+                    self.log.info("starting radio manager")
+                    self.start_radio_manager()
+
+                    if self.ctx.config_manager.config['SOCKET_INTERFACE']['enable']:
+                        self.ctx.socket_interface_manager = SocketInterfaceHandler(self.ctx).start_servers()
+                    else:
+                        self.ctx.socket_interface_manager = None
 
                 else:
                     if not self.shutdown_flag.is_set():
