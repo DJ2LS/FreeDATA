@@ -30,6 +30,8 @@ class AppContext:
         self.message_system_db_manager = DatabaseManager(self)
         self.message_system_db_attachments = DatabaseManagerAttachments(self)
 
+        self.TESTMODE = False
+
     def startup(self):
 
         # initially read config

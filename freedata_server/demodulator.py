@@ -120,7 +120,10 @@ class Demodulator():
         self.MODE_DICT[mode]["nin"] = nin
 
     def start(self, stream):
-        self.stream = stream
+        if self.ctx.TESTMODE:
+            self.stream = None
+        else:
+            self.stream = stream
 
         for mode in self.MODE_DICT:
             # Start decoder threads
@@ -160,7 +163,7 @@ class Demodulator():
         last_rx_status = 0
 
         try:
-            while self.stream and self.stream.active and not self.shutdown_flag.is_set():
+            while self.stream and self.stream.active and not self.shutdown_flag.is_set() or self.ctx.TESTMODE:
                 threading.Event().wait(0.01)
                 if audiobuffer.nbuffer >= nin and not self.shutdown_flag.is_set():
                     # demodulate audio

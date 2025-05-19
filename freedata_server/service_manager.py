@@ -129,13 +129,14 @@ class SM:
             self.log.warning("freedata_server already running")
             return False
 
-        # test audio devices
-        audio_test = self.test_audio()
-        if False in audio_test or None in audio_test or self.ctx.state_manager.is_modem_running:
-            self.log.warning("starting freedata_server failed", input_test=audio_test[0], output_test=audio_test[1])
-            self.ctx.state_manager.set("is_modem_running", False)
-            self.ctx.event_manager.modem_failed()
-            return False
+        if not self.ctx.TESTMODE:
+            # test audio devices
+            audio_test = self.test_audio()
+            if False in audio_test or None in audio_test or self.ctx.state_manager.is_modem_running:
+                self.log.warning("starting freedata_server failed", input_test=audio_test[0], output_test=audio_test[1])
+                self.ctx.state_manager.set("is_modem_running", False)
+                self.ctx.event_manager.modem_failed()
+                return False
 
         self.log.info("starting freedata_server....")
         self.ctx.rf_modem = modem.RF(self.ctx)

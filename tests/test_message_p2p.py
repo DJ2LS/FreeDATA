@@ -17,7 +17,6 @@ class TestMessageP2P(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # Starte echten Context
         cls.ctx = AppContext('freedata_server/config.ini.example')
         cls.ctx.config_manager.read()
 
