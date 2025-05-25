@@ -14,15 +14,15 @@ class AppContext:
     def __init__(self, config_file: str):
         self.config_manager   = CONFIG(self, config_file)
         self.constants = constants
-        self.p2p_data_queue   = Queue()
-        self.state_queue      = Queue()
-        self.modem_events     = Queue()
-        self.modem_fft        = Queue()
-        self.modem_service    = Queue()
-        self.event_manager    = EventManager(self, [self.modem_events])
-        self.state_manager    = StateManager(self.state_queue)
+        self.p2p_data_queue = Queue()
+        self.state_queue = Queue()
+        self.modem_events = Queue()
+        self.modem_fft = Queue()
+        self.modem_service = Queue()
+        self.event_manager = EventManager(self, [self.modem_events])
+        self.state_manager = StateManager(self.state_queue)
         self.schedule_manager = ScheduleManager(self)
-        self.service_manager  = ServiceManager(self)
+        self.service_manager = ServiceManager(self)
         self.websocket_manager = WebsocketManager(self)
 
         self.socket_interface_manager = None # Socket interface instance, We start it as we need it
