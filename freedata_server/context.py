@@ -19,7 +19,7 @@ class AppContext:
         self.modem_events     = Queue()
         self.modem_fft        = Queue()
         self.modem_service    = Queue()
-        self.event_manager    = EventManager([self.modem_events])
+        self.event_manager    = EventManager(self, [self.modem_events])
         self.state_manager    = StateManager(self.state_queue)
         self.schedule_manager = ScheduleManager(self)
         self.service_manager  = ServiceManager(self)
@@ -31,6 +31,9 @@ class AppContext:
         self.message_system_db_attachments = DatabaseManagerAttachments(self)
 
         self.TESTMODE = False
+        self.TESTMODE_TRANSMIT_QUEUE = Queue() # This is a helper queue which holds bursts to be transmitted for helping using tests
+        self.TESTMODE_RECEIVE_QUEUE = Queue() # This is a helper queue which holds received bursts for helping using tests
+        self.TESTMODE_EVENTS = Queue() # This is a helper queue which holds events
 
     def startup(self):
 

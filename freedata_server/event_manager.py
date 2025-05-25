@@ -12,13 +12,14 @@ class EventManager:
     throughout the application.
     """
 
-    def __init__(self, queues):
+    def __init__(self, ctx, queues):
         """Initializes the EventManager with a list of queues.
 
         Args:
             queues (list): A list of queues to which events will be broadcast.
         """
         self.queues = queues
+        self.ctx = ctx
         self.logger = structlog.get_logger('Event Manager')
         self.lastpttstate = False
 
@@ -32,6 +33,9 @@ class EventManager:
         Args:
             data: The event data to broadcast.
         """
+        if self.ctx.TESTMODE:
+            self.ctx.TESTMODE_EVENTS.put(data)
+
         for q in self.queues:
             self.logger.debug(f"Event: ", ev=data)
             if q.qsize() > 10:

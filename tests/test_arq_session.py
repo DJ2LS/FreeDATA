@@ -92,31 +92,40 @@ class TestARQSession(unittest.TestCase):
         cls.loss_probability = 0
 
 
-
-
         cls.channels_running = False
 
-
-
-    def channelWorker(self, modem_transmit_queue: queue.Queue, frame_dispatcher: DISPATCHER):
+    def channelWorker(self, ctx_a, ctx_b):
         while self.channels_running:
-            # Transfer data between both parties
             try:
-                transmission = modem_transmit_queue.get(timeout=1)
-                transmission["bytes"] += bytes(2) # simulate 2 bytes crc checksum
+                # Station A gets the data from its transmit queue
+                transmission = ctx_a.TESTMODE_TRANSMIT_QUEUE.get(timeout=1)
+                print(f"Station A sending: {transmission[1]}", len(transmission[1]), transmission[0])
+
+                transmission[1] += bytes(2) # 2bytes crc simulation
+
                 if random.randint(0, 100) < self.loss_probability:
                     self.logger.info(f"[{threading.current_thread().name}] Frame lost...")
                     continue
 
-                frame_bytes = transmission['bytes']
+                # Forward data from Station A to Station B's receive queue
+                if ctx_b:
+                    ctx_b.TESTMODE_RECEIVE_QUEUE.put(transmission)
+                    self.logger.info(f"Data forwarded to Station B")
 
+                frame_bytes = transmission[1]
                 if len(frame_bytes) == 5:
                     mode_name = "SIGNALLING_ACK"
                 else:
-                    mode_name = None
-                frame_dispatcher.process_data(frame_bytes, None, len(frame_bytes), 15, 0, mode_name=mode_name)
+                    mode_name = transmission[0]
+
+                snr = 15
+                ctx_b.service_manager.frame_dispatcher.process_data(
+                    frame_bytes, None, len(frame_bytes), snr, 0, mode_name=mode_name
+                )
+
             except queue.Empty:
                 continue
+
         self.logger.info(f"[{threading.current_thread().name}] Channel closed.")
 
     def waitForSession(self, q, outbound = False):
@@ -128,18 +137,14 @@ class TestARQSession(unittest.TestCase):
                     break
 
     def establishChannels(self):
-        self.iss_to_irs_channel = threading.Thread(target=self.channelWorker,
-                                                    args=[self.ctx_ISS.rf_modem.data_queue_received,
-                                                    self.ctx_IRS.service_manager.frame_dispatcher],
-                                                    name = "ISS to IRS channel")
-        self.iss_to_irs_channel.start()
-
-        self.irs_to_iss_channel = threading.Thread(target=self.channelWorker, 
-                                                    args=[self.ctx_IRS.rf_modem.data_queue_received,
-                                                    self.ctx_ISS.service_manager.frame_dispatcher],
-                                                    name = "IRS to ISS channel")
-        self.irs_to_iss_channel.start()
         self.channels_running = True
+        self.channelA = threading.Thread(target=self.channelWorker,args=[self.ctx_ISS, self.ctx_IRS],name = "channelA")
+        self.channelA.start()
+
+        self.channelB = threading.Thread(target=self.channelWorker,args=[self.ctx_IRS, self.ctx_ISS],name = "channelB")
+        self.channelB.start()
+
+
     def waitAndCloseChannels(self):
         self.waitForSession(self.ctx_ISS.modem_events, True)
         self.channels_running = False
@@ -175,7 +180,18 @@ class TestARQSession(unittest.TestCase):
         cmd.run()
 
         self.waitAndCloseChannels()
-        del cmd
+        #del cmd
+        print(self.ctx_ISS.TESTMODE_EVENTS.empty())
+
+        while not self.ctx_ISS.TESTMODE_EVENTS.empty():
+            event = self.ctx_ISS.TESTMODE_EVENTS.get()
+            success = event.get('arq-transfer-outbound', {}).get('success', None)
+            if success is not None:
+                self.assertTrue(success, f"Test failed because of wrong success: {success}")
+
+        self.ctx_IRS.shutdown()
+        self.ctx_ISS.shutdown()
+
 
     def DisabledtestARQSessionAbortTransmissionISS(self):
         # set Packet Error Rate (PER) / frame loss probability
@@ -194,6 +210,8 @@ class TestARQSession(unittest.TestCase):
             self.ctx_ISS.state_manager.arq_iss_sessions[id].abort_transmission()
 
         self.waitAndCloseChannels()
+
+
         del cmd
 
     def DisabledtestARQSessionAbortTransmissionIRS(self):

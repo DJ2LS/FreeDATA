@@ -280,6 +280,10 @@ class RF:
             frames (bytearray): The data frames to transmit.
         """
 
+        if self.ctx.TESTMODE:
+            self.ctx.TESTMODE_TRANSMIT_QUEUE.put([mode, frames])
+            return
+
         self.demodulator.reset_data_sync()
         # Wait for some other thread that might be transmitting
         self.ctx.state_manager.waitForTransmission()
