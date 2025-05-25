@@ -24,39 +24,6 @@ import codec2
 import arq_session_irs
 import os
 
-class TestModem:
-    def __init__(self, event_q, state_q):
-        self.data_queue_received = queue.Queue()
-        self.demodulator = unittest.mock.Mock()
-        self.event_manager = EventManager([event_q])
-        self.logger = structlog.get_logger('Modem')
-        self.states = StateManager(state_q)
-
-    def getFrameTransmissionTime(self, mode):
-        samples = 0
-        c2instance = codec2.open_instance(mode.value)
-        samples += codec2.api.freedv_get_n_tx_preamble_modem_samples(c2instance)
-        samples += codec2.api.freedv_get_n_tx_modem_samples(c2instance)
-        samples += codec2.api.freedv_get_n_tx_postamble_modem_samples(c2instance)
-        time = samples / 8000
-        #print(mode)
-        #if mode == codec2.FREEDV_MODE.signalling:
-        #    time = 0.69
-        #print(time)
-        return time
-
-    def transmit(self, mode, repeats: int, repeat_delay: int, frames: bytearray) -> bool:
-
-        # Simulate transmission time
-        tx_time = self.getFrameTransmissionTime(mode) + 0.1 # PTT
-        self.logger.info(f"TX {tx_time} seconds...")
-        threading.Event().wait(tx_time)
-
-        transmission = {
-            'mode': mode,
-            'bytes': frames,
-        }
-        self.data_queue_received.put(transmission)
 
 class DummyCtx:
     def __init__(self):
@@ -69,8 +36,6 @@ class TestARQSession(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        # TODO:
-        # ESTABLISH MODEM CHANNELS CORRECTLY SO WE ARE GETTING THE CORRESPINDING BURSTS
 
         cls.logger = structlog.get_logger("TESTS")
 
