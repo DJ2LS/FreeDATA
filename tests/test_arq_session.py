@@ -59,6 +59,13 @@ class TestARQSession(unittest.TestCase):
 
         cls.channels_running = False
 
+    @classmethod
+    def tearDownClass(cls):
+        # Clean shutdown after all tests
+        cls.ctx_IRS.shutdown()
+        cls.ctx_ISS.shutdown()
+
+
     def channelWorker(self, ctx_a, ctx_b):
         while self.channels_running:
             try:
@@ -129,7 +136,16 @@ class TestARQSession(unittest.TestCase):
         cmd = ARQRawCommand(self.ctx_ISS, params)
         cmd.run()
         self.waitAndCloseChannels()
-        del cmd
+        print(self.ctx_ISS.TESTMODE_EVENTS.empty())
+
+        while not self.ctx_ISS.TESTMODE_EVENTS.empty():
+            event = self.ctx_ISS.TESTMODE_EVENTS.get()
+            success = event.get('arq-transfer-outbound', {}).get('success', None)
+            if success is not None:
+                self.assertTrue(success, f"Test failed because of wrong success: {success}")
+
+        #self.ctx_IRS.shutdown()
+        #self.ctx_ISS.shutdown()
 
     def testARQSessionLargePayload(self):
         # set Packet Error Rate (PER) / frame loss probability
@@ -154,8 +170,8 @@ class TestARQSession(unittest.TestCase):
             if success is not None:
                 self.assertTrue(success, f"Test failed because of wrong success: {success}")
 
-        self.ctx_IRS.shutdown()
-        self.ctx_ISS.shutdown()
+        #self.ctx_IRS.shutdown()
+        #self.ctx_ISS.shutdown()
 
 
     def DisabledtestARQSessionAbortTransmissionISS(self):
