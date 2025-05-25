@@ -23,7 +23,7 @@ const defaultConfig = {
       rx_audio_level: 0,
       tx_audio_level: 0,
       rx_auto_audio_level: true,
-      tx_auto_audio_level: false 
+      tx_auto_audio_level: false,
     },
     MODEM: {
       tx_delay: 0,
