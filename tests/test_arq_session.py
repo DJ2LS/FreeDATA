@@ -111,9 +111,9 @@ class TestARQSession(unittest.TestCase):
 
 
     def waitAndCloseChannels(self):
-        self.waitForSession(self.ctx_ISS.modem_events, True)
+        self.waitForSession(self.ctx_ISS.TESTMODE_EVENTS, True)
         self.channels_running = False
-        self.waitForSession(self.ctx_IRS.modem_events, False)
+        self.waitForSession(self.ctx_IRS.TESTMODE_EVENTS, False)
         self.channels_running = False
 
     def DisabledtestARQSessionSmallPayload(self):
