@@ -12,7 +12,7 @@ import constants
 from fastapi import Request, WebSocket
 class AppContext:
     def __init__(self, config_file: str):
-        self.config_manager   = CONFIG(self, config_file)
+        self.config_manager = CONFIG(self, config_file)
         self.constants = constants
         self.p2p_data_queue = Queue()
         self.state_queue = Queue()
