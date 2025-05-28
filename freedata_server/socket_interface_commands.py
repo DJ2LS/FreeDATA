@@ -4,15 +4,11 @@ import structlog
 
 class SocketCommandHandler:
 
-    def __init__(self, cmd_request, modem, config_manager, state_manager, event_manager, socket_interface_manager):
+    def __init__(self, cmd_request, ctx):
         self.logger = structlog.get_logger(type(self).__name__)
         self.cmd_request = cmd_request
-        self.modem = modem
-        self.config_manager = config_manager
-        self.state_manager = state_manager
-        self.event_manager = event_manager
-        self.socket_interface_manager = socket_interface_manager
         self.session = None
+        self.ctx = ctx
 
     def log(self, message, isWarning = False):
         msg = f"[{type(self).__name__}]: {message}"
@@ -33,14 +29,14 @@ class SocketCommandHandler:
                 'destination': data[1],
             }
 
-            cmd = P2PConnectionCommand(self.config_manager.read(), self.state_manager, self.event_manager, params, self.socket_interface_manager)
-            self.session = cmd.run(self.event_manager.queues, self.modem)
+            cmd = P2PConnectionCommand(self.ctx, params)
+            self.session = cmd.run()
             self.send_response(f"OK")
             self.send_response(f"REGISTERED {data[0]}")
             self.send_response(f"UNENCRYPTED LINK")
-            self.socket_interface_manager.connecting_callsign = data[0]
+            self.ctx.socket_interface_manager.connecting_callsign = data[0]
             #if self.session.session_id:
-            #    self.state_manager.register_p2p_connection_session(self.session)
+            #    self.ctx.state_manager.register_p2p_connection_session(self.session)
             #    self.send_response("OK")
             #    self.session.connect()
             #else:
@@ -50,24 +46,30 @@ class SocketCommandHandler:
 
     def handle_disconnect(self, data):
         self.send_response(f"OK")
-        self.session.disconnect()
+        try:
+            self.session.disconnect()
+        except Exception as e:
+            self.log(f"Error disconnecting socket: {e}", isWarning = True)
 
     def handle_mycall(self, data):
         #Storing all of the callsigns assigned by client, to make sure they are checked later in new frames.
-        self.socket_interface_manager.socket_interface_callsigns = data
+        self.ctx.socket_interface_manager.socket_interface_callsigns = data
         self.send_response(f"OK")
         self.send_response(f"UNENCRYPTED LINK")
         self.send_response(f"ENCRYPTION DISABLED")
 
     def handle_bw(self, data):
         # Logic for handling BW command
-        #self.socket_interface_manager.bandwidth = data
+        self.ctx.socket_interface_manager.socket_interface_bandwidth = int(data[0])
         self.send_response(f"OK")
 
     def handle_abort(self, data):
         # Logic for handling ABORT command
         self.send_response(f"OK")
-        self.session.abort_connection()
+        try:
+            self.session.abort_connection()
+        except Exception as e:
+            self.send_response(f"ERR: {e}")
         self.send_response(f"DISCONNECTED")
 
     def handle_public(self, data):
@@ -89,7 +91,8 @@ class SocketCommandHandler:
 
     def handle_winlink_session(self, data):
         # Logic for handling WINLINK SESSION command
-        self.send_response(f"NOT IMPLEMENTED: {data}")
+        #self.send_response(f"NOT IMPLEMENTED: {data}")
+        self.send_response(f"OK")
 
     def handle_version(self, data):
         # Logic for handling VERSION command
@@ -101,13 +104,22 @@ class SocketCommandHandler:
 
     def socket_respond_connected(self, origin, destination, bandwidth):
         print("[socket interface_commands] socket_respond_connected")
-        if self.socket_interface_manager.connecting_callsign:
-            message = f"CONNECTED {self.socket_interface_manager.connecting_callsign} {destination} {bandwidth}"
+        if self.ctx.socket_interface_manager.connecting_callsign:
+            #message = f"CONNECTED {self.ctx.socket_interface_manager.connecting_callsign} {destination} {bandwidth}"
+            message = f"CONNECTED {origin} {destination} {bandwidth}"
         else:
             message = f"CONNECTED {origin} {destination} {bandwidth}"
         self.send_response(f"UNENCRYPTED LINK")
         self.send_response(f"LINK REGISTERED")
         self.send_response(message)
+
+    def socket_respond_iamalive(self):
+        try:
+            self.send_response(f"IAMALIVE")
+        except Exception as e:
+            self.log(f"sending iamalive failed {e}")
+    def socket_respond_buffer_size(self, buffer_size):
+        self.send_response(f"BUFFER {buffer_size}")
 
     def socket_respond_ptt(self, state):
         """ send the PTT state via command socket"""

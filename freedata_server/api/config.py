@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
 from api.common import api_response, api_abort, api_ok, validate
 import api_validations as validations
+from context import AppContext, get_ctx
 router = APIRouter()
 
 @router.get("/", summary="Get Modem Configuration", tags=["Configuration"], responses={
@@ -78,14 +79,17 @@ router = APIRouter()
         }
     }
 })
-async def get_config(request: Request):
+async def get_config(ctx: AppContext = Depends(get_ctx)):
     """
     Retrieve the current modem configuration.
 
     Returns:
         dict: The modem configuration settings.
     """
-    return request.app.config_manager.read()
+    cfg = ctx.config_manager.config
+    if cfg is None:
+        api_abort("Configuration not found", 404)
+    return cfg
 
 
 @router.post("/", summary="Update Modem Configuration", tags=["Configuration"], responses={
@@ -136,27 +140,40 @@ async def get_config(request: Request):
         }
     }
 })
-async def post_config(request: Request):
+async def post_config(
+    new_cfg: dict,
+    ctx: AppContext = Depends(get_ctx),
+):
     """
     Update the modem configuration with new settings.
 
     Parameters:
-        request (Request): The HTTP request containing the new configuration in JSON format.
+        new_cfg (dict): The new configuration payload.
+        ctx (AppContext): Injected application context.
 
     Returns:
         dict: The updated modem configuration.
 
     Raises:
-        HTTPException: If the provided configuration is invalid or an error occurs while writing the config.
+        HTTPException via api_abort on validation or write errors.
     """
-    config = await request.json()
-    print(config)
-    if not validations.validate_remote_config(config):
-        api_abort("Invalid config", 400)
-    if request.app.config_manager.read() == config:
-        return config
-    set_config = request.app.config_manager.write(config)
-    if not set_config:
-        api_abort("Error writing config", 500)
-    request.app.modem_service.put("restart")
-    return set_config
+    # Validate incoming data
+    if not validations.validate_remote_config(new_cfg):
+        api_abort("Invalid configuration", 400)
+
+    # Read and compare
+    old_cfg = ctx.config_manager.read()
+    if old_cfg == new_cfg:
+        return old_cfg
+
+    # Write new config
+    print(ctx.config_manager.write(new_cfg))
+    if not ctx.config_manager.write(new_cfg):
+        api_abort("Error writing configuration", 500)
+
+    # Trigger modem restart
+    ctx.modem_service.put("restart")
+
+    # Return updated configuration
+    updated = ctx.config_manager.read()
+    return updated

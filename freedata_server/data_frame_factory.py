@@ -23,10 +23,16 @@ class DataFrameFactory:
         'AWAY_FROM_KEY': 0,  # Bit-position for indicating the AWAY FROM KEY state
     }
 
-    def __init__(self, config):
+    P2P_FLAGS = {
+        'HAS_DATA': 0,  # Bit-position for indicating the BUFFER EMPTY state
+        'ANNOUNCE_ARQ': 1,  # Bit-position for announcing an ARQ session
+    }
 
-        self.myfullcall = f"{config['STATION']['mycall']}-{config['STATION']['myssid']}"
-        self.mygrid = maidenhead.generate_full_maidenhead(config["STATION"]["mygrid"])
+    def __init__(self, ctx):
+        self.ctx = ctx
+
+        self.myfullcall = f"{self.ctx.config_manager.config['STATION']['mycall']}-{self.ctx.config_manager.config['STATION']['myssid']}"
+        self.mygrid = maidenhead.generate_full_maidenhead(self.ctx.config_manager.config["STATION"]["mygrid"])
 
         # table for holding our frame templates
         self.template_list = {}
@@ -171,12 +177,14 @@ class DataFrameFactory:
         self.template_list[FR_TYPE.P2P_CONNECTION_HEARTBEAT.value] = {
             "frame_length": self.LENGTH_SIG1_FRAME,
             "session_id": 1,
+            "flag": 1
         }
 
         # ack heartbeat
         self.template_list[FR_TYPE.P2P_CONNECTION_HEARTBEAT_ACK.value] = {
             "frame_length": self.LENGTH_SIG1_FRAME,
             "session_id": 1,
+            "flag": 1,
         }
 
         # p2p payload frames
@@ -184,6 +192,16 @@ class DataFrameFactory:
             "frame_length": None,
             "session_id": 1,
             "sequence_id": 1,
+            "flag": 1,
+            "data": "dynamic",
+        }
+
+        # p2p payload frames
+        self.template_list[FR_TYPE.P2P_CONNECTION_PAYLOAD.value] = {
+            "frame_length": None,
+            "session_id": 1,
+            "sequence_id": 1,
+            "flag": 1,
             "data": "dynamic",
         }
 
@@ -225,13 +243,12 @@ class DataFrameFactory:
         for key, item_length in frame_template.items():
             if key == "frame_length":
                 continue
-
             if not isinstance(item_length, int):
                 item_length = len(content[key])
 
-            print(frame_length)
-            print(item_length)
-            print(content)
+            #print(frame_length)
+            #print(item_length)
+            #print(content)
             if buffer_position + item_length > frame_length:
                 raise OverflowError("Frame data overflow!")
             frame[buffer_position: buffer_position + item_length] = content[key]
@@ -254,14 +271,13 @@ class DataFrameFactory:
             frame_template = self.template_list.get(frametype)
 
         extracted_data = {"frame_type": FR_TYPE(frametype).name, "frame_type_int": frametype}
-
         for key, item_length in frame_template.items():
             if key == "frame_length":
                 continue
 
             # data is always on the last payload slots
             if item_length in ["dynamic"] and key in["data"]:
-                print(len(frame))
+                #print(len(frame))
                 data = frame[buffer_position:-2]
                 item_length = len(data)
             else:
@@ -304,6 +320,12 @@ class DataFrameFactory:
                         # get_flag returns True or False based on the bit value at the flag's position
                         extracted_data[key][flag] = helpers.get_flag(data, flag, flag_dict)
 
+                if frametype in [FR_TYPE.P2P_CONNECTION_PAYLOAD.value, FR_TYPE.P2P_CONNECTION_HEARTBEAT.value, FR_TYPE.P2P_CONNECTION_HEARTBEAT_ACK.value]:
+                    flag_dict = self.P2P_FLAGS
+                    for flag in flag_dict:
+                        # Update extracted_data with the status of each flag
+                        # get_flag returns True or False based on the bit value at the flag's position
+                        extracted_data[key][flag] = helpers.get_flag(data, flag, flag_dict)
 
             else:
                 extracted_data[key] = data
@@ -518,25 +540,46 @@ class DataFrameFactory:
         }
         return self.construct(FR_TYPE.P2P_CONNECTION_CONNECT_ACK, payload)
     
-    def build_p2p_connection_heartbeat(self, session_id):
+    def build_p2p_connection_heartbeat(self, session_id, flag_has_data=False, flag_announce_arq=False):
+        flag = 0b00000000
+        if flag_has_data:
+            flag = helpers.set_flag(flag, 'HAS_DATA', True, self.P2P_FLAGS)
+        if flag_announce_arq:
+            flag = helpers.set_flag(flag, 'ANNOUNCE_ARQ', True, self.P2P_FLAGS)
+
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),
+            "flag": flag.to_bytes(1, 'big'),
         }
         return self.construct(FR_TYPE.P2P_CONNECTION_HEARTBEAT, payload)
-    
-    def build_p2p_connection_heartbeat_ack(self, session_id):
+
+    def build_p2p_connection_heartbeat_ack(self, session_id, flag_has_data=False, flag_announce_arq=False):
+        flag = 0b00000000
+        if flag_has_data:
+            flag = helpers.set_flag(flag, 'HAS_DATA', True, self.P2P_FLAGS)
+        if flag_announce_arq:
+            flag = helpers.set_flag(flag, 'ANNOUNCE_ARQ', True, self.P2P_FLAGS)
+
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),
+            "flag": flag.to_bytes(1, 'big'),
         }
         return self.construct(FR_TYPE.P2P_CONNECTION_HEARTBEAT_ACK, payload)
     
-    def build_p2p_connection_payload(self, freedv_mode: codec2.FREEDV_MODE, session_id: int, sequence_id: int, data: bytes):
+    def build_p2p_connection_payload(self, freedv_mode: codec2.FREEDV_MODE, session_id: int, sequence_id: int, data: bytes, flag_has_data=False, flag_announce_arq=False):
+        flag = 0b00000000
+        if flag_has_data:
+            flag = helpers.set_flag(flag, 'HAS_DATA', True, self.P2P_FLAGS)
+        if flag_announce_arq:
+            flag = helpers.set_flag(flag, 'ANNOUNCE_ARQ', True, self.P2P_FLAGS)
+
         payload = {
             "session_id": session_id.to_bytes(1, 'big'),
             "sequence_id": sequence_id.to_bytes(1, 'big'),
+            "flag": flag.to_bytes(1, 'big'),
             "data": data,
         }
-        print(self.get_bytes_per_frame(freedv_mode))
+        #print(self.get_bytes_per_frame(freedv_mode))
         return self.construct(
             FR_TYPE.P2P_CONNECTION_PAYLOAD,
             payload,

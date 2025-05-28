@@ -3,13 +3,9 @@
 
 class SocketDataHandler:
 
-    def __init__(self, cmd_request, modem, config_manager, state_manager, event_manager, socket_interface_manager):
+    def __init__(self, cmd_request, ctx):
         self.cmd_request = cmd_request
-        self.modem = modem
-        self.config_manager = config_manager
-        self.state_manager = state_manager
-        self.event_manager = event_manager
-        self.socket_interface_manager = socket_interface_manager
+        self.ctx = ctx
         self.session = None
 
     def send_response(self, message):

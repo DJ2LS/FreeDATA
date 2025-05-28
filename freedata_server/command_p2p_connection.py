@@ -30,7 +30,7 @@ class P2PConnectionCommand(TxCommand):
             self.destination = f"{self.destination}-0"
 
 
-    def connect(self, event_queue: Queue, modem):
+    def connect(self):
         """Placeholder for the connect method.
 
         This method is currently not implemented and serves as a placeholder
@@ -42,7 +42,7 @@ class P2PConnectionCommand(TxCommand):
         """
         pass
 
-    def run(self, event_queue: Queue, modem):
+    def run(self):
         """Executes the P2P connection command.
 
         This method creates a P2PConnection session, registers it with the
@@ -57,11 +57,9 @@ class P2PConnectionCommand(TxCommand):
             P2PConnection or bool: The P2PConnection object if successful, False otherwise.
         """
         try:
-            self.emit_event(event_queue)
-            session = P2PConnection(self.config, modem, self.origin, self.destination, self.state_manager, self.event_manager, self.socket_interface_manager)
-            print(session)
+            session = P2PConnection(self.ctx, self.origin, self.destination)
             if session.session_id:
-                self.state_manager.register_p2p_connection_session(session)
+                self.ctx.state_manager.register_p2p_connection_session(session)
                 session.connect()
                 return session
             return False

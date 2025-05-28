@@ -18,16 +18,12 @@ import io
 
 class CommandSocket(socketserver.BaseRequestHandler):
     #def __init__(self, request, client_address, server):
-    def __init__(self, request, client_address, server, modem=None, state_manager=None, event_manager=None, config_manager=None, socket_interface_manager=None):
-        self.state_manager = state_manager
-        self.event_manager = event_manager
-        self.config_manager = config_manager
-        self.modem = modem
+    def setup(self):
+        super().setup()
         self.logger = structlog.get_logger(type(self).__name__)
-        self.socket_interface_manager = socket_interface_manager
-
-        self.command_handler = SocketCommandHandler(request, self.modem, self.config_manager, self.state_manager, self.event_manager, self.socket_interface_manager)
-
+        self.ctx = self.server.ctx
+        self.command_handler = SocketCommandHandler(self.request, self.ctx)
+        self.server.command_handler = self.command_handler
         self.handlers = {
             'CONNECT': self.command_handler.handle_connect,
             'DISCONNECT': self.command_handler.handle_disconnect,
@@ -43,34 +39,14 @@ class CommandSocket(socketserver.BaseRequestHandler):
 
         }
         # Register this CommandSocket's command_handler with the command_server
-        if hasattr(self.socket_interface_manager, 'command_server'):
-            self.socket_interface_manager.command_server.command_handler = self.command_handler
-        super().__init__(request, client_address, server)
+        #if hasattr(self.ctx.socket_interface_manager, 'command_server'):
+        #    self.ctx.socket_interface_manager.command_server.command_handler = self.command_handler
+
 
     def log(self, message, isWarning = False):
         msg = f"[{type(self).__name__}]: {message}"
         logger = self.logger.warn if isWarning else self.logger.info
         logger(msg)
-
-    def handle2(self):
-        self.log(f"Client connected: {self.client_address}")
-        try:
-
-            file_obj = self.request.makefile('rb')
-
-            text_file = io.TextIOWrapper(file_obj, encoding='utf-8', newline='\r')
-
-            # Continuously read data until the connection is closed.
-            while True:
-                line = text_file.readline()
-                print(line)
-
-                if line == "":
-                    break
-                self.log(f"<<<<< {line}")
-                self.parse_command(line)
-        finally:
-            self.log(f"Command connection closed with {self.client_address}")
 
     def handle(self):
         self.log(f"Client connected: {self.client_address}")
@@ -116,23 +92,16 @@ class CommandSocket(socketserver.BaseRequestHandler):
 
 class DataSocket(socketserver.BaseRequestHandler):
     #def __init__(self, request, client_address, server):
-    def __init__(self, request, client_address, server, modem=None, state_manager=None, event_manager=None, config_manager=None, socket_interface_manager=None):
-        self.state_manager = state_manager
-        self.event_manager = event_manager
-        self.config_manager = config_manager
-        self.modem = modem
-        self.socket_interface_manager = socket_interface_manager
-
-        self.data_handler = SocketDataHandler(request, self.modem, self.config_manager, self.state_manager, self.event_manager, self.socket_interface_manager)
-
+    def setup(self):
+        super().setup()
+        self.ctx = self.server.ctx
+        self.data_handler = SocketDataHandler(self.request, self.ctx)
+        self.server.data_handler = self.data_handler
         self.logger = structlog.get_logger(type(self).__name__)
 
         # not sure if we really need this
-        if hasattr(self.socket_interface_manager, 'data_server'):
-            self.socket_interface_manager.data_server.data_handler = self.data_handler
-
-
-        super().__init__(request, client_address, server)
+        #if hasattr(self.ctx.socket_interface_manager, 'data_server'):
+        #    self.ctx.socket_interface_manager.data_server.data_handler = self.data_handler
 
     def log(self, message, isWarning = False):
         msg = f"[{type(self).__name__}]: {message}"
@@ -155,24 +124,24 @@ class DataSocket(socketserver.BaseRequestHandler):
                         self.log(f"Data received from {self.client_address}: [{len(self.data)}] - {self.data}")
 
 
-                    for session_id in self.state_manager.p2p_connection_sessions:
-                        session = self.state_manager.p2p_connection_sessions[session_id]
+                    for session_id in self.ctx.state_manager.p2p_connection_sessions:
+                        session = self.ctx.state_manager.p2p_connection_sessions[session_id]
 
-                        print(f"sessions: {self.state_manager.p2p_connection_sessions}")
-                        print(f"session_id: {session_id}")
-                        print(f"session: {session}")
-                        print(f"data to send: {self.data}")
+                        #print(f"sessions: {self.ctx.state_manager.p2p_connection_sessions}")
+                        #print(f"session_id: {session_id}")
+                        #print(f"session: {session}")
+                        #print(f"data to send: {self.data}")
 
-                        print(session.p2p_data_tx_queue.empty())
+                        #print(session.p2p_data_tx_queue.empty())
                         session.p2p_data_tx_queue.put(self.data)
-                        print(session.p2p_data_tx_queue.empty())
+                        #print(session.p2p_data_tx_queue.empty())
 
                 # Check if there's something to send from the queue, without blocking
                 """
                 TODO This part isnt needed anymore, since socket_interface_data.py handles this
                 
-                for session_id in self.state_manager.p2p_connection_sessions:
-                    session = self.state_manager.get_p2p_connection_session(session_id)
+                for session_id in self.ctx.state_manager.p2p_connection_sessions:
+                    session = self.ctx.state_manager.get_p2p_connection_session(session_id)
                     if not session.p2p_data_rx_queue.empty():
                         data_to_send = session.p2p_data_rx_queue.get_nowait()  # Use get_nowait to avoid blocking
                         self.request.sendall(data_to_send)
@@ -183,38 +152,33 @@ class DataSocket(socketserver.BaseRequestHandler):
             self.log(f"Data connection closed with {self.client_address}")
 
 
-#class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
-#    allow_reuse_address = True
-
 
 class CustomThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     allow_reuse_address = True
     allow_reuse_port = True
 
     def __init__(self, server_address, RequestHandlerClass, bind_and_activate=True, **kwargs):
-        self.extra_args = kwargs
+        # add all paramters to class
+        for k,v in kwargs.items():
+            setattr(self, k, v)
         super().__init__(server_address, RequestHandlerClass, bind_and_activate=bind_and_activate)
 
-    def finish_request(self, request, client_address):
-        self.RequestHandlerClass(request, client_address, self, **self.extra_args)
+    #def finish_request(self, request, client_address):
+    #    self.RequestHandlerClass(request, client_address, self, **self.extra_args)
 
 class SocketInterfaceHandler:
-    def __init__(self, modem, config_manager, state_manager, event_manager):
-        self.modem = modem
-        self.config_manager = config_manager
-        self.config = self.config_manager.read()
-        self.state_manager = state_manager
-        self.event_manager = event_manager
+    def __init__(self, ctx):
+        self.ctx = ctx
+        
         self.logger = structlog.get_logger(type(self).__name__)
-        self.ip = self.config["SOCKET_INTERFACE"]["host"]
-        self.command_port = self.config["SOCKET_INTERFACE"]["cmd_port"]
-        self.data_port = self.config["SOCKET_INTERFACE"]["data_port"]
+
+        self.ip = self.ctx.config_manager.config["SOCKET_INTERFACE"]["host"]
+        self.command_port = self.ctx.config_manager.config["SOCKET_INTERFACE"]["cmd_port"]
+        self.data_port = self.ctx.config_manager.config["SOCKET_INTERFACE"]["data_port"]
         self.command_server = None
         self.data_server = None
         self.command_server_thread = None
         self.data_server_thread = None
-        #Not sure if this will be the permanent home for these items. This will allow us to use several callsigns.
-        #Bandwidth is also sent to the command socket by the client. Not sure how to translate this info to freedata yet.
         self.socket_interface_callsigns = None
         self.connecting_callsign = None
         self.socket_interface_bandwidth = None
@@ -232,24 +196,30 @@ class SocketInterfaceHandler:
         if self.data_port == 0:
             self.data_port = 8301
 
-        # Method to start both command and data server threads
-        self.command_server_thread = threading.Thread(target=self.run_server, args=(self.ip, self.command_port, CommandSocket))
-        self.data_server_thread = threading.Thread(target=self.run_server, args=(self.ip, self.data_port, DataSocket))
+        # in your SocketInterfaceHandler.start_servers():
+        self.command_server = CustomThreadedTCPServer(
+            (self.ip, self.command_port),
+            CommandSocket,
+            ctx=self.ctx,
+            socket_interface_manager=self
+        )
+        threading.Thread(target=self.command_server.serve_forever, daemon=True).start()
 
-        self.command_server_thread.start()
-        self.data_server_thread.start()
-
-        # this might not work
-        #self.command_server = self.command_server_thread._target.__self__
-        #self.data_server = self.data_server_thread._target.__self__
-
+        self.data_server = CustomThreadedTCPServer(
+            (self.ip, self.data_port),
+            DataSocket,
+            ctx=self.ctx,
+            socket_interface_manager=self
+        )
+        threading.Thread(target=self.data_server.serve_forever, daemon=True).start()
+        self.command_server.command_handler = None
 
         self.log(f"Interfaces started")
         return self
 
     def run_server(self,ip, port, handler):
         try:
-            with CustomThreadedTCPServer((ip, port), handler, modem=self.modem, state_manager=self.state_manager, event_manager=self.event_manager, config_manager=self.config_manager, socket_interface_manager = self) as server:
+            with CustomThreadedTCPServer((ip, port), handler, ctx=self.ctx, socket_interface_manager = self) as server:
                 self.log(f"Server starting on ip:port: {ip}:{port}")
                 if port == self.command_port:
                     self.command_server = server
@@ -264,12 +234,13 @@ class SocketInterfaceHandler:
         # Gracefully shutdown the server
         if self.command_server:
             self.command_server.shutdown()
-            self.command_server_thread.join(3)
-
+            if self.command_server_thread:
+                self.command_server_thread.join(3)
             del self.command_server
         if self.data_server:
             self.data_server.shutdown()
-            self.data_server_thread.join(3)
+            if self.data_server_thread:
+                self.data_server_thread.join(3)
             del self.data_server
 
         self.log(f"socket interfaces stopped")

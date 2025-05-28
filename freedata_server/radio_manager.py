@@ -5,15 +5,12 @@ import serial_ptt
 import threading
 
 class RadioManager:
-    def __init__(self, config, state_manager, event_manager, socket_interface_manager):
-        self.config = config
-        self.state_manager = state_manager
-        self.event_manager = event_manager
-        self.socket_interface_manager = socket_interface_manager
+    def __init__(self, ctx):
 
-        self.radiocontrol = config['RADIO']['control']
-        self.rigctld_ip = config['RIGCTLD']['ip']
-        self.rigctld_port = config['RIGCTLD']['port']
+        self.ctx = ctx
+
+        self.radiocontrol = self.ctx.config_manager.config['RADIO']['control']
+
 
         self.refresh_rate = 1
         self.stop_event = threading.Event()
@@ -23,11 +20,11 @@ class RadioManager:
     def _init_rig_control(self):
         # Check how we want to control the radio
         if self.radiocontrol in ["rigctld", "rigctld_bundle"]:
-            self.radio = rigctld.radio(self.config, self.state_manager, hostname=self.rigctld_ip,port=self.rigctld_port)
+            self.radio = rigctld.radio(self.ctx)
         elif self.radiocontrol == "serial_ptt":
-            self.radio = serial_ptt.radio(self.config, self.state_manager)
+            self.radio = serial_ptt.radio(self.ctx)
         elif self.radiocontrol == "flrig":
-            self.radio = flrig.radio(self.config, self.state_manager)
+            self.radio = flrig.radio(self.ctx)
         else:
             self.radio = rigdummy.radio()
 
@@ -41,42 +38,42 @@ class RadioManager:
 
         # send ptt state via socket interface
         try:
-            if self.config['SOCKET_INTERFACE']['enable'] and self.socket_interface_manager:
+            if self.ctx.config_manager.config['SOCKET_INTERFACE']['enable'] and self.ctx.socket_interface_manager.command_server.command_handler:
                 self.socket_interface_manager.command_server.command_handler.socket_respond_ptt(state)
         except Exception as e:
             print(e)
 
     def set_tuner(self, state):
         self.radio.set_tuner(state)
-        self.state_manager.set_radio("radio_tuner", state)
+        self.ctx.state_manager.set_radio("radio_tuner", state)
 
     def set_frequency(self, frequency):
         self.radio.set_frequency(frequency)
-        self.state_manager.set_radio("radio_frequency", frequency)
+        self.ctx.state_manager.set_radio("radio_frequency", frequency)
 
     def set_mode(self, mode):
         self.radio.set_mode(mode)
-        self.state_manager.set_radio("radio_mode", mode)
+        self.ctx.state_manager.set_radio("radio_mode", mode)
 
     def set_rf_level(self, level):
         self.radio.set_rf_level(level)
-        self.state_manager.set_radio("radio_rf_level", level)
+        self.ctx.state_manager.set_radio("radio_rf_level", level)
 
     def update_parameters(self):
         while not self.stop_event.is_set():
             parameters = self.radio.get_parameters()
 
-            self.state_manager.set_radio("radio_frequency", parameters['frequency'])
-            self.state_manager.set_radio("radio_mode", parameters['mode'])
-            self.state_manager.set_radio("radio_bandwidth", parameters['bandwidth'])
-            self.state_manager.set_radio("radio_rf_level", parameters['rf'])
-            self.state_manager.set_radio("radio_tuner", parameters['tuner'])
+            self.ctx.state_manager.set_radio("radio_frequency", parameters['frequency'])
+            self.ctx.state_manager.set_radio("radio_mode", parameters['mode'])
+            self.ctx.state_manager.set_radio("radio_bandwidth", parameters['bandwidth'])
+            self.ctx.state_manager.set_radio("radio_rf_level", parameters['rf'])
+            self.ctx.state_manager.set_radio("radio_tuner", parameters['tuner'])
 
-            if self.state_manager.isTransmitting():
+            if self.ctx.state_manager.isTransmitting():
                 self.radio_alc = parameters['alc']
-                self.state_manager.set_radio("radio_swr", parameters['swr'])
+                self.ctx.state_manager.set_radio("radio_swr", parameters['swr'])
 
-            self.state_manager.set_radio("s_meter_strength", parameters['strength'])
+            self.ctx.state_manager.set_radio("s_meter_strength", parameters['strength'])
             threading.Event().wait(self.refresh_rate)
 
     def stop(self):

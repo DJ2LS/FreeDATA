@@ -25,12 +25,11 @@ class SendMessageCommand(TxCommand):
         Args:
             apiParams (dict): A dictionary containing the API parameters.
         """
-        origin = f"{self.config['STATION']['mycall']}-{self.config['STATION']['myssid']}"
+        origin = f"{self.ctx.config_manager.config['STATION']['mycall']}-{self.ctx.config_manager.config['STATION']['myssid']}"
         self.message = MessageP2P.from_api_params(origin, apiParams)
-        print(self.message)
-        DatabaseManagerMessages(self.event_manager).add_message(self.message.to_dict(), statistics={}, direction='transmit', status='queued', frequency=self.state_manager.radio_frequency)
+        DatabaseManagerMessages(self.ctx).add_message(self.message.to_dict(), statistics={}, direction='transmit', status='queued', frequency=self.ctx.state_manager.radio_frequency)
 
-    def transmit(self, modem):
+    def transmit(self):
         """Transmits the first queued message using ARQ.
 
         This method retrieves the first queued message from the database,
@@ -41,29 +40,29 @@ class SendMessageCommand(TxCommand):
         Args:
             modem: The modem object.
         """
-        if self.state_manager.getARQ():
+        if self.ctx.state_manager.getARQ():
             self.log("Modem busy, waiting until ready...")
             return
 
-        if not modem:
+        if not self.ctx.rf_modem:
             self.log("Modem not running...", isWarning=True)
             return
 
-        first_queued_message = DatabaseManagerMessages(self.event_manager).get_first_queued_message()
+        first_queued_message = DatabaseManagerMessages(self.ctx).get_first_queued_message()
         if not first_queued_message:
             self.log("No queued message in database.")
             return
         try:
             self.log(f"Queued message found: {first_queued_message['id']}")
-            #DatabaseManagerMessages(self.event_manager).update_message(first_queued_message["id"], update_data={'status': 'transmitting'}, frequency=self.state_manager.radio_frequency)
-            message_dict = DatabaseManagerMessages(self.event_manager).get_message_by_id(first_queued_message["id"])
+            #DatabaseManagerMessages(self.ctx.event_manager).update_message(first_queued_message["id"], update_data={'status': 'transmitting'}, frequency=self.ctx.state_manager.radio_frequency)
+            message_dict = DatabaseManagerMessages(self.ctx).get_message_by_id(first_queued_message["id"])
             message = MessageP2P.from_api_params(message_dict['origin'], message_dict)
 
             # wait some random time and wait if we have an ongoing codec2 transmission
             # on our channel. This should prevent some packet collision
             random_delay = np.random.randint(0, 10)
             threading.Event().wait(random_delay)
-            while self.state_manager.is_receiving_codec2_signal():
+            while self.ctx.state_manager.is_receiving_codec2_signal():
                 threading.Event().wait(0.1)
 
             # we are going to wait and check if we received any other codec2 signal within 10s.
@@ -74,26 +73,24 @@ class SendMessageCommand(TxCommand):
             self.log(f"Checking channel if free for {time_to_wait}s", isWarning=False)
             while time.time() < time_waiting_for_free_channel:
                 threading.Event().wait(0.1)
-                if self.state_manager.is_receiving_codec2_signal():
+                if self.ctx.state_manager.is_receiving_codec2_signal():
                     self.log(f"Codec2 signal found, skipping  message until next cycle", isWarning=True)
                     return
 
             # If we came until here, we are setting status to transmitting, otherwise it stays in queued
-            DatabaseManagerMessages(self.event_manager).update_message(first_queued_message["id"], update_data={'status': 'transmitting'}, frequency=self.state_manager.radio_frequency)
+            DatabaseManagerMessages(self.ctx).update_message(first_queued_message["id"], update_data={'status': 'transmitting'}, frequency=self.ctx.state_manager.radio_frequency)
 
 
             # Convert JSON string to bytes (using UTF-8 encoding)
             payload = message.to_payload().encode('utf-8')
             json_bytearray = bytearray(payload)
             data, data_type = self.arq_data_type_handler.prepare(json_bytearray, ARQ_SESSION_TYPES.p2pmsg_zlib)
-            iss = ARQSessionISS(self.config,
-                                modem,
+            iss = ARQSessionISS(self.ctx,
                                 self.message.destination,
-                                self.state_manager,
                                 data,
                                 data_type
                                 )
-            self.state_manager.register_arq_iss_session(iss)
+            self.ctx.state_manager.register_arq_iss_session(iss)
             iss.start()
         except Exception as e:
             self.log(f"Error starting ARQ session: {e}", isWarning=True)

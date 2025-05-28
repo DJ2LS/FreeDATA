@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Request
-from api.common import api_response, api_abort, api_ok, validate
+from fastapi import APIRouter, Depends, HTTPException
+from api.common import api_response, api_abort
 from api.command_helpers import enqueue_tx_command
 from message_system_db_messages import DatabaseManagerMessages
 from message_system_db_attachments import DatabaseManagerAttachments
@@ -8,33 +8,68 @@ from message_system_db_station import DatabaseManagerStations
 import command_message_send
 import adif_udp_logger
 import wavelog_api_logger
-
+from context import AppContext, get_ctx
 
 router = APIRouter()
+
+
+def _mgr_msgs(ctx: AppContext):
+    return DatabaseManagerMessages(ctx)
+
+def _mgr_attach(ctx: AppContext):
+    return DatabaseManagerAttachments(ctx)
+
+def _mgr_beacon(ctx: AppContext):
+    return DatabaseManagerBeacon(ctx)
+
+def _mgr_stations(ctx: AppContext):
+    return DatabaseManagerStations(ctx)
+
 
 
 @router.get("/messages/{message_id}", summary="Get Message by ID", tags=["FreeDATA"], responses={
     200: {"description": "Message found and returned."},
     404: {"description": "Message not found."}
 })
-async def get_freedata_message(message_id: str, request: Request):
-    message = DatabaseManagerMessages(request.app.event_manager).get_message_by_id_json(message_id)
+async def get_freedata_message(
+    message_id: str,
+    ctx: AppContext = Depends(get_ctx)
+):
+    message = _mgr_msgs(ctx).get_message_by_id_json(message_id)
+    if message is None:
+        api_abort("Message not found", 404)
     return api_response(message)
 
-
-async def post_freedata_message(request: Request):
-    """
-    Transmit a FreeDATA message.
-
-    Parameters:
-        request (Request): The HTTP request containing the message data in JSON format.
-
-    Returns:
-        dict: A JSON object containing the transmitted message details.
-    """
-    data = await request.json()
-    await enqueue_tx_command(request.app, command_message_send.SendMessageCommand, data)
-    return api_response(data)
+@router.post("/messages", summary="Transmit Message", tags=["FreeDATA"], responses={
+    200: {
+        "description": "Message transmitted successfully.",
+        "content": {
+            "application/json": {
+                "example": {
+                    "destination": "XX1XXX-6",
+                    "body": "Hello FreeDATA"
+                }
+            }
+        }
+    },
+    404: {
+        "description": "The requested resource was not found.",
+        "content": {
+            "application/json": {
+                "example": {
+                    "error": "Resource not found."
+                }
+            }
+        }
+    }
+})
+async def post_freedata_message(
+    payload: dict,
+    ctx: AppContext = Depends(get_ctx)
+):
+    # Transmit FreeDATA message
+    await enqueue_tx_command(ctx, command_message_send.SendMessageCommand, payload)
+    return api_response(payload)
 
 @router.post("/messages/{message_id}/adif", summary="Send Message ADIF Log", tags=["FreeDATA"], responses={
     200: {
@@ -78,17 +113,17 @@ async def post_freedata_message(request: Request):
         }
     }
 })
-async def post_freedata_message_adif_log(message_id: str, request:Request):
-    adif_output = DatabaseManagerMessages(request.app.event_manager).get_message_by_id_adif(message_id)
-
-    # if message not found do not send adif as the return then is not valid
-    if not adif_output:
-        return
-
-    # Send the ADIF data via UDP and/or wavelog
-    adif_udp_logger.send_adif_qso_data(request.app.config_manager.read(), request.app.event_manager, adif_output)
-    wavelog_api_logger.send_wavelog_qso_data(request.app.config_manager.read(), request.app.event_manager, adif_output)
-    return api_response(adif_output)
+async def post_freedata_message_adif_log(
+    message_id: str,
+    ctx: AppContext = Depends(get_ctx)
+):
+    adif = _mgr_msgs(ctx).get_message_by_id_adif(message_id)
+    if not adif:
+        api_abort("Message not found or ADIF unavailable", 404)
+    # send logs
+    adif_udp_logger.send_adif_qso_data(ctx, adif)
+    wavelog_api_logger.send_wavelog_qso_data(ctx, adif)
+    return api_response({"adif_output": adif})
 
 @router.patch("/messages/{message_id}", summary="Update Message by ID", tags=["FreeDATA"], responses={
     200: {
@@ -122,25 +157,19 @@ async def post_freedata_message_adif_log(message_id: str, request:Request):
         }
     }
 })
-async def patch_freedata_message(message_id: str, request: Request):
-    """
-    Update a FreeDATA message by its ID.
-
-    Parameters:
-        message_id (str): The ID of the message to update.
-        request (Request): The HTTP request containing the update data in JSON format.
-
-    Returns:
-        dict: A JSON object containing the updated message details.
-    """
-    data = await request.json()
-
-    if data.get("action") == "retransmit":
-        result = DatabaseManagerMessages(request.app.event_manager).update_message(message_id, update_data={'status': 'queued'})
-        DatabaseManagerMessages(request.app.event_manager).increment_message_attempts(message_id)
+async def patch_freedata_message(
+    message_id: str,
+    payload: dict,
+    ctx: AppContext = Depends(get_ctx)
+):
+    if payload.get("action") == "retransmit":
+        _mgr_msgs(ctx).update_message(message_id, {'status':'queued'})
+        _mgr_msgs(ctx).increment_message_attempts(message_id)
+        result = {"message_id": message_id, "status": "queued"}
     else:
-        result = DatabaseManagerMessages(request.app.event_manager).update_message(message_id, update_data=data)
-
+        result = _mgr_msgs(ctx).update_message(message_id, update_data=payload)
+    if result is None:
+        api_abort("Message not found", 404)
     return api_response(result)
 
 
@@ -201,48 +230,15 @@ async def patch_freedata_message(message_id: str, request: Request):
         }
     }
 })
-async def get_freedata_messages(request: Request):
-    filters = {k: v for k, v in request.query_params.items() if v}
-    result = DatabaseManagerMessages(request.app.event_manager).get_all_messages_json(filters=filters)
+async def get_freedata_messages(
+    ctx: AppContext = Depends(get_ctx)
+):
+    filters = {k: v for k, v in ctx.config_manager.read().get('FILTERS', {}).items()}
+    # use query params if needed
+    # filters = dict(ctx.request.query_params)
+    result = _mgr_msgs(ctx).get_all_messages_json(filters=filters)
     return api_response(result)
 
-
-@router.post("/messages", summary="Transmit Message", tags=["FreeDATA"], responses={
-    200: {
-        "description": "Message transmitted successfully.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "destination": "XX1XXX-6",
-                    "body": "Hello FreeDATA"
-                }
-            }
-        }
-    },
-    404: {
-        "description": "The requested resource was not found.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "Resource not found."
-                }
-            }
-        }
-    }
-})
-async def post_freedata_message(request: Request):
-    """
-    Transmit a FreeDATA message.
-
-    Parameters:
-        request (Request): The HTTP request containing the message data in JSON format.
-
-    Returns:
-        dict: A JSON object containing the transmitted message details.
-    """
-    data = await request.json()
-    await enqueue_tx_command(request.app, command_message_send.SendMessageCommand, data)
-    return api_response(data)
 
 
 
@@ -270,13 +266,14 @@ async def post_freedata_message(request: Request):
         }
     }
 })
-async def delete_freedata_message(message_id: str, request:Request):
-    result = DatabaseManagerMessages(request.app.event_manager).delete_message(message_id)
-    if result:
-        return api_response({"message": f"{message_id} deleted", "status": "success"})
-    else:
-        return api_response({"message": "Message not found", "status": "failure"}, status_code=404)
-
+async def delete_freedata_message(
+    message_id: str,
+    ctx: AppContext = Depends(get_ctx)
+):
+    ok = _mgr_msgs(ctx).delete_message(message_id)
+    if not ok:
+        api_abort("Message not found", 404)
+    return api_response({"message": f"{message_id} deleted", "status": "success"})
 
 @router.get("/messages/{message_id}/attachments", summary="Get Attachments by Message ID", tags=["FreeDATA"], responses={
     200: {
@@ -325,10 +322,12 @@ async def delete_freedata_message(message_id: str, request:Request):
         }
     }
 })
-async def get_message_attachments(message_id: str, request:Request):
-    attachments = DatabaseManagerAttachments(request.app.event_manager).get_attachments_by_message_id_json(message_id)
-    return api_response(attachments)
-
+async def get_message_attachments(
+    message_id: str,
+    ctx: AppContext = Depends(get_ctx)
+):
+    attachments = _mgr_attach(ctx).get_attachments_by_message_id_json(message_id)
+    return api_response({"attachments": attachments})
 
 @router.get("/messages/attachment/{data_sha512}", summary="Get Attachment by SHA512", tags=["FreeDATA"], responses={
     200: {
@@ -366,8 +365,13 @@ async def get_message_attachments(message_id: str, request:Request):
         }
     }
 })
-async def get_message_attachment(data_sha512: str, request:Request):
-    attachment = DatabaseManagerAttachments(request.app.event_manager).get_attachment_by_sha512(data_sha512)
+async def get_message_attachment(
+    data_sha512: str,
+    ctx: AppContext = Depends(get_ctx)
+):
+    attachment = _mgr_attach(ctx).get_attachment_by_sha512(data_sha512)
+    if attachment is None:
+        api_abort("Attachment not found", 404)
     return api_response(attachment)
 
 
@@ -458,8 +462,10 @@ async def get_message_attachment(data_sha512: str, request:Request):
         }
     }
 })
-async def get_all_beacons(request:Request):
-    beacons = DatabaseManagerBeacon(request.app.event_manager).get_all_beacons()
+async def get_all_beacons(
+    ctx: AppContext = Depends(get_ctx)
+):
+    beacons = _mgr_beacon(ctx).get_all_beacons()
     return api_response(beacons)
 
 
@@ -549,9 +555,13 @@ async def get_all_beacons(request:Request):
         }
     }
 })
-async def get_beacons_by_callsign(callsign: str, request:Request):
-    beacons = DatabaseManagerBeacon(request.app.event_manager).get_beacons_by_callsign(callsign)
+async def get_beacons_by_callsign(
+    callsign: str,
+    ctx: AppContext = Depends(get_ctx)
+):
+    beacons = _mgr_beacon(ctx).get_beacons_by_callsign(callsign)
     return api_response(beacons)
+
 
 
 @router.get("/station/{callsign}", summary="Get Station Info", tags=["FreeDATA"], responses={
@@ -611,10 +621,14 @@ async def get_beacons_by_callsign(callsign: str, request:Request):
         }
     }
 })
-async def get_station_info(callsign: str, request: Request):
-    station = DatabaseManagerStations(request.app.event_manager).get_station(callsign)
+async def get_station_info(
+    callsign: str,
+    ctx: AppContext = Depends(get_ctx)
+):
+    station = _mgr_stations(ctx).get_station(callsign)
+    if station is None:
+        api_abort("Station not found", 404)
     return api_response(station)
-
 
 @router.post("/station/{callsign}", summary="Set Station Info", tags=["FreeDATA"], responses={
     200: {
@@ -673,7 +687,15 @@ async def get_station_info(callsign: str, request: Request):
         }
     }
 })
-async def set_station_info(callsign: str, request: Request):
-    data = await request.json()
-    result = DatabaseManagerStations(request.app.event_manager).update_station_info(callsign, new_info=data["info"])
+async def set_station_info(
+    callsign: str,
+    payload: dict,
+    ctx: AppContext = Depends(get_ctx)
+):
+    info = payload.get("info")
+    if not isinstance(info, dict):
+        api_abort("Invalid input data", 400)
+    result = _mgr_stations(ctx).update_station_info(callsign, new_info=info)
+    if result is None:
+        api_abort("Station not found", 404)
     return api_response(result)
