@@ -56,7 +56,7 @@ class SM:
                 if self.shutdown_flag.is_set():
                     return
 
-                if cmd in ['start'] and not self.ctx.rf_modem:
+                if cmd in ['start']:
                     self.ctx.config_manager.read()
 
                     self.start_radio_manager()
