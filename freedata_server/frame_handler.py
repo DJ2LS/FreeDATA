@@ -6,6 +6,7 @@ import time
 from codec2 import FREEDV_MODE
 from message_system_db_manager import DatabaseManager
 from message_system_db_station import DatabaseManagerStations
+from message_system_db_messages import DatabaseManagerMessages
 
 import maidenhead
 
@@ -389,3 +390,19 @@ class FrameHandler():
         self.emit_event()
         self.follow_protocol()
         return True
+
+
+    def check_for_queued_message(self):
+        """Checks for queued messages to send.
+
+        This method checks if auto-repeat is enabled in the configuration
+        and if the received signal strength is above a certain threshold.
+        If both conditions are met, it sets any messages addressed to the
+        originating station to 'queued' status in the message database.
+        """
+
+        # only check for queued messages, if we have enabled this and if we have a minimum snr received
+        if self.ctx.config_manager.config["MESSAGES"]["enable_auto_repeat"] and self.details["snr"] >= -2:
+            # set message to queued if beacon received
+            DatabaseManagerMessages(self.ctx).set_message_to_queued_for_callsign(
+                self.details['frame']["origin"])
