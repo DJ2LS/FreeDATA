@@ -552,8 +552,8 @@ class DataFrameFactory:
             "flag": flag.to_bytes(1, 'big'),
         }
         return self.construct(FR_TYPE.P2P_CONNECTION_HEARTBEAT, payload)
-    
-    def build_p2p_connection_heartbeat_ack(self, session_id,  flag_has_data=False, flag_announce_arq=False):
+
+    def build_p2p_connection_heartbeat_ack(self, session_id, flag_has_data=False, flag_announce_arq=False):
         flag = 0b00000000
         if flag_has_data:
             flag = helpers.set_flag(flag, 'HAS_DATA', True, self.P2P_FLAGS)

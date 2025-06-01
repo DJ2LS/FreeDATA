@@ -15,6 +15,8 @@
 # We expect the config.ini file to be at $HOME/.config/FreeDATA/config.ini
 # If it isn't found, we copy config.ini.example there
 #
+# 1.9:  09 May 2025 (deej)
+#	Add a check to make sure the FD server terminated properly
 # 1.8:  22 May 2024 (DJ2LS)
 #	add support for browser based gui
 # 1.7:  22 May 2024
@@ -65,7 +67,7 @@ fi
 checkrigexist=`ps auxw | grep -i rigctld | grep -v grep`
 
 echo "*************************************************************************"
-echo "Running the FreeDATA server component"
+echo "Running the FreeDATA server processes"
 echo "*************************************************************************"
 
 # New versions use freedata_server, old version use modem
@@ -99,7 +101,7 @@ echo "Process ID of FreeDATA server is" $serverpid
 # Function to handle Ctrl-C
 function ctrl_c() {
     echo "*************************************************************************"
-    echo "Stopping the server component"
+    echo "Stopping the server processes"
     echo "*************************************************************************"
     kill -INT $serverpid
 
@@ -119,6 +121,15 @@ function ctrl_c() {
             rigpid=$(echo $checkrigctld | awk '{print $2}')
             kill $rigpid
         fi
+    fi
+
+    # Check to make sure the server stopped, and terminate if needed
+    checkfdserver=`ps auxw | grep $serverpid | grep -i FreeDATA | grep -v grep`
+    if [ ! -z "$checkfdserver" ]; then
+        echo "*************************************************************************"
+        echo "Stopping FreeDATA server"
+        echo "*************************************************************************"
+        kill $serverpid
     fi
 
     # Return to the directory we started in

@@ -20,7 +20,6 @@ import audio
 import demodulator
 import modulator
 
-TESTMODE = False
 
 class RF:
     """Handles FreeDATA modem functionality.
@@ -44,7 +43,7 @@ class RF:
             states (StateManager): State manager instance.
             radio_manager (RadioManager): Radio manager instance.
         """
-        
+
         self.ctx = ctx
         self.sampler_avg = 0
         self.buffer_avg = 0
@@ -99,7 +98,10 @@ class RF:
         Raises:
             RuntimeError: If audio device initialization fails.
         """
-        if TESTMODE:
+        if self.ctx.TESTMODE:
+            self.log.warning("RUNNING IN TEST MODE")
+            self.resampler = codec2.resampler() # we need a resampler in test mode
+            self.demodulator.start(None)
             return True
         else:
             if not self.init_audio():
@@ -278,6 +280,10 @@ class RF:
             frames (bytearray): The data frames to transmit.
         """
 
+        if self.ctx.TESTMODE:
+            self.ctx.TESTMODE_TRANSMIT_QUEUE.put([mode, frames])
+            return
+
         self.demodulator.reset_data_sync()
         # Wait for some other thread that might be transmitting
         self.ctx.state_manager.waitForTransmission()
@@ -324,7 +330,11 @@ class RF:
         self.ctx.event_manager.send_ptt_change(True)
 
         # slice audio data to needed blocklength
-        block_size = self.sd_output_stream.blocksize
+        if self.ctx.TESTMODE:
+            block_size = 2400
+        else:
+            block_size = self.sd_output_stream.blocksize
+
         pad_length = -len(audio_48k) % block_size
         padded_data = np.pad(audio_48k, (0, pad_length), mode='constant')
         sliced_audio_data = padded_data.reshape(-1, block_size)

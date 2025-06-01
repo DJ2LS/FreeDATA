@@ -12,23 +12,28 @@ import constants
 from fastapi import Request, WebSocket
 class AppContext:
     def __init__(self, config_file: str):
-        self.config_manager   = CONFIG(self, config_file)
+        self.config_manager = CONFIG(self, config_file)
         self.constants = constants
-        self.p2p_data_queue   = Queue()
-        self.state_queue      = Queue()
-        self.modem_events     = Queue()
-        self.modem_fft        = Queue()
-        self.modem_service    = Queue()
-        self.event_manager    = EventManager([self.modem_events])
-        self.state_manager    = StateManager(self.state_queue)
+        self.p2p_data_queue = Queue()
+        self.state_queue = Queue()
+        self.modem_events = Queue()
+        self.modem_fft = Queue()
+        self.modem_service = Queue()
+        self.event_manager = EventManager(self, [self.modem_events])
+        self.state_manager = StateManager(self.state_queue)
         self.schedule_manager = ScheduleManager(self)
-        self.service_manager  = ServiceManager(self)
+        self.service_manager = ServiceManager(self)
         self.websocket_manager = WebsocketManager(self)
 
         self.socket_interface_manager = None # Socket interface instance, We start it as we need it
         self.rf_modem = None # Modem instnace, we start it as we need it
         self.message_system_db_manager = DatabaseManager(self)
         self.message_system_db_attachments = DatabaseManagerAttachments(self)
+
+        self.TESTMODE = False
+        self.TESTMODE_TRANSMIT_QUEUE = Queue() # This is a helper queue which holds bursts to be transmitted for helping using tests
+        self.TESTMODE_RECEIVE_QUEUE = Queue() # This is a helper queue which holds received bursts for helping using tests
+        self.TESTMODE_EVENTS = Queue() # This is a helper queue which holds events
 
     def startup(self):
 
