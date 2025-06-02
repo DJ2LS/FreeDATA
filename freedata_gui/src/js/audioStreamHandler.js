@@ -5,8 +5,17 @@ setActivePinia(pinia);
 import { useAudioStore } from "../store/audioStore.js";
 const audio = useAudioStore(pinia);
 
+const MAX_BLOCKS = 10;
+
 export function addDataToAudio(data) {
-    const int16 = new Int16Array(data);  // ArrayBuffer → Int16 PCM
-    const copied = new Int16Array(int16);
-    audio.rxStream.push(copied);
+  const int16 = new Int16Array(data);
+  const copy = new Int16Array(int16);  // Kopie für Sicherheit
+
+  const stream = audio.rxStream;
+
+  if (stream.length >= MAX_BLOCKS) {
+    stream.shift();
+  }
+
+  stream.push(copy);
 }

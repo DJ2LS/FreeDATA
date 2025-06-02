@@ -12,7 +12,7 @@ let isPlaying = false;
 function playRxStream() {
   if (isPlaying) return;
 
-  console.log("Starte PLayback");
+  console.log("Start Playback");
   audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 8000 });
   isPlaying = true;
 
