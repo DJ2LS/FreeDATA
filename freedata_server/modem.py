@@ -352,14 +352,22 @@ class RF:
 
         return
 
-    CHUNK_SIZE = 600  # z. B. 600 Samples = 75ms @ 8kHz
-
     def enqueue_streaming_audio_chunks(self, audio_block, queue):
-        total_samples = len(audio_block)
-        for start in range(0, total_samples, self.AUDIO_STREAMING_CHUNK_SIZE):
-            end = start + self.AUDIO_STREAMING_CHUNK_SIZE
-            chunk = audio_block[start:end]
-            queue.put(chunk.tobytes())
+        #total_samples = len(audio_block)
+        #for start in range(0, total_samples, self.AUDIO_STREAMING_CHUNK_SIZE):
+        #    end = start + self.AUDIO_STREAMING_CHUNK_SIZE
+        #    chunk = audio_block[start:end]
+        #    queue.put(chunk.tobytes())
+
+        block_size = self.AUDIO_STREAMING_CHUNK_SIZE
+
+        pad_length = -len(audio_block) % block_size
+        padded_data = np.pad(audio_block, (0, pad_length), mode='constant')
+        sliced_audio_data = padded_data.reshape(-1, block_size)
+        # add each block to audio out queue
+        for block in sliced_audio_data:
+            queue.put(block)
+
 
 
     def sd_output_audio_callback(self, outdata: np.ndarray, frames: int, time, status) -> None:

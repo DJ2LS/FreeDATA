@@ -22,13 +22,15 @@ function playRxStream() {
     });
   }
 
-  //const BLOCK_DURATION_MS = 1024 / 8000 * 1000;
-  const BLOCK_DURATION_MS = 10
+  const BLOCK_DURATION_MS = 600 / 8000 * 1000;
+  //const BLOCK_DURATION_MS = 10
   const MIN_BLOCKS_TO_START = 5
   function loop() {
     if (!isPlaying) return;
+    console.log(audio.rxStream.length)
     if (audio.rxStream.length < MIN_BLOCKS_TO_START){
       setTimeout(loop, 5);
+      console.log("timeout....")
       return;
     }
     if (audio.rxStream.length > 0) {
