@@ -15,6 +15,7 @@ const skel = [
 export const useAudioStore = defineStore("audioStore", () => {
   const audioInputs = ref([]);
   const audioOutputs = ref([]);
+  const rxStream = ref([]);
 
   const loadAudioDevices = async () => {
     try {
@@ -35,5 +36,6 @@ export const useAudioStore = defineStore("audioStore", () => {
     audioInputs,
     audioOutputs,
     loadAudioDevices,
+    rxStream,
   };
 });

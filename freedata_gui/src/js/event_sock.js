@@ -5,6 +5,7 @@ import {
   loadAllData,
 } from "../js/eventHandler.js";
 import { addDataToWaterfall } from "../js/waterfallHandler.js";
+import { addDataToAudio } from "../js/audioStreamHandler.js";
 
 // ----------------- init pinia stores -------------
 import { setActivePinia } from "pinia";
@@ -21,6 +22,10 @@ function connect(endpoint, dispatcher) {
   const socket = new WebSocket(
     `${wsProtocol}//${hostname}:${adjustedPort}/${endpoint}`,
   );
+
+  if (endpoint.includes("audio")){
+    socket.binaryType = "arraybuffer";
+  }
 
   // handle opening
   socket.addEventListener("open", function () {
@@ -56,4 +61,5 @@ export function initConnections() {
   connect("states", stateDispatcher);
   connect("events", eventDispatcher);
   connect("fft", addDataToWaterfall);
+  connect("audio_rx", addDataToAudio);
 }

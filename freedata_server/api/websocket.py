@@ -47,3 +47,20 @@ async def websocket_states(
         ctx.websocket_manager.states_client_list,
         ctx.state_queue
     )
+
+@router.websocket("/audio_rx")
+async def websocket_audio_rx(
+    websocket: WebSocket,
+    ctx: AppContext = Depends(get_ctx)
+):
+    """
+    WebSocket endpoint for state updates.
+    """
+    await websocket.accept()
+    await ctx.websocket_manager.handle_connection(
+        websocket,
+        ctx.websocket_manager.audio_rx_client_list,
+        ctx.state_queue
+    )
+    #while True:
+    #    await websocket.send_bytes(b"\x00" * 1024)

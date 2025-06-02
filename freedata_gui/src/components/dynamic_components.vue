@@ -28,6 +28,7 @@ import grid_tune from "./grid/grid_tune.vue";
 import grid_CQ_btn from "./grid/grid_CQ.vue";
 import grid_ping from "./grid/grid_ping.vue";
 import grid_freq from "./grid/grid_frequency.vue";
+import grid_audio from "./grid/grid_audio.vue";
 import grid_beacon from "./grid/grid_beacon.vue";
 import grid_mycall_small from "./grid/grid_mycall small.vue";
 import grid_scatter from "./grid/grid_scatter.vue";
@@ -325,8 +326,19 @@ const gridWidgets = [
     18,
     false,
     { x: 16, y: 8, w: 2, h: 8 }
+  ),
+  new gridWidget(
+    grid_audio,
+    { x: 16, y: 8, w: 2, h: 8 },
+    "Audio widget",
+    false,
+    true,
+    "Audio",
+    24,
+    false,
+    { x: 16, y: 8, w: 2, h: 8 }
   )
-  //Next new widget ID should be 23
+  //Next new widget ID should be 24
 ];
 
 function updateFrequencyAndApply(frequency) {

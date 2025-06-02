@@ -374,6 +374,8 @@ class RF:
                 audio.calculate_fft(audio_8k, self.ctx.modem_fft, self.ctx.state_manager)
                 outdata[:] = chunk.reshape(outdata.shape)
 
+
+
             else:
                 # reset transmitting state only, if we are not actively processing audio
                 # for avoiding a ptt toggle state bug
@@ -409,6 +411,10 @@ class RF:
         try:
             audio_48k = np.frombuffer(indata, dtype=np.int16)
             audio_8k = self.resampler.resample48_to_8(audio_48k)
+
+            #self.ctx.audio_rx_queue.put({"audio": audio_8k})
+            self.ctx.audio_rx_queue.put(audio_8k)
+
             if self.ctx.config_manager.config['AUDIO'].get('rx_auto_audio_level'):
                 audio_8k = audio.normalize_audio(audio_8k)
 
