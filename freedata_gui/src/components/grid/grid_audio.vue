@@ -24,9 +24,13 @@ function playRxStream() {
 
   //const BLOCK_DURATION_MS = 1024 / 8000 * 1000;
   const BLOCK_DURATION_MS = 10
+  const MIN_BLOCKS_TO_START = 5
   function loop() {
     if (!isPlaying) return;
-
+    if (audio.rxStream.length < MIN_BLOCKS_TO_START){
+      setTimeout(loop, 5);
+      return;
+    }
     if (audio.rxStream.length > 0) {
       const block = audio.rxStream.shift();  // Nächstes Audioblock holen
       const float32 = Float32Array.from(block, s => s / 32768);

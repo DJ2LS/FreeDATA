@@ -75,6 +75,7 @@ class RF:
         self.MODE = 0
         self.rms_counter = 0
 
+        self.AUDIO_STREAMING_CHUNK_SIZE = 600
         self.audio_out_queue = queue.Queue()
 
         # Make sure our resampler will work
@@ -351,6 +352,16 @@ class RF:
 
         return
 
+    CHUNK_SIZE = 600  # z. B. 600 Samples = 75ms @ 8kHz
+
+    def enqueue_streaming_audio_chunks(self, audio_block, queue):
+        total_samples = len(audio_block)
+        for start in range(0, total_samples, self.AUDIO_STREAMING_CHUNK_SIZE):
+            end = start + self.AUDIO_STREAMING_CHUNK_SIZE
+            chunk = audio_block[start:end]
+            queue.put(chunk.tobytes())
+
+
     def sd_output_audio_callback(self, outdata: np.ndarray, frames: int, time, status) -> None:
         """Callback function for the audio output stream.
 
@@ -412,8 +423,7 @@ class RF:
             audio_48k = np.frombuffer(indata, dtype=np.int16)
             audio_8k = self.resampler.resample48_to_8(audio_48k)
 
-            #self.ctx.audio_rx_queue.put({"audio": audio_8k})
-            self.ctx.audio_rx_queue.put(audio_8k)
+            self.enqueue_streaming_audio_chunks(audio_8k, self.ctx.audio_rx_queue)
 
             if self.ctx.config_manager.config['AUDIO'].get('rx_auto_audio_level'):
                 audio_8k = audio.normalize_audio(audio_8k)
