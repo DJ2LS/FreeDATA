@@ -19,7 +19,7 @@ class AppContext:
         self.modem_events = Queue()
         self.modem_fft = Queue()
         self.modem_service = Queue()
-        self.audio_rx_queue = Queue(maxsize=1)
+        self.audio_rx_queue = Queue(maxsize=10)
 
         self.event_manager = EventManager(self, [self.modem_events])
         self.state_manager = StateManager(self.state_queue)
