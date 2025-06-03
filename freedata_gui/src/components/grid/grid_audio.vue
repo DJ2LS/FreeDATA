@@ -12,44 +12,48 @@ let isPlaying = false;
 function playRxStream() {
   if (isPlaying) return;
 
-  console.log("Start Playback");
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 8000 });
+  const SAMPLE_RATE = 8000;
+  const BLOCK_SIZE = 600;
+  const BLOCK_DURATION_MS = (BLOCK_SIZE / SAMPLE_RATE) * 1000;  // z. B. 75ms
+
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: SAMPLE_RATE });
   isPlaying = true;
+  scheduledTime = audioCtx.currentTime;
 
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume().then(() => {
-      console.log("AudioContext resumed");
-    });
-  }
 
-  //const BLOCK_DURATION_MS = 600 / 8000 * 1000;
-  const BLOCK_DURATION_MS = 10
-  const MIN_BLOCKS_TO_START = 5
+
   function loop() {
     if (!isPlaying) return;
-    console.log(audio.rxStream.length)
-    if (audio.rxStream.length < MIN_BLOCKS_TO_START){
-      setTimeout(loop, 5);
-      console.log("timeout....")
-      return;
-    }
-    if (audio.rxStream.length > 0) {
-      const block = audio.rxStream.shift();  // Nächstes Audioblock holen
+
+    const block = audio.getNextBlock();
+
+    if (block) {
       const float32 = Float32Array.from(block, s => s / 32768);
-      const buffer = audioCtx.createBuffer(1, float32.length, 8000);
+      const buffer = audioCtx.createBuffer(1, float32.length, SAMPLE_RATE);
       buffer.copyToChannel(float32, 0);
 
       const source = audioCtx.createBufferSource();
       source.buffer = buffer;
       source.connect(audioCtx.destination);
-      source.start();
+
+      const now = audioCtx.currentTime;
+      const playAt = Math.max(now, scheduledTime);
+      source.start(playAt);
+      scheduledTime = playAt + buffer.duration;
+
+
     } else {
-      console.log("Buffer empty, waiting...");
+      console.warn("Buffer underrun");
     }
-    setTimeout(loop, BLOCK_DURATION_MS);
+
+    setTimeout(loop, 4);  
   }
 
-  loop();
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume().then(loop);
+  } else {
+    loop();
+  }
 }
 
 function stopRxStream() {

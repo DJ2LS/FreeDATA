@@ -17,6 +17,47 @@ export const useAudioStore = defineStore("audioStore", () => {
   const audioOutputs = ref([]);
   const rxStream = ref([]);
 
+  const BUFFER_SIZE = 64; 
+  const rxStreamBuffer = new Array(BUFFER_SIZE).fill(null);
+
+  let writePtr = 0;
+  let readPtr = 0;
+  let readyBlocks = 0;
+
+  function addBlock(block) {
+    buffer[writePtr] = block;
+    writePtr = (writePtr + 1) % BUFFER_SIZE;
+
+    if (readyBlocks < BUFFER_SIZE) {
+      readyBlocks++;
+    } else {
+      readPtr = (readPtr + 1) % BUFFER_SIZE;
+    }
+  }
+
+  function getNextBlock() {
+    if (readyBlocks === 0) return null;
+
+    const block = buffer[readPtr];
+    readPtr = (readPtr + 1) % BUFFER_SIZE;
+    readyBlocks--;
+    return block;
+  }
+
+  function resetBuffer() {
+    writePtr = 0;
+    readPtr = 0;
+    readyBlocks = 0;
+    for (let i = 0; i < BUFFER_SIZE; i++) {
+      buffer[i] = null;
+    }
+  }
+
+  
+
+
+
+
   const loadAudioDevices = async () => {
     try {
       const devices = await getAudioDevices();
@@ -37,5 +78,13 @@ export const useAudioStore = defineStore("audioStore", () => {
     audioOutputs,
     loadAudioDevices,
     rxStream,
+    
+    addBlock,
+    getNextBlock,
+    resetBuffer,
+    get bufferedBlockCount() {
+      return readyBlocks;
+    }, 
+    
   };
 });
