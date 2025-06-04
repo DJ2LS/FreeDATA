@@ -329,14 +329,14 @@ const gridWidgets = [
   ),
   new gridWidget(
     grid_audio,
-    { x: 16, y: 8, w: 2, h: 8 },
-    "Audio widget",
+    { x: 16, y: 8, w: 4, h: 24 },
+    "Audio Stream",
     false,
     true,
     "Audio",
     24,
     false,
-    { x: 16, y: 8, w: 2, h: 8 }
+    { x: 16, y: 8, w: 4, h: 24 }
   )
   //Next new widget ID should be 24
 ];
