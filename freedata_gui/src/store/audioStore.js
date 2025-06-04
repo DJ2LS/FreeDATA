@@ -25,7 +25,7 @@ export const useAudioStore = defineStore("audioStore", () => {
   let readyBlocks = 0;
 
   function addBlock(block) {
-    buffer[writePtr] = block;
+    rxStreamBuffer[writePtr] = block;
     writePtr = (writePtr + 1) % BUFFER_SIZE;
 
     if (readyBlocks < BUFFER_SIZE) {
@@ -38,7 +38,7 @@ export const useAudioStore = defineStore("audioStore", () => {
   function getNextBlock() {
     if (readyBlocks === 0) return null;
 
-    const block = buffer[readPtr];
+    const block = rxStreamBuffer[readPtr];
     readPtr = (readPtr + 1) % BUFFER_SIZE;
     readyBlocks--;
     return block;
@@ -49,7 +49,7 @@ export const useAudioStore = defineStore("audioStore", () => {
     readPtr = 0;
     readyBlocks = 0;
     for (let i = 0; i < BUFFER_SIZE; i++) {
-      buffer[i] = null;
+      rxStreamBuffer[i] = null;
     }
   }
 
@@ -78,7 +78,6 @@ export const useAudioStore = defineStore("audioStore", () => {
     audioOutputs,
     loadAudioDevices,
     rxStream,
-    
     addBlock,
     getNextBlock,
     resetBuffer,
