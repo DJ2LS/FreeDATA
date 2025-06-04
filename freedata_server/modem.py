@@ -75,7 +75,7 @@ class RF:
         self.MODE = 0
         self.rms_counter = 0
 
-        self.AUDIO_STREAMING_CHUNK_SIZE = 600
+        self.AUDIO_STREAMING_CHUNK_SIZE = 2400
         self.audio_out_queue = queue.Queue()
 
         # Make sure our resampler will work

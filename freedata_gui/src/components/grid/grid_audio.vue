@@ -13,7 +13,7 @@ function playRxStream() {
   if (isPlaying) return;
 
   const SAMPLE_RATE = 8000;
-  const BLOCK_SIZE = 600;
+  const BLOCK_SIZE = 300;
   const BLOCK_DURATION_MS = (BLOCK_SIZE / SAMPLE_RATE) * 1000;  // ≈75ms
 
   audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: SAMPLE_RATE });
@@ -37,7 +37,7 @@ function playRxStream() {
       source.start(0);
 
     } else {
-      console.warn("⛔ Audio buffer underrun");
+      //console.warn("⛔ Audio buffer underrun");
     }
 
     setTimeout(loop, 4);

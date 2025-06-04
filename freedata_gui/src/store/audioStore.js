@@ -17,7 +17,7 @@ export const useAudioStore = defineStore("audioStore", () => {
   const audioOutputs = ref([]);
   const rxStream = ref([]);
 
-  const BUFFER_SIZE = 64; 
+  const BUFFER_SIZE = 1024;
   const rxStreamBuffer = new Array(BUFFER_SIZE).fill(null);
 
   let writePtr = 0;
