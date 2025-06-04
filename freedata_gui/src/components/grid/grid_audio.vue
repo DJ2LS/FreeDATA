@@ -6,27 +6,26 @@ setActivePinia(pinia);
 import { useAudioStore } from '@/store/audioStore';
 const audio = useAudioStore(pinia);
 
-let audioCtx = null;
-let isPlaying = false;
+var audioCtx = null;
+var isPlaying = false;
 
 function playRxStream() {
   if (isPlaying) return;
 
   const SAMPLE_RATE = 8000;
   const BLOCK_SIZE = 600;
-  const BLOCK_DURATION_MS = (BLOCK_SIZE / SAMPLE_RATE) * 1000;  // z. B. 75ms
+  const BLOCK_DURATION_MS = (BLOCK_SIZE / SAMPLE_RATE) * 1000;  // ≈75ms
 
   audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: SAMPLE_RATE });
+  let scheduledTime = audioCtx.currentTime;
   isPlaying = true;
-  scheduledTime = audioCtx.currentTime;
 
-
+  console.log("▶️ Echtzeit-Wiedergabe gestartet");
 
   function loop() {
     if (!isPlaying) return;
 
     const block = audio.getNextBlock();
-
     if (block) {
       const float32 = Float32Array.from(block, s => s / 32768);
       const buffer = audioCtx.createBuffer(1, float32.length, SAMPLE_RATE);
@@ -35,18 +34,13 @@ function playRxStream() {
       const source = audioCtx.createBufferSource();
       source.buffer = buffer;
       source.connect(audioCtx.destination);
-
-      const now = audioCtx.currentTime;
-      const playAt = Math.max(now, scheduledTime);
-      source.start(playAt);
-      scheduledTime = playAt + buffer.duration;
-
+      source.start(0);
 
     } else {
-      console.warn("Buffer underrun");
+      console.warn("⛔ Audio buffer underrun");
     }
 
-    setTimeout(loop, 4);  
+    setTimeout(loop, 4);
   }
 
   if (audioCtx.state === 'suspended') {
