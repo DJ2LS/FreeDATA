@@ -286,6 +286,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             # CASE: ACK is going lost.
             self.log(f"Discarding data offset: Offset = {frame['offset']} | Already received: {self.received_bytes}", isWarning=True)
             self.received_bytes = frame['offset']
+            
 
             #return False
 
@@ -301,12 +302,15 @@ class ARQSessionIRS(arq_session.ARQSession):
         remaining_data_length = self.total_length - self.received_bytes
         self.log(f"Remaining data: {remaining_data_length}", isWarning=True)
         # Is this the last data part?
-        if remaining_data_length <= len(frame['data']):
-            # we only want the remaining length, not the entire frame data
+        if remaining_data_length < len(frame['data']):
+            # we only want the remaining length, not the entire frame data 
             data_part = frame['data'][:remaining_data_length]
         else:
             # we want the entire frame data
             data_part = frame['data']
+            
+
+            
 
         self.received_data[frame['offset']:] = data_part
         #self.received_bytes += len(data_part)
@@ -372,6 +376,7 @@ class ARQSessionIRS(arq_session.ARQSession):
                                                          flag_checksum=False)
             self.transmit_frame(ack, mode=FREEDV_MODE.signalling_ack)
             self.log("CRC fail at the end of transmission!", isWarning=True)
+            self.log(f"Failed Data [Is real:{len(self.received_data)}/Is calculated:{seld.received_bytes}/Should:{self.total_bytes}]:{self.received_data}",isWarning=True)
             return self.transmission_failed()
 
 

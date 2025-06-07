@@ -72,7 +72,7 @@ window.addEventListener(
         class="bi bi-broadcast"
         style="font-size: 1.2rem"
       />&nbsp;
-      <strong>{{ $t('grid.componments.broadcasts') }}</strong>
+      <strong>{{ $t('grid.components.broadcasts') }}</strong>
     </div>
     <div class="card-body overflow-auto">
       <div class="input-group">

@@ -37,9 +37,7 @@ class PingFrameHandler(frame_handler.FrameHandler):
             snr=self.details['snr'],
         )
         self.send_ack()
-
         self.check_for_queued_message()
-
     def send_ack(self):
         """Sends a PING acknowledgement frame.
 
@@ -52,18 +50,3 @@ class PingFrameHandler(frame_handler.FrameHandler):
             self.details['snr']
         )
         self.transmit(ping_ack_frame)
-
-    def check_for_queued_message(self):
-        """Checks for queued messages to send.
-
-        This method checks if auto-repeat is enabled in the configuration
-        and if the received signal strength is above a certain threshold.
-        If both conditions are met, it sets any messages addressed to the
-        originating station to 'queued' status in the message database.
-        """
-
-        # only check for queued messages, if we have enabled this and if we have a minimum snr received
-        if self.config["MESSAGES"]["enable_auto_repeat"] and self.details["snr"] >= -2:
-            # set message to queued if beacon received
-            DatabaseManagerMessages(self.ctx).set_message_to_queued_for_callsign(
-                self.details['frame']["origin"])

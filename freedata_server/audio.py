@@ -266,7 +266,7 @@ def normalize_audio(datalist: np.ndarray) -> np.ndarray:
         return datalist
 
     # Define the target max value as 95% of the maximum for np.int16
-    target_max_value = int(32767 * 0.95)
+    target_max_value = int(32767 * 0.85)
 
     # Compute the normalization factor
     normalization_factor = target_max_value / max_value

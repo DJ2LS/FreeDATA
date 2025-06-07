@@ -37,6 +37,7 @@ class CQFrameHandler(frame_handler.FrameHandler):
         )
 
         self.send_ack()
+        self.check_for_queued_message()
 
     def send_ack(self):
         factory = data_frame_factory.DataFrameFactory(self.ctx)
@@ -50,6 +51,3 @@ class CQFrameHandler(frame_handler.FrameHandler):
 
         self.transmit(qrv_frame)
 
-        if self.ctx.config_manager.config["MESSAGES"]["enable_auto_repeat"]:
-            # set message to queued if CQ received
-            DatabaseManagerMessages(self.ctx).set_message_to_queued_for_callsign(self.details['frame']["origin"])
