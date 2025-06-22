@@ -7,7 +7,7 @@ from codec2 import FREEDV_MODE
 from message_system_db_manager import DatabaseManager
 from message_system_db_station import DatabaseManagerStations
 from message_system_db_messages import DatabaseManagerMessages
-
+from collections.abc import Iterable
 import maidenhead
 
 TESTMODE = False
@@ -80,6 +80,13 @@ class FrameHandler():
             session_id = self.details['frame']['session_id']
             if session_id in self.ctx.state_manager.arq_iss_sessions:
                 valid = True
+
+        # check for NORM data
+        elif ft in ['NORM_DATA']:
+            # TODO
+            # maybe we can add a list of domains, we are listening to in state manager?
+            valid = True
+
 
         # check for p2p connection
         elif ft in ['P2P_CONNECTION_CONNECT']:
@@ -184,7 +191,7 @@ class FrameHandler():
         if "session_id" in frame:
             activity["session_id"] = frame["session_id"]
 
-        if "flag" in frame:
+        if "flag" in frame and isinstance(frame["flag"], (list, dict, Iterable)):
             if "AWAY_FROM_KEY" in frame["flag"]:
                 activity["away_from_key"] = frame["flag"]["AWAY_FROM_KEY"]
 
@@ -216,7 +223,7 @@ class FrameHandler():
             distance_miles = distance_dict['miles']
 
         away_from_key = False
-        if "flag" in self.details['frame']:
+        if "flag" in self.details['frame'] and isinstance(frame["flag"], (list, dict, Iterable)):
             if "AWAY_FROM_KEY" in self.details['frame']["flag"]:
                 away_from_key = self.details['frame']["flag"]["AWAY_FROM_KEY"]
 
@@ -265,7 +272,9 @@ class FrameHandler():
                 event['distance_kilometers'] = 0
                 event['distance_miles'] = 0
 
-        if "flag" in self.details['frame'] and "AWAY_FROM_KEY" in self.details['frame']["flag"]:
+
+
+        if "flag" in self.details and isinstance(self.details["flag"], (list, dict, Iterable)) and "AWAY_FROM_KEY" in self.details['frame']["flag"]:
             event['away_from_key'] = self.details['frame']["flag"]["AWAY_FROM_KEY"]
 
         return event
@@ -279,7 +288,6 @@ class FrameHandler():
         broadcasts this event through the event manager.
         """
         event_data = self.make_event()
-        print(event_data)
         self.ctx.event_manager.broadcast(event_data)
 
     def get_tx_mode(self):
@@ -346,8 +354,6 @@ class FrameHandler():
         self.details['frequency_offset'] = frequency_offset
         self.details['freedv_inst'] = freedv_inst
         self.details['bytes_per_frame'] = bytes_per_frame
-
-        print(self.details)
 
         if 'origin' not in self.details['frame'] and 'session_id' in self.details['frame']:
             dxcall = self.ctx.state_manager.get_dxcall_by_session_id(self.details['frame']['session_id'])

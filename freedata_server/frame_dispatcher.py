@@ -15,6 +15,7 @@ from frame_handler_cq import CQFrameHandler
 from frame_handler_arq_session import ARQFrameHandler
 from frame_handler_p2p_connection import P2PConnectionFrameHandler
 from frame_handler_beacon import BeaconFrameHandler
+from frame_handler_norm import NORMFrameHandler
 
 
 
@@ -54,6 +55,9 @@ class DISPATCHER:
         FR_TYPE.PING_ACK.value: {"class": FrameHandler, "name":  "PING ACK"},
         FR_TYPE.PING.value: {"class": PingFrameHandler, "name":  "PING"},
         FR_TYPE.QRV.value: {"class": FrameHandler, "name":  "QRV"},
+        FR_TYPE.NORM_DATA.value: {"class": NORMFrameHandler, "name": "NORM DATA"},
+
+
         #FR_TYPE.IS_WRITING.value: {"class": FrameHandler, "name": "IS_WRITING"},
         #FR_TYPE.FEC.value: {"class": FrameHandler, "name":  "FEC"},
         #FR_TYPE.FEC_WAKEUP.value: {"class": FrameHandler, "name":  "FEC WAKEUP"},
