@@ -4,7 +4,7 @@ from norm.norm_transmission import NORMMsgType, NORMMsgPriority
 from enum import Enum
 import time
 from codec2 import FREEDV_MODE
-
+import helpers
 class NORM_ISS_State(Enum):
     NEW = 0
     TRANSMITTING = 1
@@ -53,7 +53,7 @@ class NormTransmissionISS(NormTransmission):
             payload = full_data[offset: offset + self.MAX_PAYLOAD_SIZE]
 
             burst_info = self.encode_burst_info(burst_number, total_bursts)
-
+            checksum = helpers.get_crc_24(full_data)
             # set flag for last burst
             is_last = (burst_number == total_bursts - 1)
             flags = self.encode_flags(
@@ -70,7 +70,8 @@ class NormTransmissionISS(NormTransmission):
                 burst_info=burst_info,
                 payload_size=len(payload),
                 payload_data=payload,
-                flag=flags
+                flag=flags,
+                checksum=checksum
             )
             print(burst_frame)
             bursts.append(burst_frame)

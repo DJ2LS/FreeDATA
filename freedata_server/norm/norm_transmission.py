@@ -5,6 +5,8 @@ import structlog
 import time
 import data_frame_factory
 from enum import IntEnum
+import hashlib
+
 
 class NORMMsgType(IntEnum):
     UNDEFINED = 0
@@ -121,3 +123,9 @@ class NormTransmission:
         burst_number = (burst_info >> 4) & 0x0F
         burst_total = burst_info & 0x0F
         return burst_number, burst_total
+
+
+    def create_broadcast_id(self, timestamp: int, domain: str, checksum: str, length: int = 10) -> str:
+        raw = f"{self}|{timestamp}|{domain}|{checksum}"
+        digest = hashlib.blake2s(raw.encode(), digest_size=6).hexdigest()
+        return f"bc_{digest[:max(8, min(length, 12))]}"

@@ -19,4 +19,4 @@ class NORMFrameHandler(frame_handler.FrameHandler):
         #print(origin)
 
 
-        NormTransmissionIRS(self.details["frame"])
+        NormTransmissionIRS(self.ctx, self.details["frame"])

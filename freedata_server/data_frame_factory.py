@@ -240,6 +240,7 @@ class DataFrameFactory:
             "flag": 1,
             "timestamp": 4,
             "burst_info": 1,
+            "checksum": 3,
             "payload_size": 1,
             "payload_data": 30
         }
@@ -341,7 +342,7 @@ class DataFrameFactory:
             elif key in ["payload_data"]:
                 extracted_data[key] = data
 
-            elif key in ["origin_crc", "destination_crc", "total_crc"]:
+            elif key in ["origin_crc", "destination_crc", "total_crc", "checksum"]:
                 extracted_data[key] = data.hex()
 
             elif key == "gridsquare":
@@ -667,7 +668,7 @@ class DataFrameFactory:
         }
         return self.construct(FR_TYPE.P2P_CONNECTION_DISCONNECT_ACK, payload)
 
-    def build_norm_data(self, origin, domain, gridsquare, timestamp, burst_info, payload_size, payload_data, flag):
+    def build_norm_data(self, origin, domain, gridsquare, timestamp, burst_info, payload_size, payload_data, flag, checksum):
 
         payload = {
             "origin": helpers.callsign_to_bytes(origin),
@@ -678,6 +679,7 @@ class DataFrameFactory:
             "burst_info": burst_info.to_bytes(1, 'big'),
             "payload_size": payload_size.to_bytes(1, 'big'),
             "payload_data": payload_data,
+            "checksum": checksum
         }
         return self.construct(FR_TYPE.NORM_DATA, payload)
 
