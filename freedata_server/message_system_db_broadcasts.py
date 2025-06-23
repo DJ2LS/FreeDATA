@@ -99,12 +99,11 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             total = msg.total_bursts
 
             if total > 0 and len(received) == total and all(str(i) in received for i in range(1, total + 1)):
+
                 ordered = [received[str(i)] for i in range(1, total + 1)]
-                final = "".join(ordered)
+                final_bytes = b"".join(base64.b64decode(b64part) for b64part in ordered)
 
                 # CRC check
-
-                final_bytes = base64.b64decode(final)
                 crc = helpers.get_crc_24(final_bytes).hex()
 
                 if msg.checksum is None:
@@ -112,9 +111,8 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 elif crc != msg.checksum:
                     self.log(f"Checksum mismatch for {id}: expected {msg.checksum}, got {crc}", isWarning=True)
                 else:
-                    print("ja?=!")
-                    msg.payload_data["final"] = final
-                    msg.payload_size = len(final.encode("utf-8"))
+                    msg.payload_data["final"] = base64.b64encode(final_bytes).decode()
+                    msg.payload_size = len(final_bytes)
                     self.log(f"Final payload assembled and verified for {id}")
 
             session.commit()

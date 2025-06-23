@@ -21,10 +21,11 @@ class NormTransmissionIRS(NormTransmission):
             payload_data = payload_data[:self.MAX_PAYLOAD_SIZE]
 
         if is_last:#
+            end = self.MAX_PAYLOAD_SIZE - ((total_bursts * self.MAX_PAYLOAD_SIZE) - payload_size)
+            print(end)
+            payload_data = payload_data[:end]
 
-            payload_data = payload_data.strip(b'\x00')
-
-        payload_data = payload_data[:payload_size]
+        #payload_data = payload_data[:payload_size]
 
         self.origin = frame["origin"]
         self.domain = frame["domain"]

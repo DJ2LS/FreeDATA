@@ -56,6 +56,7 @@ class NormTransmissionISS(NormTransmission):
         for burst_number in range(1, total_bursts + 1):
             offset = (burst_number-1) * self.MAX_PAYLOAD_SIZE
             payload = full_data[offset: offset + self.MAX_PAYLOAD_SIZE]
+            print("payload: ", len(payload))
 
             burst_info = self.encode_burst_info(burst_number, total_bursts)
             checksum = helpers.get_crc_24(full_data)
