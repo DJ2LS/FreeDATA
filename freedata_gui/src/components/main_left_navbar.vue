@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 
 import { getOverallHealth } from '../js/eventHandler.js';
-import { getFreedataMessages } from '../js/api';
+import { getFreedataMessages, getFreedataBroadcasts } from '../js/api';
 import { loadAllData } from '../js/eventHandler';
 
 import { setActivePinia } from 'pinia';
@@ -89,7 +89,7 @@ const isNetworkTraffic = computed(() => state.is_network_traffic);
       aria-controls="list-chat"
       :title="$t('navbar.chat_help')"
       :class="{ disabled: isNetworkDisconnected }"
-      @click="isNetworkDisconnected ? null : getFreedataMessages"
+      @click="isNetworkDisconnected ? null : getFreedataMessages()"
     >
       <i class="bi bi-chat-text h3" />
       <span
@@ -98,6 +98,21 @@ const isNetworkTraffic = computed(() => state.is_network_traffic);
       >
         {{ chat.totalUnreadMessages }}
       </span>
+    </a>
+
+    <a
+      id="list-broadcast-list"
+      class="list-group-item list-group-item-dark list-group-item-action border-0 rounded-3 mb-2"
+      data-bs-toggle="list"
+      href="#list-broadcasts"
+      role="tab"
+      aria-controls="list-broadcast"
+      :title="$t('navbar.broadcast_help')"
+      :class="{ disabled: isNetworkDisconnected }"
+      @click="isNetworkDisconnected ? null : getFreedataBroadcasts()"
+    >
+      <i class="bi bi-broadcast h3" />
+
     </a>
 
     <a

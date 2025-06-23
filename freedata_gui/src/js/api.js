@@ -9,10 +9,14 @@ import {
   validateCallsignWithoutSSID,
 } from "./freedata";
 import { processFreedataMessages } from "./messagesHandler";
+import { processFreedataBroadcasts } from "./broadcastsHandler";
+
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 import { useChatStore } from "../store/chatStore.js";
 const chatStore = useChatStore(pinia);
+import { useBroadcastStore } from "../store/broadcastStore.js";
+const broadcastStore = useBroadcastStore(pinia);
 
 // Build URL with adjusted port if needed
 function buildURL(endpoint) {
@@ -321,4 +325,19 @@ export async function getStationInfo(callsign) {
 
 export async function setStationInfo(callsign, info) {
   return await apiPost(`/freedata/station/${callsign}`, info);
+}
+
+
+export async function getFreedataBroadcasts() {
+  broadcastStore.loading = true;
+  try {
+    const res = await apiGet("/freedata/broadcast");
+    if (res) {
+      processFreedataBroadcasts(res)
+    }
+  } catch (error) {
+    console.error("Error fetching broadcasts:", error);
+  } finally {
+    broadcastStore.loading = false;
+  }
 }
