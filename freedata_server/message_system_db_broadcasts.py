@@ -110,9 +110,17 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     self.log(f"Missing checksum for {id}", isWarning=True)
                 elif crc != msg.checksum:
                     self.log(f"Checksum mismatch for {id}: expected {msg.checksum}, got {crc}", isWarning=True)
+                    status_obj = self.get_or_create_status(session, "failed_checksum")
+                    msg.status_id = status_obj.id
+
                 else:
                     msg.payload_data["final"] = base64.b64encode(final_bytes).decode()
                     msg.payload_size = len(final_bytes)
+
+                    status_obj = self.get_or_create_status(session, "received")
+                    msg.status_id = status_obj.id
+
+
                     self.log(f"Final payload assembled and verified for {id}")
 
             session.commit()

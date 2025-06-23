@@ -76,8 +76,9 @@ class DatabaseManager:
                 "failed",
                 "failed_checksum",
                 "aborted",
-                "queued"
-            ]
+                "queued",
+                "receiving",
+                "assembling"            ]
 
             # Add default statuses if they don't exist
             for status_name in statuses:
