@@ -5,7 +5,7 @@ import base64
 from datetime import datetime, timezone
 
 class NormTransmissionIRS(NormTransmission):
-    MAX_PAYLOAD_SIZE = 99
+    MAX_PAYLOAD_SIZE = 98
 
     def __init__(self, ctx, frame):
         self.ctx = ctx
@@ -18,12 +18,13 @@ class NormTransmissionIRS(NormTransmission):
 
 
         if total_bursts == 1:
-            payload_data = payload_data[:payload_size]
-        else:
-            start = (burst_number -1) * self.MAX_PAYLOAD_SIZE
-            end = min(start + self.MAX_PAYLOAD_SIZE, payload_size)
-            payload_data = payload_data[start:end]
+            payload_data = payload_data[:self.MAX_PAYLOAD_SIZE]
 
+        if is_last:#
+
+            payload_data = payload_data.strip(b'\x00')
+
+        payload_data = payload_data[:payload_size]
 
         self.origin = frame["origin"]
         self.domain = frame["domain"]

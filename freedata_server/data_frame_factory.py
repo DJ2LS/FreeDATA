@@ -241,8 +241,8 @@ class DataFrameFactory:
             "timestamp": 4,
             "burst_info": 1,
             "checksum": 3,
-            "payload_size": 1,
-            "payload_data": 99
+            "payload_size": 2,
+            "payload_data": 98
         }
 
         # repair frame
@@ -677,7 +677,7 @@ class DataFrameFactory:
             "flag": flag.to_bytes(1, 'big'),
             "timestamp": timestamp.to_bytes(4, 'big'),
             "burst_info": burst_info.to_bytes(1, 'big'),
-            "payload_size": payload_size.to_bytes(1, 'big'),
+            "payload_size": payload_size.to_bytes(2, 'big'),
             "payload_data": payload_data,
             "checksum": checksum
         }

@@ -14,7 +14,7 @@ class NORM_ISS_State(Enum):
     ABORTED = 5
 
 class NormTransmissionISS(NormTransmission):
-    MAX_PAYLOAD_SIZE = 99
+    MAX_PAYLOAD_SIZE = 98
 
     def __init__(self, ctx, origin, domain, gridsquare, data, priority=NORMMsgPriority.NORMAL, message_type=NORMMsgType.UNDEFINED):
 
@@ -44,8 +44,13 @@ class NormTransmissionISS(NormTransmission):
 
 
         full_data = self.data
-
+        print(self.data)
         total_bursts = (len(full_data) + self.MAX_PAYLOAD_SIZE - 1) // self.MAX_PAYLOAD_SIZE
+        print("total_bursts: ", total_bursts)
+        print("MAX_PAYLOAD_SIZE: ", self.MAX_PAYLOAD_SIZE)
+        print("len full data: ", len(full_data))
+
+
         bursts = []
 
         for burst_number in range(1, total_bursts + 1):
@@ -55,7 +60,7 @@ class NormTransmissionISS(NormTransmission):
             burst_info = self.encode_burst_info(burst_number, total_bursts)
             checksum = helpers.get_crc_24(full_data)
             # set flag for last burst
-            is_last = (burst_number == total_bursts - 1)
+            is_last = (burst_number == total_bursts)
             flags = self.encode_flags(
                 msg_type=self.message_type,
                 priority=self.message_priority,
@@ -68,7 +73,7 @@ class NormTransmissionISS(NormTransmission):
                 gridsquare=self.gridsquare,
                 timestamp=self.timestamp,
                 burst_info=burst_info,
-                payload_size=len(payload),
+                payload_size=len(full_data),
                 payload_data=payload,
                 flag=flags,
                 checksum=checksum
