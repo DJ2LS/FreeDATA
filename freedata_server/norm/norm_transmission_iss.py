@@ -14,7 +14,7 @@ class NORM_ISS_State(Enum):
     ABORTED = 5
 
 class NormTransmissionISS(NormTransmission):
-    MAX_PAYLOAD_SIZE = 96
+    MAX_PAYLOAD_SIZE = 99
 
     def __init__(self, ctx, origin, domain, gridsquare, data, priority=NORMMsgPriority.NORMAL, message_type=NORMMsgType.UNDEFINED):
 

@@ -152,7 +152,8 @@ class TestMessageProtocol(unittest.TestCase):
             'gridsquare': "JN48ea",
             'type': 'MESSAGE',
             'priority': '1',
-            'data': str(base64.b64encode(b"hello world!"), 'utf-8')
+            #'data': str(base64.b64encode(b"hello world!"), 'utf-8')
+            'data': str(base64.b64encode(b"hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!"), 'utf-8')
         }
         try:
             command = command_norm.Norm(self.ctx_ISS, params)

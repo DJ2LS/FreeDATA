@@ -2,10 +2,10 @@
 from norm.norm_transmission import NormTransmission
 from message_system_db_broadcasts import DatabaseManagerBroadcasts
 import base64
-
+from datetime import datetime, timezone
 
 class NormTransmissionIRS(NormTransmission):
-    MAX_PAYLOAD_SIZE = 96
+    MAX_PAYLOAD_SIZE = 99
 
     def __init__(self, ctx, frame):
         self.ctx = ctx
@@ -29,8 +29,7 @@ class NormTransmissionIRS(NormTransmission):
         self.domain = frame["domain"]
         self.gridsquare = frame["gridsquare"]
         self.checksum = frame["checksum"]
-        self.timestamp = frame["timestamp"]
-
+        self.timestamp = datetime.fromtimestamp(frame["timestamp"], tz=timezone.utc)
 
         print("####################################")
         print("payload_size:", payload_size)
@@ -44,17 +43,20 @@ class NormTransmissionIRS(NormTransmission):
         print("burst_number", burst_number)
         print("total_bursts", total_bursts)
         print("checksum", self.checksum)
+        print("timestamp", self.timestamp)
 
 
         payload_b64 = base64.b64encode(payload_data).decode("ascii")
         print("payload_b64", payload_b64)
 
         self.id = self.create_broadcast_id(self.timestamp, self.domain, self.checksum)
+        print("id", self.id)
 
         db = DatabaseManagerBroadcasts(self.ctx)
         success = db.process_broadcast_message(
             id=self.id,
             origin=self.origin,
+            timestamp=self.timestamp,
             burst_index=burst_number,
             burst_data=payload_b64,
             total_bursts=total_bursts,
@@ -64,7 +66,8 @@ class NormTransmissionIRS(NormTransmission):
             gridsquare=self.gridsquare,
             msg_type=msg_type,
             priority=priority,
-            received_at=self.timestamp,
+            received_at=datetime.now(timezone.utc),
+            expires_at=datetime.now(timezone.utc),
             is_read=True,
             status="received"
         )

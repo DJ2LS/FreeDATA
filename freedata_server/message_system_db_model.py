@@ -203,6 +203,7 @@ class BroadcastMessage(Base):
 
     id = Column(String, primary_key=True)
     origin = Column(String, ForeignKey('station.callsign'))
+    timestamp = Column(DateTime)
     repairing_callsigns = Column(JSON, nullable=True)
     domain = Column(String)
     gridsquare = Column(String)
@@ -214,8 +215,8 @@ class BroadcastMessage(Base):
     msg_type = Column(String)
     total_bursts = Column(Integer, default=0)
     checksum = Column(String)
-    received_at = Column(DateTime, default=datetime.utcnow)
-    expires_at = Column(DateTime, nullable=True)
+    received_at = Column(DateTime, default=0)
+    expires_at = Column(DateTime, default=0)
     status_id = Column(Integer, ForeignKey('status.id'), nullable=True)
     status = relationship('Status', backref='broadcast_messages')
     error_reason = Column(String, nullable=True)
@@ -226,6 +227,7 @@ class BroadcastMessage(Base):
         return {
             'id': self.id,
             'origin': self.origin,
+            'timestamp': self.timestamp,
             'repairing_callsigns': self.repairing_callsigns,
             'domain': self.domain,
             'gridsquare': self.gridsquare,

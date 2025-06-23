@@ -126,6 +126,18 @@ class NormTransmission:
 
 
     def create_broadcast_id(self, timestamp: int, domain: str, checksum: str, length: int = 10) -> str:
-        raw = f"{self}|{timestamp}|{domain}|{checksum}"
-        digest = hashlib.blake2s(raw.encode(), digest_size=6).hexdigest()
-        return f"bc_{digest[:max(8, min(length, 12))]}"
+        """
+        Creates a deterministic broadcast ID using BLAKE2b.
+
+        Args:
+            timestamp (int): UNIX timestamp (int).
+            domain (str): Domain/context string.
+            checksum (str): Checksum string.
+            length (int): Number of hex characters in result (max 128).
+
+        Returns:
+            str: Broadcast ID, e.g., 'bc_8d12fa3b4e'
+        """
+        base_str = f"{timestamp}:{domain}:{checksum}".encode("utf-8")
+        digest = hashlib.blake2b(base_str, digest_size=length // 2).hexdigest()  # 1 hex char = 4 bits
+        return f"bc_{digest}"

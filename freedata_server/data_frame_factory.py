@@ -242,7 +242,7 @@ class DataFrameFactory:
             "burst_info": 1,
             "checksum": 3,
             "payload_size": 1,
-            "payload_data": 30
+            "payload_data": 99
         }
 
         # repair frame

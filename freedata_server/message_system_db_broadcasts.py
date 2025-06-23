@@ -2,12 +2,16 @@ from message_system_db_manager import DatabaseManager
 from message_system_db_attachments import DatabaseManagerAttachments
 from message_system_db_model import Status, BroadcastMessage
 from message_system_db_station import DatabaseManagerStations
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm.attributes import flag_modified
 from datetime import datetime, timedelta
 import json
 import os
 from exceptions import MessageStatusError
 import helpers
+import base64
+
+
+
 class DatabaseManagerBroadcasts(DatabaseManager):
 
     def __init__(self, ctx):
@@ -19,6 +23,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             self,
             id: str,
             origin: str,
+            timestamp: datetime,
             burst_index: int,
             burst_data: str,
             total_bursts: int,
@@ -46,16 +51,18 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             # Try to find existing message
             msg = session.query(BroadcastMessage).filter_by(id=id).first()
 
+            self.log(f"Broadcast ID: {id}, Burst: {burst_index}, Exists: {'yes' if msg else 'no'}")
+
             if not msg:
                 # Create station and status
                 origin_station = self.stations_manager.get_or_create_station(origin, session)
                 status_obj = self.get_or_create_status(session, status) if status else None
-                received_at = received_at or datetime.utcnow()
 
                 # New message
                 msg = BroadcastMessage(
                     id=id,
                     origin=origin_station.callsign,
+                    timestamp=timestamp,
                     repairing_callsigns=repairing_callsigns,
                     domain=domain,
                     gridsquare=gridsquare,
@@ -83,23 +90,29 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     msg.payload_data["bursts"] = {}
 
                 msg.payload_data["bursts"][str(burst_index)] = burst_data
+                flag_modified(msg, "payload_data")
+
                 self.log(f"Added burst {burst_index} to message {id}")
 
             # Check for final assembly
             received = msg.payload_data["bursts"]
-            total = msg.total_bursts or 0
+            total = msg.total_bursts
 
-            if total > 0 and len(received) == total and all(str(i) in received for i in range(total)):
-                ordered = [received[str(i)] for i in range(total)]
+            if total > 0 and len(received) == total and all(str(i) in received for i in range(1, total + 1)):
+                ordered = [received[str(i)] for i in range(1, total + 1)]
                 final = "".join(ordered)
 
                 # CRC check
-                crc = helpers.get_crc_24(final)
+
+                final_bytes = base64.b64decode(final)
+                crc = helpers.get_crc_24(final_bytes).hex()
+
                 if msg.checksum is None:
                     self.log(f"Missing checksum for {id}", isWarning=True)
                 elif crc != msg.checksum:
                     self.log(f"Checksum mismatch for {id}: expected {msg.checksum}, got {crc}", isWarning=True)
                 else:
+                    print("ja?=!")
                     msg.payload_data["final"] = final
                     msg.payload_size = len(final.encode("utf-8"))
                     self.log(f"Final payload assembled and verified for {id}")
@@ -112,6 +125,46 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             session.rollback()
             self.log(f"Error processing broadcast message {id}: {e}", isWarning=True)
             return False
+
+        finally:
+            session.remove()
+
+    def get_all_broadcasts_json(self) -> list:
+        """
+        Returns all broadcast messages in JSON-serializable dict format.
+        """
+        session = self.get_thread_scoped_session()
+        try:
+            messages = session.query(BroadcastMessage).all()
+            result = []
+
+            for msg in messages:
+                result.append({
+                    "id": msg.id,
+                    "origin": msg.origin,
+                    "timestamp": msg.timestamp.isoformat() if msg.timestamp else None,
+                    "repairing_callsigns": msg.repairing_callsigns,
+                    "domain": msg.domain,
+                    "gridsquare": msg.gridsquare,
+                    "frequency": msg.frequency,
+                    "priority": msg.priority,
+                    "is_read": msg.is_read,
+                    "payload_size": msg.payload_size,
+                    "payload_data": msg.payload_data,
+                    "msg_type": msg.msg_type,
+                    "total_bursts": msg.total_bursts,
+                    "checksum": msg.checksum,
+                    "received_at": msg.received_at.isoformat() if msg.received_at else None,
+                    "expires_at": msg.expires_at.isoformat() if msg.expires_at else None,
+                    "status": msg.status.name if msg.status else None,
+                    "error_reason": msg.error_reason
+                })
+
+            return result
+
+        except Exception as e:
+            self.log(f"Error fetching broadcasts: {e}", isWarning=True)
+            return []
 
         finally:
             session.remove()
