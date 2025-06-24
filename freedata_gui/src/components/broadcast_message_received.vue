@@ -10,9 +10,17 @@
         </div>
 
         <div class="card-footer p-0 border-top-0">
-          <p class="p-0 m-0 me-1 text-end">
-            <span class="mr-2">{{ getDateTime }} UTC</span>
+
+          <p class="text p-0 m-0 mb-1 me-1 text-end">
+          <span class="badge text-bg-secondary">{{ this.message.origin }}</span>
+          | <span class="badge text-bg-secondary">{{ this.message.msg_type }}</span>
+          | <span class="badge text-bg-secondary">{{ this.message.priority }}</span>
+          | <span class="mr-2">{{ getDateTime }} UTC</span>
+
           </p>
+
+
+
         </div>
       </div>
     </div>
