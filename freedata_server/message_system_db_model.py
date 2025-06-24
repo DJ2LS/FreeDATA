@@ -210,6 +210,7 @@ class BroadcastMessage(Base):
     frequency = Column(Integer, default=0)
     priority = Column(Integer, default=1)
     is_read = Column(Boolean, default=True)
+    direction = Column(String, nullable=True)
     payload_size = Column(Integer, default=0)
     payload_data = Column(JSON, nullable=True)
     msg_type = Column(String)
@@ -234,6 +235,7 @@ class BroadcastMessage(Base):
             'frequency': self.frequency,
             'priority': self.priority,
             'is_read': self.is_read,
+            'direction': self.direction,
             'payload_size': self.payload_size,
             'payload_data': self.payload_data,
             'msg_type': self.msg_type,

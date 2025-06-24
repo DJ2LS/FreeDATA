@@ -705,7 +705,7 @@ async def set_station_info(
         api_abort("Station not found", 404)
     return api_response(result)
 
-@router.get("/broadcast", summary="Get All Broadcast Messages", tags=["FreeDATA"], responses={})
+@router.get("/broadcasts", summary="Get All Broadcast Messages", tags=["FreeDATA"], responses={})
 async def get_freedata_broadcasts(
     ctx: AppContext = Depends(get_ctx)
 ):
@@ -713,6 +713,16 @@ async def get_freedata_broadcasts(
     # use query params if needed
     # filters = dict(ctx.request.query_params)
     result = _mgr_broadcasts(ctx).get_all_broadcasts_json()
+    return api_response(result)
+
+@router.get("/broadcasts/domains", summary="Get All Broadcast Messages", tags=["FreeDATA"], responses={})
+async def get_freedata_broadcasts(
+    ctx: AppContext = Depends(get_ctx)
+):
+    #filters = {k: v for k, v in ctx.config_manager.read().get('FILTERS', {}).items()}
+    # use query params if needed
+    # filters = dict(ctx.request.query_params)
+    result = _mgr_broadcasts(ctx).get_broadcast_domains_json()
     return api_response(result)
 
 

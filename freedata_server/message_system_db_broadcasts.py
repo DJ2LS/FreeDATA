@@ -36,6 +36,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             expires_at: datetime = None,
             priority: int = 1,
             is_read: bool = True,
+            direction: str = None,
             status: str = "queued",
             error_reason: str = None
     ) -> bool:
@@ -68,6 +69,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     gridsquare=gridsquare,
                     priority=priority,
                     is_read=is_read,
+                    direction=direction,
                     payload_size=0,
                     payload_data={"bursts": {str(burst_index): burst_data}},
                     msg_type=msg_type,
@@ -155,6 +157,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     "frequency": msg.frequency,
                     "priority": msg.priority,
                     "is_read": msg.is_read,
+                    "direction": msg.direction,
                     "payload_size": msg.payload_size,
                     "payload_data": msg.payload_data,
                     "msg_type": msg.msg_type,
@@ -171,6 +174,42 @@ class DatabaseManagerBroadcasts(DatabaseManager):
         except Exception as e:
             self.log(f"Error fetching broadcasts: {e}", isWarning=True)
             return []
+
+        finally:
+            session.remove()
+
+    def get_broadcast_domains_json(self) -> dict:
+        """
+        Returns a JSON-compatible dictionary where each key is a domain (e.g. 'BB1AA-2'),
+        and each value is a dict containing message stats for that domain.
+        """
+        session = self.get_thread_scoped_session()
+        try:
+            messages = (
+                session.query(BroadcastMessage)
+                .filter(BroadcastMessage.domain.isnot(None))
+                .order_by(BroadcastMessage.timestamp.desc())
+                .all()
+            )
+
+            result = {}
+            for msg in messages:
+                domain = msg.domain
+                if domain not in result:
+                    result[domain] = {
+                        "message_count": 1,
+                        "last_message_id": msg.id,
+                        "last_message_timestamp": msg.timestamp.isoformat() if msg.timestamp else None,
+                        "last_origin": msg.origin
+                    }
+                else:
+                    result[domain]["message_count"] += 1
+
+            return result
+
+        except Exception as e:
+            self.log(f"Error fetching domain summary: {e}", isWarning=True)
+            return {}
 
         finally:
             session.remove()
