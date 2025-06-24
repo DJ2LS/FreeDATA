@@ -11,7 +11,7 @@
    import {getFreedataBroadcastsPerDomain, getFreedataDomains, sendModemTestFrame, sendSineTone} from "../js/api";
    import { newMessage, deleteCallsignFromDB } from "../js/messagesHandler.js";
    import main_startup_check from "./main_startup_check.vue";
-   import {newBroadcastMessage} from "../js/broadcastsHandler";
+   import {deleteBroadcastDomainFromDB, newBroadcastMessage} from "../js/broadcastsHandler";
 
    // Chart.js imports
    import {
@@ -88,7 +88,13 @@
    function deleteChat() {
      deleteCallsignFromDB(chat.selectedCallsign);
    }
-   
+
+      function deleteDomain() {
+     deleteBroadcastDomainFromDB(broadcast.selectedDomain);
+   }
+
+
+
    // Chart options and data
    const skipped = (speedCtx, value) =>
      speedCtx.p0.skip || speedCtx.p1.skip ? value : undefined;
@@ -427,6 +433,63 @@ const beaconHistogramData = computed(() => ({
       </div>
     </div>
   </div>
+
+  <div
+    id="deleteBroadcastModal"
+    ref="modalElement"
+    class="modal fade"
+    tabindex="-1"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1
+            id="deleteBroadcastModalLabel"
+            class="modal-title fs-5"
+          >
+            {{ chat.selectedCallsign }} {{ $t('modals.options') }}
+          </h1>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          />
+        </div>
+        <div class="modal-body">
+
+
+          <div class="card mt-3">
+            <div class="card-header">
+              <strong>{{ $t('modals.furtheroptions') }}</strong>
+            </div>
+            <div class="card-body">
+              <button
+                type="button"
+                class="btn btn-danger"
+                data-bs-dismiss="modal"
+                @click="deleteDomain"
+              >
+                {{ $t('modals.deletebroadcastdomain') }}
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            {{ $t('modals.close') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Message Info Modal -->
   <div
     id="messageInfoModal"

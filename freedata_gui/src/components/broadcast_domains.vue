@@ -8,7 +8,7 @@
       data-bs-toggle="modal"
       @click="startNewBroadcast"
     >
-      <i class="bi bi-pencil-square" /> {{ $t('chat.startnewchat') }}
+      <i class="bi bi-pencil-square" /> {{ $t('broadcast.startnewbroadcast') }}
     </button>
   </nav>
 

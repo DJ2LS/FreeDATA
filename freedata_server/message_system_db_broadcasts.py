@@ -273,6 +273,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 session.delete(msg)
                 session.commit()
                 self.log(f"Deleted broadcast message {id}")
+                self.ctx.event_manager.freedata_message_db_change(message_id=id)
                 return {
                     "status": "success",
                     "deleted": 1,

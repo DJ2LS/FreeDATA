@@ -96,7 +96,7 @@ function resetDomain() {
                 <button
                   style="width: 100px;"
                   class="btn btn-outline-secondary ms-2"
-                  data-bs-target="#deleteChatModal"
+                  data-bs-target="#deleteBroadcastModal"
                   data-bs-toggle="modal"
                   @click="domainSelected(domain)"
                 >

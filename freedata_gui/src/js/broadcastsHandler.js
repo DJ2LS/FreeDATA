@@ -33,10 +33,8 @@ export function repeatBroadcastTransmission(id) {
 }
 
 export function deleteBroadcastDomainFromDB(domain) {
-  const messages = broadcastStore.sorted_broadcast_list[domain] || [];
-  for (const message of messages) {
-    deleteFreedataBroadcastDomain(message.id);
-  }
+  deleteFreedataBroadcastDomain(domain);
+  broadcast.selectedDomain = '';
 }
 
 export function sendBroadcastADIFviaUDP(domain) {
