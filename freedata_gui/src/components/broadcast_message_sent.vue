@@ -62,7 +62,7 @@
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 
-import {retransmitFreedataBroadcast, deleteFreedataBroadcast, sendBroadcastADIFviaUDP} from "@/js/broadcastsHandler";
+import {retransmitFreedataBroadcast, deleteBroadcastMessageFromDB, sendBroadcastADIFviaUDP} from "@/js/broadcastsHandler";
 
 export default {
   props: {
@@ -114,7 +114,7 @@ export default {
 
     async deleteBroadcast() {
       try {
-        await deleteFreedataBroadcast(this.message.id);
+        await deleteBroadcastMessageFromDB(this.message.id);
       } catch (e) {
         console.error("Delete failed:", e);
       }

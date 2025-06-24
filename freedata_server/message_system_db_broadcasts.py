@@ -82,6 +82,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 )
                 session.add(msg)
                 self.log(f"Created new broadcast message {id}")
+                self.ctx.event_manager.freedata_message_db_change(message_id=id)
 
             else:
                 # Add burst to existing message
@@ -95,7 +96,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 flag_modified(msg, "payload_data")
 
                 self.log(f"Added burst {burst_index} to message {id}")
-
+                self.ctx.event_manager.freedata_message_db_change(message_id=id)
             # Check for final assembly
             received = msg.payload_data["bursts"]
             total = msg.total_bursts
@@ -218,7 +219,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
 
         session = self.get_thread_scoped_session()
         try:
-            query = session.query(BroadcastMessage).order_by(BroadcastMessage.timestamp.desc())
+            query = session.query(BroadcastMessage).order_by(BroadcastMessage.timestamp.asc())
 
             if domain:
                 query = query.filter(BroadcastMessage.domain == domain)
@@ -282,6 +283,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     session.delete(m)
                 session.commit()
                 self.log(f"Deleted {count} messages from domain '{id}'")
+                self.ctx.event_manager.freedata_message_db_change(message_id=id)
                 return {
                     "status": "success",
                     "deleted": count,

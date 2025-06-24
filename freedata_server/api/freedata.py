@@ -741,7 +741,7 @@ async def delete_freedata_broadcast_domain(
     id: str,
     ctx: AppContext = Depends(get_ctx)
 ):
-    ok = _mgr_msgs(ctx).delete_broadcast_message_or_domain(id)
+    ok = _mgr_broadcasts(ctx).delete_broadcast_message_or_domain(id)
     if not ok:
         api_abort("Message not found", 404)
     return api_response({"message": f"{id} deleted", "status": "success"})
@@ -751,7 +751,6 @@ async def post_freedata_broadcast(
     payload: dict,
     ctx: AppContext = Depends(get_ctx)
 ):
-    print(payload)
     # Transmit FreeDATA message
     await enqueue_tx_command(ctx, command_norm.Norm, payload)
     return api_response(payload)
