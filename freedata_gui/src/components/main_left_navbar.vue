@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 
 import { getOverallHealth } from '../js/eventHandler.js';
-import { getFreedataMessages, getFreedataBroadcasts } from '../js/api';
+import { getFreedataMessages, getFreedataDomains } from '../js/api';
 import { loadAllData } from '../js/eventHandler';
 
 import { setActivePinia } from 'pinia';
@@ -109,7 +109,7 @@ const isNetworkTraffic = computed(() => state.is_network_traffic);
       aria-controls="list-broadcast"
       :title="$t('navbar.broadcast_help')"
       :class="{ disabled: isNetworkDisconnected }"
-      @click="isNetworkDisconnected ? null : getFreedataBroadcasts()"
+      @click="isNetworkDisconnected ? null : getFreedataDomains()"
     >
       <i class="bi bi-broadcast h3" />
 

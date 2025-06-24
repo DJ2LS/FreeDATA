@@ -483,6 +483,63 @@ const beaconHistogramData = computed(() => ({
       </div>
     </div>
   </div>
+
+   <div
+    id="broadcastMessageInfoModal"
+    ref="modalElement"
+    class="modal fade"
+    tabindex="-1"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1
+            id="messageInfoModalLabel"
+            class="modal-title fs-5"
+          >
+            ...
+          </h1>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          />
+        </div>
+        <div class="modal-body">
+          <div class="card mt-2">
+            <div class="card-header">
+              {{ $t('general.statistics') }}
+            </div>
+            <div class="card-body">
+              <div class="container">
+                <div class="row">
+
+                  ...
+                </div>
+
+                </div>
+              </div>
+            </div>
+        </div>
+
+
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            {{ $t('modals.close') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
   <div
     id="newChatModal"
     ref="modalElement"

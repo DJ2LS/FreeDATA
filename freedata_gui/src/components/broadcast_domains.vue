@@ -34,51 +34,93 @@
 
     <!-- Show 'no conversations' message if not loading and no conversations exist -->
     <div
-      v-else-if="!broadcast.domain_list || Object.keys(broadcast.domain_list).length === 0"
+      v-else-if="!broadcast.domains || Object.keys(broadcast.domains).length === 0"
       class="text-center p-2"
     >
-      {{ $t('chat.noConversations') }}
+      {{ $t('broadcast.noDomains') }}
     </div>
 
+<template
+  v-for="(details, domain) in broadcast.domains"
+  :key="domain"
+>
+  <a
+    :id="`list-domain-list-${domain}`"
+    class="list-group-item list-group-item-action list-group-item-secondary rounded-2 border-0 mb-2"
+    data-bs-toggle="list"
+    :href="`#list-${domain}-messages`"
+    role="tab"
+    :aria-controls="`list-${domain}-messages`"
+    @click="domainSelected(domain)"
+  >
+    <div class="row">
+      <div class="col-7 text-truncate">
+        <strong>{{ domain }}</strong>
+        <br>
+        <small>
+          {{
+            details.body
+              ? sanitizeBody(details.body.substring(0, 35) + '...')
+              : "<no preview>"
+          }}
+        </small>
+      </div>
+      <div class="col-5 text-end">
+        <small>
+          {{ getDateTime(details.last_message_timestamp) }}
+        </small>
+      </div>
+    </div>
+  </a>
+</template>
 
-    <template
-      v-for="(details, domain) in broadcast.callsign_list"
-      :key="callsign"
-    >
-      <a
-        :id="`list-domain-list-${domain}`"
-        class="list-group-item list-group-item-action list-group-item-secondary rounded-2 border-0 mb-2"
-        data-bs-toggle="list"
-        :href="`#list-${domain}-messages`"
-        role="tab"
-        :aria-controls="`list-${domain}-messages`"
-        @click="domainSelected(domain)"
-      >
-        <div class="row">
-          <div class="col-7 text-truncate">
-            <strong>{{ domain }}</strong>
-            <strong>Typ, Global, EU, US, Asia, ... EMCOM</strong>
-            <br>
-            <small>{{ sanitizeBody(details.body.substring(0, 35) + '...') || "\u003Cfile\u003E" }}</small>
-
-          </div>
-          <div class="col-5 text-end">
-            <small>{{ getDateTime(details.timestamp) }}</small>
-
-          </div>
-        </div>
-      </a>
-    </template>
   </div>
 </template>
 
 <script setup>
 
+import { getFreedataBroadcastsPerDomain } from '../js/api.js';
 import { setActivePinia } from 'pinia';
 import pinia from '../store/index';
 setActivePinia(pinia);
 
 import { useBroadcastStore } from '../store/broadcastStore.js';
 const broadcast = useBroadcastStore(pinia);
+
+function getDateTime(input) {
+  let date;
+  if (typeof input === 'number') {
+    // Assuming input is a Unix timestamp in seconds
+    date = new Date(input * 1000);
+  } else {
+    // Assuming input is an ISO 8601 formatted string
+    date = new Date(input);
+  }
+
+  const now = new Date();
+  const isSameDay = date.getDate() === now.getDate() &&
+                    date.getMonth() === now.getMonth() &&
+                    date.getFullYear() === now.getFullYear();
+
+  if (isSameDay) {
+    // Use the browser's locale to format time only
+    return date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  } else {
+    // Use the browser's locale to format both date and time
+    const datePart = date.toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: 'numeric' });
+    //const timePart = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    //return `${datePart} ${timePart}`;
+    return `${datePart}`;
+  }
+}
+
+function domainSelected(domain) {
+  broadcast.selectedDomain = domain.toUpperCase();
+  broadcast.triggerScrollToBottom();
+  //setMessagesAsRead(domain);
+  getFreedataBroadcastsPerDomain(domain);
+}
+
+
 
 </script>

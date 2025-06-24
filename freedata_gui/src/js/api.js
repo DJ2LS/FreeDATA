@@ -9,7 +9,7 @@ import {
   validateCallsignWithoutSSID,
 } from "./freedata";
 import { processFreedataMessages } from "./messagesHandler";
-import { processFreedataBroadcasts } from "./broadcastsHandler";
+import { processFreedataDomains, processFreedataBroadcastsPerDomain } from "./broadcastsHandler";
 
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
@@ -331,7 +331,7 @@ export async function setStationInfo(callsign, info) {
 export async function getFreedataBroadcasts() {
   broadcastStore.loading = true;
   try {
-    const res = await apiGet("/freedata/broadcast");
+    const res = await apiGet("/freedata/broadcasts");
     if (res) {
       processFreedataBroadcasts(res)
     }
@@ -341,3 +341,63 @@ export async function getFreedataBroadcasts() {
     broadcastStore.loading = false;
   }
 }
+
+export async function getFreedataBroadcastsPerDomain(domain) {
+  broadcastStore.loading = true;
+  try {
+    const res = await apiGet(`/freedata/broadcasts/${domain}/`);
+    if (res) {
+      processFreedataBroadcastsPerDomain(res)
+    }
+  } catch (error) {
+    console.error("Error fetching broadcasts:", error);
+  } finally {
+    broadcastStore.loading = false;
+  }
+}
+
+
+export async function getFreedataDomains() {
+  broadcastStore.loading = true;
+  try {
+    const res = await apiGet("/freedata/broadcasts/domains");
+    if (res) {
+      processFreedataDomains(res)
+    }
+  } catch (error) {
+    console.error("Error fetching broadcasts:", error);
+  } finally {
+    broadcastStore.loading = false;
+  }
+}
+
+export async function sendFreedataBroadcastMessage(domain, body) {
+  return await apiPost("/freedata/broadcasts", {
+    domain,
+    body,
+  });
+}
+
+export async function retransmitFreedataBroadcast(id) {
+  return await apiPatch(`/freedata/broadcasts/${id}`, {
+    action: "retransmit",
+  });
+}
+
+export async function deleteFreedataBroadcastMessage(id) {
+  return await apiDelete(`/freedata/broadcasts/${id}`);
+}
+
+export async function deleteFreedataBroadcastDomain(id) {
+  return await apiDelete(`/freedata/broadcasts/${id}`);
+}
+
+
+
+export async function postFreedataBroadcastADIF(id) {
+  return await apiPost(`/freedata/broadcasts/${id}/adif`, {
+    action: "retransmit",
+  });
+}
+
+
