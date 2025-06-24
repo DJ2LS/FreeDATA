@@ -33,12 +33,6 @@ class Norm(TxCommand):
             self.emit_event()
             self.logger.info(self.log_message())
 
-            # wait some random time and wait if we have an ongoing codec2 transmission
-            # on our channel. This should prevent some packet collision
-            random_delay = np.random.randint(0, 6)
-            threading.Event().wait(random_delay)
-            self.ctx.state_manager.channel_busy_condition_codec2.wait(0.5)
-
             NormTransmissionISS(self.ctx, self.origin, self.domain, self.gridsquare, self.data, self.priority, self.msgtype).prepare_and_transmit()
 
 

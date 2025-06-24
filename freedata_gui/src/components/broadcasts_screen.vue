@@ -127,7 +127,7 @@ function resetDomain() {
         </div>
 
 
-        <!-- New Message Input Area -->
+        <!-- New Broadcast Input Area -->
         <div
           v-if="broadcast.selectedDomain"
           class="p-0"

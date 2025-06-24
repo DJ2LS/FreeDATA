@@ -13,13 +13,21 @@ export const useBroadcastStore = defineStore("broadcastStore", () => {
 
   // domains
   const domains = ref({});
-  const selectedDomain = ref({});
+  const selectedDomain = ref();
 
   // broadcasts per domain
   const domainBroadcasts = ref({});
 
   // input text
   const inputText = ref("");
+
+  // new message type
+  const newMessageType = ref("");
+  // new domain
+  const newDomain = ref("");
+  // new priority
+  const newPriority = ref("");
+
 
   function triggerScrollToBottom() {
     scrollTrigger.value++;
@@ -43,5 +51,8 @@ export const useBroadcastStore = defineStore("broadcastStore", () => {
     domainBroadcasts,
     setBroadcastsForDomain,
     inputText,
+    newDomain,
+    newPriority,
+    newMessageType,
   };
 })

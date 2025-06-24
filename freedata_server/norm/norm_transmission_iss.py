@@ -8,7 +8,8 @@ import helpers
 from datetime import datetime, timezone, timedelta
 import base64
 from message_system_db_broadcasts import DatabaseManagerBroadcasts
-
+import threading
+import numpy as np
 
 
 
@@ -93,6 +94,12 @@ class NormTransmissionISS(NormTransmission):
         return bursts
 
     def transmit_bursts(self, bursts):
+
+        # wait some random time and wait if we have an ongoing codec2 transmission
+        # on our channel. This should prevent some packet collision
+        random_delay = np.random.randint(0, 6)
+        threading.Event().wait(random_delay)
+        self.ctx.state_manager.channel_busy_condition_codec2.wait(0.5)
 
         for burst in bursts:
             self.ctx.rf_modem.transmit(FREEDV_MODE.datac4, 1, 200, burst)

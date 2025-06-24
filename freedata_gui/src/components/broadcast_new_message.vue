@@ -47,6 +47,7 @@ function transmitNewBroadcast() {
   }
 
   newBroadcastMessage(params)
+  broadcast.inputText = ''
 }
 
 // Markdown helper
