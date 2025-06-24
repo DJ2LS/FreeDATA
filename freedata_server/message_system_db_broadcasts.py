@@ -242,6 +242,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     "gridsquare": msg.gridsquare,
                     "msg_type": msg.msg_type,
                     "payload_size": msg.payload_size,
+                    "payload_data": msg.payload_data,
                     "direction": msg.direction,
                     "status": msg.status.name if msg.status else None,
                     "error_reason": msg.error_reason,
