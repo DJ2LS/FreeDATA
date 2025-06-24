@@ -34,6 +34,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             msg_type: str = None,
             received_at: datetime = None,
             expires_at: datetime = None,
+            nexttransmission_at: datetime = None,
             priority: int = 1,
             is_read: bool = True,
             direction: str = None,
@@ -76,6 +77,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     total_bursts=total_bursts,
                     checksum=checksum,
                     received_at=received_at,
+                    nexttransmission_at=nexttransmission_at,
                     expires_at=expires_at,
                     status_id=status_obj.id if status_obj else None,
                     error_reason=error_reason
@@ -166,6 +168,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     "checksum": msg.checksum,
                     "received_at": msg.received_at.isoformat() if msg.received_at else None,
                     "expires_at": msg.expires_at.isoformat() if msg.expires_at else None,
+                    "nexttransmission_at": msg.nexttransmission_at.isoformat() if msg.nexttransmission_at else None,
                     "status": msg.status.name if msg.status else None,
                     "error_reason": msg.error_reason
                 })
@@ -248,6 +251,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     "status": msg.status.name if msg.status else None,
                     "error_reason": msg.error_reason,
                     "received_at": msg.received_at.isoformat() if msg.received_at else None,
+                    "nexttransmission_at": msg.nexttransmission_at.isoformat() if msg.nexttransmission_at else None,
                     "expires_at": msg.expires_at.isoformat() if msg.expires_at else None
                 })
 

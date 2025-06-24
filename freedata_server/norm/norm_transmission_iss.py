@@ -5,7 +5,7 @@ from enum import Enum
 import time
 from codec2 import FREEDV_MODE
 import helpers
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import base64
 from message_system_db_broadcasts import DatabaseManagerBroadcasts
 
@@ -124,6 +124,7 @@ class NormTransmissionISS(NormTransmission):
                 msg_type=self.message_type.name if hasattr(self.message_type, 'name') else str(self.message_type),
                 priority=self.priority.value if hasattr(self.priority, 'value') else int(self.priority),
                 received_at=datetime.now(timezone.utc),
+                nexttransmission_at = datetime.now(timezone.utc) + timedelta(hours=1),
                 expires_at=datetime.now(timezone.utc),
                 is_read=True,
                 direction="transmit",

@@ -217,6 +217,7 @@ class BroadcastMessage(Base):
     total_bursts = Column(Integer, default=0)
     checksum = Column(String)
     received_at = Column(DateTime, default=0)
+    nexttransmission_at = Column(DateTime, default=0)
     expires_at = Column(DateTime, default=0)
     status_id = Column(Integer, ForeignKey('status.id'), nullable=True)
     status = relationship('Status', backref='broadcast_messages')
@@ -243,6 +244,7 @@ class BroadcastMessage(Base):
             'checksum': self.checksum,
             'received_at': self.received_at.isoformat() if self.received_at else None,
             'expires_at': self.expires_at.isoformat() if self.expires_at else None,
+            'nexttransmission_at': self.nexttransmission_at.isoformat() if self.nexttransmission_at else None,
             'status': self.status.name if self.status else None,
             'error_reason': self.error_reason
         }
