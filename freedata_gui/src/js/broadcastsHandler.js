@@ -23,9 +23,9 @@ export async function processFreedataDomains(data) {
 }
 
 
-export function newBroadcastMessage(domain, body) {
-  sendFreedataBroadcastMessage(domain, body);
-  broadcastStore.triggerScrollToBottom();
+export function newBroadcastMessage(params) {
+  sendFreedataBroadcastMessage(params);
+  broadcast.triggerScrollToBottom();
 }
 
 export function repeatBroadcastTransmission(id) {

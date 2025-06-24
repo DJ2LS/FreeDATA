@@ -258,3 +258,49 @@ class DatabaseManagerBroadcasts(DatabaseManager):
 
         finally:
             session.remove()
+
+    def delete_broadcast_message_or_domain(self, id) -> dict:
+
+        session = self.get_thread_scoped_session()
+        try:
+            msg = session.query(BroadcastMessage).filter_by(id=id).first()
+            if msg:
+                session.delete(msg)
+                session.commit()
+                self.log(f"Deleted broadcast message {id}")
+                return {
+                    "status": "success",
+                    "deleted": 1,
+                    "type": "message",
+                    "id": id
+                }
+
+            messages = session.query(BroadcastMessage).filter_by(domain=id).all()
+            if messages:
+                count = len(messages)
+                for m in messages:
+                    session.delete(m)
+                session.commit()
+                self.log(f"Deleted {count} messages from domain '{id}'")
+                return {
+                    "status": "success",
+                    "deleted": count,
+                    "type": "domain",
+                    "domain": id
+                }
+
+            return {
+                "status": "error",
+                "message": f"Neither broadcast message ID '{id}' nor domain found."
+            }
+
+        except Exception as e:
+            session.rollback()
+            self.log(f"Error deleting broadcast message or domain '{id}': {e}", isWarning=True)
+            return {
+                "status": "error",
+                "message": str(e)
+            }
+
+        finally:
+            session.remove()

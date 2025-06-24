@@ -4,13 +4,16 @@ import pinia from '../store/index';
 setActivePinia(pinia);
 
 import { useBroadcastStore } from '../store/broadcastStore.js';
+import {settingsStore as settings} from '../store/settingsStore.js';
 const broadcast = useBroadcastStore(pinia);
+
 
 import { ref } from 'vue';
 import { VuemojiPicker } from 'vuemoji-picker';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { useIsMobile } from '../js/mobile_devices.js';
+import {newBroadcastMessage} from "@/js/broadcastsHandler";
 
 const { isMobile } = useIsMobile(992);
 
@@ -33,13 +36,17 @@ function transmitNewBroadcast() {
 
   const sanitizedInput = DOMPurify.sanitize(marked.parse(broadcast.inputText));
 
-  // Broadcast sending function (replace with actual logic)
-  console.log("Send broadcast to domain:", broadcast.selectedDomain);
-  console.log("Payload:", sanitizedInput);
+  const base64data = btoa(sanitizedInput);
+  const params = {
+    origin: settings.remote.STATION.mycall + '-' + settings.remote.STATION.myssid,
+    domain: broadcast.selectedDomain,
+    gridsquare: settings.remote.STATION.mygrid,
+    type: "MESSAGE",
+    priority: "1",
+    data: base64data
+  }
 
-  // Reset input
-  broadcast.inputText = '';
-  inputField.value = '';
+  newBroadcastMessage(params)
 }
 
 // Markdown helper

@@ -41,6 +41,10 @@ class Norm(TxCommand):
 
             NormTransmissionISS(self.ctx, self.origin, self.domain, self.gridsquare, self.data, self.priority, self.msgtype).prepare_and_transmit()
 
+
+
+
+
         except Exception as e:
             self.log(f"Error starting NORM transmission: {e}", isWarning=True)
 

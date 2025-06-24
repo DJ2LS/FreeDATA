@@ -5,6 +5,13 @@ from enum import Enum
 import time
 from codec2 import FREEDV_MODE
 import helpers
+from datetime import datetime, timezone
+import base64
+from message_system_db_broadcasts import DatabaseManagerBroadcasts
+
+
+
+
 class NORM_ISS_State(Enum):
     NEW = 0
     TRANSMITTING = 1
@@ -36,6 +43,7 @@ class NormTransmissionISS(NormTransmission):
 
     def prepare_and_transmit(self):
         bursts = self.create_bursts()
+        self.add_to_database()
         self.transmit_bursts(bursts)
 
     def create_bursts(self):
@@ -87,4 +95,37 @@ class NormTransmissionISS(NormTransmission):
     def transmit_bursts(self, bursts):
 
         for burst in bursts:
-            self.ctx.rf_modem.transmit(FREEDV_MODE.datac4, 1, 100, burst)
+            self.ctx.rf_modem.transmit(FREEDV_MODE.datac4, 1, 200, burst)
+
+    def add_to_database(self):
+        db = DatabaseManagerBroadcasts(self.ctx)
+        self.timestamp_dt = datetime.fromtimestamp(self.timestamp, tz=timezone.utc)
+        self.checksum = helpers.get_crc_24(self.data).hex()
+        self.id = self.create_broadcast_id(self.timestamp, self.domain, self.checksum)
+
+        total_bursts = (len(self.data) + self.MAX_PAYLOAD_SIZE - 1) // self.MAX_PAYLOAD_SIZE
+
+        for burst_index in range(1, total_bursts + 1):
+            offset = (burst_index - 1) * self.MAX_PAYLOAD_SIZE
+            payload_data = self.data[offset: offset + self.MAX_PAYLOAD_SIZE]
+            payload_b64 = base64.b64encode(payload_data).decode("ascii")
+
+            db.process_broadcast_message(
+                id=self.id,
+                origin=self.origin,
+                timestamp=self.timestamp_dt,
+                burst_index=burst_index,
+                burst_data=payload_b64,
+                total_bursts=total_bursts,
+                checksum=self.checksum,
+                repairing_callsigns=None,
+                domain=self.domain,
+                gridsquare=self.gridsquare,
+                msg_type=self.message_type.name if hasattr(self.message_type, 'name') else str(self.message_type),
+                priority=self.priority.value if hasattr(self.priority, 'value') else int(self.priority),
+                received_at=datetime.now(timezone.utc),
+                expires_at=datetime.now(timezone.utc),
+                is_read=True,
+                direction="transmit",
+                status="assembling"
+            )

@@ -6,7 +6,7 @@ from message_system_db_attachments import DatabaseManagerAttachments
 from message_system_db_beacon import DatabaseManagerBeacon
 from message_system_db_station import DatabaseManagerStations
 from message_system_db_broadcasts import DatabaseManagerBroadcasts
-
+import command_norm
 import command_message_send
 import adif_udp_logger
 import wavelog_api_logger
@@ -705,6 +705,7 @@ async def set_station_info(
         api_abort("Station not found", 404)
     return api_response(result)
 
+
 @router.get("/broadcasts", summary="Get All Broadcast Messages", tags=["FreeDATA"], responses={})
 async def get_freedata_broadcasts(
     ctx: AppContext = Depends(get_ctx)
@@ -735,3 +736,22 @@ async def get_freedata_broadcasts(
     return api_response(result)
 
 
+@router.delete("/broadcasts/{id}", summary="Delete Message or Broadcast by ID", tags=["FreeDATA"], responses={})
+async def delete_freedata_broadcast_domain(
+    id: str,
+    ctx: AppContext = Depends(get_ctx)
+):
+    ok = _mgr_msgs(ctx).delete_broadcast_message_or_domain(id)
+    if not ok:
+        api_abort("Message not found", 404)
+    return api_response({"message": f"{id} deleted", "status": "success"})
+
+@router.post("/broadcasts", summary="Transmit Broadcast", tags=["FreeDATA"], responses={})
+async def post_freedata_broadcast(
+    payload: dict,
+    ctx: AppContext = Depends(get_ctx)
+):
+    print(payload)
+    # Transmit FreeDATA message
+    await enqueue_tx_command(ctx, command_norm.Norm, payload)
+    return api_response(payload)

@@ -371,11 +371,8 @@ export async function getFreedataDomains() {
   }
 }
 
-export async function sendFreedataBroadcastMessage(domain, body) {
-  return await apiPost("/freedata/broadcasts", {
-    domain,
-    body,
-  });
+export async function sendFreedataBroadcastMessage(params) {
+  return await apiPost("/freedata/broadcasts", params);
 }
 
 export async function retransmitFreedataBroadcast(id) {
