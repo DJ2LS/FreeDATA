@@ -292,7 +292,7 @@
             "txdelay": "Ritardo in ms per la trasmissione",
             "txdelay_help": "Ritardo prima di trasmettere, in millisecondi",
             "maximumbandwidth": "Massima ampiezza di banda usabile",
-            "maximumbandwidth_help": "Seleziona la lassima ampiezza di banda che il modem può usare"
+            "maximumbandwidth_help": "Seleziona la lassima ampiezza di banda che il modem può usare",
             "enabletxautoadjust": "Livello audio TX auto", 
             "enablerxautoadjust": "Livello audio RX auto",
             "enabletxautoadjust_help": "Regola il livello audio in TX automaticamente al valore più alto possibile" , 
@@ -365,7 +365,7 @@
             "hamlibrigctldcommand_placeholder": "Definisci automaticamente dai parametri precedenti",
             "hamlibrigctldcustomarguments": " Argomenti specifici di rigctld",
             "hamlibrigctldcustomarguments_help": "Parametri addizionali di rigctld (normalmente non necessari)",
-            "hamlibrigctldcustomarguments_placeholder": "Parametri addizionali"
+            "hamlibrigctldcustomarguments_placeholder": "Parametri addizionali",
             "flrigport": "Porta Flrig",
             "flrigport_help": "Definisce la porta dove il server flrig ascolta (Default: 12345)",
             "flrighost": "Host Flrig",
