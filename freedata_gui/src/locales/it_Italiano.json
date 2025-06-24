@@ -293,6 +293,10 @@
             "txdelay_help": "Ritardo prima di trasmettere, in millisecondi",
             "maximumbandwidth": "Massima ampiezza di banda usabile",
             "maximumbandwidth_help": "Seleziona la lassima ampiezza di banda che il modem può usare"
+            "enabletxautoadjust": "Livello audio TX auto", 
+            "enablerxautoadjust": "Livello audio RX auto",
+            "enabletxautoadjust_help": "Regola il livello audio in TX automaticamente al valore più alto possibile" , 
+            "enablerxautoadjust_help": "Regola il livello audio in RX automaticamente al valore più alto possibile"            
         },
         "web": {
             "introduction": "Parametri per Explorer, compreso l'attivazione di Explorer per i dati e le statistiche.",
@@ -306,7 +310,9 @@
             "introduction": "Attenzione: Queste funzioni possono essere incomplete. Sono SOLO per utenti esperti!",
             "info": "Info: Non sono ancora state rese disponibili funzioni per il test",
             "enableringbuffer": "Attiva il ring buffer",
-            "enableringbuffer_help": "Attiva un ring buffer sperimentale che può essere più efficiente su CPU di bassa potenza"
+            "enableringbuffer_help": "Attiva un ring buffer sperimentale che può essere più efficiente su CPU di bassa potenza",
+            "enablevhf": "Abilita i modi VHF -- per adesso solo CQ --",
+            "enablevhf_help": "Modi VHF sperimentali per test"
         },
         "radio": {
             "introduction": "Parametri per il controllo della radio, compreso il metodo di controllo e le configurazioni specifiche del metodo.",
@@ -315,6 +321,7 @@
             "rigcontroltype_help": "Scegli con il software controlla la tua radio",
             "tabhamlib": "Hamlib",
             "tabserial": "Seriale",
+            "tabflrig": "flrig",
             "serialpttcomport": "PTT Com port",
             "serialpttcomport_help": "Seleziona la porta seriale connessa con la radio per il controllo PTT",
             "serialpttcustomcomport": "PTT Custom COM port",
@@ -359,6 +366,10 @@
             "hamlibrigctldcustomarguments": " Argomenti specifici di rigctld",
             "hamlibrigctldcustomarguments_help": "Parametri addizionali di rigctld (normalmente non necessari)",
             "hamlibrigctldcustomarguments_placeholder": "Parametri addizionali"
+            "flrigport": "Porta Flrig",
+            "flrigport_help": "Definisce la porta dove il server flrig ascolta (Default: 12345)",
+            "flrighost": "Host Flrig",
+            "flrighost_help": "Definisce l'indirizzo del server, in genere localhost o 127.0.0.1"
         }
     }
 }
