@@ -59,7 +59,7 @@ cmd_port = 9000
 data_port = 9001
 
 [MESSAGES]
-enable_auto_repeat = False
+enable_auto_repeat = True
 
 [QSO_LOGGING]
 enable_adif_udp = False
