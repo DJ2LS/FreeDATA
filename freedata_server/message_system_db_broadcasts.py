@@ -213,3 +213,47 @@ class DatabaseManagerBroadcasts(DatabaseManager):
 
         finally:
             session.remove()
+
+    def get_broadcasts_per_domain_json(self, domain: str = None) -> dict:
+
+        session = self.get_thread_scoped_session()
+        try:
+            query = session.query(BroadcastMessage).order_by(BroadcastMessage.timestamp.desc())
+
+            if domain:
+                query = query.filter(BroadcastMessage.domain == domain)
+
+            messages = query.all()
+            result = {}
+
+            for msg in messages:
+                d = msg.domain or "unknown"
+
+                if domain and d != domain:
+                    continue  # just in case
+
+                if d not in result:
+                    result[d] = []
+
+                result[d].append({
+                    "id": msg.id,
+                    "timestamp": msg.timestamp.isoformat() if msg.timestamp else None,
+                    "origin": msg.origin,
+                    "gridsquare": msg.gridsquare,
+                    "msg_type": msg.msg_type,
+                    "payload_size": msg.payload_size,
+                    "direction": msg.direction,
+                    "status": msg.status.name if msg.status else None,
+                    "error_reason": msg.error_reason,
+                    "received_at": msg.received_at.isoformat() if msg.received_at else None,
+                    "expires_at": msg.expires_at.isoformat() if msg.expires_at else None
+                })
+
+            return result
+
+        except Exception as e:
+            self.log(f"Error collecting broadcasts for domain '{domain}': {e}", isWarning=True)
+            return {}
+
+        finally:
+            session.remove()

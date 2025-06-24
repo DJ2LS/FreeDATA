@@ -715,6 +715,15 @@ async def get_freedata_broadcasts(
     result = _mgr_broadcasts(ctx).get_all_broadcasts_json()
     return api_response(result)
 
+@router.get("/broadcasts/{domain}/", summary="Get Broadcats per Domain", tags=["FreeDATA"], responses={})
+async def get_freedata_broadcasts_per_domain(
+    domain: str,
+    ctx: AppContext = Depends(get_ctx)
+):
+    result = _mgr_broadcasts(ctx).get_broadcasts_per_domain_json(domain)
+    return api_response(result)
+
+
 @router.get("/broadcasts/domains", summary="Get All Broadcast Messages", tags=["FreeDATA"], responses={})
 async def get_freedata_broadcasts(
     ctx: AppContext = Depends(get_ctx)
