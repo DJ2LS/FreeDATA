@@ -22,7 +22,7 @@ class NORM_ISS_State(Enum):
     ABORTED = 5
 
 class NormTransmissionISS(NormTransmission):
-    MAX_PAYLOAD_SIZE = 98
+    MAX_PAYLOAD_SIZE = 26
 
     def __init__(self, ctx, origin, domain, gridsquare, data, priority=NORMMsgPriority.NORMAL, message_type=NORMMsgType.UNDEFINED):
 
@@ -100,10 +100,11 @@ class NormTransmissionISS(NormTransmission):
         random_delay = np.random.randint(0, 6)
         threading.Event().wait(random_delay)
         self.ctx.state_manager.channel_busy_condition_codec2.wait(0.5)
-
+        print("bursts: ", bursts)
         for burst in bursts:
+            print("transmitting burst: ", burst)
             self.ctx.rf_modem.transmit(FREEDV_MODE.datac4, 1, 200, burst)
-
+        #self.ctx.rf_modem.transmit(FREEDV_MODE.datac4, 1, 200, bursts)
     def add_to_database(self):
         db = DatabaseManagerBroadcasts(self.ctx)
         self.timestamp_dt = datetime.fromtimestamp(self.timestamp, tz=timezone.utc)

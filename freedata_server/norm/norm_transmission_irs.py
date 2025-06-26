@@ -5,7 +5,7 @@ import base64
 from datetime import datetime, timezone, timedelta
 
 class NormTransmissionIRS(NormTransmission):
-    MAX_PAYLOAD_SIZE = 98
+    MAX_PAYLOAD_SIZE = 26
 
     def __init__(self, ctx, frame):
         self.ctx = ctx

@@ -8,7 +8,7 @@ class DataFrameFactory:
     LENGTH_SIG0_FRAME = 14
     LENGTH_SIG1_FRAME = 14
     LENGTH_ACK_FRAME = 3
-    LENGTH_NORM_FRAME = 126
+    LENGTH_NORM_FRAME = 54
 
     """
         helpers.set_flag(byte, 'DATA-ACK-NACK', True, FLAG_POSITIONS)
@@ -242,7 +242,7 @@ class DataFrameFactory:
             "burst_info": 1,
             "checksum": 3,
             "payload_size": 2,
-            "payload_data": 98
+            "payload_data": 26
         }
 
         # repair frame
