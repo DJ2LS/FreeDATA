@@ -365,7 +365,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             session.remove()
 
 
-    def get_broadcast_per_id(self, id: str) -> dict | None:
+    def get_broadcast_per_id(self, id):
         session = self.get_thread_scoped_session()
         try:
             msg = session.query(BroadcastMessage).filter_by(id=id).first()

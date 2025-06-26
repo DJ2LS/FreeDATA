@@ -46,7 +46,7 @@ class ScheduleManager:
             'transmitting_beacon': {'function': self.transmit_beacon, 'interval': 600},
             'beacon_cleanup': {'function': self.delete_beacons, 'interval': 600},
             'update_transmission_state': {'function': self.update_transmission_state, 'interval': 10},
-            'check_missing_broadcast_bursts': {'function': self.check_missing_broadcast_bursts, 'interval': 10},
+            'check_missing_broadcast_bursts': {'function': self.check_missing_broadcast_bursts, 'interval': 60},
         }
         self.running = False  # Flag to control the running state
         self.scheduler_thread = None  # Reference to the scheduler thread

@@ -27,6 +27,7 @@ class NORMFrameHandler(frame_handler.FrameHandler):
             NormTransmissionIRS(self.ctx, frame)
 
         elif frame['frame_type_int'] == FR.NORM_NACK.value:
+            print(frame["id"])
             broadcast = DatabaseManagerBroadcasts(self.ctx).get_broadcast_per_id(frame["id"])
             if broadcast is not None:
                 print(broadcast)
