@@ -2,7 +2,7 @@
 from norm.norm_transmission import NormTransmission
 from message_system_db_broadcasts import DatabaseManagerBroadcasts
 import base64
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 class NormTransmissionIRS(NormTransmission):
     MAX_PAYLOAD_SIZE = 98
@@ -32,7 +32,6 @@ class NormTransmissionIRS(NormTransmission):
         self.gridsquare = frame["gridsquare"]
         self.checksum = frame["checksum"]
         self.timestamp = datetime.fromtimestamp(frame["timestamp"], tz=timezone.utc)
-
         print("####################################")
         print("payload_size:", payload_size)
         print("payload_data:", payload_data)
@@ -70,6 +69,7 @@ class NormTransmissionIRS(NormTransmission):
             priority=priority,
             received_at=datetime.now(timezone.utc),
             expires_at=datetime.now(timezone.utc),
+            nexttransmission_at=datetime.now(timezone.utc),
             is_read=True,
             direction="receive",
             status="assembling"
