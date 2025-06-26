@@ -27,11 +27,21 @@ class NORMFrameHandler(frame_handler.FrameHandler):
             NormTransmissionIRS(self.ctx, frame)
 
         elif frame['frame_type_int'] == FR.NORM_NACK.value:
-            print(frame["id"])
-            broadcast = DatabaseManagerBroadcasts(self.ctx).get_broadcast_per_id(frame["id"])
-            if broadcast is not None:
-                print(broadcast)
-                NormTransmissionISS(self.ctx, broadcast.origin, broadcast.domain, broadcast.gridsquare, broadcast.data, priority=broadcast.priority, message_type=broadcast.message_type)
+            try:
+                print(str(frame["id"]))
+                print(frame["id"].decode("utf-8"))
+                broadcast = DatabaseManagerBroadcasts(self.ctx).get_broadcast_per_id(frame["id"].decode("utf-8"))
+                if broadcast is not None:
+                    print(broadcast)
+                    print("oring", broadcast["origin"])
+                    print("domain", broadcast["domain"])
+                    print("gridsquare", broadcast["gridsquare"])
+                    print("payload_data", broadcast["payload_data"]["final"])
+                    print("priority", broadcast["priority"])
+                    print("message_type", broadcast["msg_type"])
+                    NormTransmissionISS(self.ctx, broadcast["origin"], broadcast["domain"], broadcast["gridsquare"], broadcast["payload_data"]["final"], priority=broadcast["priority"], message_type=broadcast["msg_type"], send_only_bursts=frame["missing_bursts"]).prepare_and_transmit()
+            except Exception as e:
+                print(e)
         else:
             self.logger.warning("DISCARDING FRAME", frame=frame)
             return
