@@ -7,6 +7,8 @@ import command_message_send
 #from message_system_db_manager import DatabaseManager
 from message_system_db_messages import DatabaseManagerMessages
 from message_system_db_beacon import DatabaseManagerBeacon
+from message_system_db_broadcasts import DatabaseManagerBroadcasts
+from norm.norm_transmission import NormTransmission
 import explorer
 import command_beacon
 import structlog
@@ -44,6 +46,7 @@ class ScheduleManager:
             'transmitting_beacon': {'function': self.transmit_beacon, 'interval': 600},
             'beacon_cleanup': {'function': self.delete_beacons, 'interval': 600},
             'update_transmission_state': {'function': self.update_transmission_state, 'interval': 10},
+            'check_missing_broadcast_bursts': {'function': self.check_missing_broadcast_bursts, 'interval': 10},
         }
         self.running = False  # Flag to control the running state
         self.scheduler_thread = None  # Reference to the scheduler thread
@@ -213,3 +216,10 @@ class ScheduleManager:
 
         except Exception as e:
             self.log.warning("[SCHEDULE] error deleting ARQ session", error=e)
+
+    def check_missing_broadcast_bursts(self):
+        missing_bursts = DatabaseManagerBroadcasts(self.ctx).check_missing_bursts()
+        print("missing_bursts", missing_bursts)
+        if missing_bursts:
+            myfullcall = self.ctx.config_manager.config['STATION']['mycall'] + '-' + str(self.ctx.config_manager.config['STATION']['myssid'])
+            NormTransmission(self.ctx, missing_bursts["origin"] , missing_bursts["domain"]).create_and_transmit_nack_burst(myfullcall, missing_bursts["id"], missing_bursts["missing_bursts"])

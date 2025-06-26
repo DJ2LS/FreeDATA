@@ -9,6 +9,7 @@ class DataFrameFactory:
     LENGTH_SIG1_FRAME = 14
     LENGTH_ACK_FRAME = 3
     LENGTH_NORM_FRAME = 54
+    LENGTH_NORM_NACK_FRAME = 54
 
     """
         helpers.set_flag(byte, 'DATA-ACK-NACK', True, FLAG_POSITIONS)
@@ -246,25 +247,25 @@ class DataFrameFactory:
         }
 
         # repair frame
-        # FIXME
         self.template_list[FR_TYPE.NORM_REPAIR.value] = {
             "frame_length": self.LENGTH_NORM_FRAME,
             "origin": 6,
             "domain": 6,
+            "gridsquare": 4,
             "flag": 1,
             "timestamp": 4,
             "burst_info": 1,
-            "payload_size": 1,
-            "payload_data": 34
+            "checksum": 3,
+            "payload_size": 2,
+            "payload_data": 26
         }
 
         # nack frame
-        # FIXME
         self.template_list[FR_TYPE.NORM_NACK.value] = {
             "frame_length": self.LENGTH_NORM_FRAME,
             "origin": 6,
-            "domain": 4,
-            "flag": 2
+            "id": 10,
+            "burst_numbers":8
         }
 
         # cmd frame
@@ -347,6 +348,9 @@ class DataFrameFactory:
 
             elif key == "gridsquare":
                 extracted_data[key] = helpers.decode_grid(data)
+
+            elif key == "burst_numbers":
+                extracted_data[key] = list(data)
 
             elif key in ["session_id", "speed_level", 
                             "frames_per_burst", "version",
@@ -686,11 +690,30 @@ class DataFrameFactory:
 
 
 
-    def build_norm_nack(self):
-        pass
+    def build_norm_nack(self, origin, id, burst_numbers:list[int]):
+        max_burst_numbers = self.template_list[FR_TYPE.NORM_NACK.value]["burst_numbers"]
+        padded_numbers = burst_numbers + [0] * (max_burst_numbers-len(burst_numbers))
 
-    def build_norm_repair(self, origin, domain, timestamp, burst_info, payload_size, payload, flag=None):
-        pass
+        payload = {
+            "origin": helpers.callsign_to_bytes(origin),
+            "id": bytes(id, 'utf-8'),
+            "burst_numbers": bytes(padded_numbers),
+        }
+        return self.construct(FR_TYPE.NORM_NACK, payload)
+
+    def build_norm_repair(self, origin, domain, gridsquare, timestamp, burst_info, payload_size, payload_data, flag, checksum):
+        payload = {
+            "origin": helpers.callsign_to_bytes(origin),
+            "domain": helpers.callsign_to_bytes(domain),
+            "gridsquare": helpers.encode_grid(gridsquare),
+            "flag": flag.to_bytes(1, 'big'),
+            "timestamp": timestamp.to_bytes(4, 'big'),
+            "burst_info": burst_info.to_bytes(1, 'big'),
+            "payload_size": payload_size.to_bytes(2, 'big'),
+            "payload_data": payload_data,
+            "checksum": checksum
+        }
+        return self.construct(FR_TYPE.NORM_REPAIR, payload)
 
     def build_norm_cmd(self):
         pass

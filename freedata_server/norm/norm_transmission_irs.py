@@ -52,6 +52,7 @@ class NormTransmissionIRS(NormTransmission):
 
         self.id = self.create_broadcast_id(self.timestamp, self.domain, self.checksum)
         print("id", self.id)
+        print("len-id", len(self.id))
 
         db = DatabaseManagerBroadcasts(self.ctx)
         success = db.process_broadcast_message(
@@ -77,3 +78,4 @@ class NormTransmissionIRS(NormTransmission):
 
         if not success:
             print("Failed to process burst in database.")
+

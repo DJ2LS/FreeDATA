@@ -6,6 +6,8 @@ import time
 import data_frame_factory
 from enum import IntEnum
 import hashlib
+from codec2 import FREEDV_MODE
+
 
 
 class NORMMsgType(IntEnum):
@@ -140,4 +142,8 @@ class NormTransmission:
         """
         base_str = f"{timestamp}:{domain}:{checksum}".encode("utf-8")
         digest = hashlib.blake2b(base_str, digest_size=length // 2).hexdigest()  # 1 hex char = 4 bits
-        return f"bc_{digest}"
+        return f"{digest}"
+
+    def create_and_transmit_nack_burst(self, origin, id, burst_numbers):
+            burst = self.frame_factory.build_norm_nack(origin, id, burst_numbers)
+            self.ctx.rf_modem.transmit(FREEDV_MODE.datac4, 1, 200, burst)

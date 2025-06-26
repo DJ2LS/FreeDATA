@@ -6,6 +6,7 @@ from sqlalchemy.orm.attributes import flag_modified
 from datetime import datetime, timedelta
 import json
 import os
+from datetime import timezone
 from exceptions import MessageStatusError
 import helpers
 import base64
@@ -308,6 +309,95 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 "status": "error",
                 "message": str(e)
             }
+
+        finally:
+            session.remove()
+
+    def check_missing_bursts(self):
+        session = self.get_thread_scoped_session()
+        try:
+            one_minute_ago = datetime.now(timezone.utc) - timedelta(minutes=1)
+
+            messages = (
+                session.query(BroadcastMessage)
+                .filter(
+                    BroadcastMessage.direction == "receive",
+                    BroadcastMessage.received_at < one_minute_ago,
+                    BroadcastMessage.total_bursts > 0
+                )
+                .order_by(BroadcastMessage.received_at.asc())
+                .all()
+            )
+
+            for msg in messages:
+                if not msg.payload_data or "bursts" not in msg.payload_data:
+                    continue
+
+                bursts = msg.payload_data["bursts"]
+                total = msg.total_bursts
+
+                if "final" in msg.payload_data:
+                    continue  # bereits komplett
+
+                missing = [
+                    i for i in range(1, total + 1)
+                    if str(i) not in bursts
+                ]
+
+                if missing:
+                    return {
+                        "id": msg.id,
+                        "origin": msg.origin,
+                        "domain": msg.domain,
+                        "missing_bursts": missing,
+                        "total_bursts": total,
+                        "received_bursts": list(bursts.keys()),
+                        "received_at": msg.received_at.isoformat() if msg.received_at else None
+                    }
+
+            return None
+
+        except Exception as e:
+            self.log(f"Fehler bei check_missing_bursts: {e}", isWarning=True)
+            return None
+
+        finally:
+            session.remove()
+
+
+    def get_broadcast_per_id(self, id: str) -> dict | None:
+        session = self.get_thread_scoped_session()
+        try:
+            msg = session.query(BroadcastMessage).filter_by(id=id).first()
+            if not msg:
+                return None
+
+            return {
+                "id": msg.id,
+                "origin": msg.origin,
+                "timestamp": msg.timestamp.isoformat() if msg.timestamp else None,
+                "repairing_callsigns": msg.repairing_callsigns,
+                "domain": msg.domain,
+                "gridsquare": msg.gridsquare,
+                "frequency": msg.frequency,
+                "priority": msg.priority,
+                "is_read": msg.is_read,
+                "direction": msg.direction,
+                "payload_size": msg.payload_size,
+                "payload_data": msg.payload_data,
+                "msg_type": msg.msg_type,
+                "total_bursts": msg.total_bursts,
+                "checksum": msg.checksum,
+                "received_at": msg.received_at.isoformat() if msg.received_at else None,
+                "expires_at": msg.expires_at.isoformat() if msg.expires_at else None,
+                "nexttransmission_at": msg.nexttransmission_at.isoformat() if msg.nexttransmission_at else None,
+                "status": msg.status.name if msg.status else None,
+                "error_reason": msg.error_reason
+            }
+
+        except Exception as e:
+            self.log(f"Error fetching broadcast by id '{id}': {e}", isWarning=True)
+            return None
 
         finally:
             session.remove()

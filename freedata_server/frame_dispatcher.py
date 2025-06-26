@@ -56,7 +56,8 @@ class DISPATCHER:
         FR_TYPE.PING.value: {"class": PingFrameHandler, "name":  "PING"},
         FR_TYPE.QRV.value: {"class": FrameHandler, "name":  "QRV"},
         FR_TYPE.NORM_DATA.value: {"class": NORMFrameHandler, "name": "NORM DATA"},
-
+        FR_TYPE.NORM_NACK.value: {"class": NORMFrameHandler, "name": "NORM NACK"},
+        FR_TYPE.NORM_REPAIR.value: {"class": NORMFrameHandler, "name": "NORM REPAIR"},
 
         #FR_TYPE.IS_WRITING.value: {"class": FrameHandler, "name": "IS_WRITING"},
         #FR_TYPE.FEC.value: {"class": FrameHandler, "name":  "FEC"},
