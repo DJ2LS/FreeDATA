@@ -292,7 +292,6 @@ class RF:
 
         start_of_transmission = time.time()
         txbuffer = self.modulator.create_burst(mode, repeats, repeat_delay, frames)
-
         # Re-sample back up to 48k (resampler works on np.int16)
         x = np.frombuffer(txbuffer, dtype=np.int16)
         
