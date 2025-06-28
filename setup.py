@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-
+import freedata_server.constants as constants
 # Reading requirements.txt for dependencies
 with open('requirements.txt') as f:
     required = f.read().splitlines()
@@ -9,7 +9,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='freedata',
-    version='0.17.3',
+    version=constants.MODEM_VERSION,
     packages=find_packages(where='.'),
     package_dir={'': '.'},
     install_requires=required,
