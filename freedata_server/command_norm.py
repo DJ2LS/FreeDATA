@@ -33,7 +33,7 @@ class Norm(TxCommand):
             self.emit_event()
             self.logger.info(self.log_message())
 
-            NormTransmissionISS(self.ctx, self.origin, self.domain, self.gridsquare, self.data, self.priority, self.msgtype).prepare_and_transmit()
+            NormTransmissionISS(self.ctx).prepare_and_transmit_data(self.origin, self.domain, self.gridsquare, self.data, self.priority, self.msgtype)
 
 
 

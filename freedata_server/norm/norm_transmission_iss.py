@@ -11,8 +11,6 @@ from message_system_db_broadcasts import DatabaseManagerBroadcasts
 import threading
 import numpy as np
 
-
-
 class NORM_ISS_State(Enum):
     NEW = 0
     TRANSMITTING = 1
@@ -24,10 +22,13 @@ class NORM_ISS_State(Enum):
 class NormTransmissionISS(NormTransmission):
     MAX_PAYLOAD_SIZE = 26
 
-    def __init__(self, ctx, origin, domain, gridsquare, data, priority=NORMMsgPriority.NORMAL, message_type=NORMMsgType.UNDEFINED, send_only_bursts=None):
-
-        super().__init__(ctx, origin, domain)
+    def __init__(self, ctx):
+        super().__init__(ctx)
         self.ctx = ctx
+        self.state = NORM_ISS_State.NEW
+        self.log("Initialized")
+
+    def prepare_and_transmit_data(self, origin, domain, gridsquare, data, priority=NORMMsgPriority.NORMAL, message_type=NORMMsgType.UNDEFINED):
         self.origin = origin
         self.domain = domain
         self.gridsquare = gridsquare
@@ -35,131 +36,82 @@ class NormTransmissionISS(NormTransmission):
         self.priority = priority
         self.message_type = message_type
         self.payload_size = len(data)
-
-        self.send_only_bursts = send_only_bursts
-
         self.timestamp = int(time.time())
 
-        self.state = NORM_ISS_State.NEW
-
-        self.log("Initialized")
-
-    def prepare_and_transmit(self):
-        bursts = self.create_bursts()
-        print("add to database...")
+        bursts = self.create_data()
         self.add_to_database()
-        print("transmit bursts...")
         self.transmit_bursts(bursts)
-        print("done...")
-    def create_bursts(self):
-        self.message_type = NORMMsgType.MESSAGE
-        self.message_priority = NORMMsgPriority.NORMAL
 
-
+    def create_data(self):
         full_data = self.data
-        print(self.data)
         total_bursts = (len(full_data) + self.MAX_PAYLOAD_SIZE - 1) // self.MAX_PAYLOAD_SIZE
-        print("total_bursts: ", total_bursts)
-        print("MAX_PAYLOAD_SIZE: ", self.MAX_PAYLOAD_SIZE)
-        print("len full data: ", len(full_data))
-
 
         bursts = []
-        if not self.send_only_bursts:
+        for burst_number in range(1, total_bursts + 1):
+            offset = (burst_number - 1) * self.MAX_PAYLOAD_SIZE
+            payload = full_data[offset: offset + self.MAX_PAYLOAD_SIZE]
+            burst_info = self.encode_burst_info(burst_number, total_bursts)
+            checksum = helpers.get_crc_24(full_data)
+            is_last = (burst_number == total_bursts)
+            flags = self.encode_flags(self.message_type, self.priority, is_last)
 
-            for burst_number in range(1, total_bursts + 1):
-                offset = (burst_number-1) * self.MAX_PAYLOAD_SIZE
-                payload = full_data[offset: offset + self.MAX_PAYLOAD_SIZE]
-                print("payload: ", len(payload))
-
-                burst_info = self.encode_burst_info(burst_number, total_bursts)
-                checksum = helpers.get_crc_24(full_data)
-                # set flag for last burst
-                is_last = (burst_number == total_bursts)
-                flags = self.encode_flags(
-                    msg_type=self.message_type,
-                    priority=self.message_priority,
-                    is_last=is_last
-                )
-
-                burst_frame = self.frame_factory.build_norm_data(
-                    origin=self.origin,
-                    domain=self.domain,
-                    gridsquare=self.gridsquare,
-                    timestamp=self.timestamp,
-                    burst_info=burst_info,
-                    payload_size=len(full_data),
-                    payload_data=payload,
-                    flag=flags,
-                    checksum=checksum
-                )
-                print(burst_frame)
-                bursts.append(burst_frame)
-
-        else:
-
-            print(self.send_only_bursts)
-            for burst_number in self.send_only_bursts:
-                offset = (burst_number - 1) * self.MAX_PAYLOAD_SIZE
-                payload = full_data[offset: offset + self.MAX_PAYLOAD_SIZE]
-                print("payload: ", len(payload))
-                print(type(burst_number))
-                print(burst_number)
-                print(total_bursts)
-                burst_info = self.encode_burst_info(burst_number, total_bursts)
-                print("burst_info", burst_info)
-
-                checksum = helpers.get_crc_24(full_data)
-                print("checksum", checksum)
-                # set flag for last burst
-                is_last = (burst_number == total_bursts)
-                flags = self.encode_flags(
-                    msg_type=self.message_type,
-                    priority=self.message_priority,
-                    is_last=is_last
-                )
-                print("flags: ", flags)
-                print(self.timestamp)
-                print(self.origin)
-                print(self.domain)
-                print(self.gridsquare)
-                print(len(full_data))
-                print(payload)
-                burst_frame = self.frame_factory.build_norm_repair(
-                    origin=self.origin,
-                    domain=self.domain,
-                    gridsquare=self.gridsquare,
-                    timestamp=self.timestamp,
-                    burst_info=burst_info,
-                    payload_size=len(full_data),
-                    payload_data=payload,
-                    flag=flags,
-                    checksum=checksum
-                )
-                print(burst_frame)
-
-                bursts.append(burst_frame)
+            burst_frame = self.frame_factory.build_norm_data(
+                origin=self.origin,
+                domain=self.domain,
+                gridsquare=self.gridsquare,
+                timestamp=self.timestamp,
+                burst_info=burst_info,
+                payload_size=len(full_data),
+                payload_data=payload,
+                flag=flags,
+                checksum=checksum
+            )
+            bursts.append(burst_frame)
         return bursts
 
-    def transmit_bursts(self, bursts):
+    def create_repair(self, db_msg_obj: dict, burst_numbers: list[int]):
+        repair_bursts = []
+        data = base64.b64decode(db_msg_obj["payload_data"]["final"])
+        total_bursts = db_msg_obj["total_bursts"]
+        priority = db_msg_obj["priority"]
+        message_type = NORMMsgType[db_msg_obj["msg_type"]] if isinstance(db_msg_obj["msg_type"], str) else db_msg_obj["msg_type"]
+        checksum = bytes.fromhex(db_msg_obj["checksum"])
 
-        # wait some random time and wait if we have an ongoing codec2 transmission
-        # on our channel. This should prevent some packet collision
+        for burst_number in burst_numbers:
+            offset = (burst_number - 1) * self.MAX_PAYLOAD_SIZE
+            payload = data[offset: offset + self.MAX_PAYLOAD_SIZE]
+            burst_info = self.encode_burst_info(burst_number, total_bursts)
+            is_last = (burst_number == total_bursts)
+            flags = self.encode_flags(message_type, priority, is_last)
+
+            burst_frame = self.frame_factory.build_norm_repair(
+                origin=db_msg_obj["origin"],
+                domain=db_msg_obj["domain"],
+                gridsquare=db_msg_obj["gridsquare"],
+                timestamp=int(datetime.fromisoformat(db_msg_obj["timestamp"]).timestamp()),
+                burst_info=burst_info,
+                payload_size=len(data),
+                payload_data=payload,
+                flag=flags,
+                checksum=checksum
+            )
+            repair_bursts.append(burst_frame)
+
+        return repair_bursts
+
+    def transmit_bursts(self, bursts):
         random_delay = np.random.randint(0, 6)
         threading.Event().wait(random_delay)
         self.ctx.state_manager.channel_busy_condition_codec2.wait(0.5)
-        print("bursts: ", bursts)
+
         for burst in bursts:
-            print("transmitting burst: ", burst)
             self.ctx.rf_modem.transmit(FREEDV_MODE.datac4, 1, 200, burst)
-        #self.ctx.rf_modem.transmit(FREEDV_MODE.datac4, 1, 200, bursts)
+
     def add_to_database(self):
         db = DatabaseManagerBroadcasts(self.ctx)
-        self.timestamp_dt = datetime.fromtimestamp(self.timestamp, tz=timezone.utc)
-        self.checksum = helpers.get_crc_24(self.data).hex()
-        self.id = self.create_broadcast_id(self.timestamp_dt, self.domain, self.checksum)
-        print(self.create_broadcast_id(self.timestamp_dt, self.domain, self.checksum), self.create_broadcast_id(self.timestamp, self.domain, self.checksum))
-        print(self.timestamp, self.timestamp_dt)
+        timestamp_dt = datetime.fromtimestamp(self.timestamp, tz=timezone.utc)
+        checksum = helpers.get_crc_24(self.data).hex()
+        broadcast_id = self.create_broadcast_id(timestamp_dt, self.domain, checksum)
 
         total_bursts = (len(self.data) + self.MAX_PAYLOAD_SIZE - 1) // self.MAX_PAYLOAD_SIZE
 
@@ -169,20 +121,20 @@ class NormTransmissionISS(NormTransmission):
             payload_b64 = base64.b64encode(payload_data).decode("ascii")
 
             db.process_broadcast_message(
-                id=self.id,
+                id=broadcast_id,
                 origin=self.origin,
-                timestamp=self.timestamp_dt,
+                timestamp=timestamp_dt,
                 burst_index=burst_index,
                 burst_data=payload_b64,
                 total_bursts=total_bursts,
-                checksum=self.checksum,
+                checksum=checksum,
                 repairing_callsigns=None,
                 domain=self.domain,
                 gridsquare=self.gridsquare,
                 msg_type=self.message_type.name if hasattr(self.message_type, 'name') else str(self.message_type),
                 priority=self.priority.value if hasattr(self.priority, 'value') else int(self.priority),
                 received_at=datetime.now(timezone.utc),
-                nexttransmission_at = datetime.now(timezone.utc) + timedelta(hours=1),
+                nexttransmission_at=datetime.now(timezone.utc) + timedelta(hours=1),
                 expires_at=datetime.now(timezone.utc),
                 is_read=True,
                 direction="transmit",

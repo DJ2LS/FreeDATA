@@ -31,11 +31,11 @@ class NORMMsgPriority(IntEnum):
     EMERGENCY  = 5
 
 class NormTransmission:
-    def __init__(self, ctx, origin, domain):
+    def __init__(self, ctx):
         self.logger = structlog.get_logger(type(self).__name__)
         self.ctx = ctx
-        self.origin = origin
-        self.domain = domain
+        self.origin = None
+        self.domain = None
 
         self.frame_factory = data_frame_factory.DataFrameFactory(self.ctx)
 
