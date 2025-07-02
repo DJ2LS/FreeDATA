@@ -1,6 +1,6 @@
 {
   "name": "FreeDATA",
-  "version": "0.17.5-beta",
+  "version": "0.17.6-beta",
   "description": "FreeDATA Client application for connecting to FreeDATA server",
   "private": true,
   "scripts": {
@@ -26,7 +26,7 @@
   "homepage": "https://freedata.app",
   "dependencies": {
     "@popperjs/core": "^2.11.8",
-    "bootstrap": "^5.3.5",
+    "bootstrap": "^5.3.7",
     "bootstrap-icons": "^1.11.3",
     "bootstrap-vue-next": "^0.30.0",
     "chart.js": "^4.4.3",
@@ -39,7 +39,7 @@
     "i18next": "^25.0.2",
     "i18next-vue": "^5.2.0",
     "js-image-compressor": "^2.0.0",
-    "marked": "^15.0.3",
+    "marked": "^16.0.0",
     "pinia": "^3.0.1",
     "qth-locator": "^2.1.0",
     "topojson-client": "^3.1.0",
