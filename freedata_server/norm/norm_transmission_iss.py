@@ -97,13 +97,20 @@ class NormTransmissionISS(NormTransmission):
                 bursts.append(burst_frame)
 
         else:
+
+            print(self.send_only_bursts)
             for burst_number in self.send_only_bursts:
                 offset = (burst_number - 1) * self.MAX_PAYLOAD_SIZE
                 payload = full_data[offset: offset + self.MAX_PAYLOAD_SIZE]
                 print("payload: ", len(payload))
-
+                print(type(burst_number))
+                print(burst_number)
+                print(total_bursts)
                 burst_info = self.encode_burst_info(burst_number, total_bursts)
+                print("burst_info", burst_info)
+
                 checksum = helpers.get_crc_24(full_data)
+                print("checksum", checksum)
                 # set flag for last burst
                 is_last = (burst_number == total_bursts)
                 flags = self.encode_flags(
@@ -111,7 +118,14 @@ class NormTransmissionISS(NormTransmission):
                     priority=self.message_priority,
                     is_last=is_last
                 )
-                burst_frame = self.frame_factory.build_norm_data(
+                print("flags: ", flags)
+                print(self.timestamp)
+                print(self.origin)
+                print(self.domain)
+                print(self.gridsquare)
+                print(len(full_data))
+                print(payload)
+                burst_frame = self.frame_factory.build_norm_repair(
                     origin=self.origin,
                     domain=self.domain,
                     gridsquare=self.gridsquare,

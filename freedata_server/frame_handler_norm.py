@@ -1,3 +1,4 @@
+import base64
 import threading
 from modem_frametypes import FRAME_TYPE as FR
 
@@ -32,6 +33,8 @@ class NORMFrameHandler(frame_handler.FrameHandler):
                 print(frame["id"].decode("utf-8"))
                 broadcast = DatabaseManagerBroadcasts(self.ctx).get_broadcast_per_id(frame["id"].decode("utf-8"))
                 if broadcast is not None:
+
+                    data = base64.b64decode(broadcast["payload_data"]["final"])
                     print(broadcast)
                     print("oring", broadcast["origin"])
                     print("domain", broadcast["domain"])
@@ -39,7 +42,9 @@ class NORMFrameHandler(frame_handler.FrameHandler):
                     print("payload_data", broadcast["payload_data"]["final"])
                     print("priority", broadcast["priority"])
                     print("message_type", broadcast["msg_type"])
-                    NormTransmissionISS(self.ctx, broadcast["origin"], broadcast["domain"], broadcast["gridsquare"], broadcast["payload_data"]["final"], priority=broadcast["priority"], message_type=broadcast["msg_type"], send_only_bursts=frame["missing_bursts"]).prepare_and_transmit()
+                    print("frame:", frame)
+                    print("missing bursts:", frame["burst_numbers"])
+                    NormTransmissionISS(self.ctx, broadcast["origin"], broadcast["domain"], broadcast["gridsquare"], data, priority=broadcast["priority"], message_type=broadcast["msg_type"], send_only_bursts=frame["burst_numbers"]).prepare_and_transmit()
             except Exception as e:
                 print(e)
         else:

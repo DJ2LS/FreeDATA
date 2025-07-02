@@ -350,7 +350,7 @@ class DataFrameFactory:
                 extracted_data[key] = helpers.decode_grid(data)
 
             elif key == "burst_numbers":
-                extracted_data[key] = list(data)
+                extracted_data[key] = [x for x in data if x !=0]
 
             elif key in ["session_id", "speed_level", 
                             "frames_per_burst", "version",
