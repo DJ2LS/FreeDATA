@@ -8,4 +8,4 @@ LICENSE = 'GPL3.0'
 DOCUMENTATION_URL = 'https://wiki.freedata.app'
 STATS_API_URL = 'https://api.freedata.app/stats.php'
 EXPLORER_API_URL = 'https://api.freedata.app/explorer.php'
-MESSAGE_SYSTEM_DATABASE_VERSION = 0
+MESSAGE_SYSTEM_DATABASE_VERSION = 1

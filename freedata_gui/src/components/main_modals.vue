@@ -3,14 +3,15 @@
    import { setActivePinia } from "pinia";
    import pinia from "../store/index";
    import { useChatStore } from "../store/chatStore.js";
+   import { useBroadcastStore } from "../store/broadcastStore.js";
    import { useStationStore } from "../store/stationStore.js";
    import { getStationInfoByCallsign, setStationInfoByCallsign } from "../js/stationHandler.js";
    import { settingsStore } from "../store/settingsStore.js";
    import { settingsStore as settings, onChange } from "../store/settingsStore.js";
-   import { sendModemTestFrame, sendSineTone } from "../js/api";
+   import {getFreedataBroadcastsPerDomain, getFreedataDomains, sendModemTestFrame, sendSineTone} from "../js/api";
    import { newMessage, deleteCallsignFromDB } from "../js/messagesHandler.js";
    import main_startup_check from "./main_startup_check.vue";
-
+   import {deleteBroadcastDomainFromDB, newBroadcastMessage} from "../js/broadcastsHandler";
 
    // Chart.js imports
    import {
@@ -25,7 +26,9 @@
      BarElement,
    } from "chart.js";
    import { Line, Bar } from "vue-chartjs";
-   
+   import DOMPurify from "dompurify";
+   import {marked} from "marked";
+
    // Register Chart.js components
    ChartJS.register(
      CategoryScale,
@@ -44,6 +47,7 @@
    // Setup stores
    const chat = useChatStore(pinia);
    const station = useStationStore(pinia);
+   const broadcast = useBroadcastStore(pinia);
    
    // Function to handle new chat messages
    function newChat() {
@@ -53,12 +57,44 @@
      chat.newChatCallsign = "";
      chat.newChatMessage = "";
    }
+
+      // Function to handle new broadcast messages
+   function newBroadcast() {
+     broadcast.inputText = broadcast.inputText.trim();
+      if (broadcast.inputText.length === 0) return;
+      const sanitizedInput = DOMPurify.sanitize(marked.parse(broadcast.inputText));
+      const base64data = btoa(sanitizedInput);
+      const params = {
+      origin: settings.remote.STATION.mycall + '-' + settings.remote.STATION.myssid,
+      domain: broadcast.newDomain,
+      gridsquare: settings.remote.STATION.mygrid,
+      type: broadcast.newMessageType,
+      priority: broadcast.newPriority,
+      data: base64data
+    }
+
+     newBroadcastMessage(params);
+     setTimeout(() => {
+        getFreedataDomains()
+        getFreedataBroadcastsPerDomain(broadcast.newDomain)
+
+        broadcast.selectedDomain = broadcast.newDomain;
+        broadcast.newDomain = "";
+     }, 1000);
+
+   }
    
    // Function to delete selected chat
    function deleteChat() {
      deleteCallsignFromDB(chat.selectedCallsign);
    }
-   
+
+      function deleteDomain() {
+     deleteBroadcastDomainFromDB(broadcast.selectedDomain);
+   }
+
+
+
    // Chart options and data
    const skipped = (speedCtx, value) =>
      speedCtx.p0.skip || speedCtx.p1.skip ? value : undefined;
@@ -397,6 +433,63 @@ const beaconHistogramData = computed(() => ({
       </div>
     </div>
   </div>
+
+  <div
+    id="deleteBroadcastModal"
+    ref="modalElement"
+    class="modal fade"
+    tabindex="-1"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1
+            id="deleteBroadcastModalLabel"
+            class="modal-title fs-5"
+          >
+            {{ chat.selectedCallsign }} {{ $t('modals.options') }}
+          </h1>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          />
+        </div>
+        <div class="modal-body">
+
+
+          <div class="card mt-3">
+            <div class="card-header">
+              <strong>{{ $t('modals.furtheroptions') }}</strong>
+            </div>
+            <div class="card-body">
+              <button
+                type="button"
+                class="btn btn-danger"
+                data-bs-dismiss="modal"
+                @click="deleteDomain"
+              >
+                {{ $t('modals.deletebroadcastdomain') }}
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            {{ $t('modals.close') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Message Info Modal -->
   <div
     id="messageInfoModal"
@@ -483,6 +576,63 @@ const beaconHistogramData = computed(() => ({
       </div>
     </div>
   </div>
+
+   <div
+    id="broadcastMessageInfoModal"
+    ref="modalElement"
+    class="modal fade"
+    tabindex="-1"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1
+            id="messageInfoModalLabel"
+            class="modal-title fs-5"
+          >
+            ...
+          </h1>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          />
+        </div>
+        <div class="modal-body">
+          <div class="card mt-2">
+            <div class="card-header">
+              {{ $t('general.statistics') }}
+            </div>
+            <div class="card-body">
+              <div class="container">
+                <div class="row">
+
+                  ...
+                </div>
+
+                </div>
+              </div>
+            </div>
+        </div>
+
+
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            {{ $t('modals.close') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
   <div
     id="newChatModal"
     ref="modalElement"
@@ -570,6 +720,112 @@ const beaconHistogramData = computed(() => ({
       </div>
     </div>
   </div>
+
+
+  <div
+    id="newBroadcastModal"
+    ref="modalElement"
+    class="modal fade"
+    tabindex="-1"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5">
+            {{ $t('modals.startnewbroadcast') }}
+          </h1>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          />
+        </div>
+
+        <div class="modal-body">
+          <!-- Domain selection -->
+          <div class="mb-3">
+            <label for="domainInput" class="form-label">Domain</label>
+            <input
+              id="domainInput"
+              list="domainOptions"
+              class="form-control"
+              v-model="broadcast.newDomain"
+              placeholder="Enter or select a domain"
+            />
+            <datalist id="domainOptions">
+              <option value="EUROPE-1">EUROPE-1</option>
+              <option value="ASIA-1">ASIA-1</option>
+              <option value="NA-1">NA-1</option>
+              <option value="SA-1">SA-1</option>
+              <option value="AFRICA-1">AFRICA-1</option>
+            </datalist>
+          </div>
+
+          <!-- Type selection -->
+          <div class="mb-3">
+            <label for="typeSelect" class="form-label">Type</label>
+            <select
+              id="typeSelect"
+              class="form-select"
+              v-model="broadcast.newMessageType"
+            >
+              <option value="MESSAGE">MESSAGE</option>
+            </select>
+          </div>
+
+          <!-- Priority selection -->
+          <div class="mb-3">
+            <label for="prioritySelect" class="form-label">Priority</label>
+            <select
+              id="prioritySelect"
+              class="form-select"
+              v-model="broadcast.newPriority"
+            >
+              <option value="1">Normal (1)</option>
+              <option value="0">Low (0)</option>
+              <option value="2">High (2)</option>
+            </select>
+          </div>
+
+          <!-- Message content -->
+          <div class="mb-3">
+            <label for="messageTextarea" class="form-label">Message</label>
+            <textarea
+              id="messageTextarea"
+              class="form-control"
+              rows="5"
+              v-model="broadcast.inputText"
+              placeholder="Enter your message..."
+            />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            {{ $t('modals.close') }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            data-bs-dismiss="modal"
+            data-bs-trigger="hover"
+            @click="newBroadcast"
+          >
+            Send Broadcast
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
   <!-- AUDIO MODAL -->
   <div
     id="audioModal"
