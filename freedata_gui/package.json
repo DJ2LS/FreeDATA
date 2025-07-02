@@ -1,6 +1,6 @@
 {
   "name": "FreeDATA",
-  "version": "0.17.5-beta",
+  "version": "0.17.6-beta",
   "description": "FreeDATA Client application for connecting to FreeDATA server",
   "private": true,
   "scripts": {
@@ -39,7 +39,7 @@
     "i18next": "^25.0.2",
     "i18next-vue": "^5.2.0",
     "js-image-compressor": "^2.0.0",
-    "marked": "^15.0.3",
+    "marked": "^16.0.0",
     "pinia": "^3.0.1",
     "qth-locator": "^2.1.0",
     "topojson-client": "^3.1.0",

@@ -47,7 +47,7 @@ async def lifespan(app: FastAPI):
 # Create FastAPI app with unified lifespan
 app = FastAPI(
     title="FreeDATA API",
-    version=API_VERSION,
+    version=str(API_VERSION),
     lifespan=lifespan,
 )
 
