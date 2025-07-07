@@ -222,6 +222,7 @@ class BroadcastMessage(Base):
     status_id = Column(Integer, ForeignKey('status.id'), nullable=True)
     status = relationship('Status', backref='broadcast_messages')
     error_reason = Column(String, nullable=True)
+    attempts = Column(Integer, default=0)
 
     Index('idx_broadcast_domain_received', 'domain', 'received_at')
 
@@ -246,5 +247,6 @@ class BroadcastMessage(Base):
             'expires_at': self.expires_at.isoformat() if self.expires_at else None,
             'nexttransmission_at': self.nexttransmission_at.isoformat() if self.nexttransmission_at else None,
             'status': self.status.name if self.status else None,
-            'error_reason': self.error_reason
+            'error_reason': self.error_reason,
+            'attempts':self.attempts
         }

@@ -392,7 +392,8 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 "expires_at": msg.expires_at.isoformat() if msg.expires_at else None,
                 "nexttransmission_at": msg.nexttransmission_at.isoformat() if msg.nexttransmission_at else None,
                 "status": msg.status.name if msg.status else None,
-                "error_reason": msg.error_reason
+                "error_reason": msg.error_reason,
+                "attempts": msg.attempts
             }
 
         except Exception as e:

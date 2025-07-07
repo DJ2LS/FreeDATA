@@ -222,4 +222,4 @@ class ScheduleManager:
         print("missing_bursts", missing_bursts)
         if missing_bursts:
             myfullcall = self.ctx.config_manager.config['STATION']['mycall'] + '-' + str(self.ctx.config_manager.config['STATION']['myssid'])
-            NormTransmission(self.ctx, missing_bursts["origin"] , missing_bursts["domain"]).create_and_transmit_nack_burst(myfullcall, missing_bursts["id"], missing_bursts["missing_bursts"])
+            NormTransmission(self.ctx).create_and_transmit_nack_burst(myfullcall, missing_bursts["id"], missing_bursts["missing_bursts"])
