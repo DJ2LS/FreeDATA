@@ -452,7 +452,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
 
             # Update next transmission
             msg.nexttransmission_at = datetime.now(timezone.utc) + timedelta(minutes=next_delay)
-
+            print("---------------", msg.nexttransmission_at)
             # Check max attempts
             if msg.attempts >= self.MAX_ATTEMPTS:
                 # Mark as failed or set specific status

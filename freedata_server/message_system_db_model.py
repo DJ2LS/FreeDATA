@@ -198,12 +198,16 @@ class Attachment(Base):
         }
 
 
+from sqlalchemy import Column, DateTime, String, Integer, Boolean, JSON, ForeignKey, Index
+from sqlalchemy.orm import relationship
+from datetime import datetime, timezone
+
 class BroadcastMessage(Base):
     __tablename__ = 'broadcast_messages'
 
     id = Column(String, primary_key=True)
     origin = Column(String, ForeignKey('station.callsign'))
-    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     repairing_callsigns = Column(JSON, nullable=True)
     domain = Column(String)
     gridsquare = Column(String)
@@ -216,17 +220,18 @@ class BroadcastMessage(Base):
     msg_type = Column(String)
     total_bursts = Column(Integer, default=0)
     checksum = Column(String)
-    received_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    nexttransmission_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    expires_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-
+    received_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    nexttransmission_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    expires_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     status_id = Column(Integer, ForeignKey('status.id'), nullable=True)
     status = relationship('Status', backref='broadcast_messages')
     error_reason = Column(String, nullable=True)
     attempts = Column(Integer, default=0)
 
-    Index('idx_broadcast_domain_received', 'domain', 'received_at')
+    __table_args__ = (
+        Index('idx_broadcast_domain_received', 'domain', 'received_at'),
+    )
 
     def to_dict(self):
         return {
