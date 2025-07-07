@@ -333,6 +333,10 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 if not msg.payload_data or "bursts" not in msg.payload_data:
                     continue
 
+                # break if we reached maximum attempts
+                if msg.attempts >= 30:
+                    return None
+
                 bursts = msg.payload_data["bursts"]
                 total = msg.total_bursts
 
@@ -400,5 +404,21 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             self.log(f"Error fetching broadcast by id '{id}': {e}", isWarning=True)
             return None
 
+        finally:
+            session.remove()
+
+    def increment_attempts(self, message_id: str):
+        session = self.get_thread_scoped_session()
+        try:
+            msg = session.query(BroadcastMessage).filter_by(id=message_id).first()
+            if msg:
+                msg.attempts = (msg.attempts or 0) + 1
+                session.commit()
+                self.log(f"Increased attempts for message {message_id} to {msg.attempts}")
+            else:
+                self.log(f"Message {message_id} not found", isWarning=True)
+        except Exception as e:
+            session.rollback()
+            self.log(f"Error incrementing attempts for {message_id}: {e}", isWarning=True)
         finally:
             session.remove()

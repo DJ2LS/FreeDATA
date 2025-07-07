@@ -33,7 +33,10 @@ class NORMFrameHandler(frame_handler.FrameHandler):
                 print(frame["id"].decode("utf-8"))
                 broadcast = DatabaseManagerBroadcasts(self.ctx).get_broadcast_per_id(frame["id"].decode("utf-8"))
                 if broadcast is not None:
-
+                    if broadcast["attempts"] >= 30:
+                        print("maximum attempts reached...")
+                        return
+                    DatabaseManagerBroadcasts(self.ctx).increment_attempts(broadcast["id"])
                     data = base64.b64decode(broadcast["payload_data"]["final"])
                     print(broadcast)
                     print("oring", broadcast["origin"])
