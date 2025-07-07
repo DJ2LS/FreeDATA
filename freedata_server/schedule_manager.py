@@ -222,6 +222,6 @@ class ScheduleManager:
         print("missing_bursts", missing_bursts)
         if missing_bursts:
             # Increment attmepts
-            DatabaseManagerBroadcasts.increment_attempts(missing_bursts["id"])
+            DatabaseManagerBroadcasts(self.ctx).increment_attempts_and_update_next_transmission(missing_bursts["id"])
             myfullcall = self.ctx.config_manager.config['STATION']['mycall'] + '-' + str(self.ctx.config_manager.config['STATION']['myssid'])
             NormTransmission(self.ctx).create_and_transmit_nack_burst(myfullcall, missing_bursts["id"], missing_bursts["missing_bursts"])

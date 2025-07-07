@@ -1,13 +1,8 @@
 from message_system_db_manager import DatabaseManager
-from message_system_db_attachments import DatabaseManagerAttachments
 from message_system_db_model import Status, BroadcastMessage
 from message_system_db_station import DatabaseManagerStations
 from sqlalchemy.orm.attributes import flag_modified
-from datetime import datetime, timedelta
-import json
-import os
-from datetime import timezone
-from exceptions import MessageStatusError
+from datetime import datetime, timedelta, timezone
 import helpers
 import base64
 
@@ -17,6 +12,8 @@ class DatabaseManagerBroadcasts(DatabaseManager):
 
     def __init__(self, ctx):
         super().__init__(ctx)
+
+        self.MAX_ATTEMPTS = 20
 
         self.stations_manager = DatabaseManagerStations(self.ctx)
 
@@ -317,6 +314,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
         session = self.get_thread_scoped_session()
         try:
             one_minute_ago = datetime.now(timezone.utc) - timedelta(minutes=1)
+            now = datetime.now(timezone.utc)
 
             messages = (
                 session.query(BroadcastMessage)
@@ -333,15 +331,22 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 if not msg.payload_data or "bursts" not in msg.payload_data:
                     continue
 
-                # break if we reached maximum attempts
-                if msg.attempts >= 30:
-                    return None
+                # Already complete
+                if "final" in msg.payload_data:
+                    continue
+
+                # Check next transmission time
+                if msg.nexttransmission_at and now < msg.nexttransmission_at:
+                    self.log(f"Skip {msg.id}: wait until {msg.nexttransmission_at.isoformat()}")
+                    continue
+
+                # Max attempts
+                if msg.attempts >= self.MAX_ATTEMPTS:
+                    self.log(f"Skip {msg.id}: max attempts reached")
+                    continue
 
                 bursts = msg.payload_data["bursts"]
                 total = msg.total_bursts
-
-                if "final" in msg.payload_data:
-                    continue  # bereits komplett
 
                 missing = [
                     i for i in range(1, total + 1)
@@ -367,7 +372,6 @@ class DatabaseManagerBroadcasts(DatabaseManager):
 
         finally:
             session.remove()
-
 
     def get_broadcast_per_id(self, id):
         session = self.get_thread_scoped_session()
@@ -417,6 +421,47 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 self.log(f"Increased attempts for message {message_id} to {msg.attempts}")
             else:
                 self.log(f"Message {message_id} not found", isWarning=True)
+        except Exception as e:
+            session.rollback()
+            self.log(f"Error incrementing attempts for {message_id}: {e}", isWarning=True)
+        finally:
+            session.remove()
+
+
+
+
+    def increment_attempts_and_update_next_transmission(self, message_id: str):
+        session = self.get_thread_scoped_session()
+        try:
+            msg = session.query(BroadcastMessage).filter_by(id=message_id).first()
+            if not msg:
+                self.log(f"Message {message_id} not found", isWarning=True)
+                return
+
+            # Increment attempts
+            msg.attempts = (msg.attempts or 0) + 1
+
+            # Define backoff intervals (minutes)
+            backoff_minutes = [5, 15, 30, 60, 120, 240, 360, 720, 1440, 2880]
+            if msg.attempts <= len(backoff_minutes):
+                next_delay = backoff_minutes[msg.attempts - 1]
+            else:
+                next_delay = 2880  # after max backoff minutes reached in table above
+
+            # Update next transmission
+            msg.nexttransmission_at = datetime.now(timezone.utc) + timedelta(minutes=next_delay)
+
+            # Check max attempts
+            if msg.attempts >= self.MAX_ATTEMPTS:
+                # Mark as failed or set specific status
+                status_obj = self.get_or_create_status(session, "max_attempts_reached")
+                msg.status_id = status_obj.id
+                self.log(f"Max attempts reached for {message_id}, marking as failed.")
+
+            session.commit()
+            self.log(
+                f"Incremented attempts for {message_id} to {msg.attempts}, next transmission at {msg.nexttransmission_at}")
+
         except Exception as e:
             session.rollback()
             self.log(f"Error incrementing attempts for {message_id}: {e}", isWarning=True)
