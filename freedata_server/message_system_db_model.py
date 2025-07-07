@@ -2,7 +2,7 @@
 
 from sqlalchemy import Index, Boolean, Column, String, Integer, JSON, ForeignKey, DateTime
 from sqlalchemy.orm import declarative_base, relationship
-from datetime import datetime
+from datetime import datetime, timezone
 
 Base = declarative_base()
 
@@ -203,7 +203,7 @@ class BroadcastMessage(Base):
 
     id = Column(String, primary_key=True)
     origin = Column(String, ForeignKey('station.callsign'))
-    timestamp = Column(DateTime)
+    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     repairing_callsigns = Column(JSON, nullable=True)
     domain = Column(String)
     gridsquare = Column(String)
@@ -216,9 +216,11 @@ class BroadcastMessage(Base):
     msg_type = Column(String)
     total_bursts = Column(Integer, default=0)
     checksum = Column(String)
-    received_at = Column(DateTime, default=0)
-    nexttransmission_at = Column(DateTime, default=0)
-    expires_at = Column(DateTime, default=0)
+    received_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    nexttransmission_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    expires_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
     status_id = Column(Integer, ForeignKey('status.id'), nullable=True)
     status = relationship('Status', backref='broadcast_messages')
     error_reason = Column(String, nullable=True)

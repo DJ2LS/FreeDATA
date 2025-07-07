@@ -313,9 +313,8 @@ class DatabaseManagerBroadcasts(DatabaseManager):
     def check_missing_bursts(self):
         session = self.get_thread_scoped_session()
         try:
-            one_minute_ago = datetime.now(timezone.utc) - timedelta(minutes=1)
             now = datetime.now(timezone.utc)
-
+            one_minute_ago = now - timedelta(minutes=1)
             messages = (
                 session.query(BroadcastMessage)
                 .filter(
@@ -336,6 +335,9 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     continue
 
                 # Check next transmission time
+                print("ok....")
+                print("nexttransmissionat", msg.nexttransmission_at)
+                print("now", now)
                 if msg.nexttransmission_at and now < msg.nexttransmission_at:
                     self.log(f"Skip {msg.id}: wait until {msg.nexttransmission_at.isoformat()}")
                     continue
@@ -367,7 +369,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             return None
 
         except Exception as e:
-            self.log(f"Fehler bei check_missing_bursts: {e}", isWarning=True)
+            self.log(f"Fehler at check_missing_bursts: {e}", isWarning=True)
             return None
 
         finally:
