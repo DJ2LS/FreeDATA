@@ -28,6 +28,8 @@ export const useBroadcastStore = defineStore("broadcastStore", () => {
   // new priority
   const newPriority = ref("");
 
+  // selectedMessage
+  const selectedMessage = ref()
 
   function triggerScrollToBottom() {
     scrollTrigger.value++;
@@ -54,5 +56,6 @@ export const useBroadcastStore = defineStore("broadcastStore", () => {
     newDomain,
     newPriority,
     newMessageType,
+    selectedMessage
   };
 })

@@ -7,7 +7,7 @@
         class="btn btn-outline-secondary border-0 me-1"
         data-bs-target="#broadcastMessageInfoModal"
         data-bs-toggle="modal"
-        @click="showMessageInfo"
+        @click="showBroadcastMessageInfo"
       >
         <i class="bi bi-info-circle" />
       </button>
@@ -100,8 +100,8 @@ export default {
   },
 
   methods: {
-    showMessageInfo() {
-      this.$emit("show-info", this.message);
+    showBroadcastMessageInfo() {
+      broadcast.selectedMessage = this.message;
     },
 
     async retransmitBroadcast() {

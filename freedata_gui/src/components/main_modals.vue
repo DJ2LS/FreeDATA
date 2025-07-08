@@ -436,7 +436,7 @@ const beaconHistogramData = computed(() => ({
 
   <div
     id="deleteBroadcastModal"
-    ref="modalElement"
+    ref="deleteBroadcastModalElement"
     class="modal fade"
     tabindex="-1"
     aria-labelledby="exampleModalLabel"
@@ -579,7 +579,7 @@ const beaconHistogramData = computed(() => ({
 
    <div
     id="broadcastMessageInfoModal"
-    ref="modalElement"
+    ref="broadcastMessageInfoModalElement"
     class="modal fade"
     tabindex="-1"
     aria-hidden="true"
@@ -588,10 +588,10 @@ const beaconHistogramData = computed(() => ({
       <div class="modal-content">
         <div class="modal-header">
           <h1
-            id="messageInfoModalLabel"
+            id="broadcastMessageInfoModalLabel"
             class="modal-title fs-5"
           >
-            ...
+            {{ broadcast.selectedMessage?.origin?? 'NaN' }} - {{ broadcast.selectedMessage?.timestamp ?? 'NaN' }}
           </h1>
           <button
             type="button"
@@ -601,22 +601,89 @@ const beaconHistogramData = computed(() => ({
           />
         </div>
         <div class="modal-body">
+
           <div class="card mt-2">
             <div class="card-header">
-              {{ $t('general.statistics') }}
+              {{ $t('broadcast.general') }}
+            </div>
+            <div class="card-body">
+              <div class="container">
+                <div class="row">
+                  <div class="input-group">
+                      <span class="input-group-text">{{ $t('broadcast.id') }}</span>
+                      <span class="input-group-text">{{ broadcast.selectedMessage?.id ?? 'NaN' }}</span>
+                  </div>
+
+                                    <div class="input-group">
+                      <span class="input-group-text">{{ $t('broadcast.msg_type') }}</span>
+                      <span class="input-group-text">{{ broadcast.selectedMessage?.msg_type ?? 'NaN' }}</span>
+                  </div>
+
+                  <div class="input-group">
+                      <span class="input-group-text">{{ $t('broadcast.timestamp') }}</span>
+                      <span class="input-group-text">{{ broadcast.selectedMessage?.timestamp ?? 'NaN' }}</span>
+                  </div>
+
+                                    <div class="input-group">
+                      <span class="input-group-text">{{ $t('broadcast.nexttransmission_at') }}</span>
+                      <span class="input-group-text">{{ broadcast.selectedMessage?.nexttransmission_at ?? 'NaN' }}</span>
+                  </div>
+
+                                    <div class="input-group">
+                      <span class="input-group-text">{{ $t('broadcast.expires_at') }}</span>
+                      <span class="input-group-text">{{ broadcast.selectedMessage?.expires_at ?? 'NaN' }}</span>
+                  </div>
+                </div>
+                </div>
+              </div>
+            </div>
+
+          <div class="card mt-2">
+            <div class="card-header">
+              {{ $t('broadcast.sender') }}
+            </div>
+            <div class="card-body">
+              <div class="container">
+                <div class="row">
+                  <div class="input-group">
+                      <span class="input-group-text">{{ $t('broadcast.origin') }}</span>
+                      <span class="input-group-text">{{ broadcast.selectedMessage?.origin ?? 'NaN' }}</span>
+                  </div>
+
+                  <div class="input-group">
+                      <span class="input-group-text">{{ $t('broadcast.gridsquare') }}</span>
+                      <span class="input-group-text">{{ broadcast.selectedMessage?.gridsquare ?? 'NaN' }}</span>
+                  </div>
+                </div>
+                </div>
+              </div>
+            </div>
+
+
+        </div>
+
+        <div class="card mt-2">
+            <div class="card-header">
+              {{ $t('broadcast.data') }}
             </div>
             <div class="card-body">
               <div class="container">
                 <div class="row">
 
-                  ...
-                </div>
+                                    <div class="input-group">
+                      <span class="input-group-text">{{ $t('broadcast.payload_size') }}</span>
+                      <span class="input-group-text">{{ broadcast.selectedMessage?.payload_size ?? 'NaN' }}</span>
+                  </div>
 
+                  <div class="input-group">
+                      <span class="input-group-text">{{ $t('broadcast.bursts') }}</span>
+                      <span class="input-group-text">{{ broadcast.selectedMessage?.bursts ?? 'NaN' }}</span>
+                  </div>
+
+                </div>
                 </div>
               </div>
             </div>
-        </div>
-
 
 
         <div class="modal-footer">
@@ -724,7 +791,7 @@ const beaconHistogramData = computed(() => ({
 
   <div
     id="newBroadcastModal"
-    ref="modalElement"
+    ref="newBroadcastModalElement"
     class="modal fade"
     tabindex="-1"
     aria-hidden="true"

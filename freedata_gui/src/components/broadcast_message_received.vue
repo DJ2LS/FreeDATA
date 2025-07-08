@@ -31,7 +31,7 @@
         class="btn btn-outline-secondary border-0 me-1"
         data-bs-target="#broadcastMessageInfoModal"
         data-bs-toggle="modal"
-        @click="showMessageInfo"
+        @click="showBroadcastMessageInfo"
       >
         <i class="bi bi-info-circle" />
       </button>
@@ -59,6 +59,12 @@
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import {deleteBroadcastMessageFromDB, sendBroadcastADIFviaUDP} from "@/js/broadcastsHandler";
+
+import { setActivePinia } from 'pinia';
+import pinia from '../store/index';
+import { useBroadcastStore } from '../store/broadcastStore.js';
+setActivePinia(pinia);
+const broadcast = useBroadcastStore(pinia);
 
 export default {
   props: {
@@ -109,8 +115,9 @@ export default {
   },
 
   methods: {
-    showMessageInfo() {
-      this.$emit("show-info", this.message);
+    showBroadcastMessageInfo() {
+      console.log(this.message);
+      broadcast.selectedMessage = this.message;
     },
   },
 };
