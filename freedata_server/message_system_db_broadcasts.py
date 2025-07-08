@@ -349,7 +349,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 print("timestamp", msg.timestamp)
                 print("received_at", msg.received_at)
                 if msg.nexttransmission_at and now < msg.nexttransmission_at:
-                    self.log(f"Skip {msg.id}: wait until {msg.nexttransmission_at.isoformat()}")
+                    self.log(f"Skip {msg.id}: wait until {int(msg.nexttransmission_at).isoformat()}")
 
                     continue
 
