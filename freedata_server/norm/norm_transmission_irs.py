@@ -31,7 +31,7 @@ class NormTransmissionIRS(NormTransmission):
         self.domain = frame["domain"]
         self.gridsquare = frame["gridsquare"]
         self.checksum = frame["checksum"]
-        self.timestamp = datetime.fromtimestamp(frame["timestamp"], tz=timezone.utc)
+        self.timestamp = frame["timestamp"]
         print("####################################")
         print("payload_size:", payload_size)
         print("payload_data:", payload_data)
@@ -68,9 +68,9 @@ class NormTransmissionIRS(NormTransmission):
             gridsquare=self.gridsquare,
             msg_type=msg_type,
             priority=priority,
-            received_at=datetime.now(timezone.utc),
-            expires_at=datetime.now(timezone.utc),
-            nexttransmission_at=datetime.now(timezone.utc),
+            received_at=datetime.now(timezone.utc).timestamp(),
+            expires_at=datetime.now(timezone.utc).timestamp(),
+            nexttransmission_at=datetime.now(timezone.utc).timestamp(),
             is_read=True,
             direction="receive",
             status="assembling"

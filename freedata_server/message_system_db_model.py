@@ -1,6 +1,6 @@
 # models.py
 
-from sqlalchemy import Index, Boolean, Column, String, Integer, JSON, ForeignKey, DateTime
+from sqlalchemy import Index, Boolean, Column, String, Integer, JSON, ForeignKey, DateTime, Float
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime, timezone
 
@@ -207,7 +207,7 @@ class BroadcastMessage(Base):
 
     id = Column(String, primary_key=True)
     origin = Column(String, ForeignKey('station.callsign'))
-    timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    timestamp = Column(Float, default=lambda: datetime.now(timezone.utc))
     repairing_callsigns = Column(JSON, nullable=True)
     domain = Column(String)
     gridsquare = Column(String)
@@ -220,9 +220,9 @@ class BroadcastMessage(Base):
     msg_type = Column(String)
     total_bursts = Column(Integer, default=0)
     checksum = Column(String)
-    received_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    nexttransmission_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    expires_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    received_at = Column(Float, default=lambda: datetime.now(timezone.utc))
+    nexttransmission_at = Column(Float, default=lambda: datetime.now(timezone.utc))
+    expires_at = Column(Float, default=lambda: datetime.now(timezone.utc))
 
     status_id = Column(Integer, ForeignKey('status.id'), nullable=True)
     status = relationship('Status', backref='broadcast_messages')
@@ -250,9 +250,9 @@ class BroadcastMessage(Base):
             'msg_type': self.msg_type,
             'total_bursts': self.total_bursts,
             'checksum': self.checksum,
-            'received_at': self.received_at.isoformat() if self.received_at else None,
-            'expires_at': self.expires_at.isoformat() if self.expires_at else None,
-            'nexttransmission_at': self.nexttransmission_at.isoformat() if self.nexttransmission_at else None,
+            'received_at': self.received_at if self.received_at else None,
+            'expires_at': self.expires_at if self.expires_at else None,
+            'nexttransmission_at': self.nexttransmission_at if self.nexttransmission_at else None,
             'status': self.status.name if self.status else None,
             'error_reason': self.error_reason,
             'attempts':self.attempts

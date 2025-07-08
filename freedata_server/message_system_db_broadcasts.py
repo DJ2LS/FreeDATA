@@ -21,7 +21,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             self,
             id: str,
             origin: str,
-            timestamp: datetime,
+            timestamp: float,
             burst_index: int,
             burst_data: str,
             total_bursts: int,
@@ -30,9 +30,9 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             domain: str = None,
             gridsquare: str = None,
             msg_type: str = None,
-            received_at: datetime = None,
-            expires_at: datetime = None,
-            nexttransmission_at: datetime = None,
+            received_at: float = None,
+            expires_at: float = None,
+            nexttransmission_at: float = None,
             priority: int = 1,
             is_read: bool = True,
             direction: str = None,
@@ -57,6 +57,11 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 # Create station and status
                 origin_station = self.stations_manager.get_or_create_station(origin, session)
                 status_obj = self.get_or_create_status(session, status) if status else None
+
+                print("nexttransmission_at", nexttransmission_at)
+                print("received_at", received_at)
+                print("timestamp", timestamp)
+                print("exires_at", expires_at)
 
                 # New message
                 msg = BroadcastMessage(
@@ -151,7 +156,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 result.append({
                     "id": msg.id,
                     "origin": msg.origin,
-                    "timestamp": msg.timestamp.isoformat() if msg.timestamp else None,
+                    "timestamp": msg.timestamp if msg.timestamp else None,
                     "repairing_callsigns": msg.repairing_callsigns,
                     "domain": msg.domain,
                     "gridsquare": msg.gridsquare,
@@ -164,9 +169,9 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     "msg_type": msg.msg_type,
                     "total_bursts": msg.total_bursts,
                     "checksum": msg.checksum,
-                    "received_at": msg.received_at.isoformat() if msg.received_at else None,
-                    "expires_at": msg.expires_at.isoformat() if msg.expires_at else None,
-                    "nexttransmission_at": msg.nexttransmission_at.isoformat() if msg.nexttransmission_at else None,
+                    "received_at": msg.received_at if msg.received_at else None,
+                    "expires_at": msg.expires_at if msg.expires_at else None,
+                    "nexttransmission_at": msg.nexttransmission_at if msg.nexttransmission_at else None,
                     "status": msg.status.name if msg.status else None,
                     "error_reason": msg.error_reason
                 })
@@ -201,7 +206,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     result[domain] = {
                         "message_count": 1,
                         "last_message_id": msg.id,
-                        "last_message_timestamp": msg.timestamp.isoformat() if msg.timestamp else None,
+                        "last_message_timestamp": msg.timestamp if msg.timestamp else None,
                         "last_origin": msg.origin
                     }
                 else:
@@ -239,7 +244,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
 
                 result[d].append({
                     "id": msg.id,
-                    "timestamp": msg.timestamp.isoformat() if msg.timestamp else None,
+                    "timestamp": msg.timestamp if msg.timestamp else None,
                     "origin": msg.origin,
                     "gridsquare": msg.gridsquare,
                     "msg_type": msg.msg_type,
@@ -248,9 +253,9 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     "direction": msg.direction,
                     "status": msg.status.name if msg.status else None,
                     "error_reason": msg.error_reason,
-                    "received_at": msg.received_at.isoformat() if msg.received_at else None,
-                    "nexttransmission_at": msg.nexttransmission_at.isoformat() if msg.nexttransmission_at else None,
-                    "expires_at": msg.expires_at.isoformat() if msg.expires_at else None
+                    "received_at": msg.received_at if msg.received_at else None,
+                    "nexttransmission_at": msg.nexttransmission_at if msg.nexttransmission_at else None,
+                    "expires_at": msg.expires_at if msg.expires_at else None
                 })
 
             return result
@@ -338,8 +343,11 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 print("ok....")
                 print("nexttransmissionat", msg.nexttransmission_at)
                 print("now", now)
+                print("expires_at", msg.expires_at)
+                print("timestamp", msg.timestamp)
+                print("received_at", msg.received_at)
                 if msg.nexttransmission_at and now < msg.nexttransmission_at:
-                    self.log(f"Skip {msg.id}: wait until {msg.nexttransmission_at.isoformat()}")
+                    self.log(f"Skip {msg.id}: wait until {msg.nexttransmission_at}")
                     continue
 
                 # Max attempts
@@ -363,7 +371,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                         "missing_bursts": missing,
                         "total_bursts": total,
                         "received_bursts": list(bursts.keys()),
-                        "received_at": msg.received_at.isoformat() if msg.received_at else None
+                        "received_at": msg.received_at if msg.received_at else None
                     }
 
             return None
@@ -385,7 +393,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             return {
                 "id": msg.id,
                 "origin": msg.origin,
-                "timestamp": msg.timestamp.isoformat() if msg.timestamp else None,
+                "timestamp": msg.timestamp if msg.timestamp else None,
                 "repairing_callsigns": msg.repairing_callsigns,
                 "domain": msg.domain,
                 "gridsquare": msg.gridsquare,
@@ -398,9 +406,9 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 "msg_type": msg.msg_type,
                 "total_bursts": msg.total_bursts,
                 "checksum": msg.checksum,
-                "received_at": msg.received_at.isoformat() if msg.received_at else None,
-                "expires_at": msg.expires_at.isoformat() if msg.expires_at else None,
-                "nexttransmission_at": msg.nexttransmission_at.isoformat() if msg.nexttransmission_at else None,
+                "received_at": msg.received_at if msg.received_at else None,
+                "expires_at": msg.expires_at if msg.expires_at else None,
+                "nexttransmission_at": msg.nexttransmission_at if msg.nexttransmission_at else None,
                 "status": msg.status.name if msg.status else None,
                 "error_reason": msg.error_reason,
                 "attempts": msg.attempts

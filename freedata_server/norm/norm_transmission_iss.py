@@ -184,9 +184,8 @@ class NormTransmissionISS(NormTransmission):
     def add_to_database(self):
         try:
             db = DatabaseManagerBroadcasts(self.ctx)
-            timestamp_dt = datetime.fromtimestamp(self.timestamp, tz=timezone.utc)
             checksum = helpers.get_crc_24(self.data).hex()
-            broadcast_id = self.create_broadcast_id(timestamp_dt, self.domain, checksum)
+            broadcast_id = self.create_broadcast_id(int(self.timestamp), self.domain, checksum)
 
             total_bursts = (len(self.data) + self.MAX_PAYLOAD_SIZE - 1) // self.MAX_PAYLOAD_SIZE
 
@@ -202,11 +201,12 @@ class NormTransmissionISS(NormTransmission):
                     continue
 
                 payload_b64 = base64.b64encode(payload_data).decode("ascii")
-
+                nexttransmission_at = datetime.now(timezone.utc) + timedelta(hours=1)
+                nexttransmission_at = nexttransmission_at.timestamp()
                 db.process_broadcast_message(
                     id=broadcast_id,
                     origin=self.origin,
-                    timestamp=timestamp_dt,
+                    timestamp=self.timestamp,
                     burst_index=burst_index,
                     burst_data=payload_b64,
                     total_bursts=total_bursts,
@@ -216,9 +216,9 @@ class NormTransmissionISS(NormTransmission):
                     gridsquare=self.gridsquare,
                     msg_type=self.message_type.name if hasattr(self.message_type, "name") else str(self.message_type),
                     priority=self.priority.value if hasattr(self.priority, "value") else int(self.priority),
-                    received_at=datetime.now(timezone.utc),
-                    nexttransmission_at=datetime.now(timezone.utc) + timedelta(hours=1),
-                    expires_at=datetime.now(timezone.utc),
+                    received_at=datetime.now(timezone.utc).timestamp(),
+                    nexttransmission_at=nexttransmission_at,
+                    expires_at=datetime.now(timezone.utc).timestamp(),
                     is_read=True,
                     direction="transmit",
                     status="assembling"
