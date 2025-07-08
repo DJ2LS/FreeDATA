@@ -17,7 +17,11 @@ class Norm(TxCommand):
         if not api_validations.validate_freedata_callsign(self.domain):
             self.domain = f"{self.domain}-0"
 
+
+        # strip data to maximum payload
         self.data = base64.b64decode(apiParams['data'])
+        self.data = self.data[:15*26]
+
 
         if 'priority' not in apiParams:
             self.priority = 1

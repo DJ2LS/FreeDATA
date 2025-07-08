@@ -118,6 +118,7 @@ function applyMarkdown(formatType) {
           rows="1"
           :placeholder="$t('chat.entermessage_placeholder')"
           style="resize: none;"
+          maxlength="390"
           @keyup.enter="transmitNewBroadcast()"
         />
 
