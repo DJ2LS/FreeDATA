@@ -43,100 +43,191 @@ class NormTransmissionISS(NormTransmission):
         self.transmit_bursts(bursts)
 
     def create_data(self):
-        full_data = self.data
-        total_bursts = (len(full_data) + self.MAX_PAYLOAD_SIZE - 1) // self.MAX_PAYLOAD_SIZE
+        try:
+            if not self.data:
+                self.log("Data is empty", isWarning=True)
+                raise ValueError("Data is empty")
 
-        bursts = []
-        for burst_number in range(1, total_bursts + 1):
-            offset = (burst_number - 1) * self.MAX_PAYLOAD_SIZE
-            payload = full_data[offset: offset + self.MAX_PAYLOAD_SIZE]
-            burst_info = self.encode_burst_info(burst_number, total_bursts)
-            checksum = helpers.get_crc_24(full_data)
-            is_last = (burst_number == total_bursts)
-            flags = self.encode_flags(self.message_type, self.priority, is_last)
+            full_data = self.data
+            total_bursts = (len(full_data) + self.MAX_PAYLOAD_SIZE - 1) // self.MAX_PAYLOAD_SIZE
 
-            burst_frame = self.frame_factory.build_norm_data(
-                origin=self.origin,
-                domain=self.domain,
-                gridsquare=self.gridsquare,
-                timestamp=self.timestamp,
-                burst_info=burst_info,
-                payload_size=len(full_data),
-                payload_data=payload,
-                flag=flags,
-                checksum=checksum
-            )
-            bursts.append(burst_frame)
-        return bursts
+            if total_bursts <= 0:
+                self.log(
+                    f"Invalid burst calculation (data length: {len(full_data)}, max payload: {self.MAX_PAYLOAD_SIZE})",
+                    isWarning=True)
+                raise ValueError("Invalid burst calculation")
+
+            bursts = []
+            for burst_number in range(1, total_bursts + 1):
+                offset = (burst_number - 1) * self.MAX_PAYLOAD_SIZE
+                payload = full_data[offset: offset + self.MAX_PAYLOAD_SIZE]
+
+                if not payload:
+                    self.log(f"Empty payload at burst {burst_number}", isWarning=True)
+                    raise ValueError(f"Empty payload at burst {burst_number}")
+
+                burst_info = self.encode_burst_info(burst_number, total_bursts)
+                checksum = helpers.get_crc_24(full_data)
+                is_last = (burst_number == total_bursts)
+                print("so...")
+                print("message type", self.message_type)
+                print("priority", self.priority)
+                print("is_last", is_last)
+                flags = self.encode_flags(self.message_type, self.priority, is_last)
+                print("?=")
+                burst_frame = self.frame_factory.build_norm_data(
+                    origin=self.origin,
+                    domain=self.domain,
+                    gridsquare=self.gridsquare,
+                    timestamp=self.timestamp,
+                    burst_info=burst_info,
+                    payload_size=len(full_data),
+                    payload_data=payload,
+                    flag=flags,
+                    checksum=checksum
+                )
+
+                self.log(
+                    f"Burst {burst_number}/{total_bursts} created (offset={offset}, payload_size={len(payload)}, is_last={is_last})")
+
+                bursts.append(burst_frame)
+
+            self.log(f"All bursts created successfully (total={total_bursts})")
+            return bursts
+
+        except Exception as e:
+            self.log(f"Error in create_data: {e}", isWarning=True)
+            raise
 
     def create_repair(self, db_msg_obj: dict, burst_numbers: list[int]):
-        repair_bursts = []
-        data = base64.b64decode(db_msg_obj["payload_data"]["final"])
-        total_bursts = db_msg_obj["total_bursts"]
-        priority = db_msg_obj["priority"]
-        message_type = NORMMsgType[db_msg_obj["msg_type"]] if isinstance(db_msg_obj["msg_type"], str) else db_msg_obj["msg_type"]
-        checksum = bytes.fromhex(db_msg_obj["checksum"])
+        try:
+            if "payload_data" not in db_msg_obj or "final" not in db_msg_obj["payload_data"]:
+                self.log("Missing payload data in db_msg_obj", isWarning=True)
+                raise ValueError("Missing payload data")
 
-        for burst_number in burst_numbers:
-            offset = (burst_number - 1) * self.MAX_PAYLOAD_SIZE
-            payload = data[offset: offset + self.MAX_PAYLOAD_SIZE]
-            burst_info = self.encode_burst_info(burst_number, total_bursts)
-            is_last = (burst_number == total_bursts)
-            flags = self.encode_flags(message_type, priority, is_last)
+            data = base64.b64decode(db_msg_obj["payload_data"]["final"])
+            total_bursts = db_msg_obj.get("total_bursts")
+            priority = db_msg_obj.get("priority")
+            msg_type_val = db_msg_obj.get("msg_type")
+            message_type = NORMMsgType[msg_type_val] if isinstance(msg_type_val, str) else msg_type_val
+            checksum_hex = db_msg_obj.get("checksum")
 
-            burst_frame = self.frame_factory.build_norm_repair(
-                origin=db_msg_obj["origin"],
-                domain=db_msg_obj["domain"],
-                gridsquare=db_msg_obj["gridsquare"],
-                timestamp=int(datetime.fromisoformat(db_msg_obj["timestamp"]).timestamp()),
-                burst_info=burst_info,
-                payload_size=len(data),
-                payload_data=payload,
-                flag=flags,
-                checksum=checksum
-            )
-            repair_bursts.append(burst_frame)
+            if not all([total_bursts, priority, message_type, checksum_hex]):
+                self.log("Missing required fields in db_msg_obj", isWarning=True)
+                raise ValueError("Missing required fields")
 
-        return repair_bursts
+            checksum = bytes.fromhex(checksum_hex)
+            repair_bursts = []
+
+            for burst_number in burst_numbers:
+                if burst_number < 1 or burst_number > total_bursts:
+                    self.log(f"Invalid burst number {burst_number}", isWarning=True)
+                    raise ValueError(f"Invalid burst number {burst_number}")
+
+                offset = (burst_number - 1) * self.MAX_PAYLOAD_SIZE
+                payload = data[offset: offset + self.MAX_PAYLOAD_SIZE]
+
+                if not payload:
+                    self.log(f"Empty payload for burst {burst_number}", isWarning=True)
+                    raise ValueError(f"Empty payload for burst {burst_number}")
+
+                burst_info = self.encode_burst_info(burst_number, total_bursts)
+                is_last = (burst_number == total_bursts)
+                flags = self.encode_flags(message_type, priority, is_last)
+
+                burst_frame = self.frame_factory.build_norm_repair(
+                    origin=db_msg_obj["origin"],
+                    domain=db_msg_obj["domain"],
+                    gridsquare=db_msg_obj["gridsquare"],
+                    timestamp=int(datetime.fromisoformat(db_msg_obj["timestamp"]).timestamp()),
+                    burst_info=burst_info,
+                    payload_size=len(data),
+                    payload_data=payload,
+                    flag=flags,
+                    checksum=checksum
+                )
+
+                self.log(
+                    f"Repair burst {burst_number}/{total_bursts} created (offset={offset}, payload_size={len(payload)}, is_last={is_last})")
+                repair_bursts.append(burst_frame)
+
+            self.log(f"All repair bursts created successfully (count={len(repair_bursts)})")
+            return repair_bursts
+
+        except Exception as e:
+            self.log(f"Error in create_repair: {e}", isWarning=True)
+            raise
 
     def transmit_bursts(self, bursts):
-        random_delay = np.random.randint(0, 6)
-        threading.Event().wait(random_delay)
-        self.ctx.state_manager.channel_busy_condition_codec2.wait(0.5)
+        try:
+            if not bursts:
+                self.log("No bursts to transmit", isWarning=True)
+                return
 
-        for burst in bursts:
-            self.ctx.rf_modem.transmit(FREEDV_MODE.datac4, 1, 200, burst)
+            random_delay = np.random.randint(0, 6)
+            self.log(f"Random delay before transmit: {random_delay}s")
+            threading.Event().wait(random_delay)
+
+            self.log("Waiting for channel busy condition")
+            self.ctx.state_manager.channel_busy_condition_codec2.wait(0.5)
+
+            for i, burst in enumerate(bursts, 1):
+                self.ctx.rf_modem.transmit(FREEDV_MODE.datac4, 1, 200, burst)
+                self.log(f"Transmitted burst {i}/{len(bursts)} (size={len(burst)})")
+
+            self.log("All bursts transmitted successfully")
+
+        except Exception as e:
+            self.log(f"Error in transmit_bursts: {e}", isWarning=True)
+            raise
 
     def add_to_database(self):
-        db = DatabaseManagerBroadcasts(self.ctx)
-        timestamp_dt = datetime.fromtimestamp(self.timestamp, tz=timezone.utc)
-        checksum = helpers.get_crc_24(self.data).hex()
-        broadcast_id = self.create_broadcast_id(timestamp_dt, self.domain, checksum)
+        try:
+            db = DatabaseManagerBroadcasts(self.ctx)
+            timestamp_dt = datetime.fromtimestamp(self.timestamp, tz=timezone.utc)
+            checksum = helpers.get_crc_24(self.data).hex()
+            broadcast_id = self.create_broadcast_id(timestamp_dt, self.domain, checksum)
 
-        total_bursts = (len(self.data) + self.MAX_PAYLOAD_SIZE - 1) // self.MAX_PAYLOAD_SIZE
+            total_bursts = (len(self.data) + self.MAX_PAYLOAD_SIZE - 1) // self.MAX_PAYLOAD_SIZE
 
-        for burst_index in range(1, total_bursts + 1):
-            offset = (burst_index - 1) * self.MAX_PAYLOAD_SIZE
-            payload_data = self.data[offset: offset + self.MAX_PAYLOAD_SIZE]
-            payload_b64 = base64.b64encode(payload_data).decode("ascii")
+            if total_bursts < 1:
+                self.log("No bursts to store in database", isWarning=True)
+                return
 
-            db.process_broadcast_message(
-                id=broadcast_id,
-                origin=self.origin,
-                timestamp=timestamp_dt,
-                burst_index=burst_index,
-                burst_data=payload_b64,
-                total_bursts=total_bursts,
-                checksum=checksum,
-                repairing_callsigns=None,
-                domain=self.domain,
-                gridsquare=self.gridsquare,
-                msg_type=self.message_type.name if hasattr(self.message_type, 'name') else str(self.message_type),
-                priority=self.priority.value if hasattr(self.priority, 'value') else int(self.priority),
-                received_at=datetime.now(timezone.utc),
-                nexttransmission_at=datetime.now(timezone.utc) + timedelta(hours=1),
-                expires_at=datetime.now(timezone.utc),
-                is_read=True,
-                direction="transmit",
-                status="assembling"
-            )
+            for burst_index in range(1, total_bursts + 1):
+                offset = (burst_index - 1) * self.MAX_PAYLOAD_SIZE
+                payload_data = self.data[offset: offset + self.MAX_PAYLOAD_SIZE]
+                if not payload_data:
+                    self.log(f"Empty payload at burst index {burst_index}", isWarning=True)
+                    continue
+
+                payload_b64 = base64.b64encode(payload_data).decode("ascii")
+
+                db.process_broadcast_message(
+                    id=broadcast_id,
+                    origin=self.origin,
+                    timestamp=timestamp_dt,
+                    burst_index=burst_index,
+                    burst_data=payload_b64,
+                    total_bursts=total_bursts,
+                    checksum=checksum,
+                    repairing_callsigns=None,
+                    domain=self.domain,
+                    gridsquare=self.gridsquare,
+                    msg_type=self.message_type.name if hasattr(self.message_type, "name") else str(self.message_type),
+                    priority=self.priority.value if hasattr(self.priority, "value") else int(self.priority),
+                    received_at=datetime.now(timezone.utc),
+                    nexttransmission_at=datetime.now(timezone.utc) + timedelta(hours=1),
+                    expires_at=datetime.now(timezone.utc),
+                    is_read=True,
+                    direction="transmit",
+                    status="assembling"
+                )
+
+                self.log(f"Stored burst {burst_index}/{total_bursts} in database (size={len(payload_data)})")
+
+            self.log(f"All {total_bursts} bursts added to database successfully")
+
+        except Exception as e:
+            self.log(f"Error in add_to_database: {e}", isWarning=True)
+            raise

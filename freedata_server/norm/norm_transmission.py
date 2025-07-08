@@ -90,19 +90,31 @@ class NormTransmission:
         """
         Encodes message type, priority and 'last burst' flag into a single byte.
 
-        Bit layout:
-        Bit 7   → is_last (1 = letzter Burst)
-        Bits 6–3 → msg_type (0–15)
-        Bits 2–0 → priority (0–7)
+        Supports msg_type as Enum or string (e.g., "MESSAGE").
         """
-        if isinstance(msg_type, IntEnum):  # e.g., MsgType
-            msg_type = int(msg_type)
+        # Convert msg_type
+        if isinstance(msg_type, str):
+            try:
+                msg_type_enum = NORMMsgType[msg_type.upper()]
+            except KeyError:
+                raise ValueError(f"Invalid msg_type string: '{msg_type}'")
+        elif isinstance(msg_type, NORMMsgType):
+            msg_type_enum = msg_type
+        else:
+            raise TypeError("msg_type must be NORMMsgType or str")
 
-        assert 0 <= msg_type <= 15, "msg_type must be 0–15"
-        assert 0 <= priority <= 7, "priority must be 0–7"
+        msg_type_int = int(msg_type_enum)
 
-        return ((1 if is_last else 0) << 7) | ((msg_type & 0x0F) << 3) | (priority & 0x07)
+        # Convert priority
+        if isinstance(priority, IntEnum):
+            priority_int = int(priority)
+        else:
+            priority_int = int(priority)
 
+        assert 0 <= msg_type_int <= 15, "msg_type must be 0–15"
+        assert 0 <= priority_int <= 7, "priority must be 0–7"
+
+        return ((1 if is_last else 0) << 7) | ((msg_type_int & 0x0F) << 3) | (priority_int & 0x07)
 
     def decode_flags(self, flags):
         """
@@ -112,10 +124,21 @@ class NormTransmission:
         Bit 7   → is_last
         Bits 6–3 → msg_type (0–15)
         Bits 2–0 → priority (0–7)
+
+        Returns:
+            is_last (bool),
+            msg_type (NORMMsgType),
+            priority (int)
         """
         is_last = bool((flags >> 7) & 0x01)
-        msg_type = (flags >> 3) & 0x0F
+        msg_type_int = (flags >> 3) & 0x0F
         priority = flags & 0x07
+
+        try:
+            msg_type = NORMMsgType(msg_type_int)
+        except ValueError:
+            msg_type = NORMMsgType.UNDEFINED  # Fallback bei unbekanntem Typ
+
         return is_last, msg_type, priority
 
     def encode_burst_info(self, burst_number, total_bursts):
