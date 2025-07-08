@@ -319,12 +319,15 @@ class DatabaseManagerBroadcasts(DatabaseManager):
         session = self.get_thread_scoped_session()
         try:
             now = datetime.now(timezone.utc)
-            one_minute_ago = now - timedelta(minutes=1)
+            one_minute_ago_ts = (now - timedelta(minutes=1)).timestamp()
+            now = now.timestamp()
+            print(now)
+            print(one_minute_ago_ts)
             messages = (
                 session.query(BroadcastMessage)
                 .filter(
                     BroadcastMessage.direction == "receive",
-                    BroadcastMessage.received_at < one_minute_ago,
+                    BroadcastMessage.received_at < one_minute_ago_ts,
                     BroadcastMessage.total_bursts > 0
                 )
                 .order_by(BroadcastMessage.received_at.asc())
@@ -340,7 +343,6 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     continue
 
                 # Check next transmission time
-                print("ok....")
                 print("nexttransmissionat", msg.nexttransmission_at)
                 print("now", now)
                 print("expires_at", msg.expires_at)
@@ -459,7 +461,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 next_delay = 2880  # after max backoff minutes reached in table above
 
             # Update next transmission
-            msg.nexttransmission_at = datetime.now(timezone.utc) + timedelta(minutes=next_delay)
+            msg.nexttransmission_at = (datetime.now(timezone.utc) + timedelta(minutes=next_delay)).timestamp()
             print("---------------", msg.nexttransmission_at)
             # Check max attempts
             if msg.attempts >= self.MAX_ATTEMPTS:
