@@ -66,7 +66,7 @@ class NormTransmissionIRS(NormTransmission):
             repairing_callsigns=frame.get("repairing_callsigns"),
             domain=self.domain,
             gridsquare=self.gridsquare,
-            msg_type=msg_type,
+            msg_type=msg_type.name,
             priority=priority,
             received_at=datetime.now(timezone.utc).timestamp(),
             expires_at=datetime.now(timezone.utc).timestamp(),
