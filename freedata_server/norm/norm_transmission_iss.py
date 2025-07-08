@@ -139,7 +139,7 @@ class NormTransmissionISS(NormTransmission):
                     origin=db_msg_obj["origin"],
                     domain=db_msg_obj["domain"],
                     gridsquare=db_msg_obj["gridsquare"],
-                    timestamp=int(datetime.fromisoformat(db_msg_obj["timestamp"]).timestamp()),
+                    timestamp=int(db_msg_obj["timestamp"]),
                     burst_info=burst_info,
                     payload_size=len(data),
                     payload_data=payload,
