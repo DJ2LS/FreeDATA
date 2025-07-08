@@ -455,7 +455,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             msg.attempts = (msg.attempts or 0) + 1
 
             # Define backoff intervals (minutes)
-            backoff_minutes = [5, 15, 30, 60, 120, 240, 360, 720, 1440, 2880]
+            backoff_minutes = [2, 5, 10, 15, 30, 60, 120, 240, 360, 720, 1440, 2880]
             if msg.attempts <= len(backoff_minutes):
                 next_delay = backoff_minutes[msg.attempts - 1]
             else:
