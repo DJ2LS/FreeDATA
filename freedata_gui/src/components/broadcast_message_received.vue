@@ -93,7 +93,10 @@ export default {
     },
 
     parsedMessageBody() {
-      let body = "";
+      let body = " <p class=\"card-text placeholder-glow\">\n" +
+          "      <span class=\"placeholder col-7\"></span>\n" +
+          "      <span class=\"placeholder col-4\"></span>\n" +
+          "    </p>";
       if (this.message.payload_data?.final) {
         try {
           body = atob(this.message.payload_data.final);
