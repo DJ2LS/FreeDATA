@@ -48,7 +48,8 @@ class NORMFrameHandler(frame_handler.FrameHandler):
                     #print("frame:", frame)
                     #print("missing bursts:", frame["burst_numbers"])
                     #NormTransmissionISS(self.ctx, broadcast["origin"], broadcast["domain"], broadcast["gridsquare"], data, priority=broadcast["priority"], message_type=broadcast["msg_type"], send_only_bursts=frame["burst_numbers"]).prepare_and_transmit()
-                    NormTransmissionISS(self.ctx).create_repair(broadcast, frame["burst_numbers"])
+                    repair_bursts = NormTransmissionISS(self.ctx).create_repair(broadcast, frame["burst_numbers"])
+                    NormTransmissionISS(self.ctx).transmit_bursts(repair_bursts)
             except Exception as e:
                 print(e)
         else:
