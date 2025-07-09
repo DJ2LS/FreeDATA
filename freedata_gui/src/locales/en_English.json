@@ -58,7 +58,8 @@
         "settings": "Settings",
         "settings_help": "Settings",
         "station": "Station",
-        "station_help": "Set station info"
+        "station_help": "Set station info",
+		"broadcast_help": "Broadcast"
     },
     "grid": {
         "frequencydescription": "Commonly used frequencies are listed here, and are all USB. Simply click on a entry or manually enter a frequency in the textbox to tune your rig if rig control is enabled.",
@@ -193,7 +194,8 @@
         "compiler": "Compiler",
         "branch": "Branch",
         "implementation": "Implementation",
-        "revision": "Revision"
+        "revision": "Revision",
+		"startnewbroadcast": "Start new broadcast"
     },
     "chat": {
         "startnewchat": "Start a new chat",
@@ -271,6 +273,11 @@
             "adifloggingwavelogapi": "Wavelog API key",
             "adifloggingwavelogapi_placeholder": "Enter API key",
             "adifloggingwavelogapi_help": "Enter Wavelog api key"
+        },
+		"broadcast": {
+			"startnewbroadcast": "Start new broadcast",
+			"noDomains": "No existing domain",
+			"selectDomain": "Select a domain"
         },
         "modem": {
             "introduction": "Modem and Audio related settings, including starting/stopping the modem, configuring audio devices, and adjusting audio levels.",
@@ -370,6 +377,6 @@
             "flrigport_help": "Set the port where the flrig server is listening (Default: 12345)",
             "flrighost": "Flrig host",
             "flrighost_help": "Set the host adress of the server, mostly localhost or 127.0.0.1"
-        }
+		}
     }
 }
