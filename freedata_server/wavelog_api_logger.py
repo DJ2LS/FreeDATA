@@ -3,7 +3,7 @@ import threading
 import structlog
 
 
-def send_wavelog_qso_data(config, event_manager, wavelog_data):
+def send_wavelog_qso_data(ctx, wavelog_data):
     """
     Sends wavelog QSO data to the specified server via API call.
 
@@ -16,13 +16,13 @@ def send_wavelog_qso_data(config, event_manager, wavelog_data):
     log = structlog.get_logger()
 
     # If False then exit the function
-    wavelog = config['QSO_LOGGING'].get('enable_adif_wavelog', 'False')
+    wavelog = ctx.config_manager.config['QSO_LOGGING'].get('enable_adif_wavelog', 'False')
 
     if not wavelog:
         return  # exit as we don't want to log Wavelog
 
-    wavelog_host = config['QSO_LOGGING'].get('adif_wavelog_host', 'http://localhost/')
-    wavelog_api_key = config['QSO_LOGGING'].get('adif_wavelog_api_key', '')
+    wavelog_host = ctx.config_manager.config['QSO_LOGGING'].get('adif_wavelog_host', 'http://localhost/')
+    wavelog_api_key = ctx.config_manager.config['QSO_LOGGING'].get('adif_wavelog_api_key', '')
 
     # check if the last part in the HOST URL from the config is correct
     if wavelog_host.endswith("/"):
@@ -52,10 +52,10 @@ def send_wavelog_qso_data(config, event_manager, wavelog_data):
             callsign_end = wavelog_data.find(f"<QSO_DATE", callsign_start)
             call_value = wavelog_data[callsign_start:callsign_end]
 
-            event_manager.freedata_logging(type="wavelog", status=True, message=f" {call_value} ")
+            ctx.event_manager.freedata_logging(type="wavelog", status=True, message=f" {call_value} ")
 
         except Exception as e:
-            event_manager.freedata_logging(type="wavelog", status=False, message=f"{e}")
+            ctx.event_manager.freedata_logging(type="wavelog", status=False, message=f"{e}")
 
     # Run the API call in a background thread to avoid blocking the main thread
     thread = threading.Thread(target=send_api, daemon=True)
