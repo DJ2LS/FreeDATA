@@ -194,8 +194,7 @@
         "compiler": "Compiler",
         "branch": "Branch",
         "implementation": "Implementation",
-        "revision": "Revision",
-	"startnewbroadcast": "Start new broadcast"
+        "revision": "Revision"
     },
     "chat": {
         "startnewchat": "Start a new chat",
@@ -209,6 +208,11 @@
         "noConversations": "No conversations, yet",
         "loadingMessages": "Loading messages..."
     },
+    "broadcast": {
+            "startnewbroadcast": "Start new broadcast",
+            "noDomains": "No existing domain",
+            "selectDomain": "Select a domain"
+        },
     "settings": {
         "enable": "Enable",
         "default": "default",
@@ -273,11 +277,6 @@
             "adifloggingwavelogapi": "Wavelog API key",
             "adifloggingwavelogapi_placeholder": "Enter API key",
             "adifloggingwavelogapi_help": "Enter Wavelog api key"
-        },
-	"broadcast": {
-	    "startnewbroadcast": "Start new broadcast",
-	    "noDomains": "No existing domain",
-	    "selectDomain": "Select a domain"
         },
         "modem": {
             "introduction": "Modem and Audio related settings, including starting/stopping the modem, configuring audio devices, and adjusting audio levels.",
