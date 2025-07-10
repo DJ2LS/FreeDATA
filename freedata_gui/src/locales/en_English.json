@@ -194,7 +194,9 @@
         "compiler": "Compiler",
         "branch": "Branch",
         "implementation": "Implementation",
-        "revision": "Revision"
+        "revision": "Revision",
+	"startnewbroadcast": "Start new broadcast",
+ 	"deletebroadcastdomain": "Delete broadcast domain"
     },
     "chat": {
         "startnewchat": "Start a new chat",
