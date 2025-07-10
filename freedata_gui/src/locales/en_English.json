@@ -213,7 +213,19 @@
     "broadcast": {
             "startnewbroadcast": "Start new broadcast",
             "noDomains": "No existing domain",
-            "selectDomain": "Select a domain"
+            "selectDomain": "Select a domain",
+	    "general": "General",
+	    "id": "ID",
+	    "msg_type": "Message type",
+	    "timestamp": "Timestamp",
+	    "nexttransmission_at": "Next transmission at",
+	    "expires_at": "Expires at",
+	    "sender": "Sender",
+	    "origin": "Origin",
+	    "gridsquare": "Gridsquare",
+	    "data": "Data",
+	    "payload_size": "Payload size",
+	    "bursts": "Bursts"
         },
     "settings": {
         "enable": "Enable",
