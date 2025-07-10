@@ -194,7 +194,8 @@
         "compiler": "Compiler",
         "branch": "Branch",
         "implementation": "Implementation",
-        "revision": "Revision"
+        "revision": "Revision",
+	"startnewbroadcast": "Start new broadcast"
     },
     "chat": {
         "startnewchat": "Start a new chat",
