@@ -62,7 +62,7 @@
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 
-import {retransmitFreedataBroadcast, deleteBroadcastMessageFromDB, sendBroadcastADIFviaUDP} from "@/js/broadcastsHandler";
+import {repeatBroadcastTransmission, deleteBroadcastMessageFromDB, sendBroadcastADIFviaUDP} from "@/js/broadcastsHandler";
 
 export default {
   props: {
@@ -106,7 +106,7 @@ export default {
 
     async retransmitBroadcast() {
       try {
-        await retransmitFreedataBroadcast(this.message.id);
+        await repeatBroadcastTransmission(this.message.id);
       } catch (e) {
         console.error("Retransmit failed:", e);
       }

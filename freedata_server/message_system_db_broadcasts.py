@@ -185,6 +185,31 @@ class DatabaseManagerBroadcasts(DatabaseManager):
         finally:
             session.remove()
 
+    def get_first_queued_message(self):
+        session = self.get_thread_scoped_session()
+        try:
+            now_ts = datetime.now(timezone.utc).timestamp()
+
+            message = (
+                session.query(BroadcastMessage)
+                .filter(
+                    BroadcastMessage.direction == "transmit",
+                    BroadcastMessage.attempts < self.MAX_ATTEMPTS,
+                    BroadcastMessage.nexttransmission_at <= now_ts,
+                )
+                .order_by(BroadcastMessage.nexttransmission_at.asc())
+                .first()
+            )
+
+            return message
+
+        except Exception as e:
+            self.log(f"Error at get_first_queued_message: {e}", isWarning=True)
+            return None
+
+        finally:
+            session.remove()
+
     def get_broadcast_domains_json(self) -> dict:
         """
         Returns a JSON-compatible dictionary where each key is a domain (e.g. 'BB1AA-2'),
@@ -388,12 +413,15 @@ class DatabaseManagerBroadcasts(DatabaseManager):
         finally:
             session.remove()
 
-    def get_broadcast_per_id(self, id):
+    def get_broadcast_per_id(self, id, get_object=False):
         session = self.get_thread_scoped_session()
         try:
             msg = session.query(BroadcastMessage).filter_by(id=id).first()
             if not msg:
                 return None
+
+            if get_object:
+                return msg
 
             return {
                 "id": msg.id,

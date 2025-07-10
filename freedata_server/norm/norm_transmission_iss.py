@@ -74,7 +74,6 @@ class NormTransmissionISS(NormTransmission):
                 print("priority", self.priority)
                 print("is_last", is_last)
                 flags = self.encode_flags(self.message_type, self.priority, is_last)
-                print("?=")
                 burst_frame = self.frame_factory.build_norm_data(
                     origin=self.origin,
                     domain=self.domain,
@@ -231,3 +230,18 @@ class NormTransmissionISS(NormTransmission):
         except Exception as e:
             self.log(f"Error in add_to_database: {e}", isWarning=True)
             raise
+
+    def retransmit_data(self, msg):
+        self.origin = msg.origin
+        self.domain = msg.domain
+        self.gridsquare = msg.gridsquare
+        self.data = base64.b64decode(msg.payload_data["final"])
+        self.priority = msg.priority
+        self.message_type = msg.msg_type
+        self.payload_size = len(self.data)
+        self.timestamp = int(msg.timestamp)
+
+        bursts = self.create_data()
+        #self.add_to_database()
+        self.transmit_bursts(bursts)
+

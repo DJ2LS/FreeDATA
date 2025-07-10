@@ -6,6 +6,7 @@ from message_system_db_attachments import DatabaseManagerAttachments
 from message_system_db_beacon import DatabaseManagerBeacon
 from message_system_db_station import DatabaseManagerStations
 from message_system_db_broadcasts import DatabaseManagerBroadcasts
+from norm.norm_transmission_iss import NormTransmissionISS
 import command_norm
 import command_message_send
 import adif_udp_logger
@@ -743,6 +744,23 @@ async def delete_freedata_broadcast_domain(
 ):
     ok = _mgr_broadcasts(ctx).delete_broadcast_message_or_domain(id)
     if not ok:
+        api_abort("Message not found", 404)
+    return api_response({"message": f"{id} deleted", "status": "success"})
+
+@router.patch("/broadcasts/{id}", summary="Retransmit Broadcast by ID", tags=["FreeDATA"], responses={})
+async def patch_freedata_broadcast_domain(
+    id: str,
+    payload: dict,
+    ctx: AppContext = Depends(get_ctx)
+):
+
+    if payload.get("action") == "retransmit":
+        _mgr_broadcasts(ctx).increment_attempts(id)
+        msg = _mgr_broadcasts(ctx).get_broadcast_per_id(id, get_object=True)
+        if msg:
+            NormTransmissionISS(ctx).retransmit_data(msg)
+            result = {"message_id": id, "status": "retransmit"}
+    else:
         api_abort("Message not found", 404)
     return api_response({"message": f"{id} deleted", "status": "success"})
 
