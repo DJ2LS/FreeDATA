@@ -195,7 +195,8 @@
         "branch": "Branch",
         "implementation": "Implementation",
         "revision": "Revision",
-	"startnewbroadcast": "Start new broadcast"
+	"startnewbroadcast": "Start new broadcast",
+ 	"deletebroadcastdomain": "Delete broadcast domain"
     },
     "chat": {
         "startnewchat": "Start a new chat",
