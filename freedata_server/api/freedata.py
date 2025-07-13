@@ -12,6 +12,7 @@ import command_message_send
 import adif_udp_logger
 import wavelog_api_logger
 from context import AppContext, get_ctx
+import asyncio
 
 router = APIRouter()
 
@@ -747,27 +748,35 @@ async def delete_freedata_broadcast_domain(
         api_abort("Message not found", 404)
     return api_response({"message": f"{id} deleted", "status": "success"})
 
+
+
 @router.patch("/broadcasts/{id}", summary="Retransmit Broadcast by ID", tags=["FreeDATA"], responses={})
 async def patch_freedata_broadcast_domain(
     id: str,
     payload: dict,
     ctx: AppContext = Depends(get_ctx)
 ):
-
     if payload.get("action") == "retransmit":
         _mgr_broadcasts(ctx).increment_attempts(id)
         msg = _mgr_broadcasts(ctx).get_broadcast_per_id(id, get_object=True)
         if msg:
-            NormTransmissionISS(ctx).retransmit_data(msg)
-            result = {"message_id": id, "status": "retransmit"}
-    else:
-        api_abort("Message not found", 404)
-    return api_response({"message": f"{id} deleted", "status": "success"})
+            loop = asyncio.get_running_loop()
+            loop.run_in_executor(
+                None,
+                NormTransmissionISS(ctx).retransmit_data,
+                msg
+            )
+            return api_response({"message_id": id, "status": "retransmit started"})
+        else:
+            api_abort("Message not found", 404)
+
+    api_abort("Invalid action", 400)
+
 
 @router.post("/broadcasts", summary="Transmit Broadcast", tags=["FreeDATA"], responses={})
 async def post_freedata_broadcast(
     payload: dict,
     ctx: AppContext = Depends(get_ctx)
 ):
-    await enqueue_tx_command(ctx, command_norm.Norm, payload)
+    enqueue_tx_command(ctx, command_norm.Norm, payload)
     return api_response({"message": f"broadcast transmitted", "status": "success"})
