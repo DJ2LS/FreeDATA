@@ -778,5 +778,5 @@ async def post_freedata_broadcast(
     payload: dict,
     ctx: AppContext = Depends(get_ctx)
 ):
-    enqueue_tx_command(ctx, command_norm.Norm, payload)
+    await enqueue_tx_command(ctx, command_norm.Norm, payload)
     return api_response({"message": f"broadcast transmitted", "status": "success"})
