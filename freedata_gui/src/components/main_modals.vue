@@ -131,6 +131,19 @@ function formatTimestamp(isoTimestamp) {
   return date.toLocaleTimeString('en-US', { hour12: false });
 }
 
+function formatTimestampFull(isoTimestamp) {
+  const date = new Date(isoTimestamp * 1000);
+  return date.toLocaleString('en-US', {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+  });
+}
+
+
 const transmissionSpeedChartDataMessageInfo = computed(() => ({
   labels: Object.values(chat.messageInfoById?.statistics?.time_histogram || {}).map(formatTimestamp),
   datasets: [
@@ -591,7 +604,7 @@ const beaconHistogramData = computed(() => ({
             id="broadcastMessageInfoModalLabel"
             class="modal-title fs-5"
           >
-            {{ broadcast.selectedMessage?.origin?? 'NaN' }} - {{ broadcast.selectedMessage?.timestamp ?? 'NaN' }}
+            {{ broadcast.selectedMessage?.origin?? 'NaN' }} - {{formatTimestampFull(broadcast.selectedMessage?.timestamp) ?? 'NaN' }}
           </h1>
           <button
             type="button"
@@ -621,17 +634,17 @@ const beaconHistogramData = computed(() => ({
 
                   <div class="input-group">
                       <span class="input-group-text">{{ $t('broadcast.timestamp') }}</span>
-                      <span class="input-group-text">{{ broadcast.selectedMessage?.timestamp ?? 'NaN' }}</span>
+                      <span class="input-group-text">{{ formatTimestampFull(broadcast.selectedMessage?.timestamp) ?? 'NaN' }}</span>
                   </div>
 
                                     <div class="input-group">
                       <span class="input-group-text">{{ $t('broadcast.nexttransmission_at') }}</span>
-                      <span class="input-group-text">{{ broadcast.selectedMessage?.nexttransmission_at ?? 'NaN' }}</span>
+                      <span class="input-group-text">{{ formatTimestampFull(broadcast.selectedMessage?.nexttransmission_at) ?? 'NaN' }}</span>
                   </div>
 
                                     <div class="input-group">
                       <span class="input-group-text">{{ $t('broadcast.expires_at') }}</span>
-                      <span class="input-group-text">{{ broadcast.selectedMessage?.expires_at ?? 'NaN' }}</span>
+                      <span class="input-group-text">{{ formatTimestampFull(broadcast.selectedMessage?.expires_at) ?? 'NaN' }}</span>
                   </div>
                 </div>
                 </div>
@@ -677,7 +690,7 @@ const beaconHistogramData = computed(() => ({
 
                   <div class="input-group">
                       <span class="input-group-text">{{ $t('broadcast.bursts') }}</span>
-                      <span class="input-group-text">{{ broadcast.selectedMessage?.bursts ?? 'NaN' }}</span>
+                      <span class="input-group-text">{{ broadcast.selectedMessage?.total_bursts ?? 'NaN' }}</span>
                   </div>
 
                 </div>

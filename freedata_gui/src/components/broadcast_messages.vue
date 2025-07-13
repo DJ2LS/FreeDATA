@@ -19,10 +19,10 @@
           :key="item.timestamp"
         >
           <!-- Date Separator -->
-          <div v-if="showDateSeparator(index, item.timestamp, messages)">
+          <div v-if="showDateSeparator(index, item.timestamp * 1000, messages)">
             <div class="d-flex align-items-center my-3">
               <hr class="flex-grow-1">
-              <span class="mx-2 text-muted">{{ getDate(item.timestamp) }}</span>
+              <span class="mx-2 text-muted">{{ getDate(item.timestamp * 1000) }}</span>
               <hr class="flex-grow-1">
             </div>
           </div>
@@ -68,7 +68,7 @@ function getDate(timestampRaw) {
 
 function showDateSeparator(index, currentTimestamp, messages) {
   if (index === 0) return true;
-  const previousTimestamp = messages[index - 1].timestamp;
+  const previousTimestamp = messages[index - 1].timestamp * 1000;
   return getDate(currentTimestamp) !== getDate(previousTimestamp);
 }
 
