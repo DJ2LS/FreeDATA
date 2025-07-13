@@ -61,7 +61,11 @@
 <script>
 import { marked } from "marked";
 import DOMPurify from "dompurify";
-
+import { setActivePinia } from 'pinia';
+import pinia from '../store/index';
+import { useBroadcastStore } from '../store/broadcastStore.js';
+setActivePinia(pinia);
+const broadcast = useBroadcastStore(pinia);
 import {repeatBroadcastTransmission, deleteBroadcastMessageFromDB, sendBroadcastADIFviaUDP} from "@/js/broadcastsHandler";
 
 export default {
