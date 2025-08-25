@@ -202,6 +202,11 @@ class NormTransmissionISS(NormTransmission):
                 payload_b64 = base64.b64encode(payload_data).decode("ascii")
                 nexttransmission_at = datetime.now(timezone.utc) + timedelta(hours=1)
                 nexttransmission_at = nexttransmission_at.timestamp()
+
+                expires_at = datetime.now(timezone.utc) + timedelta(days=1)
+                expires_at = expires_at.timestamp()
+
+
                 db.process_broadcast_message(
                     id=broadcast_id,
                     origin=self.origin,
@@ -217,7 +222,7 @@ class NormTransmissionISS(NormTransmission):
                     priority=self.priority.value if hasattr(self.priority, "value") else int(self.priority),
                     received_at=datetime.now(timezone.utc).timestamp(),
                     nexttransmission_at=nexttransmission_at,
-                    expires_at=datetime.now(timezone.utc).timestamp(),
+                    expires_at=expires_at,
                     is_read=True,
                     direction="transmit",
                     status="assembling"

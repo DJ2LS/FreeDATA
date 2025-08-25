@@ -362,7 +362,8 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 .filter(
                     BroadcastMessage.direction == "receive",
                     BroadcastMessage.received_at < one_minute_ago_ts,
-                    BroadcastMessage.total_bursts > 0
+                    BroadcastMessage.total_bursts > 0,
+                    BroadcastMessage.expires_at > now
                 )
                 .order_by(BroadcastMessage.received_at.asc())
                 .all()

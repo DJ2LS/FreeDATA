@@ -54,6 +54,9 @@ class NormTransmissionIRS(NormTransmission):
         print("id", self.id)
         print("len-id", len(self.id))
 
+        expires_at = datetime.now(timezone.utc) + timedelta(days=1)
+        expires_at = expires_at.timestamp()
+
         db = DatabaseManagerBroadcasts(self.ctx)
         success = db.process_broadcast_message(
             id=self.id,
@@ -69,7 +72,7 @@ class NormTransmissionIRS(NormTransmission):
             msg_type=msg_type.name,
             priority=priority,
             received_at=datetime.now(timezone.utc).timestamp(),
-            expires_at=datetime.now(timezone.utc).timestamp(),
+            expires_at=expires_at,
             nexttransmission_at=datetime.now(timezone.utc).timestamp(),
             is_read=False,
             direction="receive",
