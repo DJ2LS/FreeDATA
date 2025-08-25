@@ -11,7 +11,8 @@ setActivePinia(pinia);
 
 import { useChatStore } from '../store/chatStore.js';
 const chat = useChatStore(pinia);
-
+import { useBroadcastStore } from '../store/broadcastStore.js';
+const broadcast = useBroadcastStore(pinia);
 
 // Network state computation
 import { useStateStore } from '../store/stateStore.js';
@@ -112,7 +113,12 @@ const isNetworkTraffic = computed(() => state.is_network_traffic);
       @click="isNetworkDisconnected ? null : getFreedataDomains()"
     >
       <i class="bi bi-broadcast h3" />
-
+<span
+        v-if="broadcast.totalUnreadMessages > 0"
+        class="badge bg-danger position-absolute top-0 end-0 mt-1 me-1"
+      >
+        {{ broadcast.totalUnreadMessages }}
+      </span>
     </a>
 
     <a

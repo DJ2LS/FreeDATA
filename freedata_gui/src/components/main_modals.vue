@@ -863,7 +863,7 @@ const beaconHistogramData = computed(() => ({
               class="form-select"
               v-model="broadcast.newPriority"
             >
-              <option value="1">Normal (1)</option>
+              <option value="1" select>Normal (1)</option>
               <option value="0">Low (0)</option>
               <option value="2">High (2)</option>
             </select>

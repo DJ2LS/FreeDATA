@@ -57,12 +57,18 @@
       <div class="col-7 text-truncate">
         <strong>{{ domain }}</strong>
         <br>
-        <small>
-          {{
-            details.body
-              ? sanitizeBody(details.body.substring(0, 35) + '...')
-              : "<no preview>"
-          }}
+        <small class="text-muted d-inline-flex align-items-center gap-2">
+          <span class="badge bg-secondary rounded-pill">
+            {{ details.message_count }}&nbsp;{{ $t('broadcast.broadcasts') }}
+          </span>
+          <span
+            class="badge rounded-pill"
+            :class="details.unread_count > 0 ? 'bg-danger' : 'bg-success'"
+            :aria-label="details.unread_count > 0 ? (details.unread_count + $t('broadcast.unread_description')) : $t('broadcast.unread_description')"
+            :title="details.unread_count > 0 ? (details.unread_count + $t('broadcast.unread_description')) : $t('broadcast.unread_description')"
+          >
+            {{ details.unread_count }}&nbsp;{{ $t('broadcast.unread') }}
+          </span>
         </small>
       </div>
       <div class="col-5 text-end">

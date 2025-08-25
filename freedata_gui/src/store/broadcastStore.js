@@ -31,6 +31,10 @@ export const useBroadcastStore = defineStore("broadcastStore", () => {
   // selectedMessage
   const selectedMessage = ref()
 
+  // unread message counter
+  var totalUnreadMessages = ref(0);
+
+
   function triggerScrollToBottom() {
     scrollTrigger.value++;
   }
@@ -56,6 +60,7 @@ export const useBroadcastStore = defineStore("broadcastStore", () => {
     newDomain,
     newPriority,
     newMessageType,
-    selectedMessage
+    selectedMessage,
+    totalUnreadMessages
   };
 })

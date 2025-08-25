@@ -213,7 +213,8 @@ class DatabaseManagerBroadcasts(DatabaseManager):
     def get_broadcast_domains_json(self) -> dict:
         """
         Returns a JSON-compatible dictionary where each key is a domain (e.g. 'BB1AA-2'),
-        and each value is a dict containing message stats for that domain.
+        and each value is a dict containing message statistics for that domain,
+        including an unread_count based on the `is_read` boolean field.
         """
         session = self.get_thread_scoped_session()
         try:
@@ -224,18 +225,23 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 .all()
             )
 
-            result = {}
+            result: dict[str, dict] = {}
+
             for msg in messages:
                 domain = msg.domain
                 if domain not in result:
                     result[domain] = {
                         "message_count": 1,
+                        "unread_count": 0 if msg.is_read else 1,
                         "last_message_id": msg.id,
+                        "last_payload": msg.payload_data,
                         "last_message_timestamp": msg.timestamp if msg.timestamp else None,
-                        "last_origin": msg.origin
+                        "last_origin": msg.origin,
                     }
                 else:
                     result[domain]["message_count"] += 1
+                    if not msg.is_read:
+                        result[domain]["unread_count"] += 1
 
             return result
 
@@ -247,6 +253,9 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             session.remove()
 
     def get_broadcasts_per_domain_json(self, domain: str = None) -> dict:
+
+        if domain:
+            self.mark_domain_as_read(domain)
 
         session = self.get_thread_scoped_session()
         try:
@@ -510,3 +519,35 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             self.log(f"Error incrementing attempts for {message_id}: {e}", isWarning=True)
         finally:
             session.remove()
+
+    def mark_domain_as_read(self, domain: str) -> int:
+        """
+        Marks all unread *received* messages in a domain as read.
+        Returns the number of updated rows.
+        """
+        session = self.get_thread_scoped_session()
+        try:
+            msgs = (
+                session.query(BroadcastMessage)
+                .filter(
+                    BroadcastMessage.domain == domain,
+                    BroadcastMessage.is_read.is_(False),
+                )
+                .all()
+            )
+            count = 0
+            for m in msgs:
+                m.is_read = True
+                count += 1
+            if count:
+                session.commit()
+                self.log(f"Marked {count} messages as read in domain '{domain}'")
+                self.ctx.event_manager.freedata_message_db_change(message_id=domain)
+            return count
+        except Exception as e:
+            session.rollback()
+            self.log(f"Error marking domain '{domain}' as read: {e}", isWarning=True)
+            return 0
+        finally:
+            session.remove()
+

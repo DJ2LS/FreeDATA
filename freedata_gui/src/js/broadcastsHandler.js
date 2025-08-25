@@ -18,9 +18,17 @@ export async function processFreedataBroadcastsPerDomain(data) {
 }
 
 export async function processFreedataDomains(data) {
-  console.log(data)
+  console.log(data);
+
   broadcast.setDomains(data);
+
+  // sum of unread_count
+  broadcast.totalUnreadMessages = Object.values(data).reduce(
+    (sum, domain) => sum + (domain.unread_count || 0),
+    0
+  );
 }
+
 
 
 export function newBroadcastMessage(params) {

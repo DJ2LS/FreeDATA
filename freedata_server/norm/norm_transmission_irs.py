@@ -71,7 +71,7 @@ class NormTransmissionIRS(NormTransmission):
             received_at=datetime.now(timezone.utc).timestamp(),
             expires_at=datetime.now(timezone.utc).timestamp(),
             nexttransmission_at=datetime.now(timezone.utc).timestamp(),
-            is_read=True,
+            is_read=False,
             direction="receive",
             status="assembling"
         )
