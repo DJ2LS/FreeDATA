@@ -17,7 +17,6 @@ const defaultConfig = {
   },
   remote: {
     AUDIO: {
-      enable_auto_tune: false,
       input_device: "",
       output_device: "",
       rx_audio_level: 0,
