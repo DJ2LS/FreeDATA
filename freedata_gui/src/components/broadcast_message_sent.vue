@@ -75,7 +75,7 @@ export default {
 
   computed: {
     timeUTC() {
-      const d = new Date(this.message.timestamp);
+      const d = new Date(this.message.timestamp * 1000);
       return d.toISOString().split("T")[1].split(".")[0]; // HH:MM:SS
     },
 

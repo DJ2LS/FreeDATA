@@ -80,7 +80,7 @@ export default {
     },
 
     getDateTime() {
-      const date = new Date(this.message.timestamp);
+      const date = new Date(this.message.timestamp * 1000);
       return date.toISOString().split("T")[1].split(".")[0]; // HH:MM:SS
     },
 
