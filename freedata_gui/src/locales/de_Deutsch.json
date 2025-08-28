@@ -58,7 +58,7 @@
         "settings": "Einstellungen",
         "settings_help": "Einstellungen",
         "station": "Station",
-        "station_help": "Stationsinfo setzen"
+        "station_help": "Stationsinfo setzen",
 		"broadcast_help": "Broadcast"
     },		   
     "grid": {
@@ -194,7 +194,7 @@
         "compiler": "Compiler",
         "branch": "Zweig",
         "implementation": "Implementierung",
-        "revision": "Revision"
+        "revision": "Revision",
 		"startnewbroadcast": "Starte neuen Broadcast",
  	    "deletebroadcastdomain": "Lösche Broadcast-Domäne"
     },
@@ -205,7 +205,7 @@
         "attempt": "Versuch",
         "utc": "UTC",
         "adif": "ADIF",
-	"new": "neu",
+	    "new": "neu",
         "selectChat": "Bitte starte oder wähle einen Chat aus",
         "noConversations": "bislang noch kein Chat hier",
         "loadingMessages": "Lade Nachrichten..."
@@ -224,12 +224,12 @@
 	    "origin": "Herkunft",
 	    "gridsquare": "Gridsquare",
 	    "data": "Daten",
-	    "payload_size": "Nutzlast größe",
+	    "payload_size": "Nutzlastgröße",
 	    "bursts": "Bursts",
         "unread": "ungelesen",
         "unread_description": "Anzahl ungelesener Nachrichten",
-        "broadcasts": "broadcasts"
-        },
+        "broadcasts": "Broadcasts"
+    },
     "settings": {
         "enable": "Aktivieren",
         "default": "Standard",
