@@ -56,11 +56,12 @@
     <div class="row">
       <div class="col-7 text-truncate">
         <strong>{{ domain }}</strong>
+        <span class="badge bg-secondary ms-1 rounded-pill">
+            {{ details.message_count }}
+          </span>
         <br>
         <small class="text-muted d-inline-flex align-items-center gap-2">
-          <span class="badge bg-secondary rounded-pill">
-            {{ details.message_count }}&nbsp;{{ $t('broadcast.broadcasts') }}
-          </span>
+
           <span
             class="badge rounded-pill"
             :class="details.unread_count > 0 ? 'bg-danger' : 'bg-success'"
