@@ -23,10 +23,10 @@ async function transmitPing() {
   // Send Ping message
   await sendModemPing(dxcallPing.value.toUpperCase());
 
-  // Wait for 6 seconds (cooldown period)
+  // Wait for 3 seconds (cooldown period)
   setTimeout(() => {
     isPingButtonDisabled.value = false;
-  }, 6000);
+  }, 3000);
 }
 
 // Function to start or stop the beacon
@@ -53,7 +53,7 @@ async function handleSendCQ() {
   // Wait for 6 seconds (cooldown period)
   setTimeout(() => {
     isCQButtonDisabled.value = false;
-  }, 10000);
+  }, 3000);
 }
 
 // Listen for the stationSelected event and update dxcallPing
