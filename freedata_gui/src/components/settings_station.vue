@@ -114,16 +114,18 @@
         <i class="bi bi-question-circle" />
       </button>
     </span>
+
     <input
-      id="myGrid"
-      v-model="settings.remote.STATION.mygrid"
-      type="text"
-      class="form-control"
-      :placeholder="$t('settings.station.locator_placeholder')"
-      maxlength="6"
-      aria-label="Station Grid Locator"
-      @change="onChange"
-    >
+  id="myGrid"
+  v-model="settings.remote.STATION.mygrid"
+  type="text"
+  class="form-control"
+  :placeholder="$t('settings.station.locator_placeholder')"
+  maxlength="6"
+  aria-label="Station Grid Locator"
+  @change="checkGridsquare"
+/>
+
   </div>
 
   <!-- Respond to CQ Callings -->
@@ -220,13 +222,32 @@ import { onMounted } from "vue";
 import { settingsStore as settings, onChange, getRemote } from "../store/settingsStore.js";
 import { validateCallsignWithoutSSID } from "../js/freedata";
 import * as bootstrap from "bootstrap";
-
+import i18next from "../js/i18n";
 
 // Initialize Bootstrap tooltips
 onMounted(() => {
   const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
   [...tooltipTriggerList].forEach(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 });
+
+
+function checkGridsquare(e) {
+  let value = e.target.value.trim();
+  const regex = /^[A-Ra-r]{2}[0-9]{2}([A-Xa-x]{2})?$/;
+
+  if (regex.test(value)) {
+    let formatted =
+      value.substring(0, 2).toUpperCase() +
+      value.substring(2, 4) +
+      (value.length === 6 ? value.substring(4, 6).toLowerCase() : "");
+
+    settings.remote.STATION.mygrid = formatted;
+    onChange();
+  } else {
+    alert(i18next.t('settings.station.locator_error'));
+  }
+}
+
 
 // Function to validate and update callsign
 function validateCall() {

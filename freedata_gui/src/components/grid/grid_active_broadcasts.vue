@@ -25,10 +25,10 @@ async function transmitPing() {
   // Send Ping message
   await sendModemPing(dxcallPing.value.toUpperCase());
 
-  // Wait for 6 seconds (cooldown period)
+  // Wait for 3 seconds (cooldown period)
   setTimeout(() => {
     isPingButtonDisabled.value = false;
-  }, 6000);
+  }, 3000);
 }
 
 // Function to send CQ and handle button disable and cooldown
@@ -38,10 +38,10 @@ async function handleSendCQ() {
   // Send CQ message
   await sendModemCQ();
 
-  // Wait for 6 seconds (cooldown period)
+  // Wait for 3 seconds (cooldown period)
   setTimeout(() => {
     isCQButtonDisabled.value = false;
-  }, 10000);
+  }, 3000);
 }
 
 
