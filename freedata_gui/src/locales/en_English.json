@@ -242,6 +242,7 @@
             "callsignssid_help": "Set a SSID for this station",
             "locator": "Grid Locator / Maidenhead",
             "locator_help": "Enter a grid locator (Max 6 chars; shorter will randomize)",
+            "locator_error": "Enter a correct grid locator, like JN12ea or JN12!",
             "locator_placeholder": "Your grid locator",
             "respondtocq": "Respond to CQ callings with a QRV reply",
             "respondtocq_help": "QRV reply sent with random delay",
