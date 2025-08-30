@@ -65,13 +65,13 @@
       const sanitizedInput = DOMPurify.sanitize(marked.parse(broadcast.inputText));
       const base64data = btoa(sanitizedInput);
       const params = {
-      origin: settings.remote.STATION.mycall + '-' + settings.remote.STATION.myssid,
-      domain: broadcast.newDomain,
-      gridsquare: settings.remote.STATION.mygrid,
-      type: broadcast.newMessageType,
-      priority: broadcast.newPriority,
-      data: base64data
-    }
+    origin: settings.remote.STATION.mycall + '-' + settings.remote.STATION.myssid,
+    domain: broadcast.newDomain && broadcast.newDomain.trim() ? broadcast.newDomain : "GLOBAL-1",
+    gridsquare: settings.remote.STATION.mygrid,
+    type: broadcast.newMessageType && broadcast.newMessageType.trim() ? broadcast.newMessageType : "MESSAGE",
+    priority: 1,
+    data: base64data
+  };
 
      newBroadcastMessage(params);
      setTimeout(() => {
@@ -856,6 +856,7 @@ const beaconHistogramData = computed(() => ({
           </div>
 
           <!-- Priority selection -->
+          <!--
           <div class="mb-3">
             <label for="prioritySelect" class="form-label">Priority</label>
             <select
@@ -868,7 +869,7 @@ const beaconHistogramData = computed(() => ({
               <option value="2">High (2)</option>
             </select>
           </div>
-
+        -->
           <!-- Message content -->
           <div class="mb-3">
             <label for="messageTextarea" class="form-label">Message</label>

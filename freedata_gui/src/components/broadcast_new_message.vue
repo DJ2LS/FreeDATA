@@ -73,6 +73,7 @@ function applyMarkdown(formatType) {
       <div class="input-group bottom-0 ms-2">
 
         <!-- Emoji Button -->
+        <!--
         <button
           v-if="!isMobile"
           type="button"
@@ -86,7 +87,7 @@ function applyMarkdown(formatType) {
         </button>
 
         <div v-if="!isMobile" class="vr mx-2" />
-
+        -->
         <!-- Markdown Buttons -->
         <button
           v-if="!isMobile"
