@@ -23,7 +23,7 @@ def validate_gridsquare(value: str):
     return raw[0:2].upper() + raw[2:4] + (raw[4:6].lower() if len(raw) == 6 else "")
 
 
-def validate_callsign(value: str):
+def validate_freedata_callsign(value: str):
     """
     Validate a ham radio callsign.
 
@@ -60,7 +60,7 @@ def validate_remote_config(config: dict) -> bool:
 
     station = config["STATION"]
 
-    call = validate_callsign(station.get("mycall"))
+    call = validate_freedata_callsign(station.get("mycall"))
     grid = validate_gridsquare(station.get("mygrid"))
 
     if not call or not grid:
