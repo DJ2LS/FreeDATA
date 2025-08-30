@@ -9,38 +9,68 @@ validate_message_attachment: Validates that a message attachment (represented as
 
 import re
 
-def validate_remote_config(config):
-    """Validates the presence of a remote configuration.
+GRID_RE = re.compile(r'^[A-Ra-r]{2}[0-9]{2}([A-Xa-x]{2})?$')
+CALL_RE = re.compile(r'^[A-Z0-9]{1,7}(-[0-9]{1,3})?$', re.IGNORECASE)
 
-    This function checks if a remote configuration is present.
 
-    Args:
-        config: The configuration to validate.
+def validate_gridsquare(value: str):
+    """Validate and normalize a Maidenhead grid locator (4 or 6 characters)."""
+    if not value or not isinstance(value, str):
+        return None
+    raw = value.strip()
+    if not GRID_RE.match(raw):
+        return None
+    return raw[0:2].upper() + raw[2:4] + (raw[4:6].lower() if len(raw) == 6 else "")
 
-    Returns:
-        True if the configuration is present, None otherwise.
+
+def validate_callsign(value: str):
     """
-    if not config:
-        return
+    Validate a ham radio callsign.
+
+    Rules:
+      - Up to 7 alphanumeric characters for the base.
+      - Optional -SSID with a number 0–255.
+    """
+    if not value or not isinstance(value, str):
+        return None
+    raw = value.strip().upper()
+    match = CALL_RE.fullmatch(raw)
+    if not match:
+        return None
+
+    if "-" in raw:
+        base, ssid = raw.split("-", 1)
+        try:
+            ssid_num = int(ssid)
+            if 0 <= ssid_num <= 255:
+                return f"{base}-{ssid_num}"
+            return None
+        except ValueError:
+            return None
+    return raw
+
+
+def validate_remote_config(config: dict) -> bool:
+    """
+    Validate 'mycall' and 'mygrid' in STATION.
+    Returns False if either one is invalid.
+    """
+    if not config or "STATION" not in config:
+        return False
+
+    station = config["STATION"]
+
+    call = validate_callsign(station.get("mycall"))
+    grid = validate_gridsquare(station.get("mygrid"))
+
+    if not call or not grid:
+        return False
+
+    # Write back normalized values
+    station["mycall"] = call
+    station["mygrid"] = grid
     return True
 
-def validate_freedata_callsign(callsign):
-    """Validates a FreeData callsign.
-
-    This function checks if a given callsign conforms to the defined pattern.
-    Currently, the regular expression allows 1 to 7 alphanumeric characters
-    followed by a hyphen and 1 to 3 digits.  Note: This may require adjustment
-    to fully support all SSID values from 0 to 255.
-
-    Args:
-        callsign: The callsign to validate.
-
-    Returns:
-        True if the callsign is valid, False otherwise.
-    """
-    #regexp = "^[a-zA-Z]+\d+\w+-\d{1,2}$"
-    regexp = "^[A-Za-z0-9]{1,7}-[0-9]{1,3}$" # still broken - we need to allow all ssids form 0 - 255
-    return re.compile(regexp).match(callsign) is not None
 
 def validate_message_attachment(attachment):
     """Validates a message attachment.
