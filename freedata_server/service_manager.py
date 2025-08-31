@@ -80,7 +80,7 @@ class SM:
                     self.stop_radio_manager()
                     if self.ctx.config_manager.config['SOCKET_INTERFACE']['enable'] and self.ctx.socket_interface_manager:
                         self.ctx.socket_interface_manager.stop_servers()
-                        del self.ctx.socket_interface_manager
+                        self.ctx.socket_interface_manager = None
 
                     # we need to wait a bit for avoiding a portaudio crash
                     threading.Event().wait(0.5)
@@ -163,8 +163,7 @@ class SM:
         try:
             if self.ctx.rf_modem and hasattr(self.ctx, 'modem_service'):
                 self.ctx.rf_modem.stop_modem()
-                del self.ctx.rf_modem
-                self.ctx.rf_modem = False
+                self.ctx.rf_modem = None
         except AttributeError:
             pass
         self.ctx.state_manager.set("is_modem_running", False)
@@ -222,7 +221,7 @@ class SM:
         """
         if hasattr(self.ctx, 'radio_manager'):
             self.ctx.radio_manager.stop()
-            del self.ctx.radio_manager
+            self.ctx.radio_manager = None
 
     def shutdown(self):
         """Shuts down the service manager.
