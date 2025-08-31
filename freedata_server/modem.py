@@ -324,8 +324,10 @@ class RF:
         self.enqueuing_audio = True
         if not self.ctx.state_manager.isTransmitting():
             self.ctx.state_manager.setTransmitting(True)
-
-        self.ctx.radio_manager.set_ptt(True)
+        if self.ctx.radio_manager:
+            self.ctx.radio_manager.set_ptt(True)
+        else:
+            self.log.warning("Radio manager not yet initialized...should happen soon, some errors might occur")  #
 
         self.ctx.event_manager.send_ptt_change(True)
 
@@ -346,7 +348,12 @@ class RF:
         self.enqueuing_audio = False
         self.ctx.state_manager.transmitting_event.wait()
 
-        self.ctx.radio_manager.set_ptt(False)
+        if self.ctx.radio_manager:
+            self.ctx.radio_manager.set_ptt(False)
+        else:
+            self.log.warning("Radio manager not yet initialized...should happen soon, some errors might occur")  #
+
+
         self.ctx.event_manager.send_ptt_change(False)
 
         return

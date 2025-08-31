@@ -15,10 +15,10 @@ async function handleCQCall() {
   // Send CQ message
   await sendModemCQ();
 
-  // Wait for 6 seconds (cooldown period)
+  // Wait for 3 seconds (cooldown period)
   setTimeout(() => {
     isCQButtonDisabled.value = false;
-  }, 10000);
+  }, 3000);
 }
 
 

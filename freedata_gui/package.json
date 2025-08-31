@@ -1,6 +1,6 @@
 {
   "name": "FreeDATA",
-  "version": "0.17.6-beta",
+  "version": "0.17.7-beta",
   "description": "FreeDATA Client application for connecting to FreeDATA server",
   "private": true,
   "scripts": {
