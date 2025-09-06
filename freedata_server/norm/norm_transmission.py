@@ -15,12 +15,7 @@ class NORMMsgType(IntEnum):
     MESSAGE   = 1  # Generic text/data message
     POSITION  = 2  # GPS or grid locator info
     SITREP    = 3  # Situation report
-    PING      = 4  # Ping or keepalive
-    ACK       = 5  # Acknowledgement
-    COMMAND   = 6  # Control or remote command
-    STATUS    = 7  # System or device status
-    ALERT     = 8  # High-priority broadcast
-
+    METAR = 4       # METAR Message
 
 class NORMMsgPriority(IntEnum):
     LOW        = 0
