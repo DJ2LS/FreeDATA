@@ -5,6 +5,8 @@ import {
   getModemState,
   getRadioStatus,
   getSysInfo,
+    getFreedataDomains,
+    getFreedataBroadcastsPerDomain
 } from "./api";
 import { processFreedataMessages } from "./messagesHandler";
 import { processRadioStatus } from "./radioHandler";
@@ -21,6 +23,8 @@ const audioStore = useAudioStore(pinia);
 import { useSerialStore } from "../store/serialStore";
 const serialStore = useSerialStore(pinia);
 import { getRemote } from "../store/settingsStore";
+import { useBroadcastStore } from "../store/broadcastStore";
+const broadcast = useBroadcastStore(pinia);
 
 export async function loadAllData() {
   let stateData = await getModemState();
@@ -40,6 +44,8 @@ export async function loadAllData() {
   getRemote();
   getOverallHealth();
   getFreedataMessages();
+  getFreedataDomains();
+  getFreedataBroadcastsPerDomain(broadcast.selectedDomain)
   processFreedataMessages();
   processRadioStatus();
 }
@@ -105,9 +111,14 @@ export function eventDispatcher(data) {
   switch (data["message-db"]) {
     case "changed":
       console.log("fetching new messages...");
+        getFreedataDomains();
+        getFreedataBroadcastsPerDomain(broadcast.selectedDomain)
+
       var messages = getFreedataMessages();
       processFreedataMessages(messages);
       return;
+    default:
+      break;
   }
 
   switch (data.ptt) {
