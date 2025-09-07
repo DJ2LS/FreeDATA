@@ -1,4 +1,3 @@
-// METAR parsing, flight category, formatters, and wind compass SVG.
 
 export function parseMetar(raw) {
   const out = {
@@ -23,7 +22,10 @@ export function parseMetar(raw) {
 
   for (const t of tokens) {
     if (/^[A-Z]{3}$/.test(t)) { out.iata = t; break; }
+    if (/^[A-Z]{4}$/.test(t)) { out.iata = t; break; } // IACA override
   }
+
+
 
   const tTok = tokens.find(t => /^\d{6}Z$/.test(t));
   if (tTok) {
