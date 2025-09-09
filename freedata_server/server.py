@@ -4,37 +4,50 @@ import sys
 script_directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(script_directory)
 
-
 import threading
 import webbrowser
+from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request, Depends
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from contextlib import asynccontextmanager
-import structlog
 
+from log_handler import setup_logging
 from constants import CONFIG_ENV_VAR, DEFAULT_CONFIG_FILE, API_VERSION
 from context import AppContext
 
 import uvicorn
 
-logger = structlog.get_logger()
-# --- Set config file and initialize AppContext once at startup ---
-def set_config():
-    """Determine the configuration file to use."""
-    config_file = os.getenv(CONFIG_ENV_VAR, os.path.join(os.path.dirname(__file__), DEFAULT_CONFIG_FILE))
-    if os.path.exists(config_file):
-        logger.info(f"Using config from {config_file}")
-    else:
-        logger.error(f"Config file '{config_file}' not found. Exiting.")
-        sys.exit(1)
-    return config_file
 
-# create and start AppContext early so we can use ctx in __main__
-config_file = set_config()
+# --- Resolve config path FIRST (no logger needed yet) ---
+def resolve_config_path() -> str:
+    """
+    Determine the configuration file to use (env var or default next to this file).
+    Exits if not found.
+    """
+    candidate = os.getenv(
+        CONFIG_ENV_VAR,
+        os.path.join(os.path.dirname(__file__), DEFAULT_CONFIG_FILE),
+    )
+    if not os.path.exists(candidate):
+        # We cannot log to file yet since we don't know the directory; write to stderr.
+        sys.stderr.write(f"[FATAL] Config file not found: {candidate}\n")
+        sys.exit(1)
+    return os.path.abspath(candidate)
+
+
+config_file = resolve_config_path()
+
+# --- Logging setup: log file MUST be in the same directory as the config file ---
+config_dir = os.path.dirname(config_file)
+log_file = os.path.join(config_dir, "freedata_server.log")
+logger = setup_logging(filename=log_file, level="INFO")
+logger.info("Using config", file=config_file, log_file=log_file)
+
+# --- AppContext startup ---
 ctx = AppContext(config_file)
 ctx.startup()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -69,6 +82,7 @@ async def nocache(request: Request, call_next):
     response = await call_next(request)
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private"
     response.headers["Pragma"] = "no-cache"
+    # structlog stdlib logger akzeptiert %-Formatierung; alternativ key/value:
     logger.info("[API] %s %s → %d", request.method, request.url.path, response.status_code)
     return response
 
@@ -102,6 +116,7 @@ app.include_router(modem_router, prefix="/modem", tags=["Modem"])
 app.include_router(freedata_router, prefix="/freedata", tags=["FreeDATA"])
 app.include_router(websocket_router, prefix="", tags=["WebSocket"])
 
+
 def open_browser_after_delay(url, delay=2):
     """Opens the specified URL in a web browser after a delay.
 
@@ -131,7 +146,7 @@ if __name__ == "__main__":
         logger.info("                                                   ")
         logger.info("---------------------------------------------------")
 
-        if ctx.config_manager.config['GUI'].get('auto_run_browser', True):
-            threading.Thread(target=open_browser_after_delay, args=(url, 2)).start()
+        if ctx.config_manager.config.get('GUI', {}).get('auto_run_browser', True):
+            threading.Thread(target=open_browser_after_delay, args=(url, 2), daemon=True).start()
 
     uvicorn.run(app, host=host, port=port, log_config=None, log_level="info")
