@@ -24,7 +24,7 @@ const state = useStateStore(pinia);
       'col-lg-auto'
     ]"
   >
-    <div class="col-lg-8 col-md-9 col-sm-10 col-xs-11 col-8">
+    <div class="col-lg-8 col-md-9 col-sm-10 col-xs-11 col-9">
       <div
         class="btn-toolbar"
         role="toolbar"
@@ -168,7 +168,7 @@ const state = useStateStore(pinia);
           </button>
 
           <button
-            class="btn btn-sm btn-secondary disabled"
+            class="btn btn-sm btn-secondary disabled d-none d-lg-inline-block"
             type="button"
             data-bs-placement="top"
             data-bs-toggle="tooltip"
@@ -189,7 +189,7 @@ const state = useStateStore(pinia);
             data-bs-html="true"
             :data-bs-title="state.dxcallsign || '-----'"
           >
-            {{ state.dxcallsign || '-----' }}
+            <small>{{ state.dxcallsign || '-----' }}</small>
           </button>
         </div>
       </div>

@@ -59,7 +59,7 @@
               v-if="details.unread_messages > 0"
               class="ms-1 badge bg-danger"
             >
-              {{ details.unread_messages }} {{ $t('chat.new') }}
+              {{ $t('chat.new') }}
             </span>
             <br>
             <small>{{ sanitizeBody(details.body.substring(0, 35) + '...') || "\u003Cfile\u003E" }}</small>
