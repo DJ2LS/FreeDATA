@@ -44,6 +44,9 @@
 #
 #
 # Changelog:
+# 2.8:	16 Sep 2025
+#	Add initial support for Debian 13
+#
 # 2.7:	14 Sep 2025 (deej)
 #	Add comment that this script will also update FreeDATA
 #
@@ -155,7 +158,7 @@ echo "*************************************************************************"
 case $osname in
    "Debian GNU/Linux")
 	case $osversion in
-	   "11" | "12")
+	   "11" | "12" | "13")
 		sudo apt install --upgrade -y fonts-noto-color-emoji git build-essential cmake python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama python3-venv wget python3-dev
 	   ;;
 
