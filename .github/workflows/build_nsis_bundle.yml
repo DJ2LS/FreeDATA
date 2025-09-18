@@ -9,15 +9,15 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v5
 
-      - name: Set up Python 3.11
+      - name: Set up Python 3.13
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.13"
 
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
 
       - name: Vue Builder
         working-directory: freedata_gui
@@ -39,7 +39,7 @@ jobs:
           fileName: "hamlib-w64-*.zip"
           # latest: true
           extract: true
-          tag: '4.5.5'
+          tag: '4.6.5'
           out-file-path: "freedata_server/lib/hamlib"
 
       - name: Move Hamlib Files
@@ -76,7 +76,7 @@ jobs:
         run: ls -R
 
       - name: Create installer
-        uses: joncloud/makensis-action@v4.1
+        uses: joncloud/makensis-action@v5.0
         with:
           script-file: "freedata-nsis-config.nsi"
           arguments: '/V3'
