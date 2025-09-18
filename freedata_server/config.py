@@ -43,6 +43,7 @@ class CONFIG:
             'stop_bits': int,
             'serial_handshake': str,
             'ptt_port': str,
+            'ptt_mode': str,
             'ptt_type': str,
             'serial_dcd': str,
             'serial_dtr': str,

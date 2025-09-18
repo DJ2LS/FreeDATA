@@ -2,6 +2,14 @@ import socket
 import structlog
 import helpers
 import threading
+from enum import IntEnum
+
+class PTTMode(IntEnum):
+    RX = 0
+    TX = 1
+    TX_MIC = 2
+    TX_DATA = 3
+
 
 class radio:
     """Controls a radio using rigctld.
@@ -32,6 +40,7 @@ class radio:
         self.ctx = ctx
         self.hostname = self.ctx.config_manager.config['RIGCTLD']['ip']
         self.port = self.ctx.config_manager.config['RIGCTLD']['port']
+        self.ptt_mode = self.ctx.config_manager.config['RADIO']['ptt_mode']
         self.timeout = 3
         self.rigctld_process = None
         self.max_connection_attempts = 60
@@ -228,34 +237,32 @@ class radio:
 
         return command
 
-
     def set_ptt(self, state):
-        """Set the PTT (Push-to-Talk) state.
 
-        Args:
-            state (bool): True to enable PTT, False to disable.
+        if not self.connected:
+            return False
+        try:
+            if state:
+                try:
+                    ptt_mode = int(PTTMode[self.ptt_mode])
+                except Exception:
+                    self.log.warning("[RIGCTLD] Invalid or unset ptt_mode, falling back to TX (1)")
+                    ptt_mode = PTTMode.TX
+            else:
+                ptt_mode = PTTMode.RX
 
-        Returns:
-            bool: True if the PTT state was set successfully, False otherwise.
-        """
-        if self.connected:
-            try:
+            command = self.insert_vfo(f"T {int(ptt_mode)}")
+            self.send_command(command)
 
-                if state:
-                    command = 'T 1'
-                else:
-                    command = 'T 0'
+            # Parameter-Update
+            self.parameters['ptt'] = (ptt_mode in (PTTMode.TX, PTTMode.TX_MIC, PTTMode.TX_DATA))
 
-                command = self.insert_vfo(command)
-                self.send_command(command)
-
-
-                self.parameters['ptt'] = state  # Update PTT state in parameters
-                return True
-            except Exception as err:
-                self.log.warning(f"[RIGCTLD] Error setting PTT state: {err}")
-                self.connected = False
-        return False
+            self.log.info(f"[RIGCTLD] Setting PTT: {ptt_mode.name} ({int(ptt_mode)})")
+            return True
+        except Exception as err:
+            self.log.warning(f"[RIGCTLD] Error setting PTT: {err}")
+            self.connected = False
+            return False
 
     def set_mode(self, mode):
         """Set the mode.
@@ -693,6 +700,9 @@ class radio:
         if not should_ignore(config.get('serial_dtr')):
             args += ['--set-conf', f'dtr_state={config["serial_dtr"]}']
 
+        if not should_ignore(config.get('serial_rts')):
+            args += ['--set-conf', f'rts_state={config["serial_rts"]}']
+
         # Handling Data Bits and Stop Bits
         if not should_ignore(config.get('data_bits')):
             args += ['--set-conf', f'data_bits={config["data_bits"]}']
@@ -701,10 +711,6 @@ class radio:
 
         if self.ctx.config_manager.config['RIGCTLD']['enable_vfo']:
             args += ['--vfo']
-
-        # Fixme        #rts_state
-        # if not should_ignore(config.get('rts_state')):
-        #    args += ['--set-conf', f'stop_bits={config["rts_state"]}']
 
         # Handle custom arguments for rigctld
         # Custom args are split via ' ' so python doesn't add extranaeous quotes on windows
