@@ -81,8 +81,6 @@ jobs:
             --include-data-dir=lib=lib `
             --include-data-dir=../freedata_gui/dist=gui `
             --include-data-files=lib/codec2/*=lib/codec2/ `
-            --include-data-files=lib/hamlib/bin/*.exe=lib/hamlib/bin/ `
-            --include-data-files=lib/hamlib/bin/*.dll=lib/hamlib/bin/ `
             --include-data-files=config.ini.example=config.ini `
             --standalone server.py `
             --output-filename=freedata-server `
