@@ -12,7 +12,7 @@ jobs:
         include:
           - os: ubuntu-24.04
             zip_name: freedata-server_ubuntu
-            generator: Unix Makefiles
+           #generator: Unix Makefiles
             modem_binary_name: freedata_server
 
           #- os: macos-latest
@@ -22,7 +22,7 @@ jobs:
 
           - os: windows-latest
             zip_name: freedata-server_windows
-            generator: Visual Studio 16 2019
+            #generator: Visual Studio 17 2022
             modem_binary_name: freedata_server.exe
 
     steps:
@@ -42,10 +42,10 @@ jobs:
           npm i
           npm run build
 
-      - name: Set up Python 3.13
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.12"
 
       - name: Install Linux dependencies
         if: ${{startsWith(matrix.os, 'ubuntu')}}
