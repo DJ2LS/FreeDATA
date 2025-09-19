@@ -70,7 +70,6 @@ jobs:
             --standalone server.py `
             --output-filename=freedata-server `
             --low-memory
-
         shell: pwsh
 
 
