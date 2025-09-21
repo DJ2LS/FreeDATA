@@ -2,7 +2,6 @@ from message_system_db_manager import DatabaseManager
 from message_system_db_model import MessageAttachment, Attachment, P2PMessage
 import json
 import hashlib
-import os
 
 class DatabaseManagerAttachments(DatabaseManager):
     """Manages database operations for message attachments.
