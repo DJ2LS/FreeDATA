@@ -1,6 +1,3 @@
-# database_manager.py
-import sqlite3
-
 from sqlalchemy import create_engine, text, inspect
 from sqlalchemy.orm import scoped_session, sessionmaker
 from threading import local
