@@ -2,9 +2,7 @@ from datetime import datetime, timezone
 import api_validations
 import base64
 import json
-from message_system_db_manager import DatabaseManager
 from message_system_db_messages import DatabaseManagerMessages
-#import command_message_send
 
 
 def message_received(ctx, data, statistics):

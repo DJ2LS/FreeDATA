@@ -1,10 +1,6 @@
 from message_system_db_manager import DatabaseManager
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
-from threading import local
-from message_system_db_model import Base, Beacon, Station, Status, Attachment, P2PMessage
+from message_system_db_model import Beacon, Station
 from datetime import timezone, timedelta, datetime
-import os
 
 class DatabaseManagerBeacon(DatabaseManager):
     """Manages database operations for beacon signals.
