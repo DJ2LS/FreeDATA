@@ -43,6 +43,7 @@ const defaultConfig = {
       serial_handshake: "",
       ptt_port: "",
       ptt_type: "",
+        ptt_mode: "",
       serial_dcd: "",
       serial_dtr: "",
       serial_rts: "",
