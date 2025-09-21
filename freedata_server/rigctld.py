@@ -422,7 +422,7 @@ class radio:
     def dump_caps(self):
         """Dumps rigctld capabilities.
 
-        This method sends the '\dump_caps' command to rigctld and prints
+        This method sends the '\\dump_caps' command to rigctld and prints
         the response. It is used for debugging and informational
         purposes. It handles potential errors during command execution.
         """
@@ -437,7 +437,7 @@ class radio:
         """Checks for VFO support.
 
         This method checks if the connected radio supports VFO by sending
-        the '\chk_vfo' command to rigctld. It updates the 'chk_vfo'
+        the '\\chk_vfo' command to rigctld. It updates the 'chk_vfo'
         parameter accordingly and handles potential errors during the
         check.
         """
