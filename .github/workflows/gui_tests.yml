@@ -20,6 +20,7 @@ jobs:
           #- node-version: "18" # EOL
           - node-version: "20"
           - node-version: "22"
+          - node-version: "24"
 
     steps:
       - uses: actions/checkout@v5

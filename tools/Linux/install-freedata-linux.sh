@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# Simple script to install FreeDATA in Linux
-# Dj Merrill - N1JOV
+# Simple script to install and also update FreeDATA in Linux
+# To update FreeDATA, simply re-run the script in the same location
 #
 # Please note this script is not meant to cover all possible installations
 # but hopefully can be used as a guide if you are installing on other 
@@ -40,8 +40,16 @@
 # FreeDATA config file is stored in $HOME/.config/FreeDATA/config.ini
 # See the run-freedata-linux.sh for more details
 #
+# Dj Merrill - N1JOV
+#
 #
 # Changelog:
+# 2.8:	16 Sep 2025
+#	Add initial support for Debian 13
+#
+# 2.7:	14 Sep 2025 (deej)
+#	Add comment that this script will also update FreeDATA
+#
 # 2.6:	02 May 2025 (deej)
 # 	Allow any Hamlib released version as a second command line argument.
 #	Note this requires specifying the FreeDATA branch as the
@@ -150,7 +158,7 @@ echo "*************************************************************************"
 case $osname in
    "Debian GNU/Linux")
 	case $osversion in
-	   "11" | "12")
+	   "11" | "12" | "13")
 		sudo apt install --upgrade -y fonts-noto-color-emoji git build-essential cmake python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama python3-venv wget python3-dev
 	   ;;
 
