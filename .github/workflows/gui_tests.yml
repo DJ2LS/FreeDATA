@@ -20,9 +20,10 @@ jobs:
           #- node-version: "18" # EOL
           - node-version: "20"
           - node-version: "22"
+          - node-version: "24"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v4
         with:
