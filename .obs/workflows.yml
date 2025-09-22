@@ -1,0 +1,51 @@
+# .obs/workflows.yml
+# OBS SCM/CI workflow for FreeDATA
+# - develop branch -> package freedata-dev (on every push)
+# - release tags v* -> package freedata (only on tags)
+# - pushes to main  -> no build
+
+workflow:
+  version: 1
+
+  steps:
+    # === develop branch (dev builds on every push) ===
+    - branch_package:
+        source_project: home:DJ2LS:FreeDATA
+        source_package: freedata
+        target_project: home:DJ2LS:FreeDATA
+        target_package: freedata-dev
+      filters:
+        event: push
+        branches:
+          only:
+            - develop
+
+    - trigger_services:
+        project: home:DJ2LS:FreeDATA
+        package: freedata-dev
+      filters:
+        event: push
+        branches:
+          only:
+            - develop
+
+    # === release tags (build only for tags, e.g. v1.2.3) ===
+    - branch_package:
+        source_project: home:DJ2LS:FreeDATA
+        source_package: freedata
+        target_project: home:DJ2LS:FreeDATA
+        target_package: freedata
+      filters:
+        event: tag_push
+        branches:
+          only:
+            - "v*"
+
+    - trigger_services:
+        project: home:DJ2LS:FreeDATA
+        package: freedata
+      filters:
+        event: tag_push
+        branches:
+          only:
+            - "v*"
