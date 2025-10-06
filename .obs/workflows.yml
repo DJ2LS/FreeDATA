@@ -10,9 +10,9 @@ workflow:
   steps:
     # === develop branch (dev builds on every push) ===
     - branch_package:
-        source_project: home:DJ2LS:FreeDATA
+        source_project: home:DJ2LS
         source_package: freedata
-        target_project: home:DJ2LS:FreeDATA
+        target_project: home:DJ2LS
         target_package: freedata-dev
       filters:
         event: push
@@ -21,7 +21,7 @@ workflow:
             - develop
 
     - trigger_services:
-        project: home:DJ2LS:FreeDATA
+        project: home:DJ2LS
         package: freedata-dev
       filters:
         event: push
@@ -31,9 +31,9 @@ workflow:
 
     # === release tags (build only for tags, e.g. v1.2.3) ===
     - branch_package:
-        source_project: home:DJ2LS:FreeDATA
+        source_project: home:DJ2LS
         source_package: freedata
-        target_project: home:DJ2LS:FreeDATA
+        target_project: home:DJ2LS
         target_package: freedata
       filters:
         event: tag_push
@@ -42,7 +42,7 @@ workflow:
             - "v*"
 
     - trigger_services:
-        project: home:DJ2LS:FreeDATA
+        project: home:DJ2LS
         package: freedata
       filters:
         event: tag_push
