@@ -62,7 +62,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install .[nuitka]
 
       - name: Add MacOS certs
         if: ${{startsWith(matrix.os, 'macos')}}
