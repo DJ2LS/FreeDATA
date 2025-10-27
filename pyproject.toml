@@ -65,14 +65,18 @@ test = [
     "pick",
 ]
 dev = [
+    "freedata[test]",
     "autopep8",
     "black",
     "isort",
     "pycodestyle",
 ]
 build = [
+    "build",
+    "wheel",
+]
+nuitka = [
     "nuitka<=2.7.16",
-    "pyinstaller",
 ]
 
 [tool.setuptools.packages.find]
