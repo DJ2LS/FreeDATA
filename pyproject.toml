@@ -16,7 +16,7 @@ keywords = [
     "freedata",
     "codec2",
 ]
-classifier = [
+classifiers = [
     # See https://pypi.org/classifiers/
     "Development Status :: 4 - Beta",
     "Environment :: Web Environment",
