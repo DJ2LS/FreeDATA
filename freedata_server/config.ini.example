@@ -42,6 +42,7 @@ data_bits = 8
 stop_bits = 1
 serial_handshake = ignore
 ptt_port = ignore
+ptt_mode = TX
 ptt_type = USB
 serial_dcd = NONE
 serial_dtr = OFF
