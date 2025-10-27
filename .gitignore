@@ -5,7 +5,6 @@ freedata_server/codec2
 **/build
 **/Testing
 
-package-lock.json
 .DS_Store
 
 # Other various files and virtual environments

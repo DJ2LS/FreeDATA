@@ -13,7 +13,7 @@ setup(
     packages=find_packages(where='.'),
     package_dir={'': '.'},
     install_requires=required,
-    python_requires='>=3.9',
+    python_requires='>=3.10',
     author='DJ2LS',
     author_email='dj2ls@proton.me',
     description='INFO: THIS PACKAGE IS NOT YET WORKING - PLEASE USE THE OFFICIAL SCRIPT BASED SETUP',
