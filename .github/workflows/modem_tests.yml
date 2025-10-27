@@ -18,7 +18,7 @@ jobs:
         include:
           #- python-version: "3.7" EOL
           #- python-version: "3.8" EOL
-          - python-version: "3.9"
+          #- python-version: "3.9" EOL
           - python-version: "3.10"
           - python-version: "3.11"
           - python-version: "3.12"
