@@ -1,7 +1,7 @@
 # Module for saving some constants
 CONFIG_ENV_VAR = 'FREEDATA_CONFIG'
 DEFAULT_CONFIG_FILE = 'config.ini'
-MODEM_VERSION = "0.17.7-beta"
+MODEM_VERSION = "0.17.8-beta"
 API_VERSION = 3
 ARQ_PROTOCOL_VERSION = 1
 LICENSE = 'GPL3.0'

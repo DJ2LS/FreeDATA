@@ -5,7 +5,6 @@ from message_system_db_station import DatabaseManagerStations
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timedelta
 import json
-import os
 from exceptions import MessageStatusError
 
 class DatabaseManagerMessages(DatabaseManager):

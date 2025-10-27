@@ -1,5 +1,3 @@
-# models.py
-
 from sqlalchemy import Index, Boolean, Column, String, Integer, JSON, ForeignKey, DateTime
 from sqlalchemy.orm import declarative_base, relationship
 

@@ -1,9 +1,6 @@
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from message_system_db_model import Station
 from message_system_db_manager import DatabaseManager
-import os
-
 
 class DatabaseManagerStations(DatabaseManager):
     """Manages database operations for stations.

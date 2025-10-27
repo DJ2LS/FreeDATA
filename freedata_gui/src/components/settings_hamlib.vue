@@ -736,6 +736,46 @@ const settings = ref({
       </select>
     </div>
 
+        <!-- PTT MODE -->
+    <div class="input-group input-group-sm mb-1">
+      <label class="input-group-text w-50 text-wrap">
+        {{ $t('settings.radio.hamlibrigctldpttmode') }}
+        <button
+          type="button"
+          class="btn btn-link p-0 ms-2"
+          data-bs-toggle="tooltip"
+          :title="$t('settings.radio.hamlibrigctldpttmode')"
+        >
+          <i class="bi bi-question-circle" />
+        </button>
+      </label>
+      <select
+        id="dtrSelect"
+        v-model="settings.remote.RADIO.ptt_mode"
+        class="form-select form-select-sm w-50"
+        @change="onChange"
+      >
+        <option
+          selected
+          value="ignore"
+        >
+          -- ignore --
+        </option>
+        <option value="TX">
+          TX
+        </option>
+        <option value="TX_MIC">
+          TX_MIC
+        </option>
+        <option value="TX_DATA">
+          TX_DATA
+        </option>
+      </select>
+    </div>
+
+
+
+
     <!-- DCD -->
     <div class="input-group input-group-sm mb-1">
       <label class="input-group-text w-50 text-wrap">
@@ -798,6 +838,40 @@ const settings = ref({
       <select
         id="dtrSelect"
         v-model="settings.remote.RADIO.serial_dtr"
+        class="form-select form-select-sm w-50"
+        @change="onChange"
+      >
+        <option
+          selected
+          value="ignore"
+        >
+          -- ignore --
+        </option>
+        <option value="OFF">
+          OFF
+        </option>
+        <option value="ON">
+          ON
+        </option>
+      </select>
+    </div>
+
+        <!-- RTS -->
+    <div class="input-group input-group-sm mb-1">
+      <label class="input-group-text w-50 text-wrap">
+        {{ $t('settings.radio.hamlibrigctldrts') }}
+        <button
+          type="button"
+          class="btn btn-link p-0 ms-2"
+          data-bs-toggle="tooltip"
+          :title="$t('settings.radio.hamlibrigctldrts_help')"
+        >
+          <i class="bi bi-question-circle" />
+        </button>
+      </label>
+      <select
+        id="rtsSelect"
+        v-model="settings.remote.RADIO.serial_rts"
         class="form-select form-select-sm w-50"
         @change="onChange"
       >
