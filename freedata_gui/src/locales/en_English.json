@@ -231,7 +231,11 @@
             "colormode_help": "Set the GUI color mode",
             "colormodelight": "light",
             "colormodedark": "dark",
-            "colormodeauto": "auto"
+            "colormodeauto": "auto",
+            "distanceunit": "Distance Unit",
+            "distanceunit_help": "Select the preferred distance unit",
+            "distanceunitkilometers": "Kilometers",
+            "distanceunitmiles": "Miles"
         },
         "station": {
             "introduction": "Station related settings, like changing your callsign, location and general behaviour.",

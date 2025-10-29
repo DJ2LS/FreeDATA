@@ -32,7 +32,13 @@ function getDateTime(timestampRaw) {
 
 function getMaidenheadDistance(dxGrid) {
   try {
-    return parseInt(distance(settings.remote.STATION.mygrid, dxGrid));
+    const distanceKm = parseInt(distance(settings.remote.STATION.mygrid, dxGrid));
+
+    if (settings.remote.GUI.distance_unit === "mi") {
+       return Math.round(distanceKm * 0.621371)
+    }
+
+    return distanceKm;
   } catch (e) {
     //
   }
@@ -202,7 +208,7 @@ function transmitPing(callsign) {
               <td>
                 <small>{{ item.gridsquare }}</small>
               </td>
-              <td><small>{{ getMaidenheadDistance(item.gridsquare) }} km</small></td>
+              <td><small>{{ getMaidenheadDistance(item.gridsquare) }} {{settings.remote.GUI.distance_unit}}</small></td>
               <td>
                 <i
                   :class="getActivityInfo(item.activity_type).iconClass"
