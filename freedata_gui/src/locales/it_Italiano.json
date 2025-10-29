@@ -231,7 +231,11 @@
             "colormode_help": "Definisci il colore della GUI",
             "colormodelight": "light",
             "colormodedark": "dark",
-            "colormodeauto": "auto"
+            "colormodeauto": "auto",
+            "distanceunit": "Unità di distanza",
+            "distanceunit_help": "Seleziona l'unità di distanza preferita",
+            "distanceunitkilometers": "Chilometri",
+            "distanceunitmiles": "Miglia"
         },
         "station": {
             "introduction": "Configurazione relativa alla stazione, quale nominativo, localizzazione e comportamento generale.",

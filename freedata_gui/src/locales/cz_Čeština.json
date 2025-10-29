@@ -211,7 +211,11 @@
             "selectlanguage": "Zvolte jazyk",
             "selectlanguage_help": "Nastaví preferovaný jazyk pro GUI",
             "waterfalltheme": "Téma vodopádu",
-            "waterfalltheme_help": "Nastaví barevné téma pro vodopád"
+            "waterfalltheme_help": "Nastaví barevné téma pro vodopád",
+            "distanceunit": "Jednotka vzdálenosti",
+            "distanceunit_help": "Vyberte preferovanou jednotku vzdálenosti",
+            "distanceunitkilometers": "Kilometry",
+            "distanceunitmiles": "Míle"
         },
         "station": {
             "introduction": "Nastavení stanice, volací značka, lokátor a základní chování.\n",
