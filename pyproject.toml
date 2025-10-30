@@ -1,0 +1,77 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "freedata"
+dynamic = ["version"]
+authors = [
+    {name = "DJ2LS", email = "dj2ls@proton.me"}
+]
+description = "A versatile, open-source platform designed specifically for HF communications, leveraging Codec2 data modes for robust global digital communication."
+readme = "README.md"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
+keywords = [
+    "freedata",
+    "codec2",
+]
+classifier = [
+    # See https://pypi.org/classifiers/
+    "Development Status :: 4 - Beta",
+    "Environment :: Web Environment",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Communications :: Ham Radio",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "psutil",
+    "PyAudio",
+    "pyserial",
+    "sounddevice",
+    "structlog",
+    "requests",
+    "chardet",
+    "colorama",
+    "ordered-set",
+    "nuitka<=2.7.16",
+    "pyinstaller",
+    "websocket-client",
+    "fastapi[standard]",
+    "uvicorn[standard]",
+]
+
+[project.urls]
+Homepage = "https://freedata.app"
+Documentation = "https://wiki.freedata.app"
+Repository = "https://github.com/DJ2LS/FreeDATA"
+Tracker = "https://github.com/DJ2LS/FreeDATA/issues"
+
+[project.scripts]
+freedata = "freedata_server.server:main"
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-cov",
+    "pytest-rerunfailures",
+    "pick",
+    "sqlalchemy",
+]
+dev = [
+    "autopep8",
+    "black",
+    "isort",
+    "pycodestyle",
+]
+
+[tool.pytest.ini_options]
+testpaths = [ "tests" ]
