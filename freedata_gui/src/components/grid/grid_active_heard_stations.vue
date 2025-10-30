@@ -38,6 +38,10 @@ function getMaidenheadDistance(dxGrid) {
        return Math.round(distanceKm * 0.621371)
     }
 
+    if (settings.remote.GUI.distance_unit === "nm") {
+       return Math.round(distanceKm * 0.539957)
+    }
+
     return distanceKm;
   } catch (e) {
     //

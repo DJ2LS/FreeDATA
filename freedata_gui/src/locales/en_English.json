@@ -235,7 +235,8 @@
             "distanceunit": "Distance Unit",
             "distanceunit_help": "Select the preferred distance unit",
             "distanceunitkilometers": "Kilometers",
-            "distanceunitmiles": "Miles"
+            "distanceunitmiles": "Miles",
+            "distanceunitnauticalmiles": "Nautical Miles"
         },
         "station": {
             "introduction": "Station related settings, like changing your callsign, location and general behaviour.",

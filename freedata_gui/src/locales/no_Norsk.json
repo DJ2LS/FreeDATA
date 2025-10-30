@@ -232,7 +232,8 @@
             "distanceunit": "Avstandsenhet",
             "distanceunit_help": "Velg foretrukket avstandsenhet",
             "distanceunitkilometers": "Kilometer",
-            "distanceunitmiles": "Miles"
+            "distanceunitmiles": "Miles",
+            "distanceunitnauticalmiles": "Nautiske miles"
         },
         "station": {
             "introduction": "Stasjonsrelaterte innstillinger, som å endre kallesignal, plassering og generell oppførsel.",

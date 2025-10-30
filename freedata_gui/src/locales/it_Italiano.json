@@ -235,7 +235,8 @@
             "distanceunit": "Unità di distanza",
             "distanceunit_help": "Seleziona l'unità di distanza preferita",
             "distanceunitkilometers": "Chilometri",
-            "distanceunitmiles": "Miglia"
+            "distanceunitmiles": "Miglia",
+            "distanceunitnauticalmiles": "Miglia nautiche"
         },
         "station": {
             "introduction": "Configurazione relativa alla stazione, quale nominativo, localizzazione e comportamento generale.",

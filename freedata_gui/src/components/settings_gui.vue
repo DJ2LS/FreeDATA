@@ -176,6 +176,9 @@
       <option value="mi">
         {{ $t('settings.gui.distanceunitmiles') }}
       </option>
+      <option value="nm">
+        {{ $t('settings.gui.distanceunitnauticalmiles') }}
+      </option>
     </select>
   </div>
 </template>

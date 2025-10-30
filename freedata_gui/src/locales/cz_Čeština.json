@@ -215,7 +215,8 @@
             "distanceunit": "Jednotka vzdálenosti",
             "distanceunit_help": "Vyberte preferovanou jednotku vzdálenosti",
             "distanceunitkilometers": "Kilometry",
-            "distanceunitmiles": "Míle"
+            "distanceunitmiles": "Míle",
+            "distanceunitnauticalmiles": "Námořní míle"
         },
         "station": {
             "introduction": "Nastavení stanice, volací značka, lokátor a základní chování.\n",
