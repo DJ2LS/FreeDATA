@@ -86,6 +86,7 @@ class CONFIG:
 
         'GUI': {
             'auto_run_browser': bool,
+            'distance_unit': str,
         },
         'EXP': {
             'enable_ring_buffer': bool,
