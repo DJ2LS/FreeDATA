@@ -132,7 +132,7 @@ def open_browser_after_delay(url, delay=2):
     webbrowser.open(url, new=0, autoraise=True)
 
 
-if __name__ == "__main__":
+def main():
     host = ctx.config_manager.config.get('NETWORK', {}).get('modemaddress') or '0.0.0.0'
     port = int(ctx.config_manager.config.get('NETWORK', {}).get('modemport', 5000))
 
@@ -150,3 +150,6 @@ if __name__ == "__main__":
             threading.Thread(target=open_browser_after_delay, args=(url, 2), daemon=True).start()
 
     uvicorn.run(app, host=host, port=port, log_config=None, log_level="info")
+
+if __name__ == "__main__":
+    sys.exit(main())
