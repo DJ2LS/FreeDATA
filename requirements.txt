@@ -8,7 +8,7 @@ requests
 chardet
 colorama
 ordered-set
-nuitka<=2.7.16
+nuitka<=2.8.4
 pyinstaller
 websocket-client
 fastapi[standard]
