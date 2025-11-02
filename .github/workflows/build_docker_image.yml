@@ -25,7 +25,7 @@ jobs:
 
       # Upload the image tarball as an artifact.
       - name: Upload Docker image artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: freedata-image
           path: freedata.tar
