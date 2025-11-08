@@ -231,7 +231,12 @@
       "colormode_help": "Stel de GUI kleurmodus in",
       "colormodelight": "licht",
       "colormodedark": "donker",
-      "colormodeauto": "automatisch"
+      "colormodeauto": "automatisch",
+      "distanceunit": "Afstandeenheid",
+      "distanceunit_help": "Selecteer de voorkeurseenheid voor afstanden",
+      "distanceunitkilometers": "Kilometers",
+      "distanceunitmiles": "Mijlen",
+      "distanceunitnauticalmiles": "Nautische Mijlen"
     },
     "station": {
       "introduction": "Station gerelateerde instellingen, zoals het wijzigen van uw roepnaam, locatie en algemeen gedrag.",

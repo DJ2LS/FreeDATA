@@ -231,7 +231,12 @@
             "colormode_help": "Farbmodus der GUI einstellen",
             "colormodelight": "hell",
             "colormodedark": "dunkel",
-            "colormodeauto": "auto"
+            "colormodeauto": "auto",
+            "distanceunit": "Entfernungseinheit",
+            "distanceunit_help": "Wählen Sie die bevorzugte Entfernungseinheit aus",
+            "distanceunitkilometers": "Kilometer",
+            "distanceunitmiles": "Meilen",
+            "distanceunitnauticalmiles": "Nautische Meilen"
          },
         "station": {
             "introduction": "Stationsbezogene Einstellungen, wie das Ändern des Rufzeichens, des Standorts und des allgemeinen Verhaltens.",
