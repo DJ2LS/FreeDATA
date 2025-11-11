@@ -42,8 +42,7 @@ dependencies = [
     "chardet",
     "colorama",
     "ordered-set",
-    "nuitka<=2.8.4",
-    "pyinstaller",
+    "sqlalchemy",
     "websocket-client",
     "fastapi[standard]",
     "uvicorn[standard]",
@@ -64,7 +63,6 @@ test = [
     "pytest-cov",
     "pytest-rerunfailures",
     "pick",
-    "sqlalchemy",
 ]
 dev = [
     "autopep8",
@@ -72,6 +70,23 @@ dev = [
     "isort",
     "pycodestyle",
 ]
+build = [
+    "nuitka<=2.8.4",
+    "pyinstaller",
+]
+
+[tool.setuptools.packages.find]
+where = [ "." ]
+exclude = [
+    "tools*",
+]
+
+[tool.setuptools.package-data]
+freedata_server = [ "lib/**/*" ]
+freedata_gui = [ "dist/**/*" ]
+
+[tool.setuptools.dynamic]
+version = { attr = "freedata_server.constants.MODEM_VERSION"}
 
 [tool.pytest.ini_options]
 testpaths = [ "tests" ]
