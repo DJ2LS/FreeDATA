@@ -8,8 +8,6 @@ requests
 chardet
 colorama
 ordered-set
-nuitka<=2.8.4
-pyinstaller
 websocket-client
 sqlalchemy
 fastapi[standard]
@@ -24,3 +22,8 @@ pytest
 pytest-cov
 pytest-rerunfailures
 pick
+
+# Build
+build
+wheel
+nuitka<=2.8.4
