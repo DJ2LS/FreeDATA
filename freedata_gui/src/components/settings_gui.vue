@@ -150,6 +150,37 @@
       </div>
     </label>
   </div>
+
+  <!-- Distance Unit Setting -->
+  <div class="input-group input-group-sm mb-1">
+    <span class="input-group-text w-50 text-wrap">
+      {{ $t('settings.gui.distanceunit') }}
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        :title="$t('settings.gui.distanceunit_help')"
+      >
+        <i class="bi bi-question-circle" />
+      </button>
+    </span>
+    <select
+      id="distance_unit_selector"
+      v-model="settings.remote.GUI.distance_unit"
+      class="form-select form-select-sm w-50"
+      @change="onChange"
+    >
+      <option value="km">
+        {{ $t('settings.gui.distanceunitkilometers') }}
+      </option>
+      <option value="mi">
+        {{ $t('settings.gui.distanceunitmiles') }}
+      </option>
+      <option value="nm">
+        {{ $t('settings.gui.distanceunitnauticalmiles') }}
+      </option>
+    </select>
+  </div>
 </template>
 
 <script>
@@ -171,6 +202,10 @@ function saveSettings() {
 
 export default {
   data() {
+    // Ensure distance_unit has a default value
+    if (settings.remote.GUI.distance_unit !== "km" || settings.remote.GUI.distance_unit !== "mi") {
+      settings.remote.GUI.distance_unit = "km";
+    }
     return {
       availableLanguages, // imported from i18next configuration
       settings,

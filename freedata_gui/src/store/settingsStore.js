@@ -43,7 +43,7 @@ const defaultConfig = {
       serial_handshake: "",
       ptt_port: "",
       ptt_type: "",
-        ptt_mode: "",
+      ptt_mode: "",
       serial_dcd: "",
       serial_dtr: "",
       serial_rts: "",
@@ -92,6 +92,7 @@ const defaultConfig = {
 
     GUI: {
       auto_run_browser: true,
+      distance_unit: "km",
     },
     EXP: {
       enable_ring_buffer: false,
