@@ -42,7 +42,7 @@ jobs:
       - name: Install python packages
         shell: bash
         run: |
-          pip3 install -r requirements.txt
+          pip install .[test]
 
       - name: run config tests
         shell: bash

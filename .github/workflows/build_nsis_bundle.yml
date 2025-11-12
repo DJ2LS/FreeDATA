@@ -34,7 +34,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install .[nuitka]
 
       - uses: robinraju/release-downloader@v1.12
         with:
