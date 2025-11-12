@@ -254,7 +254,12 @@
             "colormode_help": "Set the GUI color mode",
             "colormodelight": "light",
             "colormodedark": "dark",
-            "colormodeauto": "auto"
+            "colormodeauto": "auto",
+            "distanceunit": "Distance Unit",
+            "distanceunit_help": "Select the preferred distance unit",
+            "distanceunitkilometers": "Kilometers",
+            "distanceunitmiles": "Miles",
+            "distanceunitnauticalmiles": "Nautical Miles"
         },
         "station": {
             "introduction": "Station related settings, like changing your callsign, location and general behaviour.",
@@ -373,8 +378,8 @@
             "hamlibrigctlddatabits": "Data bits",
             "hamlibrigctlddatabits_help": "Choose the number of data bits",
             "hamlibrigctldstopbits": "Stop bits",
-            "hamlibrigctldstopbits_help": "Set the baud rate for serial communication",
-            "hamlibrigctldhandshake": "Choose the number of stop bits",
+            "hamlibrigctldstopbits_help": "Choose the number of stop bits",
+            "hamlibrigctldhandshake": "Choose the handshake method",
             "hamlibrigctldhandshake_help": "Set the serial handshake method",
             "hamlibrigctldpttdeviceport": "PTT device port",
             "hamlibrigctldpttdeviceport_help": "Select the port used for PTT control",
@@ -384,7 +389,7 @@
             "hamlibrigctlddcd_help": "Select the Data Carrier Detect method",
             "hamlibrigctlddtr": "DTR",
             "hamlibrigctlddtr_help": "Set the DTR line state",
-             "hamlibrigctldrts": "RTS",
+            "hamlibrigctldrts": "RTS",
             "hamlibrigctldrts_help": "Set the RTS line state",
             "hamlibrigctldcommand": "Rigctld command",
             "hamlibrigctldcommand_help": "Auto-populated command based on settings",

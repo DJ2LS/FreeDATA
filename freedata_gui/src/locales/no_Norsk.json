@@ -228,7 +228,12 @@
             "colormode_help": "GUI-fargemodus",
             "colormodelight": "lys",
             "colormodedark": "mørk",
-            "colormodeauto": "auto"
+            "colormodeauto": "auto",
+            "distanceunit": "Avstandsenhet",
+            "distanceunit_help": "Velg foretrukket avstandsenhet",
+            "distanceunitkilometers": "Kilometer",
+            "distanceunitmiles": "Miles",
+            "distanceunitnauticalmiles": "Nautiske miles"
         },
         "station": {
             "introduction": "Stasjonsrelaterte innstillinger, som å endre kallesignal, plassering og generell oppførsel.",

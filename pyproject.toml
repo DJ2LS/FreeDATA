@@ -16,7 +16,7 @@ keywords = [
     "freedata",
     "codec2",
 ]
-classifier = [
+classifiers = [
     # See https://pypi.org/classifiers/
     "Development Status :: 4 - Beta",
     "Environment :: Web Environment",
@@ -42,8 +42,7 @@ dependencies = [
     "chardet",
     "colorama",
     "ordered-set",
-    "nuitka<=2.7.16",
-    "pyinstaller",
+    "sqlalchemy",
     "websocket-client",
     "fastapi[standard]",
     "uvicorn[standard]",
@@ -64,14 +63,34 @@ test = [
     "pytest-cov",
     "pytest-rerunfailures",
     "pick",
-    "sqlalchemy",
 ]
 dev = [
+    "freedata[test]",
     "autopep8",
     "black",
     "isort",
     "pycodestyle",
 ]
+build = [
+    "build",
+    "wheel",
+]
+nuitka = [
+    "nuitka<=2.8.4",
+]
+
+[tool.setuptools.packages.find]
+where = [ "." ]
+exclude = [
+    "tools*",
+]
+
+[tool.setuptools.package-data]
+freedata_server = [ "lib/**/*" ]
+freedata_gui = [ "dist/**/*" ]
+
+[tool.setuptools.dynamic]
+version = { attr = "freedata_server.constants.MODEM_VERSION"}
 
 [tool.pytest.ini_options]
 testpaths = [ "tests" ]
