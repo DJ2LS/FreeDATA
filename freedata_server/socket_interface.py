@@ -1,12 +1,8 @@
-"""WORK IN PROGRESS by DJ2LS"""
+"""WORK IN PROGRESS by DJ2LS.
 
-import time
-
-"""
-access command handler from external via: 
+Access command handler from external via:
     self.socket_manager.command_server.command_handler.<function>
     self.socket_manager.data_server.data_handler.<function>
-
 """
 
 import socketserver

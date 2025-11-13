@@ -98,13 +98,6 @@ def distance_between_locators(locator1, locator2):
     return {"kilometers": km, "miles": miles}
 
 
-import random
-
-
-import random
-import string
-
-
 def generate_full_maidenhead(grid_square):
     """
     Convert a Maidenhead locator of 2 or 4 characters to a 6-character locator

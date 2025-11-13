@@ -1,6 +1,7 @@
 import unittest
 from subprocess import Popen, PIPE
-import shlex, os
+import shlex
+import os
 import requests
 import time
 import json

@@ -181,10 +181,6 @@ def get_crc_32(data: str) -> bytes:
     return crc.to_bytes(4, byteorder="big")
 
 
-from datetime import datetime, timezone
-import time
-
-
 def add_to_heard_stations(
     dxcallsign,
     dxgrid,
