@@ -8,6 +8,7 @@ from arq_data_type_handler import ARQ_SESSION_TYPES
 import numpy as np
 import threading
 
+
 class ARQRawCommand(TxCommand):
     """Command for transmitting raw data via ARQ.
 
@@ -26,16 +27,16 @@ class ARQRawCommand(TxCommand):
         Args:
             apiParams (dict): A dictionary containing the API parameters.
         """
-        self.dxcall = apiParams['dxcall']
+        self.dxcall = apiParams["dxcall"]
         if not api_validations.validate_freedata_callsign(self.dxcall):
             self.dxcall = f"{self.dxcall}-0"
 
         try:
-            self.type = ARQ_SESSION_TYPES[apiParams['type']]
+            self.type = ARQ_SESSION_TYPES[apiParams["type"]]
         except KeyError:
             self.type = ARQ_SESSION_TYPES.raw
 
-        self.data = base64.b64decode(apiParams['data'])
+        self.data = base64.b64decode(apiParams["data"])
 
     def run(self):
         """Executes the ARQ raw data transmission command.

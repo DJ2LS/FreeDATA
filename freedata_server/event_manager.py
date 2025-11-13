@@ -2,6 +2,7 @@ import base64
 import json
 import structlog
 
+
 class EventManager:
     """Manages and broadcasts events within the FreeDATA server.
 
@@ -20,7 +21,7 @@ class EventManager:
         """
         self.queues = queues
         self.ctx = ctx
-        self.logger = structlog.get_logger('Event Manager')
+        self.logger = structlog.get_logger("Event Manager")
         self.lastpttstate = False
 
     def broadcast(self, data):
@@ -42,7 +43,7 @@ class EventManager:
                 q.queue.clear()
             q.put(data)
 
-    def send_ptt_change(self, on:bool = False):
+    def send_ptt_change(self, on: bool = False):
         """Sends a PTT change event.
 
         This method broadcasts a "ptt" event indicating whether the Push-to-Talk
@@ -52,9 +53,9 @@ class EventManager:
         Args:
             on (bool, optional): True if PTT is activated, False otherwise. Defaults to False.
         """
-        if (on == self.lastpttstate):
+        if on == self.lastpttstate:
             return
-        self.lastpttstate= on
+        self.lastpttstate = on
         self.broadcast({"ptt": bool(on)})
 
     def send_scatter_change(self, data):
@@ -109,19 +110,29 @@ class EventManager:
             total_bytes (int): The total number of bytes to be transferred.
             state (str): The initial state of the ARQ session.
         """
-        direction = 'outbound' if outbound else 'inbound'
+        direction = "outbound" if outbound else "inbound"
         event = {
-                "type": "arq",
-                f"arq-transfer-{direction}": {
-                'session_id': session_id,
-                'dxcall': dxcall,
-                'total_bytes': total_bytes,
-                'state': state,
-            }
+            "type": "arq",
+            f"arq-transfer-{direction}": {
+                "session_id": session_id,
+                "dxcall": dxcall,
+                "total_bytes": total_bytes,
+                "state": state,
+            },
         }
         self.broadcast(event)
 
-    def send_arq_session_progress(self, outbound: bool, session_id, dxcall, received_bytes, total_bytes, state, speed_level, statistics=None):
+    def send_arq_session_progress(
+        self,
+        outbound: bool,
+        session_id,
+        dxcall,
+        received_bytes,
+        total_bytes,
+        state,
+        speed_level,
+        statistics=None,
+    ):
         """Sends an ARQ session progress update event.
 
         This method broadcasts an event indicating the progress of an ARQ
@@ -142,22 +153,31 @@ class EventManager:
         if statistics is None:
             statistics = {}
 
-        direction = 'outbound' if outbound else 'inbound'
+        direction = "outbound" if outbound else "inbound"
         event = {
-                "type": "arq",
-                f"arq-transfer-{direction}": {
-                'session_id': session_id,
-                'dxcall': dxcall,
-                'received_bytes': received_bytes,
-                'total_bytes': total_bytes,
-                'state': state,
-                'speed_level': speed_level,
-                'statistics': statistics,
-            }
+            "type": "arq",
+            f"arq-transfer-{direction}": {
+                "session_id": session_id,
+                "dxcall": dxcall,
+                "received_bytes": received_bytes,
+                "total_bytes": total_bytes,
+                "state": state,
+                "speed_level": speed_level,
+                "statistics": statistics,
+            },
         }
         self.broadcast(event)
 
-    def send_arq_session_finished(self, outbound: bool, session_id, dxcall, success: bool, state: bool, data=False, statistics=None):
+    def send_arq_session_finished(
+        self,
+        outbound: bool,
+        session_id,
+        dxcall,
+        success: bool,
+        state: bool,
+        data=False,
+        statistics=None,
+    ):
         """Sends an ARQ session finished event.
 
         This method broadcasts an event indicating the completion of an ARQ
@@ -179,20 +199,20 @@ class EventManager:
             statistics = {}
         if data:
             if isinstance(data, dict):
-                data = json.dumps(data).encode('utf-8')
+                data = json.dumps(data).encode("utf-8")
                 # Base64 encode the bytes-like object
             data = base64.b64encode(data).decode("UTF-8")
-        direction = 'outbound' if outbound else 'inbound'
+        direction = "outbound" if outbound else "inbound"
         event = {
-                "type" : "arq",
-                f"arq-transfer-{direction}": {
-                'session_id': session_id,
-                'dxcall': dxcall,
-                'statistics': statistics,
-                'success': bool(success),
-                'state': state,
-                'data': data
-            }
+            "type": "arq",
+            f"arq-transfer-{direction}": {
+                "session_id": session_id,
+                "dxcall": dxcall,
+                "statistics": statistics,
+                "success": bool(success),
+                "state": state,
+                "data": data,
+            },
         }
         self.broadcast(event)
 
@@ -258,4 +278,6 @@ class EventManager:
             message (str): The message to be displayed
         """
 
-        self.broadcast({"type": "message-logging", "endpoint": type, "status": status, "message": message})
+        self.broadcast(
+            {"type": "message-logging", "endpoint": type, "status": status, "message": message}
+        )

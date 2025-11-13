@@ -1,6 +1,7 @@
 import math
 import random
 
+
 def haversine(lat1, lon1, lat2, lon2):
     """
     Calculate the great circle distance in kilometers between two points
@@ -50,14 +51,14 @@ def maidenhead_to_latlon(grid_square):
     grid_square = generate_full_maidenhead(grid_square)
 
     grid_square = grid_square.upper()
-    lon = -180 + (ord(grid_square[0]) - ord('A')) * 20
-    lat = -90 + (ord(grid_square[1]) - ord('A')) * 10
-    lon += (int(grid_square[2]) * 2)
+    lon = -180 + (ord(grid_square[0]) - ord("A")) * 20
+    lat = -90 + (ord(grid_square[1]) - ord("A")) * 10
+    lon += int(grid_square[2]) * 2
     lat += int(grid_square[3])
 
     if len(grid_square) >= 6:
-        lon += (ord(grid_square[4]) - ord('A')) * (5 / 60)
-        lat += (ord(grid_square[5]) - ord('A')) * (2.5 / 60)
+        lon += (ord(grid_square[4]) - ord("A")) * (5 / 60)
+        lat += (ord(grid_square[5]) - ord("A")) * (2.5 / 60)
 
     # not needed now as we always have 6 digits
     if len(grid_square) == 8:
@@ -94,7 +95,7 @@ def distance_between_locators(locator1, locator2):
     lat2, lon2 = maidenhead_to_latlon(locator2)
     km = haversine(lat1, lon1, lat2, lon2)
     miles = km * 0.621371
-    return {'kilometers': km, 'miles': miles}
+    return {"kilometers": km, "miles": miles}
 
 
 import random
@@ -102,6 +103,7 @@ import random
 
 import random
 import string
+
 
 def generate_full_maidenhead(grid_square):
     """
@@ -147,5 +149,3 @@ def generate_full_maidenhead(grid_square):
     # Adjust the case for the last two characters
     grid_square = grid_square[:4] + grid_square[4:].lower()
     return grid_square
-
-

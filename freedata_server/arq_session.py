@@ -8,40 +8,43 @@ import time
 from arq_data_type_handler import ARQDataTypeHandler
 from codec2 import FREEDV_MODE_USED_SLOTS, FREEDV_MODE
 import stats
+
+
 class ARQSession:
     """Manages an ARQ (Automatic Repeat reQuest) session.
 
     This class handles the transmission and reception of data using the ARQ protocol,
     managing session state, statistics, and data handling.
     """
+
     SPEED_LEVEL_DICT = {
         0: {
-            'mode': FREEDV_MODE.datac4,
-            'min_snr': -10,
-            'duration_per_frame': 5.17,
-            'bandwidth': 250,
-            'slots': FREEDV_MODE_USED_SLOTS.datac4,
+            "mode": FREEDV_MODE.datac4,
+            "min_snr": -10,
+            "duration_per_frame": 5.17,
+            "bandwidth": 250,
+            "slots": FREEDV_MODE_USED_SLOTS.datac4,
         },
         1: {
-            'mode': FREEDV_MODE.data_ofdm_500,
-            'min_snr': 0,
-            'duration_per_frame': 3.19,
-            'bandwidth': 500,
-            'slots': FREEDV_MODE_USED_SLOTS.data_ofdm_500,
+            "mode": FREEDV_MODE.data_ofdm_500,
+            "min_snr": 0,
+            "duration_per_frame": 3.19,
+            "bandwidth": 500,
+            "slots": FREEDV_MODE_USED_SLOTS.data_ofdm_500,
         },
         2: {
-            'mode': FREEDV_MODE.datac1,
-            'min_snr': 3,
-            'duration_per_frame': 4.18,
-            'bandwidth': 1700,
-            'slots': FREEDV_MODE_USED_SLOTS.datac1,
+            "mode": FREEDV_MODE.datac1,
+            "min_snr": 3,
+            "duration_per_frame": 4.18,
+            "bandwidth": 1700,
+            "slots": FREEDV_MODE_USED_SLOTS.datac1,
         },
         3: {
-            'mode': FREEDV_MODE.data_ofdm_2438,
-            'min_snr': 8.5,
-            'duration_per_frame': 5.5,
-            'bandwidth': 2438,
-            'slots': FREEDV_MODE_USED_SLOTS.data_ofdm_2438,
+            "mode": FREEDV_MODE.data_ofdm_2438,
+            "min_snr": 8.5,
+            "duration_per_frame": 5.5,
+            "bandwidth": 2438,
+            "slots": FREEDV_MODE_USED_SLOTS.data_ofdm_2438,
         },
         # 4: {
         #    'mode': FREEDV_MODE.qam16c2,
@@ -67,10 +70,10 @@ class ARQSession:
         """
         self.logger = structlog.get_logger(type(self).__name__)
         self.ctx = ctx
-        #self.ctx.state_manager = freedata_server.states
+        # self.ctx.state_manager = freedata_server.states
         self.ctx.state_manager.setARQ(True)
 
-        self.is_IRS = False # state for easy check "is IRS" or is "ISS"
+        self.is_IRS = False  # state for easy check "is IRS" or is "ISS"
 
         self.protocol_version = self.ctx.constants.ARQ_PROTOCOL_VERSION
 
@@ -133,7 +136,7 @@ class ARQSession:
         """
         return self.SPEED_LEVEL_DICT[speed_level]["mode"]
 
-    def transmit_frame(self, frame: bytearray, mode='auto'):
+    def transmit_frame(self, frame: bytearray, mode="auto"):
         """Transmits a given frame using the modem.
 
         This method transmits the provided frame using the configured modem.
@@ -145,7 +148,7 @@ class ARQSession:
             mode (str, optional): The FreeDV mode to use for transmission. Defaults to 'auto'.
         """
         self.log("Transmitting frame")
-        if mode in ['auto']:
+        if mode in ["auto"]:
             mode = self.get_mode_by_speed_level(self.speed_level)
 
         self.ctx.rf_modem.transmit(mode, 1, 1, frame)
@@ -163,7 +166,9 @@ class ARQSession:
         if self.state == state:
             self.log(f"{type(self).__name__} state {self.state.name} unchanged.")
         else:
-            self.log(f"{type(self).__name__} state change from {self.state.name} to {state.name} at {self.last_state_change_timestamp}")
+            self.log(
+                f"{type(self).__name__} state change from {self.state.name} to {state.name} at {self.last_state_change_timestamp}"
+            )
         self.state = state
 
     def get_data_payload_size(self):
@@ -176,9 +181,8 @@ class ARQSession:
             int: The available data payload size in bytes.
         """
         return self.frame_factory.get_available_data_payload_for_mode(
-            FRAME_TYPE.ARQ_BURST_FRAME,
-            self.SPEED_LEVEL_DICT[self.speed_level]["mode"]
-            )
+            FRAME_TYPE.ARQ_BURST_FRAME, self.SPEED_LEVEL_DICT[self.speed_level]["mode"]
+        )
 
     def set_details(self, snr, frequency_offset):
         """Sets the SNR and frequency offset for the ARQ session.
@@ -205,17 +209,22 @@ class ARQSession:
         """
         self.event_frame_received.set()
         self.log(f"Received {frame['frame_type']}")
-        frame_type = frame['frame_type_int']
+        frame_type = frame["frame_type_int"]
         if self.state in self.STATE_TRANSITION and frame_type in self.STATE_TRANSITION[self.state]:
             action_name = self.STATE_TRANSITION[self.state][frame_type]
             received_data, type_byte = getattr(self, action_name)(frame)
 
             if isinstance(received_data, bytearray) and isinstance(type_byte, int):
-                self.arq_data_type_handler.dispatch(type_byte, received_data,
-                                                    self.update_histograms(len(received_data), len(received_data)))
+                self.arq_data_type_handler.dispatch(
+                    type_byte,
+                    received_data,
+                    self.update_histograms(len(received_data), len(received_data)),
+                )
             return
 
-        self.log(f"Ignoring unknown transition from state {self.state.name} with frame {frame['frame_type']}")
+        self.log(
+            f"Ignoring unknown transition from state {self.state.name} with frame {frame['frame_type']}"
+        )
 
     def is_session_outdated(self):
         """Checks if the session is outdated.
@@ -229,9 +238,9 @@ class ARQSession:
         """
         session_alivetime = time.time() - self.session_max_age
         return self.session_ended < session_alivetime and self.state.name in [
-            'FAILED',
-            'ENDED',
-            'ABORTED',
+            "FAILED",
+            "ENDED",
+            "ABORTED",
         ]
 
     def calculate_session_duration(self):
@@ -276,7 +285,6 @@ class ARQSession:
         # Calculate bits per second
         bits_per_second = int((confirmed_bytes * 8) / duration)
 
-
         # Convert histograms lists to dictionaries
         time_histogram_dict = dict(enumerate(self.time_histogram))
         snr_histogram_dict = dict(enumerate(self.snr_histogram))
@@ -284,14 +292,14 @@ class ARQSession:
         bps_histogram_dict = dict(enumerate(self.bps_histogram))
 
         return {
-            'total_bytes': total_bytes,
-            'duration': duration,
-            'bytes_per_minute': bytes_per_minute,
-            'bits_per_second': bits_per_second,
-            'time_histogram': time_histogram_dict,
-            'snr_histogram': snr_histogram_dict,
-            'bpm_histogram': bpm_histogram_dict,
-            'bps_histogram': bps_histogram_dict,
+            "total_bytes": total_bytes,
+            "duration": duration,
+            "bytes_per_minute": bytes_per_minute,
+            "bits_per_second": bits_per_second,
+            "time_histogram": time_histogram_dict,
+            "snr_histogram": snr_histogram_dict,
+            "bpm_histogram": bpm_histogram_dict,
+            "bps_histogram": bps_histogram_dict,
         }
 
     def update_histograms(self, confirmed_bytes, total_bytes):
@@ -311,8 +319,8 @@ class ARQSession:
         """
         stats = self.calculate_session_statistics(confirmed_bytes, total_bytes)
         self.snr_histogram.append(self.snr)
-        self.bpm_histogram.append(stats['bytes_per_minute'])
-        self.bps_histogram.append(stats['bits_per_second'])
+        self.bpm_histogram.append(stats["bytes_per_minute"])
+        self.bps_histogram.append(stats["bits_per_second"])
         self.time_histogram.append(datetime.datetime.now().isoformat())
 
         # Limit the size of each histogram to the last 20 entries
@@ -356,24 +364,28 @@ class ARQSession:
         """
         # Use default maximum bandwidth from configuration if not provided
         if maximum_bandwidth is None:
-            maximum_bandwidth = self.ctx.config_manager.config['MODEM']['maximum_bandwidth']
+            maximum_bandwidth = self.ctx.config_manager.config["MODEM"]["maximum_bandwidth"]
 
         # Adjust maximum_bandwidth if set to 0 (use maximum available bandwidth from speed levels)
         if maximum_bandwidth == 0:
-            maximum_bandwidth = max(details['bandwidth'] for details in self.SPEED_LEVEL_DICT.values())
+            maximum_bandwidth = max(
+                details["bandwidth"] for details in self.SPEED_LEVEL_DICT.values()
+            )
 
         # Iterate through speed levels in reverse order to find the highest appropriate one
         for level in sorted(self.SPEED_LEVEL_DICT.keys(), reverse=True):
             details = self.SPEED_LEVEL_DICT[level]
-            mode_slots = details['slots'].value
-            if (snr >= details['min_snr'] and
-                details['bandwidth'] <= maximum_bandwidth and
-                self.check_channel_busy(self.ctx.state_manager.channel_busy_slot, mode_slots)):
+            mode_slots = details["slots"].value
+            if (
+                snr >= details["min_snr"]
+                and details["bandwidth"] <= maximum_bandwidth
+                and self.check_channel_busy(self.ctx.state_manager.channel_busy_slot, mode_slots)
+            ):
                 return level
 
         # Return the lowest level if no higher level is found
         return min(self.SPEED_LEVEL_DICT.keys())
-    
+
     def reset_session(self):
         """Resets the ARQ session to its initial state.
 
@@ -388,7 +400,7 @@ class ARQSession:
         self.time_histogram = []
         self.type_byte = None
         self.total_length = 0
-        self.total_crc = ''
+        self.total_crc = ""
         self.received_data = None
         self.received_bytes = 0
         self.received_crc = None

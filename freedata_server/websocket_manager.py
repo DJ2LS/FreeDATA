@@ -12,6 +12,7 @@ class wsm:
     data to connected clients via worker threads. It ensures a clean
     shutdown of WebSocket connections and related resources.
     """
+
     def __init__(self, ctx):
         """Initializes the WebSocket manager.
 
@@ -31,7 +32,7 @@ class wsm:
         self.events_thread = None
         self.states_thread = None
         self.fft_thread = None
-        
+
     async def handle_connection(self, websocket, client_list, event_queue):
         """Handles a WebSocket connection.
 
@@ -82,8 +83,6 @@ class wsm:
             except Exception:
                 continue
 
-
-
     def startWorkerThreads(self, app):
         """Starts worker threads for handling WebSocket data transmission.
 
@@ -95,15 +94,27 @@ class wsm:
         Args:
             app: The main application object containing the event queues and client lists.
         """
-        self.events_thread = threading.Thread(target=self.transmit_sock_data_worker, daemon=True, args=(self.events_client_list, self.ctx.modem_events))
+        self.events_thread = threading.Thread(
+            target=self.transmit_sock_data_worker,
+            daemon=True,
+            args=(self.events_client_list, self.ctx.modem_events),
+        )
         self.events_thread.start()
 
-        self.states_thread = threading.Thread(target=self.transmit_sock_data_worker, daemon=True, args=(self.states_client_list, self.ctx.state_queue))
+        self.states_thread = threading.Thread(
+            target=self.transmit_sock_data_worker,
+            daemon=True,
+            args=(self.states_client_list, self.ctx.state_queue),
+        )
         self.states_thread.start()
 
-        self.fft_thread = threading.Thread(target=self.transmit_sock_data_worker, daemon=True, args=(self.fft_client_list, self.ctx.modem_fft))
+        self.fft_thread = threading.Thread(
+            target=self.transmit_sock_data_worker,
+            daemon=True,
+            args=(self.fft_client_list, self.ctx.modem_fft),
+        )
         self.fft_thread.start()
-        
+
     def shutdown(self):
         """Shuts down the WebSocket manager.
 

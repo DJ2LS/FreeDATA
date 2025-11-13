@@ -11,7 +11,7 @@ class PingFrameHandler(frame_handler.FrameHandler):
     checks for queued messages to be sent based on configuration.
     """
 
-    #def is_frame_for_me(self):
+    # def is_frame_for_me(self):
     #    call_with_ssid = self.config['STATION']['mycall'] + "-" + str(self.config['STATION']['myssid'])
     #    valid, mycallsign = helpers.check_callsign(
     #        call_with_ssid,
@@ -34,10 +34,11 @@ class PingFrameHandler(frame_handler.FrameHandler):
             return
         self.logger.debug(
             f"[Modem] Responding to request from [{self.details['frame']['origin']}]",
-            snr=self.details['snr'],
+            snr=self.details["snr"],
         )
         self.send_ack()
         self.check_for_queued_message()
+
     def send_ack(self):
         """Sends a PING acknowledgement frame.
 
@@ -46,7 +47,6 @@ class PingFrameHandler(frame_handler.FrameHandler):
         """
         factory = data_frame_factory.DataFrameFactory(self.ctx)
         ping_ack_frame = factory.build_ping_ack(
-            self.details['frame']['origin_crc'], 
-            self.details['snr']
+            self.details["frame"]["origin_crc"], self.details["snr"]
         )
         self.transmit(ping_ack_frame)

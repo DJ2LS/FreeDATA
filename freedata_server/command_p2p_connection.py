@@ -5,6 +5,7 @@ import base64
 from queue import Queue
 from p2p_connection import P2PConnection
 
+
 class P2PConnectionCommand(TxCommand):
     """Command to initiate a P2P connection.
 
@@ -21,14 +22,13 @@ class P2PConnectionCommand(TxCommand):
         Args:
             apiParams (dict): A dictionary containing the API parameters.
         """
-        self.origin = apiParams['origin']
+        self.origin = apiParams["origin"]
         if not api_validations.validate_freedata_callsign(self.origin):
             self.origin = f"{self.origin}-0"
 
-        self.destination = apiParams['destination']
+        self.destination = apiParams["destination"]
         if not api_validations.validate_freedata_callsign(self.destination):
             self.destination = f"{self.destination}-0"
-
 
     def connect(self):
         """Placeholder for the connect method.

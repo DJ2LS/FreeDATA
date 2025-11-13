@@ -5,6 +5,8 @@ from message_system_db_messages import DatabaseManagerMessages
 
 
 from message_system_db_manager import DatabaseManager
+
+
 class BeaconFrameHandler(frame_handler.FrameHandler):
     """Handles received beacon frames.
 
@@ -20,10 +22,11 @@ class BeaconFrameHandler(frame_handler.FrameHandler):
         for queued messages to send if auto-repeat is enabled and the
         signal strength is above a certain threshold.
         """
-        DatabaseManagerBeacon(self.ctx).add_beacon(datetime.datetime.now(),
-                                                             self.details['frame']["origin"],
-                                                             self.details["snr"],
-                                                             self.details['frame']["gridsquare"]
-                                                             )
+        DatabaseManagerBeacon(self.ctx).add_beacon(
+            datetime.datetime.now(),
+            self.details["frame"]["origin"],
+            self.details["snr"],
+            self.details["frame"]["gridsquare"],
+        )
 
         self.check_for_queued_message()

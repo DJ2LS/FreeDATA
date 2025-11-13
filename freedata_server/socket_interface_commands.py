@@ -1,16 +1,17 @@
-""" WORK IN PROGRESS by DJ2LS"""
+"""WORK IN PROGRESS by DJ2LS"""
+
 from command_p2p_connection import P2PConnectionCommand
 import structlog
 
-class SocketCommandHandler:
 
+class SocketCommandHandler:
     def __init__(self, cmd_request, ctx):
         self.logger = structlog.get_logger(type(self).__name__)
         self.cmd_request = cmd_request
         self.session = None
         self.ctx = ctx
 
-    def log(self, message, isWarning = False):
+    def log(self, message, isWarning=False):
         msg = f"[{type(self).__name__}]: {message}"
         logger = self.logger.warn if isWarning else self.logger.info
         logger(msg)
@@ -21,12 +22,13 @@ class SocketCommandHandler:
             full_message = f"{message}\r"
             self.cmd_request.sendall(full_message.encode())
         except Exception as e:
-            self.log(f"Error sending to socket: {message}", isWarning = True)
+            self.log(f"Error sending to socket: {message}", isWarning=True)
+
     def handle_connect(self, data):
         try:
             params = {
-                'origin': data[0],
-                'destination': data[1],
+                "origin": data[0],
+                "destination": data[1],
             }
 
             cmd = P2PConnectionCommand(self.ctx, params)
@@ -35,11 +37,11 @@ class SocketCommandHandler:
             self.send_response(f"REGISTERED {data[0]}")
             self.send_response(f"UNENCRYPTED LINK")
             self.ctx.socket_interface_manager.connecting_callsign = data[0]
-            #if self.session.session_id:
+            # if self.session.session_id:
             #    self.ctx.state_manager.register_p2p_connection_session(self.session)
             #    self.send_response("OK")
             #    self.session.connect()
-            #else:
+            # else:
             #    self.send_response("ERROR")
         except:
             self.send_response(f"ERR: {data}")
@@ -49,10 +51,10 @@ class SocketCommandHandler:
         try:
             self.session.disconnect()
         except Exception as e:
-            self.log(f"Error disconnecting socket: {e}", isWarning = True)
+            self.log(f"Error disconnecting socket: {e}", isWarning=True)
 
     def handle_mycall(self, data):
-        #Storing all of the callsigns assigned by client, to make sure they are checked later in new frames.
+        # Storing all of the callsigns assigned by client, to make sure they are checked later in new frames.
         self.ctx.socket_interface_manager.socket_interface_callsigns = data
         self.send_response(f"OK")
         self.send_response(f"UNENCRYPTED LINK")
@@ -91,7 +93,7 @@ class SocketCommandHandler:
 
     def handle_winlink_session(self, data):
         # Logic for handling WINLINK SESSION command
-        #self.send_response(f"NOT IMPLEMENTED: {data}")
+        # self.send_response(f"NOT IMPLEMENTED: {data}")
         self.send_response(f"OK")
 
     def handle_version(self, data):
@@ -105,7 +107,7 @@ class SocketCommandHandler:
     def socket_respond_connected(self, origin, destination, bandwidth):
         print("[socket interface_commands] socket_respond_connected")
         if self.ctx.socket_interface_manager.connecting_callsign:
-            #message = f"CONNECTED {self.ctx.socket_interface_manager.connecting_callsign} {destination} {bandwidth}"
+            # message = f"CONNECTED {self.ctx.socket_interface_manager.connecting_callsign} {destination} {bandwidth}"
             message = f"CONNECTED {origin} {destination} {bandwidth}"
         else:
             message = f"CONNECTED {origin} {destination} {bandwidth}"
@@ -118,11 +120,12 @@ class SocketCommandHandler:
             self.send_response(f"IAMALIVE")
         except Exception as e:
             self.log(f"sending iamalive failed {e}")
+
     def socket_respond_buffer_size(self, buffer_size):
         self.send_response(f"BUFFER {buffer_size}")
 
     def socket_respond_ptt(self, state):
-        """ send the PTT state via command socket"""
+        """send the PTT state via command socket"""
         if state:
             message = f"PTT ON"
         else:

@@ -1,6 +1,7 @@
 """
 Gather information about audio devices.
 """
+
 import multiprocessing
 import sounddevice as sd
 import structlog
@@ -24,8 +25,8 @@ def get_audio_devices():
 
     # we need to reset and initialize sounddevice before running the multiprocessing part.
     # If we are not doing this at this early point, not all devices will be displayed
-    #sd._terminate()
-    #sd._initialize()
+    # sd._terminate()
+    # sd._initialize()
 
     # log.debug("[AUD] get_audio_devices")
     with multiprocessing.Manager() as manager:
@@ -61,6 +62,7 @@ def device_crc(device) -> str:
     crc_hwid = crc_hwid.hex()
     return crc_hwid
 
+
 def fetch_audio_devices(input_devices, output_devices):
     """
     get audio devices from portaudio
@@ -93,22 +95,26 @@ def fetch_audio_devices(input_devices, output_devices):
             max_output_channels = 0
 
         if max_input_channels > 0:
-            hostapi_name = sd.query_hostapis(device['hostapi'])['name']
+            hostapi_name = sd.query_hostapis(device["hostapi"])["name"]
 
-            new_input_device = {"id": device_crc(device), 
-                                "name": device['name'], 
-                                "api": hostapi_name,
-                                "native_index":index}
+            new_input_device = {
+                "id": device_crc(device),
+                "name": device["name"],
+                "api": hostapi_name,
+                "native_index": index,
+            }
             # check if device not in device list
             if new_input_device not in input_devices:
                 input_devices.append(new_input_device)
 
         if max_output_channels > 0:
-            hostapi_name = sd.query_hostapis(device['hostapi'])['name']
-            new_output_device = {"id": device_crc(device), 
-                                 "name": device['name'], 
-                                 "api": hostapi_name,
-                                 "native_index":index}
+            hostapi_name = sd.query_hostapis(device["hostapi"])["name"]
+            new_output_device = {
+                "id": device_crc(device),
+                "name": device["name"],
+                "api": hostapi_name,
+                "native_index": index,
+            }
             # check if device not in device list
             if new_output_device not in output_devices:
                 output_devices.append(new_output_device)
@@ -142,12 +148,13 @@ def get_device_index_from_crc(crc, isInput: bool):
             detected_devices = out_devices
 
         for i, dev in enumerate(detected_devices):
-            if dev['id'] == crc:
-                return (dev['native_index'], dev['name'])
+            if dev["id"] == crc:
+                return (dev["native_index"], dev["name"])
 
     except Exception as e:
         log.warning(f"Audio device {crc} not detected ", devices=detected_devices, isInput=isInput)
         return [None, None]
+
 
 def test_audio_devices(input_id: str, output_id: str) -> list:
     """Tests the specified input and output audio devices.
@@ -196,7 +203,6 @@ def test_audio_devices(input_id: str, output_id: str) -> list:
             )
             test_result[1] = True
 
-
     except (sd.PortAudioError, ValueError) as e:
         log.warning(f"[Audio-Test] Output device error ({output_id}):", e=e)
         test_result[1] = False
@@ -204,6 +210,7 @@ def test_audio_devices(input_id: str, output_id: str) -> list:
     sd._terminate()
     sd._initialize()
     return test_result
+
 
 def set_audio_volume(datalist: np.ndarray, dB: float) -> np.ndarray:
     """
@@ -249,12 +256,12 @@ def normalize_audio(datalist: np.ndarray) -> np.ndarray:
     :rtype: np.ndarray
     """
     if not isinstance(datalist, np.ndarray):
-        #print("[MDM] Invalid datalist type. Expected np.ndarray.")
+        # print("[MDM] Invalid datalist type. Expected np.ndarray.")
         return datalist
 
     # Ensure datalist is not empty
     if datalist.size == 0:
-        #print("[MDM] Datalist is empty. Returning unmodified.")
+        # print("[MDM] Datalist is empty. Returning unmodified.")
         return datalist
 
     # Find the maximum absolute value in the data
@@ -262,7 +269,7 @@ def normalize_audio(datalist: np.ndarray) -> np.ndarray:
 
     # If max_value is 0, return the datalist (avoid division by zero)
     if max_value == 0:
-        #print("[MDM] Max value is zero. Cannot normalize. Returning unmodified.")
+        # print("[MDM] Max value is zero. Cannot normalize. Returning unmodified.")
         return datalist
 
     # Define the target max value as 95% of the maximum for np.int16
@@ -300,7 +307,7 @@ SLOT_RANGES = [
     (65, 120),  # Slot 2: Frequency range from 65 to 120
     (120, 176),  # Slot 3: Frequency range from 120 to 176
     (176, 231),  # Slot 4: Frequency range from 176 to 231
-    (231, 315)  # Slot 5: Frequency range from 231 to 315
+    (231, 315),  # Slot 5: Frequency range from 231 to 315
 ]
 
 # Initialize a queue to store FFT results for visualization
@@ -308,6 +315,7 @@ fft_queue = queue.Queue()
 
 # Variable to track the time of the last RMS calculation
 last_rms_time = 0
+
 
 def prepare_data_for_fft(data, target_length_samples=800):
     """
@@ -326,10 +334,13 @@ def prepare_data_for_fft(data, target_length_samples=800):
 
     # If data is shorter than the target length, pad with zeros
     if len(data) < target_length_samples:
-        return np.pad(data, (0, target_length_samples - len(data)), 'constant', constant_values=(0,))
+        return np.pad(
+            data, (0, target_length_samples - len(data)), "constant", constant_values=(0,)
+        )
     else:
         # If data is longer or equal to the target length, truncate it
         return data[:target_length_samples]
+
 
 def calculate_rms_dbfs(data):
     """
@@ -419,7 +430,11 @@ def calculate_fft(data, fft_queue, states) -> None:
         # Iterate over each slot range to detect activity
         for slot, (range_start, range_end) in enumerate(SLOT_RANGES):
             # Check if any frequency in the slot exceeds the threshold
-            if np.any(significant_frequencies[range_start:range_end]) and not_transmitting and not_receiving:
+            if (
+                np.any(significant_frequencies[range_start:range_end])
+                and not_transmitting
+                and not_receiving
+            ):
                 # Mark that additional delay should be added
                 addDelay = True
 

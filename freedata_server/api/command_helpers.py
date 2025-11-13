@@ -3,11 +3,9 @@ from context import AppContext
 import structlog
 
 logger = structlog.get_logger()
-async def enqueue_tx_command(
-    ctx: AppContext,
-    cmd_class,
-    params: dict = None
-) -> bool:
+
+
+async def enqueue_tx_command(ctx: AppContext, cmd_class, params: dict = None) -> bool:
     """
     Enqueue a transmit command using the application context's managers.
 
@@ -30,4 +28,3 @@ async def enqueue_tx_command(
     except Exception as e:
         logger.error("Command execution failed", error=str(e))
         return False
-

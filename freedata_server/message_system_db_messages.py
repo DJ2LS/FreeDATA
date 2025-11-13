@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import json
 from exceptions import MessageStatusError
 
+
 class DatabaseManagerMessages(DatabaseManager):
     """Manages database operations for P2P messages.
 
@@ -15,6 +16,7 @@ class DatabaseManagerMessages(DatabaseManager):
     updating, deleting messages, handling attachments, and managing
     message statuses.
     """
+
     def __init__(self, ctx):
         """Initializes DatabaseManagerMessages.
 
@@ -26,7 +28,15 @@ class DatabaseManagerMessages(DatabaseManager):
         self.attachments_manager = DatabaseManagerAttachments(self.ctx)
         self.stations_manager = DatabaseManagerStations(self.ctx)
 
-    def add_message(self, message_data, statistics, direction='receive', status=None, is_read=True, frequency=None):
+    def add_message(
+        self,
+        message_data,
+        statistics,
+        direction="receive",
+        status=None,
+        is_read=True,
+        frequency=None,
+    ):
         """Adds a new P2P message to the database.
 
         This method adds a new P2P message record to the database,
@@ -48,37 +58,40 @@ class DatabaseManagerMessages(DatabaseManager):
         session = self.get_thread_scoped_session()
         try:
             # Create and add the origin and destination Stations
-            origin = self.stations_manager.get_or_create_station(message_data['origin'], session)
-            destination = self.stations_manager.get_or_create_station(message_data['destination'], session)
+            origin = self.stations_manager.get_or_create_station(message_data["origin"], session)
+            destination = self.stations_manager.get_or_create_station(
+                message_data["destination"], session
+            )
 
             # Create and add Status if provided
             if status:
                 status = self.get_or_create_status(session, status)
 
             # Parse the timestamp from the message ID
-            timestamp = datetime.fromisoformat(message_data['id'].split('_')[2])
+            timestamp = datetime.fromisoformat(message_data["id"].split("_")[2])
 
-            if frequency and frequency not in ['---']:
+            if frequency and frequency not in ["---"]:
                 statistics["frequency"] = frequency
 
             # Create the P2PMessage instance
             new_message = P2PMessage(
-                id=message_data['id'],
+                id=message_data["id"],
                 origin_callsign=origin.callsign,
                 destination_callsign=destination.callsign,
-                body=message_data['body'],
+                body=message_data["body"],
                 timestamp=timestamp,
                 direction=direction,
                 status_id=status.id if status else None,
                 is_read=is_read,
                 attempt=0,
-                statistics=statistics            )
+                statistics=statistics,
+            )
 
             session.add(new_message)
 
             # Process and add attachments
-            if 'attachments' in message_data:
-                for attachment_data in message_data['attachments']:
+            if "attachments" in message_data:
+                for attachment_data in message_data["attachments"]:
                     self.attachments_manager.add_attachment(session, new_message, attachment_data)
 
             session.commit()
@@ -87,7 +100,10 @@ class DatabaseManagerMessages(DatabaseManager):
             return new_message.id
         except IntegrityError as e:
             session.rollback()  # Roll back the session to a clean state
-            self.log(f"Message with ID {message_data['id']} already exists in the database.", isWarning=True)
+            self.log(
+                f"Message with ID {message_data['id']} already exists in the database.",
+                isWarning=True,
+            )
             return None
 
         except Exception as e:
@@ -126,15 +142,20 @@ class DatabaseManagerMessages(DatabaseManager):
 
             if filters:
                 for key, value in filters.items():
-                    if key == 'id':
+                    if key == "id":
                         query = query.filter(P2PMessage.id == value)
-                    elif key == 'callsign':
+                    elif key == "callsign":
                         query = query.filter(
-                            (P2PMessage.origin_callsign.contains(value)) |
-                            (P2PMessage.via_callsign.contains(value)) |
-                            (P2PMessage.destination_callsign.contains(value))
+                            (P2PMessage.origin_callsign.contains(value))
+                            | (P2PMessage.via_callsign.contains(value))
+                            | (P2PMessage.destination_callsign.contains(value))
                         )
-                    elif key in ['origin_callsign', 'via_callsign', 'destination_callsign', 'direction']:
+                    elif key in [
+                        "origin_callsign",
+                        "via_callsign",
+                        "destination_callsign",
+                        "direction",
+                    ]:
                         query = query.filter(getattr(P2PMessage, key).contains(value))
 
             messages = query.all()
@@ -166,7 +187,7 @@ class DatabaseManagerMessages(DatabaseManager):
             the messages themselves, formatted for JSON serialization.
         """
         messages_dict = self.get_all_messages(filters)
-        messages_with_header = {'total_messages': len(messages_dict), 'messages': messages_dict}
+        messages_with_header = {"total_messages": len(messages_dict), "messages": messages_dict}
         return messages_with_header
 
     def get_message_by_id(self, message_id):
@@ -245,15 +266,20 @@ class DatabaseManagerMessages(DatabaseManager):
 
                 # Parse the timestamp for QSO date and time, strip fractional seconds
                 timestamp_clean = timestamp.split(".")[0]  # Remove fractional seconds
-                qso_date = timestamp_clean.split("T")[0].replace("-", "")  # Extract the date part and remove hyphens
+                qso_date = timestamp_clean.split("T")[0].replace(
+                    "-", ""
+                )  # Extract the date part and remove hyphens
 
                 # Extract the time and format it as HHMMSS
-                time_on = datetime.strptime(timestamp_clean.split("T")[1], "%H:%M:%S").strftime("%H%M%S")
+                time_on = datetime.strptime(timestamp_clean.split("T")[1], "%H:%M:%S").strftime(
+                    "%H%M%S"
+                )
 
                 # Calculate TIME_OFF by adding duration to TIME_ON
                 duration = statistics.get("duration", 0.0)  # Duration in seconds
-                time_on_obj = datetime.strptime(timestamp_clean.split("T")[1],
-                                                "%H:%M:%S")  # Parse time_on as a datetime object
+                time_on_obj = datetime.strptime(
+                    timestamp_clean.split("T")[1], "%H:%M:%S"
+                )  # Parse time_on as a datetime object
                 time_off_obj = time_on_obj + timedelta(seconds=duration)
                 time_off = time_off_obj.strftime("%H%M%S")  # Format time_off back to HHMMSS format
 
@@ -264,7 +290,11 @@ class DatabaseManagerMessages(DatabaseManager):
 
                 # Gridsquare handling
                 print(origin_info)
-                if origin_info and "location" in origin_info and origin_info["location"] is not None:
+                if (
+                    origin_info
+                    and "location" in origin_info
+                    and origin_info["location"] is not None
+                ):
                     print(origin_info["location"])
                     grid = origin_info["location"].get("gridsquare", "")
                 else:
@@ -294,10 +324,10 @@ class DatabaseManagerMessages(DatabaseManager):
                     f"<SUBMODE:{len(submode)}>{submode}",
                     f"<COMMENT:{len(comment)}>{comment}",
                     f"<GRIDSQUARE:{len(grid)}>{grid}",
-                    #f"<DIRECTION:{len(direction)}>{direction}",
-                    #f"<STATUS:{len(status)}>{status}",
-                    #f"<DURATION:{len(str(duration))}>{duration}",
-                    "<EOR>"
+                    # f"<DIRECTION:{len(direction)}>{direction}",
+                    # f"<STATUS:{len(status)}>{status}",
+                    # f"<DURATION:{len(str(duration))}>{duration}",
+                    "<EOR>",
                 ]
 
                 return "".join(adif_fields)
@@ -332,12 +362,10 @@ class DatabaseManagerMessages(DatabaseManager):
         # - If the attachment is solely linked to this message, the attachment record is deleted.
         self.attachments_manager.delete_attachments_by_message_id(message_id)
 
-
         session = self.get_thread_scoped_session()
         try:
             message = session.query(P2PMessage).filter_by(id=message_id).first()
             if message:
-
                 if message.to_dict()["status"] in ["transmitting", "queued"]:
                     raise MessageStatusError("Message is queued or transmitting")
 
@@ -346,17 +374,17 @@ class DatabaseManagerMessages(DatabaseManager):
 
                 self.log(f"Deleted: {message_id}")
                 self.ctx.event_manager.freedata_message_db_change(message_id=message_id)
-                return {'status': 'success', 'message': f'Message {message_id} deleted'}
+                return {"status": "success", "message": f"Message {message_id} deleted"}
             else:
-                return {'status': 'failure', 'message': 'Message not found'}
+                return {"status": "failure", "message": "Message not found"}
         except Exception as e:
             session.rollback()
             self.log(f"Error deleting message with ID {message_id}: {e}", isWarning=True)
-            return {'status': 'failure', 'message': 'error deleting message'}
+            return {"status": "failure", "message": "error deleting message"}
         except MessageStatusError as e:
             session.rollback()
             self.log(f"Error deleting message with ID {message_id}: {e}", isWarning=True)
-            return {'status': 'failure', 'message': e}
+            return {"status": "failure", "message": e}
 
         finally:
             session.remove()
@@ -388,27 +416,27 @@ class DatabaseManagerMessages(DatabaseManager):
             if message:
                 # Update fields of the message as per update_data
                 for key, value in update_data.items():
-                    if key == 'status':
+                    if key == "status":
                         setattr(message, key, self.get_or_create_status(session, value))
-                    elif key == 'statistics':
+                    elif key == "statistics":
                         statistics = value
-                        if frequency and frequency not in ['---']:
+                        if frequency and frequency not in ["---"]:
                             statistics["frequency"] = frequency
                         setattr(message, key, statistics)
-                    elif key in ['body', 'is_read', 'attempt', 'priority']:
+                    elif key in ["body", "is_read", "attempt", "priority"]:
                         setattr(message, key, value)
 
                 session.commit()
                 self.log(f"Updated: {message_id}")
                 self.ctx.event_manager.freedata_message_db_change(message_id=message_id)
-                return {'status': 'success', 'message': f'Message {message_id} updated'}
+                return {"status": "success", "message": f"Message {message_id} updated"}
             else:
-                return {'status': 'failure', 'message': 'Message not found'}
+                return {"status": "failure", "message": "Message not found"}
 
         except Exception as e:
             session.rollback()
             self.log(f"Error updating message with ID {message_id}: {e}", isWarning=True)
-            return {'status': 'failure', 'message': 'error updating message'}
+            return {"status": "failure", "message": "error updating message"}
 
         finally:
             session.remove()
@@ -430,13 +458,15 @@ class DatabaseManagerMessages(DatabaseManager):
         session = self.get_thread_scoped_session()
         try:
             # Find the status object for "queued"
-            queued_status = session.query(Status).filter_by(name='queued').first()
+            queued_status = session.query(Status).filter_by(name="queued").first()
             if queued_status:
                 # Query for the first (oldest) message with status "queued"
-                message = session.query(P2PMessage)\
-                    .filter_by(status=queued_status)\
-                    .order_by(P2PMessage.timestamp)\
+                message = (
+                    session.query(P2PMessage)
+                    .filter_by(status=queued_status)
+                    .order_by(P2PMessage.timestamp)
                     .first()
+                )
                 if message:
                     self.log(f"Found queued message with ID {message.id}")
                     return message.to_dict()
@@ -486,7 +516,6 @@ class DatabaseManagerMessages(DatabaseManager):
             if own_session:
                 session.remove()
 
-
     def set_message_to_queued_for_callsign(self, callsign):
         """Sets the first failed message for a callsign to 'queued'.
 
@@ -507,21 +536,23 @@ class DatabaseManagerMessages(DatabaseManager):
         session = self.get_thread_scoped_session()
         try:
             # Find the 'failed' status object
-            failed_status = session.query(Status).filter_by(name='failed').first()
+            failed_status = session.query(Status).filter_by(name="failed").first()
             # Find the 'queued' status object
-            queued_status = session.query(Status).filter_by(name='queued').first()
+            queued_status = session.query(Status).filter_by(name="queued").first()
 
             # Ensure both statuses are found
             if not failed_status or not queued_status:
                 self.log("Failed or queued status not found", isWarning=True)
-                return {'status': 'failure', 'message': 'Failed or queued status not found'}
+                return {"status": "failure", "message": "Failed or queued status not found"}
 
             # Query for messages with the specified callsign, 'failed' status, and fewer than 10 attempts
-            message = session.query(P2PMessage) \
-                .filter(P2PMessage.destination_callsign == callsign) \
-                .filter(P2PMessage.status_id == failed_status.id) \
-                .filter(P2PMessage.attempt < 10) \
+            message = (
+                session.query(P2PMessage)
+                .filter(P2PMessage.destination_callsign == callsign)
+                .filter(P2PMessage.status_id == failed_status.id)
+                .filter(P2PMessage.attempt < 10)
                 .first()
+            )
 
             if message:
                 # Increment attempt count using the existing function
@@ -531,12 +562,12 @@ class DatabaseManagerMessages(DatabaseManager):
                 self.log(f"Set message {message.id} to queued and incremented attempt")
 
                 session.commit()
-                return {'status': 'success', 'message': f'message(s) set to queued'}
+                return {"status": "success", "message": f"message(s) set to queued"}
             else:
-                return {'status': 'failure', 'message': 'No eligible messages found'}
+                return {"status": "failure", "message": "No eligible messages found"}
         except Exception as e:
             session.rollback()
             self.log(f"An error occurred while setting messages to queued: {e}", isWarning=True)
-            return {'status': 'failure', 'message': 'error setting message to queued'}
+            return {"status": "failure", "message": "error setting message to queued"}
         finally:
             session.remove()

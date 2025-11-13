@@ -1,18 +1,17 @@
-
 class radio:
     """ """
 
     def __init__(self):
         self.parameters = {
-            'frequency': '---',
-            'mode': '---',
-            'alc': '---',
-            'strength': '---',
-            'bandwidth': '---',
-            'rf': '---',
-            'ptt': False,  # Initial PTT state is set to False
-            'tuner': False,
-            'swr': '---'
+            "frequency": "---",
+            "mode": "---",
+            "alc": "---",
+            "strength": "---",
+            "bandwidth": "---",
+            "rf": "---",
+            "ptt": False,  # Initial PTT state is set to False
+            "tuner": False,
+            "swr": "---",
         }
 
     def connect(self, **kwargs):
@@ -39,11 +38,11 @@ class radio:
 
     def get_frequency(self):
         """ """
-        return self.parameters['frequency']
+        return self.parameters["frequency"]
 
     def get_mode(self):
         """ """
-        return self.parameters['mode']
+        return self.parameters["mode"]
 
     def get_level(self):
         """ """
@@ -76,6 +75,7 @@ class radio:
     def set_bandwidth(self):
         """ """
         return None
+
     def set_mode(self, mode):
         """
 
@@ -85,7 +85,7 @@ class radio:
         Returns:
 
         """
-        self.parameters['mode'] = mode
+        self.parameters["mode"] = mode
         return None
 
     def set_tuner(self, state):
@@ -108,9 +108,10 @@ class radio:
         Returns:
 
         """
-        self.parameters['frequency'] = frequency
+        self.parameters["frequency"] = frequency
 
         return None
+
     def get_status(self):
         """
 
@@ -121,6 +122,7 @@ class radio:
 
         """
         return True
+
     def get_ptt(self):
         """ """
         return None
@@ -139,7 +141,6 @@ class radio:
     def close_rig(self):
         """ """
         return
-
 
     def get_parameters(self):
         return self.parameters

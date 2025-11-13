@@ -26,6 +26,7 @@ class FREEDV_MODE(Enum):
     """
     Enumeration for codec2 modes and names
     """
+
     signalling = 19
     signalling_ack = 20
     datac0 = 14
@@ -41,13 +42,15 @@ class FREEDV_MODE(Enum):
     data_ofdm_2438 = 2124381
     data_vhf_1 = 201
 
-    #data_qam_2438 = 2124382
-    #qam16c2 = 22
+    # data_qam_2438 = 2124382
+    # qam16c2 = 22
+
 
 class FREEDV_MODE_USED_SLOTS(Enum):
     """
     Enumeration for codec2 used slots
     """
+
     sig0 = [False, False, True, False, False]
     sig1 = [False, False, True, False, False]
     datac0 = [False, False, True, False, False]
@@ -63,6 +66,7 @@ class FREEDV_MODE_USED_SLOTS(Enum):
     data_ofdm_2438 = [True, True, True, True, True]
     data_qam_2438 = [True, True, True, True, True]
     qam16c2 = [True, True, True, True, True]
+
 
 # Function for returning the mode value
 def freedv_get_mode_value_by_name(mode: str) -> int:
@@ -90,6 +94,7 @@ def freedv_get_mode_name_by_value(mode: int) -> str:
     """
     return FREEDV_MODE(mode).name
 
+
 # Get the directory of the current script file
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(script_dir)
@@ -97,10 +102,10 @@ sys.path.append(script_dir)
 # Use script_dir to construct the paths for file search
 if sys.platform == "linux":
     files = glob.glob(os.path.join(script_dir, "**/*libcodec2*"), recursive=True)
-    #files.append(os.path.join(script_dir, "libcodec2.so"))
+    # files.append(os.path.join(script_dir, "libcodec2.so"))
 elif sys.platform == "darwin":
     if hasattr(sys, "_MEIPASS"):
-        files = glob.glob(os.path.join(getattr(sys, "_MEIPASS"), '**/*libcodec2*'), recursive=True)
+        files = glob.glob(os.path.join(getattr(sys, "_MEIPASS"), "**/*libcodec2*"), recursive=True)
     else:
         files = glob.glob(os.path.join(script_dir, "**/*libcodec2*.dylib"), recursive=True)
 elif sys.platform in ["win32", "win64"]:
@@ -116,14 +121,14 @@ for file in files:
         break
     except OSError as err:
         pass
-        #log.info("[C2 ] Error:  Libcodec2 found but not loaded", path=file, e=err)
+        # log.info("[C2 ] Error:  Libcodec2 found but not loaded", path=file, e=err)
 
 # Quit module if codec2 cant be loaded
 if api is None or "api" not in locals():
     log.critical("[C2 ] Error:  Libcodec2 not loaded - Exiting")
     sys.exit(1)
 
-#log.info("[C2 ] Libcodec2 loaded...", path=file)
+# log.info("[C2 ] Libcodec2 loaded...", path=file)
 # ctypes function init
 
 # api.freedv_set_tuning_range.restype = ctypes.c_int
@@ -220,7 +225,7 @@ class MODEMSTATS(ctypes.Structure):
         ("neyesamp", ctypes.c_int),  # How many samples in the eye diagram
         ("f_est", (ctypes.c_float * MODEM_STATS_MAX_F_EST)),
         ("fft_buf", (ctypes.c_float * MODEM_STATS_NSPEC * 2)),
-        ("fft_cfg", ctypes.c_void_p)
+        ("fft_cfg", ctypes.c_void_p),
     ]
 
 
@@ -248,6 +253,7 @@ api.rx_sync_flags_to_text = [  # type: ignore
     "EBS-",
     "EBST",
 ]
+
 
 # Audio buffer ---------------------------------------------------------
 class audio_buffer:
@@ -298,8 +304,6 @@ class audio_buffer:
         self.buffer[: self.nbuffer] = self.buffer[size : size + self.nbuffer]
         assert self.nbuffer >= 0
         self.mutex.release()
-
-
 
 
 # Resampler ---------------------------------------------------------
@@ -385,18 +389,25 @@ class resampler:
 
         return out48
 
+
 def open_instance(mode: int) -> ctypes.c_void_p:
     data_custom = 21
-    if mode in [FREEDV_MODE.data_ofdm_200.value, FREEDV_MODE.data_ofdm_250.value, FREEDV_MODE.data_ofdm_500.value, FREEDV_MODE.data_ofdm_1700.value, FREEDV_MODE.data_ofdm_2438.value]:
-    #if mode in [FREEDV_MODE.data_ofdm_500.value, FREEDV_MODE.data_ofdm_2438.value, FREEDV_MODE.data_qam_2438]:
+    if mode in [
+        FREEDV_MODE.data_ofdm_200.value,
+        FREEDV_MODE.data_ofdm_250.value,
+        FREEDV_MODE.data_ofdm_500.value,
+        FREEDV_MODE.data_ofdm_1700.value,
+        FREEDV_MODE.data_ofdm_2438.value,
+    ]:
+        # if mode in [FREEDV_MODE.data_ofdm_500.value, FREEDV_MODE.data_ofdm_2438.value, FREEDV_MODE.data_qam_2438]:
         custom_params = ofdm_configurations[mode]
         return ctypes.cast(
-                    api.freedv_open_advanced(
-                        data_custom,
-                        ctypes.byref(custom_params),
-                    ),
-                    ctypes.c_void_p,
-                )
+            api.freedv_open_advanced(
+                data_custom,
+                ctypes.byref(custom_params),
+            ),
+            ctypes.c_void_p,
+        )
 
     elif mode in [FREEDV_MODE.data_vhf_1.value]:
         fsk_custom = 9
@@ -428,7 +439,8 @@ def get_bytes_per_frame(mode: int) -> int:
     return int(api.freedv_get_bits_per_modem_frame(freedv) / 8)
 
 
-MAX_UW_BITS = 64#192
+MAX_UW_BITS = 64  # 192
+
 
 class OFDM_CONFIG(ctypes.Structure):
     _fields_ = [
@@ -465,11 +477,12 @@ class OFDM_CONFIG(ctypes.Structure):
         ("data_mode", ctypes.c_char_p),  # Data mode ("streaming", "burst", etc.)
         ("fmin", ctypes.c_float),  # Minimum frequency for tuning range
         ("fmax", ctypes.c_float),  # Maximum frequency for tuning range
-
     ]
+
 
 class FREEDV_ADVANCED(ctypes.Structure):
     """Advanced structure for fsk and ofdm modes"""
+
     _fields_ = [
         ("interleave_frames", ctypes.c_int),
         ("M", ctypes.c_int),
@@ -478,11 +491,13 @@ class FREEDV_ADVANCED(ctypes.Structure):
         ("first_tone", ctypes.c_int),
         ("tone_spacing", ctypes.c_int),
         ("codename", ctypes.c_char_p),
-        ("config", ctypes.POINTER(OFDM_CONFIG))
+        ("config", ctypes.POINTER(OFDM_CONFIG)),
     ]
+
 
 class FREEDV_ADVANCED_FSK(ctypes.Structure):
     """Advanced structure for fsk and ofdm modes"""
+
     _fields_ = [
         ("interleave_frames", ctypes.c_int),
         ("M", ctypes.c_int),
@@ -492,12 +507,13 @@ class FREEDV_ADVANCED_FSK(ctypes.Structure):
         ("tone_spacing", ctypes.c_int),
         ("codename", ctypes.c_char_p),
     ]
+
 
 api.freedv_open_advanced.argtypes = [ctypes.c_int, ctypes.POINTER(FREEDV_ADVANCED)]
 api.freedv_open_advanced.restype = ctypes.c_void_p
 
-def create_default_ofdm_config():
 
+def create_default_ofdm_config():
     ofdm_default_config = OFDM_CONFIG(
         tx_centre=1500.0,
         rx_centre=1500.0,
@@ -515,34 +531,36 @@ def create_default_ofdm_config():
         bad_uw_errors=10,
         ftwindowwidth=80,
         edge_pilots=False,
-        state_machine="data".encode('utf-8'),
-        codename="H_1024_2048_4f".encode('utf-8'),
+        state_machine="data".encode("utf-8"),
+        codename="H_1024_2048_4f".encode("utf-8"),
         tx_uw=(c_uint8 * MAX_UW_BITS)(*([0] * MAX_UW_BITS)),
         amp_est_mode=1,
         tx_bpf_en=False,
         rx_bpf_en=False,
         tx_bpf_proto=codec2_filter_coeff.testFilter,
-        tx_bpf_proto_n=int(ctypes.sizeof(codec2_filter_coeff.testFilter) / ctypes.sizeof(ctypes.c_float)),
+        tx_bpf_proto_n=int(
+            ctypes.sizeof(codec2_filter_coeff.testFilter) / ctypes.sizeof(ctypes.c_float)
+        ),
         foff_limiter=False,
-        amp_scale=300E3,
+        amp_scale=300e3,
         clip_gain1=2.2,
         clip_gain2=0.8,
         clip_en=False,
-        mode="CUSTOM".encode('utf-8'),
-        data_mode="streaming".encode('utf-8'),
+        mode="CUSTOM".encode("utf-8"),
+        data_mode="streaming".encode("utf-8"),
         fmin=-50.0,
         fmax=50.0,
     )
 
     return FREEDV_ADVANCED(
-        interleave_frames = 0,
-        M = 2,
-        Rs = 100,
-        Fs = 8000,
-        first_tone = 1000,
-        tone_spacing = 200,
-        codename = "H_256_512_4".encode("utf-8"),
-        config = ctypes.pointer(ofdm_default_config),
+        interleave_frames=0,
+        M=2,
+        Rs=100,
+        Fs=8000,
+        first_tone=1000,
+        tone_spacing=200,
+        codename="H_256_512_4".encode("utf-8"),
+        config=ctypes.pointer(ofdm_default_config),
     )
 
 
@@ -567,15 +585,16 @@ def create_tx_uw(nuwbits, uw_sequence):
 
 def create_default_fsk_config():
     return FREEDV_ADVANCED(
-            interleave_frames = 0,
-            M = 2,
-            Rs = 100,
-            Fs = 8000,
-            first_tone = 1000,
-            tone_spacing = 200,
-            codename = "H_256_512_4".encode("utf-8"),
-            config = None
-        )
+        interleave_frames=0,
+        M=2,
+        Rs=100,
+        Fs=8000,
+        first_tone=1000,
+        tone_spacing=200,
+        codename="H_256_512_4".encode("utf-8"),
+        config=None,
+    )
+
 
 def get_centered_first_tone(config, center=1500):
     """
@@ -617,15 +636,22 @@ data_ofdm_200_config.config.contents.rs = 1.0 / data_ofdm_200_config.config.cont
 data_ofdm_200_config.config.contents.nc = 3
 data_ofdm_200_config.config.contents.timing_mx_thresh = 0.45
 data_ofdm_200_config.config.contents.bad_uw_errors = 18
-data_ofdm_200_config.config.contents.codename = "H_256_512_4".encode('utf-8')
-data_ofdm_200_config.config.contents.amp_scale = 2.5*300E3
+data_ofdm_200_config.config.contents.codename = "H_256_512_4".encode("utf-8")
+data_ofdm_200_config.config.contents.amp_scale = 2.5 * 300e3
 data_ofdm_200_config.config.contents.nuwbits = 48
-data_ofdm_200_config.config.contents.tx_uw = create_tx_uw(data_ofdm_200_config.config.contents.nuwbits, [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0])
+data_ofdm_200_config.config.contents.tx_uw = create_tx_uw(
+    data_ofdm_200_config.config.contents.nuwbits,
+    [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0],
+)
 data_ofdm_200_config.config.contents.clip_gain1 = 1.2
 data_ofdm_200_config.config.contents.clip_gain2 = 1.0
 data_ofdm_200_config.config.contents.tx_bpf_en = False
-data_ofdm_200_config.config.contents.tx_bpf_proto = codec2_filter_coeff.generate_filter_coefficients(8000, 400, 101)
-data_ofdm_200_config.config.contents.tx_bpf_proto_n = 101 # TODO sizeof(filtP200S400) / sizeof(float);
+data_ofdm_200_config.config.contents.tx_bpf_proto = (
+    codec2_filter_coeff.generate_filter_coefficients(8000, 400, 101)
+)
+data_ofdm_200_config.config.contents.tx_bpf_proto_n = (
+    101  # TODO sizeof(filtP200S400) / sizeof(float);
+)
 
 
 # DATAC4 # OFDM 250
@@ -638,15 +664,22 @@ data_ofdm_250_config.config.contents.rs = 1.0 / data_ofdm_250_config.config.cont
 data_ofdm_250_config.config.contents.nc = 4
 data_ofdm_250_config.config.contents.timing_mx_thresh = 0.5
 data_ofdm_250_config.config.contents.bad_uw_errors = 12
-data_ofdm_250_config.config.contents.codename = "H_1024_2048_4f".encode('utf-8')
-data_ofdm_250_config.config.contents.amp_scale = 2*300E3
+data_ofdm_250_config.config.contents.codename = "H_1024_2048_4f".encode("utf-8")
+data_ofdm_250_config.config.contents.amp_scale = 2 * 300e3
 data_ofdm_250_config.config.contents.nuwbits = 32
-data_ofdm_250_config.config.contents.tx_uw = create_tx_uw(data_ofdm_250_config.config.contents.nuwbits, [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0])
+data_ofdm_250_config.config.contents.tx_uw = create_tx_uw(
+    data_ofdm_250_config.config.contents.nuwbits,
+    [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0],
+)
 data_ofdm_250_config.config.contents.clip_gain1 = 1.2
 data_ofdm_250_config.config.contents.clip_gain2 = 1.0
 data_ofdm_250_config.config.contents.tx_bpf_en = True
-data_ofdm_250_config.config.contents.tx_bpf_proto = codec2_filter_coeff.generate_filter_coefficients(8000, 400, 101)
-data_ofdm_250_config.config.contents.tx_bpf_proto_n = 101 # TODO sizeof(filtP200S400) / sizeof(float);
+data_ofdm_250_config.config.contents.tx_bpf_proto = (
+    codec2_filter_coeff.generate_filter_coefficients(8000, 400, 101)
+)
+data_ofdm_250_config.config.contents.tx_bpf_proto_n = (
+    101  # TODO sizeof(filtP200S400) / sizeof(float);
+)
 
 
 # OFDM 500
@@ -659,14 +692,19 @@ data_ofdm_500_config.config.contents.rs = 1.0 / data_ofdm_500_config.config.cont
 data_ofdm_500_config.config.contents.nc = 8
 data_ofdm_500_config.config.contents.timing_mx_thresh = 0.1
 data_ofdm_500_config.config.contents.bad_uw_errors = 18
-data_ofdm_500_config.config.contents.codename = "H_1024_2048_4f".encode('utf-8')
-data_ofdm_500_config.config.contents.amp_scale = 300E3 # 290E3
+data_ofdm_500_config.config.contents.codename = "H_1024_2048_4f".encode("utf-8")
+data_ofdm_500_config.config.contents.amp_scale = 300e3  # 290E3
 data_ofdm_500_config.config.contents.nuwbits = 56
-data_ofdm_500_config.config.contents.tx_uw = create_tx_uw(data_ofdm_500_config.config.contents.nuwbits, [0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1])
-data_ofdm_500_config.config.contents.clip_gain1 = 2.5 # 2.8
-data_ofdm_500_config.config.contents.clip_gain2 = 1.0 #0.9
+data_ofdm_500_config.config.contents.tx_uw = create_tx_uw(
+    data_ofdm_500_config.config.contents.nuwbits,
+    [0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1],
+)
+data_ofdm_500_config.config.contents.clip_gain1 = 2.5  # 2.8
+data_ofdm_500_config.config.contents.clip_gain2 = 1.0  # 0.9
 data_ofdm_500_config.config.contents.tx_bpf_en = True
-data_ofdm_500_config.config.contents.tx_bpf_proto = codec2_filter_coeff.generate_filter_coefficients(8000, 600, 100)
+data_ofdm_500_config.config.contents.tx_bpf_proto = (
+    codec2_filter_coeff.generate_filter_coefficients(8000, 600, 100)
+)
 data_ofdm_500_config.config.contents.tx_bpf_proto_n = 100
 
 
@@ -683,11 +721,15 @@ data_ofdm_1700_config.config.contents.bad_uw_errors = 6
 data_ofdm_1700_config.config.contents.codename = b"H_4096_8192_3d"
 data_ofdm_1700_config.config.contents.clip_gain1 = 2.7
 data_ofdm_1700_config.config.contents.clip_gain2 = 0.8
-data_ofdm_1700_config.config.contents.amp_scale = 145E3
+data_ofdm_1700_config.config.contents.amp_scale = 145e3
 data_ofdm_1700_config.config.contents.tx_bpf_en = False
-data_ofdm_1700_config.config.contents.tx_bpf_proto = codec2_filter_coeff.generate_filter_coefficients(8000, 2000, 100)
+data_ofdm_1700_config.config.contents.tx_bpf_proto = (
+    codec2_filter_coeff.generate_filter_coefficients(8000, 2000, 100)
+)
 data_ofdm_1700_config.config.contents.tx_bpf_proto_n = 100
-data_ofdm_1700_config.config.contents.tx_uw = create_tx_uw(data_ofdm_1700_config.config.contents.nuwbits, [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0])
+data_ofdm_1700_config.config.contents.tx_uw = create_tx_uw(
+    data_ofdm_1700_config.config.contents.nuwbits, [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0]
+)
 
 
 """
@@ -720,14 +762,19 @@ data_ofdm_2438_config.config.contents.nuwbits = 24
 data_ofdm_2438_config.config.contents.timing_mx_thresh = 0.10
 data_ofdm_2438_config.config.contents.bad_uw_errors = 8
 data_ofdm_2438_config.config.contents.amp_est_mode = 0
-data_ofdm_2438_config.config.contents.amp_scale = 106E3
-data_ofdm_2438_config.config.contents.codename = "H_16200_9720".encode('utf-8')
+data_ofdm_2438_config.config.contents.amp_scale = 106e3
+data_ofdm_2438_config.config.contents.codename = "H_16200_9720".encode("utf-8")
 data_ofdm_2438_config.config.contents.clip_gain1 = 3.3
-data_ofdm_2438_config.config.contents.clip_gain2 = 1.5 #0.8 - a test in real world shows, 0.8 seems to be not enough for decoding. Lets test this some more time.
+data_ofdm_2438_config.config.contents.clip_gain2 = 1.5  # 0.8 - a test in real world shows, 0.8 seems to be not enough for decoding. Lets test this some more time.
 data_ofdm_2438_config.config.contents.timing_mx_thresh = 0.10
-data_ofdm_2438_config.config.contents.tx_uw = create_tx_uw(data_ofdm_2438_config.config.contents.nuwbits, [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1])
+data_ofdm_2438_config.config.contents.tx_uw = create_tx_uw(
+    data_ofdm_2438_config.config.contents.nuwbits,
+    [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
+)
 data_ofdm_2438_config.config.contents.tx_bpf_en = True
-data_ofdm_2438_config.config.contents.tx_bpf_proto = codec2_filter_coeff.generate_filter_coefficients(8000, 2700, 100)
+data_ofdm_2438_config.config.contents.tx_bpf_proto = (
+    codec2_filter_coeff.generate_filter_coefficients(8000, 2700, 100)
+)
 data_ofdm_2438_config.config.contents.tx_bpf_proto_n = 100
 
 # ---------------- QAM 2438 Hz Bandwidth ---------------#
@@ -758,8 +805,6 @@ ofdm_configurations = {
     FREEDV_MODE.data_ofdm_500.value: data_ofdm_500_config,
     FREEDV_MODE.data_ofdm_1700.value: data_ofdm_1700_config,
     FREEDV_MODE.data_ofdm_2438.value: data_ofdm_2438_config,
-    #FREEDV_MODE.data_qam_2438.value: data_qam_2438_config,
+    # FREEDV_MODE.data_qam_2438.value: data_qam_2438_config,
 }
-fsk_configurations = {
-    FREEDV_MODE.data_vhf_1.value: data_vhf_1_config
-}
+fsk_configurations = {FREEDV_MODE.data_vhf_1.value: data_vhf_1_config}

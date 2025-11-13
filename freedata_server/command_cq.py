@@ -1,5 +1,7 @@
 from command import TxCommand
 from codec2 import FREEDV_MODE
+
+
 class CQCommand(TxCommand):
     """Command for transmitting CQ frames.
 

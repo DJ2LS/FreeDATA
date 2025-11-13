@@ -1,5 +1,6 @@
 import os
 import sys
+
 # we need to add script directory to the sys path for avoiding problems with pip package
 script_directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(script_directory)
@@ -57,6 +58,7 @@ async def lifespan(app: FastAPI):
     ctx.shutdown()
     logger.info("Shutdown complete")
 
+
 # Create FastAPI app with unified lifespan
 app = FastAPI(
     title="FreeDATA API",
@@ -76,6 +78,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # HTTP middleware: disable caching and logging
 @app.middleware("http")
 async def nocache(request: Request, call_next):
@@ -85,6 +88,7 @@ async def nocache(request: Request, call_next):
     # structlog stdlib logger akzeptiert %-Formatierung; alternativ key/value:
     logger.info("[API] %s %s → %d", request.method, request.url.path, response.status_code)
     return response
+
 
 # Static GUI mounting
 potential_gui_dirs = [
@@ -133,8 +137,8 @@ def open_browser_after_delay(url, delay=2):
 
 
 def main():
-    host = ctx.config_manager.config.get('NETWORK', {}).get('modemaddress') or '0.0.0.0'
-    port = int(ctx.config_manager.config.get('NETWORK', {}).get('modemport', 5000))
+    host = ctx.config_manager.config.get("NETWORK", {}).get("modemaddress") or "0.0.0.0"
+    port = int(ctx.config_manager.config.get("NETWORK", {}).get("modemport", 5000))
 
     # Launch GUI if available
     if gui_dir and os.path.isdir(gui_dir):
@@ -146,10 +150,11 @@ def main():
         logger.info("                                                   ")
         logger.info("---------------------------------------------------")
 
-        if ctx.config_manager.config.get('GUI', {}).get('auto_run_browser', True):
+        if ctx.config_manager.config.get("GUI", {}).get("auto_run_browser", True):
             threading.Thread(target=open_browser_after_delay, args=(url, 2), daemon=True).start()
 
     uvicorn.run(app, host=host, port=port, log_config=None, log_level="info")
+
 
 if __name__ == "__main__":
     sys.exit(main())

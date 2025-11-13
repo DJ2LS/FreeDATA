@@ -14,6 +14,7 @@ from constants import EXPLORER_API_URL
 
 log = structlog.get_logger("explorer")
 
+
 class Explorer:
     """Pushes station and last heard data to the FreeDATA explorer.
 
@@ -21,6 +22,7 @@ class Explorer:
     frequency, signal strength, version, bandwidth, beacon status, and
     last heard stations, and pushes this data to the FreeDATA explorer API.
     """
+
     def __init__(self, ctx):
         """Initializes the Explorer.
 
@@ -46,32 +48,36 @@ class Explorer:
         pushes, failed pushes, and connection issues.
         """
 
-        frequency = 0 if self.ctx.state_manager.radio_frequency is None else self.ctx.state_manager.radio_frequency
+        frequency = (
+            0
+            if self.ctx.state_manager.radio_frequency is None
+            else self.ctx.state_manager.radio_frequency
+        )
         band = "USB"
         callsign = f"{self.ctx.config_manager.config['STATION']['mycall']}-{self.ctx.config_manager.config['STATION']['myssid']}"
-        gridsquare = str(self.ctx.config_manager.config['STATION']['mygrid'])
+        gridsquare = str(self.ctx.config_manager.config["STATION"]["mygrid"])
         version = str(self.modem_version)
-        bandwidth = str(self.ctx.config_manager.config['MODEM']['maximum_bandwidth'])
+        bandwidth = str(self.ctx.config_manager.config["MODEM"]["maximum_bandwidth"])
         beacon = str(self.ctx.state_manager.is_beacon_running)
         strength = str(self.ctx.state_manager.s_meter_strength)
         away_from_key = str(self.ctx.state_manager.is_away_from_key)
 
         # Stop pushing if default callsign
-        if callsign in ['AA1AAA-1', 'XX1XXX-6']:
+        if callsign in ["AA1AAA-1", "XX1XXX-6"]:
             return
 
         headers = {"Content-Type": "application/json"}
         station_data = {
-            'callsign': callsign,
-            'gridsquare': gridsquare,
-            'frequency': frequency,
-            'strength': strength,
-            'band': band,
-            'version': version,
-            'bandwidth': bandwidth,
-            'beacon': beacon,
+            "callsign": callsign,
+            "gridsquare": gridsquare,
+            "frequency": frequency,
+            "strength": strength,
+            "band": band,
+            "version": version,
+            "bandwidth": bandwidth,
+            "beacon": beacon,
             "lastheard": [],
-            "away_from_key": away_from_key
+            "away_from_key": away_from_key,
         }
 
         for i in self.ctx.state_manager.heard_stations:
@@ -85,13 +91,15 @@ class Explorer:
                 except Exception as e:
                     snr = "N/A"
                     log.warning("[EXPLORER] SNR parsing failed", e=e)
-                station_data["lastheard"].append({
-                    "callsign": callsign,
-                    "grid": grid,
-                    "snr": snr,
-                    "timestamp": timestamp,
-                    "frequency": frequency
-                })
+                station_data["lastheard"].append(
+                    {
+                        "callsign": callsign,
+                        "grid": grid,
+                        "snr": snr,
+                        "timestamp": timestamp,
+                        "frequency": frequency,
+                    }
+                )
             except Exception as e:
                 log.debug("[EXPLORER] not publishing station", e=e)
         station_data = json.dumps(station_data)
@@ -100,6 +108,10 @@ class Explorer:
             if response.status_code == 200:
                 log.info("[EXPLORER] Data pushed successfully")
             else:
-                log.error("[EXPLORER] Failed to push data", status_code=response.status_code, response_text=response.text)
+                log.error(
+                    "[EXPLORER] Failed to push data",
+                    status_code=response.status_code,
+                    response_text=response.text,
+                )
         except requests.exceptions.RequestException as e:
             log.warning("[EXPLORER] Connection lost", e=e)

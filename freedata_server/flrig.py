@@ -1,8 +1,8 @@
-
 import xmlrpc.client
 import threading
 import time
 import logging
+
 
 class radio:
     def __init__(self, ctx):
@@ -16,15 +16,15 @@ class radio:
         self.connected = False
 
         self.parameters = {
-            'frequency': '---',
-            'mode': '---',
-            'alc': '---',
-            'strength': '---',
-            'bandwidth': '---',
-            'rf': '---',
-            'ptt': False,
-            'tuner': False,
-            'swr': '---'
+            "frequency": "---",
+            "mode": "---",
+            "alc": "---",
+            "strength": "---",
+            "bandwidth": "---",
+            "rf": "---",
+            "ptt": False,
+            "tuner": False,
+            "swr": "---",
         }
 
         self._stop_event = threading.Event()
@@ -67,7 +67,6 @@ class radio:
                     self.get_mode()
                     self.get_level()
 
-
                 except Exception as e:
                     self.logger.warning(f"Polling error: {e}")
                     self.connected = False
@@ -75,20 +74,18 @@ class radio:
             time.sleep(self.poll_interval)
 
     def get_frequency(self):
-        self.parameters['frequency'] = self.server.rig.get_vfo()
-        return self.parameters['frequency']
+        self.parameters["frequency"] = self.server.rig.get_vfo()
+        return self.parameters["frequency"]
 
     def get_rf(self):
-
         current_power_level = self.server.rig.get_power()
         max_power_level = self.server.rig.get_maxpwr()
         power_percentage = (int(current_power_level) / int(max_power_level)) * 100
-        self.parameters['rf'] = round(power_percentage, 0)
-        return self.parameters['rf']
-
+        self.parameters["rf"] = round(power_percentage, 0)
+        return self.parameters["rf"]
 
     def set_frequency(self, frequency):
-        self.parameters['frequency'] = frequency
+        self.parameters["frequency"] = frequency
         if self.connected:
             try:
                 self.server.main.set_frequency(float(frequency))
@@ -98,11 +95,11 @@ class radio:
                 self.connected = False
 
     def get_mode(self):
-        self.parameters['mode'] = self.server.rig.get_mode()
-        return self.parameters['mode']
+        self.parameters["mode"] = self.server.rig.get_mode()
+        return self.parameters["mode"]
 
     def set_mode(self, mode):
-        self.parameters['mode'] = mode
+        self.parameters["mode"] = mode
         if self.connected:
             try:
                 self.server.rig.set_mode(mode)
@@ -111,7 +108,7 @@ class radio:
                 self.connected = False
 
     def get_level(self):
-        self.parameters['strength'] = self.server.rig.get_smeter()
+        self.parameters["strength"] = self.server.rig.get_smeter()
 
     def get_alc(self):
         return None
@@ -120,7 +117,7 @@ class radio:
         return None
 
     def get_bandwidth(self):
-        return self.parameters['bandwidth']
+        return self.parameters["bandwidth"]
 
     def set_bandwidth(self, bandwidth):
         if self.connected:
@@ -148,25 +145,25 @@ class radio:
                 self.connected = False
 
     def get_strength(self):
-        return self.parameters['strength']
+        return self.parameters["strength"]
 
     def get_tuner(self):
-        return self.parameters['tuner']
+        return self.parameters["tuner"]
 
     def set_tuner(self, state):
-        self.parameters['tuner'] = state
+        self.parameters["tuner"] = state
         return None
 
     def get_swr(self):
-        self.parameters['swr'] = self.server.rig.get_swrmeter()
-        return self.parameters['swr']
+        self.parameters["swr"] = self.server.rig.get_swrmeter()
+        return self.parameters["swr"]
 
     def get_ptt(self):
-        self.parameters['ptt'] = self.server.rig.get_ptt()
-        return self.parameters['ptt']
+        self.parameters["ptt"] = self.server.rig.get_ptt()
+        return self.parameters["ptt"]
 
     def set_ptt(self, state):
-        self.parameters['ptt'] = state
+        self.parameters["ptt"] = state
         if self.connected:
             try:
                 if state:
@@ -178,14 +175,13 @@ class radio:
         return state
 
     def set_tuner(self, state):
-        self.parameters['ptt'] = state
+        self.parameters["ptt"] = state
         if self.connected:
             try:
                 self.server.rig.tune(state)
             except Exception as e:
                 self.logger.error(f"Set Tune failed: {e}")
         return state
-
 
     def get_status(self):
         return self.connected

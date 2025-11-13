@@ -1,6 +1,7 @@
 import sys
 import time
-sys.path.append('freedata_server')
+
+sys.path.append("freedata_server")
 
 import unittest
 import unittest.mock
@@ -30,24 +31,19 @@ class DummyCtx:
         pass
 
 
-
 class TestARQSession(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
-
-
         cls.logger = structlog.get_logger("TESTS")
 
         # ISS
 
-        cls.ctx_ISS = AppContext('freedata_server/config.ini.example')
+        cls.ctx_ISS = AppContext("freedata_server/config.ini.example")
         cls.ctx_ISS.TESTMODE = True
         cls.ctx_ISS.startup()
 
-
         # IRS
-        cls.ctx_IRS = AppContext('freedata_server/config.ini.example')
+        cls.ctx_IRS = AppContext("freedata_server/config.ini.example")
         cls.ctx_IRS.TESTMODE = True
         cls.ctx_IRS.startup()
 
@@ -55,7 +51,6 @@ class TestARQSession(unittest.TestCase):
         cls.ctx_IRS.state_manager.channel_busy_slot = [True, False, False, False, False]
         # Frame loss probability in %
         cls.loss_probability = 0
-
 
         cls.channels_running = False
 
@@ -65,15 +60,16 @@ class TestARQSession(unittest.TestCase):
         cls.ctx_IRS.shutdown()
         cls.ctx_ISS.shutdown()
 
-
     def channelWorker(self, ctx_a, ctx_b):
         while self.channels_running:
             try:
                 # Station A gets the data from its transmit queue
                 transmission = ctx_a.TESTMODE_TRANSMIT_QUEUE.get(timeout=1)
-                print(f"Station A sending: {transmission[1]}", len(transmission[1]), transmission[0])
+                print(
+                    f"Station A sending: {transmission[1]}", len(transmission[1]), transmission[0]
+                )
 
-                transmission[1] += bytes(2) # 2bytes crc simulation
+                transmission[1] += bytes(2)  # 2bytes crc simulation
 
                 if random.randint(0, 100) < self.loss_probability:
                     self.logger.info(f"[{threading.current_thread().name}] Frame lost...")
@@ -100,22 +96,25 @@ class TestARQSession(unittest.TestCase):
 
         self.logger.info(f"[{threading.current_thread().name}] Channel closed.")
 
-    def waitForSession(self, q, outbound = False):
-            key = 'arq-transfer-outbound' if outbound else 'arq-transfer-inbound'
-            while True and self.channels_running:
-                ev = q.get()
-                if key in ev and ('success' in ev[key] or 'ABORTED' in ev[key]):
-                    self.logger.info(f"[{threading.current_thread().name}] {key} session ended.")
-                    break
+    def waitForSession(self, q, outbound=False):
+        key = "arq-transfer-outbound" if outbound else "arq-transfer-inbound"
+        while True and self.channels_running:
+            ev = q.get()
+            if key in ev and ("success" in ev[key] or "ABORTED" in ev[key]):
+                self.logger.info(f"[{threading.current_thread().name}] {key} session ended.")
+                break
 
     def establishChannels(self):
         self.channels_running = True
-        self.channelA = threading.Thread(target=self.channelWorker,args=[self.ctx_ISS, self.ctx_IRS],name = "channelA")
+        self.channelA = threading.Thread(
+            target=self.channelWorker, args=[self.ctx_ISS, self.ctx_IRS], name="channelA"
+        )
         self.channelA.start()
 
-        self.channelB = threading.Thread(target=self.channelWorker,args=[self.ctx_IRS, self.ctx_ISS],name = "channelB")
+        self.channelB = threading.Thread(
+            target=self.channelWorker, args=[self.ctx_IRS, self.ctx_ISS], name="channelB"
+        )
         self.channelB.start()
-
 
     def waitAndCloseChannels(self):
         self.waitForSession(self.ctx_ISS.TESTMODE_EVENTS, True)
@@ -129,9 +128,9 @@ class TestARQSession(unittest.TestCase):
 
         self.establishChannels()
         params = {
-            'dxcall': "AA1AAA-1",
-            'data': base64.b64encode(bytes("Hello world!", encoding="utf-8")),
-            'type': "raw_lzma"
+            "dxcall": "AA1AAA-1",
+            "data": base64.b64encode(bytes("Hello world!", encoding="utf-8")),
+            "type": "raw_lzma",
         }
         cmd = ARQRawCommand(self.ctx_ISS, params)
         cmd.run()
@@ -140,12 +139,12 @@ class TestARQSession(unittest.TestCase):
 
         while not self.ctx_ISS.TESTMODE_EVENTS.empty():
             event = self.ctx_ISS.TESTMODE_EVENTS.get()
-            success = event.get('arq-transfer-outbound', {}).get('success', None)
+            success = event.get("arq-transfer-outbound", {}).get("success", None)
             if success is not None:
                 self.assertTrue(success, f"Test failed because of wrong success: {success}")
 
-        #self.ctx_IRS.shutdown()
-        #self.ctx_ISS.shutdown()
+        # self.ctx_IRS.shutdown()
+        # self.ctx_ISS.shutdown()
 
     def testARQSessionLargePayload(self):
         # set Packet Error Rate (PER) / frame loss probability
@@ -153,26 +152,25 @@ class TestARQSession(unittest.TestCase):
 
         self.establishChannels()
         params = {
-            'dxcall': "AA1AAA-1",
-            'data': base64.b64encode(np.random.bytes(1000)),
-            'type': "raw_lzma"
+            "dxcall": "AA1AAA-1",
+            "data": base64.b64encode(np.random.bytes(1000)),
+            "type": "raw_lzma",
         }
         cmd = ARQRawCommand(self.ctx_ISS, params)
         cmd.run()
 
         self.waitAndCloseChannels()
-        #del cmd
+        # del cmd
         print(self.ctx_ISS.TESTMODE_EVENTS.empty())
 
         while not self.ctx_ISS.TESTMODE_EVENTS.empty():
             event = self.ctx_ISS.TESTMODE_EVENTS.get()
-            success = event.get('arq-transfer-outbound', {}).get('success', None)
+            success = event.get("arq-transfer-outbound", {}).get("success", None)
             if success is not None:
                 self.assertTrue(success, f"Test failed because of wrong success: {success}")
 
-        #self.ctx_IRS.shutdown()
-        #self.ctx_ISS.shutdown()
-
+        # self.ctx_IRS.shutdown()
+        # self.ctx_ISS.shutdown()
 
     def DisabledtestARQSessionAbortTransmissionISS(self):
         # set Packet Error Rate (PER) / frame loss probability
@@ -180,18 +178,17 @@ class TestARQSession(unittest.TestCase):
 
         self.establishChannels()
         params = {
-            'dxcall': "AA1AAA-1",
-            'data': base64.b64encode(np.random.bytes(100)),
+            "dxcall": "AA1AAA-1",
+            "data": base64.b64encode(np.random.bytes(100)),
         }
         cmd = ARQRawCommand(self.ctx_ISS, params)
         cmd.run()
 
-        threading.Event().wait(np.random.randint(10,10))
+        threading.Event().wait(np.random.randint(10, 10))
         for id in self.ctx_ISS.state_manager.arq_iss_sessions:
             self.ctx_ISS.state_manager.arq_iss_sessions[id].abort_transmission()
 
         self.waitAndCloseChannels()
-
 
         del cmd
 
@@ -201,13 +198,13 @@ class TestARQSession(unittest.TestCase):
 
         self.establishChannels()
         params = {
-            'dxcall': "AA1AAA-1",
-            'data': base64.b64encode(np.random.bytes(100)),
+            "dxcall": "AA1AAA-1",
+            "data": base64.b64encode(np.random.bytes(100)),
         }
         cmd = ARQRawCommand(self.ctx_ISS, params)
         cmd.run()
 
-        threading.Event().wait(np.random.randint(1,10))
+        threading.Event().wait(np.random.randint(1, 10))
         for id in self.ctx_IRS.state_manager.arq_irs_sessions:
             self.ctx_IRS.state_manager.arq_irs_sessions[id].abort_transmission()
 
@@ -215,10 +212,9 @@ class TestARQSession(unittest.TestCase):
         del cmd
 
     def DisabledtestSessionCleanupISS(self):
-
         params = {
-            'dxcall': "AA1AAA-1",
-            'data': base64.b64encode(np.random.bytes(100)),
+            "dxcall": "AA1AAA-1",
+            "data": base64.b64encode(np.random.bytes(100)),
         }
         cmd = ARQRawCommand(self.config, self.iss_state_manager, self.iss_event_queue, params)
         cmd.run(self.iss_event_queue, self.iss_modem)
@@ -234,12 +230,9 @@ class TestARQSession(unittest.TestCase):
         del cmd
 
     def DisabledtestSessionCleanupIRS(self):
-        session = arq_session_irs.ARQSessionIRS(self.config,
-                            self.irs_modem,
-                            'AA1AAA-1',
-                            random.randint(0, 255),
-                            self.irs_state_manager
-                                                )
+        session = arq_session_irs.ARQSessionIRS(
+            self.config, self.irs_modem, "AA1AAA-1", random.randint(0, 255), self.irs_state_manager
+        )
         self.irs_state_manager.register_arq_irs_session(session)
         for session_id in self.irs_state_manager.arq_irs_sessions:
             session = self.irs_state_manager.arq_irs_sessions[session_id]
@@ -251,5 +244,6 @@ class TestARQSession(unittest.TestCase):
                 self.irs_state_manager.remove_arq_irs_session(session_id)
                 break
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

@@ -5,6 +5,7 @@ from state_manager import StateManager
 from modem_frametypes import FRAME_TYPE as FR
 from p2p_connection import P2PConnection
 
+
 class P2PConnectionFrameHandler(frame_handler.FrameHandler):
     """Handles P2P connection frames.
 
@@ -25,30 +26,30 @@ class P2PConnectionFrameHandler(frame_handler.FrameHandler):
         if not self.should_respond():
             return
 
-        frame = self.details['frame']
-        session_id = frame['session_id']
+        frame = self.details["frame"]
+        session_id = frame["session_id"]
         snr = self.details["snr"]
         frequency_offset = self.details["frequency_offset"]
 
-        if frame['frame_type_int'] == FR.P2P_CONNECTION_CONNECT.value:
-
+        if frame["frame_type_int"] == FR.P2P_CONNECTION_CONNECT.value:
             # Lost OPEN_ACK case .. ISS will retry opening a session
             if session_id in self.ctx.state_manager.arq_irs_sessions:
                 session = self.ctx.state_manager.p2p_connection_sessions[session_id]
 
             # Normal case when receiving a SESSION_OPEN for the first time
             else:
-            #    if self.ctx.state_manager.check_if_running_arq_session():
-            #        self.logger.warning("DISCARDING SESSION OPEN because of ongoing ARQ session ", frame=frame)
-            #        return
-                session = P2PConnection(self.ctx,
-                                        frame['origin'],
-                                        frame['destination'],
-                                        )
+                #    if self.ctx.state_manager.check_if_running_arq_session():
+                #        self.logger.warning("DISCARDING SESSION OPEN because of ongoing ARQ session ", frame=frame)
+                #        return
+                session = P2PConnection(
+                    self.ctx,
+                    frame["origin"],
+                    frame["destination"],
+                )
                 session.session_id = session_id
                 self.ctx.state_manager.register_p2p_connection_session(session)
 
-        elif frame['frame_type_int'] in [
+        elif frame["frame_type_int"] in [
             FR.P2P_CONNECTION_CONNECT_ACK.value,
             FR.P2P_CONNECTION_DISCONNECT.value,
             FR.P2P_CONNECTION_DISCONNECT_ACK.value,

@@ -16,13 +16,15 @@ def send_wavelog_qso_data(ctx, wavelog_data):
     log = structlog.get_logger()
 
     # If False then exit the function
-    wavelog = ctx.config_manager.config['QSO_LOGGING'].get('enable_adif_wavelog', 'False')
+    wavelog = ctx.config_manager.config["QSO_LOGGING"].get("enable_adif_wavelog", "False")
 
     if not wavelog:
         return  # exit as we don't want to log Wavelog
 
-    wavelog_host = ctx.config_manager.config['QSO_LOGGING'].get('adif_wavelog_host', 'http://localhost/')
-    wavelog_api_key = ctx.config_manager.config['QSO_LOGGING'].get('adif_wavelog_api_key', '')
+    wavelog_host = ctx.config_manager.config["QSO_LOGGING"].get(
+        "adif_wavelog_host", "http://localhost/"
+    )
+    wavelog_api_key = ctx.config_manager.config["QSO_LOGGING"].get("adif_wavelog_api_key", "")
 
     # check if the last part in the HOST URL from the config is correct
     if wavelog_host.endswith("/"):
@@ -30,16 +32,13 @@ def send_wavelog_qso_data(ctx, wavelog_data):
     else:
         url = wavelog_host + "/" + "index.php/api/qso"
 
-    headers = {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-    }
+    headers = {"Content-Type": "application/json", "Accept": "application/json"}
 
     data = {
         "key": wavelog_api_key,
         "station_profile_id": "1",
         "type": "adif",
-        "string": wavelog_data
+        "string": wavelog_data,
     }
 
     def send_api():
@@ -52,7 +51,9 @@ def send_wavelog_qso_data(ctx, wavelog_data):
             callsign_end = wavelog_data.find(f"<QSO_DATE", callsign_start)
             call_value = wavelog_data[callsign_start:callsign_end]
 
-            ctx.event_manager.freedata_logging(type="wavelog", status=True, message=f" {call_value} ")
+            ctx.event_manager.freedata_logging(
+                type="wavelog", status=True, message=f" {call_value} "
+            )
 
         except Exception as e:
             ctx.event_manager.freedata_logging(type="wavelog", status=False, message=f"{e}")

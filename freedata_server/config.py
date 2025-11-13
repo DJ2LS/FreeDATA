@@ -10,95 +10,93 @@ class CONFIG:
     """
 
     config_types = {
-        'NETWORK': {
-            'modemaddress': str,
-            'modemport': int,
+        "NETWORK": {
+            "modemaddress": str,
+            "modemport": int,
         },
-        'STATION': {
-            'mycall': str,
-            'mygrid': str,
-            'myssid': int,
-            'ssid_list': list,
-            'enable_explorer': bool,
-            'enable_stats': bool,
-            'respond_to_cq': bool,
-            'enable_callsign_blacklist': bool,
-            'callsign_blacklist': list
-
+        "STATION": {
+            "mycall": str,
+            "mygrid": str,
+            "myssid": int,
+            "ssid_list": list,
+            "enable_explorer": bool,
+            "enable_stats": bool,
+            "respond_to_cq": bool,
+            "enable_callsign_blacklist": bool,
+            "callsign_blacklist": list,
         },
-        'AUDIO': {
-            'input_device': str,
-            'output_device': str,
-            'rx_audio_level': int,
-            'tx_audio_level': int,
-            'rx_auto_audio_level': bool,
-            'tx_auto_audio_level': bool,
+        "AUDIO": {
+            "input_device": str,
+            "output_device": str,
+            "rx_audio_level": int,
+            "tx_audio_level": int,
+            "rx_auto_audio_level": bool,
+            "tx_auto_audio_level": bool,
         },
-        'RADIO': {
-            'control': str,
-            'serial_port': str,
-            'model_id': int,
-            'serial_speed': int,
-            'data_bits': int,
-            'stop_bits': int,
-            'serial_handshake': str,
-            'ptt_port': str,
-            'ptt_mode': str,
-            'ptt_type': str,
-            'serial_dcd': str,
-            'serial_dtr': str,
-            'serial_rts': str,
+        "RADIO": {
+            "control": str,
+            "serial_port": str,
+            "model_id": int,
+            "serial_speed": int,
+            "data_bits": int,
+            "stop_bits": int,
+            "serial_handshake": str,
+            "ptt_port": str,
+            "ptt_mode": str,
+            "ptt_type": str,
+            "serial_dcd": str,
+            "serial_dtr": str,
+            "serial_rts": str,
         },
-        'RIGCTLD': {
-            'ip': str,
-            'port': int,
-            'path': str,
-            'command': str,
-            'arguments': str,
-            'enable_vfo': bool,
+        "RIGCTLD": {
+            "ip": str,
+            "port": int,
+            "path": str,
+            "command": str,
+            "arguments": str,
+            "enable_vfo": bool,
         },
-        'FLRIG': {
-            'ip': str,
-            'port': int,
+        "FLRIG": {
+            "ip": str,
+            "port": int,
         },
-        'MODEM': {
-            'enable_morse_identifier': bool,
-            'maximum_bandwidth': int,
-            'tx_delay': int,
+        "MODEM": {
+            "enable_morse_identifier": bool,
+            "maximum_bandwidth": int,
+            "tx_delay": int,
         },
-        'SOCKET_INTERFACE': {
-            'enable': bool,
-            'host': str,
-            'cmd_port': int,
-            'data_port': int,
+        "SOCKET_INTERFACE": {
+            "enable": bool,
+            "host": str,
+            "cmd_port": int,
+            "data_port": int,
         },
-        'MESSAGES': {
-            'enable_auto_repeat': bool,
+        "MESSAGES": {
+            "enable_auto_repeat": bool,
         },
-        'QSO_LOGGING': {
-            'enable_adif_udp': bool,
-            'adif_udp_host': str,
-            'adif_udp_port': int,
-            'enable_adif_wavelog': bool,
-            'adif_wavelog_host': str,
-            'adif_wavelog_api_key': str,
+        "QSO_LOGGING": {
+            "enable_adif_udp": bool,
+            "adif_udp_host": str,
+            "adif_udp_port": int,
+            "enable_adif_wavelog": bool,
+            "adif_wavelog_host": str,
+            "adif_wavelog_api_key": str,
         },
-
-        'GUI': {
-            'auto_run_browser': bool,
-            'distance_unit': str,
+        "GUI": {
+            "auto_run_browser": bool,
+            "distance_unit": str,
         },
-        'EXP': {
-            'enable_ring_buffer': bool,
-            'enable_vhf': bool,
-        }
+        "EXP": {
+            "enable_ring_buffer": bool,
+            "enable_vhf": bool,
+        },
     }
 
     default_values = {
-        list: '[]',
-        bool: 'False',
-        int: '0',
-        str: '',
+        list: "[]",
+        bool: "False",
+        int: "0",
+        str: "",
     }
 
     def __init__(self, ctx, configfile: str):
@@ -133,7 +131,7 @@ class CONFIG:
 
         # read config
         self.config = self.read()
-        
+
     def config_exists(self):
         """Checks if the configuration file exists and can be read.
 
@@ -167,8 +165,10 @@ class CONFIG:
         for section in data:
             for setting in data[section]:
                 if not isinstance(data[section][setting], self.config_types[section][setting]):
-                    message = (f"{section}.{setting} must be {self.config_types[section][setting]}."
-                               f" '{data[section][setting]}' {type(data[section][setting])} given.")
+                    message = (
+                        f"{section}.{setting} must be {self.config_types[section][setting]}."
+                        f" '{data[section][setting]}' {type(data[section][setting])} given."
+                    )
                     raise ValueError(message)
 
     def validate_config(self):
@@ -250,7 +250,9 @@ class CONFIG:
             else:
                 return value
         except KeyError as key:
-            self.log.error("[CFG] key error in logfile, please check 'config.ini.example' for help", key=key)
+            self.log.error(
+                "[CFG] key error in logfile, please check 'config.ini.example' for help", key=key
+            )
 
     # Sets and writes config data from a dict containing data settings
     def write(self, data):
@@ -276,8 +278,7 @@ class CONFIG:
                 self.parser[section] = {}
 
             for setting in data[section]:
-                new_value = self.handle_setting(
-                    section, setting, data[section][setting], True)
+                new_value = self.handle_setting(section, setting, data[section][setting], True)
                 try:
                     self.parser[section][setting] = str(new_value)
                 except Exception as e:
@@ -297,7 +298,7 @@ class CONFIG:
             data if successful, False otherwise.
         """
         try:
-            with open(self.config_name, 'w') as configfile:
+            with open(self.config_name, "w") as configfile:
                 self.parser.write(configfile)
                 self.ctx.config = self.read()
 
@@ -328,7 +329,8 @@ class CONFIG:
             for section in result:
                 for setting in result[section]:
                     result[section][setting] = self.handle_setting(
-                       section, setting, result[section][setting], False)
+                        section, setting, result[section][setting], False
+                    )
 
             # store config in config manager instance
             self.config = result
@@ -337,4 +339,3 @@ class CONFIG:
         except Exception as conferror:
             self.log.error("[CFG] reading logfile", e=conferror)
             return False
-

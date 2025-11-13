@@ -1,5 +1,6 @@
 import sys
-sys.path.append('freedata_server')
+
+sys.path.append("freedata_server")
 
 import threading
 import ctypes
@@ -46,29 +47,29 @@ class FreeDV:
         print(audiobuffer.nbuffer)
 
     def write_to_file(self, txbuffer, filename):
-        with open(filename, 'wb') as f:
+        with open(filename, "wb") as f:
             f.write(txbuffer)
         print(f"TX buffer written to {filename}")
 
+
 # Usage example
 if __name__ == "__main__":
-
     # geht
     MODE = FREEDV_MODE.data_ofdm_250
     RX_MODE = FREEDV_MODE.datac4
 
     # fail
-    #MODE = FREEDV_MODE.datac4
-    #RX_MODE = FREEDV_MODE.data_ofdm_250
+    # MODE = FREEDV_MODE.datac4
+    # RX_MODE = FREEDV_MODE.data_ofdm_250
 
     FRAMES = 1
 
-    freedv_instance = FreeDV(MODE, 'config.ini')
-    freedv_rx_instance = FreeDV(RX_MODE, 'config.ini')
+    freedv_instance = FreeDV(MODE, "config.ini")
+    freedv_rx_instance = FreeDV(RX_MODE, "config.ini")
 
-    message = b'ABC'
+    message = b"ABC"
     txbuffer = freedv_instance.modulator.create_burst(MODE, FRAMES, 100, message)
-    freedv_instance.write_to_file(txbuffer, 'ota_audio.raw')
+    freedv_instance.write_to_file(txbuffer, "ota_audio.raw")
     txbuffer = np.frombuffer(txbuffer, dtype=np.int16)
     freedv_rx_instance.demodulate(txbuffer)
 

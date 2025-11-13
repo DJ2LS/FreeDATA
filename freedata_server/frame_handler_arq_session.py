@@ -29,12 +29,12 @@ class ARQFrameHandler(frame_handler.FrameHandler):
         if not self.should_respond():
             return
 
-        frame = self.details['frame']
-        session_id = frame['session_id']
+        frame = self.details["frame"]
+        session_id = frame["session_id"]
         snr = self.details["snr"]
         frequency_offset = self.details["frequency_offset"]
 
-        if frame['frame_type_int'] == FR.ARQ_SESSION_OPEN.value:
+        if frame["frame_type_int"] == FR.ARQ_SESSION_OPEN.value:
             print("Received ARQ_SESSION_OPEN frame")
             print(f"Session ID: {session_id}")
 
@@ -44,7 +44,6 @@ class ARQFrameHandler(frame_handler.FrameHandler):
                 session = self.ctx.state_manager.arq_irs_sessions[session_id]
                 current_state = session.state
                 print(f"ARQ session state: {current_state}")
-
 
                 # Lost OPEN_ACK case .. ISS will retry opening a session
                 if current_state in [IRS_State.NEW, IRS_State.OPEN_ACK_SENT]:
@@ -65,12 +64,14 @@ class ARQFrameHandler(frame_handler.FrameHandler):
             else:
                 print("First-time reception of SESSION_OPEN frame.")
                 if self.ctx.state_manager.check_if_running_arq_session():
-                    self.logger.warning("DISCARDING SESSION OPEN because of ongoing ARQ session ", frame=frame)
+                    self.logger.warning(
+                        "DISCARDING SESSION OPEN because of ongoing ARQ session ", frame=frame
+                    )
                     return
-                session = ARQSessionIRS(self.ctx,frame['origin'],session_id)
+                session = ARQSessionIRS(self.ctx, frame["origin"], session_id)
                 self.ctx.state_manager.register_arq_irs_session(session)
 
-        elif frame['frame_type_int'] in [
+        elif frame["frame_type_int"] in [
             FR.ARQ_SESSION_INFO.value,
             FR.ARQ_BURST_FRAME.value,
             FR.ARQ_STOP.value,
@@ -78,11 +79,11 @@ class ARQFrameHandler(frame_handler.FrameHandler):
             print("Received ARQ frame of type: INFO, BURST, or STOP.")
             session = self.ctx.state_manager.get_arq_irs_session(session_id)
 
-        elif frame['frame_type_int'] in [
+        elif frame["frame_type_int"] in [
             FR.ARQ_SESSION_OPEN_ACK.value,
             FR.ARQ_SESSION_INFO_ACK.value,
             FR.ARQ_BURST_ACK.value,
-            FR.ARQ_STOP_ACK.value
+            FR.ARQ_STOP_ACK.value,
         ]:
             print("Received ARQ ACK frame of type: OPEN_ACK, INFO_ACK, BURST_ACK, or STOP_ACK.")
             session = self.ctx.state_manager.get_arq_iss_session(session_id)
