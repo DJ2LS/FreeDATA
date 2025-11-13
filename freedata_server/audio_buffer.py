@@ -55,9 +55,10 @@ class CircularBuffer:
             if n <= end_space:
                 result = self.buffer[self.head : self.head + n].copy()
             else:
-                result = np.concatenate(
-                    (self.buffer[self.head :].copy(), self.buffer[: n - end_space].copy())
-                )
+                result = np.concatenate((
+                    self.buffer[self.head :].copy(),
+                    self.buffer[: n - end_space].copy(),
+                ))
             # Update head and count.
             self.head = (self.head + n) % self.size
             self.nbuffer -= n

@@ -87,15 +87,13 @@ class Explorer:
                 except Exception as e:
                     snr = "N/A"
                     log.warning("[EXPLORER] SNR parsing failed", e=e)
-                station_data["lastheard"].append(
-                    {
-                        "callsign": callsign,
-                        "grid": grid,
-                        "snr": snr,
-                        "timestamp": timestamp,
-                        "frequency": frequency,
-                    }
-                )
+                station_data["lastheard"].append({
+                    "callsign": callsign,
+                    "grid": grid,
+                    "snr": snr,
+                    "timestamp": timestamp,
+                    "frequency": frequency,
+                })
             except Exception as e:
                 log.debug("[EXPLORER] not publishing station", e=e)
         station_data = json.dumps(station_data)

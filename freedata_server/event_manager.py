@@ -278,6 +278,9 @@ class EventManager:
             message (str): The message to be displayed
         """
 
-        self.broadcast(
-            {"type": "message-logging", "endpoint": type, "status": status, "message": message}
-        )
+        self.broadcast({
+            "type": "message-logging",
+            "endpoint": type,
+            "status": status,
+            "message": message,
+        })

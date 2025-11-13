@@ -89,13 +89,11 @@ class TestDatabaseMessageSystem(unittest.TestCase):
     def test_get_attachments(self):
         attachments = []
         for i in range(3):
-            attachments.append(
-                {
-                    "name": f"test{i}.gif",
-                    "type": "image/gif",
-                    "data": str(base64.b64encode(np.random.bytes(1024)), "utf-8"),
-                }
-            )
+            attachments.append({
+                "name": f"test{i}.gif",
+                "type": "image/gif",
+                "data": str(base64.b64encode(np.random.bytes(1024)), "utf-8"),
+            })
 
         apiParams = {"destination": "DJ2LS-3", "body": "Hello World!", "attachments": attachments}
         message = MessageP2P.from_api_params(self.mycall, apiParams)

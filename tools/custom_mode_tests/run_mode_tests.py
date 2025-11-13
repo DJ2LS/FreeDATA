@@ -155,9 +155,14 @@ def test_freedv_mode_pairs(mode_pairs, config_file="config.ini"):
             avg_volume_db, max_possible_volume_db, papr, freqs, fft_values = (
                 freedv_tx.compute_audio_metrics(txbuffer)
             )
-            results.append(
-                (test_tx.name, test_rx.name, result, avg_volume_db, max_possible_volume_db, papr)
-            )
+            results.append((
+                test_tx.name,
+                test_rx.name,
+                result,
+                avg_volume_db,
+                max_possible_volume_db,
+                papr,
+            ))
             volume_per_mode[test_tx.name] = avg_volume_db
             max_volume_per_mode[test_tx.name] = max_possible_volume_db
             papr_per_mode[test_tx.name] = papr

@@ -41,9 +41,12 @@ The python sources must be formatted and checked using `ruff`. There is a CI
 workflow that block all PRs that do not pass the linter/formatter checks.
 
 - To check formatting run `ruff format --check` (lists file that needs formatting)
-- To see what the automatic formatter will change run `ruff format --diff` (shows
-  diff-style changes).
-- To automatically format files run `ruff format`
+- To see what the automatic formatter will change run `ruff format --preview
+--diff` (shows diff-style changes).
+- To automatically format files run `ruff format --preview`
+
+NOTE: the `--preview` enables new auto-formatting actions and enables a feature
+usefull in the CI. In the future it will no longer be necessary
 
 - To run the checker/linter execute `ruff check`
 - Some errors can be automatically fixed running `ruff check --fix`, but always

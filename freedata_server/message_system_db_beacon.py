@@ -141,15 +141,13 @@ class DatabaseManagerBeacon(DatabaseManager):
                     station.location.get("gridsquare") if station and station.location else None
                 )
 
-                beacons_list.append(
-                    {
-                        "id": beacon.id,
-                        "timestamp": beacon.timestamp.isoformat(),
-                        "snr": beacon.snr,
-                        "callsign": beacon.callsign,
-                        "gridsquare": gridsquare,
-                    }
-                )
+                beacons_list.append({
+                    "id": beacon.id,
+                    "timestamp": beacon.timestamp.isoformat(),
+                    "snr": beacon.snr,
+                    "callsign": beacon.callsign,
+                    "gridsquare": gridsquare,
+                })
 
             return beacons_list
 

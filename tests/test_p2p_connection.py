@@ -35,12 +35,10 @@ class TestModem:
         tx_time = self.getFrameTransmissionTime(mode) + 0.1
         self.logger.info(f"TX {tx_time} seconds...")
         threading.Event().wait(tx_time)
-        self.data_queue_received.put(
-            {
-                "mode": mode,
-                "bytes": frames,
-            }
-        )
+        self.data_queue_received.put({
+            "mode": mode,
+            "bytes": frames,
+        })
 
 
 class TestP2PConnectionSession(unittest.TestCase):
