@@ -1,10 +1,6 @@
 import os
 import sys
 
-# we need to add script directory to the sys path for avoiding problems with pip package
-script_directory = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(script_directory)
-
 import threading
 import webbrowser
 from contextlib import asynccontextmanager
@@ -13,9 +9,9 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from log_handler import setup_logging
-from constants import CONFIG_ENV_VAR, DEFAULT_CONFIG_FILE, API_VERSION
-from context import AppContext
+from freedata_server.log_handler import setup_logging
+from freedata_server.constants import CONFIG_ENV_VAR, DEFAULT_CONFIG_FILE, API_VERSION
+from freedata_server.context import AppContext
 
 import uvicorn
 
@@ -104,13 +100,13 @@ else:
     logger.warning("GUI directory not found: %s", gui_dir)
 
 # Register routers
-from api.general import router as general_router
-from api.config import router as config_router
-from api.devices import router as devices_router
-from api.radio import router as radio_router
-from api.modem import router as modem_router
-from api.freedata import router as freedata_router
-from api.websocket import router as websocket_router
+from freedata_server.api.general import router as general_router
+from freedata_server.api.config import router as config_router
+from freedata_server.api.devices import router as devices_router
+from freedata_server.api.radio import router as radio_router
+from freedata_server.api.modem import router as modem_router
+from freedata_server.api.freedata import router as freedata_router
+from freedata_server.api.websocket import router as websocket_router
 
 app.include_router(general_router, prefix="", tags=["General"])
 app.include_router(config_router, prefix="/config", tags=["Configuration"])

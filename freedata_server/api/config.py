@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, Depends
-from api.common import api_response, api_abort, api_ok, validate
-import api_validations as validations
-from context import AppContext, get_ctx
+from freedata_server.api.common import api_response, api_abort, api_ok, validate
+from freedata_server import api_validations as validations
+from freedata_server.context import AppContext, get_ctx
 
 router = APIRouter()
 

@@ -1,7 +1,7 @@
-import frame_handler
-import helpers
-import data_frame_factory
-from message_system_db_messages import DatabaseManagerMessages
+from freedata_server import frame_handler
+from freedata_server import helpers
+from freedata_server import data_frame_factory
+from freedata_server.message_system_db_messages import DatabaseManagerMessages
 
 
 class PingFrameHandler(frame_handler.FrameHandler):

@@ -1,11 +1,11 @@
 import threading
-import arq_session
-import helpers
-from modem_frametypes import FRAME_TYPE
-from codec2 import FREEDV_MODE
+from freedata_server import arq_session
+from freedata_server import helpers
+from freedata_server.modem_frametypes import FRAME_TYPE
+from freedata_server.codec2 import FREEDV_MODE
 from enum import Enum
 import time
-from p2p_connection import States as P2PStates
+from freedata_server.p2p_connection import States as P2PStates
 
 
 class IRS_State(Enum):

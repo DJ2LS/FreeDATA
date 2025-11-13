@@ -4,12 +4,8 @@ import shutil
 import tempfile
 import unittest
 
-# Ensure freedata_server package is on the path
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "freedata_server"))
-sys.path.insert(0, ROOT)
-
-import config
-from context import AppContext
+from freedata_server import config
+from freedata_server.context import AppContext
 
 
 class DummyCtx:

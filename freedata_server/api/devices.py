@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
-from api.common import api_response, api_abort
-import audio
-import serial_ports
-from context import AppContext, get_ctx
+from freedata_server.api.common import api_response, api_abort
+from freedata_server import audio
+from freedata_server import serial_ports
+from freedata_server.context import AppContext, get_ctx
 
 router = APIRouter()
 

@@ -1,9 +1,9 @@
 from queue import Queue
-import frame_handler
-from event_manager import EventManager
-from state_manager import StateManager
-from modem_frametypes import FRAME_TYPE as FR
-from p2p_connection import P2PConnection
+from freedata_server import frame_handler
+from freedata_server.event_manager import EventManager
+from freedata_server.state_manager import StateManager
+from freedata_server.modem_frametypes import FRAME_TYPE as FR
+from freedata_server.p2p_connection import P2PConnection
 
 
 class P2PConnectionFrameHandler(frame_handler.FrameHandler):

@@ -1,10 +1,10 @@
 import threading
-import frame_dispatcher
-import modem
+from freedata_server import frame_dispatcher
+from freedata_server import modem
 import structlog
-import audio
-import radio_manager
-from socket_interface import SocketInterfaceHandler
+from freedata_server import audio
+from freedata_server import radio_manager
+from freedata_server.socket_interface import SocketInterfaceHandler
 import queue
 
 

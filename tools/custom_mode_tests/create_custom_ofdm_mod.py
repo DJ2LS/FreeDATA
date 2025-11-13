@@ -6,21 +6,11 @@ FreeDATA % python3.11 tools/custom_mode_tests/create_custom_ofdm_mod.py | ./free
 """
 
 import sys
-
-sys.path.append("freedata_server")
-import numpy as np
-
-modem_path = "/../../freedata_server"
-if modem_path not in sys.path:
-    sys.path.append(modem_path)
-
-
-# import freedata_server.codec2 as codec2
-from codec2 import *
+from freedata_server.codec2 import *
 import threading
-import modulator as modulator
-import demodulator as demodulator
-import config as config
+from freedata_server import modulator
+from freedata_server import demodulator
+from freedata_server import config
 
 MODE = FREEDV_MODE.datac1
 

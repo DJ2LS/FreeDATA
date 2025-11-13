@@ -1,11 +1,11 @@
 from queue import Queue
-import frame_handler
-from event_manager import EventManager
-from state_manager import StateManager
-from modem_frametypes import FRAME_TYPE as FR
-from arq_session_irs import ARQSessionIRS
-from arq_session_iss import ARQSessionISS
-from arq_session_irs import IRS_State
+from freedata_server import frame_handler
+from freedata_server.event_manager import EventManager
+from freedata_server.state_manager import StateManager
+from freedata_server.modem_frametypes import FRAME_TYPE as FR
+from freedata_server.arq_session_irs import ARQSessionIRS
+from freedata_server.arq_session_iss import ARQSessionISS
+from freedata_server.arq_session_irs import IRS_State
 
 
 class ARQFrameHandler(frame_handler.FrameHandler):

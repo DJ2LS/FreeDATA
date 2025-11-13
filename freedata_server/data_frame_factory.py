@@ -1,7 +1,7 @@
-from modem_frametypes import FRAME_TYPE as FR_TYPE
-import helpers
-import codec2
-import maidenhead
+from freedata_server.modem_frametypes import FRAME_TYPE as FR_TYPE
+from freedata_server import helpers
+from freedata_server import codec2
+from freedata_server import maidenhead
 
 
 class DataFrameFactory:

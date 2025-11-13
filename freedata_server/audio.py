@@ -7,7 +7,7 @@ import sounddevice as sd
 import structlog
 import numpy as np
 import queue
-import helpers
+from freedata_server import helpers
 import time
 
 log = structlog.get_logger("audio")

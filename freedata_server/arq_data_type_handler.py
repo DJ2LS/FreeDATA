@@ -9,7 +9,7 @@ import structlog
 import lzma
 import gzip
 import zlib
-from message_p2p import message_received, message_failed, message_transmitted
+from freedata_server.message_p2p import message_received, message_failed, message_transmitted
 from enum import Enum
 
 

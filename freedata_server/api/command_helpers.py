@@ -1,5 +1,5 @@
 import asyncio
-from context import AppContext
+from freedata_server.context import AppContext
 import structlog
 
 logger = structlog.get_logger()

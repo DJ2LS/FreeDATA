@@ -1,28 +1,26 @@
 import sys
 import time
 
-sys.path.append("freedata_server")
-
 import unittest
 import unittest.mock
-import config
-from context import AppContext
+from freedata_server import config
+from freedata_server.context import AppContext
 
-import helpers
+from freedata_server import helpers
 import queue
 import threading
 import base64
-from command_arq_raw import ARQRawCommand
-from state_manager import StateManager
-from frame_dispatcher import DISPATCHER
+from freedata_server.command_arq_raw import ARQRawCommand
+from freedata_server.state_manager import StateManager
+from freedata_server.frame_dispatcher import DISPATCHER
 import random
 import structlog
 import numpy as np
-from event_manager import EventManager
-from state_manager import StateManager
-from data_frame_factory import DataFrameFactory
-import codec2
-import arq_session_irs
+from freedata_server.event_manager import EventManager
+from freedata_server.state_manager import StateManager
+from freedata_server.data_frame_factory import DataFrameFactory
+from freedata_server import codec2
+from freedata_server import arq_session_irs
 import os
 
 

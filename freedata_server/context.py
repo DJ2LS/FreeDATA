@@ -1,14 +1,14 @@
 from queue import Queue
-from event_manager import EventManager
-from state_manager import StateManager
-from schedule_manager import ScheduleManager
-from radio_manager import RadioManager
-from config import CONFIG
-from service_manager import SM as ServiceManager
-from message_system_db_manager import DatabaseManager
-from message_system_db_attachments import DatabaseManagerAttachments
-from websocket_manager import wsm as WebsocketManager
-import constants
+from freedata_server.event_manager import EventManager
+from freedata_server.state_manager import StateManager
+from freedata_server.schedule_manager import ScheduleManager
+from freedata_server.radio_manager import RadioManager
+from freedata_server.config import CONFIG
+from freedata_server.service_manager import SM as ServiceManager
+from freedata_server.message_system_db_manager import DatabaseManager
+from freedata_server.message_system_db_attachments import DatabaseManagerAttachments
+from freedata_server.websocket_manager import wsm as WebsocketManager
+from freedata_server import constants
 from fastapi import Request, WebSocket
 
 

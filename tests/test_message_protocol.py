@@ -9,16 +9,14 @@ import structlog
 import base64
 import numpy as np
 
-sys.path.append("freedata_server")
-
-from config import CONFIG
-from context import AppContext
-from event_manager import EventManager
-from state_manager import StateManager
-from data_frame_factory import DataFrameFactory
-from frame_dispatcher import DISPATCHER
-import codec2
-import command_message_send
+from freedata_server.config import CONFIG
+from freedata_server.context import AppContext
+from freedata_server.event_manager import EventManager
+from freedata_server.state_manager import StateManager
+from freedata_server.data_frame_factory import DataFrameFactory
+from freedata_server.frame_dispatcher import DISPATCHER
+from freedata_server import codec2
+from freedata_server import command_message_send
 
 
 class TestModem:

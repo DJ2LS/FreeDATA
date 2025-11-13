@@ -2,15 +2,11 @@ import os
 import sys
 import unittest
 
-# Ensure freedata_server package is on the path
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "freedata_server"))
-sys.path.insert(0, ROOT)
-
-from config import CONFIG
-from data_frame_factory import DataFrameFactory
-from codec2 import FREEDV_MODE
-import helpers
-from modem_frametypes import FRAME_TYPE
+from freedata_server.config import CONFIG
+from freedata_server.data_frame_factory import DataFrameFactory
+from freedata_server.codec2 import FREEDV_MODE
+from freedata_server import helpers
+from freedata_server.modem_frametypes import FRAME_TYPE
 
 
 # Dummy Context with config

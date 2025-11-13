@@ -1,6 +1,6 @@
 import socket
 import structlog
-import helpers
+from freedata_server import helpers
 import threading
 from enum import IntEnum
 

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
-from api.common import api_response, api_abort
-from api.command_helpers import enqueue_tx_command
-import command_transmit_sine
-from context import AppContext, get_ctx
+from freedata_server.api.common import api_response, api_abort
+from freedata_server.api.command_helpers import enqueue_tx_command
+from freedata_server import command_transmit_sine
+from freedata_server.context import AppContext, get_ctx
 
 router = APIRouter()
 

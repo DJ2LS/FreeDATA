@@ -4,12 +4,10 @@ import queue
 import base64
 import numpy as np
 
-sys.path.append("freedata_server")
-
-from context import AppContext
-from message_p2p import MessageP2P
-from message_system_db_messages import DatabaseManagerMessages
-from message_system_db_attachments import DatabaseManagerAttachments
+from freedata_server.context import AppContext
+from freedata_server.message_p2p import MessageP2P
+from freedata_server.message_system_db_messages import DatabaseManagerMessages
+from freedata_server.message_system_db_attachments import DatabaseManagerAttachments
 
 
 class TestDatabaseMessageSystem(unittest.TestCase):

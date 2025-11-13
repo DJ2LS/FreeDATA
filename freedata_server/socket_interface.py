@@ -13,8 +13,8 @@ import socketserver
 import threading
 import structlog
 import select
-from socket_interface_commands import SocketCommandHandler
-from socket_interface_data import SocketDataHandler
+from freedata_server.socket_interface_commands import SocketCommandHandler
+from freedata_server.socket_interface_data import SocketDataHandler
 import io
 
 

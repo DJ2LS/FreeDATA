@@ -1,7 +1,7 @@
-import rigctld
-import flrig
-import rigdummy
-import serial_ptt
+from freedata_server import rigctld
+from freedata_server import flrig
+from freedata_server import rigdummy
+from freedata_server import serial_ptt
 import threading
 
 

@@ -1,5 +1,5 @@
-from message_system_db_manager import DatabaseManager
-from message_system_db_model import Beacon, Station
+from freedata_server.message_system_db_manager import DatabaseManager
+from freedata_server.message_system_db_model import Beacon, Station
 from datetime import timezone, timedelta, datetime
 
 

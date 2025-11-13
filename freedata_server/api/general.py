@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 import platform
-from context import AppContext, get_ctx
+from freedata_server.context import AppContext, get_ctx
 
 router = APIRouter()
 

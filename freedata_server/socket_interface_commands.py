@@ -1,6 +1,6 @@
 """WORK IN PROGRESS by DJ2LS"""
 
-from command_p2p_connection import P2PConnectionCommand
+from freedata_server.command_p2p_connection import P2PConnectionCommand
 import structlog
 
 

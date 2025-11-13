@@ -7,7 +7,7 @@ Created on 05.11.23
 import requests
 import json
 import structlog
-from constants import MODEM_VERSION, STATS_API_URL
+from freedata_server.constants import MODEM_VERSION, STATS_API_URL
 
 log = structlog.get_logger("stats")
 

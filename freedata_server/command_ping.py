@@ -1,6 +1,6 @@
-from command import TxCommand
-import api_validations
-from message_system_db_manager import DatabaseManager
+from freedata_server.command import TxCommand
+from freedata_server import api_validations
+from freedata_server.message_system_db_manager import DatabaseManager
 
 
 class PingCommand(TxCommand):

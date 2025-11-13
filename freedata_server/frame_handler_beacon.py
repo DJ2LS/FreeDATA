@@ -1,10 +1,10 @@
-import frame_handler
+from freedata_server import frame_handler
 import datetime
-from message_system_db_beacon import DatabaseManagerBeacon
-from message_system_db_messages import DatabaseManagerMessages
+from freedata_server.message_system_db_beacon import DatabaseManagerBeacon
+from freedata_server.message_system_db_messages import DatabaseManagerMessages
 
 
-from message_system_db_manager import DatabaseManager
+from freedata_server.message_system_db_manager import DatabaseManager
 
 
 class BeaconFrameHandler(frame_handler.FrameHandler):

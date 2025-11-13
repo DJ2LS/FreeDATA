@@ -1,5 +1,5 @@
-from message_system_db_manager import DatabaseManager
-from message_system_db_model import MessageAttachment, Attachment, P2PMessage
+from freedata_server.message_system_db_manager import DatabaseManager
+from freedata_server.message_system_db_model import MessageAttachment, Attachment, P2PMessage
 import json
 import hashlib
 

@@ -10,7 +10,7 @@ import os
 import sys
 from enum import Enum
 from threading import Lock
-import codec2_filter_coeff
+from freedata_server import codec2_filter_coeff
 import numpy as np
 import structlog
 
@@ -93,7 +93,6 @@ def freedv_get_mode_name_by_value(mode: int) -> str:
 
 # Get the directory of the current script file
 script_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(script_dir)
 
 # Use script_dir to construct the paths for file search
 if sys.platform == "linux":

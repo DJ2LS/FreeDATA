@@ -1,15 +1,13 @@
 import sys
 
-sys.path.append("freedata_server")
-
 import unittest
-from context import AppContext
+from freedata_server.context import AppContext
 import queue
 
-from command_ping import PingCommand
-from command_cq import CQCommand
-import frame_handler
-import frame_dispatcher
+from freedata_server.command_ping import PingCommand
+from freedata_server.command_cq import CQCommand
+from freedata_server import frame_handler
+from freedata_server import frame_dispatcher
 
 
 class TestProtocols(unittest.TestCase):

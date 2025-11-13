@@ -6,16 +6,16 @@ FRAME DISPATCHER - We are dispatching the received frames to the needed function
 
 import threading
 import structlog
-from modem_frametypes import FRAME_TYPE as FR_TYPE
-import event_manager
-from data_frame_factory import DataFrameFactory
+from freedata_server.modem_frametypes import FRAME_TYPE as FR_TYPE
+from freedata_server import event_manager
+from freedata_server.data_frame_factory import DataFrameFactory
 
-from frame_handler import FrameHandler
-from frame_handler_ping import PingFrameHandler
-from frame_handler_cq import CQFrameHandler
-from frame_handler_arq_session import ARQFrameHandler
-from frame_handler_p2p_connection import P2PConnectionFrameHandler
-from frame_handler_beacon import BeaconFrameHandler
+from freedata_server.frame_handler import FrameHandler
+from freedata_server.frame_handler_ping import PingFrameHandler
+from freedata_server.frame_handler_cq import CQFrameHandler
+from freedata_server.frame_handler_arq_session import ARQFrameHandler
+from freedata_server.frame_handler_p2p_connection import P2PConnectionFrameHandler
+from freedata_server.frame_handler_beacon import BeaconFrameHandler
 
 
 class DISPATCHER:

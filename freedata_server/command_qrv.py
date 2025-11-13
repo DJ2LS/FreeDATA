@@ -1,4 +1,4 @@
-from command import TxCommand
+from freedata_server.command import TxCommand
 
 
 class QRVCommand(TxCommand):

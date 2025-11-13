@@ -1,12 +1,12 @@
 from sqlalchemy import create_engine, text, inspect
 from sqlalchemy.orm import scoped_session, sessionmaker
 from threading import local
-from message_system_db_model import Base, Config, Station, Status, P2PMessage
+from freedata_server.message_system_db_model import Base, Config, Station, Status, P2PMessage
 import structlog
-import helpers
+from freedata_server import helpers
 import os
 import sys
-from constants import MESSAGE_SYSTEM_DATABASE_VERSION
+from freedata_server.constants import MESSAGE_SYSTEM_DATABASE_VERSION
 
 
 class DatabaseManager:
@@ -49,7 +49,6 @@ class DatabaseManager:
             str: The database file path as a SQLAlchemy URL.
         """
         script_directory = os.path.dirname(os.path.abspath(__file__))
-        sys.path.append(script_directory)
 
         if self.DATABASE_ENV_VAR in os.environ:
             # db_path = os.getenv(self.DATABASE_ENV_VAR, os.path.join(script_directory, self.DEFAULT_DATABASE_FILE))

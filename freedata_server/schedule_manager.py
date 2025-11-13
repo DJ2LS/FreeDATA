@@ -2,17 +2,17 @@ import sched
 import time
 import threading
 
-import command_message_send
+from freedata_server import command_message_send
 
 # from freedata_server.context import AppContext
 # from message_system_db_manager import DatabaseManager
-from message_system_db_messages import DatabaseManagerMessages
-from message_system_db_beacon import DatabaseManagerBeacon
-import explorer
-import command_beacon
+from freedata_server.message_system_db_messages import DatabaseManagerMessages
+from freedata_server.message_system_db_beacon import DatabaseManagerBeacon
+from freedata_server import explorer
+from freedata_server import command_beacon
 import structlog
-from arq_session_irs import IRS_State
-from arq_session_iss import ISS_State
+from freedata_server.arq_session_irs import IRS_State
+from freedata_server.arq_session_iss import ISS_State
 
 
 class ScheduleManager:

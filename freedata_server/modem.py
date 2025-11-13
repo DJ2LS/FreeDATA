@@ -7,14 +7,14 @@ Created on Wed Dec 23 07:04:24 2020
 
 import queue
 import time
-import codec2
+from freedata_server import codec2
 import numpy as np
 import sounddevice as sd
 import structlog
-import cw
-import audio
-import demodulator
-import modulator
+from freedata_server import cw
+from freedata_server import audio
+from freedata_server import demodulator
+from freedata_server import modulator
 
 
 class RF:

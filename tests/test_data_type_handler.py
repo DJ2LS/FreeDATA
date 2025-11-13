@@ -2,10 +2,8 @@ import sys
 import unittest
 import queue
 
-sys.path.append("freedata_server")
-
-from context import AppContext
-from arq_data_type_handler import ARQDataTypeHandler, ARQ_SESSION_TYPES
+from freedata_server.context import AppContext
+from freedata_server.arq_data_type_handler import ARQDataTypeHandler, ARQ_SESSION_TYPES
 
 
 class TestDispatcher(unittest.TestCase):

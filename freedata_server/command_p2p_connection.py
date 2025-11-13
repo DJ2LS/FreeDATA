@@ -1,9 +1,9 @@
 import queue
-from command import TxCommand
-import api_validations
+from freedata_server.command import TxCommand
+from freedata_server import api_validations
 import base64
 from queue import Queue
-from p2p_connection import P2PConnection
+from freedata_server.p2p_connection import P2PConnection
 
 
 class P2PConnectionCommand(TxCommand):

@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
-import api_validations
+from freedata_server import api_validations
 import base64
 import json
-from message_system_db_messages import DatabaseManagerMessages
+from freedata_server.message_system_db_messages import DatabaseManagerMessages
 
 
 def message_received(ctx, data, statistics):

@@ -1,11 +1,11 @@
-from message_system_db_manager import DatabaseManager
-from message_system_db_attachments import DatabaseManagerAttachments
-from message_system_db_model import Status, P2PMessage
-from message_system_db_station import DatabaseManagerStations
+from freedata_server.message_system_db_manager import DatabaseManager
+from freedata_server.message_system_db_attachments import DatabaseManagerAttachments
+from freedata_server.message_system_db_model import Status, P2PMessage
+from freedata_server.message_system_db_station import DatabaseManagerStations
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timedelta
 import json
-from exceptions import MessageStatusError
+from freedata_server.exceptions import MessageStatusError
 
 
 class DatabaseManagerMessages(DatabaseManager):

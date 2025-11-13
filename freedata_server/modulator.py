@@ -1,8 +1,8 @@
 import ctypes
-import codec2
+from freedata_server import codec2
 import structlog
-from codec2 import FREEDV_MODE
-from codec2 import FREEDV_ADVANCED_FSK
+from freedata_server.codec2 import FREEDV_MODE
+from freedata_server.codec2 import FREEDV_ADVANCED_FSK
 
 
 class Modulator:
