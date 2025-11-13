@@ -1,5 +1,4 @@
 from freedata_server.command import TxCommand
-from freedata_server.codec2 import FREEDV_MODE
 
 
 class CQCommand(TxCommand):

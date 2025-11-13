@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import numpy as np
 
 codec2_modes = {
     "datac4": {

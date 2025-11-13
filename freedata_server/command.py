@@ -2,7 +2,6 @@ from freedata_server.data_frame_factory import DataFrameFactory
 import queue
 from freedata_server.codec2 import FREEDV_MODE
 import structlog
-from freedata_server.state_manager import StateManager
 from freedata_server.arq_data_type_handler import ARQDataTypeHandler
 
 

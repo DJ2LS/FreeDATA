@@ -1,8 +1,5 @@
-import queue
 from freedata_server.command import TxCommand
 from freedata_server import api_validations
-import base64
-from queue import Queue
 from freedata_server.p2p_connection import P2PConnection
 
 

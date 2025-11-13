@@ -7,7 +7,6 @@ from freedata_server import arq_session
 from freedata_server import helpers
 from enum import Enum
 import time
-from freedata_server import stats
 
 
 class ISS_State(Enum):

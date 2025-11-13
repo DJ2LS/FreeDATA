@@ -12,19 +12,14 @@ The script runs predefined mode pairs in both transmission and reception directi
 and visualizes the results in separate plots.
 """
 
-import sys
-
 import ctypes
 import threading
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
-from collections import defaultdict
 from scipy.fftpack import fft
-from freedata_server.codec2 import open_instance, api, audio_buffer, FREEDV_MODE, resampler
+from freedata_server.codec2 import open_instance, api, audio_buffer, FREEDV_MODE
 from freedata_server import modulator
 from freedata_server import config
-from freedata_server import helpers
 
 
 class FreeDV:

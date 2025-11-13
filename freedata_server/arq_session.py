@@ -2,7 +2,6 @@ import datetime
 import threading
 from freedata_server import data_frame_factory
 import structlog
-from freedata_server.event_manager import EventManager
 from freedata_server.modem_frametypes import FRAME_TYPE
 import time
 from freedata_server.arq_data_type_handler import ARQDataTypeHandler

@@ -1,6 +1,4 @@
-import sys
 import unittest
-import queue
 import base64
 import numpy as np
 

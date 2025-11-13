@@ -1,11 +1,8 @@
-import sys
-
 import threading
 import ctypes
-from freedata_server.codec2 import open_instance, api, audio_buffer, FREEDV_MODE, resampler
+from freedata_server.codec2 import open_instance, api, audio_buffer, FREEDV_MODE
 from freedata_server import modulator
 from freedata_server import config
-from freedata_server import helpers
 from freedata_server import numpy as np
 
 

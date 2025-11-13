@@ -1,20 +1,13 @@
-import sys
-import time
 import unittest
 import unittest.mock
 import queue
 import threading
 import random
 import structlog
-import base64
-import numpy as np
 
-from freedata_server.config import CONFIG
 from freedata_server.context import AppContext
 from freedata_server.event_manager import EventManager
 from freedata_server.state_manager import StateManager
-from freedata_server.data_frame_factory import DataFrameFactory
-from freedata_server.frame_dispatcher import DISPATCHER
 from freedata_server import codec2
 from freedata_server import command_message_send
 

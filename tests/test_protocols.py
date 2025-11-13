@@ -1,8 +1,5 @@
-import sys
-
 import unittest
 from freedata_server.context import AppContext
-import queue
 
 from freedata_server.command_ping import PingCommand
 from freedata_server.command_cq import CQCommand

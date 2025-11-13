@@ -5,11 +5,9 @@ FreeDATA % python3.11 tools/custom_mode_tests/create_custom_ofdm_mod.py | ./free
 
 """
 
-import sys
 from freedata_server.codec2 import *
 import threading
 from freedata_server import modulator
-from freedata_server import demodulator
 from freedata_server import config
 
 MODE = FREEDV_MODE.datac1

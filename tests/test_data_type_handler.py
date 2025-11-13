@@ -1,6 +1,4 @@
-import sys
 import unittest
-import queue
 
 from freedata_server.context import AppContext
 from freedata_server.arq_data_type_handler import ARQDataTypeHandler, ARQ_SESSION_TYPES

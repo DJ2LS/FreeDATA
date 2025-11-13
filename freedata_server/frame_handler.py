@@ -1,6 +1,4 @@
 from freedata_server import helpers
-from freedata_server.event_manager import EventManager
-from freedata_server.state_manager import StateManager
 import structlog
 import time
 from freedata_server.codec2 import FREEDV_MODE

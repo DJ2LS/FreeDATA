@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from freedata_server.api.common import api_response, api_abort
 from freedata_server.api.command_helpers import enqueue_tx_command
 from freedata_server.message_system_db_messages import DatabaseManagerMessages

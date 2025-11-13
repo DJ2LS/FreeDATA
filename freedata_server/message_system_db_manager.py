@@ -5,7 +5,6 @@ from freedata_server.message_system_db_model import Base, Config, Station, Statu
 import structlog
 from freedata_server import helpers
 import os
-import sys
 from freedata_server.constants import MESSAGE_SYSTEM_DATABASE_VERSION
 
 

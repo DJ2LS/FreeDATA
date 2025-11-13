@@ -7,7 +7,6 @@ Created on 05.11.23
 import requests
 import json
 import structlog
-from freedata_server.constants import EXPLORER_API_URL
 
 log = structlog.get_logger("explorer")
 

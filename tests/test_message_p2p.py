@@ -1,15 +1,10 @@
-import sys
-
 import unittest
-import queue
 import numpy as np
 import base64
 
-from freedata_server.config import CONFIG
 from freedata_server.context import AppContext
 from freedata_server.message_p2p import MessageP2P
 from freedata_server.message_system_db_messages import DatabaseManagerMessages
-from freedata_server.event_manager import EventManager
 
 
 class TestMessageP2P(unittest.TestCase):

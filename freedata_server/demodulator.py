@@ -1,4 +1,3 @@
-import numpy as np
 from freedata_server import codec2
 import ctypes
 import structlog
@@ -6,7 +5,6 @@ import threading
 from freedata_server import audio
 import itertools
 from freedata_server.audio_buffer import CircularBuffer
-from freedata_server.codec2 import FREEDV_MODE
 
 TESTMODE = False
 

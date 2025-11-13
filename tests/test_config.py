@@ -1,11 +1,9 @@
 import os
-import sys
 import shutil
 import tempfile
 import unittest
 
 from freedata_server import config
-from freedata_server.context import AppContext
 
 
 class DummyCtx:

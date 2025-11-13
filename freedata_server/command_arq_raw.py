@@ -1,8 +1,6 @@
-import queue
 from freedata_server.command import TxCommand
 from freedata_server import api_validations
 import base64
-from queue import Queue
 from freedata_server.arq_session_iss import ARQSessionISS
 from freedata_server.arq_data_type_handler import ARQ_SESSION_TYPES
 import numpy as np

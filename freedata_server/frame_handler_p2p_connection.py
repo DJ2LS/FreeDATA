@@ -1,7 +1,4 @@
-from queue import Queue
 from freedata_server import frame_handler
-from freedata_server.event_manager import EventManager
-from freedata_server.state_manager import StateManager
 from freedata_server.modem_frametypes import FRAME_TYPE as FR
 from freedata_server.p2p_connection import P2PConnection
 

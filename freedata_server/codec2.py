@@ -4,7 +4,6 @@ Python interface to the C-language codec2 library.
 
 import ctypes
 from ctypes import *
-import hashlib
 import glob
 import os
 import sys
