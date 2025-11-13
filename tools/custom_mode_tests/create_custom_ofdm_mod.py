@@ -5,7 +5,8 @@ FreeDATA % python3.11 tools/custom_mode_tests/create_custom_ofdm_mod.py | ./free
 
 """
 
-from freedata_server.codec2 import *
+import ctypes
+from freedata_server.codec2 import api, FREEDV_MODE, MODE, open_instance, audio_buffer
 import threading
 from freedata_server import modulator
 from freedata_server import config

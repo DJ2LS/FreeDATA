@@ -3,7 +3,6 @@ Python interface to the C-language codec2 library.
 """
 
 import ctypes
-from ctypes import *
 import glob
 import os
 import sys
@@ -527,7 +526,7 @@ def create_default_ofdm_config():
         edge_pilots=False,
         state_machine="data".encode("utf-8"),
         codename="H_1024_2048_4f".encode("utf-8"),
-        tx_uw=(c_uint8 * MAX_UW_BITS)(*([0] * MAX_UW_BITS)),
+        tx_uw=(ctypes.c_uint8 * MAX_UW_BITS)(*([0] * MAX_UW_BITS)),
         amp_est_mode=1,
         tx_bpf_en=False,
         rx_bpf_en=False,
