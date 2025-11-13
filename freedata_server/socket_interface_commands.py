@@ -21,7 +21,7 @@ class SocketCommandHandler:
             self.log(f">>>>> {message}")
             full_message = f"{message}\r"
             self.cmd_request.sendall(full_message.encode())
-        except Exception as e:
+        except Exception as _:
             self.log(f"Error sending to socket: {message}", isWarning=True)
 
     def handle_connect(self, data):
@@ -43,7 +43,7 @@ class SocketCommandHandler:
             #    self.session.connect()
             # else:
             #    self.send_response("ERROR")
-        except Exception as e:
+        except Exception as _:
             self.send_response(f"ERR: {data}")
 
     def handle_disconnect(self, data):

@@ -82,5 +82,5 @@ class stats:
             # print(response.status_code)
             # print(response.content)
 
-        except Exception as e:
+        except Exception as _:
             log.warning("[API] connection lost")

@@ -42,7 +42,7 @@ def demod(txbuffer):
         # 3 trial sync
         # 6 decoded
         # 10 error decoding == NACK
-        rx_status = api.freedv_get_rx_status(freedv)
+        # rx_status = api.freedv_get_rx_status(freedv)
         # print(rx_status)
 
         # decrement codec traffic counter for making state smoother

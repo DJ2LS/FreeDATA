@@ -112,7 +112,7 @@ for file in files:
         api = ctypes.CDLL(file)
         log.info("[C2 ] Libcodec2 loaded", path=file)
         break
-    except OSError as err:
+    except OSError as _:
         pass
         # log.info("[C2 ] Error:  Libcodec2 found but not loaded", path=file, e=err)
 

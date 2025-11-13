@@ -151,7 +151,7 @@ def get_device_index_from_crc(crc, isInput: bool):
             if dev["id"] == crc:
                 return (dev["native_index"], dev["name"])
 
-    except Exception as e:
+    except Exception as _:
         log.warning(f"Audio device {crc} not detected ", devices=detected_devices, isInput=isInput)
         return [None, None]
 
@@ -285,8 +285,8 @@ def normalize_audio(datalist: np.ndarray) -> np.ndarray:
     normalized_data = np.clip(normalized_data, -32768, 32767).astype(np.int16)
 
     # Debug information: normalization factor, loudest value before, and after normalization
-    loudest_before = max_value
-    loudest_after = np.max(np.abs(normalized_data))
+    _loudest_before = max_value
+    _loudest_after = np.max(np.abs(normalized_data))
     # print(f"[AUDIO] Normalization factor: {normalization_factor:.6f}, Loudest before: {loudest_before}, Loudest after: {loudest_after}")
 
     return normalized_data

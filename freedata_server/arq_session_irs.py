@@ -115,7 +115,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             # register arq session in p2p connection
             self.running_p2p_connection.running_arq_session = self
             self.running_p2p_connection.set_state(P2PStates.ARQ_SESSION)
-        except Exception as e:
+        except Exception as _:
             self.log("Error getting p2p connection session")
 
         self.type_byte = None
@@ -414,10 +414,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         Returns:
             int: The calculated speed level.
         """
-        if burst_frame:
-            received_speed_level = burst_frame["speed_level"]
-        else:
-            received_speed_level = 0
+        _received_speed_level = burst_frame["speed_level"] if burst_frame else 0
 
         latest_snr = self.snr if self.snr else -10
         appropriate_speed_level = self.get_appropriate_speed_level(

@@ -98,7 +98,7 @@ class DatabaseManagerMessages(DatabaseManager):
             self.log(f"Added data to database: {new_message.id}")
             self.ctx.event_manager.freedata_message_db_change(message_id=new_message.id)
             return new_message.id
-        except IntegrityError as e:
+        except IntegrityError as _:
             session.rollback()  # Roll back the session to a clean state
             self.log(
                 f"Message with ID {message_data['id']} already exists in the database.",
@@ -252,7 +252,7 @@ class DatabaseManagerMessages(DatabaseManager):
                 destination = message_dict.get("destination", "")
                 timestamp = message_dict.get("timestamp", "")
                 direction = message_dict.get("direction", "").lower()  # Ensure case insensitivity
-                status = message_dict.get("status", "")
+                _status = message_dict.get("status", "")
                 statistics = message_dict.get("statistics", {})
 
                 # Determine the CALL based on the direction

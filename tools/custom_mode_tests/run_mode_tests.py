@@ -41,7 +41,7 @@ class FreeDV:
 
         while audiobuffer.nbuffer >= nin:
             nbytes = api.freedv_rawdatarx(self.freedv, bytes_out, audiobuffer.buffer.ctypes)
-            rx_status = api.freedv_get_rx_status(self.freedv)
+            _rx_status = api.freedv_get_rx_status(self.freedv)
             nin = api.freedv_nin(self.freedv)
             audiobuffer.pop(nin)
             if nbytes == bytes_per_frame:

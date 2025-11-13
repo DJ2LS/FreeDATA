@@ -221,7 +221,7 @@ class P2PConnection:
         if self.state in self.STATE_TRANSITION:
             if frame_type in self.STATE_TRANSITION[self.state]:
                 action_name = self.STATE_TRANSITION[self.state][frame_type]
-                response = getattr(self, action_name)(frame)
+                _response = getattr(self, action_name)(frame)
                 return
 
         self.log(

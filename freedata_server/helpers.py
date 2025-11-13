@@ -608,7 +608,7 @@ def get_hmac_salt(dxcallsign: bytes, mycallsign: bytes):
         try:
             subfolder = Path("hmac")
             filepath = subfolder / filename
-        except Exception as e:
+        except Exception as _:
             log.error(
                 "[Modem] [HMAC] File lookup error",
                 file=filepath,
@@ -657,7 +657,7 @@ def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_fr
         try:
             subfolder = Path("hmac")
             filepath = subfolder / filename
-        except Exception as e:
+        except Exception as _:
             log.error(
                 "[Modem] [HMAC] File lookup error",
                 file=filepath,
