@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Wed Dec 23 07:04:24 2020
 
 @author: DJ2LS
 """
-
-# pylint: disable=invalid-name, line-too-long, c-extension-no-member
-# pylint: disable=import-outside-toplevel
 
 import queue
 import time

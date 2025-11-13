@@ -1,12 +1,9 @@
-# -*- coding: UTF-8 -*-
 """
 Created on 05.11.23
 
 @author: DJ2LS
 """
 
-# pylint: disable=invalid-name, line-too-long, c-extension-no-member
-# pylint: disable=import-outside-toplevel, attribute-defined-outside-init
 import requests
 import json
 import structlog

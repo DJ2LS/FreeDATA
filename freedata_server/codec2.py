@@ -1,10 +1,6 @@
 """
 Python interface to the C-language codec2 library.
 """
-# -*- coding: utf-8 -*-
-
-# pylint: disable=invalid-name, line-too-long, c-extension-no-member
-# pylint: disable=import-outside-toplevel, attribute-defined-outside-init
 
 import ctypes
 from ctypes import *
