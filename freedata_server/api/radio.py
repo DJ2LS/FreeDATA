@@ -159,4 +159,3 @@ async def post_radio_tune(
     else:
         ctx.rf_modem.stop_sine()
     return api_response(params)
-    return api_response(data)

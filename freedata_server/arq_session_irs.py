@@ -396,7 +396,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.transmit_frame(ack, mode=FREEDV_MODE.signalling_ack)
             self.log("CRC fail at the end of transmission!", isWarning=True)
             self.log(
-                f"Failed Data [Is real:{len(self.received_data)}/Is calculated:{seld.received_bytes}/Should:{self.total_bytes}]:{self.received_data}",
+                f"Failed Data [Is real:{len(self.received_data)}/Is calculated:{self.received_bytes}/Should:{self.total_bytes}]:{self.received_data}",
                 isWarning=True,
             )
             return self.transmission_failed()
