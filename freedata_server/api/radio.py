@@ -1,41 +1,39 @@
 from fastapi import APIRouter, Depends
-from api.common import api_response, api_abort
-from api.command_helpers import enqueue_tx_command
-import command_transmit_sine
-from context import AppContext, get_ctx
+from freedata_server.api.common import api_response, api_abort
+from freedata_server.api.command_helpers import enqueue_tx_command
+from freedata_server import command_transmit_sine
+from freedata_server.context import AppContext, get_ctx
 
 router = APIRouter()
 
 
-
-@router.get("/", summary="Get Radio Parameters", tags=["Radio"], responses={
-    200: {
-        "description": "Current radio parameters.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "radio_frequency": "14093000",
-                    "radio_mode": "PKTUSB",
-                    "radio_rf_level": 100,
-                    "radio_status": True,
-                    "radio_swr": 0,
-                    "radio_tuner": False,
-                    "s_meter_strength": "20"
+@router.get(
+    "/",
+    summary="Get Radio Parameters",
+    tags=["Radio"],
+    responses={
+        200: {
+            "description": "Current radio parameters.",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "radio_frequency": "14093000",
+                        "radio_mode": "PKTUSB",
+                        "radio_rf_level": 100,
+                        "radio_status": True,
+                        "radio_swr": 0,
+                        "radio_tuner": False,
+                        "s_meter_strength": "20",
+                    }
                 }
-            }
-        }
+            },
+        },
+        404: {
+            "description": "The requested resource was not found.",
+            "content": {"application/json": {"example": {"error": "Resource not found."}}},
+        },
     },
-    404: {
-        "description": "The requested resource was not found.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "Resource not found."
-                }
-            }
-        }
-    }
-})
+)
 async def get_radio(ctx: AppContext = Depends(get_ctx)):
     """
     Retrieve current radio parameters.
@@ -48,44 +46,38 @@ async def get_radio(ctx: AppContext = Depends(get_ctx)):
         api_abort("Radio parameters not found", 404)
     return api_response(params)
 
-@router.post("/", summary="Set Radio Parameters", tags=["Radio"], responses={
-    200: {
-        "description": "Radio parameters updated successfully.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "radio_frequency": "14093000",
-                    "radio_mode": "PKTUSB",
-                    "radio_rf_level": 100,
-                    "radio_status": True,
-                    "radio_swr": 0,
-                    "radio_tuner": True,
-                    "s_meter_strength": "20"
+
+@router.post(
+    "/",
+    summary="Set Radio Parameters",
+    tags=["Radio"],
+    responses={
+        200: {
+            "description": "Radio parameters updated successfully.",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "radio_frequency": "14093000",
+                        "radio_mode": "PKTUSB",
+                        "radio_rf_level": 100,
+                        "radio_status": True,
+                        "radio_swr": 0,
+                        "radio_tuner": True,
+                        "s_meter_strength": "20",
+                    }
                 }
-            }
-        }
+            },
+        },
+        400: {
+            "description": "Bad Request: The request was malformed or missing required parameters.",
+            "content": {"application/json": {"example": {"error": "Invalid parameters."}}},
+        },
+        404: {
+            "description": "The requested resource was not found.",
+            "content": {"application/json": {"example": {"error": "Resource not found."}}},
+        },
     },
-    400: {
-        "description": "Bad Request: The request was malformed or missing required parameters.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "Invalid parameters."
-                }
-            }
-        }
-    },
-    404: {
-        "description": "The requested resource was not found.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "Resource not found."
-                }
-            }
-        }
-    }
-})
+)
 async def post_radio(
     new_params: dict,
     ctx: AppContext = Depends(get_ctx),
@@ -112,59 +104,39 @@ async def post_radio(
     return api_response(new_params)
 
 
-@router.post("/tune", summary="Enable/Disable Radio Tuning", tags=["Radio"], responses={
-    200: {
-        "description": "Radio tuning status updated successfully.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "enable_tuning": True
-                }
-            }
-        }
-    },
-    400: {
-        "description": "Bad Request: The request was malformed or missing required parameters.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "Invalid parameters."
-                }
-            }
-        }
-    },
-    404: {
-        "description": "The requested resource was not found.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "Resource not found."
-                }
-            }
-        }
-    },
-    503: {
-        "description": "Modem not running or busy.",
-        "content": {
-            "application/json": {
-                "examples": {
-                    "modem_not_running": {
-                        "summary": "Modem Not Running",
-                        "value": {
-                            "error": "Modem not running."
-                        }
-                    },
-                    "modem_busy": {
-                        "summary": "Modem Busy",
-                        "value": {
-                            "error": "Modem Busy."
-                        }
+@router.post(
+    "/tune",
+    summary="Enable/Disable Radio Tuning",
+    tags=["Radio"],
+    responses={
+        200: {
+            "description": "Radio tuning status updated successfully.",
+            "content": {"application/json": {"example": {"enable_tuning": True}}},
+        },
+        400: {
+            "description": "Bad Request: The request was malformed or missing required parameters.",
+            "content": {"application/json": {"example": {"error": "Invalid parameters."}}},
+        },
+        404: {
+            "description": "The requested resource was not found.",
+            "content": {"application/json": {"example": {"error": "Resource not found."}}},
+        },
+        503: {
+            "description": "Modem not running or busy.",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "modem_not_running": {
+                            "summary": "Modem Not Running",
+                            "value": {"error": "Modem not running."},
+                        },
+                        "modem_busy": {"summary": "Modem Busy", "value": {"error": "Modem Busy."}},
                     }
                 }
-            }
-        }
-    }
-})
+            },
+        },
+    },
+)
 async def post_radio_tune(
     params: dict,
     ctx: AppContext = Depends(get_ctx),
@@ -187,4 +159,3 @@ async def post_radio_tune(
     else:
         ctx.rf_modem.stop_sine()
     return api_response(params)
-    return api_response(data)

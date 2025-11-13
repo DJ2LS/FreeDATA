@@ -1,8 +1,5 @@
 import os
 import sys
-# we need to add script directory to the sys path for avoiding problems with pip package
-script_directory = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(script_directory)
 
 import threading
 import webbrowser
@@ -12,9 +9,17 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from log_handler import setup_logging
-from constants import CONFIG_ENV_VAR, DEFAULT_CONFIG_FILE, API_VERSION
-from context import AppContext
+from freedata_server.log_handler import setup_logging
+from freedata_server.constants import CONFIG_ENV_VAR, DEFAULT_CONFIG_FILE, API_VERSION
+from freedata_server.context import AppContext
+
+from freedata_server.api.general import router as general_router
+from freedata_server.api.config import router as config_router
+from freedata_server.api.devices import router as devices_router
+from freedata_server.api.radio import router as radio_router
+from freedata_server.api.modem import router as modem_router
+from freedata_server.api.freedata import router as freedata_router
+from freedata_server.api.websocket import router as websocket_router
 
 import uvicorn
 
@@ -57,6 +62,7 @@ async def lifespan(app: FastAPI):
     ctx.shutdown()
     logger.info("Shutdown complete")
 
+
 # Create FastAPI app with unified lifespan
 app = FastAPI(
     title="FreeDATA API",
@@ -76,6 +82,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # HTTP middleware: disable caching and logging
 @app.middleware("http")
 async def nocache(request: Request, call_next):
@@ -85,6 +92,7 @@ async def nocache(request: Request, call_next):
     # structlog stdlib logger akzeptiert %-Formatierung; alternativ key/value:
     logger.info("[API] %s %s → %d", request.method, request.url.path, response.status_code)
     return response
+
 
 # Static GUI mounting
 potential_gui_dirs = [
@@ -100,14 +108,6 @@ else:
     logger.warning("GUI directory not found: %s", gui_dir)
 
 # Register routers
-from api.general import router as general_router
-from api.config import router as config_router
-from api.devices import router as devices_router
-from api.radio import router as radio_router
-from api.modem import router as modem_router
-from api.freedata import router as freedata_router
-from api.websocket import router as websocket_router
-
 app.include_router(general_router, prefix="", tags=["General"])
 app.include_router(config_router, prefix="/config", tags=["Configuration"])
 app.include_router(devices_router, prefix="/devices", tags=["Devices"])
@@ -133,8 +133,8 @@ def open_browser_after_delay(url, delay=2):
 
 
 def main():
-    host = ctx.config_manager.config.get('NETWORK', {}).get('modemaddress') or '0.0.0.0'
-    port = int(ctx.config_manager.config.get('NETWORK', {}).get('modemport', 5000))
+    host = ctx.config_manager.config.get("NETWORK", {}).get("modemaddress") or "0.0.0.0"
+    port = int(ctx.config_manager.config.get("NETWORK", {}).get("modemport", 5000))
 
     # Launch GUI if available
     if gui_dir and os.path.isdir(gui_dir):
@@ -146,10 +146,11 @@ def main():
         logger.info("                                                   ")
         logger.info("---------------------------------------------------")
 
-        if ctx.config_manager.config.get('GUI', {}).get('auto_run_browser', True):
+        if ctx.config_manager.config.get("GUI", {}).get("auto_run_browser", True):
             threading.Thread(target=open_browser_after_delay, args=(url, 2), daemon=True).start()
 
     uvicorn.run(app, host=host, port=port, log_config=None, log_level="info")
+
 
 if __name__ == "__main__":
     sys.exit(main())

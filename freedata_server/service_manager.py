@@ -1,11 +1,12 @@
 import threading
-import frame_dispatcher
-import modem
+from freedata_server import frame_dispatcher
+from freedata_server import modem
 import structlog
-import audio
-import radio_manager
-from socket_interface import SocketInterfaceHandler
+from freedata_server import audio
+from freedata_server import radio_manager
+from freedata_server.socket_interface import SocketInterfaceHandler
 import queue
+
 
 class SM:
     """Manages the FreeDATA server services.
@@ -14,6 +15,7 @@ class SM:
     radio manager, and socket interface. It handles commands from the modem
     service queue and performs actions based on the received commands.
     """
+
     def __init__(self, ctx):
         """Initializes the service manager.
 
@@ -26,21 +28,18 @@ class SM:
         Args:
             app: The main application object.
         """
-        
-        
+
         self.log = structlog.get_logger("service manager")
         self.ctx = ctx
         self.ctx.rf_modem = False
 
         self.shutdown_flag = threading.Event()
 
-
         self.runner_thread = threading.Thread(
             target=self.runner, name="runner thread", daemon=False
         )
 
         self.runner_thread.start()
-
 
     def runner(self):
         """Main loop for handling service commands.
@@ -56,29 +55,37 @@ class SM:
                 if self.shutdown_flag.is_set():
                     return
 
-                if cmd in ['start']:
+                if cmd in ["start"]:
                     self.ctx.config_manager.read()
 
                     self.start_radio_manager()
                     self.start_modem()
 
-                    if self.ctx.config_manager.config['SOCKET_INTERFACE']['enable']:
-                        self.ctx.socket_interface_manager = SocketInterfaceHandler(self.ctx).start_servers()
+                    if self.ctx.config_manager.config["SOCKET_INTERFACE"]["enable"]:
+                        self.ctx.socket_interface_manager = SocketInterfaceHandler(
+                            self.ctx
+                        ).start_servers()
                     else:
                         self.ctx.socket_interface_manager = None
 
-                elif cmd in ['stop'] and self.ctx.rf_modem:
+                elif cmd in ["stop"] and self.ctx.rf_modem:
                     self.stop_modem()
                     self.stop_radio_manager()
-                    if self.ctx.config_manager.config['SOCKET_INTERFACE']['enable'] and self.ctx.socket_interface_manager:
+                    if (
+                        self.ctx.config_manager.config["SOCKET_INTERFACE"]["enable"]
+                        and self.ctx.socket_interface_manager
+                    ):
                         self.ctx.socket_interface_manager.stop_servers()
                     # we need to wait a bit for avoiding a portaudio crash
                     threading.Event().wait(0.5)
 
-                elif cmd in ['restart']:
+                elif cmd in ["restart"]:
                     self.stop_modem()
                     self.stop_radio_manager()
-                    if self.ctx.config_manager.config['SOCKET_INTERFACE']['enable'] and self.ctx.socket_interface_manager:
+                    if (
+                        self.ctx.config_manager.config["SOCKET_INTERFACE"]["enable"]
+                        and self.ctx.socket_interface_manager
+                    ):
                         self.ctx.socket_interface_manager.stop_servers()
                         self.ctx.socket_interface_manager = None
 
@@ -94,14 +101,20 @@ class SM:
                     self.log.info("starting radio manager")
                     self.start_radio_manager()
 
-                    if self.ctx.config_manager.config['SOCKET_INTERFACE']['enable']:
-                        self.ctx.socket_interface_manager = SocketInterfaceHandler(self.ctx).start_servers()
+                    if self.ctx.config_manager.config["SOCKET_INTERFACE"]["enable"]:
+                        self.ctx.socket_interface_manager = SocketInterfaceHandler(
+                            self.ctx
+                        ).start_servers()
                     else:
                         self.ctx.socket_interface_manager = None
 
                 else:
                     if not self.shutdown_flag.is_set():
-                        self.log.warning("[SVC] freedata_server command processing failed", cmd=cmd, state=self.ctx.state_manager.is_modem_running)
+                        self.log.warning(
+                            "[SVC] freedata_server command processing failed",
+                            cmd=cmd,
+                            state=self.ctx.state_manager.is_modem_running,
+                        )
 
             # Queue is empty
             except queue.Empty:
@@ -121,7 +134,7 @@ class SM:
             bool: True if the modem started successfully, False otherwise.
         """
 
-        if self.ctx.config_manager.config['STATION']['mycall'] in ['XX1XXX']:
+        if self.ctx.config_manager.config["STATION"]["mycall"] in ["XX1XXX"]:
             self.log.warning("wrong callsign in config! interrupting startup")
             return False
 
@@ -133,7 +146,11 @@ class SM:
             # test audio devices
             audio_test = self.test_audio()
             if False in audio_test or None in audio_test or self.ctx.state_manager.is_modem_running:
-                self.log.warning("starting freedata_server failed", input_test=audio_test[0], output_test=audio_test[1])
+                self.log.warning(
+                    "starting freedata_server failed",
+                    input_test=audio_test[0],
+                    output_test=audio_test[1],
+                )
                 self.ctx.state_manager.set("is_modem_running", False)
                 self.ctx.event_manager.modem_failed()
                 return False
@@ -149,7 +166,7 @@ class SM:
         self.ctx.schedule_manager.start(self.ctx.rf_modem)
 
         return True
-        
+
     def stop_modem(self):
         """Stops the FreeDATA modem and related services.
 
@@ -161,19 +178,19 @@ class SM:
         """
         self.log.warning("stopping modem....")
         try:
-            if self.ctx.rf_modem and hasattr(self.ctx, 'modem_service'):
+            if self.ctx.rf_modem and hasattr(self.ctx, "modem_service"):
                 self.ctx.rf_modem.stop_modem()
                 self.ctx.rf_modem = None
         except AttributeError:
             pass
         self.ctx.state_manager.set("is_modem_running", False)
         try:
-            if self.ctx.schedule_manager and hasattr(self.ctx, 'schedule_manager'):
+            if self.ctx.schedule_manager and hasattr(self.ctx, "schedule_manager"):
                 self.ctx.schedule_manager.stop()
         except AttributeError:
             pass
         try:
-            if self.frame_dispatcher and hasattr(self.ctx, 'frame_dispatcher'):
+            if self.frame_dispatcher and hasattr(self.ctx, "frame_dispatcher"):
                 self.frame_dispatcher.stop()
         except AttributeError:
             pass
@@ -194,8 +211,10 @@ class SM:
             occurs during testing.
         """
         try:
-            audio_test = audio.test_audio_devices(self.ctx.config_manager.config['AUDIO']['input_device'],
-                                                  self.ctx.config_manager.config['AUDIO']['output_device'])
+            audio_test = audio.test_audio_devices(
+                self.ctx.config_manager.config["AUDIO"]["input_device"],
+                self.ctx.config_manager.config["AUDIO"]["output_device"],
+            )
             self.log.info("tested audio devices", result=audio_test)
 
             return audio_test
@@ -204,7 +223,6 @@ class SM:
             return [False, False]
 
     def start_radio_manager(self):
-
         """Starts the radio manager.
 
         This method initializes and starts the RadioManager, which handles
@@ -219,7 +237,7 @@ class SM:
         resources. It handles potential AttributeErrors if the radio manager
         has not been initialized.
         """
-        if hasattr(self.ctx, 'radio_manager'):
+        if hasattr(self.ctx, "radio_manager"):
             self.ctx.radio_manager.stop()
             self.ctx.radio_manager = None
 
@@ -232,6 +250,8 @@ class SM:
         """
         self.log.warning("[SHUTDOWN] stopping service manager....")
         self.ctx.modem_service.put("stop")
-        threading.Event().wait(2) # we need some time before processing with the shutdown_event_flag
+        threading.Event().wait(
+            2
+        )  # we need some time before processing with the shutdown_event_flag
         self.shutdown_flag.set()
         self.runner_thread.join(0.5)

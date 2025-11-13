@@ -1,4 +1,5 @@
-from command import TxCommand
+from freedata_server.command import TxCommand
+
 
 class BeaconCommand(TxCommand):
     """Command for transmitting beacon frames.
@@ -19,8 +20,7 @@ class BeaconCommand(TxCommand):
         beacon_state = self.ctx.state_manager.is_away_from_key
         return self.frame_factory.build_beacon(beacon_state)
 
-
-    #def transmit(self, freedata_server):
+    # def transmit(self, freedata_server):
     #    super().transmit(freedata_server)
     #    if self.config['MODEM']['enable_morse_identifier']:
     #        mycall = f"{self.config['STATION']['mycall']}-{self.config['STATION']['myssid']}"

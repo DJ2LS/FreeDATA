@@ -1,8 +1,6 @@
 import ctypes
-import codec2
+from freedata_server import codec2
 import structlog
-from codec2 import FREEDV_MODE
-from codec2 import FREEDV_ADVANCED_FSK
 
 
 class Modulator:
@@ -13,6 +11,7 @@ class Modulator:
     to the transmitted data, and creates bursts of modulated frames. It
     also initializes and manages Codec2 instances for different modes.
     """
+
     log = structlog.get_logger("RF")
 
     def __init__(self, ctx):
@@ -24,7 +23,7 @@ class Modulator:
 
         self.ctx = ctx
 
-        self.tx_delay = self.ctx.config_manager.config['MODEM']['tx_delay']
+        self.tx_delay = self.ctx.config_manager.config["MODEM"]["tx_delay"]
         self.modem_sample_rate = codec2.api.FREEDV_FS_8000
 
         # Initialize codec2, rig control, and data threads
@@ -54,8 +53,8 @@ class Modulator:
         self.data_ofdm_2438_tx = codec2.open_instance(codec2.FREEDV_MODE.data_ofdm_2438.value)
         self.data_vhf_1 = codec2.open_instance(codec2.FREEDV_MODE.data_vhf_1.value)
 
-        #self.freedv_qam16c2_tx = codec2.open_instance(codec2.FREEDV_MODE.qam16c2.value)
-        #self.data_qam_2438_tx = codec2.open_instance(codec2.FREEDV_MODE.data_qam_2438.value)
+        # self.freedv_qam16c2_tx = codec2.open_instance(codec2.FREEDV_MODE.qam16c2.value)
+        # self.data_qam_2438_tx = codec2.open_instance(codec2.FREEDV_MODE.data_qam_2438.value)
 
     def transmit_add_preamble(self, buffer, freedv):
         """Adds a preamble to the transmit buffer.
@@ -72,9 +71,7 @@ class Modulator:
             bytes: The buffer with the preamble appended.
         """
         # Init buffer for preample
-        n_tx_preamble_modem_samples = codec2.api.freedv_get_n_tx_preamble_modem_samples(
-            freedv
-        )
+        n_tx_preamble_modem_samples = codec2.api.freedv_get_n_tx_preamble_modem_samples(freedv)
         mod_out_preamble = ctypes.create_string_buffer(n_tx_preamble_modem_samples * 2)
 
         # Write preamble to txbuffer
@@ -97,12 +94,8 @@ class Modulator:
             bytes: The buffer with the postamble appended.
         """
         # Init buffer for postamble
-        n_tx_postamble_modem_samples = (
-            codec2.api.freedv_get_n_tx_postamble_modem_samples(freedv)
-        )
-        mod_out_postamble = ctypes.create_string_buffer(
-            n_tx_postamble_modem_samples * 2
-        )
+        n_tx_postamble_modem_samples = codec2.api.freedv_get_n_tx_postamble_modem_samples(freedv)
+        mod_out_postamble = ctypes.create_string_buffer(n_tx_postamble_modem_samples * 2)
         # Write postamble to txbuffer
         codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
         # Append postamble to txbuffer
@@ -147,7 +140,7 @@ class Modulator:
         # Get number of bytes per frame for mode
         bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv) / 8)
         payload_bytes_per_frame = bytes_per_frame - 2
-        #print(payload_bytes_per_frame)
+        # print(payload_bytes_per_frame)
         # Init buffer for data
         n_tx_modem_samples = codec2.api.freedv_get_n_tx_modem_samples(freedv)
         mod_out = ctypes.create_string_buffer(n_tx_modem_samples * 2)
@@ -162,23 +155,19 @@ class Modulator:
         #   Use the crc function shipped with codec2
         #   to avoid CRC algorithm incompatibilities
         # Generate CRC16
-        crc = ctypes.c_ushort(
-            codec2.api.freedv_gen_crc16(bytes(buffer), payload_bytes_per_frame)
-        )
+        crc = ctypes.c_ushort(codec2.api.freedv_gen_crc16(bytes(buffer), payload_bytes_per_frame))
         # Convert crc to 2-byte (16-bit) hex string
         crc = crc.value.to_bytes(2, byteorder="big")
         # Append CRC to data buffer
         buffer += crc
-        assert (bytes_per_frame == len(buffer))
+        assert bytes_per_frame == len(buffer)
         data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
         # modulate DATA and save it into mod_out pointer
         codec2.api.freedv_rawdatatx(freedv, mod_out, data)
         txbuffer += bytes(mod_out)
         return txbuffer
 
-    def create_burst(
-            self, mode, repeats: int, repeat_delay: int, frames: bytearray
-    ) -> bytes:
+    def create_burst(self, mode, repeats: int, repeat_delay: int, frames: bytearray) -> bytes:
         """Creates a burst of modulated frames.
 
         This method creates a burst transmission by repeating the given
@@ -211,44 +200,39 @@ class Modulator:
             codec2.FREEDV_MODE.data_ofdm_500: self.data_ofdm_500_tx,
             codec2.FREEDV_MODE.data_ofdm_1700: self.data_ofdm_1700_tx,
             codec2.FREEDV_MODE.data_ofdm_2438: self.data_ofdm_2438_tx,
-            #codec2.FREEDV_MODE.qam16c2: self.freedv_qam16c2_tx,
-            #codec2.FREEDV_MODE.data_qam_2438: self.freedv_data_qam_2438_tx,
-            codec2.FREEDV_MODE.data_vhf_1: self.data_vhf_1
+            # codec2.FREEDV_MODE.qam16c2: self.freedv_qam16c2_tx,
+            # codec2.FREEDV_MODE.data_qam_2438: self.freedv_data_qam_2438_tx,
+            codec2.FREEDV_MODE.data_vhf_1: self.data_vhf_1,
         }
         if mode in mode_transition:
             freedv = mode_transition[mode]
         else:
             print("wrong mode.................")
             print(mode)
-            #return False
-
+            # return False
 
         # Open codec2 instance
         self.MODE = mode
-        self.log.debug(
-            "[MDM] TRANSMIT", mode=self.MODE.name, delay=self.tx_delay
-        )
+        self.log.debug("[MDM] TRANSMIT", mode=self.MODE.name, delay=self.tx_delay)
 
         txbuffer = bytes()
-
 
         # Add empty data to handle ptt toggle time
         if self.tx_delay > 0:
             txbuffer = self.transmit_add_silence(txbuffer, self.tx_delay)
 
-        if not isinstance(frames, list): frames = [frames]
+        if not isinstance(frames, list):
+            frames = [frames]
         for _ in range(repeats):
-
             # Create modulation for all frames in the list
             for frame in frames:
-                if not self.ctx.config_manager.config['EXP'].get('enable_vhf'):
+                if not self.ctx.config_manager.config["EXP"].get("enable_vhf"):
                     txbuffer = self.transmit_add_preamble(txbuffer, freedv)
                 txbuffer = self.transmit_create_frame(txbuffer, freedv, frame)
-                if not self.ctx.config_manager.config['EXP'].get('enable_vhf'):
+                if not self.ctx.config_manager.config["EXP"].get("enable_vhf"):
                     txbuffer = self.transmit_add_postamble(txbuffer, freedv)
 
             # Add delay to end of frames
             txbuffer = self.transmit_add_silence(txbuffer, repeat_delay)
 
         return txbuffer
-

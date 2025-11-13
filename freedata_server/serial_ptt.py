@@ -1,6 +1,7 @@
 import serial
 import structlog
 
+
 class radio:
     """Controls PTT via serial port.
 
@@ -21,17 +22,17 @@ class radio:
             state_manager (StateManager): State manager instance.
         """
         self.ctx = ctx
-        
+
         self.parameters = {
-            'frequency': '---',
-            'mode': '---',
-            'alc': '---',
-            'strength': '---',
-            'bandwidth': '---',
-            'rf': '---',
-            'ptt': False,  # Initial PTT state is set to False
-            'tuner': False,
-            'swr': '---'
+            "frequency": "---",
+            "mode": "---",
+            "alc": "---",
+            "strength": "---",
+            "bandwidth": "---",
+            "rf": "---",
+            "ptt": False,  # Initial PTT state is set to False
+            "tuner": False,
+            "swr": "---",
         }
         self.serial_rts = self.ctx.config_manager.config["RADIO"]["serial_rts"]
         self.serial_dtr = self.ctx.config_manager.config["RADIO"]["serial_dtr"]
@@ -158,7 +159,7 @@ class radio:
 
     def get_ptt(self):
         """ """
-        return self.parameters['ptt']
+        return self.parameters["ptt"]
 
     def set_ptt(self, state):
         """
@@ -170,16 +171,16 @@ class radio:
         """
         if self.serial_connection is None:
             self.log.warning("Error: Serial connection not established.")
-            return self.parameters['ptt']
+            return self.parameters["ptt"]
 
         try:
             self.set_rts_state(state)
             self.set_dtr_state(state)
-            self.parameters['ptt'] = state
+            self.parameters["ptt"] = state
         except serial.SerialException as e:
             self.log.warning(f"Error: {e}")
-            self.parameters['ptt'] = False
-        return self.parameters['ptt']
+            self.parameters["ptt"] = False
+        return self.parameters["ptt"]
 
     def set_rts_state(self, state):
         """
@@ -208,7 +209,6 @@ class radio:
     def close_rig(self):
         """ """
         return
-
 
     def get_parameters(self):
         return self.parameters

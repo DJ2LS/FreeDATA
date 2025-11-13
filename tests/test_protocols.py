@@ -1,20 +1,17 @@
-import sys
-sys.path.append('freedata_server')
-
 import unittest
-from context import AppContext
-import queue
+from freedata_server.context import AppContext
 
-from command_ping import PingCommand
-from command_cq import CQCommand
-import frame_handler
-import frame_dispatcher
+from freedata_server.command_ping import PingCommand
+from freedata_server.command_cq import CQCommand
+from freedata_server import frame_handler
+from freedata_server import frame_dispatcher
+
+
 class TestProtocols(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         # Create a full AppContext
-        cls.ctx = AppContext('freedata_server/config.ini.example')
+        cls.ctx = AppContext("freedata_server/config.ini.example")
         cls.ctx.startup()
 
         frame_handler.TESTMODE = True
@@ -32,13 +29,15 @@ class TestProtocols(unittest.TestCase):
 
     def shortcutTransmission(self, frame_bytes):
         """Inject a frame directly into the frame dispatcher."""
-        self.frame_dispatcher.process_data(frame_bytes, None, len(frame_bytes), 0, 0, mode_name="TEST")
+        self.frame_dispatcher.process_data(
+            frame_bytes, None, len(frame_bytes), 0, 0, mode_name="TEST"
+        )
 
     def assertEventReceivedType(self, event_type):
         """Assert that an event with a specific type was received."""
         ev = self.ctx.event_manager.queues[0].get(timeout=5)
-        self.assertIn('type', ev)
-        self.assertEqual(ev['type'], event_type)
+        self.assertIn("type", ev)
+        self.assertEqual(ev["type"], event_type)
 
     def testPingWithAck(self):
         # Prepare and transmit a PING
@@ -48,17 +47,17 @@ class TestProtocols(unittest.TestCase):
 
         # Send frame to dispatcher
         self.shortcutTransmission(frame)
-        self.assertEventReceivedType('PING')
+        self.assertEventReceivedType("PING")
 
         # Simulate receiving the ACK
         event_frame = self.event_manager.queues[0].get(timeout=5)
         self.shortcutTransmission(event_frame)
-        self.assertEventReceivedType('PING_ACK')
+        self.assertEventReceivedType("PING_ACK")
 
         print("✅ PING/PING_ACK successfully verified.")
 
     def testCQWithQRV(self):
-        self.ctx.config_manager.config['STATION']['respond_to_cq'] = True
+        self.ctx.config_manager.config["STATION"]["respond_to_cq"] = True
         self.state_manager.set_channel_busy_condition_codec2(False)
 
         # Prepare and transmit a CQ
@@ -68,14 +67,15 @@ class TestProtocols(unittest.TestCase):
 
         # Send frame to dispatcher
         self.shortcutTransmission(frame)
-        self.assertEventReceivedType('CQ')
+        self.assertEventReceivedType("CQ")
 
         # Simulate receiving the QRV
         event_frame = self.event_manager.queues[0].get(timeout=5)
         self.shortcutTransmission(event_frame)
-        self.assertEventReceivedType('QRV')
+        self.assertEventReceivedType("QRV")
 
         print("✅ CQ/QRV successfully verified.")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

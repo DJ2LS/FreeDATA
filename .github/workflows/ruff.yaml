@@ -1,0 +1,33 @@
+name: "Ruff"
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'develop'
+    paths:
+      - '**.py'
+      - 'pyproject.toml'
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  merge_group:
+  workflow_dispatch:
+
+jobs:
+  ruff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff
+      - name: Run Ruff check
+        run: ruff check --output-format=github .
+      - name: Run Ruff Format
+        # TODO: remove `--preview` when `--output-format=github` stabilizes for the format action
+        run: ruff format --check --preview --output-format=github .
