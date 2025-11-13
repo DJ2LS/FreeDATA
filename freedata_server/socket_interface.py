@@ -205,7 +205,7 @@ class SocketInterfaceHandler:
         threading.Thread(target=self.data_server.serve_forever, daemon=True).start()
         self.command_server.command_handler = None
 
-        self.log(f"Interfaces started")
+        self.log("Interfaces started")
         return self
 
     def run_server(self, ip, port, handler):
@@ -236,4 +236,4 @@ class SocketInterfaceHandler:
                 self.data_server_thread.join(3)
             del self.data_server
 
-        self.log(f"socket interfaces stopped")
+        self.log("socket interfaces stopped")

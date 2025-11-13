@@ -33,7 +33,7 @@ class DatabaseManagerStations(DatabaseManager):
                 return None
         except Exception as e:
             self.log(f"error fetching database station with error: {e}", isWarning=True)
-            self.log(f"---> please delete or update existing database", isWarning=True)
+            self.log("---> please delete or update existing database", isWarning=True)
 
             return []
 

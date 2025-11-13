@@ -38,7 +38,7 @@ class EventManager:
             self.ctx.TESTMODE_EVENTS.put(data)
 
         for q in self.queues:
-            self.logger.debug(f"Event: ", ev=data)
+            self.logger.debug("Event: ", ev=data)
             if q.qsize() > 10:
                 q.queue.clear()
             q.put(data)

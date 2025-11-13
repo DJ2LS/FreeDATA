@@ -33,9 +33,9 @@ class SocketCommandHandler:
 
             cmd = P2PConnectionCommand(self.ctx, params)
             self.session = cmd.run()
-            self.send_response(f"OK")
+            self.send_response("OK")
             self.send_response(f"REGISTERED {data[0]}")
-            self.send_response(f"UNENCRYPTED LINK")
+            self.send_response("UNENCRYPTED LINK")
             self.ctx.socket_interface_manager.connecting_callsign = data[0]
             # if self.session.session_id:
             #    self.ctx.state_manager.register_p2p_connection_session(self.session)
@@ -47,7 +47,7 @@ class SocketCommandHandler:
             self.send_response(f"ERR: {data}")
 
     def handle_disconnect(self, data):
-        self.send_response(f"OK")
+        self.send_response("OK")
         try:
             self.session.disconnect()
         except Exception as e:
@@ -56,50 +56,50 @@ class SocketCommandHandler:
     def handle_mycall(self, data):
         # Storing all of the callsigns assigned by client, to make sure they are checked later in new frames.
         self.ctx.socket_interface_manager.socket_interface_callsigns = data
-        self.send_response(f"OK")
-        self.send_response(f"UNENCRYPTED LINK")
-        self.send_response(f"ENCRYPTION DISABLED")
+        self.send_response("OK")
+        self.send_response("UNENCRYPTED LINK")
+        self.send_response("ENCRYPTION DISABLED")
 
     def handle_bw(self, data):
         # Logic for handling BW command
         self.ctx.socket_interface_manager.socket_interface_bandwidth = int(data[0])
-        self.send_response(f"OK")
+        self.send_response("OK")
 
     def handle_abort(self, data):
         # Logic for handling ABORT command
-        self.send_response(f"OK")
+        self.send_response("OK")
         try:
             self.session.abort_connection()
         except Exception as e:
             self.send_response(f"ERR: {e}")
-        self.send_response(f"DISCONNECTED")
+        self.send_response("DISCONNECTED")
 
     def handle_public(self, data):
         # Logic for handling PUBLIC command
-        self.send_response(f"OK")
+        self.send_response("OK")
 
     def handle_cwid(self, data):
         # Logic for handling CWID command
-        self.send_response(f"OK")
+        self.send_response("OK")
 
     def handle_listen(self, data):
         # Logic for handling LISTEN command
-        self.send_response(f"OK")
+        self.send_response("OK")
 
     def handle_compression(self, data):
         # Logic for handling COMPRESSION command
         # We are always sending OK, as we have our own compression
-        self.send_response(f"OK")
+        self.send_response("OK")
 
     def handle_winlink_session(self, data):
         # Logic for handling WINLINK SESSION command
         # self.send_response(f"NOT IMPLEMENTED: {data}")
-        self.send_response(f"OK")
+        self.send_response("OK")
 
     def handle_version(self, data):
         # Logic for handling VERSION command
         # maybe we need to use a different version, like 5.0
-        self.send_response(f"VERSION FREEDATA")
+        self.send_response("VERSION FREEDATA")
 
     def socket_respond_disconnected(self):
         self.send_response("DISCONNECTED")
@@ -111,13 +111,13 @@ class SocketCommandHandler:
             message = f"CONNECTED {origin} {destination} {bandwidth}"
         else:
             message = f"CONNECTED {origin} {destination} {bandwidth}"
-        self.send_response(f"UNENCRYPTED LINK")
-        self.send_response(f"LINK REGISTERED")
+        self.send_response("UNENCRYPTED LINK")
+        self.send_response("LINK REGISTERED")
         self.send_response(message)
 
     def socket_respond_iamalive(self):
         try:
-            self.send_response(f"IAMALIVE")
+            self.send_response("IAMALIVE")
         except Exception as e:
             self.log(f"sending iamalive failed {e}")
 
@@ -127,8 +127,8 @@ class SocketCommandHandler:
     def socket_respond_ptt(self, state):
         """send the PTT state via command socket"""
         if state:
-            message = f"PTT ON"
+            message = "PTT ON"
         else:
-            message = f"PTT OFF"
+            message = "PTT OFF"
 
         self.send_response(message)

@@ -66,7 +66,7 @@ class TestARQSession(unittest.TestCase):
                 # Forward data from Station A to Station B's receive queue
                 if ctx_b:
                     ctx_b.TESTMODE_RECEIVE_QUEUE.put(transmission)
-                    self.logger.info(f"Data forwarded to Station B")
+                    self.logger.info("Data forwarded to Station B")
 
                 frame_bytes = transmission[1]
                 if len(frame_bytes) == 5:

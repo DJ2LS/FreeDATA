@@ -388,7 +388,7 @@ class P2PConnection:
         return
 
     def received_data(self, frame):
-        self.log(f"received data...")
+        self.log("received data...")
 
         ack_data = self.frame_factory.build_p2p_connection_payload_ack(self.session_id, 0)
         self.launch_twr_irs(

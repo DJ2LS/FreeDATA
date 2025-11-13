@@ -50,11 +50,11 @@ class wsm:
             try:
                 await websocket.receive_text()
             except Exception as e:
-                self.log.warning(f"Client connection lost", e=e)
+                self.log.warning("Client connection lost", e=e)
                 try:
                     client_list.remove(websocket)
                 except Exception as err:
-                    self.log.error(f"Error removing client from list", e=e, err=err)
+                    self.log.error("Error removing client from list", e=e, err=err)
                 break
 
     def transmit_sock_data_worker(self, client_list, event_queue):

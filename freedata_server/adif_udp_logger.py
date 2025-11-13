@@ -27,8 +27,8 @@ def send_adif_qso_data(ctx, adif_data):
         # Set a timeout of 3 seconds to avoid blocking indefinitely
         sock.settimeout(3)
 
-        callsign_start = adif_data.find(f">") + 1
-        callsign_end = adif_data.find(f"<QSO_DATE", callsign_start)
+        callsign_start = adif_data.find(">") + 1
+        callsign_end = adif_data.find("<QSO_DATE", callsign_start)
         call_value = adif_data[callsign_start:callsign_end]
 
         try:

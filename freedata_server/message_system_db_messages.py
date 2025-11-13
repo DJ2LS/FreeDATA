@@ -163,7 +163,7 @@ class DatabaseManagerMessages(DatabaseManager):
 
         except Exception as e:
             self.log(f"error fetching database messages with error: {e}", isWarning=True)
-            self.log(f"---> please delete or update existing database", isWarning=True)
+            self.log("---> please delete or update existing database", isWarning=True)
 
             return []
 
@@ -286,7 +286,7 @@ class DatabaseManagerMessages(DatabaseManager):
                 # Set ADIF Fields
                 mode = "DYNAMIC"
                 submode = "FREEDATA"
-                comment = f"QSO via FreeDATA RF-Chat"
+                comment = "QSO via FreeDATA RF-Chat"
 
                 # Gridsquare handling
                 print(origin_info)
@@ -562,7 +562,7 @@ class DatabaseManagerMessages(DatabaseManager):
                 self.log(f"Set message {message.id} to queued and incremented attempt")
 
                 session.commit()
-                return {"status": "success", "message": f"message(s) set to queued"}
+                return {"status": "success", "message": "message(s) set to queued"}
             else:
                 return {"status": "failure", "message": "No eligible messages found"}
         except Exception as e:

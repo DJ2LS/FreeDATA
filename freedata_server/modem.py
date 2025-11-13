@@ -134,7 +134,7 @@ class RF:
             bool: True if audio initialization was successful, False otherwise.
         """
         self.log.info(
-            f"[MDM] init: get audio devices",
+            "[MDM] init: get audio devices",
             input_device=self.audio_input_device,
             output_device=self.audio_output_device,
         )

@@ -78,7 +78,7 @@ class SendMessageCommand(TxCommand):
                 threading.Event().wait(0.1)
                 if self.ctx.state_manager.is_receiving_codec2_signal():
                     self.log(
-                        f"Codec2 signal found, skipping  message until next cycle", isWarning=True
+                        "Codec2 signal found, skipping  message until next cycle", isWarning=True
                     )
                     return
 

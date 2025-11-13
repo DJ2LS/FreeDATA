@@ -47,8 +47,8 @@ def send_wavelog_qso_data(ctx, wavelog_data):
             response.raise_for_status()  # Raise an error for bad status codes
             log.info(f"[CHAT] Wavelog API: {wavelog_data}")
 
-            callsign_start = wavelog_data.find(f">") + 1
-            callsign_end = wavelog_data.find(f"<QSO_DATE", callsign_start)
+            callsign_start = wavelog_data.find(">") + 1
+            callsign_end = wavelog_data.find("<QSO_DATE", callsign_start)
             call_value = wavelog_data[callsign_start:callsign_end]
 
             ctx.event_manager.freedata_logging(

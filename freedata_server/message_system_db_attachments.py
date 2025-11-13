@@ -226,7 +226,7 @@ class DatabaseManagerAttachments(DatabaseManager):
             for attachment in orphaned:
                 self.log(f"Deleting orphaned attachment: {attachment.name}")
                 session.delete(attachment)
-            self.log(f"Checked for orphaned attachments")
+            self.log("Checked for orphaned attachments")
             session.commit()
             return {"status": "success", "deleted_count": len(orphaned)}
         except Exception as e:

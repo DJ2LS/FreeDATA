@@ -136,12 +136,12 @@ class ARQSessionISS(arq_session.ARQSession):
             ]:
                 # If a matching CRC is found, use this session ID
                 self.log(
-                    f"Matching CRC found, deleting existing session and resuming transmission",
+                    "Matching CRC found, deleting existing session and resuming transmission",
                     isWarning=True,
                 )
                 self.ctx.state_manager.remove_arq_iss_session(session_id)
                 return session_id
-        self.log(f"No matching CRC found, creating new session id", isWarning=False)
+        self.log("No matching CRC found, creating new session id", isWarning=False)
 
         # Compute 8-bit integer from the 32-bit CRC
         # Convert the byte sequence to a 32-bit integer (little-endian)

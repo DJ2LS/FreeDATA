@@ -642,7 +642,7 @@ class radio:
                         f"Attempting to start rigctld using binary found at: {binary_path}"
                     )
                     self.rigctld_process = helpers.kill_and_execute(binary_path, additional_args)
-                    self.log.info(f"Successfully executed rigctld", args=additional_args)
+                    self.log.info("Successfully executed rigctld", args=additional_args)
                     return  # Exit the function after successful execution
                 except Exception as e:
                     self.log.warning(
