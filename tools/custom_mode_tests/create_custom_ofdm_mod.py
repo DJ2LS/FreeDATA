@@ -6,10 +6,10 @@ FreeDATA % python3.11 tools/custom_mode_tests/create_custom_ofdm_mod.py | ./free
 """
 
 import ctypes
-from freedata_server.codec2 import api, FREEDV_MODE, MODE, open_instance, audio_buffer
+from freedata_server.codec2 import api, FREEDV_MODE, open_instance, audio_buffer
 import threading
 from freedata_server import modulator
-from freedata_server import config
+from freedata_server.context import AppContext
 
 MODE = FREEDV_MODE.datac1
 
@@ -57,9 +57,10 @@ def demod(txbuffer):
     print(nin)
     print(audiobuffer.nbuffer)
 
-
-config = config.CONFIG("config.ini")
-modulator = modulator.Modulator(config.read())
+config_file = "config.ini"
+ctx = AppContext(config_file)
+ctx.startup()
+modulator = modulator.Modulator(ctx)
 # freedv = open_instance(FREEDV_MODE.data_ofdm_2438.value)
 # freedv = open_instance(FREEDV_MODE.datac14.value)
 # freedv = open_instance(FREEDV_MODE.datac1.value)
