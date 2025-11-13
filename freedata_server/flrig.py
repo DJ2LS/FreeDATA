@@ -152,7 +152,12 @@ class radio:
 
     def set_tuner(self, state):
         self.parameters["tuner"] = state
-        return None
+        if self.connected:
+            try:
+                self.server.rig.tune(state)
+            except Exception as e:
+                self.logger.error(f"Set Tune failed: {e}")
+        return state
 
     def get_swr(self):
         self.parameters["swr"] = self.server.rig.get_swrmeter()
@@ -169,15 +174,6 @@ class radio:
                 _result = self.server.rig.set_ptt(1) if state else self.server.rig.set_ptt(0)
             except Exception as e:
                 self.logger.error(f"Set PTT failed: {e}")
-        return state
-
-    def set_tuner(self, state):
-        self.parameters["ptt"] = state
-        if self.connected:
-            try:
-                self.server.rig.tune(state)
-            except Exception as e:
-                self.logger.error(f"Set Tune failed: {e}")
         return state
 
     def get_status(self):
