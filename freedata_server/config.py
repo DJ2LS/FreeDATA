@@ -229,7 +229,7 @@ class CONFIG:
             The converted value, or the original value if no conversion is needed.
         """
         try:
-            if self.config_types[section][setting] == list:
+            if self.config_types[section][setting] is list:
                 if is_writing:
                     # When writing, ensure the value is a list and then convert it to JSON
                     if isinstance(value, str):
@@ -241,10 +241,10 @@ class CONFIG:
                         return json.loads(value)
                     return value  # Return as-is if already a list
 
-            elif self.config_types[section][setting] == bool and not is_writing:
+            elif self.config_types[section][setting] is bool and not is_writing:
                 return self.parser.getboolean(section, setting)
 
-            elif self.config_types[section][setting] == int and not is_writing:
+            elif self.config_types[section][setting] is int and not is_writing:
                 return self.parser.getint(section, setting)
 
             else:
@@ -274,7 +274,7 @@ class CONFIG:
         self.validate_data(data)
         for section in data:
             # init section if it doesn't exist yet
-            if not section.upper() in self.parser.keys():
+            if section.upper() not in self.parser.keys():
                 self.parser[section] = {}
 
             for setting in data[section]:

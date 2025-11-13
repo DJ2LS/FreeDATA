@@ -43,7 +43,7 @@ class SocketCommandHandler:
             #    self.session.connect()
             # else:
             #    self.send_response("ERROR")
-        except:
+        except Exception as e:
             self.send_response(f"ERR: {data}")
 
     def handle_disconnect(self, data):
