@@ -39,7 +39,7 @@
     "i18next": "^25.5.2",
     "i18next-vue": "^5.3.0",
     "js-image-compressor": "^2.0.0",
-    "marked": "^16.3.0",
+    "marked": "^16.4.1",
     "pinia": "^3.0.3",
     "qth-locator": "^2.1.0",
     "topojson-client": "^3.1.0",
