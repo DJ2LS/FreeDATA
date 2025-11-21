@@ -92,6 +92,7 @@ const defaultConfig = {
 
     GUI: {
       auto_run_browser: true,
+      distance_unit: "km",
     },
     EXP: {
       enable_ring_buffer: false,
