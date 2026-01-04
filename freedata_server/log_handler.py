@@ -2,6 +2,7 @@ import logging.config
 import structlog
 import sys
 
+
 def setup_logging(filename: str = "", level: str = "DEBUG"):
     """
     Configure stdlib logging + structlog.
@@ -51,7 +52,7 @@ def setup_logging(filename: str = "", level: str = "DEBUG"):
             "level": level,
             "class": "logging.handlers.RotatingFileHandler",
             "filename": filename,
-            "maxBytes": 10 * 1024 * 1024,   # 10 MB
+            "maxBytes": 10 * 1024 * 1024,  # 10 MB
             "backupCount": 10,
             "formatter": "plain",
         }

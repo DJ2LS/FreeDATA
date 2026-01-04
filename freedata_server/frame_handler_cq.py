@@ -1,11 +1,9 @@
 import threading
 
-import frame_handler_ping
-import helpers
-import data_frame_factory
-import frame_handler
-from message_system_db_messages import DatabaseManagerMessages
+from freedata_server import data_frame_factory
+from freedata_server import frame_handler
 import numpy as np
+
 
 class CQFrameHandler(frame_handler.FrameHandler):
     """Handles received CQ frames.
@@ -16,7 +14,7 @@ class CQFrameHandler(frame_handler.FrameHandler):
     sent based on the configuration.
     """
 
-    #def should_respond(self):
+    # def should_respond(self):
     #    self.logger.debug(f"Respond to CQ: {self.ctx.config_manager.config['MODEM']['respond_to_cq']}")
     #    return bool(self.ctx.config_manager.config['MODEM']['respond_to_cq'] and not self.ctx.state_manager.getARQ())
 
@@ -33,7 +31,7 @@ class CQFrameHandler(frame_handler.FrameHandler):
 
         self.logger.debug(
             f"[Modem] Responding to request from [{self.details['frame']['origin']}]",
-            snr=self.details['snr'],
+            snr=self.details["snr"],
         )
 
         self.send_ack()
@@ -41,7 +39,7 @@ class CQFrameHandler(frame_handler.FrameHandler):
 
     def send_ack(self):
         factory = data_frame_factory.DataFrameFactory(self.ctx)
-        qrv_frame = factory.build_qrv(self.details['snr'])
+        qrv_frame = factory.build_qrv(self.details["snr"])
 
         # wait some random time and wait if we have an ongoing codec2 transmission
         # on our channel. This should prevent some packet collision
@@ -50,4 +48,3 @@ class CQFrameHandler(frame_handler.FrameHandler):
         self.ctx.state_manager.channel_busy_condition_codec2.wait(5)
 
         self.transmit(qrv_frame)
-
