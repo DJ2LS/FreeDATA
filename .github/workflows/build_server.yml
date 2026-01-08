@@ -27,7 +27,7 @@ jobs:
 
     steps:
       - name: Checkout code for ${{ matrix.platform.name }}
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: DJ2LS/FreeDATA
 
@@ -117,7 +117,7 @@ jobs:
         run: ls -R
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: '${{ matrix.zip_name }}'
           path: ./freedata_server/server.dist/${{ matrix.zip_name }}.zip

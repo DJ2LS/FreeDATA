@@ -1,6 +1,7 @@
-from message_system_db_manager import DatabaseManager
-from message_system_db_model import Beacon, Station
+from freedata_server.message_system_db_manager import DatabaseManager
+from freedata_server.message_system_db_model import Beacon, Station
 from datetime import timezone, timedelta, datetime
+
 
 class DatabaseManagerBeacon(DatabaseManager):
     """Manages database operations for beacon signals.
@@ -9,6 +10,7 @@ class DatabaseManagerBeacon(DatabaseManager):
     interacting with beacon data in the database. It includes
     functionality for adding, retrieving, and cleaning up beacon records.
     """
+
     def __init__(self, ctx):
         """Initializes the DatabaseManagerBeacon.
 
@@ -42,9 +44,11 @@ class DatabaseManagerBeacon(DatabaseManager):
                 station.location = {}
 
             # Now, check and update the station's location with gridsquare if it has changed
-            if station.location.get('gridsquare') != gridsquare:
+            if station.location.get("gridsquare") != gridsquare:
                 self.log(f"Updating location for {callsign}")
-                station.location['gridsquare'] = gridsquare  # Update directly without re-serialization
+                station.location["gridsquare"] = (
+                    gridsquare  # Update directly without re-serialization
+                )
                 session.flush()
 
             # Now, add the beacon
@@ -85,18 +89,26 @@ class DatabaseManagerBeacon(DatabaseManager):
                 # Access the beacons directly thanks to the back_populated relationship
                 beacons = station.beacons
                 # Convert beacon objects to a dictionary if needed, or directly return the list
-                beacons_data = [{
-                    'id': beacon.id,
-                    'timestamp': beacon.timestamp.isoformat(),
-                    'snr': beacon.snr,
-                    'gridsquare': station.location.get('gridsquare') if station.location else None
-                } for beacon in beacons]
+                beacons_data = [
+                    {
+                        "id": beacon.id,
+                        "timestamp": beacon.timestamp.isoformat(),
+                        "snr": beacon.snr,
+                        "gridsquare": station.location.get("gridsquare")
+                        if station.location
+                        else None,
+                    }
+                    for beacon in beacons
+                ]
                 return beacons_data
             else:
                 self.log(f"No station found with callsign {callsign}")
                 return []
         except Exception as e:
-            self.log(f"An error occurred while fetching beacons for callsign {callsign}: {e}", isWarning=True)
+            self.log(
+                f"An error occurred while fetching beacons for callsign {callsign}: {e}",
+                isWarning=True,
+            )
             return []
         finally:
             session.remove()
@@ -125,14 +137,16 @@ class DatabaseManagerBeacon(DatabaseManager):
             for beacon in beacons_query:
                 # Fetch the associated station for each beacon to get the 'gridsquare' information
                 station = session.query(Station).filter_by(callsign=beacon.callsign).first()
-                gridsquare = station.location.get('gridsquare') if station and station.location else None
+                gridsquare = (
+                    station.location.get("gridsquare") if station and station.location else None
+                )
 
                 beacons_list.append({
-                    'id': beacon.id,
-                    'timestamp': beacon.timestamp.isoformat(),
-                    'snr': beacon.snr,
-                    'callsign': beacon.callsign,
-                    'gridsquare': gridsquare
+                    "id": beacon.id,
+                    "timestamp": beacon.timestamp.isoformat(),
+                    "snr": beacon.snr,
+                    "callsign": beacon.callsign,
+                    "gridsquare": gridsquare,
                 })
 
             return beacons_list
@@ -165,7 +179,7 @@ class DatabaseManagerBeacon(DatabaseManager):
 
             # Query and delete beacons older than the calculated timestamp
             delete_query = session.query(Beacon).filter(Beacon.timestamp < older_than_timestamp)
-            deleted_count = delete_query.delete(synchronize_session='fetch')
+            deleted_count = delete_query.delete(synchronize_session="fetch")
             session.commit()
 
             self.log(f"Deleted {deleted_count} beacons older than {days} days")

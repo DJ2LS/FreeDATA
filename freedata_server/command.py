@@ -1,9 +1,8 @@
-from data_frame_factory import DataFrameFactory
+from freedata_server.data_frame_factory import DataFrameFactory
 import queue
-from codec2 import FREEDV_MODE
+from freedata_server.codec2 import FREEDV_MODE
 import structlog
-from state_manager import StateManager
-from arq_data_type_handler import ARQDataTypeHandler
+from freedata_server.arq_data_type_handler import ARQDataTypeHandler
 
 
 class TxCommand:
@@ -14,7 +13,7 @@ class TxCommand:
     and transmission via the modem.
     """
 
-    def __init__(self, ctx, apiParams:dict = {}):
+    def __init__(self, ctx, apiParams: dict = {}):
         """Initializes a new TxCommand instance.
 
         This method sets up the command with the given configuration, state
@@ -35,7 +34,7 @@ class TxCommand:
         self.frame_factory = DataFrameFactory(self.ctx)
         self.arq_data_type_handler = ARQDataTypeHandler(self.ctx)
 
-    def log(self, message, isWarning = False):
+    def log(self, message, isWarning=False):
         """Logs a message with the command's name.
 
         This method logs a message prefixed with the command's name, using
@@ -114,13 +113,13 @@ class TxCommand:
             FREEDV_MODE: The transmission mode.
         """
 
-        if self.ctx.config_manager.config['EXP'].get('enable_vhf'):
+        if self.ctx.config_manager.config["EXP"].get("enable_vhf"):
             mode = FREEDV_MODE.data_vhf_1
         else:
             mode = FREEDV_MODE.signalling
 
         return mode
-    
+
     def make_modem_queue_item(self, mode, repeat, repeat_delay, frame):
         """Creates a dictionary representing a modem queue item.
 
@@ -138,10 +137,10 @@ class TxCommand:
             dict: A dictionary representing the modem queue item.
         """
         return {
-            'mode': mode,
-            'repeat': repeat,
-            'repeat_delay': repeat_delay,
-            'frame': frame,
+            "mode": mode,
+            "repeat": repeat,
+            "repeat_delay": repeat_delay,
+            "frame": frame,
         }
 
     def transmit(self):

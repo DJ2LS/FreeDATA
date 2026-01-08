@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
-import api_validations
+from freedata_server import api_validations
 import base64
 import json
-from message_system_db_messages import DatabaseManagerMessages
+from freedata_server.message_system_db_messages import DatabaseManagerMessages
 
 
 def message_received(ctx, data, statistics):
@@ -17,10 +17,18 @@ def message_received(ctx, data, statistics):
         data (bytes): The received message data.
         statistics (dict): Statistics about the message transmission.
     """
-    decompressed_json_string = data.decode('utf-8')
+    decompressed_json_string = data.decode("utf-8")
     received_message_obj = MessageP2P.from_payload(decompressed_json_string)
     received_message_dict = MessageP2P.to_dict(received_message_obj)
-    DatabaseManagerMessages(ctx).add_message(received_message_dict, statistics, direction='receive', status='received', is_read=False, frequency=ctx.state_manager.radio_frequency)
+    DatabaseManagerMessages(ctx).add_message(
+        received_message_dict,
+        statistics,
+        direction="receive",
+        status="received",
+        is_read=False,
+        frequency=ctx.state_manager.radio_frequency,
+    )
+
 
 def message_transmitted(ctx, data, statistics):
     """Handles a transmitted P2P message.
@@ -35,12 +43,18 @@ def message_transmitted(ctx, data, statistics):
         data (bytes): The transmitted message data.
         statistics (dict): Statistics about the message transmission.
     """
-    decompressed_json_string = data.decode('utf-8')
+    decompressed_json_string = data.decode("utf-8")
     payload_message_obj = MessageP2P.from_payload(decompressed_json_string)
     payload_message = MessageP2P.to_dict(payload_message_obj)
     # Todo we need to optimize this - WIP
-    DatabaseManagerMessages(ctx).update_message(payload_message["id"], update_data={'status': 'transmitted'})
-    DatabaseManagerMessages(ctx).update_message(payload_message["id"], update_data={'statistics': statistics}, frequency=ctx.state_manager.radio_frequency)
+    DatabaseManagerMessages(ctx).update_message(
+        payload_message["id"], update_data={"status": "transmitted"}
+    )
+    DatabaseManagerMessages(ctx).update_message(
+        payload_message["id"],
+        update_data={"statistics": statistics},
+        frequency=ctx.state_manager.radio_frequency,
+    )
 
 
 def message_failed(ctx, data, statistics):
@@ -56,12 +70,19 @@ def message_failed(ctx, data, statistics):
         data (bytes): The message data that failed to transmit.
         statistics (dict): Statistics related to the failed transmission.
     """
-    decompressed_json_string = data.decode('utf-8')
+    decompressed_json_string = data.decode("utf-8")
     payload_message_obj = MessageP2P.from_payload(decompressed_json_string)
     payload_message = MessageP2P.to_dict(payload_message_obj)
     # Todo we need to optimize this - WIP
-    DatabaseManagerMessages(ctx).update_message(payload_message["id"], update_data={'status': 'failed'})
-    DatabaseManagerMessages(ctx).update_message(payload_message["id"], update_data={'statistics': statistics}, frequency=ctx.state_manager.radio_frequency)
+    DatabaseManagerMessages(ctx).update_message(
+        payload_message["id"], update_data={"status": "failed"}
+    )
+    DatabaseManagerMessages(ctx).update_message(
+        payload_message["id"],
+        update_data={"statistics": statistics},
+        frequency=ctx.state_manager.radio_frequency,
+    )
+
 
 class MessageP2P:
     """Represents a P2P message.
@@ -72,7 +93,10 @@ class MessageP2P:
     encoding and decoding attachments, converting messages to dictionaries
     or payloads, and generating unique message IDs.
     """
-    def __init__(self, id: str, origin: str, destination: str, body: str, attachments: list) -> None:
+
+    def __init__(
+        self, id: str, origin: str, destination: str, body: str, attachments: list
+    ) -> None:
         """Initializes a new MessageP2P instance.
 
         Args:
@@ -112,29 +136,29 @@ class MessageP2P:
             MessageP2P: A new MessageP2P object.
         """
 
-        destination = params['destination']
+        destination = params["destination"]
         if not api_validations.validate_freedata_callsign(destination):
             destination = f"{destination}-0"
 
         if not api_validations.validate_freedata_callsign(destination):
             raise ValueError(f"Invalid destination given ({params['destination']})")
 
-        body = params['body']
+        body = params["body"]
 
         attachments = []
-        if 'attachments' in params: 
-            for a in params['attachments']:
+        if "attachments" in params:
+            for a in params["attachments"]:
                 api_validations.validate_message_attachment(a)
                 attachments.append(cls.__decode_attachment__(a))
 
         timestamp = datetime.now(timezone.utc).isoformat()
-        if 'id' not in params:
+        if "id" not in params:
             msg_id = f"{origin}_{destination}_{timestamp}"
         else:
             msg_id = params["id"]
 
         return cls(msg_id, origin, destination, body, attachments)
-        
+
     @classmethod
     def from_payload(cls, payload):
         """Creates a MessageP2P object from a payload string.
@@ -150,9 +174,14 @@ class MessageP2P:
             MessageP2P: A new MessageP2P object.
         """
         payload_message = json.loads(payload)
-        attachments = list(map(cls.__decode_attachment__, payload_message['attachments']))
-        return cls(payload_message['id'], payload_message['origin'], payload_message['destination'],
-                   payload_message['body'], attachments)
+        attachments = list(map(cls.__decode_attachment__, payload_message["attachments"]))
+        return cls(
+            payload_message["id"],
+            payload_message["origin"],
+            payload_message["destination"],
+            payload_message["body"],
+            attachments,
+        )
 
     def get_id(self) -> str:
         """Generates a unique message ID.
@@ -179,9 +208,9 @@ class MessageP2P:
             dict: The encoded attachment dictionary.
         """
         encoded_attachment = binary_attachment.copy()
-        encoded_attachment['data'] = str(base64.b64encode(binary_attachment['data']), 'utf-8')
+        encoded_attachment["data"] = str(base64.b64encode(binary_attachment["data"]), "utf-8")
         return encoded_attachment
-    
+
     def __decode_attachment__(encoded_attachment: dict):
         """Decodes a base64-encoded attachment.
 
@@ -196,7 +225,7 @@ class MessageP2P:
             dict: The decoded attachment dictionary.
         """
         decoded_attachment = encoded_attachment.copy()
-        decoded_attachment['data'] = base64.b64decode(encoded_attachment['data'])
+        decoded_attachment["data"] = base64.b64decode(encoded_attachment["data"])
         return decoded_attachment
 
     def to_dict(self):
@@ -211,15 +240,14 @@ class MessageP2P:
         """
 
         return {
-            'id': self.id,
-            'origin': self.origin,
-            'destination': self.destination,
-            'body': self.body,
-            'attachments': list(map(self.__encode_attachment__, self.attachments)),
+            "id": self.id,
+            "origin": self.origin,
+            "destination": self.destination,
+            "body": self.body,
+            "attachments": list(map(self.__encode_attachment__, self.attachments)),
         }
-    
+
     def to_payload(self):
         """Make a byte array ready to be sent out of the message data"""
         json_string = json.dumps(self.to_dict())
         return json_string
-

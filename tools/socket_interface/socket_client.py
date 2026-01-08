@@ -11,7 +11,7 @@ def receive_messages(sock):
                 # If no data is received, break out of the loop
                 print("Disconnected from server.")
                 break
-            print(f"\nReceived from server: {data.decode()}\n> ", end='')
+            print(f"\nReceived from server: {data.decode()}\n> ", end="")
         except Exception as e:
             print(f"Error receiving data: {e}")
             sock.close()
@@ -34,10 +34,10 @@ def tcp_client(server_ip, server_port):
         while True:
             # Send data to the server
             message = input("> ")
-            if message.lower() == 'quit':
+            if message.lower() == "quit":
                 break
-            message += '\r'
-            client_socket.sendall(message.encode('utf-8'))
+            message += "\r"
+            client_socket.sendall(message.encode("utf-8"))
     except Exception as e:
         print(f"An error occurred: {e}")
     finally:
