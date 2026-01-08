@@ -25,6 +25,10 @@ class NormTransmissionISS(NormTransmission):
     def __init__(self, ctx):
         super().__init__(ctx)
         self.ctx = ctx
+
+        if not self.ctx.config_manager.config["EXP"]["enable_groupchat"]:
+            return
+
         self.state = NORM_ISS_State.NEW
         self.log("Initialized")
 

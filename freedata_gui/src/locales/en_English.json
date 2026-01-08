@@ -341,7 +341,10 @@
             "enableringbuffer": "Enable ring buffer",
             "enableringbuffer_help": "Enable an experimental ring buffer which can be more efficient on low power CPU",
             "enablevhf": "Enable VHF modes -- only CQ for now --",
-            "enablevhf_help": "Enable experimental VHF modes for testing and playing"
+            "enablevhf_help": "Enable experimental VHF modes for testing and playing",
+            "enable_groupchat": "Enable group chat - Really experimental",
+            "enable_groupchat_help": "Enable experimental group chat"
+
         },
         "radio": {
             "introduction": "Rig Control related settings, including selecting your rig control method and configuring specific settings.",

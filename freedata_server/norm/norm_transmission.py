@@ -29,6 +29,10 @@ class NormTransmission:
     def __init__(self, ctx):
         self.logger = structlog.get_logger(type(self).__name__)
         self.ctx = ctx
+
+        if not self.ctx.config_manager.config["EXP"]["enable_groupchat"]:
+            return
+
         self.origin = None
         self.domain = None
 

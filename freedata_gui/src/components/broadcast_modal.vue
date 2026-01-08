@@ -244,7 +244,7 @@ function newBroadcast() {
                 v-model="broadcast.newMessageType"
               >
                 <option value="MESSAGE">MESSAGE</option>
-                <option value="METAR">METAR</option>
+                <!--<option disabled value="METAR">METAR</option>-->
               </select>
             </div>
           </div>

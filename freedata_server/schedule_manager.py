@@ -248,18 +248,26 @@ class ScheduleManager:
             self.log.warning("[SCHEDULE] error deleting ARQ session", error=e)
 
     def check_missing_broadcast_bursts(self):
-        missing_bursts = DatabaseManagerBroadcasts(self.ctx).check_missing_bursts()
-        print("missing_bursts", missing_bursts)
-        if missing_bursts:
-            # Increment attempts
-            DatabaseManagerBroadcasts(self.ctx).increment_attempts_and_update_next_transmission(missing_bursts["id"])
-            myfullcall = self.ctx.config_manager.config['STATION']['mycall'] + '-' + str(self.ctx.config_manager.config['STATION']['myssid'])
-            NormTransmission(self.ctx).create_and_transmit_nack_burst(myfullcall, missing_bursts["id"], missing_bursts["missing_bursts"])
+        if (
+                self.ctx.config_manager.config["EXP"]["enable_groupchat"]
+                and self.ctx.state_manager.is_modem_running
+        ):
+            missing_bursts = DatabaseManagerBroadcasts(self.ctx).check_missing_bursts()
+            print("missing_bursts", missing_bursts)
+            if missing_bursts:
+                # Increment attempts
+                DatabaseManagerBroadcasts(self.ctx).increment_attempts_and_update_next_transmission(missing_bursts["id"])
+                myfullcall = self.ctx.config_manager.config['STATION']['mycall'] + '-' + str(self.ctx.config_manager.config['STATION']['myssid'])
+                NormTransmission(self.ctx).create_and_transmit_nack_burst(myfullcall, missing_bursts["id"], missing_bursts["missing_bursts"])
 
     def check_queued_messages(self):
-        msg = DatabaseManagerBroadcasts(self.ctx).get_first_queued_message()
-        if msg:
-            print(msg.payload_data)
-            self.log.info("[SCHEDULE] Sending broadcast", id=msg.id)
-            DatabaseManagerBroadcasts(self.ctx).increment_attempts_and_update_next_transmission(msg.id)
-            NormTransmissionISS(self.ctx).retransmit_data(msg)
+        if (
+                self.ctx.config_manager.config["EXP"]["enable_groupchat"]
+                and self.ctx.state_manager.is_modem_running
+        ):
+            msg = DatabaseManagerBroadcasts(self.ctx).get_first_queued_message()
+            if msg:
+                print(msg.payload_data)
+                self.log.info("[SCHEDULE] Sending broadcast", id=msg.id)
+                DatabaseManagerBroadcasts(self.ctx).increment_attempts_and_update_next_transmission(msg.id)
+                NormTransmissionISS(self.ctx).retransmit_data(msg)

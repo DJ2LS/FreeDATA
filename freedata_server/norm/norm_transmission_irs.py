@@ -9,7 +9,12 @@ class NormTransmissionIRS(NormTransmission):
 
     def __init__(self, ctx, frame):
         self.ctx = ctx
+
+        if not self.ctx.config_manager.config["EXP"]["enable_groupchat"]:
+            return
+
         print("burst:", frame)
+
 
         is_last, msg_type, priority = self.decode_flags(frame["flag"])
         burst_number, total_bursts = self.decode_burst_info(frame["burst_info"])

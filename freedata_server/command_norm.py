@@ -34,6 +34,10 @@ class Norm(TxCommand):
 
     def run(self):
         try:
+
+            if not self.ctx.config_manager.config["EXP"]["enable_groupchat"]:
+                return False
+
             self.emit_event()
             self.logger.info(self.log_message())
 

@@ -77,4 +77,4 @@ distance_unit = km
 [EXP]
 enable_ring_buffer = False
 enable_vhf = False
-
+enable_groupchat = False
