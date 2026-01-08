@@ -210,11 +210,6 @@ class Attachment(Base):
         }
 
 
-from sqlalchemy import Column, DateTime, String, Integer, Boolean, JSON, ForeignKey, Index
-from sqlalchemy.orm import relationship
-from datetime import datetime, timezone
-
-
 class BroadcastMessage(Base):
     __tablename__ = "broadcast_messages"
 
