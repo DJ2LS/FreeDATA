@@ -95,7 +95,7 @@ class TestMessageProtocol(unittest.TestCase):
                 if ctx_b:
                     for burst in transmission:
                         ctx_b.TESTMODE_RECEIVE_QUEUE.put(burst)
-                        self.logger.info(f"Data forwarded to Station B")
+                        self.logger.info("Data forwarded to Station B")
 
                 frame_bytes = transmission[1]
                 if len(frame_bytes) == 5:

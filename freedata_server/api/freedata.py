@@ -583,4 +583,4 @@ async def patch_freedata_broadcast_domain(id: str, payload: dict, ctx: AppContex
 @router.post("/broadcasts", summary="Transmit Broadcast", tags=["FreeDATA"], responses={})
 async def post_freedata_broadcast(payload: dict, ctx: AppContext = Depends(get_ctx)):
     await enqueue_tx_command(ctx, command_norm.Norm, payload)
-    return api_response({"message": f"broadcast transmitted", "status": "success"})
+    return api_response({"message": "broadcast transmitted", "status": "success"})

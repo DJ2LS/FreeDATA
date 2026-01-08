@@ -51,7 +51,7 @@ class wsm:
             event_queue (queue.Queue): The event queue. Currently unused.
         """
         client_list.add(websocket)
-        self.log.info(f"Client websocket connection established", ws=websocket)
+        self.log.info("Client websocket connection established", ws=websocket)
         while not self.shutdown_flag.is_set():
             try:
                 await websocket.receive_text()
