@@ -86,6 +86,7 @@
         "downloadpreset": "Einstell. Herunterladen",
         "downloadpreset_help": "Lade die GUI-Einstellungen herunter um sie zu speichern und zu teilen",
         "components": {
+            "audiostream": "Audio Stream",
             "tune": "Tune",
             "stop_help": "Sitzung abbrechen und Aussendung beenden",
             "transmissioncharts": "Übertragungs-Diagramme",

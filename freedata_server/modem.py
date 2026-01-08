@@ -67,6 +67,7 @@ class RF:
         self.MODE = 0
         self.rms_counter = 0
 
+        self.AUDIO_STREAMING_CHUNK_SIZE = 2400
         self.audio_out_queue = queue.Queue()
 
         # Make sure our resampler will work
@@ -349,6 +350,24 @@ class RF:
 
         return
 
+    def enqueue_streaming_audio_chunks(self, audio_block, queue):
+        #total_samples = len(audio_block)
+        #for start in range(0, total_samples, self.AUDIO_STREAMING_CHUNK_SIZE):
+        #    end = start + self.AUDIO_STREAMING_CHUNK_SIZE
+        #    chunk = audio_block[start:end]
+        #    queue.put(chunk.tobytes())
+
+        block_size = self.AUDIO_STREAMING_CHUNK_SIZE
+
+        pad_length = -len(audio_block) % block_size
+        padded_data = np.pad(audio_block, (0, pad_length), mode='constant')
+        sliced_audio_data = padded_data.reshape(-1, block_size)
+        # add each block to audio out queue
+        for block in sliced_audio_data:
+            queue.put(block)
+
+
+
     def sd_output_audio_callback(self, outdata: np.ndarray, frames: int, time, status) -> None:
         """Callback function for the audio output stream.
 
@@ -371,6 +390,8 @@ class RF:
                 audio_8k = self.resampler.resample48_to_8(chunk)
                 audio.calculate_fft(audio_8k, self.ctx.modem_fft, self.ctx.state_manager)
                 outdata[:] = chunk.reshape(outdata.shape)
+
+
 
             else:
                 # reset transmitting state only, if we are not actively processing audio
@@ -407,7 +428,10 @@ class RF:
         try:
             audio_48k = np.frombuffer(indata, dtype=np.int16)
             audio_8k = self.resampler.resample48_to_8(audio_48k)
-            if self.ctx.config_manager.config["AUDIO"].get("rx_auto_audio_level"):
+
+            self.enqueue_streaming_audio_chunks(audio_8k, self.ctx.audio_rx_queue)
+
+            if self.ctx.config_manager.config['AUDIO'].get('rx_auto_audio_level'):
                 audio_8k = audio.normalize_audio(audio_8k)
 
             audio_8k_level_adjusted = audio.set_audio_volume(audio_8k, self.rx_audio_level)

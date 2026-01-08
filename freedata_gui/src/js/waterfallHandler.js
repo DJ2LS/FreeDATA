@@ -28,6 +28,7 @@ export function addDataToWaterfall(data) {
   });
   //window.dispatchEvent(new CustomEvent("wf-data-avail", {bubbles:true, detail: data }));
 }
+
 /**
  * Setwaterfall colormap array by index
  * @param {number} index colormap index to use

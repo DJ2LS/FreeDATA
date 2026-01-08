@@ -86,6 +86,7 @@
         "downloadpreset": "Download Preset",
         "downloadpreset_help": "Download preset file for sharing or saving",
         "components": {
+            "audiostream": "Audio Stream",
             "tune": "Tune",
             "stop_help": "Abort session and stop transmissions",
             "transmissioncharts": "Transmission charts",
