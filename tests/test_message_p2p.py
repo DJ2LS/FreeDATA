@@ -15,7 +15,9 @@ class TestMessageP2P(unittest.TestCase):
 
         cls.event_manager = cls.ctx.event_manager
         cls.database_manager = DatabaseManagerMessages(cls.ctx)
-        cls.mycall = f"{cls.ctx.config_manager.config['STATION']['mycall']}-{cls.ctx.config_manager.config['STATION']['myssid']}"
+        cls.mycall = (
+            f"{cls.ctx.config_manager.config['STATION']['mycall']}-{cls.ctx.config_manager.config['STATION']['myssid']}"
+        )
 
     @classmethod
     def tearDownClass(cls):

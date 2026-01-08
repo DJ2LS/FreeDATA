@@ -31,16 +31,14 @@ class DataFrameFactory:
     }
 
     NORM_FLAGS = {
-        'LAST_DATA': 0,  # Bit-position for indicating the LAST DATA state
+        "LAST_DATA": 0,  # Bit-position for indicating the LAST DATA state
     }
 
     def __init__(self, ctx):
         self.ctx = ctx
 
         self.myfullcall = f"{self.ctx.config_manager.config['STATION']['mycall']}-{self.ctx.config_manager.config['STATION']['myssid']}"
-        self.mygrid = maidenhead.generate_full_maidenhead(
-            self.ctx.config_manager.config["STATION"]["mygrid"]
-        )
+        self.mygrid = maidenhead.generate_full_maidenhead(self.ctx.config_manager.config["STATION"]["mygrid"])
 
         # table for holding our frame templates
         self.template_list = {}
@@ -243,7 +241,7 @@ class DataFrameFactory:
             "burst_info": 1,
             "checksum": 3,
             "payload_size": 2,
-            "payload_data": 26
+            "payload_data": 26,
         }
 
         # repair frame
@@ -257,7 +255,7 @@ class DataFrameFactory:
             "burst_info": 1,
             "checksum": 3,
             "payload_size": 2,
-            "payload_data": 26
+            "payload_data": 26,
         }
 
         # nack frame
@@ -265,7 +263,7 @@ class DataFrameFactory:
             "frame_length": self.LENGTH_NORM_FRAME,
             "origin": 6,
             "id": 10,
-            "burst_numbers":8
+            "burst_numbers": 8,
         }
 
         # cmd frame
@@ -274,10 +272,10 @@ class DataFrameFactory:
             "frame_length": self.LENGTH_NORM_FRAME,
             "origin": 6,
             "domain": 4,
-            "flag": 1
+            "flag": 1,
         }
 
-    def construct(self, frametype, content, frame_length = LENGTH_SIG1_FRAME):
+    def construct(self, frametype, content, frame_length=LENGTH_SIG1_FRAME):
         frame_template = self.template_list[frametype.value]
 
         if isinstance(frame_template["frame_length"], int):
@@ -302,7 +300,7 @@ class DataFrameFactory:
             # print(content)
             if buffer_position + item_length > frame_length:
                 raise OverflowError(f"Frame data overflow! {buffer_position + item_length} of max {frame_length}")
-            frame[buffer_position: buffer_position + item_length] = content[key]
+            frame[buffer_position : buffer_position + item_length] = content[key]
             buffer_position += item_length
 
         return frame
@@ -352,12 +350,24 @@ class DataFrameFactory:
                 extracted_data[key] = helpers.decode_grid(data)
 
             elif key == "burst_numbers":
-                extracted_data[key] = [x for x in data if x !=0]
+                extracted_data[key] = [x for x in data if x != 0]
 
-            elif key in ["session_id", "speed_level", 
-                            "frames_per_burst", "version",
-                            "offset", "total_length", "state", "type", "maximum_bandwidth", "protocol_version", "burst_info", "timestamp", "payload_size"]:
-                extracted_data[key] = int.from_bytes(data, 'big')
+            elif key in [
+                "session_id",
+                "speed_level",
+                "frames_per_burst",
+                "version",
+                "offset",
+                "total_length",
+                "state",
+                "type",
+                "maximum_bandwidth",
+                "protocol_version",
+                "burst_info",
+                "timestamp",
+                "payload_size",
+            ]:
+                extracted_data[key] = int.from_bytes(data, "big")
                 print(key, data)
             elif key in ["snr"]:
                 extracted_data[key] = helpers.snr_from_bytes(data)
@@ -395,7 +405,12 @@ class DataFrameFactory:
                         # get_flag returns True or False based on the bit value at the flag's position
                         extracted_data[key][flag] = helpers.get_flag(data, flag, flag_dict)
 
-                if frametype in [FR_TYPE.NORM_DATA.value, FR_TYPE.NORM_NACK.value, FR_TYPE.NORM_REPAIR.value, FR_TYPE.NORM_CMD.value]:
+                if frametype in [
+                    FR_TYPE.NORM_DATA.value,
+                    FR_TYPE.NORM_NACK.value,
+                    FR_TYPE.NORM_REPAIR.value,
+                    FR_TYPE.NORM_CMD.value,
+                ]:
                     extracted_data[key] = data
                 #    flag_dict = self.NORM_FLAGS
                 #    for flag in flag_dict:
@@ -525,9 +540,7 @@ class DataFrameFactory:
         }
         return self.construct(FR_TYPE.ARQ_SESSION_OPEN_ACK, payload)
 
-    def build_arq_session_info(
-        self, session_id: int, total_length: int, total_crc: bytes, snr, type
-    ):
+    def build_arq_session_info(self, session_id: int, total_length: int, total_crc: bytes, snr, type):
         flag = 0b00000000
 
         payload = {
@@ -593,9 +606,7 @@ class DataFrameFactory:
             "offset": offset.to_bytes(4, "big"),
             "data": data,
         }
-        return self.construct(
-            FR_TYPE.ARQ_BURST_FRAME, payload, self.get_bytes_per_frame(freedv_mode)
-        )
+        return self.construct(FR_TYPE.ARQ_BURST_FRAME, payload, self.get_bytes_per_frame(freedv_mode))
 
     def build_arq_burst_ack(
         self,
@@ -638,9 +649,7 @@ class DataFrameFactory:
         }
         return self.construct(FR_TYPE.P2P_CONNECTION_CONNECT_ACK, payload)
 
-    def build_p2p_connection_heartbeat(
-        self, session_id, flag_has_data=False, flag_announce_arq=False
-    ):
+    def build_p2p_connection_heartbeat(self, session_id, flag_has_data=False, flag_announce_arq=False):
         flag = 0b00000000
         if flag_has_data:
             flag = helpers.set_flag(flag, "HAS_DATA", True, self.P2P_FLAGS)
@@ -653,9 +662,7 @@ class DataFrameFactory:
         }
         return self.construct(FR_TYPE.P2P_CONNECTION_HEARTBEAT, payload)
 
-    def build_p2p_connection_heartbeat_ack(
-        self, session_id, flag_has_data=False, flag_announce_arq=False
-    ):
+    def build_p2p_connection_heartbeat_ack(self, session_id, flag_has_data=False, flag_announce_arq=False):
         flag = 0b00000000
         if flag_has_data:
             flag = helpers.set_flag(flag, "HAS_DATA", True, self.P2P_FLAGS)
@@ -715,46 +722,47 @@ class DataFrameFactory:
         }
         return self.construct(FR_TYPE.P2P_CONNECTION_DISCONNECT_ACK, payload)
 
-    def build_norm_data(self, origin, domain, gridsquare, timestamp, burst_info, payload_size, payload_data, flag, checksum):
+    def build_norm_data(
+        self, origin, domain, gridsquare, timestamp, burst_info, payload_size, payload_data, flag, checksum
+    ):
 
         payload = {
             "origin": helpers.callsign_to_bytes(origin),
             "domain": helpers.callsign_to_bytes(domain),
             "gridsquare": helpers.encode_grid(gridsquare),
-            "flag": flag.to_bytes(1, 'big'),
-            "timestamp": timestamp.to_bytes(4, 'big'),
-            "burst_info": burst_info.to_bytes(1, 'big'),
-            "payload_size": payload_size.to_bytes(2, 'big'),
+            "flag": flag.to_bytes(1, "big"),
+            "timestamp": timestamp.to_bytes(4, "big"),
+            "burst_info": burst_info.to_bytes(1, "big"),
+            "payload_size": payload_size.to_bytes(2, "big"),
             "payload_data": payload_data,
-            "checksum": checksum
+            "checksum": checksum,
         }
         return self.construct(FR_TYPE.NORM_DATA, payload)
 
-
-
-
-    def build_norm_nack(self, origin, id, burst_numbers:list[int]):
+    def build_norm_nack(self, origin, id, burst_numbers: list[int]):
         max_burst_numbers = self.template_list[FR_TYPE.NORM_NACK.value]["burst_numbers"]
-        padded_numbers = burst_numbers + [0] * (max_burst_numbers-len(burst_numbers))
+        padded_numbers = burst_numbers + [0] * (max_burst_numbers - len(burst_numbers))
 
         payload = {
             "origin": helpers.callsign_to_bytes(origin),
-            "id": bytes(id, 'utf-8'),
+            "id": bytes(id, "utf-8"),
             "burst_numbers": bytes(padded_numbers),
         }
         return self.construct(FR_TYPE.NORM_NACK, payload)
 
-    def build_norm_repair(self, origin, domain, gridsquare, timestamp, burst_info, payload_size, payload_data, flag, checksum):
+    def build_norm_repair(
+        self, origin, domain, gridsquare, timestamp, burst_info, payload_size, payload_data, flag, checksum
+    ):
         payload = {
             "origin": helpers.callsign_to_bytes(origin),
             "domain": helpers.callsign_to_bytes(domain),
             "gridsquare": helpers.encode_grid(gridsquare),
-            "flag": flag.to_bytes(1, 'big'),
-            "timestamp": timestamp.to_bytes(4, 'big'),
-            "burst_info": burst_info.to_bytes(1, 'big'),
-            "payload_size": payload_size.to_bytes(2, 'big'),
+            "flag": flag.to_bytes(1, "big"),
+            "timestamp": timestamp.to_bytes(4, "big"),
+            "burst_info": burst_info.to_bytes(1, "big"),
+            "payload_size": payload_size.to_bytes(2, "big"),
             "payload_data": payload_data,
-            "checksum": checksum
+            "checksum": checksum,
         }
         return self.construct(FR_TYPE.NORM_REPAIR, payload)
 

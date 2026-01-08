@@ -47,9 +47,7 @@ def message_transmitted(ctx, data, statistics):
     payload_message_obj = MessageP2P.from_payload(decompressed_json_string)
     payload_message = MessageP2P.to_dict(payload_message_obj)
     # Todo we need to optimize this - WIP
-    DatabaseManagerMessages(ctx).update_message(
-        payload_message["id"], update_data={"status": "transmitted"}
-    )
+    DatabaseManagerMessages(ctx).update_message(payload_message["id"], update_data={"status": "transmitted"})
     DatabaseManagerMessages(ctx).update_message(
         payload_message["id"],
         update_data={"statistics": statistics},
@@ -74,9 +72,7 @@ def message_failed(ctx, data, statistics):
     payload_message_obj = MessageP2P.from_payload(decompressed_json_string)
     payload_message = MessageP2P.to_dict(payload_message_obj)
     # Todo we need to optimize this - WIP
-    DatabaseManagerMessages(ctx).update_message(
-        payload_message["id"], update_data={"status": "failed"}
-    )
+    DatabaseManagerMessages(ctx).update_message(payload_message["id"], update_data={"status": "failed"})
     DatabaseManagerMessages(ctx).update_message(
         payload_message["id"],
         update_data={"statistics": statistics},
@@ -94,9 +90,7 @@ class MessageP2P:
     or payloads, and generating unique message IDs.
     """
 
-    def __init__(
-        self, id: str, origin: str, destination: str, body: str, attachments: list
-    ) -> None:
+    def __init__(self, id: str, origin: str, destination: str, body: str, attachments: list) -> None:
         """Initializes a new MessageP2P instance.
 
         Args:

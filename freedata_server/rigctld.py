@@ -87,9 +87,7 @@ class radio:
                     f"[RIGCTLD] Connection attempt {attempt}/{self.max_connection_attempts} "
                     f"to {self.hostname}:{self.port}"
                 )
-                self.connection = socket.create_connection(
-                    (self.hostname, self.port), timeout=self.timeout
-                )
+                self.connection = socket.create_connection((self.hostname, self.port), timeout=self.timeout)
                 self.connection.settimeout(self.timeout)
                 # allow rigctld to warm up
                 threading.Event().wait(2)
@@ -114,9 +112,7 @@ class radio:
                     and attempt < self.max_connection_attempts
                     and self.ctx.config_manager.config["RADIO"]["control"] in ["rigctld_bundle"]
                 ):
-                    self.log.info(
-                        f"[RIGCTLD] Reached {attempt} failures, restarting rigctld service."
-                    )
+                    self.log.info(f"[RIGCTLD] Reached {attempt} failures, restarting rigctld service.")
                     try:
                         self.stop_service()
                         self.start_service()
@@ -130,10 +126,7 @@ class radio:
 
         # if still not connected after all attempts
         if not self.connected:
-            self.log.error(
-                f"[RIGCTLD] Could not establish connection after "
-                f"{self.max_connection_attempts} attempts"
-            )
+            self.log.error(f"[RIGCTLD] Could not establish connection after {self.max_connection_attempts} attempts")
 
     def disconnect(self):
         """Disconnects from the rigctld server.
@@ -208,9 +201,7 @@ class radio:
                 return stripped_result
 
             except socket.timeout:
-                self.log.warning(
-                    f"[RIGCTLD] Timeout waiting for response from rigctld: [{command}]"
-                )
+                self.log.warning(f"[RIGCTLD] Timeout waiting for response from rigctld: [{command}]")
                 self.connected = False  # Set connected to False if timeout occurs
                 return None  # Return None to indicate timeout
             except Exception as err:
@@ -638,19 +629,13 @@ class radio:
         if binary_paths:
             for binary_path in binary_paths:
                 try:
-                    self.log.info(
-                        f"Attempting to start rigctld using binary found at: {binary_path}"
-                    )
+                    self.log.info(f"Attempting to start rigctld using binary found at: {binary_path}")
                     self.rigctld_process = helpers.kill_and_execute(binary_path, additional_args)
                     self.log.info("Successfully executed rigctld", args=additional_args)
                     return  # Exit the function after successful execution
                 except Exception as e:
-                    self.log.warning(
-                        f"Failed to start rigctld with binary at {binary_path}: {e}"
-                    )  # Log the error
-            self.log.warning(
-                "Failed to start rigctld with all found binaries.", binaries=binary_paths
-            )
+                    self.log.warning(f"Failed to start rigctld with binary at {binary_path}: {e}")  # Log the error
+            self.log.warning("Failed to start rigctld with all found binaries.", binaries=binary_paths)
         else:
             self.log.warning("Rigctld binary not found.")
 

@@ -79,11 +79,7 @@ async def get_audio_devices(ctx: AppContext = Depends(get_ctx)):
     responses={
         200: {
             "description": "List of available serial devices (COM ports).",
-            "content": {
-                "application/json": {
-                    "example": [{"description": "n/a [26a9]", "port": "/dev/ttyS4"}]
-                }
-            },
+            "content": {"application/json": {"example": [{"description": "n/a [26a9]", "port": "/dev/ttyS4"}]}},
         },
         404: {
             "description": "The requested resource was not found.",

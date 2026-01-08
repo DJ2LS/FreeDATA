@@ -41,9 +41,7 @@ class RadioManager:
                 self.ctx.config_manager.config["SOCKET_INTERFACE"]["enable"]
                 and self.ctx.socket_interface_manager.command_server.command_handler
             ):
-                self.socket_interface_manager.command_server.command_handler.socket_respond_ptt(
-                    state
-                )
+                self.socket_interface_manager.command_server.command_handler.socket_respond_ptt(state)
         except Exception as e:
             print(e)
 

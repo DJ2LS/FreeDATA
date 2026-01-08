@@ -246,9 +246,7 @@ class RF:
         # if we're transmitting FreeDATA signals, reset channel busy state
         self.log.debug("[MDM] TRANSMIT", mode="MORSE")
         start_of_transmission = time.time()
-        txbuffer_out = cw.MorseCodePlayer().text_to_signal(
-            self.ctx.config_manager.config["STATION"].get("mycall")
-        )
+        txbuffer_out = cw.MorseCodePlayer().text_to_signal(self.ctx.config_manager.config["STATION"].get("mycall"))
         txbuffer_out = audio.normalize_audio(txbuffer_out)
         # transmit audio
         self.enqueue_audio_out(txbuffer_out)
@@ -317,9 +315,7 @@ class RF:
         if self.ctx.radio_manager:
             self.ctx.radio_manager.set_ptt(True)
         else:
-            self.log.warning(
-                "Radio manager not yet initialized...should happen soon, some errors might occur"
-            )  #
+            self.log.warning("Radio manager not yet initialized...should happen soon, some errors might occur")  #
 
         self.ctx.event_manager.send_ptt_change(True)
 
@@ -342,17 +338,15 @@ class RF:
         if self.ctx.radio_manager:
             self.ctx.radio_manager.set_ptt(False)
         else:
-            self.log.warning(
-                "Radio manager not yet initialized...should happen soon, some errors might occur"
-            )  #
+            self.log.warning("Radio manager not yet initialized...should happen soon, some errors might occur")  #
 
         self.ctx.event_manager.send_ptt_change(False)
 
         return
 
     def enqueue_streaming_audio_chunks(self, audio_block, queue):
-        #total_samples = len(audio_block)
-        #for start in range(0, total_samples, self.AUDIO_STREAMING_CHUNK_SIZE):
+        # total_samples = len(audio_block)
+        # for start in range(0, total_samples, self.AUDIO_STREAMING_CHUNK_SIZE):
         #    end = start + self.AUDIO_STREAMING_CHUNK_SIZE
         #    chunk = audio_block[start:end]
         #    queue.put(chunk.tobytes())
@@ -360,13 +354,11 @@ class RF:
         block_size = self.AUDIO_STREAMING_CHUNK_SIZE
 
         pad_length = -len(audio_block) % block_size
-        padded_data = np.pad(audio_block, (0, pad_length), mode='constant')
+        padded_data = np.pad(audio_block, (0, pad_length), mode="constant")
         sliced_audio_data = padded_data.reshape(-1, block_size)
         # add each block to audio out queue
         for block in sliced_audio_data:
             queue.put(block)
-
-
 
     def sd_output_audio_callback(self, outdata: np.ndarray, frames: int, time, status) -> None:
         """Callback function for the audio output stream.
@@ -390,8 +382,6 @@ class RF:
                 audio_8k = self.resampler.resample48_to_8(chunk)
                 audio.calculate_fft(audio_8k, self.ctx.modem_fft, self.ctx.state_manager)
                 outdata[:] = chunk.reshape(outdata.shape)
-
-
 
             else:
                 # reset transmitting state only, if we are not actively processing audio
@@ -431,15 +421,13 @@ class RF:
 
             self.enqueue_streaming_audio_chunks(audio_8k, self.ctx.audio_rx_queue)
 
-            if self.ctx.config_manager.config['AUDIO'].get('rx_auto_audio_level'):
+            if self.ctx.config_manager.config["AUDIO"].get("rx_auto_audio_level"):
                 audio_8k = audio.normalize_audio(audio_8k)
 
             audio_8k_level_adjusted = audio.set_audio_volume(audio_8k, self.rx_audio_level)
 
             if not self.ctx.state_manager.isTransmitting():
-                audio.calculate_fft(
-                    audio_8k_level_adjusted, self.ctx.modem_fft, self.ctx.state_manager
-                )
+                audio.calculate_fft(audio_8k_level_adjusted, self.ctx.modem_fft, self.ctx.state_manager)
 
             length_audio_8k_level_adjusted = len(audio_8k_level_adjusted)
             # Avoid buffer overflow by filling only if buffer for
@@ -453,9 +441,7 @@ class RF:
                 if audiobuffer:
                     if (audiobuffer.nbuffer + length_audio_8k_level_adjusted) > audiobuffer.size:
                         self.demodulator.buffer_overflow_counter[index] += 1
-                        self.ctx.event_manager.send_buffer_overflow(
-                            self.demodulator.buffer_overflow_counter
-                        )
+                        self.ctx.event_manager.send_buffer_overflow(self.demodulator.buffer_overflow_counter)
                     elif decode:
                         audiobuffer.push(audio_8k_level_adjusted)
         except Exception as e:

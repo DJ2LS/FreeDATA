@@ -57,9 +57,7 @@ class FreeDV:
 
         avg_volume = np.mean(np.abs(txbuffer))
         avg_volume_db = 20 * np.log10(avg_volume) if avg_volume > 0 else -np.inf
-        max_possible_volume_db = 20 * np.log10(
-            1.0
-        )  # Max possible volume when signal is fully utilized
+        max_possible_volume_db = 20 * np.log10(1.0)  # Max possible volume when signal is fully utilized
         max_val = np.max(np.abs(txbuffer))
 
         # Prevent division by zero and ensure reasonable values
@@ -70,9 +68,7 @@ class FreeDV:
 
         # Compute FFT
         fft_values = np.abs(fft(txbuffer))[: len(txbuffer) // 2]
-        freqs = np.fft.fftfreq(len(txbuffer), d=1 / 8000)[
-            : len(txbuffer) // 2
-        ]  # Assuming 8 kHz sample rate
+        freqs = np.fft.fftfreq(len(txbuffer), d=1 / 8000)[: len(txbuffer) // 2]  # Assuming 8 kHz sample rate
 
         return avg_volume_db, max_possible_volume_db, papr, freqs, fft_values
 
@@ -152,9 +148,7 @@ def test_freedv_mode_pairs(mode_pairs, config_file="config.ini"):
             txbuffer = np.frombuffer(txbuffer, dtype=np.int16)
 
             result = freedv_rx.demodulate(txbuffer)
-            avg_volume_db, max_possible_volume_db, papr, freqs, fft_values = (
-                freedv_tx.compute_audio_metrics(txbuffer)
-            )
+            avg_volume_db, max_possible_volume_db, papr, freqs, fft_values = freedv_tx.compute_audio_metrics(txbuffer)
             results.append((
                 test_tx.name,
                 test_rx.name,
@@ -182,8 +176,8 @@ if __name__ == "__main__":
         (FREEDV_MODE.datac1, FREEDV_MODE.data_ofdm_1700),
         (FREEDV_MODE.data_ofdm_2438, FREEDV_MODE.data_ofdm_2438),
     ]
-    results, avg_volume_per_mode, avg_max_volume_per_mode, avg_papr_per_mode, fft_data = (
-        test_freedv_mode_pairs(test_mode_pairs)
+    results, avg_volume_per_mode, avg_max_volume_per_mode, avg_papr_per_mode, fft_data = test_freedv_mode_pairs(
+        test_mode_pairs
     )
     plot_audio_metrics(avg_volume_per_mode, avg_max_volume_per_mode, avg_papr_per_mode)
     plot_fft_per_mode(fft_data)

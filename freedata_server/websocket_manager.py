@@ -37,7 +37,7 @@ class wsm:
         self.states_thread = None
         self.fft_thread = None
         self.audio_rx_thread = None
-        
+
     async def handle_connection(self, websocket, client_list, event_queue):
         """Handles a WebSocket connection.
 
@@ -100,7 +100,7 @@ class wsm:
             event_queue (queue.Queue): The queue containing events to be transmitted.
         """
         while not self.shutdown_flag.is_set():
-            #loop = asyncio.get_event_loop()
+            # loop = asyncio.get_event_loop()
             try:
                 audio = audio_queue.get(timeout=1)
                 if isinstance(audio, np.ndarray):
@@ -114,7 +114,6 @@ class wsm:
                             client_list.remove(client)
             except Exception:
                 continue
-
 
     def startWorkerThreads(self, app):
         """Starts worker threads for handling WebSocket data transmission.
@@ -148,7 +147,11 @@ class wsm:
         )
         self.fft_thread.start()
 
-        self.audio_rx_thread = threading.Thread(target=self.transmit_sock_audio_worker, daemon=True, args=(self.audio_rx_client_list, self.ctx.audio_rx_queue))
+        self.audio_rx_thread = threading.Thread(
+            target=self.transmit_sock_audio_worker,
+            daemon=True,
+            args=(self.audio_rx_client_list, self.ctx.audio_rx_queue),
+        )
         self.audio_rx_thread.start()
 
     def shutdown(self):

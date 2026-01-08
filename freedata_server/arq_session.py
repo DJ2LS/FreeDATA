@@ -98,7 +98,6 @@ class ARQSession:
         # we will use the schedule manager, for checking, how old is the state change for deciding, how we continue with the message
         self.last_state_change_timestamp = time.time()
 
-
         # histogram lists for storing statistics
         self.snr_histogram = []
         self.bpm_histogram = []
@@ -219,9 +218,7 @@ class ARQSession:
                 )
             return
 
-        self.log(
-            f"Ignoring unknown transition from state {self.state.name} with frame {frame['frame_type']}"
-        )
+        self.log(f"Ignoring unknown transition from state {self.state.name} with frame {frame['frame_type']}")
 
     def is_session_outdated(self):
         """Checks if the session is outdated.
@@ -365,9 +362,7 @@ class ARQSession:
 
         # Adjust maximum_bandwidth if set to 0 (use maximum available bandwidth from speed levels)
         if maximum_bandwidth == 0:
-            maximum_bandwidth = max(
-                details["bandwidth"] for details in self.SPEED_LEVEL_DICT.values()
-            )
+            maximum_bandwidth = max(details["bandwidth"] for details in self.SPEED_LEVEL_DICT.values())
 
         # Iterate through speed levels in reverse order to find the highest appropriate one
         for level in sorted(self.SPEED_LEVEL_DICT.keys(), reverse=True):

@@ -29,9 +29,7 @@ class TestProtocols(unittest.TestCase):
 
     def shortcutTransmission(self, frame_bytes):
         """Inject a frame directly into the frame dispatcher."""
-        self.frame_dispatcher.process_data(
-            frame_bytes, None, len(frame_bytes), 0, 0, mode_name="TEST"
-        )
+        self.frame_dispatcher.process_data(frame_bytes, None, len(frame_bytes), 0, 0, mode_name="TEST")
 
     def assertEventReceivedType(self, event_type):
         """Assert that an event with a specific type was received."""

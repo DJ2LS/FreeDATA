@@ -242,9 +242,7 @@ class ARQSessionISS(arq_session.ARQSession):
         """
         maximum_bandwidth = self.ctx.config_manager.config["MODEM"]["maximum_bandwidth"]
         print(maximum_bandwidth)
-        self.ctx.event_manager.send_arq_session_new(
-            True, self.id, self.dxcall, self.total_length, self.state.name
-        )
+        self.ctx.event_manager.send_arq_session_new(True, self.id, self.dxcall, self.total_length, self.state.name)
         session_open_frame = self.frame_factory.build_arq_session_open(
             self.dxcall, self.id, maximum_bandwidth, self.protocol_version
         )
@@ -319,9 +317,7 @@ class ARQSessionISS(arq_session.ARQSession):
             self.id, self.total_length, self.data_crc, self.snr, self.type_byte
         )
 
-        self.launch_twr(
-            info_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_INFO, mode=FREEDV_MODE.signalling
-        )
+        self.launch_twr(info_frame, self.TIMEOUT_CONNECT_ACK, self.RETRIES_INFO, mode=FREEDV_MODE.signalling)
         self.set_state(ISS_State.INFO_SENT)
 
         return None, None
@@ -405,9 +401,7 @@ class ARQSessionISS(arq_session.ARQSession):
                 self.speed_level,
             )
             burst.append(data_frame)
-        self.launch_twr(
-            burst, self.TIMEOUT_TRANSFER, self.RETRIES_DATA, mode="auto", isARQBurst=True
-        )
+        self.launch_twr(burst, self.TIMEOUT_TRANSFER, self.RETRIES_DATA, mode="auto", isARQBurst=True)
         self.set_state(ISS_State.BURST_SENT)
         return None, None
 
@@ -531,9 +525,7 @@ class ARQSessionISS(arq_session.ARQSession):
         for transmission and retries.
         """
         stop_frame = self.frame_factory.build_arq_stop(self.id)
-        self.launch_twr(
-            stop_frame, self.TIMEOUT_STOP_ACK, self.RETRIES_STOP, mode=FREEDV_MODE.signalling
-        )
+        self.launch_twr(stop_frame, self.TIMEOUT_STOP_ACK, self.RETRIES_STOP, mode=FREEDV_MODE.signalling)
 
     def transmission_aborted(self, irs_frame=None):
         """Handles the abortion of the transmission.
@@ -563,9 +555,7 @@ class ARQSessionISS(arq_session.ARQSession):
                 self.dxcall,
                 False,
                 self.state.name,
-                statistics=self.calculate_session_statistics(
-                    self.confirmed_bytes, self.total_length
-                ),
+                statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length),
             )
             # self.ctx.state_manager.remove_arq_iss_session(self.id)
             self.ctx.state_manager.setARQ(False)

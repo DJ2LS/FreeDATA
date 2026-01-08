@@ -75,7 +75,8 @@ class DatabaseManager:
                 "aborted",
                 "queued",
                 "receiving",
-                "assembling"            ]
+                "assembling",
+            ]
 
             # Add default statuses if they don't exist
             for status_name in statuses:
@@ -115,18 +116,14 @@ class DatabaseManager:
             transmitting_status = session.query(Status).filter_by(name="transmitting").first()
             if transmitting_status:
                 # Check if any messages have the status "transmitting" and update them to "failed"
-                messages_to_update = (
-                    session.query(P2PMessage).filter_by(status_id=transmitting_status.id).all()
-                )
+                messages_to_update = session.query(P2PMessage).filter_by(status_id=transmitting_status.id).all()
                 for message in messages_to_update:
                     message.status_id = failed_status.id
 
                 session.commit()
                 len_repaired_message = len(messages_to_update)
                 if len_repaired_message > 0:
-                    self.log(
-                        f"Repaired {len_repaired_message} messages ('transmitting' to 'failed')"
-                    )
+                    self.log(f"Repaired {len_repaired_message} messages ('transmitting' to 'failed')")
 
             # Vacuum the database to reclaim space
             session.execute(text("VACUUM"))
@@ -366,9 +363,7 @@ class DatabaseManager:
         inspector = inspect(self.engine)
         existing_tables = inspector.get_table_names()
 
-        new_tables = [
-            table for table in Base.metadata.sorted_tables if table.name not in existing_tables
-        ]
+        new_tables = [table for table in Base.metadata.sorted_tables if table.name not in existing_tables]
 
         if new_tables:
             table_names = ", ".join(table.name for table in new_tables)

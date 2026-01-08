@@ -531,9 +531,7 @@ def create_default_ofdm_config():
         tx_bpf_en=False,
         rx_bpf_en=False,
         tx_bpf_proto=codec2_filter_coeff.testFilter,
-        tx_bpf_proto_n=int(
-            ctypes.sizeof(codec2_filter_coeff.testFilter) / ctypes.sizeof(ctypes.c_float)
-        ),
+        tx_bpf_proto_n=int(ctypes.sizeof(codec2_filter_coeff.testFilter) / ctypes.sizeof(ctypes.c_float)),
         foff_limiter=False,
         amp_scale=300e3,
         clip_gain1=2.2,
@@ -639,12 +637,8 @@ data_ofdm_200_config.config.contents.tx_uw = create_tx_uw(
 data_ofdm_200_config.config.contents.clip_gain1 = 1.2
 data_ofdm_200_config.config.contents.clip_gain2 = 1.0
 data_ofdm_200_config.config.contents.tx_bpf_en = False
-data_ofdm_200_config.config.contents.tx_bpf_proto = (
-    codec2_filter_coeff.generate_filter_coefficients(8000, 400, 101)
-)
-data_ofdm_200_config.config.contents.tx_bpf_proto_n = (
-    101  # TODO sizeof(filtP200S400) / sizeof(float);
-)
+data_ofdm_200_config.config.contents.tx_bpf_proto = codec2_filter_coeff.generate_filter_coefficients(8000, 400, 101)
+data_ofdm_200_config.config.contents.tx_bpf_proto_n = 101  # TODO sizeof(filtP200S400) / sizeof(float);
 
 
 # DATAC4 # OFDM 250
@@ -667,12 +661,8 @@ data_ofdm_250_config.config.contents.tx_uw = create_tx_uw(
 data_ofdm_250_config.config.contents.clip_gain1 = 1.2
 data_ofdm_250_config.config.contents.clip_gain2 = 1.0
 data_ofdm_250_config.config.contents.tx_bpf_en = True
-data_ofdm_250_config.config.contents.tx_bpf_proto = (
-    codec2_filter_coeff.generate_filter_coefficients(8000, 400, 101)
-)
-data_ofdm_250_config.config.contents.tx_bpf_proto_n = (
-    101  # TODO sizeof(filtP200S400) / sizeof(float);
-)
+data_ofdm_250_config.config.contents.tx_bpf_proto = codec2_filter_coeff.generate_filter_coefficients(8000, 400, 101)
+data_ofdm_250_config.config.contents.tx_bpf_proto_n = 101  # TODO sizeof(filtP200S400) / sizeof(float);
 
 
 # OFDM 500
@@ -695,9 +685,7 @@ data_ofdm_500_config.config.contents.tx_uw = create_tx_uw(
 data_ofdm_500_config.config.contents.clip_gain1 = 2.5  # 2.8
 data_ofdm_500_config.config.contents.clip_gain2 = 1.0  # 0.9
 data_ofdm_500_config.config.contents.tx_bpf_en = True
-data_ofdm_500_config.config.contents.tx_bpf_proto = (
-    codec2_filter_coeff.generate_filter_coefficients(8000, 600, 100)
-)
+data_ofdm_500_config.config.contents.tx_bpf_proto = codec2_filter_coeff.generate_filter_coefficients(8000, 600, 100)
 data_ofdm_500_config.config.contents.tx_bpf_proto_n = 100
 
 
@@ -716,9 +704,7 @@ data_ofdm_1700_config.config.contents.clip_gain1 = 2.7
 data_ofdm_1700_config.config.contents.clip_gain2 = 0.8
 data_ofdm_1700_config.config.contents.amp_scale = 145e3
 data_ofdm_1700_config.config.contents.tx_bpf_en = False
-data_ofdm_1700_config.config.contents.tx_bpf_proto = (
-    codec2_filter_coeff.generate_filter_coefficients(8000, 2000, 100)
-)
+data_ofdm_1700_config.config.contents.tx_bpf_proto = codec2_filter_coeff.generate_filter_coefficients(8000, 2000, 100)
 data_ofdm_1700_config.config.contents.tx_bpf_proto_n = 100
 data_ofdm_1700_config.config.contents.tx_uw = create_tx_uw(
     data_ofdm_1700_config.config.contents.nuwbits, [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0]
@@ -758,16 +744,16 @@ data_ofdm_2438_config.config.contents.amp_est_mode = 0
 data_ofdm_2438_config.config.contents.amp_scale = 106e3
 data_ofdm_2438_config.config.contents.codename = "H_16200_9720".encode("utf-8")
 data_ofdm_2438_config.config.contents.clip_gain1 = 3.3
-data_ofdm_2438_config.config.contents.clip_gain2 = 1.5  # 0.8 - a test in real world shows, 0.8 seems to be not enough for decoding. Lets test this some more time.
+data_ofdm_2438_config.config.contents.clip_gain2 = (
+    1.5  # 0.8 - a test in real world shows, 0.8 seems to be not enough for decoding. Lets test this some more time.
+)
 data_ofdm_2438_config.config.contents.timing_mx_thresh = 0.10
 data_ofdm_2438_config.config.contents.tx_uw = create_tx_uw(
     data_ofdm_2438_config.config.contents.nuwbits,
     [1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
 )
 data_ofdm_2438_config.config.contents.tx_bpf_en = True
-data_ofdm_2438_config.config.contents.tx_bpf_proto = (
-    codec2_filter_coeff.generate_filter_coefficients(8000, 2700, 100)
-)
+data_ofdm_2438_config.config.contents.tx_bpf_proto = codec2_filter_coeff.generate_filter_coefficients(8000, 2700, 100)
 data_ofdm_2438_config.config.contents.tx_bpf_proto_n = 100
 
 # ---------------- QAM 2438 Hz Bandwidth ---------------#

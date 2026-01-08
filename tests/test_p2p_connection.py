@@ -138,9 +138,7 @@ class TestP2PConnectionSession(unittest.TestCase):
                 transmission = modem_transmit_queue.get(timeout=1)
                 if random.randint(0, 100) < self.loss_probability:
                     continue
-                frame_dispatcher.process_data(
-                    transmission["bytes"], None, len(transmission["bytes"]), 0, 0, "test"
-                )
+                frame_dispatcher.process_data(transmission["bytes"], None, len(transmission["bytes"]), 0, 0, "test")
             except queue.Empty:
                 continue
 

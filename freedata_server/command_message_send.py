@@ -56,9 +56,7 @@ class SendMessageCommand(TxCommand):
         try:
             self.log(f"Queued message found: {first_queued_message['id']}")
             # DatabaseManagerMessages(self.ctx.event_manager).update_message(first_queued_message["id"], update_data={'status': 'transmitting'}, frequency=self.ctx.state_manager.radio_frequency)
-            message_dict = DatabaseManagerMessages(self.ctx).get_message_by_id(
-                first_queued_message["id"]
-            )
+            message_dict = DatabaseManagerMessages(self.ctx).get_message_by_id(first_queued_message["id"])
             message = MessageP2P.from_api_params(message_dict["origin"], message_dict)
 
             # wait some random time and wait if we have an ongoing codec2 transmission
@@ -77,9 +75,7 @@ class SendMessageCommand(TxCommand):
             while time.time() < time_waiting_for_free_channel:
                 threading.Event().wait(0.1)
                 if self.ctx.state_manager.is_receiving_codec2_signal():
-                    self.log(
-                        "Codec2 signal found, skipping  message until next cycle", isWarning=True
-                    )
+                    self.log("Codec2 signal found, skipping  message until next cycle", isWarning=True)
                     return
 
             # If we came until here, we are setting status to transmitting, otherwise it stays in queued
@@ -92,9 +88,7 @@ class SendMessageCommand(TxCommand):
             # Convert JSON string to bytes (using UTF-8 encoding)
             payload = message.to_payload().encode("utf-8")
             json_bytearray = bytearray(payload)
-            data, data_type = self.arq_data_type_handler.prepare(
-                json_bytearray, ARQ_SESSION_TYPES.p2pmsg_zlib
-            )
+            data, data_type = self.arq_data_type_handler.prepare(json_bytearray, ARQ_SESSION_TYPES.p2pmsg_zlib)
             iss = ARQSessionISS(self.ctx, self.message.destination, data, data_type)
             self.ctx.state_manager.register_arq_iss_session(iss)
             iss.start()

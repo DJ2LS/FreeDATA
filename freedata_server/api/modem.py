@@ -179,9 +179,7 @@ async def post_cq(ctx: AppContext = Depends(get_ctx)):
             "description": "Invalid input parameters.",
             "content": {
                 "application/json": {
-                    "example": {
-                        "error": "Incorrect value for 'enabled' or 'away_from_key'. Should be bool."
-                    }
+                    "example": {"error": "Incorrect value for 'enabled' or 'away_from_key'. Should be bool."}
                 }
             },
         },

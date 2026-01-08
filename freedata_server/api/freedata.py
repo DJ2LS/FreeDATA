@@ -39,6 +39,7 @@ def _mgr_beacon(ctx: AppContext):
 def _mgr_stations(ctx: AppContext):
     return DatabaseManagerStations(ctx)
 
+
 def _mgr_broadcasts(ctx: AppContext):
     return DatabaseManagerBroadcasts(ctx)
 
@@ -66,11 +67,7 @@ async def get_freedata_message(message_id: str, ctx: AppContext = Depends(get_ct
     responses={
         200: {
             "description": "Message transmitted successfully.",
-            "content": {
-                "application/json": {
-                    "example": {"destination": "XX1XXX-6", "body": "Hello FreeDATA"}
-                }
-            },
+            "content": {"application/json": {"example": {"destination": "XX1XXX-6", "body": "Hello FreeDATA"}}},
         },
         404: {
             "description": "The requested resource was not found.",
@@ -136,9 +133,7 @@ async def post_freedata_message_adif_log(message_id: str, ctx: AppContext = Depe
         },
     },
 )
-async def patch_freedata_message(
-    message_id: str, payload: dict, ctx: AppContext = Depends(get_ctx)
-):
+async def patch_freedata_message(message_id: str, payload: dict, ctx: AppContext = Depends(get_ctx)):
     if payload.get("action") == "retransmit":
         _mgr_msgs(ctx).update_message(message_id, {"status": "queued"})
         _mgr_msgs(ctx).increment_message_attempts(message_id)
@@ -224,11 +219,7 @@ async def get_freedata_messages(ctx: AppContext = Depends(get_ctx)):
         },
         404: {
             "description": "Message not found.",
-            "content": {
-                "application/json": {
-                    "example": {"message": "Message not found", "status": "failure"}
-                }
-            },
+            "content": {"application/json": {"example": {"message": "Message not found", "status": "failure"}}},
         },
     },
 )
@@ -543,29 +534,23 @@ async def set_station_info(callsign: str, payload: dict, ctx: AppContext = Depen
 
 
 @router.get("/broadcasts", summary="Get All Broadcast Messages", tags=["FreeDATA"], responses={})
-async def get_freedata_broadcasts(
-    ctx: AppContext = Depends(get_ctx)
-):
-    #filters = {k: v for k, v in ctx.config_manager.read().get('FILTERS', {}).items()}
+async def get_freedata_broadcasts(ctx: AppContext = Depends(get_ctx)):
+    # filters = {k: v for k, v in ctx.config_manager.read().get('FILTERS', {}).items()}
     # use query params if needed
     # filters = dict(ctx.request.query_params)
     result = _mgr_broadcasts(ctx).get_all_broadcasts_json()
     return api_response(result)
 
+
 @router.get("/broadcasts/{domain}/", summary="Get Broadcats per Domain", tags=["FreeDATA"], responses={})
-async def get_freedata_broadcasts_per_domain(
-    domain: str,
-    ctx: AppContext = Depends(get_ctx)
-):
+async def get_freedata_broadcasts_per_domain(domain: str, ctx: AppContext = Depends(get_ctx)):
     result = _mgr_broadcasts(ctx).get_broadcasts_per_domain_json(domain)
     return api_response(result)
 
 
 @router.get("/broadcasts/domains", summary="Get All Broadcast Messages", tags=["FreeDATA"], responses={})
-async def get_freedata_broadcasts(
-    ctx: AppContext = Depends(get_ctx)
-):
-    #filters = {k: v for k, v in ctx.config_manager.read().get('FILTERS', {}).items()}
+async def get_freedata_broadcasts(ctx: AppContext = Depends(get_ctx)):
+    # filters = {k: v for k, v in ctx.config_manager.read().get('FILTERS', {}).items()}
     # use query params if needed
     # filters = dict(ctx.request.query_params)
     result = _mgr_broadcasts(ctx).get_broadcast_domains_json()
@@ -573,33 +558,21 @@ async def get_freedata_broadcasts(
 
 
 @router.delete("/broadcasts/{id}", summary="Delete Message or Broadcast by ID", tags=["FreeDATA"], responses={})
-async def delete_freedata_broadcast_domain(
-    id: str,
-    ctx: AppContext = Depends(get_ctx)
-):
+async def delete_freedata_broadcast_domain(id: str, ctx: AppContext = Depends(get_ctx)):
     ok = _mgr_broadcasts(ctx).delete_broadcast_message_or_domain(id)
     if not ok:
         api_abort("Message not found", 404)
     return api_response({"message": f"{id} deleted", "status": "success"})
 
 
-
 @router.patch("/broadcasts/{id}", summary="Retransmit Broadcast by ID", tags=["FreeDATA"], responses={})
-async def patch_freedata_broadcast_domain(
-    id: str,
-    payload: dict,
-    ctx: AppContext = Depends(get_ctx)
-):
+async def patch_freedata_broadcast_domain(id: str, payload: dict, ctx: AppContext = Depends(get_ctx)):
     if payload.get("action") == "retransmit":
         _mgr_broadcasts(ctx).increment_attempts(id)
         msg = _mgr_broadcasts(ctx).get_broadcast_per_id(id, get_object=True)
         if msg:
             loop = asyncio.get_running_loop()
-            loop.run_in_executor(
-                None,
-                NormTransmissionISS(ctx).retransmit_data,
-                msg
-            )
+            loop.run_in_executor(None, NormTransmissionISS(ctx).retransmit_data, msg)
             return api_response({"message_id": id, "status": "retransmit started"})
         else:
             api_abort("Message not found", 404)
@@ -608,9 +581,6 @@ async def patch_freedata_broadcast_domain(
 
 
 @router.post("/broadcasts", summary="Transmit Broadcast", tags=["FreeDATA"], responses={})
-async def post_freedata_broadcast(
-    payload: dict,
-    ctx: AppContext = Depends(get_ctx)
-):
+async def post_freedata_broadcast(payload: dict, ctx: AppContext = Depends(get_ctx)):
     await enqueue_tx_command(ctx, command_norm.Norm, payload)
     return api_response({"message": f"broadcast transmitted", "status": "success"})

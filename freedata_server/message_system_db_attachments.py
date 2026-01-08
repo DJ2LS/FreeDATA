@@ -137,9 +137,7 @@ class DatabaseManagerAttachments(DatabaseManager):
                 self.log(f"No attachment found with SHA-512 hash: {hash_sha512}")
                 return None
         except Exception as e:
-            self.log(
-                f"Error fetching attachment with SHA-512 hash {hash_sha512}: {e}", isWarning=True
-            )
+            self.log(f"Error fetching attachment with SHA-512 hash {hash_sha512}: {e}", isWarning=True)
             return None
         finally:
             session.remove()
@@ -168,11 +166,7 @@ class DatabaseManagerAttachments(DatabaseManager):
 
             for link in links:
                 # Count how many associations exist for this attachment.
-                link_count = (
-                    session.query(MessageAttachment)
-                    .filter_by(attachment_id=link.attachment_id)
-                    .count()
-                )
+                link_count = session.query(MessageAttachment).filter_by(attachment_id=link.attachment_id).count()
                 if link_count > 1:
                     # More than one link exists, so only remove the association.
                     session.delete(link)
@@ -183,9 +177,7 @@ class DatabaseManagerAttachments(DatabaseManager):
                     # Only one link exists, so delete both the association and the attachment.
                     session.delete(link)
                     session.delete(link.attachment)
-                    self.log(
-                        f"Deleted attachment '{link.attachment.name}' from message {message_id} (only link)."
-                    )
+                    self.log(f"Deleted attachment '{link.attachment.name}' from message {message_id} (only link).")
 
             session.commit()
             return True
@@ -217,9 +209,7 @@ class DatabaseManagerAttachments(DatabaseManager):
             attachments = session.query(Attachment).all()
             for attachment in attachments:
                 # Count the number of MessageAttachment links for this attachment.
-                link_count = (
-                    session.query(MessageAttachment).filter_by(attachment_id=attachment.id).count()
-                )
+                link_count = session.query(MessageAttachment).filter_by(attachment_id=attachment.id).count()
                 if link_count == 0:
                     orphaned.append(attachment)
 

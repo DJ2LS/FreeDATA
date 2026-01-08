@@ -9,7 +9,7 @@ import structlog
 import base64
 import numpy as np
 
-sys.path.append('freedata_server')
+sys.path.append("freedata_server")
 
 from config import CONFIG
 from context import AppContext
@@ -26,7 +26,7 @@ class TestModem:
         self.data_queue_received = queue.Queue()
         self.demodulator = unittest.mock.Mock()
         self.event_manager = EventManager([event_q])
-        self.logger = structlog.get_logger('Modem')
+        self.logger = structlog.get_logger("Modem")
         self.states = StateManager(state_q)
 
     def getFrameTransmissionTime(self, mode):
@@ -44,27 +44,25 @@ class TestModem:
         threading.Event().wait(tx_time)
 
         transmission = {
-            'mode': mode,
-            'bytes': frames,
+            "mode": mode,
+            "bytes": frames,
         }
         self.data_queue_received.put(transmission)
 
 
 class TestMessageProtocol(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.logger = structlog.get_logger("TESTS")
 
         # ISS
 
-        cls.ctx_ISS = AppContext('freedata_server/config.ini.example')
+        cls.ctx_ISS = AppContext("freedata_server/config.ini.example")
         cls.ctx_ISS.TESTMODE = True
         cls.ctx_ISS.startup()
 
-
         # IRS
-        cls.ctx_IRS = AppContext('freedata_server/config.ini.example')
+        cls.ctx_IRS = AppContext("freedata_server/config.ini.example")
         cls.ctx_IRS.TESTMODE = True
         cls.ctx_IRS.startup()
 
@@ -73,14 +71,12 @@ class TestMessageProtocol(unittest.TestCase):
         # Frame loss probability in %
         cls.loss_probability = 0
 
-
         cls.channels_running = False
 
     @classmethod
     def tearDownClass(cls):
         cls.ctx_IRS.shutdown()
         cls.ctx_ISS.shutdown()
-
 
     def channelWorker(self, ctx_a, ctx_b):
         while self.channels_running:
@@ -89,7 +85,7 @@ class TestMessageProtocol(unittest.TestCase):
                 transmission = ctx_a.TESTMODE_TRANSMIT_QUEUE.get(timeout=1)
                 print(f"Station A sending: {transmission[1]}", len(transmission[1]), transmission[0])
 
-                transmission[1] += bytes(2) # 2bytes crc simulation
+                transmission[1] += bytes(2)  # 2bytes crc simulation
 
                 if random.randint(0, 100) < self.loss_probability:
                     self.logger.info(f"[{threading.current_thread().name}] Frame lost...")
@@ -118,11 +114,11 @@ class TestMessageProtocol(unittest.TestCase):
         self.logger.info(f"[{threading.current_thread().name}] Channel closed.")
 
     def waitForSession(self, event_queue, outbound=False):
-        key = 'arq-transfer-outbound' if outbound else 'arq-transfer-inbound'
+        key = "arq-transfer-outbound" if outbound else "arq-transfer-inbound"
         while self.channels_running:
             try:
                 ev = event_queue.get(timeout=2)
-                if key in ev and ('success' in ev[key] or 'ABORTED' in ev[key]):
+                if key in ev and ("success" in ev[key] or "ABORTED" in ev[key]):
                     self.logger.info(f"[{threading.current_thread().name}] {key} session ended.")
                     break
             except queue.Empty:
@@ -130,10 +126,10 @@ class TestMessageProtocol(unittest.TestCase):
 
     def establishChannels(self):
         self.channels_running = True
-        self.channelA = threading.Thread(target=self.channelWorker,args=[self.ctx_ISS, self.ctx_IRS],name = "channelA")
+        self.channelA = threading.Thread(target=self.channelWorker, args=[self.ctx_ISS, self.ctx_IRS], name="channelA")
         self.channelA.start()
 
-        self.channelB = threading.Thread(target=self.channelWorker,args=[self.ctx_IRS, self.ctx_ISS],name = "channelB")
+        self.channelB = threading.Thread(target=self.channelWorker, args=[self.ctx_IRS, self.ctx_ISS], name="channelB")
         self.channelB.start()
 
     def waitAndCloseChannels(self):
@@ -147,13 +143,18 @@ class TestMessageProtocol(unittest.TestCase):
         self.establishChannels()
 
         params = {
-            'origin': "AA1AAA-1",
-            'domain': "BB1BBB-1",
-            'gridsquare': "JN48ea",
-            'type': 'MESSAGE',
-            'priority': '1',
+            "origin": "AA1AAA-1",
+            "domain": "BB1BBB-1",
+            "gridsquare": "JN48ea",
+            "type": "MESSAGE",
+            "priority": "1",
             #'data': str(base64.b64encode(b"hello world!"), 'utf-8')
-            'data': str(base64.b64encode(b"hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!"), 'utf-8')
+            "data": str(
+                base64.b64encode(
+                    b"hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!hello world!"
+                ),
+                "utf-8",
+            ),
         }
         try:
             command = command_norm.Norm(self.ctx_ISS, params)
@@ -161,15 +162,15 @@ class TestMessageProtocol(unittest.TestCase):
         except Exception as e:
             print(e)
 
-
-        #del cmd
-        #print(self.ctx_ISS.TESTMODE_EVENTS.empty())
+        # del cmd
+        # print(self.ctx_ISS.TESTMODE_EVENTS.empty())
 
         while not self.ctx_ISS.TESTMODE_EVENTS.empty():
             event = self.ctx_ISS.TESTMODE_EVENTS.get()
-            success = event.get('arq-transfer-outbound', {}).get('success', None)
+            success = event.get("arq-transfer-outbound", {}).get("success", None)
             if success is not None:
                 self.assertTrue(success, f"Test failed because of wrong success: {success}")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

@@ -59,9 +59,7 @@ class DatabaseManagerMessages(DatabaseManager):
         try:
             # Create and add the origin and destination Stations
             origin = self.stations_manager.get_or_create_station(message_data["origin"], session)
-            destination = self.stations_manager.get_or_create_station(
-                message_data["destination"], session
-            )
+            destination = self.stations_manager.get_or_create_station(message_data["destination"], session)
 
             # Create and add Status if provided
             if status:
@@ -266,14 +264,10 @@ class DatabaseManagerMessages(DatabaseManager):
 
                 # Parse the timestamp for QSO date and time, strip fractional seconds
                 timestamp_clean = timestamp.split(".")[0]  # Remove fractional seconds
-                qso_date = timestamp_clean.split("T")[0].replace(
-                    "-", ""
-                )  # Extract the date part and remove hyphens
+                qso_date = timestamp_clean.split("T")[0].replace("-", "")  # Extract the date part and remove hyphens
 
                 # Extract the time and format it as HHMMSS
-                time_on = datetime.strptime(timestamp_clean.split("T")[1], "%H:%M:%S").strftime(
-                    "%H%M%S"
-                )
+                time_on = datetime.strptime(timestamp_clean.split("T")[1], "%H:%M:%S").strftime("%H%M%S")
 
                 # Calculate TIME_OFF by adding duration to TIME_ON
                 duration = statistics.get("duration", 0.0)  # Duration in seconds
@@ -290,11 +284,7 @@ class DatabaseManagerMessages(DatabaseManager):
 
                 # Gridsquare handling
                 print(origin_info)
-                if (
-                    origin_info
-                    and "location" in origin_info
-                    and origin_info["location"] is not None
-                ):
+                if origin_info and "location" in origin_info and origin_info["location"] is not None:
                     print(origin_info["location"])
                     grid = origin_info["location"].get("gridsquare", "")
                 else:
@@ -462,10 +452,7 @@ class DatabaseManagerMessages(DatabaseManager):
             if queued_status:
                 # Query for the first (oldest) message with status "queued"
                 message = (
-                    session.query(P2PMessage)
-                    .filter_by(status=queued_status)
-                    .order_by(P2PMessage.timestamp)
-                    .first()
+                    session.query(P2PMessage).filter_by(status=queued_status).order_by(P2PMessage.timestamp).first()
                 )
                 if message:
                     self.log(f"Found queued message with ID {message.id}")
@@ -547,7 +534,8 @@ class DatabaseManagerMessages(DatabaseManager):
 
             # Query for messages with the specified callsign, 'failed' status, and fewer than 10 attempts
             message = (
-                session.query(P2PMessage)
+                session
+                .query(P2PMessage)
                 .filter(P2PMessage.destination_callsign == callsign)
                 .filter(P2PMessage.status_id == failed_status.id)
                 .filter(P2PMessage.attempt < 10)

@@ -12,6 +12,7 @@ from freedata_server.message_system_db_broadcasts import DatabaseManagerBroadcas
 import threading
 import numpy as np
 
+
 class NORM_ISS_State(Enum):
     NEW = 0
     TRANSMITTING = 1
@@ -19,6 +20,7 @@ class NORM_ISS_State(Enum):
     FAILED = 3
     ABORTING = 4
     ABORTED = 5
+
 
 class NormTransmissionISS(NormTransmission):
     MAX_PAYLOAD_SIZE = 26
@@ -33,7 +35,9 @@ class NormTransmissionISS(NormTransmission):
         self.state = NORM_ISS_State.NEW
         self.log("Initialized")
 
-    def prepare_and_transmit_data(self, origin, domain, gridsquare, data, priority=NORMMsgPriority.NORMAL, message_type=NORMMsgType.UNDEFINED):
+    def prepare_and_transmit_data(
+        self, origin, domain, gridsquare, data, priority=NORMMsgPriority.NORMAL, message_type=NORMMsgType.UNDEFINED
+    ):
         self.origin = origin
         self.domain = domain
         self.gridsquare = gridsquare
@@ -59,13 +63,14 @@ class NormTransmissionISS(NormTransmission):
             if total_bursts <= 0:
                 self.log(
                     f"Invalid burst calculation (data length: {len(full_data)}, max payload: {self.MAX_PAYLOAD_SIZE})",
-                    isWarning=True)
+                    isWarning=True,
+                )
                 raise ValueError("Invalid burst calculation")
 
             bursts = []
             for burst_number in range(1, total_bursts + 1):
                 offset = (burst_number - 1) * self.MAX_PAYLOAD_SIZE
-                payload = full_data[offset: offset + self.MAX_PAYLOAD_SIZE]
+                payload = full_data[offset : offset + self.MAX_PAYLOAD_SIZE]
 
                 if not payload:
                     self.log(f"Empty payload at burst {burst_number}", isWarning=True)
@@ -73,7 +78,7 @@ class NormTransmissionISS(NormTransmission):
 
                 burst_info = self.encode_burst_info(burst_number, total_bursts)
                 checksum = freedata_server.helpers.get_crc_24(full_data)
-                is_last = (burst_number == total_bursts)
+                is_last = burst_number == total_bursts
                 print("message type", self.message_type)
                 print("priority", self.priority)
                 print("is_last", is_last)
@@ -87,11 +92,12 @@ class NormTransmissionISS(NormTransmission):
                     payload_size=len(full_data),
                     payload_data=payload,
                     flag=flags,
-                    checksum=checksum
+                    checksum=checksum,
                 )
 
                 self.log(
-                    f"Burst {burst_number}/{total_bursts} created (offset={offset}, payload_size={len(payload)}, is_last={is_last})")
+                    f"Burst {burst_number}/{total_bursts} created (offset={offset}, payload_size={len(payload)}, is_last={is_last})"
+                )
 
                 bursts.append(burst_frame)
 
@@ -128,14 +134,14 @@ class NormTransmissionISS(NormTransmission):
                     raise ValueError(f"Invalid burst number {burst_number}")
 
                 offset = (burst_number - 1) * self.MAX_PAYLOAD_SIZE
-                payload = data[offset: offset + self.MAX_PAYLOAD_SIZE]
+                payload = data[offset : offset + self.MAX_PAYLOAD_SIZE]
 
                 if not payload:
                     self.log(f"Empty payload for burst {burst_number}", isWarning=True)
                     raise ValueError(f"Empty payload for burst {burst_number}")
 
                 burst_info = self.encode_burst_info(burst_number, total_bursts)
-                is_last = (burst_number == total_bursts)
+                is_last = burst_number == total_bursts
                 flags = self.encode_flags(message_type, priority, is_last)
 
                 burst_frame = self.frame_factory.build_norm_repair(
@@ -147,11 +153,12 @@ class NormTransmissionISS(NormTransmission):
                     payload_size=len(data),
                     payload_data=payload,
                     flag=flags,
-                    checksum=checksum
+                    checksum=checksum,
                 )
 
                 self.log(
-                    f"Repair burst {burst_number}/{total_bursts} created (offset={offset}, payload_size={len(payload)}, is_last={is_last})")
+                    f"Repair burst {burst_number}/{total_bursts} created (offset={offset}, payload_size={len(payload)}, is_last={is_last})"
+                )
                 repair_bursts.append(burst_frame)
 
             self.log(f"All repair bursts created successfully (count={len(repair_bursts)})")
@@ -198,7 +205,7 @@ class NormTransmissionISS(NormTransmission):
 
             for burst_index in range(1, total_bursts + 1):
                 offset = (burst_index - 1) * self.MAX_PAYLOAD_SIZE
-                payload_data = self.data[offset: offset + self.MAX_PAYLOAD_SIZE]
+                payload_data = self.data[offset : offset + self.MAX_PAYLOAD_SIZE]
                 if not payload_data:
                     self.log(f"Empty payload at burst index {burst_index}", isWarning=True)
                     continue
@@ -209,7 +216,6 @@ class NormTransmissionISS(NormTransmission):
 
                 expires_at = datetime.now(timezone.utc) + timedelta(days=1)
                 expires_at = expires_at.timestamp()
-
 
                 db.process_broadcast_message(
                     id=broadcast_id,
@@ -229,7 +235,7 @@ class NormTransmissionISS(NormTransmission):
                     expires_at=expires_at,
                     is_read=True,
                     direction="transmit",
-                    status="assembling"
+                    status="assembling",
                 )
 
                 self.log(f"Stored burst {burst_index}/{total_bursts} in database (size={len(payload_data)})")
@@ -251,6 +257,5 @@ class NormTransmissionISS(NormTransmission):
         self.timestamp = int(msg.timestamp)
 
         bursts = self.create_data()
-        #self.add_to_database()
+        # self.add_to_database()
         self.transmit_bursts(bursts)
-

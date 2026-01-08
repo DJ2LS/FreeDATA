@@ -69,9 +69,7 @@ class FecCommand(TxCommand):
             tx_frame_queue: The transmission queue.
         """
         if self.wakeup:
-            tx_queue_item = self.make_modem_queue_item(
-                self.get_c2_mode(), 1, 0, self.build_wakeup_frame()
-            )
+            tx_queue_item = self.make_modem_queue_item(self.get_c2_mode(), 1, 0, self.build_wakeup_frame())
             tx_frame_queue.put(tx_queue_item)
 
         tx_queue_item = self.make_modem_queue_item(self.get_c2_mode(), 1, 0, self.build_frame())

@@ -44,11 +44,7 @@ class Explorer:
         pushes, failed pushes, and connection issues.
         """
 
-        frequency = (
-            0
-            if self.ctx.state_manager.radio_frequency is None
-            else self.ctx.state_manager.radio_frequency
-        )
+        frequency = 0 if self.ctx.state_manager.radio_frequency is None else self.ctx.state_manager.radio_frequency
         band = "USB"
         callsign = f"{self.ctx.config_manager.config['STATION']['mycall']}-{self.ctx.config_manager.config['STATION']['myssid']}"
         gridsquare = str(self.ctx.config_manager.config["STATION"]["mygrid"])

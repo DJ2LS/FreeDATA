@@ -7,9 +7,7 @@ import helpers
 import base64
 
 
-
 class DatabaseManagerBroadcasts(DatabaseManager):
-
     def __init__(self, ctx):
         super().__init__(ctx)
 
@@ -18,26 +16,26 @@ class DatabaseManagerBroadcasts(DatabaseManager):
         self.stations_manager = DatabaseManagerStations(self.ctx)
 
     def process_broadcast_message(
-            self,
-            id: str,
-            origin: str,
-            timestamp: float,
-            burst_index: int,
-            burst_data: str,
-            total_bursts: int,
-            checksum: str,
-            repairing_callsigns: dict = None,
-            domain: str = None,
-            gridsquare: str = None,
-            msg_type: str = None,
-            received_at: float = None,
-            expires_at: float = None,
-            nexttransmission_at: float = None,
-            priority: int = 1,
-            is_read: bool = True,
-            direction: str = None,
-            status: str = "queued",
-            error_reason: str = None
+        self,
+        id: str,
+        origin: str,
+        timestamp: float,
+        burst_index: int,
+        burst_data: str,
+        total_bursts: int,
+        checksum: str,
+        repairing_callsigns: dict = None,
+        domain: str = None,
+        gridsquare: str = None,
+        msg_type: str = None,
+        received_at: float = None,
+        expires_at: float = None,
+        nexttransmission_at: float = None,
+        priority: int = 1,
+        is_read: bool = True,
+        direction: str = None,
+        status: str = "queued",
+        error_reason: str = None,
     ) -> bool:
         """
         Handles both creation of a new broadcast message and addition of bursts.
@@ -83,7 +81,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     nexttransmission_at=nexttransmission_at,
                     expires_at=expires_at,
                     status_id=status_obj.id if status_obj else None,
-                    error_reason=error_reason
+                    error_reason=error_reason,
                 )
                 session.add(msg)
                 self.log(f"Created new broadcast message {id}")
@@ -107,7 +105,6 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             total = msg.total_bursts
 
             if total > 0 and len(received) == total and all(str(i) in received for i in range(1, total + 1)):
-
                 ordered = [received[str(i)] for i in range(1, total + 1)]
                 final_bytes = b"".join(base64.b64decode(b64part) for b64part in ordered)
 
@@ -127,7 +124,6 @@ class DatabaseManagerBroadcasts(DatabaseManager):
 
                     status_obj = self.get_or_create_status(session, "received")
                     msg.status_id = status_obj.id
-
 
                     self.log(f"Final payload assembled and verified for {id}")
 
@@ -173,7 +169,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     "expires_at": msg.expires_at if msg.expires_at else None,
                     "nexttransmission_at": msg.nexttransmission_at if msg.nexttransmission_at else None,
                     "status": msg.status.name if msg.status else None,
-                    "error_reason": msg.error_reason
+                    "error_reason": msg.error_reason,
                 })
 
             return result
@@ -191,7 +187,8 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             now_ts = datetime.now(timezone.utc).timestamp()
 
             message = (
-                session.query(BroadcastMessage)
+                session
+                .query(BroadcastMessage)
                 .filter(
                     BroadcastMessage.direction == "transmit",
                     BroadcastMessage.attempts < self.MAX_ATTEMPTS,
@@ -219,7 +216,8 @@ class DatabaseManagerBroadcasts(DatabaseManager):
         session = self.get_thread_scoped_session()
         try:
             messages = (
-                session.query(BroadcastMessage)
+                session
+                .query(BroadcastMessage)
                 .filter(BroadcastMessage.domain.isnot(None))
                 .order_by(BroadcastMessage.timestamp.desc())
                 .all()
@@ -289,7 +287,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     "error_reason": msg.error_reason,
                     "received_at": msg.received_at if msg.received_at else None,
                     "nexttransmission_at": msg.nexttransmission_at if msg.nexttransmission_at else None,
-                    "expires_at": msg.expires_at if msg.expires_at else None
+                    "expires_at": msg.expires_at if msg.expires_at else None,
                 })
 
             return result
@@ -311,12 +309,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 session.commit()
                 self.log(f"Deleted broadcast message {id}")
                 self.ctx.event_manager.freedata_message_db_change(message_id=id)
-                return {
-                    "status": "success",
-                    "deleted": 1,
-                    "type": "message",
-                    "id": id
-                }
+                return {"status": "success", "deleted": 1, "type": "message", "id": id}
 
             messages = session.query(BroadcastMessage).filter_by(domain=id).all()
             if messages:
@@ -326,25 +319,14 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 session.commit()
                 self.log(f"Deleted {count} messages from domain '{id}'")
                 self.ctx.event_manager.freedata_message_db_change(message_id=id)
-                return {
-                    "status": "success",
-                    "deleted": count,
-                    "type": "domain",
-                    "domain": id
-                }
+                return {"status": "success", "deleted": count, "type": "domain", "domain": id}
 
-            return {
-                "status": "error",
-                "message": f"Neither broadcast message ID '{id}' nor domain found."
-            }
+            return {"status": "error", "message": f"Neither broadcast message ID '{id}' nor domain found."}
 
         except Exception as e:
             session.rollback()
             self.log(f"Error deleting broadcast message or domain '{id}': {e}", isWarning=True)
-            return {
-                "status": "error",
-                "message": str(e)
-            }
+            return {"status": "error", "message": str(e)}
 
         finally:
             session.remove()
@@ -358,12 +340,13 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             print(now)
             print(one_minute_ago_ts)
             messages = (
-                session.query(BroadcastMessage)
+                session
+                .query(BroadcastMessage)
                 .filter(
                     BroadcastMessage.direction == "receive",
                     BroadcastMessage.received_at < one_minute_ago_ts,
                     BroadcastMessage.total_bursts > 0,
-                    BroadcastMessage.expires_at > now
+                    BroadcastMessage.expires_at > now,
                 )
                 .order_by(BroadcastMessage.received_at.asc())
                 .all()
@@ -387,7 +370,6 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     dt = datetime.fromtimestamp(msg.nexttransmission_at, timezone.utc)
                     self.log(f"Skip {msg.id}: wait until {int(msg.nexttransmission_at)} ({dt.isoformat()})")
 
-
                     continue
 
                 # Max attempts
@@ -398,10 +380,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 bursts = msg.payload_data["bursts"]
                 total = msg.total_bursts
 
-                missing = [
-                    i for i in range(1, total + 1)
-                    if str(i) not in bursts
-                ]
+                missing = [i for i in range(1, total + 1) if str(i) not in bursts]
 
                 if missing:
                     return {
@@ -411,7 +390,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                         "missing_bursts": missing,
                         "total_bursts": total,
                         "received_bursts": list(bursts.keys()),
-                        "received_at": msg.received_at if msg.received_at else None
+                        "received_at": msg.received_at if msg.received_at else None,
                     }
 
             return None
@@ -454,7 +433,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 "nexttransmission_at": msg.nexttransmission_at if msg.nexttransmission_at else None,
                 "status": msg.status.name if msg.status else None,
                 "error_reason": msg.error_reason,
-                "attempts": msg.attempts
+                "attempts": msg.attempts,
             }
 
         except Exception as e:
@@ -479,9 +458,6 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             self.log(f"Error incrementing attempts for {message_id}: {e}", isWarning=True)
         finally:
             session.remove()
-
-
-
 
     def increment_attempts_and_update_next_transmission(self, message_id: str):
         session = self.get_thread_scoped_session()
@@ -513,7 +489,8 @@ class DatabaseManagerBroadcasts(DatabaseManager):
 
             session.commit()
             self.log(
-                f"Incremented attempts for {message_id} to {msg.attempts}, next transmission at {msg.nexttransmission_at}")
+                f"Incremented attempts for {message_id} to {msg.attempts}, next transmission at {msg.nexttransmission_at}"
+            )
 
         except Exception as e:
             session.rollback()
@@ -529,7 +506,8 @@ class DatabaseManagerBroadcasts(DatabaseManager):
         session = self.get_thread_scoped_session()
         try:
             msgs = (
-                session.query(BroadcastMessage)
+                session
+                .query(BroadcastMessage)
                 .filter(
                     BroadcastMessage.domain == domain,
                     BroadcastMessage.is_read.is_(False),
@@ -551,4 +529,3 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             return 0
         finally:
             session.remove()
-

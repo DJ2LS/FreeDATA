@@ -33,9 +33,7 @@ def get_audio_devices():
         proxy_input_devices = manager.list()
         proxy_output_devices = manager.list()
         # print(multiprocessing.get_start_method())
-        proc = multiprocessing.Process(
-            target=fetch_audio_devices, args=(proxy_input_devices, proxy_output_devices)
-        )
+        proc = multiprocessing.Process(target=fetch_audio_devices, args=(proxy_input_devices, proxy_output_devices))
         proc.start()
         proc.join(3)
 
@@ -334,9 +332,7 @@ def prepare_data_for_fft(data, target_length_samples=800):
 
     # If data is shorter than the target length, pad with zeros
     if len(data) < target_length_samples:
-        return np.pad(
-            data, (0, target_length_samples - len(data)), "constant", constant_values=(0,)
-        )
+        return np.pad(data, (0, target_length_samples - len(data)), "constant", constant_values=(0,))
     else:
         # If data is longer or equal to the target length, truncate it
         return data[:target_length_samples]
@@ -430,11 +426,7 @@ def calculate_fft(data, fft_queue, states) -> None:
         # Iterate over each slot range to detect activity
         for slot, (range_start, range_end) in enumerate(SLOT_RANGES):
             # Check if any frequency in the slot exceeds the threshold
-            if (
-                np.any(significant_frequencies[range_start:range_end])
-                and not_transmitting
-                and not_receiving
-            ):
+            if np.any(significant_frequencies[range_start:range_end]) and not_transmitting and not_receiving:
                 # Mark that additional delay should be added
                 addDelay = True
 

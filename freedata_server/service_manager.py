@@ -35,9 +35,7 @@ class SM:
 
         self.shutdown_flag = threading.Event()
 
-        self.runner_thread = threading.Thread(
-            target=self.runner, name="runner thread", daemon=False
-        )
+        self.runner_thread = threading.Thread(target=self.runner, name="runner thread", daemon=False)
 
         self.runner_thread.start()
 
@@ -62,9 +60,7 @@ class SM:
                     self.start_modem()
 
                     if self.ctx.config_manager.config["SOCKET_INTERFACE"]["enable"]:
-                        self.ctx.socket_interface_manager = SocketInterfaceHandler(
-                            self.ctx
-                        ).start_servers()
+                        self.ctx.socket_interface_manager = SocketInterfaceHandler(self.ctx).start_servers()
                     else:
                         self.ctx.socket_interface_manager = None
 
@@ -102,9 +98,7 @@ class SM:
                     self.start_radio_manager()
 
                     if self.ctx.config_manager.config["SOCKET_INTERFACE"]["enable"]:
-                        self.ctx.socket_interface_manager = SocketInterfaceHandler(
-                            self.ctx
-                        ).start_servers()
+                        self.ctx.socket_interface_manager = SocketInterfaceHandler(self.ctx).start_servers()
                     else:
                         self.ctx.socket_interface_manager = None
 
@@ -250,8 +244,6 @@ class SM:
         """
         self.log.warning("[SHUTDOWN] stopping service manager....")
         self.ctx.modem_service.put("stop")
-        threading.Event().wait(
-            2
-        )  # we need some time before processing with the shutdown_event_flag
+        threading.Event().wait(2)  # we need some time before processing with the shutdown_event_flag
         self.shutdown_flag.set()
         self.runner_thread.join(0.5)

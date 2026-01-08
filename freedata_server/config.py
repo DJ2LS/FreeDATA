@@ -250,9 +250,7 @@ class CONFIG:
             else:
                 return value
         except KeyError as key:
-            self.log.error(
-                "[CFG] key error in logfile, please check 'config.ini.example' for help", key=key
-            )
+            self.log.error("[CFG] key error in logfile, please check 'config.ini.example' for help", key=key)
 
     # Sets and writes config data from a dict containing data settings
     def write(self, data):
@@ -328,9 +326,7 @@ class CONFIG:
             # handle the special settings
             for section in result:
                 for setting in result[section]:
-                    result[section][setting] = self.handle_setting(
-                        section, setting, result[section][setting], False
-                    )
+                    result[section][setting] = self.handle_setting(section, setting, result[section][setting], False)
 
             # store config in config manager instance
             self.config = result

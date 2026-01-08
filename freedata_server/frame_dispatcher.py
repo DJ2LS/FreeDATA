@@ -76,19 +76,18 @@ class DISPATCHER:
         FR_TYPE.ARQ_STOP.value: {"class": ARQFrameHandler, "name": "ARQ STOP"},
         FR_TYPE.ARQ_STOP_ACK.value: {"class": ARQFrameHandler, "name": "ARQ STOP ACK"},
         FR_TYPE.BEACON.value: {"class": BeaconFrameHandler, "name": "BEACON"},
-        FR_TYPE.ARQ_BURST_FRAME.value:{"class": ARQFrameHandler, "name": "BURST FRAME"},
-        FR_TYPE.ARQ_BURST_ACK.value: {"class": ARQFrameHandler, "name":  "BURST ACK"},
-        FR_TYPE.CQ.value: {"class": CQFrameHandler, "name":  "CQ"},
-        FR_TYPE.PING_ACK.value: {"class": FrameHandler, "name":  "PING ACK"},
-        FR_TYPE.PING.value: {"class": PingFrameHandler, "name":  "PING"},
-        FR_TYPE.QRV.value: {"class": FrameHandler, "name":  "QRV"},
+        FR_TYPE.ARQ_BURST_FRAME.value: {"class": ARQFrameHandler, "name": "BURST FRAME"},
+        FR_TYPE.ARQ_BURST_ACK.value: {"class": ARQFrameHandler, "name": "BURST ACK"},
+        FR_TYPE.CQ.value: {"class": CQFrameHandler, "name": "CQ"},
+        FR_TYPE.PING_ACK.value: {"class": FrameHandler, "name": "PING ACK"},
+        FR_TYPE.PING.value: {"class": PingFrameHandler, "name": "PING"},
+        FR_TYPE.QRV.value: {"class": FrameHandler, "name": "QRV"},
         FR_TYPE.NORM_DATA.value: {"class": NORMFrameHandler, "name": "NORM DATA"},
         FR_TYPE.NORM_NACK.value: {"class": NORMFrameHandler, "name": "NORM NACK"},
         FR_TYPE.NORM_REPAIR.value: {"class": NORMFrameHandler, "name": "NORM REPAIR"},
-
-        #FR_TYPE.IS_WRITING.value: {"class": FrameHandler, "name": "IS_WRITING"},
-        #FR_TYPE.FEC.value: {"class": FrameHandler, "name":  "FEC"},
-        #FR_TYPE.FEC_WAKEUP.value: {"class": FrameHandler, "name":  "FEC WAKEUP"},
+        # FR_TYPE.IS_WRITING.value: {"class": FrameHandler, "name": "IS_WRITING"},
+        # FR_TYPE.FEC.value: {"class": FrameHandler, "name":  "FEC"},
+        # FR_TYPE.FEC_WAKEUP.value: {"class": FrameHandler, "name":  "FEC WAKEUP"},
     }
 
     def __init__(self, ctx):
@@ -137,9 +136,7 @@ class DISPATCHER:
             except Exception:
                 continue
 
-    def process_data(
-        self, bytes_out, freedv, bytes_per_frame: int, snr, frequency_offset, mode_name
-    ) -> None:
+    def process_data(self, bytes_out, freedv, bytes_per_frame: int, snr, frequency_offset, mode_name) -> None:
         """Processes received data frames.
 
         This method deconstructs the received data into a frame dictionary,

@@ -46,9 +46,7 @@ class DatabaseManagerBeacon(DatabaseManager):
             # Now, check and update the station's location with gridsquare if it has changed
             if station.location.get("gridsquare") != gridsquare:
                 self.log(f"Updating location for {callsign}")
-                station.location["gridsquare"] = (
-                    gridsquare  # Update directly without re-serialization
-                )
+                station.location["gridsquare"] = gridsquare  # Update directly without re-serialization
                 session.flush()
 
             # Now, add the beacon
@@ -94,9 +92,7 @@ class DatabaseManagerBeacon(DatabaseManager):
                         "id": beacon.id,
                         "timestamp": beacon.timestamp.isoformat(),
                         "snr": beacon.snr,
-                        "gridsquare": station.location.get("gridsquare")
-                        if station.location
-                        else None,
+                        "gridsquare": station.location.get("gridsquare") if station.location else None,
                     }
                     for beacon in beacons
                 ]
@@ -137,9 +133,7 @@ class DatabaseManagerBeacon(DatabaseManager):
             for beacon in beacons_query:
                 # Fetch the associated station for each beacon to get the 'gridsquare' information
                 station = session.query(Station).filter_by(callsign=beacon.callsign).first()
-                gridsquare = (
-                    station.location.get("gridsquare") if station and station.location else None
-                )
+                gridsquare = station.location.get("gridsquare") if station and station.location else None
 
                 beacons_list.append({
                     "id": beacon.id,

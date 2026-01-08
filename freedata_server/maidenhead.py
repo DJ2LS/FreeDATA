@@ -96,8 +96,8 @@ def latlon_to_maidenhead(lat, lon, precision=6):
     lon += 180
     lat += 90
 
-    A = ord('A')
-    a = ord('a')
+    A = ord("A")
+    a = ord("a")
 
     lon_field = int(lon // 20)
     lat_field = int(lat // 10)

@@ -60,9 +60,7 @@ class ARQFrameHandler(frame_handler.FrameHandler):
             else:
                 print("First-time reception of SESSION_OPEN frame.")
                 if self.ctx.state_manager.check_if_running_arq_session():
-                    self.logger.warning(
-                        "DISCARDING SESSION OPEN because of ongoing ARQ session ", frame=frame
-                    )
+                    self.logger.warning("DISCARDING SESSION OPEN because of ongoing ARQ session ", frame=frame)
                     return
                 session = ARQSessionIRS(self.ctx, frame["origin"], session_id)
                 self.ctx.state_manager.register_arq_irs_session(session)

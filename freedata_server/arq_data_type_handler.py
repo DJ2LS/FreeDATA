@@ -106,11 +106,7 @@ class ARQDataTypeHandler:
 
         self.ctx.state_manager.setARQ(False)
 
-        if (
-            session_type
-            and session_type in self.handlers
-            and "handle" in self.handlers[session_type]
-        ):
+        if session_type and session_type in self.handlers and "handle" in self.handlers[session_type]:
             return self.handlers[session_type]["handle"](data, statistics)
         else:
             self.log(f"Unknown handling endpoint for type: {type_byte}", isWarning=True)
@@ -271,9 +267,7 @@ class ARQDataTypeHandler:
             The LZMA-compressed data as a bytearray.
         """
         compressed_data = lzma.compress(data)
-        self.log(
-            f"Preparing LZMA compressed data: {len(data)} Bytes >>> {len(compressed_data)} Bytes"
-        )
+        self.log(f"Preparing LZMA compressed data: {len(data)} Bytes >>> {len(compressed_data)} Bytes")
         return compressed_data
 
     def handle_raw_lzma(self, data, statistics):
@@ -290,9 +284,7 @@ class ARQDataTypeHandler:
             The decompressed data as a bytearray.
         """
         decompressed_data = lzma.decompress(data)
-        self.log(
-            f"Handling LZMA compressed data: {len(decompressed_data)} Bytes from {len(data)} Bytes"
-        )
+        self.log(f"Handling LZMA compressed data: {len(decompressed_data)} Bytes from {len(data)} Bytes")
         return decompressed_data
 
     def failed_raw_lzma(self, data, statistics):
@@ -338,9 +330,7 @@ class ARQDataTypeHandler:
             The GZIP-compressed data as a bytearray.
         """
         compressed_data = gzip.compress(data)
-        self.log(
-            f"Preparing GZIP compressed data: {len(data)} Bytes >>> {len(compressed_data)} Bytes"
-        )
+        self.log(f"Preparing GZIP compressed data: {len(data)} Bytes >>> {len(compressed_data)} Bytes")
         return compressed_data
 
     def handle_raw_gzip(self, data, statistics):
@@ -357,9 +347,7 @@ class ARQDataTypeHandler:
             The decompressed data as a bytearray.
         """
         decompressed_data = gzip.decompress(data)
-        self.log(
-            f"Handling GZIP compressed data: {len(decompressed_data)} Bytes from {len(data)} Bytes"
-        )
+        self.log(f"Handling GZIP compressed data: {len(decompressed_data)} Bytes from {len(data)} Bytes")
         return decompressed_data
 
     def failed_raw_gzip(self, data, statistics):
@@ -408,9 +396,7 @@ class ARQDataTypeHandler:
         compressor = zlib.compressobj(level=6, wbits=-zlib.MAX_WBITS, strategy=zlib.Z_FILTERED)
         compressed_data = compressor.compress(data) + compressor.flush()
 
-        self.log(
-            f"Preparing ZLIB compressed P2PMSG data: {len(data)} Bytes >>> {len(compressed_data)} Bytes"
-        )
+        self.log(f"Preparing ZLIB compressed P2PMSG data: {len(data)} Bytes >>> {len(compressed_data)} Bytes")
         return compressed_data
 
     def handle_p2pmsg_zlib(self, data, statistics):
@@ -431,9 +417,7 @@ class ARQDataTypeHandler:
         decompressed_data = decompressor.decompress(data)
         decompressed_data += decompressor.flush()
 
-        self.log(
-            f"Handling ZLIB compressed P2PMSG data: {len(decompressed_data)} Bytes from {len(data)} Bytes"
-        )
+        self.log(f"Handling ZLIB compressed P2PMSG data: {len(decompressed_data)} Bytes from {len(data)} Bytes")
         message_received(self.ctx, decompressed_data, statistics)
         return decompressed_data
 
@@ -500,9 +484,7 @@ class ARQDataTypeHandler:
         compressor = zlib.compressobj(level=6, wbits=-zlib.MAX_WBITS, strategy=zlib.Z_FILTERED)
         compressed_data = compressor.compress(data) + compressor.flush()
 
-        self.log(
-            f"Preparing zlib compressed P2P_CONNECTION data: {len(data)} Bytes >>> {len(compressed_data)} Bytes"
-        )
+        self.log(f"Preparing zlib compressed P2P_CONNECTION data: {len(data)} Bytes >>> {len(compressed_data)} Bytes")
         print(self.ctx.state_manager.p2p_connection_sessions)
         return compressed_data
 
@@ -511,13 +493,9 @@ class ARQDataTypeHandler:
         decompressed_data = decompressor.decompress(data)
         decompressed_data += decompressor.flush()
 
-        self.log(
-            f"Handling gzip compressed P2P_CONNECTION data: {len(decompressed_data)} Bytes from {len(data)} Bytes"
-        )
+        self.log(f"Handling gzip compressed P2P_CONNECTION data: {len(decompressed_data)} Bytes from {len(data)} Bytes")
         for session_id in self.ctx.state_manager.p2p_connection_sessions:
-            self.ctx.state_manager.p2p_connection_sessions[session_id].received_arq(
-                decompressed_data
-            )
+            self.ctx.state_manager.p2p_connection_sessions[session_id].received_arq(decompressed_data)
 
     def failed_p2p_connection(self, data, statistics):
         decompressor = zlib.decompressobj(wbits=-zlib.MAX_WBITS)
@@ -535,6 +513,4 @@ class ARQDataTypeHandler:
         decompressed_data = decompressor.decompress(data)
         decompressed_data += decompressor.flush()
         for session_id in self.ctx.state_manager.p2p_connection_sessions:
-            self.ctx.state_manager.p2p_connection_sessions[session_id].transmitted_arq(
-                decompressed_data
-            )
+            self.ctx.state_manager.p2p_connection_sessions[session_id].transmitted_arq(decompressed_data)
