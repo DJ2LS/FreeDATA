@@ -27,7 +27,7 @@ jobs:
 
     steps:
       - name: Checkout code for ${{ matrix.platform.name }}
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: DJ2LS/FreeDATA
 
