@@ -37,7 +37,7 @@ class NORMFrameHandler(frame_handler.FrameHandler):
                         print("maximum attempts reached...")
                         return
                     DatabaseManagerBroadcasts(self.ctx).increment_attempts(broadcast["id"])
-                    data = base64.b64decode(broadcast["payload_data"]["final"])
+                    _data = base64.b64decode(broadcast["payload_data"]["final"])
                     print(broadcast)
                     print("oring", broadcast["origin"])
                     print("domain", broadcast["domain"])
