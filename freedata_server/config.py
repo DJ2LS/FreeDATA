@@ -89,6 +89,7 @@ class CONFIG:
         "EXP": {
             "enable_ring_buffer": bool,
             "enable_vhf": bool,
+            "enable_groupchat": bool,
         },
     }
 

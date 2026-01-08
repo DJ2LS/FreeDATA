@@ -3,16 +3,21 @@ import time
 import threading
 
 from freedata_server import command_message_send
-
-# from freedata_server.context import AppContext
-# from message_system_db_manager import DatabaseManager
+#from freedata_server.context import AppContext
+#from message_system_db_manager import DatabaseManager
 from freedata_server.message_system_db_messages import DatabaseManagerMessages
 from freedata_server.message_system_db_beacon import DatabaseManagerBeacon
+from message_system_db_broadcasts import DatabaseManagerBroadcasts
+from norm.norm_transmission import NormTransmission, NORMMsgPriority, NORMMsgType
+from norm.norm_transmission_iss import NormTransmissionISS
+
 from freedata_server import explorer
 from freedata_server import command_beacon
+
 import structlog
 from freedata_server.arq_session_irs import IRS_State
 from freedata_server.arq_session_iss import ISS_State
+
 
 
 class ScheduleManager:
@@ -41,17 +46,15 @@ class ScheduleManager:
 
         self.scheduler = sched.scheduler(time.time, threading.Event().wait)
         self.events = {
-            "check_for_queued_messages": {
-                "function": self.check_for_queued_messages,
-                "interval": 15,
-            },
-            "explorer_publishing": {"function": self.push_to_explorer, "interval": 60},
-            "transmitting_beacon": {"function": self.transmit_beacon, "interval": 600},
-            "beacon_cleanup": {"function": self.delete_beacons, "interval": 600},
-            "update_transmission_state": {
-                "function": self.update_transmission_state,
-                "interval": 10,
-            },
+            'check_for_queued_messages': {'function': self.check_for_queued_messages, 'interval': 15},
+            'explorer_publishing': {'function': self.push_to_explorer, 'interval': 60},
+            'transmitting_beacon': {'function': self.transmit_beacon, 'interval': 600},
+            'beacon_cleanup': {'function': self.delete_beacons, 'interval': 600},
+            'update_transmission_state': {'function': self.update_transmission_state, 'interval': 10},
+            'check_missing_broadcast_bursts': {'function': self.check_missing_broadcast_bursts, 'interval': 20},
+            'check_queued_messages': {'function': self.check_queued_messages, 'interval': 20},
+
+
         }
         self.running = False  # Flag to control the running state
         self.scheduler_thread = None  # Reference to the scheduler thread
@@ -243,3 +246,28 @@ class ScheduleManager:
 
         except Exception as e:
             self.log.warning("[SCHEDULE] error deleting ARQ session", error=e)
+
+    def check_missing_broadcast_bursts(self):
+        if (
+                self.ctx.config_manager.config["EXP"]["enable_groupchat"]
+                and self.ctx.state_manager.is_modem_running
+        ):
+            missing_bursts = DatabaseManagerBroadcasts(self.ctx).check_missing_bursts()
+            print("missing_bursts", missing_bursts)
+            if missing_bursts:
+                # Increment attempts
+                DatabaseManagerBroadcasts(self.ctx).increment_attempts_and_update_next_transmission(missing_bursts["id"])
+                myfullcall = self.ctx.config_manager.config['STATION']['mycall'] + '-' + str(self.ctx.config_manager.config['STATION']['myssid'])
+                NormTransmission(self.ctx).create_and_transmit_nack_burst(myfullcall, missing_bursts["id"], missing_bursts["missing_bursts"])
+
+    def check_queued_messages(self):
+        if (
+                self.ctx.config_manager.config["EXP"]["enable_groupchat"]
+                and self.ctx.state_manager.is_modem_running
+        ):
+            msg = DatabaseManagerBroadcasts(self.ctx).get_first_queued_message()
+            if msg:
+                print(msg.payload_data)
+                self.log.info("[SCHEDULE] Sending broadcast", id=msg.id)
+                DatabaseManagerBroadcasts(self.ctx).increment_attempts_and_update_next_transmission(msg.id)
+                NormTransmissionISS(self.ctx).retransmit_data(msg)

@@ -58,7 +58,8 @@
         "settings": "Einstellungen",
         "settings_help": "Einstellungen",
         "station": "Station",
-        "station_help": "Stationsinfo setzen"
+        "station_help": "Stationsinfo setzen",
+		"broadcast_help": "Broadcast"
     },		   
     "grid": {
         "frequencydescription": "Häufig verwendete Frequenzen (alle in USB) sind hier aufgelistet. Klicke einfach auf einen Eintrag oder gebe manuell eine Frequenz in das Textfeld ein, um den Transceiver abzustimmen. Nur bei aktivierter Hamlib-Steuerung.",
@@ -108,7 +109,7 @@
             "transmitting": "Sende...",
             "pingstation": "PING Station",
             "sendingcq": "Sende CQ...",
-	    "sendingping": "Sende PING...",
+	        "sendingping": "Sende PING...",
             "callcq": "CQ rufen",
             "cqcqcq": "CQ CQ CQ",
             "cqcqcq_help": "Sende ein CQ",
@@ -122,7 +123,7 @@
             "tuner": "Tuner",
             "activity": "Aktivität",
             "beacon": "Bake",
-	    "active": "Aktiv",
+	        "active": "Aktiv",
             "inactive": "Inaktiv",
             "connected": "Verbunden",
             "disconnected": "Getrennt",
@@ -193,7 +194,9 @@
         "compiler": "Compiler",
         "branch": "Zweig",
         "implementation": "Implementierung",
-        "revision": "Revision"
+        "revision": "Revision",
+		"startnewbroadcast": "Starte neuen Broadcast",
+ 	    "deletebroadcastdomain": "Lösche Broadcast-Domäne"
     },
     "chat": {
         "startnewchat": "Neuen Chat starten",
@@ -202,10 +205,30 @@
         "attempt": "Versuch",
         "utc": "UTC",
         "adif": "ADIF",
-	"new": "neu",
+	    "new": "neu",
         "selectChat": "Bitte starte oder wähle einen Chat aus",
         "noConversations": "bislang noch kein Chat hier",
         "loadingMessages": "Lade Nachrichten..."
+    },
+	"broadcast": {
+        "startnewbroadcast": "Starte neuen Broadcast",
+        "noDomains": "Keine existierende Domäne",
+        "selectDomain": "Wähle eine Domäne",
+	    "general": "Allgemein",
+	    "id": "ID",
+	    "msg_type": "Nachrichtentyp",
+	    "timestamp": "Zeitstempel",
+	    "nexttransmission_at": "Nächste Übertragung",
+	    "expires_at": "Läuft ab um",
+	    "sender": "Sender",
+	    "origin": "Herkunft",
+	    "gridsquare": "Gridsquare",
+	    "data": "Daten",
+	    "payload_size": "Nutzlastgröße",
+	    "bursts": "Bursts",
+        "unread": "ungelesen",
+        "unread_description": "Anzahl ungelesener Nachrichten",
+        "broadcasts": "Broadcasts"
     },
     "settings": {
         "enable": "Aktivieren",
@@ -298,7 +321,7 @@
             "txdelay_help": "Sendeverzögerung, in Millisekuinden",
             "maximumbandwidth": "Maximale Bandbreite",
             "maximumbandwidth_help": "Wähle die maximale Bandbreite, die das Modem nutzen soll",
-	    "enabletxautoadjust": "Auto TX Audio Pegel", 
+	        "enabletxautoadjust": "Auto TX Audio Pegel", 
             "enablerxautoadjust": "Auto RX Audio Pegel",
             "enabletxautoadjust_help": "Automatische Einstellung des Sendepegels auf den höchstmöglichen Wert" , 
             "enablerxautoadjust_help": "Automatische Einstellung des Empfangspegels auf den höchstmöglichen Wert"
@@ -314,7 +337,7 @@
         "exp": {
             "introduction": "Warnung: Diese Funktionen können unvollständig sein. Sie sind NUR für erfahrene Benutzer!",
             "info": "Info: Noch keine Funktionen zum Testen veröffentlicht",
-	    "enableringbuffer": "Ringpuffer einschalten",
+	        "enableringbuffer": "Ringpuffer einschalten",
             "enableringbuffer_help": "Aktivieren eines experimentellen Ringpuffers, der bei einer leistungsschwachen CPU effizienter sein kann",
             "enablevhf": "UKW-Modus aktivieren -- derzeit nur CQ --",
             "enablevhf_help": "Aktiviert den experimentellen UKW-Modus zum Testen"
@@ -326,7 +349,7 @@
             "rigcontroltype_help": "Auswählen, wie die Software deinen Transceiver steuert",
             "tabhamlib": "Hamlib",
             "tabserial": "Seriell",
-	    "tabflrig": "flrig",
+	        "tabflrig": "flrig",
             "serialpttcomport": "PTT COM-Port",
             "serialpttcomport_help": "Wähle  den COM-Port, der mit dem Transceiver für die PTT-Steuerung verbunden ist.",
             "serialpttcustomcomport": "PTT Benutzerdefinierter COM-Port",
@@ -371,7 +394,7 @@
             "hamlibrigctldcustomarguments": "Rigctld benutzerdefinierte Argumente",
             "hamlibrigctldcustomarguments_help": "Zusätzliche Argumente für rigctld (normalerweise nicht erforderlich)",
             "hamlibrigctldcustomarguments_placeholder": "Optionale benutzerdefinierte Argumente",
-	    "flrigport": "Flrig Port",
+	        "flrigport": "Flrig Port",
             "flrigport_help": "Lege den flrig-Port fest, auf den der flrig-Server hört (Standard: 12345)",
             "flrighost": "Flrig Host",
             "flrighost_help": "Lege die Hostadresse des flrig-Servers fest. Meist localhost oder 127.0.0.1"

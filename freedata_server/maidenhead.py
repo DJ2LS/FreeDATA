@@ -80,6 +80,46 @@ def maidenhead_to_latlon(grid_square):
     return lat, lon
 
 
+def latlon_to_maidenhead(lat, lon, precision=6):
+    """
+    Convert latitude and longitude to a Maidenhead locator.
+
+    Parameters:
+    lat (float): Latitude in degrees.
+    lon (float): Longitude in degrees.
+    precision (int): Number of characters in the locator (4, 6 or 8). Default 6.
+
+    Returns:
+    str: Maidenhead locator string.
+    """
+
+    lon += 180
+    lat += 90
+
+    A = ord('A')
+    a = ord('a')
+
+    lon_field = int(lon // 20)
+    lat_field = int(lat // 10)
+
+    lon_square = int((lon % 20) // 2)
+    lat_square = int((lat % 10) // 1)
+
+    lon_subsquare = int(((lon % 2) / 2) * 24)
+    lat_subsquare = int(((lat % 1) / 1) * 24)
+
+    locator = f"{chr(A + lon_field)}{chr(A + lat_field)}{lon_square}{lat_square}{chr(A + lon_subsquare)}{chr(A + lat_subsquare)}"
+
+    if precision == 4:
+        return locator[:4]
+    elif precision == 8:
+        lon_ext = int((((lon % (1 / 12)) / (1 / 12)) * 10))
+        lat_ext = int((((lat % (1 / 24)) / (1 / 24)) * 10))
+        return locator + f"{lon_ext}{lat_ext}"
+    else:
+        return locator[:6]
+
+
 def distance_between_locators(locator1, locator2):
     """
     Calculate the distance between two Maidenhead locators and return the result as a dictionary.

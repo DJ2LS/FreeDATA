@@ -1,14 +1,25 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+
+import command_norm
+import command_message_send
+import adif_udp_logger
+import wavelog_api_logger
+from context import AppContext, get_ctx
+import asyncio
+
 from freedata_server.api.common import api_response, api_abort
 from freedata_server.api.command_helpers import enqueue_tx_command
 from freedata_server.message_system_db_messages import DatabaseManagerMessages
 from freedata_server.message_system_db_attachments import DatabaseManagerAttachments
 from freedata_server.message_system_db_beacon import DatabaseManagerBeacon
 from freedata_server.message_system_db_station import DatabaseManagerStations
+from freedata_server.message_system_db_broadcasts import DatabaseManagerBroadcasts
 from freedata_server import command_message_send
 from freedata_server import adif_udp_logger
 from freedata_server import wavelog_api_logger
 from freedata_server.context import AppContext, get_ctx
+from freedata_server.norm.norm_transmission_iss import NormTransmissionISS
+
 
 router = APIRouter()
 
@@ -27,6 +38,9 @@ def _mgr_beacon(ctx: AppContext):
 
 def _mgr_stations(ctx: AppContext):
     return DatabaseManagerStations(ctx)
+
+def _mgr_broadcasts(ctx: AppContext):
+    return DatabaseManagerBroadcasts(ctx)
 
 
 @router.get(
@@ -526,3 +540,77 @@ async def set_station_info(callsign: str, payload: dict, ctx: AppContext = Depen
     if result is None:
         api_abort("Station not found", 404)
     return api_response(result)
+
+
+@router.get("/broadcasts", summary="Get All Broadcast Messages", tags=["FreeDATA"], responses={})
+async def get_freedata_broadcasts(
+    ctx: AppContext = Depends(get_ctx)
+):
+    #filters = {k: v for k, v in ctx.config_manager.read().get('FILTERS', {}).items()}
+    # use query params if needed
+    # filters = dict(ctx.request.query_params)
+    result = _mgr_broadcasts(ctx).get_all_broadcasts_json()
+    return api_response(result)
+
+@router.get("/broadcasts/{domain}/", summary="Get Broadcats per Domain", tags=["FreeDATA"], responses={})
+async def get_freedata_broadcasts_per_domain(
+    domain: str,
+    ctx: AppContext = Depends(get_ctx)
+):
+    result = _mgr_broadcasts(ctx).get_broadcasts_per_domain_json(domain)
+    return api_response(result)
+
+
+@router.get("/broadcasts/domains", summary="Get All Broadcast Messages", tags=["FreeDATA"], responses={})
+async def get_freedata_broadcasts(
+    ctx: AppContext = Depends(get_ctx)
+):
+    #filters = {k: v for k, v in ctx.config_manager.read().get('FILTERS', {}).items()}
+    # use query params if needed
+    # filters = dict(ctx.request.query_params)
+    result = _mgr_broadcasts(ctx).get_broadcast_domains_json()
+    return api_response(result)
+
+
+@router.delete("/broadcasts/{id}", summary="Delete Message or Broadcast by ID", tags=["FreeDATA"], responses={})
+async def delete_freedata_broadcast_domain(
+    id: str,
+    ctx: AppContext = Depends(get_ctx)
+):
+    ok = _mgr_broadcasts(ctx).delete_broadcast_message_or_domain(id)
+    if not ok:
+        api_abort("Message not found", 404)
+    return api_response({"message": f"{id} deleted", "status": "success"})
+
+
+
+@router.patch("/broadcasts/{id}", summary="Retransmit Broadcast by ID", tags=["FreeDATA"], responses={})
+async def patch_freedata_broadcast_domain(
+    id: str,
+    payload: dict,
+    ctx: AppContext = Depends(get_ctx)
+):
+    if payload.get("action") == "retransmit":
+        _mgr_broadcasts(ctx).increment_attempts(id)
+        msg = _mgr_broadcasts(ctx).get_broadcast_per_id(id, get_object=True)
+        if msg:
+            loop = asyncio.get_running_loop()
+            loop.run_in_executor(
+                None,
+                NormTransmissionISS(ctx).retransmit_data,
+                msg
+            )
+            return api_response({"message_id": id, "status": "retransmit started"})
+        else:
+            api_abort("Message not found", 404)
+
+    api_abort("Invalid action", 400)
+
+
+@router.post("/broadcasts", summary="Transmit Broadcast", tags=["FreeDATA"], responses={})
+async def post_freedata_broadcast(
+    payload: dict,
+    ctx: AppContext = Depends(get_ctx)
+):
+    await enqueue_tx_command(ctx, command_norm.Norm, payload)
+    return api_response({"message": f"broadcast transmitted", "status": "success"})

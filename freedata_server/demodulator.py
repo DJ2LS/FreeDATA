@@ -53,6 +53,7 @@ class Demodulator:
         else:
             self.MODE_DICT[codec2.FREEDV_MODE.signalling.value]["decode"] = True
             self.MODE_DICT[codec2.FREEDV_MODE.signalling_ack.value]["decode"] = True
+            self.MODE_DICT[codec2.FREEDV_MODE.datac4.value]["decode"] = True
 
     def init_codec2(self):
         # Open codec2 instances

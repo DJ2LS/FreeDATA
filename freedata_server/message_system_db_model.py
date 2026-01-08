@@ -1,5 +1,6 @@
-from sqlalchemy import Index, Boolean, Column, String, Integer, JSON, ForeignKey, DateTime
+from sqlalchemy import Index, Boolean, Column, String, Integer, JSON, ForeignKey, DateTime, Float
 from sqlalchemy.orm import declarative_base, relationship
+from datetime import datetime, timezone
 
 Base = declarative_base()
 
@@ -212,4 +213,65 @@ class Attachment(Base):
             "data": self.data,
             "checksum_crc32": self.checksum_crc32,
             "hash_sha512": self.hash_sha512,
+        }
+
+
+from sqlalchemy import Column, DateTime, String, Integer, Boolean, JSON, ForeignKey, Index
+from sqlalchemy.orm import relationship
+from datetime import datetime, timezone
+
+class BroadcastMessage(Base):
+    __tablename__ = 'broadcast_messages'
+
+    id = Column(String, primary_key=True)
+    origin = Column(String, ForeignKey('station.callsign'))
+    timestamp = Column(Float, default=lambda: datetime.now(timezone.utc))
+    repairing_callsigns = Column(JSON, nullable=True)
+    domain = Column(String)
+    gridsquare = Column(String)
+    frequency = Column(Integer, default=0)
+    priority = Column(Integer, default=1)
+    is_read = Column(Boolean, default=True)
+    direction = Column(String, nullable=True)
+    payload_size = Column(Integer, default=0)
+    payload_data = Column(JSON, nullable=True)
+    msg_type = Column(String)
+    total_bursts = Column(Integer, default=0)
+    checksum = Column(String)
+    received_at = Column(Float, default=lambda: datetime.now(timezone.utc))
+    nexttransmission_at = Column(Float, default=lambda: datetime.now(timezone.utc))
+    expires_at = Column(Float, default=lambda: datetime.now(timezone.utc))
+
+    status_id = Column(Integer, ForeignKey('status.id'), nullable=True)
+    status = relationship('Status', backref='broadcast_messages')
+    error_reason = Column(String, nullable=True)
+    attempts = Column(Integer, default=0)
+
+    __table_args__ = (
+        Index('idx_broadcast_domain_received', 'domain', 'received_at'),
+    )
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'origin': self.origin,
+            'timestamp': self.timestamp,
+            'repairing_callsigns': self.repairing_callsigns,
+            'domain': self.domain,
+            'gridsquare': self.gridsquare,
+            'frequency': self.frequency,
+            'priority': self.priority,
+            'is_read': self.is_read,
+            'direction': self.direction,
+            'payload_size': self.payload_size,
+            'payload_data': self.payload_data,
+            'msg_type': self.msg_type,
+            'total_bursts': self.total_bursts,
+            'checksum': self.checksum,
+            'received_at': self.received_at if self.received_at else None,
+            'expires_at': self.expires_at if self.expires_at else None,
+            'nexttransmission_at': self.nexttransmission_at if self.nexttransmission_at else None,
+            'status': self.status.name if self.status else None,
+            'error_reason': self.error_reason,
+            'attempts':self.attempts
         }

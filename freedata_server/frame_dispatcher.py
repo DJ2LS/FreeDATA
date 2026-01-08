@@ -6,6 +6,16 @@ FRAME DISPATCHER - We are dispatching the received frames to the needed function
 
 import threading
 import structlog
+import event_manager
+
+from frame_handler import FrameHandler
+from frame_handler_ping import PingFrameHandler
+from frame_handler_cq import CQFrameHandler
+from frame_handler_arq_session import ARQFrameHandler
+from frame_handler_p2p_connection import P2PConnectionFrameHandler
+from frame_handler_beacon import BeaconFrameHandler
+from frame_handler_norm import NORMFrameHandler
+
 from freedata_server.modem_frametypes import FRAME_TYPE as FR_TYPE
 from freedata_server.data_frame_factory import DataFrameFactory
 
@@ -66,15 +76,19 @@ class DISPATCHER:
         FR_TYPE.ARQ_STOP.value: {"class": ARQFrameHandler, "name": "ARQ STOP"},
         FR_TYPE.ARQ_STOP_ACK.value: {"class": ARQFrameHandler, "name": "ARQ STOP ACK"},
         FR_TYPE.BEACON.value: {"class": BeaconFrameHandler, "name": "BEACON"},
-        FR_TYPE.ARQ_BURST_FRAME.value: {"class": ARQFrameHandler, "name": "BURST FRAME"},
-        FR_TYPE.ARQ_BURST_ACK.value: {"class": ARQFrameHandler, "name": "BURST ACK"},
-        FR_TYPE.CQ.value: {"class": CQFrameHandler, "name": "CQ"},
-        FR_TYPE.PING_ACK.value: {"class": FrameHandler, "name": "PING ACK"},
-        FR_TYPE.PING.value: {"class": PingFrameHandler, "name": "PING"},
-        FR_TYPE.QRV.value: {"class": FrameHandler, "name": "QRV"},
-        # FR_TYPE.IS_WRITING.value: {"class": FrameHandler, "name": "IS_WRITING"},
-        # FR_TYPE.FEC.value: {"class": FrameHandler, "name":  "FEC"},
-        # FR_TYPE.FEC_WAKEUP.value: {"class": FrameHandler, "name":  "FEC WAKEUP"},
+        FR_TYPE.ARQ_BURST_FRAME.value:{"class": ARQFrameHandler, "name": "BURST FRAME"},
+        FR_TYPE.ARQ_BURST_ACK.value: {"class": ARQFrameHandler, "name":  "BURST ACK"},
+        FR_TYPE.CQ.value: {"class": CQFrameHandler, "name":  "CQ"},
+        FR_TYPE.PING_ACK.value: {"class": FrameHandler, "name":  "PING ACK"},
+        FR_TYPE.PING.value: {"class": PingFrameHandler, "name":  "PING"},
+        FR_TYPE.QRV.value: {"class": FrameHandler, "name":  "QRV"},
+        FR_TYPE.NORM_DATA.value: {"class": NORMFrameHandler, "name": "NORM DATA"},
+        FR_TYPE.NORM_NACK.value: {"class": NORMFrameHandler, "name": "NORM NACK"},
+        FR_TYPE.NORM_REPAIR.value: {"class": NORMFrameHandler, "name": "NORM REPAIR"},
+
+        #FR_TYPE.IS_WRITING.value: {"class": FrameHandler, "name": "IS_WRITING"},
+        #FR_TYPE.FEC.value: {"class": FrameHandler, "name":  "FEC"},
+        #FR_TYPE.FEC_WAKEUP.value: {"class": FrameHandler, "name":  "FEC WAKEUP"},
     }
 
     def __init__(self, ctx):

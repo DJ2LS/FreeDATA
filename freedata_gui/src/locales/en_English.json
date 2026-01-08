@@ -58,10 +58,11 @@
         "settings": "Settings",
         "settings_help": "Settings",
         "station": "Station",
-        "station_help": "Set station info"
+        "station_help": "Set station info",
+	"broadcast_help": "Broadcast"
     },
     "grid": {
-        "frequencydescription": "Commonly used frequencies are listed here, and are all USB. Simply click on a entry or manually enter a frequency in the textbox to tune your rig if rig control is enabled.",
+        "frequencydescription": "Commonly used frequencies are listed here, and are all USB. Simply click on an entry or manually enter a frequency in the textbox to tune your rig if rig control is enabled.",
         "frequencyselection": "Frequency selection",
         "savepreset": "Save preset",
         "savepreset_help": "Save current grid layout as a preset that can be restored using restore preset button",
@@ -71,7 +72,7 @@
         "cleargrid_help": "Clear all items from the grid",
         "gridedit": "grid edit",
         "managegridwidgets": "Manage grid widgets",
-        "gridwidgetsdescription": "Grid widgets allow you to customize the display. You may add additional widgets to fit your needs. You can move and resize the individual widgets!",
+        "gridwidgetsdescription": "Grid widgets allow you to customize the display. You may add additional widgets to suit your needs. You can move and resize the individual widgets!",
         "fillgrid": "Fill grid with common widgets",
         "fillgridsmallscreen": "Fill grid for small screens",
         "activity": "Activity",
@@ -193,7 +194,9 @@
         "compiler": "Compiler",
         "branch": "Branch",
         "implementation": "Implementation",
-        "revision": "Revision"
+        "revision": "Revision",
+	"startnewbroadcast": "Start new broadcast",
+ 	"deletebroadcastdomain": "Delete broadcast domain"
     },
     "chat": {
         "startnewchat": "Start a new chat",
@@ -207,6 +210,26 @@
         "noConversations": "No conversations, yet",
         "loadingMessages": "Loading messages..."
     },
+    "broadcast": {
+            "startnewbroadcast": "Start new broadcast",
+            "noDomains": "No existing domain",
+            "selectDomain": "Select a domain",
+	    "general": "General",
+	    "id": "ID",
+	    "msg_type": "Message type",
+	    "timestamp": "Timestamp",
+	    "nexttransmission_at": "Next transmission at",
+	    "expires_at": "Expires at",
+	    "sender": "Sender",
+	    "origin": "Origin",
+	    "gridsquare": "Gridsquare",
+	    "data": "Data",
+	    "payload_size": "Payload size",
+	    "bursts": "Bursts",
+        "unread": "unread",
+        "unread_description": "Number of unread messages",
+        "broadcasts": "broadcasts"
+        },
     "settings": {
         "enable": "Enable",
         "default": "default",
@@ -301,12 +324,12 @@
             "maximumbandwidth_help": "Select the maximum bandwidth the modem will use",
             "enabletxautoadjust": "Auto TX audio level", 
             "enablerxautoadjust": "Auto RX audio level",
-            "enabletxautoadjust_help": "Set TX audio level automatically to highest possible value" , 
+            "enabletxautoadjust_help": "Set TX audio level automatically to highest possible value", 
             "enablerxautoadjust_help": "Set RX audio level automatically to highest possible value"            
         },
         "web": {
             "introduction": "Explorer related settings, including enabling Explorer publishing and Explorer stats publishing.",
-            "description": " Publish information like your frequency or heard stations to https://explorer.freedata.app, so other users can see your stations status. Publishing stats is currently under development and might be broken.",
+            "description": " Publish information such as your frequency or heard stations to https://explorer.freedata.app, so other users can see your stations status. Publishing stats is currently under development and might be broken.",
             "enableexplorer": "Publish station details",
             "enableexplorer_help": "Share your station's status with FreeDATA web service",
             "enablestats":"Publish statistics",
@@ -314,11 +337,14 @@
         },
         "exp": {
             "introduction": "Warning: These features may be incomplete. They are for experienced users ONLY!",
-            "info": "Info: No features publishes for testing, yet",
+            "info": "Info: No features published for testing, yet",
             "enableringbuffer": "Enable ring buffer",
             "enableringbuffer_help": "Enable an experimental ring buffer which can be more efficient on low power CPU",
             "enablevhf": "Enable VHF modes -- only CQ for now --",
-            "enablevhf_help": "Enable experimental VHF modes for testing and playing"
+            "enablevhf_help": "Enable experimental VHF modes for testing and playing",
+            "enable_groupchat": "Enable group chat - Really experimental",
+            "enable_groupchat_help": "Enable experimental group chat"
+
         },
         "radio": {
             "introduction": "Rig Control related settings, including selecting your rig control method and configuring specific settings.",
@@ -331,7 +357,7 @@
             "serialpttcomport": "PTT Com port",
             "serialpttcomport_help": "Select the COM port connected to your radio for PTT control",
             "serialpttcustomcomport": "PTT Custom COM port",
-            "serialpttcustomcomport_help": "Override the com port of your radio if its not listed above",
+            "serialpttcustomcomport_help": "Override the com port of your radio if it´s not listed above",
             "serialpttviadtr": "PTT via DTR",
             "serialpttviadtr_help": "Configure DTR line behavior for PTT control",
             "serialpttviarts": "PTT via RTS",
@@ -349,7 +375,7 @@
             "hamlibrigctldcomport": "Radio COM port",
             "hamlibrigctldcomport_help": "Select the serial port connected to your radio",
             "hamlibrigctldcustomcomport": "Radio custom COM port",
-            "hamlibrigctldcustomcomport_help": "Override the com port of your radio if its not listed above",
+            "hamlibrigctldcustomcomport_help": "Override the com port of your radio if it´s not listed above",
             "hamlibrigctldserialspeed": "Serial speed",
             "hamlibrigctldserialspeed_help": "Set the baud rate for serial communication",
             "hamlibrigctlddatabits": "Data bits",
@@ -379,7 +405,7 @@
             "flrigport": "Flrig port",
             "flrigport_help": "Set the port where the flrig server is listening (Default: 12345)",
             "flrighost": "Flrig host",
-            "flrighost_help": "Set the host adress of the server, mostly localhost or 127.0.0.1"
-        }
+            "flrighost_help": "Set the host adress of the server, usually localhost or 127.0.0.1"
+	}
     }
 }
