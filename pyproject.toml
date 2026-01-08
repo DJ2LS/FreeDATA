@@ -73,7 +73,7 @@ build = [
     "wheel",
 ]
 nuitka = [
-    "nuitka<=2.8.4",
+    "nuitka<=2.8.9",
 ]
 
 [tool.setuptools.packages.find]
