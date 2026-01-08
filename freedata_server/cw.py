@@ -28,19 +28,65 @@ class MorseCodePlayer:
         self.wpm = wpm
         self.f0 = f
         self.fs = fs
-        self.dot_duration = 1.2/(self.wpm)
-        self.dash_duration = 3*self.dot_duration
+        self.dot_duration = 1.2 / (self.wpm)
+        self.dash_duration = 3 * self.dot_duration
         self.pause_duration = self.dot_duration
-        self.word_pause_duration = 7*self.dot_duration
+        self.word_pause_duration = 7 * self.dot_duration
         self.morse_alphabet = {
-            'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.', 'G': '--.', 'H': '....',
-            'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---', 'P': '.--.',
-            'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
-            'Y': '-.--', 'Z': '--..', '0': '-----', '1': '.----', '2': '..---', '3': '...--', '4': '....-',
-            '5': '.....', '6': '-....', '7': '--...', '8': '---..', '9': '----.', '.': '.-.-.-', ',': '--..--',
-            '?': '..--..', "'": '.----.', '!': '-.-.--', '/': '-..-.', '(': '-.--.', ')': '-.--.-', '&': '.-...',
-            ':': '---...', ';': '-.-.-.', '=': '-...-', '+': '.-.-.', '-': '-....-', '_': '..--.-', '"': '.-..-.',
-            '$': '...-..-', '@': '.--.-.'
+            "A": ".-",
+            "B": "-...",
+            "C": "-.-.",
+            "D": "-..",
+            "E": ".",
+            "F": "..-.",
+            "G": "--.",
+            "H": "....",
+            "I": "..",
+            "J": ".---",
+            "K": "-.-",
+            "L": ".-..",
+            "M": "--",
+            "N": "-.",
+            "O": "---",
+            "P": ".--.",
+            "Q": "--.-",
+            "R": ".-.",
+            "S": "...",
+            "T": "-",
+            "U": "..-",
+            "V": "...-",
+            "W": ".--",
+            "X": "-..-",
+            "Y": "-.--",
+            "Z": "--..",
+            "0": "-----",
+            "1": ".----",
+            "2": "..---",
+            "3": "...--",
+            "4": "....-",
+            "5": ".....",
+            "6": "-....",
+            "7": "--...",
+            "8": "---..",
+            "9": "----.",
+            ".": ".-.-.-",
+            ",": "--..--",
+            "?": "..--..",
+            "'": ".----.",
+            "!": "-.-.--",
+            "/": "-..-.",
+            "(": "-.--.",
+            ")": "-.--.-",
+            "&": ".-...",
+            ":": "---...",
+            ";": "-.-.-.",
+            "=": "-...-",
+            "+": ".-.-.",
+            "-": "-....-",
+            "_": "..--.-",
+            '"': ".-..-.",
+            "$": "...-..-",
+            "@": ".--.-.",
         }
 
     def text_to_morse(self, text):
@@ -56,12 +102,12 @@ class MorseCodePlayer:
         Returns:
             str: The morse code representation of the input text.
         """
-        morse = ''
+        morse = ""
         for char in text:
             if char.upper() in self.morse_alphabet:
-                morse += self.morse_alphabet[char.upper()] + ' '
-            elif char == ' ':
-                morse += ' '
+                morse += self.morse_alphabet[char.upper()] + " "
+            elif char == " ":
+                morse += " "
         return morse
 
     def morse_to_signal(self, morse):
@@ -80,7 +126,7 @@ class MorseCodePlayer:
         """
         signal = np.array([], dtype=np.int16)
         for char in morse:
-            if char == '.':
+            if char == ".":
                 duration = self.dot_duration  # Using class-defined duration
                 t = np.linspace(0, duration, int(self.fs * duration), endpoint=False)
                 s = 0.5 * np.sin(2 * np.pi * self.f0 * t)
@@ -88,7 +134,7 @@ class MorseCodePlayer:
                 pause_samples = int(self.pause_duration * self.fs)
                 signal = np.concatenate((signal, np.zeros(pause_samples, dtype=np.int16)))
 
-            elif char == '-':
+            elif char == "-":
                 duration = self.dash_duration  # Using class-defined duration
                 t = np.linspace(0, duration, int(self.fs * duration), endpoint=False)
                 s = 0.5 * np.sin(2 * np.pi * self.f0 * t)
@@ -96,7 +142,7 @@ class MorseCodePlayer:
                 pause_samples = int(self.pause_duration * self.fs)
                 signal = np.concatenate((signal, np.zeros(pause_samples, dtype=np.int16)))
 
-            elif char == ' ':
+            elif char == " ":
                 pause_samples = int(self.word_pause_duration * self.fs)
                 signal = np.concatenate((signal, np.zeros(pause_samples, dtype=np.int16)))
                 pause_samples = int(self.pause_duration * self.fs)
@@ -119,4 +165,3 @@ class MorseCodePlayer:
         """
         morse = self.text_to_morse(text)
         return self.morse_to_signal(morse)
-

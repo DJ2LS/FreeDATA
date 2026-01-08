@@ -96,5 +96,38 @@ export default {
     </label>
   </div>
 
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50 text-wrap">
+
+      {{ $t('settings.exp.enable_groupchat') }}
+      <button
+        type="button"
+        class="btn btn-link p-0 ms-2"
+        data-bs-toggle="tooltip"
+        :title="$t('settings.exp.enable_groupchat_help')"
+      >
+        <i class="bi bi-question-circle" />
+      </button>
+    </label>
+    <label class="input-group-text w-50">
+      <div class="form-check form-switch form-check-inline">
+        <input
+          id="enable_groupchat_switch"
+          v-model="settings.remote.EXP.enable_groupchat"
+          class="form-check-input"
+          type="checkbox"
+          @change="onChange"
+        >
+        <label
+          class="form-check-label"
+          for="enable_groupchat_switch"
+        >{{ $t('settings.enable') }}</label>
+      </div>
+    </label>
+  </div>
+
+
+
+
 </template>
 

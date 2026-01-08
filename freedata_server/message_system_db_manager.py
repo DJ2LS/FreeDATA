@@ -1,12 +1,12 @@
 from sqlalchemy import create_engine, text, inspect
 from sqlalchemy.orm import scoped_session, sessionmaker
 from threading import local
-from message_system_db_model import Base, Config, Station, Status, P2PMessage
+from freedata_server.message_system_db_model import Base, Config, Station, Status, P2PMessage
 import structlog
-import helpers
+from freedata_server import helpers
 import os
-import sys
-from constants import MESSAGE_SYSTEM_DATABASE_VERSION
+from freedata_server.constants import MESSAGE_SYSTEM_DATABASE_VERSION
+
 
 class DatabaseManager:
     """Manages database connections and operations.
@@ -16,8 +16,9 @@ class DatabaseManager:
     database operations such as initialization, repair, and retrieval of
     stations and statuses.
     """
-    DATABASE_ENV_VAR = 'FREEDATA_DATABASE'
-    DEFAULT_DATABASE_FILE = 'freedata-messages.db'
+
+    DATABASE_ENV_VAR = "FREEDATA_DATABASE"
+    DEFAULT_DATABASE_FILE = "freedata-messages.db"
 
     def __init__(self, ctx):
         """Initializes the DatabaseManager.
@@ -47,14 +48,13 @@ class DatabaseManager:
             str: The database file path as a SQLAlchemy URL.
         """
         script_directory = os.path.dirname(os.path.abspath(__file__))
-        sys.path.append(script_directory)
 
         if self.DATABASE_ENV_VAR in os.environ:
-            #db_path = os.getenv(self.DATABASE_ENV_VAR, os.path.join(script_directory, self.DEFAULT_DATABASE_FILE))
+            # db_path = os.getenv(self.DATABASE_ENV_VAR, os.path.join(script_directory, self.DEFAULT_DATABASE_FILE))
             db_path = os.getenv(self.DATABASE_ENV_VAR)
         else:
             db_path = os.path.join(script_directory, self.DEFAULT_DATABASE_FILE)
-        return 'sqlite:///' + db_path
+        return "sqlite:///" + db_path
 
     def initialize_default_values(self):
         """Initializes default values in the database.
@@ -73,8 +73,9 @@ class DatabaseManager:
                 "failed",
                 "failed_checksum",
                 "aborted",
-                "queued"
-            ]
+                "queued",
+                "receiving",
+                "assembling"            ]
 
             # Add default statuses if they don't exist
             for status_name in statuses:
@@ -105,7 +106,6 @@ class DatabaseManager:
         """
         session = self.get_thread_scoped_session()
         try:
-
             # Fetch the 'failed' status ID
             failed_status = session.query(Status).filter_by(name="failed").first()
             if not failed_status:
@@ -115,14 +115,18 @@ class DatabaseManager:
             transmitting_status = session.query(Status).filter_by(name="transmitting").first()
             if transmitting_status:
                 # Check if any messages have the status "transmitting" and update them to "failed"
-                messages_to_update = session.query(P2PMessage).filter_by(status_id=transmitting_status.id).all()
+                messages_to_update = (
+                    session.query(P2PMessage).filter_by(status_id=transmitting_status.id).all()
+                )
                 for message in messages_to_update:
                     message.status_id = failed_status.id
 
                 session.commit()
                 len_repaired_message = len(messages_to_update)
                 if len_repaired_message > 0:
-                    self.log(f"Repaired {len_repaired_message} messages ('transmitting' to 'failed')")
+                    self.log(
+                        f"Repaired {len_repaired_message} messages ('transmitting' to 'failed')"
+                    )
 
             # Vacuum the database to reclaim space
             session.execute(text("VACUUM"))
@@ -134,7 +138,7 @@ class DatabaseManager:
 
             # Perform an integrity check on the database
             result = session.execute(text("PRAGMA integrity_check")).fetchone()
-            if result[0] == 'ok':
+            if result[0] == "ok":
                 self.log("Database integrity check passed")
             else:
                 self.log("Database integrity check failed", isWarning=True)
@@ -211,7 +215,10 @@ class DatabaseManager:
             return station
 
         except Exception as e:
-            self.log(f"An error occurred while getting or creating station {callsign}: {e}", isWarning=True)
+            self.log(
+                f"An error occurred while getting or creating station {callsign}: {e}",
+                isWarning=True,
+            )
             if own_session:
                 session.rollback()
             return None  # Indicate failure
@@ -272,26 +279,25 @@ class DatabaseManager:
             session.flush()  # To get the ID immediately
         return status
 
-
     def check_database_version(self):
         """Updates the database schema to the expected version.
 
-            This method is called by `check_database_version` if the current
-            schema version is older than the expected version. It performs
-            the necessary schema updates based on the current and expected
-            versions. Currently, it only logs a message indicating that
-            schema updates are not yet implemented. It takes the current and
-            expected versions as arguments, but doesn't use them yet.
+        This method is called by `check_database_version` if the current
+        schema version is older than the expected version. It performs
+        the necessary schema updates based on the current and expected
+        versions. Currently, it only logs a message indicating that
+        schema updates are not yet implemented. It takes the current and
+        expected versions as arguments, but doesn't use them yet.
 
-            Args:
-            current_version (int): The current database schema version.
-            expected_version (int): The expected database schema version.
+        Args:
+        current_version (int): The current database schema version.
+        expected_version (int): The expected database schema version.
         """
         session = self.get_thread_scoped_session()
         try:
-            config = session.query(Config).filter_by(db_variable='database_version').first()
+            config = session.query(Config).filter_by(db_variable="database_version").first()
             if config is None:
-                config = Config(db_variable='database_version', db_version="0")
+                config = Config(db_variable="database_version", db_version="0")
                 session.add(config)
                 session.commit()
                 self.log("No database version found. Assuming version 0 and storing it.")
@@ -301,14 +307,17 @@ class DatabaseManager:
 
             if current_version < expected_version:
                 self.log(
-                    f"Database schema outdated (current: {current_version}, expected: {expected_version}). Updating schema...")
+                    f"Database schema outdated (current: {current_version}, expected: {expected_version}). Updating schema..."
+                )
                 self.update_database_schema()
                 config.db_version = str(expected_version)
                 session.commit()
                 self.log("Database schema updated successfully.")
             elif current_version > expected_version:
-                self.log("Database version is newer than the expected version. Manual intervention might be required.",
-                         isWarning=True)
+                self.log(
+                    "Database version is newer than the expected version. Manual intervention might be required.",
+                    isWarning=True,
+                )
             else:
                 self.log("Database schema is up-to-date.")
         except Exception as e:
@@ -357,7 +366,9 @@ class DatabaseManager:
         inspector = inspect(self.engine)
         existing_tables = inspector.get_table_names()
 
-        new_tables = [table for table in Base.metadata.sorted_tables if table.name not in existing_tables]
+        new_tables = [
+            table for table in Base.metadata.sorted_tables if table.name not in existing_tables
+        ]
 
         if new_tables:
             table_names = ", ".join(table.name for table in new_tables)
@@ -420,6 +431,9 @@ class DatabaseManager:
                                 conn.execute(text(ddl))
                             self.log(f"Column '{col_name}' added to table '{table.name}'.")
                         except Exception as e:
-                            self.log(f"Failed to add column '{col_name}' to table '{table.name}': {e}", isWarning=True)
+                            self.log(
+                                f"Failed to add column '{col_name}' to table '{table.name}': {e}",
+                                isWarning=True,
+                            )
                             success = False
         return success

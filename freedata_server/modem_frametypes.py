@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 from enum import Enum
 
 
 class FRAME_TYPE(Enum):
     """Lookup for frame types"""
+
     ARQ_STOP = 10
     ARQ_STOP_ACK = 11
     ARQ_SESSION_OPEN = 12
@@ -25,13 +25,17 @@ class FRAME_TYPE(Enum):
     #MESH_BROADCAST = 100
     #MESH_SIGNALLING_PING = 101
     #MESH_SIGNALLING_PING_ACK = 102
+    NORM_DATA = 100
+    NORM_NACK = 101
+    NORM_REPAIR = 102
+    NORM_CMD = 103
     CQ = 200
     QRV = 201
     PING = 210
     PING_ACK = 211
-    #IS_WRITING = 215
+    # IS_WRITING = 215
     BEACON = 250
-    #FEC = 251
-    #FEC_WAKEUP = 252
+    # FEC = 251
+    # FEC_WAKEUP = 252
     IDENT = 254
     TEST_FRAME = 255

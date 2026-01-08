@@ -15,6 +15,7 @@ class wsm:
     data to connected clients via worker threads. It ensures a clean
     shutdown of WebSocket connections and related resources.
     """
+
     def __init__(self, ctx):
         """Initializes the WebSocket manager.
 
@@ -55,11 +56,11 @@ class wsm:
             try:
                 await websocket.receive_text()
             except Exception as e:
-                self.log.warning(f"Client connection lost", e=e)
+                self.log.warning("Client connection lost", e=e)
                 try:
                     client_list.remove(websocket)
                 except Exception as err:
-                    self.log.error(f"Error removing client from list", e=e, err=err)
+                    self.log.error("Error removing client from list", e=e, err=err)
                 break
 
     def transmit_sock_data_worker(self, client_list, event_queue):
@@ -126,13 +127,25 @@ class wsm:
         Args:
             app: The main application object containing the event queues and client lists.
         """
-        self.events_thread = threading.Thread(target=self.transmit_sock_data_worker, daemon=True, args=(self.events_client_list, self.ctx.modem_events))
+        self.events_thread = threading.Thread(
+            target=self.transmit_sock_data_worker,
+            daemon=True,
+            args=(self.events_client_list, self.ctx.modem_events),
+        )
         self.events_thread.start()
 
-        self.states_thread = threading.Thread(target=self.transmit_sock_data_worker, daemon=True, args=(self.states_client_list, self.ctx.state_queue))
+        self.states_thread = threading.Thread(
+            target=self.transmit_sock_data_worker,
+            daemon=True,
+            args=(self.states_client_list, self.ctx.state_queue),
+        )
         self.states_thread.start()
 
-        self.fft_thread = threading.Thread(target=self.transmit_sock_data_worker, daemon=True, args=(self.fft_client_list, self.ctx.modem_fft))
+        self.fft_thread = threading.Thread(
+            target=self.transmit_sock_data_worker,
+            daemon=True,
+            args=(self.fft_client_list, self.ctx.modem_fft),
+        )
         self.fft_thread.start()
 
         self.audio_rx_thread = threading.Thread(target=self.transmit_sock_audio_worker, daemon=True, args=(self.audio_rx_client_list, self.ctx.audio_rx_queue))
