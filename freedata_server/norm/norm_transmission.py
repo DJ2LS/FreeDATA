@@ -3,10 +3,9 @@
 
 import structlog
 import time
-import data_frame_factory
 from enum import IntEnum
 import hashlib
-from codec2 import FREEDV_MODE
+from freedata_server.codec2 import FREEDV_MODE
 
 
 
@@ -36,7 +35,7 @@ class NormTransmission:
         self.origin = None
         self.domain = None
 
-        self.frame_factory = data_frame_factory.DataFrameFactory(self.ctx)
+        self.frame_factory = freedata_server.data_frame_factory.DataFrameFactory(self.ctx)
 
     def log(self, message, isWarning=False):
         """Logs a message with session context.

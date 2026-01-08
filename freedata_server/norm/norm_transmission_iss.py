@@ -1,13 +1,14 @@
 # file for handling transmitting data
-from norm.norm_transmission import NormTransmission
-from norm.norm_transmission import NORMMsgType, NORMMsgPriority
+from freedata_server.norm.norm_transmission import NormTransmission
+from freedata_server.norm.norm_transmission import NORMMsgType, NORMMsgPriority
 from enum import Enum
 import time
-from codec2 import FREEDV_MODE
-import helpers
+from freedata_server.codec2 import FREEDV_MODE
+
+import freedata_server.helpers
 from datetime import datetime, timezone, timedelta
 import base64
-from message_system_db_broadcasts import DatabaseManagerBroadcasts
+from freedata_server.message_system_db_broadcasts import DatabaseManagerBroadcasts
 import threading
 import numpy as np
 
@@ -71,9 +72,8 @@ class NormTransmissionISS(NormTransmission):
                     raise ValueError(f"Empty payload at burst {burst_number}")
 
                 burst_info = self.encode_burst_info(burst_number, total_bursts)
-                checksum = helpers.get_crc_24(full_data)
+                checksum = freedata_server.helpers.get_crc_24(full_data)
                 is_last = (burst_number == total_bursts)
-                print("so...")
                 print("message type", self.message_type)
                 print("priority", self.priority)
                 print("is_last", is_last)
@@ -187,7 +187,7 @@ class NormTransmissionISS(NormTransmission):
     def add_to_database(self):
         try:
             db = DatabaseManagerBroadcasts(self.ctx)
-            checksum = helpers.get_crc_24(self.data).hex()
+            checksum = freedata_server.helpers.get_crc_24(self.data).hex()
             broadcast_id = self.create_broadcast_id(int(self.timestamp), self.domain, checksum)
 
             total_bursts = (len(self.data) + self.MAX_PAYLOAD_SIZE - 1) // self.MAX_PAYLOAD_SIZE

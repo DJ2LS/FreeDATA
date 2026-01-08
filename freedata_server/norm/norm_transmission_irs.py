@@ -1,6 +1,6 @@
 # file for handling received data
-from norm.norm_transmission import NormTransmission
-from message_system_db_broadcasts import DatabaseManagerBroadcasts
+from freedata_server.norm.norm_transmission import NormTransmission
+from freedata_server.message_system_db_broadcasts import DatabaseManagerBroadcasts
 import base64
 from datetime import datetime, timezone, timedelta
 
