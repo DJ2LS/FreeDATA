@@ -62,7 +62,6 @@ const defaultConfig = {
     },
     STATION: {
       enable_explorer: false,
-      enable_stats: false,
       mycall: "DEFAULT",
       myssid: 0,
       mygrid: "",

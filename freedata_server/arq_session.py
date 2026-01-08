@@ -6,7 +6,6 @@ from freedata_server.modem_frametypes import FRAME_TYPE
 import time
 from freedata_server.arq_data_type_handler import ARQDataTypeHandler
 from freedata_server.codec2 import FREEDV_MODE_USED_SLOTS, FREEDV_MODE
-from freedata_server import stats
 
 
 class ARQSession:
@@ -99,7 +98,6 @@ class ARQSession:
         # we will use the schedule manager, for checking, how old is the state change for deciding, how we continue with the message
         self.last_state_change_timestamp = time.time()
 
-        self.statistics = stats.stats(self.ctx)
 
         # histogram lists for storing statistics
         self.snr_histogram = []

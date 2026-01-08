@@ -20,7 +20,6 @@ class CONFIG:
             "myssid": int,
             "ssid_list": list,
             "enable_explorer": bool,
-            "enable_stats": bool,
             "respond_to_cq": bool,
             "enable_callsign_blacklist": bool,
             "callsign_blacklist": list,
