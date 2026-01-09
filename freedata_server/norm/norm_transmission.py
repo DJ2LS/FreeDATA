@@ -6,7 +6,7 @@ import time
 from enum import IntEnum
 import hashlib
 from freedata_server.codec2 import FREEDV_MODE
-
+from freedata_server.data_frame_factory import DataFrameFactory
 
 
 class NORMMsgType(IntEnum):
@@ -35,7 +35,7 @@ class NormTransmission:
         self.origin = None
         self.domain = None
 
-        self.frame_factory = freedata_server.data_frame_factory.DataFrameFactory(self.ctx)
+        self.frame_factory = DataFrameFactory(self.ctx)
 
     def log(self, message, isWarning=False):
         """Logs a message with session context.
