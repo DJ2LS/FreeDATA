@@ -21,9 +21,7 @@ def send_wavelog_qso_data(ctx, wavelog_data):
     if not wavelog:
         return  # exit as we don't want to log Wavelog
 
-    wavelog_host = ctx.config_manager.config["QSO_LOGGING"].get(
-        "adif_wavelog_host", "http://localhost/"
-    )
+    wavelog_host = ctx.config_manager.config["QSO_LOGGING"].get("adif_wavelog_host", "http://localhost/")
     wavelog_api_key = ctx.config_manager.config["QSO_LOGGING"].get("adif_wavelog_api_key", "")
 
     # check if the last part in the HOST URL from the config is correct
@@ -51,9 +49,7 @@ def send_wavelog_qso_data(ctx, wavelog_data):
             callsign_end = wavelog_data.find("<QSO_DATE", callsign_start)
             call_value = wavelog_data[callsign_start:callsign_end]
 
-            ctx.event_manager.freedata_logging(
-                type="wavelog", status=True, message=f" {call_value} "
-            )
+            ctx.event_manager.freedata_logging(type="wavelog", status=True, message=f" {call_value} ")
 
         except Exception as e:
             ctx.event_manager.freedata_logging(type="wavelog", status=False, message=f"{e}")

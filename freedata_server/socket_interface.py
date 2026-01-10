@@ -114,13 +114,9 @@ class DataSocket(socketserver.BaseRequestHandler):
                     if not self.data:
                         break
                     try:
-                        self.log(
-                            f"Data received from {self.client_address}: [{len(self.data)}] - {self.data.decode()}"
-                        )
+                        self.log(f"Data received from {self.client_address}: [{len(self.data)}] - {self.data.decode()}")
                     except Exception:
-                        self.log(
-                            f"Data received from {self.client_address}: [{len(self.data)}] - {self.data}"
-                        )
+                        self.log(f"Data received from {self.client_address}: [{len(self.data)}] - {self.data}")
 
                     for session_id in self.ctx.state_manager.p2p_connection_sessions:
                         session = self.ctx.state_manager.p2p_connection_sessions[session_id]
@@ -210,9 +206,7 @@ class SocketInterfaceHandler:
 
     def run_server(self, ip, port, handler):
         try:
-            with CustomThreadedTCPServer(
-                (ip, port), handler, ctx=self.ctx, socket_interface_manager=self
-            ) as server:
+            with CustomThreadedTCPServer((ip, port), handler, ctx=self.ctx, socket_interface_manager=self) as server:
                 self.log(f"Server starting on ip:port: {ip}:{port}")
                 if port == self.command_port:
                     self.command_server = server

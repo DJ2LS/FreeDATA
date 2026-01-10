@@ -93,9 +93,7 @@ class DatabaseManagerStations(DatabaseManager):
                 # Update the station's location with gridsquare if it has changed
                 if station.location.get("gridsquare") != gridsquare:
                     self.log(f"Updating location for {callsign}")
-                    station.location["gridsquare"] = (
-                        gridsquare  # Update directly without re-serialization
-                    )
+                    station.location["gridsquare"] = gridsquare  # Update directly without re-serialization
                     session.flush()
                 else:
                     self.log(f"No changes needed for {callsign}'s location")
@@ -107,9 +105,7 @@ class DatabaseManagerStations(DatabaseManager):
                 return False
         except SQLAlchemyError as e:
             session.rollback()
-            self.log(
-                f"Failed to update location for station {callsign} with error: {e}", isError=True
-            )
+            self.log(f"Failed to update location for station {callsign} with error: {e}", isError=True)
             return False
         finally:
             session.remove()

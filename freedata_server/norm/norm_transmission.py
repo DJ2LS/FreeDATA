@@ -11,18 +11,20 @@ from freedata_server.data_frame_factory import DataFrameFactory
 
 class NORMMsgType(IntEnum):
     UNDEFINED = 0
-    MESSAGE   = 1  # Generic text/data message
-    POSITION  = 2  # GPS or grid locator info
-    SITREP    = 3  # Situation report
-    METAR = 4       # METAR Message
+    MESSAGE = 1  # Generic text/data message
+    POSITION = 2  # GPS or grid locator info
+    SITREP = 3  # Situation report
+    METAR = 4  # METAR Message
+
 
 class NORMMsgPriority(IntEnum):
-    LOW        = 0
-    NORMAL     = 1
-    HIGH       = 2
-    CRITICAL   = 3
-    ALERT      = 4
-    EMERGENCY  = 5
+    LOW = 0
+    NORMAL = 1
+    HIGH = 2
+    CRITICAL = 3
+    ALERT = 4
+    EMERGENCY = 5
+
 
 class NormTransmission:
     def __init__(self, ctx):
@@ -52,12 +54,13 @@ class NormTransmission:
         logger(msg)
 
     def set_state(self, state):
-
         self.last_state_change_timestamp = time.time()
         if self.state == state:
             self.log(f"{type(self).__name__} state {self.state.name} unchanged.")
         else:
-            self.log(f"{type(self).__name__} state change from {self.state.name} to {state.name} at {self.last_state_change_timestamp}")
+            self.log(
+                f"{type(self).__name__} state change from {self.state.name} to {state.name} at {self.last_state_change_timestamp}"
+            )
         self.state = state
 
     def on_frame_received(self, frame):
@@ -72,14 +75,15 @@ class NormTransmission:
         """
         self.event_frame_received.set()
         self.log(f"Received {frame['frame_type']}")
-        frame_type = frame['frame_type_int']
+        frame_type = frame["frame_type_int"]
         if self.state in self.STATE_TRANSITION and frame_type in self.STATE_TRANSITION[self.state]:
             action_name = self.STATE_TRANSITION[self.state][frame_type]
             received_data, type_byte = getattr(self, action_name)(frame)
 
             if isinstance(received_data, bytearray) and isinstance(type_byte, int):
-                self.arq_data_type_handler.dispatch(type_byte, received_data,
-                                                    self.update_histograms(len(received_data), len(received_data)))
+                self.arq_data_type_handler.dispatch(
+                    type_byte, received_data, self.update_histograms(len(received_data), len(received_data))
+                )
             return
 
         self.log(f"Ignoring unknown transition from state {self.state.name} with frame {frame['frame_type']}")
@@ -147,7 +151,6 @@ class NormTransmission:
         burst_total = burst_info & 0x0F
         return burst_number, burst_total
 
-
     def create_broadcast_id(self, timestamp: int, domain: str, checksum: str, length: int = 10) -> str:
         """
         Creates a deterministic broadcast ID using BLAKE2b.
@@ -166,5 +169,5 @@ class NormTransmission:
         return f"{digest}"
 
     def create_and_transmit_nack_burst(self, origin, id, burst_numbers):
-            burst = self.frame_factory.build_norm_nack(origin, id, burst_numbers)
-            self.ctx.rf_modem.transmit(FREEDV_MODE.datac4, 1, 200, burst)
+        burst = self.frame_factory.build_norm_nack(origin, id, burst_numbers)
+        self.ctx.rf_modem.transmit(FREEDV_MODE.datac4, 1, 200, burst)

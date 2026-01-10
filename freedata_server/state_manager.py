@@ -472,10 +472,7 @@ class StateManager:
         it sets the channel_busy_event, indicating the channel is available.
         Otherwise, it resets the channel_busy_event.
         """
-        if (
-            self.channel_busy_condition_traffic.is_set()
-            and self.channel_busy_condition_codec2.is_set()
-        ):
+        if self.channel_busy_condition_traffic.is_set() and self.channel_busy_condition_codec2.is_set():
             self.channel_busy_event.set()
         else:
             self.channel_busy_event = threading.Event()

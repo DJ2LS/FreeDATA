@@ -154,19 +154,12 @@ class Demodulator:
         last_rx_status = 0
 
         try:
-            while (
-                self.stream
-                and self.stream.active
-                and not self.shutdown_flag.is_set()
-                or self.ctx.TESTMODE
-            ):
+            while self.stream and self.stream.active and not self.shutdown_flag.is_set() or self.ctx.TESTMODE:
                 threading.Event().wait(0.01)
                 if audiobuffer.nbuffer >= nin and not self.shutdown_flag.is_set():
                     # demodulate audio
                     if not self.ctx.state_manager.isTransmitting():
-                        nbytes = codec2.api.freedv_rawdatarx(
-                            freedv, bytes_out, audiobuffer.buffer.ctypes
-                        )
+                        nbytes = codec2.api.freedv_rawdatarx(freedv, bytes_out, audiobuffer.buffer.ctypes)
 
                         # get current freedata_server states and write to list
                         # 1 trial
@@ -266,9 +259,7 @@ class Demodulator:
             modem_stats_snr = ctypes.c_float()
             modem_stats_sync = ctypes.c_int()
 
-            codec2.api.freedv_get_modem_stats(
-                freedv, ctypes.byref(modem_stats_sync), ctypes.byref(modem_stats_snr)
-            )
+            codec2.api.freedv_get_modem_stats(freedv, ctypes.byref(modem_stats_sync), ctypes.byref(modem_stats_snr))
             modem_stats_snr = modem_stats_snr.value
             modem_stats_sync = modem_stats_sync.value
 
@@ -306,9 +297,7 @@ class Demodulator:
         #        if xsymbols != 0.0 and ysymbols != 0.0:
         #            scatterdata.append({"x": str(xsymbols), "y": str(ysymbols)})
 
-        for i, j in itertools.product(
-            range(codec2.MODEM_STATS_NC_MAX), range(1, codec2.MODEM_STATS_NR_MAX, 2)
-        ):
+        for i, j in itertools.product(range(codec2.MODEM_STATS_NC_MAX), range(1, codec2.MODEM_STATS_NR_MAX, 2)):
             # print(f"{modemStats.rx_symbols[i][j]} - {modemStats.rx_symbols[i][j]}")
             xsymbols = round(modemStats.rx_symbols[i][j - 1] // 1000)
             ysymbols = round(modemStats.rx_symbols[i][j] // 1000)

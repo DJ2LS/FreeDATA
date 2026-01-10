@@ -4,6 +4,7 @@ from freedata_server.message_system_db_broadcasts import DatabaseManagerBroadcas
 import base64
 from datetime import datetime, timezone, timedelta
 
+
 class NormTransmissionIRS(NormTransmission):
     MAX_PAYLOAD_SIZE = 26
 
@@ -15,22 +16,20 @@ class NormTransmissionIRS(NormTransmission):
 
         print("burst:", frame)
 
-
         is_last, msg_type, priority = self.decode_flags(frame["flag"])
         burst_number, total_bursts = self.decode_burst_info(frame["burst_info"])
         payload_size = frame["payload_size"]
         payload_data = frame["payload_data"]
 
-
         if total_bursts == 1:
-            payload_data = payload_data[:self.MAX_PAYLOAD_SIZE]
+            payload_data = payload_data[: self.MAX_PAYLOAD_SIZE]
 
-        if is_last:#
+        if is_last:  #
             end = self.MAX_PAYLOAD_SIZE - ((total_bursts * self.MAX_PAYLOAD_SIZE) - payload_size)
             print(end)
             payload_data = payload_data[:end]
 
-        #payload_data = payload_data[:payload_size]
+        # payload_data = payload_data[:payload_size]
 
         self.origin = frame["origin"]
         self.domain = frame["domain"]
@@ -50,7 +49,6 @@ class NormTransmissionIRS(NormTransmission):
         print("total_bursts", total_bursts)
         print("checksum", self.checksum)
         print("timestamp", self.timestamp)
-
 
         payload_b64 = base64.b64encode(payload_data).decode("ascii")
         print("payload_b64", payload_b64)
@@ -81,9 +79,8 @@ class NormTransmissionIRS(NormTransmission):
             nexttransmission_at=datetime.now(timezone.utc).timestamp(),
             is_read=False,
             direction="receive",
-            status="assembling"
+            status="assembling",
         )
 
         if not success:
             print("Failed to process burst in database.")
-

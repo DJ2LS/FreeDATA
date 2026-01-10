@@ -37,9 +37,7 @@ def send_adif_qso_data(ctx, adif_data):
             ctx.event_manager.freedata_logging(type="udp", status=True, message=f" {call_value} ")
 
         except socket.timeout:
-            log.info(
-                f"[CHAT] Timeout occurred sending ADIF data to {adif_log_host}:{adif_log_port}"
-            )
+            log.info(f"[CHAT] Timeout occurred sending ADIF data to {adif_log_host}:{adif_log_port}")
             ctx.event_manager.freedata_logging(type="udp", status=True, message=f" {call_value} ")
         except Exception as e:
             log.info(f"[CHAT] Error sending ADIF data: {e}")

@@ -187,9 +187,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             timeout: The timeout period in seconds.
             mode: The FreeDV mode to use for transmission.
         """
-        thread_wait = threading.Thread(
-            target=self.transmit_and_wait, args=[frame, timeout, mode], daemon=True
-        )
+        thread_wait = threading.Thread(target=self.transmit_and_wait, args=[frame, timeout, mode], daemon=True)
         thread_wait.start()
 
     def send_open_ack(self, open_frame):
@@ -206,10 +204,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             Tuple[None, None]: Returns None for both data and type_byte as this method doesn't handle data.
         """
         # check for maximum bandwidth. If ISS bandwidth is higher than own, then use own
-        if (
-            open_frame["maximum_bandwidth"]
-            > self.ctx.config_manager.config["MODEM"]["maximum_bandwidth"]
-        ):
+        if open_frame["maximum_bandwidth"] > self.ctx.config_manager.config["MODEM"]["maximum_bandwidth"]:
             self.maximum_bandwidth = self.ctx.config_manager.config["MODEM"]["maximum_bandwidth"]
         else:
             self.maximum_bandwidth = open_frame["maximum_bandwidth"]
@@ -254,12 +249,8 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         self.calibrate_speed_settings()
 
-        self.log(
-            f"New transfer of {self.total_length} bytes, received_bytes: {self.received_bytes}"
-        )
-        self.ctx.event_manager.send_arq_session_new(
-            False, self.id, self.dxcall, self.total_length, self.state.name
-        )
+        self.log(f"New transfer of {self.total_length} bytes, received_bytes: {self.received_bytes}")
+        self.ctx.event_manager.send_arq_session_new(False, self.id, self.dxcall, self.total_length, self.state.name)
 
         info_ack = self.frame_factory.build_arq_session_info_ack(
             self.id,
@@ -357,9 +348,7 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         if not self.all_data_received():
             self.calibrate_speed_settings(burst_frame=burst_frame)
-            ack = self.frame_factory.build_arq_burst_ack(
-                self.id, self.speed_level, flag_abort=self.abort
-            )
+            ack = self.frame_factory.build_arq_burst_ack(self.id, self.speed_level, flag_abort=self.abort)
 
             self.set_state(IRS_State.BURST_REPLY_SENT)
             self.ctx.event_manager.send_arq_session_progress(
@@ -370,9 +359,7 @@ class ARQSessionIRS(arq_session.ARQSession):
                 self.total_length,
                 self.state.name,
                 self.speed_level,
-                statistics=self.calculate_session_statistics(
-                    self.received_bytes, self.total_length
-                ),
+                statistics=self.calculate_session_statistics(self.received_bytes, self.total_length),
             )
 
             self.launch_transmit_and_wait(ack, self.TIMEOUT_DATA, mode=FREEDV_MODE.signalling_ack)
@@ -380,9 +367,7 @@ class ARQSessionIRS(arq_session.ARQSession):
 
         if self.final_crc_matches():
             self.log("All data received successfully!")
-            ack = self.frame_factory.build_arq_burst_ack(
-                self.id, self.speed_level, flag_final=True, flag_checksum=True
-            )
+            ack = self.frame_factory.build_arq_burst_ack(self.id, self.speed_level, flag_final=True, flag_checksum=True)
             self.transmit_frame(ack, mode=FREEDV_MODE.signalling_ack)
             self.log("ACK sent")
             self.session_ended = time.time()
@@ -417,9 +402,7 @@ class ARQSessionIRS(arq_session.ARQSession):
         _received_speed_level = burst_frame["speed_level"] if burst_frame else 0
 
         latest_snr = self.snr if self.snr else -10
-        appropriate_speed_level = self.get_appropriate_speed_level(
-            latest_snr, self.maximum_bandwidth
-        )
+        appropriate_speed_level = self.get_appropriate_speed_level(latest_snr, self.maximum_bandwidth)
         modes_to_decode = {}
 
         # Log the latest SNR, current, appropriate speed levels, and the previous speed level
@@ -485,9 +468,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             Tuple[None, None]: Returns None for both data and type_byte as this method doesn't handle data.
         """
         stop_ack = self.frame_factory.build_arq_stop_ack(self.id)
-        self.launch_transmit_and_wait(
-            stop_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling_ack
-        )
+        self.launch_transmit_and_wait(stop_ack, self.TIMEOUT_CONNECT, mode=FREEDV_MODE.signalling_ack)
         self.set_state(IRS_State.ABORTED)
         self.ctx.state_manager.setARQ(False)
         session_stats = self.calculate_session_statistics(self.received_bytes, self.total_length)
@@ -554,9 +535,7 @@ class ARQSessionIRS(arq_session.ARQSession):
                 self.dxcall,
                 False,
                 self.state.name,
-                statistics=self.calculate_session_statistics(
-                    self.received_bytes, self.total_length
-                ),
+                statistics=self.calculate_session_statistics(self.received_bytes, self.total_length),
             )
             self.ctx.state_manager.setARQ(False)
         return None, None

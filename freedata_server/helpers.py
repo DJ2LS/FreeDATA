@@ -272,9 +272,7 @@ def callsign_to_bytes(callsign: str) -> bytes:
         # log.debug("[HLP] callsign_to_bytes: Error converting callsign to bytes:", e=err)
         pass
     except Exception as err:
-        log.debug(
-            "[HLP] callsign_to_bytes: Error converting callsign to bytes:", e=err, data=callsign
-        )
+        log.debug("[HLP] callsign_to_bytes: Error converting callsign to bytes:", e=err, data=callsign)
 
     # Need this step to reduce the needed payload by the callsign
     # (stripping "-" out of the callsign)
@@ -401,9 +399,7 @@ def check_callsign(callsign: str, crc_to_check: bytes, ssid_list):
             return [True, call_with_ssid.decode()]
 
         if get_crc_24(callsign).hex() == crc_to_check:
-            log.debug(
-                "[HLP] check_callsign matched:", call_without_ssid=callsign, checksum=crc_to_check
-            )
+            log.debug("[HLP] check_callsign matched:", call_without_ssid=callsign, checksum=crc_to_check)
             return [True, callsign.decode()]
 
     log.debug(

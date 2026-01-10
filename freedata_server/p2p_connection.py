@@ -129,9 +129,7 @@ class P2PConnection:
         self.flag_has_data = False
         self.flag_announce_arq = False
 
-        self.transmission_in_progress = (
-            False  # indicatews, if we are waiting for an ongoing transmission
-        )
+        self.transmission_in_progress = False  # indicatews, if we are waiting for an ongoing transmission
         self.running_arq_session = None
 
     def start_data_processing_worker(self):
@@ -141,17 +139,13 @@ class P2PConnection:
             last_isalive = 0
             while True:
                 now = time.time()
-                if (
-                    now > self.last_data_timestamp + self.ENTIRE_CONNECTION_TIMEOUT
-                    and self.state
-                    not in [
-                        States.DISCONNECTING,
-                        States.DISCONNECTED,
-                        States.ARQ_SESSION,
-                        States.FAILED,
-                        States.PAYLOAD_TRANSMISSION,
-                    ]
-                ):
+                if now > self.last_data_timestamp + self.ENTIRE_CONNECTION_TIMEOUT and self.state not in [
+                    States.DISCONNECTING,
+                    States.DISCONNECTED,
+                    States.ARQ_SESSION,
+                    States.FAILED,
+                    States.PAYLOAD_TRANSMISSION,
+                ]:
                     self.disconnect()
                     return
 
@@ -224,9 +218,7 @@ class P2PConnection:
                 _response = getattr(self, action_name)(frame)
                 return
 
-        self.log(
-            f"Ignoring unknown transition from state {self.state.name} with frame {frame['frame_type']}"
-        )
+        self.log(f"Ignoring unknown transition from state {self.state.name} with frame {frame['frame_type']}")
 
     def transmit_frame(self, frame: bytearray, mode="auto"):
         if mode in ["auto"]:
@@ -272,9 +264,7 @@ class P2PConnection:
         #    self.transmission_failed()
 
     def launch_twr_irs(self, frame, timeout, mode):
-        thread_wait = threading.Thread(
-            target=self.transmit_and_wait_irs, args=[frame, timeout, mode], daemon=True
-        )
+        thread_wait = threading.Thread(target=self.transmit_and_wait_irs, args=[frame, timeout, mode], daemon=True)
         thread_wait.start()
 
     def connect(self):
@@ -328,9 +318,7 @@ class P2PConnection:
         session_open_frame = self.frame_factory.build_p2p_connection_connect_ack(
             self.destination, self.origin, self.session_id
         )
-        self.launch_twr_irs(
-            session_open_frame, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling
-        )
+        self.launch_twr_irs(session_open_frame, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
 
     def session_failed(self):
         self.set_state(States.FAILED)
@@ -347,9 +335,7 @@ class P2PConnection:
         self.is_Master = True
 
         buffer_size = self.get_tx_queue_buffer_size()
-        self.ctx.socket_interface_manager.command_server.command_handler.socket_respond_buffer_size(
-            buffer_size
-        )
+        self.ctx.socket_interface_manager.command_server.command_handler.socket_respond_buffer_size(buffer_size)
 
         raw_data = self.p2p_data_tx_queue.get()
         sequence_id = random.randint(0, 255)
@@ -391,9 +377,7 @@ class P2PConnection:
         self.log("received data...")
 
         ack_data = self.frame_factory.build_p2p_connection_payload_ack(self.session_id, 0)
-        self.launch_twr_irs(
-            ack_data, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling_ack
-        )
+        self.launch_twr_irs(ack_data, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling_ack)
 
         if not frame["flag"]["HAS_DATA"]:
             self.set_state(States.CONNECTED)
@@ -410,12 +394,8 @@ class P2PConnection:
             if self.ctx.socket_interface_manager and hasattr(
                 self.ctx.socket_interface_manager.data_server, "data_handler"
             ):
-                self.log(
-                    f"sending {len(received_data)} bytes to data socket client: {received_data}"
-                )
-                self.ctx.socket_interface_manager.data_server.data_handler.send_data_to_client(
-                    received_data
-                )
+                self.log(f"sending {len(received_data)} bytes to data socket client: {received_data}")
+                self.ctx.socket_interface_manager.data_server.data_handler.send_data_to_client(received_data)
 
         except Exception as e:
             self.log(f"Error sending data to socket: {e}")
@@ -430,9 +410,7 @@ class P2PConnection:
             self.set_state(States.PAYLOAD_SENT)
 
         buffer_size = self.get_tx_queue_buffer_size()
-        self.ctx.socket_interface_manager.command_server.command_handler.socket_respond_buffer_size(
-            buffer_size
-        )
+        self.ctx.socket_interface_manager.command_server.command_handler.socket_respond_buffer_size(buffer_size)
 
     def transmit_heartbeat(self, has_data=False, announce_arq=False):
         # heartbeats will be transmit by ISS only, therefore only IRS can reveice heartbeat ack
@@ -458,9 +436,7 @@ class P2PConnection:
             flag_has_data=self.flag_has_data,
             flag_announce_arq=self.flag_announce_arq,
         )
-        self.launch_twr_irs(
-            heartbeat_ack, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling
-        )
+        self.launch_twr_irs(heartbeat_ack, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
 
     def received_heartbeat(self, frame):
         # we don't accept heartbeats as ISS
@@ -480,9 +456,7 @@ class P2PConnection:
 
         else:
             if self.p2p_data_tx_queue.empty():
-                self.log(
-                    "Opposite station's data buffer is empty as well -- We won't become data master now"
-                )
+                self.log("Opposite station's data buffer is empty as well -- We won't become data master now")
                 self.is_Master = False
                 self.flag_has_data = False
             else:
@@ -562,12 +536,8 @@ class P2PConnection:
         if self.ctx.socket_interface_manager:
             self.ctx.socket_interface_manager.command_server.command_handler.socket_respond_disconnected()
         self.is_ISS = False
-        disconnect_ack_frame = self.frame_factory.build_p2p_connection_disconnect_ack(
-            self.session_id
-        )
-        self.launch_twr_irs(
-            disconnect_ack_frame, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling
-        )
+        disconnect_ack_frame = self.frame_factory.build_p2p_connection_disconnect_ack(self.session_id)
+        self.launch_twr_irs(disconnect_ack_frame, self.ENTIRE_CONNECTION_TIMEOUT, mode=FREEDV_MODE.signalling)
 
     def received_disconnect_ack(self, frame):
         self.log("DISCONNECTED...............")
@@ -589,9 +559,7 @@ class P2PConnection:
 
         threading.Event().wait(3)
 
-        prepared_data, type_byte = self.arq_data_type_handler.prepare(
-            data, ARQ_SESSION_TYPES.p2p_connection
-        )
+        prepared_data, type_byte = self.arq_data_type_handler.prepare(data, ARQ_SESSION_TYPES.p2p_connection)
         iss = ARQSessionISS(self.ctx, arq_destination, prepared_data, type_byte)
         iss.id = self.session_id
         # register p2p connection to arq session
@@ -621,9 +589,7 @@ class P2PConnection:
                 self.ctx.socket_interface_manager.data_server, "data_handler"
             ):
                 self.log(f"sending {len(received_data)} bytes to data socket client")
-                self.ctx.socket_interface_manager.data_server.data_handler.send_data_to_client(
-                    received_data
-                )
+                self.ctx.socket_interface_manager.data_server.data_handler.send_data_to_client(received_data)
 
         except Exception as e:
             self.log(f"Error sending data to socket: {e}")

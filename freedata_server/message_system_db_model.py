@@ -16,9 +16,7 @@ class MessageAttachment(Base):
 
     __tablename__ = "message_attachment"
     message_id = Column(String, ForeignKey("p2p_message.id", ondelete="CASCADE"), primary_key=True)
-    attachment_id = Column(
-        Integer, ForeignKey("attachment.id", ondelete="CASCADE"), primary_key=True
-    )
+    attachment_id = Column(Integer, ForeignKey("attachment.id", ondelete="CASCADE"), primary_key=True)
 
     message = relationship("P2PMessage", back_populates="message_attachments")
     attachment = relationship("Attachment", back_populates="message_attachments")
@@ -33,9 +31,7 @@ class Config(Base):
     """
 
     __tablename__ = "config"
-    db_variable = Column(
-        String, primary_key=True
-    )  # Unique identifier for the configuration setting
+    db_variable = Column(String, primary_key=True)  # Unique identifier for the configuration setting
     db_version = Column(String)
 
     def to_dict(self):
@@ -128,9 +124,7 @@ class P2PMessage(Base):
     via_callsign = Column(String, ForeignKey("station.callsign"), nullable=True)
     destination_callsign = Column(String, ForeignKey("station.callsign"))
     body = Column(String, nullable=True)
-    message_attachments = relationship(
-        "MessageAttachment", back_populates="message", cascade="all, delete-orphan"
-    )
+    message_attachments = relationship("MessageAttachment", back_populates="message", cascade="all, delete-orphan")
     attempt = Column(Integer, default=0)
     timestamp = Column(DateTime)
     status_id = Column(Integer, ForeignKey("status.id"), nullable=True)
@@ -216,15 +210,11 @@ class Attachment(Base):
         }
 
 
-from sqlalchemy import Column, DateTime, String, Integer, Boolean, JSON, ForeignKey, Index
-from sqlalchemy.orm import relationship
-from datetime import datetime, timezone
-
 class BroadcastMessage(Base):
-    __tablename__ = 'broadcast_messages'
+    __tablename__ = "broadcast_messages"
 
     id = Column(String, primary_key=True)
-    origin = Column(String, ForeignKey('station.callsign'))
+    origin = Column(String, ForeignKey("station.callsign"))
     timestamp = Column(Float, default=lambda: datetime.now(timezone.utc))
     repairing_callsigns = Column(JSON, nullable=True)
     domain = Column(String)
@@ -242,36 +232,34 @@ class BroadcastMessage(Base):
     nexttransmission_at = Column(Float, default=lambda: datetime.now(timezone.utc))
     expires_at = Column(Float, default=lambda: datetime.now(timezone.utc))
 
-    status_id = Column(Integer, ForeignKey('status.id'), nullable=True)
-    status = relationship('Status', backref='broadcast_messages')
+    status_id = Column(Integer, ForeignKey("status.id"), nullable=True)
+    status = relationship("Status", backref="broadcast_messages")
     error_reason = Column(String, nullable=True)
     attempts = Column(Integer, default=0)
 
-    __table_args__ = (
-        Index('idx_broadcast_domain_received', 'domain', 'received_at'),
-    )
+    __table_args__ = (Index("idx_broadcast_domain_received", "domain", "received_at"),)
 
     def to_dict(self):
         return {
-            'id': self.id,
-            'origin': self.origin,
-            'timestamp': self.timestamp,
-            'repairing_callsigns': self.repairing_callsigns,
-            'domain': self.domain,
-            'gridsquare': self.gridsquare,
-            'frequency': self.frequency,
-            'priority': self.priority,
-            'is_read': self.is_read,
-            'direction': self.direction,
-            'payload_size': self.payload_size,
-            'payload_data': self.payload_data,
-            'msg_type': self.msg_type,
-            'total_bursts': self.total_bursts,
-            'checksum': self.checksum,
-            'received_at': self.received_at if self.received_at else None,
-            'expires_at': self.expires_at if self.expires_at else None,
-            'nexttransmission_at': self.nexttransmission_at if self.nexttransmission_at else None,
-            'status': self.status.name if self.status else None,
-            'error_reason': self.error_reason,
-            'attempts':self.attempts
+            "id": self.id,
+            "origin": self.origin,
+            "timestamp": self.timestamp,
+            "repairing_callsigns": self.repairing_callsigns,
+            "domain": self.domain,
+            "gridsquare": self.gridsquare,
+            "frequency": self.frequency,
+            "priority": self.priority,
+            "is_read": self.is_read,
+            "direction": self.direction,
+            "payload_size": self.payload_size,
+            "payload_data": self.payload_data,
+            "msg_type": self.msg_type,
+            "total_bursts": self.total_bursts,
+            "checksum": self.checksum,
+            "received_at": self.received_at if self.received_at else None,
+            "expires_at": self.expires_at if self.expires_at else None,
+            "nexttransmission_at": self.nexttransmission_at if self.nexttransmission_at else None,
+            "status": self.status.name if self.status else None,
+            "error_reason": self.error_reason,
+            "attempts": self.attempts,
         }

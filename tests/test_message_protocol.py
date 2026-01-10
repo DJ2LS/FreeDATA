@@ -74,9 +74,7 @@ class TestMessageProtocol(unittest.TestCase):
             try:
                 # Station A gets the data from its transmit queue
                 transmission = ctx_a.TESTMODE_TRANSMIT_QUEUE.get(timeout=1)
-                print(
-                    f"Station A sending: {transmission[1]}", len(transmission[1]), transmission[0]
-                )
+                print(f"Station A sending: {transmission[1]}", len(transmission[1]), transmission[0])
 
                 transmission[1] += bytes(2)  # 2bytes crc simulation
 
@@ -118,14 +116,10 @@ class TestMessageProtocol(unittest.TestCase):
 
     def establishChannels(self):
         self.channels_running = True
-        self.channelA = threading.Thread(
-            target=self.channelWorker, args=[self.ctx_ISS, self.ctx_IRS], name="channelA"
-        )
+        self.channelA = threading.Thread(target=self.channelWorker, args=[self.ctx_ISS, self.ctx_IRS], name="channelA")
         self.channelA.start()
 
-        self.channelB = threading.Thread(
-            target=self.channelWorker, args=[self.ctx_IRS, self.ctx_ISS], name="channelB"
-        )
+        self.channelB = threading.Thread(target=self.channelWorker, args=[self.ctx_IRS, self.ctx_ISS], name="channelB")
         self.channelB.start()
 
     def waitAndCloseChannels(self):

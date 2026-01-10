@@ -44,7 +44,5 @@ class PingFrameHandler(frame_handler.FrameHandler):
         frame's origin CRC and SNR, and transmits it using the modem.
         """
         factory = data_frame_factory.DataFrameFactory(self.ctx)
-        ping_ack_frame = factory.build_ping_ack(
-            self.details["frame"]["origin_crc"], self.details["snr"]
-        )
+        ping_ack_frame = factory.build_ping_ack(self.details["frame"]["origin_crc"], self.details["snr"])
         self.transmit(ping_ack_frame)
