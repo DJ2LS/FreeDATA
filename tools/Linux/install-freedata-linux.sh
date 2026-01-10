@@ -47,6 +47,7 @@
 # 2.9:	10 Jan Sep 2026
 #	Add Ubuntu 24.10 and 25.04
 #	Change hamlib default version to 4.6.5
+#	Add pyproject.toml support
 #
 # 2.8:	16 Sep 2025
 #	Add initial support for Debian 13
@@ -364,7 +365,7 @@ fi
 echo "*************************************************************************"
 echo "Installing required Python programs into the virtual environment"
 echo "*************************************************************************"
-pip install --upgrade -r requirements.txt
+python -m pip install .
 
 echo "*************************************************************************"
 echo "Changing into the server directory"
