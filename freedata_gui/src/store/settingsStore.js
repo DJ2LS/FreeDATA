@@ -62,7 +62,6 @@ const defaultConfig = {
     },
     STATION: {
       enable_explorer: false,
-      enable_stats: false,
       mycall: "DEFAULT",
       myssid: 0,
       mygrid: "",
@@ -92,10 +91,12 @@ const defaultConfig = {
 
     GUI: {
       auto_run_browser: true,
+      distance_unit: "km",
     },
     EXP: {
       enable_ring_buffer: false,
       enable_vhf: false,
+      enable_groupchat: false
     },
   },
 };

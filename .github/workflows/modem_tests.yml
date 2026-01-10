@@ -17,18 +17,18 @@ jobs:
       matrix:
         include:
           #- python-version: "3.7" EOL
-          - python-version: "3.8"
-          - python-version: "3.9"
+          #- python-version: "3.8" EOL
+          #- python-version: "3.9" EOL
           - python-version: "3.10"
           - python-version: "3.11"
           - python-version: "3.12"
           - python-version: "3.13"
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -42,7 +42,7 @@ jobs:
       - name: Install python packages
         shell: bash
         run: |
-          pip3 install -r requirements.txt
+          pip install .[test]
 
       - name: run config tests
         shell: bash

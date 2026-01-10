@@ -1,7 +1,8 @@
-from message_system_db_manager import DatabaseManager
-from message_system_db_model import MessageAttachment, Attachment, P2PMessage
+from freedata_server.message_system_db_manager import DatabaseManager
+from freedata_server.message_system_db_model import MessageAttachment, Attachment, P2PMessage
 import json
 import hashlib
+
 
 class DatabaseManagerAttachments(DatabaseManager):
     """Manages database operations for message attachments.
@@ -10,13 +11,14 @@ class DatabaseManagerAttachments(DatabaseManager):
     retrieving, and deleting message attachments in the database. It also
     handles orphaned attachments and database sessions.
     """
+
     def __init__(self, ctx):
         """Initializes DatabaseManagerAttachments.
 
         Args:
             event_manager (EventManager): The event manager instance.
         """
-        #self.ctx = ctx
+        # self.ctx = ctx
         super().__init__(ctx)
 
     def add_attachment(self, session, message, attachment_data):
@@ -38,16 +40,16 @@ class DatabaseManagerAttachments(DatabaseManager):
         Returns:
             Attachment: The Attachment object that was added or found.
         """
-        hash_sha512 = hashlib.sha512(attachment_data['data'].encode()).hexdigest()
+        hash_sha512 = hashlib.sha512(attachment_data["data"].encode()).hexdigest()
         existing_attachment = session.query(Attachment).filter_by(hash_sha512=hash_sha512).first()
 
         if not existing_attachment:
             attachment = Attachment(
-                name=attachment_data['name'],
-                data_type=attachment_data['type'],
-                data=attachment_data['data'],
-                checksum_crc32=attachment_data.get('checksum_crc32', ''),
-                hash_sha512=hash_sha512
+                name=attachment_data["name"],
+                data_type=attachment_data["type"],
+                data=attachment_data["data"],
+                checksum_crc32=attachment_data.get("checksum_crc32", ""),
+                hash_sha512=hash_sha512,
             )
             session.add(attachment)
             session.flush()  # Ensure the attachment is persisted and has an ID
@@ -169,7 +171,8 @@ class DatabaseManagerAttachments(DatabaseManager):
                     # More than one link exists, so only remove the association.
                     session.delete(link)
                     self.log(
-                        f"Deleted link for attachment '{link.attachment.name}' from message {message_id} (other links exist).")
+                        f"Deleted link for attachment '{link.attachment.name}' from message {message_id} (other links exist)."
+                    )
                 else:
                     # Only one link exists, so delete both the association and the attachment.
                     session.delete(link)
@@ -184,7 +187,6 @@ class DatabaseManagerAttachments(DatabaseManager):
             return False
         finally:
             session.remove()
-
 
     def clean_orphaned_attachments(self):
         """
@@ -214,9 +216,9 @@ class DatabaseManagerAttachments(DatabaseManager):
             for attachment in orphaned:
                 self.log(f"Deleting orphaned attachment: {attachment.name}")
                 session.delete(attachment)
-            self.log(f"Checked for orphaned attachments")
+            self.log("Checked for orphaned attachments")
             session.commit()
-            return {'status': 'success', 'deleted_count': len(orphaned)}
+            return {"status": "success", "deleted_count": len(orphaned)}
         except Exception as e:
             session.rollback()
             self.log(f"Error checking orphaned attachments: {e}", isWarning=True)

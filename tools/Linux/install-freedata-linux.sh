@@ -11,7 +11,7 @@
 # Untested additions for Linux Mint [21.3]
 # 
 # First option passed is the branch of FreeDATA to run.  Defaults to main.
-# Second option passed is the version of Hamlib to use.  Defaults to 4.5.5.
+# Second option passed is the version of Hamlib to use.  Defaults to 4.6.5.
 #
 # Run this script by typing in the terminal (without the quotes):
 # "bash install-freedata-linux.sh (FreeDATA-branch) (hamlib-version)"
@@ -44,6 +44,11 @@
 #
 #
 # Changelog:
+# 2.9:	10 Jan Sep 2026
+#	Add Ubuntu 24.10 and 25.04
+#	Change hamlib default version to 4.6.5
+#	Add pyproject.toml support
+#
 # 2.8:	16 Sep 2025
 #	Add initial support for Debian 13
 #
@@ -133,7 +138,7 @@ if [ ! -z "$2" ];
 then
 	hamlibver=$2
 else
-	hamlibver="4.5.5"
+	hamlibver="4.6.5"
 fi
 
 osname=`grep -E '^(NAME)=' /etc/os-release | cut -d\" -f2`
@@ -176,7 +181,7 @@ case $osname in
 
    "Ubuntu" | "Linux Mint")
 	case $osversion in
-	   "21.3" | "22.04" | "24.04")
+	   "21.3" | "22.04" | "24.04" | "24.10" | "25.04" )
 		sudo apt install --upgrade -y fonts-noto-color-emoji git build-essential cmake python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama python3-venv wget python3-dev
 	   ;;
 
@@ -360,7 +365,7 @@ fi
 echo "*************************************************************************"
 echo "Installing required Python programs into the virtual environment"
 echo "*************************************************************************"
-pip install --upgrade -r requirements.txt
+python -m pip install .
 
 echo "*************************************************************************"
 echo "Changing into the server directory"

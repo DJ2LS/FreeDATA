@@ -1,6 +1,7 @@
 import math
 import random
 
+
 def haversine(lat1, lon1, lat2, lon2):
     """
     Calculate the great circle distance in kilometers between two points
@@ -50,14 +51,14 @@ def maidenhead_to_latlon(grid_square):
     grid_square = generate_full_maidenhead(grid_square)
 
     grid_square = grid_square.upper()
-    lon = -180 + (ord(grid_square[0]) - ord('A')) * 20
-    lat = -90 + (ord(grid_square[1]) - ord('A')) * 10
-    lon += (int(grid_square[2]) * 2)
+    lon = -180 + (ord(grid_square[0]) - ord("A")) * 20
+    lat = -90 + (ord(grid_square[1]) - ord("A")) * 10
+    lon += int(grid_square[2]) * 2
     lat += int(grid_square[3])
 
     if len(grid_square) >= 6:
-        lon += (ord(grid_square[4]) - ord('A')) * (5 / 60)
-        lat += (ord(grid_square[5]) - ord('A')) * (2.5 / 60)
+        lon += (ord(grid_square[4]) - ord("A")) * (5 / 60)
+        lat += (ord(grid_square[5]) - ord("A")) * (2.5 / 60)
 
     # not needed now as we always have 6 digits
     if len(grid_square) == 8:
@@ -79,6 +80,46 @@ def maidenhead_to_latlon(grid_square):
     return lat, lon
 
 
+def latlon_to_maidenhead(lat, lon, precision=6):
+    """
+    Convert latitude and longitude to a Maidenhead locator.
+
+    Parameters:
+    lat (float): Latitude in degrees.
+    lon (float): Longitude in degrees.
+    precision (int): Number of characters in the locator (4, 6 or 8). Default 6.
+
+    Returns:
+    str: Maidenhead locator string.
+    """
+
+    lon += 180
+    lat += 90
+
+    A = ord("A")
+    _a = ord("a")
+
+    lon_field = int(lon // 20)
+    lat_field = int(lat // 10)
+
+    lon_square = int((lon % 20) // 2)
+    lat_square = int((lat % 10) // 1)
+
+    lon_subsquare = int(((lon % 2) / 2) * 24)
+    lat_subsquare = int(((lat % 1) / 1) * 24)
+
+    locator = f"{chr(A + lon_field)}{chr(A + lat_field)}{lon_square}{lat_square}{chr(A + lon_subsquare)}{chr(A + lat_subsquare)}"
+
+    if precision == 4:
+        return locator[:4]
+    elif precision == 8:
+        lon_ext = int((((lon % (1 / 12)) / (1 / 12)) * 10))
+        lat_ext = int((((lat % (1 / 24)) / (1 / 24)) * 10))
+        return locator + f"{lon_ext}{lat_ext}"
+    else:
+        return locator[:6]
+
+
 def distance_between_locators(locator1, locator2):
     """
     Calculate the distance between two Maidenhead locators and return the result as a dictionary.
@@ -94,14 +135,8 @@ def distance_between_locators(locator1, locator2):
     lat2, lon2 = maidenhead_to_latlon(locator2)
     km = haversine(lat1, lon1, lat2, lon2)
     miles = km * 0.621371
-    return {'kilometers': km, 'miles': miles}
+    return {"kilometers": km, "miles": miles}
 
-
-import random
-
-
-import random
-import string
 
 def generate_full_maidenhead(grid_square):
     """
@@ -147,5 +182,3 @@ def generate_full_maidenhead(grid_square):
     # Adjust the case for the last two characters
     grid_square = grid_square[:4] + grid_square[4:].lower()
     return grid_square
-
-

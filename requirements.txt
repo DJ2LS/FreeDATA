@@ -5,13 +5,11 @@ pyserial
 sounddevice
 structlog
 requests
-asyncio
 chardet
 colorama
 ordered-set
-nuitka<=2.7.13
-pyinstaller
 websocket-client
+sqlalchemy
 fastapi[standard]
 uvicorn[standard]
 
@@ -22,8 +20,10 @@ isort
 pycodestyle
 pytest
 pytest-cov
-pytest-cover
-pytest-coverage
 pytest-rerunfailures
 pick
-sqlalchemy
+
+# Build
+build
+wheel
+nuitka<=2.8.9

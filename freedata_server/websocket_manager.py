@@ -1,6 +1,7 @@
 import threading
 import json
 import asyncio
+import numpy as np
 import structlog
 
 
@@ -12,6 +13,7 @@ class wsm:
     data to connected clients via worker threads. It ensures a clean
     shutdown of WebSocket connections and related resources.
     """
+
     def __init__(self, ctx):
         """Initializes the WebSocket manager.
 
@@ -27,11 +29,13 @@ class wsm:
         self.events_client_list = set()
         self.fft_client_list = set()
         self.states_client_list = set()
+        self.audio_rx_client_list = set()
 
         self.events_thread = None
         self.states_thread = None
         self.fft_thread = None
-        
+        self.audio_rx_thread = None
+
     async def handle_connection(self, websocket, client_list, event_queue):
         """Handles a WebSocket connection.
 
@@ -45,15 +49,16 @@ class wsm:
             event_queue (queue.Queue): The event queue. Currently unused.
         """
         client_list.add(websocket)
+        self.log.info("Client websocket connection established", ws=websocket)
         while not self.shutdown_flag.is_set():
             try:
                 await websocket.receive_text()
             except Exception as e:
-                self.log.warning(f"Client connection lost", e=e)
+                self.log.warning("Client connection lost", e=e)
                 try:
                     client_list.remove(websocket)
                 except Exception as err:
-                    self.log.error(f"Error removing client from list", e=e, err=err)
+                    self.log.error("Error removing client from list", e=e, err=err)
                 break
 
     def transmit_sock_data_worker(self, client_list, event_queue):
@@ -70,7 +75,6 @@ class wsm:
         while not self.shutdown_flag.is_set():
             try:
                 event = event_queue.get(timeout=1)
-
                 if event:
                     json_event = json.dumps(event)
                     clients = client_list.copy()
@@ -82,7 +86,32 @@ class wsm:
             except Exception:
                 continue
 
+    def transmit_sock_audio_worker(self, client_list, audio_queue):
+        """Worker thread function for transmitting data to WebSocket clients.
 
+        This method continuously retrieves events from the provided queue and
+        sends them as JSON strings to all connected clients in the specified
+        list. It handles client disconnections gracefully.
+
+        Args:
+            client_list (set): The set of connected WebSocket clients.
+            event_queue (queue.Queue): The queue containing events to be transmitted.
+        """
+        while not self.shutdown_flag.is_set():
+            # loop = asyncio.get_event_loop()
+            try:
+                audio = audio_queue.get(timeout=1)
+                if isinstance(audio, np.ndarray):
+                    audio = audio.tobytes()
+                    clients = client_list.copy()
+                    for client in clients:
+                        try:
+                            asyncio.run(client.send_bytes(audio))
+
+                        except Exception:
+                            client_list.remove(client)
+            except Exception:
+                continue
 
     def startWorkerThreads(self, app):
         """Starts worker threads for handling WebSocket data transmission.
@@ -95,15 +124,34 @@ class wsm:
         Args:
             app: The main application object containing the event queues and client lists.
         """
-        self.events_thread = threading.Thread(target=self.transmit_sock_data_worker, daemon=True, args=(self.events_client_list, self.ctx.modem_events))
+        self.events_thread = threading.Thread(
+            target=self.transmit_sock_data_worker,
+            daemon=True,
+            args=(self.events_client_list, self.ctx.modem_events),
+        )
         self.events_thread.start()
 
-        self.states_thread = threading.Thread(target=self.transmit_sock_data_worker, daemon=True, args=(self.states_client_list, self.ctx.state_queue))
+        self.states_thread = threading.Thread(
+            target=self.transmit_sock_data_worker,
+            daemon=True,
+            args=(self.states_client_list, self.ctx.state_queue),
+        )
         self.states_thread.start()
 
-        self.fft_thread = threading.Thread(target=self.transmit_sock_data_worker, daemon=True, args=(self.fft_client_list, self.ctx.modem_fft))
+        self.fft_thread = threading.Thread(
+            target=self.transmit_sock_data_worker,
+            daemon=True,
+            args=(self.fft_client_list, self.ctx.modem_fft),
+        )
         self.fft_thread.start()
-        
+
+        self.audio_rx_thread = threading.Thread(
+            target=self.transmit_sock_audio_worker,
+            daemon=True,
+            args=(self.audio_rx_client_list, self.ctx.audio_rx_queue),
+        )
+        self.audio_rx_thread.start()
+
     def shutdown(self):
         """Shuts down the WebSocket manager.
 
@@ -117,6 +165,8 @@ class wsm:
             self.events_thread.join(0.5)
         if self.states_thread:
             self.states_thread.join(0.5)
-        if self.states_thread:
+        if self.fft_thread:
             self.fft_thread.join(0.5)
+        if self.audio_rx_thread:
+            self.audio_rx_thread.join(0.5)
         self.log.warning("[SHUTDOWN] websockets closed")

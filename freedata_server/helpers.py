@@ -1,11 +1,11 @@
-# -*- coding: utf-8 -*-
 """
 Created on Fri Dec 25 21:25:14 2020
 
 @author: DJ2LS
 """
+
 import time
-from datetime import datetime,timezone
+from datetime import datetime, timezone
 import structlog
 import numpy as np
 import threading
@@ -155,7 +155,7 @@ def get_crc_32(data: str) -> bytes:
         reflected_data = 0
         for i in range(width):
             if data & (1 << i):
-                reflected_data |= (1 << (width - 1 - i))
+                reflected_data |= 1 << (width - 1 - i)
         return reflected_data
 
     crc = 0xFFFFFFFF
@@ -181,12 +181,18 @@ def get_crc_32(data: str) -> bytes:
     return crc.to_bytes(4, byteorder="big")
 
 
-from datetime import datetime, timezone
-import time
-
-
-def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency, heard_stations_list, distance_km=None,
-                          distance_miles=None, away_from_key=False):
+def add_to_heard_stations(
+    dxcallsign,
+    dxgrid,
+    datatype,
+    snr,
+    offset,
+    frequency,
+    heard_stations_list,
+    distance_km=None,
+    distance_miles=None,
+    away_from_key=False,
+):
     """
     Args:
         dxcallsign (str): The callsign of the DX station.
@@ -208,7 +214,16 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency, 
 
     # Initialize the new entry
     new_entry = [
-        dxcallsign, dxgrid, current_timestamp, datatype, snr, offset, frequency, distance_km, distance_miles, away_from_key
+        dxcallsign,
+        dxgrid,
+        current_timestamp,
+        datatype,
+        snr,
+        offset,
+        frequency,
+        distance_km,
+        distance_miles,
+        away_from_key,
     ]
 
     # Check if the buffer is empty or if the callsign is not already in the list
@@ -330,7 +345,8 @@ def bytes_to_callsign(bytestring: bytes) -> bytes:
     ssid = ord(bytes(decoded[-1], "utf-8"))
     return bytes(f"{callsign}-{ssid}", "utf-8")
 
-def separate_callsign_from_ssid(callsign:bytes):
+
+def separate_callsign_from_ssid(callsign: bytes):
     # We want the callsign without SSID
     splitted_callsign = callsign.split(b"-")
     callsign = splitted_callsign[0]
@@ -352,14 +368,13 @@ def check_callsign(callsign: str, crc_to_check: bytes, ssid_list):
         False
     """
     if not isinstance(callsign, (bytes)):
-        callsign = bytes(callsign,'utf-8')
+        callsign = bytes(callsign, "utf-8")
 
     try:
         # We want the callsign without SSID
         splitted_callsign = callsign.split(b"-")
         callsign = splitted_callsign[0]
         ssid = splitted_callsign[1].decode()
-
 
     except IndexError:
         # This is expected when `callsign` doesn't have a dash.
@@ -372,19 +387,28 @@ def check_callsign(callsign: str, crc_to_check: bytes, ssid_list):
         ssid_list.append(str(ssid))
 
     for ssid in ssid_list:
-        call_with_ssid = callsign + b'-' + (str(ssid)).encode('utf-8')
+        call_with_ssid = callsign + b"-" + (str(ssid)).encode("utf-8")
         callsign_crc = get_crc_24(call_with_ssid)
         callsign_crc = callsign_crc.hex()
         if callsign_crc == crc_to_check:
-            log.debug("[HLP] check_callsign matched:", call_with_ssid=call_with_ssid, checksum=crc_to_check)
+            log.debug(
+                "[HLP] check_callsign matched:",
+                call_with_ssid=call_with_ssid,
+                checksum=crc_to_check,
+            )
             return [True, call_with_ssid.decode()]
 
         if get_crc_24(callsign).hex() == crc_to_check:
             log.debug("[HLP] check_callsign matched:", call_without_ssid=callsign, checksum=crc_to_check)
             return [True, callsign.decode()]
 
-    log.debug("[HLP] check_callsign: Check failed:", callsign=callsign, crc_to_check=crc_to_check, own_crc=callsign_crc)
-    return [False, b'']
+    log.debug(
+        "[HLP] check_callsign: Check failed:",
+        callsign=callsign,
+        crc_to_check=crc_to_check,
+        own_crc=callsign_crc,
+    )
+    return [False, b""]
 
 
 def check_session_id(id: bytes, id_to_check: bytes):
@@ -399,7 +423,7 @@ def check_session_id(id: bytes, id_to_check: bytes):
         True
         False
     """
-    if id_to_check == b'\x00':
+    if id_to_check == b"\x00":
         return False
     log.debug("[HLP] check_sessionid: Checking:", ownid=id, check=id_to_check)
     return id == id_to_check
@@ -482,9 +506,7 @@ def encode_call(call):
     for char in call:
         int_val = ord(char) - 48  # -48 reduce bits, begin with first number utf8 table
         out_code_word <<= 6  # shift left 6 bit, making space for a new char
-        out_code_word |= (
-            int_val & 0b111111
-        )  # bit OR adds the new char, masked with AND 0b111111
+        out_code_word |= int_val & 0b111111  # bit OR adds the new char, masked with AND 0b111111
     out_code_word >>= 6  # clean last char
     out_code_word <<= 6  # make clean space
     out_code_word |= ord(call[-1]) & 0b111111  # add the SSID uncoded only 0 - 63
@@ -515,19 +537,19 @@ def decode_call(b_code_word: bytes):
 
 
 def snr_to_bytes(snr):
-    """create a byte from snr value """
+    """create a byte from snr value"""
     # make sure we have onl 1 byte snr
     # min max = -12.7 / 12.7
     # enough for detecting if a channel is good or bad
     snr = snr * 10
     snr = np.clip(snr, -127, 127)
-    snr = int(snr).to_bytes(1, byteorder='big', signed=True)
+    snr = int(snr).to_bytes(1, byteorder="big", signed=True)
     return snr
 
 
 def snr_from_bytes(snr):
     """create int from snr byte"""
-    snr = int.from_bytes(snr, byteorder='big', signed=True)
+    snr = int.from_bytes(snr, byteorder="big", signed=True)
     snr = snr / 10
     return snr
 
@@ -546,7 +568,6 @@ def safe_execute(default, exception, function, *args):
 
 
 def return_key_from_object(default, obj, key):
-
     try:
         return obj[key]
     except KeyError:
@@ -557,39 +578,36 @@ def bool_to_string(state):
     return "True" if state else "False"
 
 
-
-
 def get_hmac_salt(dxcallsign: bytes, mycallsign: bytes):
     filename = f"freedata_hmac_STATION_{mycallsign.decode('utf-8')}_REMOTE_{dxcallsign.decode('utf-8')}.txt"
     if sys.platform in ["linux"]:
-
         if hasattr(sys, "_MEIPASS"):
-            filepath = getattr(sys, "_MEIPASS") + '/hmac/' + filename
+            filepath = getattr(sys, "_MEIPASS") + "/hmac/" + filename
         else:
-            subfolder = Path('hmac')
+            subfolder = Path("hmac")
             filepath = subfolder / filename
-
 
     elif sys.platform in ["darwin"]:
         if hasattr(sys, "_MEIPASS"):
-            filepath = getattr(sys, "_MEIPASS") + '/hmac/' + filename
+            filepath = getattr(sys, "_MEIPASS") + "/hmac/" + filename
         else:
-            subfolder = Path('hmac')
+            subfolder = Path("hmac")
             filepath = subfolder / filename
 
     elif sys.platform in ["win32", "win64"]:
         if hasattr(sys, "_MEIPASS"):
-            filepath = getattr(sys, "_MEIPASS") + '/hmac/' + filename
+            filepath = getattr(sys, "_MEIPASS") + "/hmac/" + filename
         else:
-            subfolder = Path('hmac')
+            subfolder = Path("hmac")
             filepath = subfolder / filename
     else:
         try:
-            subfolder = Path('hmac')
+            subfolder = Path("hmac")
             filepath = subfolder / filename
-        except Exception as e:
+        except Exception as _:
             log.error(
-                "[Modem] [HMAC] File lookup error", file=filepath,
+                "[Modem] [HMAC] File lookup error",
+                file=filepath,
             )
 
     # check if file exists else return false
@@ -601,51 +619,51 @@ def get_hmac_salt(dxcallsign: bytes, mycallsign: bytes):
     try:
         with open(filepath, "r") as file:
             line = file.readlines()
-            hmac_salt = bytes(line[-1], "utf-8").split(b'\n')
+            hmac_salt = bytes(line[-1], "utf-8").split(b"\n")
             hmac_salt = hmac_salt[0]
             return hmac_salt if delete_last_line_from_hmac_list(filepath, -1) else False
     except Exception as e:
         log.warning("[SCK] [HMAC] File lookup failed", file=filepath, e=e)
         return False
 
-def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_frame, token_iters):
 
+def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_frame, token_iters):
     filename = f"freedata_hmac_STATION_{mycallsign.decode('utf-8')}_REMOTE_{dxcallsign.decode('utf-8')}.txt"
     if sys.platform in ["linux"]:
-
         if hasattr(sys, "_MEIPASS"):
-            filepath = getattr(sys, "_MEIPASS") + '/hmac/' + filename
+            filepath = getattr(sys, "_MEIPASS") + "/hmac/" + filename
         else:
-            subfolder = Path('hmac')
+            subfolder = Path("hmac")
             filepath = subfolder / filename
-
 
     elif sys.platform in ["darwin"]:
         if hasattr(sys, "_MEIPASS"):
-            filepath = getattr(sys, "_MEIPASS") + '/hmac/' + filename
+            filepath = getattr(sys, "_MEIPASS") + "/hmac/" + filename
         else:
-            subfolder = Path('hmac')
+            subfolder = Path("hmac")
             filepath = subfolder / filename
 
     elif sys.platform in ["win32", "win64"]:
         if hasattr(sys, "_MEIPASS"):
-            filepath = getattr(sys, "_MEIPASS") + '/hmac/' + filename
+            filepath = getattr(sys, "_MEIPASS") + "/hmac/" + filename
         else:
-            subfolder = Path('hmac')
+            subfolder = Path("hmac")
             filepath = subfolder / filename
     else:
         try:
-            subfolder = Path('hmac')
+            subfolder = Path("hmac")
             filepath = subfolder / filename
-        except Exception as e:
+        except Exception as _:
             log.error(
-                "[Modem] [HMAC] File lookup error", file=filepath,
+                "[Modem] [HMAC] File lookup error",
+                file=filepath,
             )
 
     # check if file exists else return false
     if not check_if_file_exists(filepath):
         log.warning(
-            "[Modem] [HMAC] Token file not found", file=filepath,
+            "[Modem] [HMAC] Token file not found",
+            file=filepath,
         )
         return False
 
@@ -670,19 +688,23 @@ def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_fr
                     token_position = len(token_list) - _
                     delete_last_line_from_hmac_list(filepath, token_position)
                     log.info(
-                        "[Modem] [HMAC] Signature found", expected=search_token.hex(),
+                        "[Modem] [HMAC] Signature found",
+                        expected=search_token.hex(),
                     )
                     return True
 
-
         log.warning(
-            "[Modem] [HMAC] Signature not found", expected=search_token.hex(), filepath=filepath,
+            "[Modem] [HMAC] Signature not found",
+            expected=search_token.hex(),
+            filepath=filepath,
         )
         return False
 
     except Exception as e:
         log.warning(
-            "[Modem] [HMAC] Lookup failed", e=e, expected=search_token,
+            "[Modem] [HMAC] Lookup failed",
+            e=e,
+            expected=search_token,
         )
         return False
 
@@ -696,10 +718,10 @@ def delete_last_line_from_hmac_list(filepath, position):
         linearray = []
         with open(filepath, "r") as file:
             linearray = file.readlines()[:position]
-            #print(linearray)
+            # print(linearray)
 
         with open(filepath, "w") as file:
-            #print(linearray)
+            # print(linearray)
             for line in linearray:
                 file.write(line)
 
@@ -707,6 +729,7 @@ def delete_last_line_from_hmac_list(filepath, position):
 
     except Exception:
         return False
+
 
 def check_if_file_exists(path):
     try:
@@ -721,7 +744,9 @@ def check_if_file_exists(path):
             return False
     except Exception as e:
         log.warning(
-            "[Modem] [FILE] Lookup failed", e=e, path=path,
+            "[Modem] [FILE] Lookup failed",
+            e=e,
+            path=path,
         )
         return False
 
@@ -736,12 +761,14 @@ def set_bit(byte, position, value):
     else:
         return byte & ~(1 << position)
 
+
 def get_bit(byte, position):
     """Get the boolean value of the bit at 'position' in the given byte."""
     if not 0 <= position <= 7:
         raise ValueError("Position must be between 0 and 7")
 
     return (byte & (1 << position)) != 0
+
 
 def set_flag(byte, flag_name, value, flag_dict):
     """Set the flag in the byte according to the flag dictionary.
@@ -779,7 +806,7 @@ def find_binary_paths(binary_name="rigctld", search_system_wide=False):
     """
     binary_paths = []  # Initialize an empty list to store found paths
     # Adjust binary name for Windows
-    if platform.system() == 'Windows':
+    if platform.system() == "Windows":
         binary_name += ".exe"
 
     # Search in the current working directory and subdirectories
@@ -790,10 +817,10 @@ def find_binary_paths(binary_name="rigctld", search_system_wide=False):
 
     # If system-wide search is enabled, look in system locations and PATH
     if search_system_wide:
-        system_paths = os.environ.get('PATH', '').split(os.pathsep)
+        system_paths = os.environ.get("PATH", "").split(os.pathsep)
         # Optionally add common binary locations for Unix-like and Windows systems
-        if platform.system() != 'Windows':
-            system_paths.extend(['/usr/bin', '/usr/local/bin', '/bin'])
+        if platform.system() != "Windows":
+            system_paths.extend(["/usr/bin", "/usr/local/bin", "/bin"])
         else:
             system_paths.extend(glob.glob("C:\\Program Files\\Hamlib*\\bin"))
             system_paths.extend(glob.glob("C:\\Program Files (x86)\\Hamlib*\\bin"))
@@ -806,7 +833,6 @@ def find_binary_paths(binary_name="rigctld", search_system_wide=False):
     return binary_paths
 
 
-
 def kill_and_execute(binary_path, additional_args=None):
     """
     Kills any running instances of the binary across Linux, macOS, and Windows, then starts a new one non-blocking.
@@ -816,11 +842,11 @@ def kill_and_execute(binary_path, additional_args=None):
     :return: subprocess.Popen object of the started process
     """
     # Kill any existing instances of the binary
-    for proc in psutil.process_iter(attrs=['pid', 'name', 'cmdline']):
+    for proc in psutil.process_iter(attrs=["pid", "name", "cmdline"]):
         try:
-            cmdline = proc.info['cmdline']
+            cmdline = proc.info["cmdline"]
             # Ensure cmdline is iterable and not None
-            if cmdline and binary_path in ' '.join(cmdline):
+            if cmdline and binary_path in " ".join(cmdline):
                 proc.kill()
                 print(f"Killed running instance with PID: {proc.info['pid']}")
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
@@ -829,6 +855,7 @@ def kill_and_execute(binary_path, additional_args=None):
     # Execute the binary with additional arguments non-blocking
     command = [binary_path] + (additional_args if additional_args else [])
     return subprocess.Popen(command)
+
 
 def kill_process(proc):
     try:

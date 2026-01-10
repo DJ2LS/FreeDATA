@@ -1,17 +1,13 @@
-import sys
 import unittest
-import queue
 
-sys.path.append('freedata_server')
+from freedata_server.context import AppContext
+from freedata_server.arq_data_type_handler import ARQDataTypeHandler, ARQ_SESSION_TYPES
 
-from context import AppContext
-from arq_data_type_handler import ARQDataTypeHandler, ARQ_SESSION_TYPES
 
 class TestDispatcher(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
-        cls.ctx = AppContext('freedata_server/config.ini.example')
+        cls.ctx = AppContext("freedata_server/config.ini.example")
         cls.event_manager = cls.ctx.event_manager
         cls.state_manager = cls.ctx.state_manager
         cls.arq_data_type_handler = ARQDataTypeHandler(cls.ctx)
@@ -41,5 +37,6 @@ class TestDispatcher(unittest.TestCase):
         dispatched_data = self.arq_data_type_handler.dispatch(type_byte, formatted_data, statistics={})
         self.assertEqual(example_data, dispatched_data)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

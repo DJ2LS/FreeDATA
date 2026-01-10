@@ -1,24 +1,20 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Wed Dec 23 07:04:24 2020
 
 @author: DJ2LS
 """
 
-# pylint: disable=invalid-name, line-too-long, c-extension-no-member
-# pylint: disable=import-outside-toplevel
-
 import queue
 import time
-import codec2
+from freedata_server import codec2
 import numpy as np
 import sounddevice as sd
 import structlog
-import cw
-import audio
-import demodulator
-import modulator
+from freedata_server import cw
+from freedata_server import audio
+from freedata_server import demodulator
+from freedata_server import modulator
 
 
 class RF:
@@ -49,22 +45,18 @@ class RF:
         self.buffer_avg = 0
 
         # these are crc ids now
-        self.audio_input_device = self.ctx.config_manager.config['AUDIO']['input_device']
-        self.audio_output_device = self.ctx.config_manager.config['AUDIO']['output_device']
+        self.audio_input_device = self.ctx.config_manager.config["AUDIO"]["input_device"]
+        self.audio_output_device = self.ctx.config_manager.config["AUDIO"]["output_device"]
 
+        self.ctx.radio_managercontrol = self.ctx.config_manager.config["RADIO"]["control"]
+        self.rigctld_ip = self.ctx.config_manager.config["RIGCTLD"]["ip"]
+        self.rigctld_port = self.ctx.config_manager.config["RIGCTLD"]["port"]
 
-
-        self.ctx.radio_managercontrol = self.ctx.config_manager.config['RADIO']['control']
-        self.rigctld_ip = self.ctx.config_manager.config['RIGCTLD']['ip']
-        self.rigctld_port = self.ctx.config_manager.config['RIGCTLD']['port']
-
-
-        self.tx_audio_level = self.ctx.config_manager.config['AUDIO']['tx_audio_level']
-        self.rx_audio_level = self.ctx.config_manager.config['AUDIO']['rx_audio_level']
-
+        self.tx_audio_level = self.ctx.config_manager.config["AUDIO"]["tx_audio_level"]
+        self.rx_audio_level = self.ctx.config_manager.config["AUDIO"]["rx_audio_level"]
 
         self.ptt_state = False
-        self.enqueuing_audio = False # set to True, while we are processing audio
+        self.enqueuing_audio = False  # set to True, while we are processing audio
 
         self.AUDIO_SAMPLE_RATE = 48000
         self.modem_sample_rate = codec2.api.FREEDV_FS_8000
@@ -75,6 +67,7 @@ class RF:
         self.MODE = 0
         self.rms_counter = 0
 
+        self.AUDIO_STREAMING_CHUNK_SIZE = 2400
         self.audio_out_queue = queue.Queue()
 
         # Make sure our resampler will work
@@ -100,7 +93,7 @@ class RF:
         """
         if self.ctx.TESTMODE:
             self.log.warning("RUNNING IN TEST MODE")
-            self.resampler = codec2.resampler() # we need a resampler in test mode
+            self.resampler = codec2.resampler()  # we need a resampler in test mode
             self.demodulator.start(None)
             return True
         else:
@@ -141,8 +134,11 @@ class RF:
         Returns:
             bool: True if audio initialization was successful, False otherwise.
         """
-        self.log.info(f"[MDM] init: get audio devices", input_device=self.audio_input_device,
-                      output_device=self.audio_output_device)
+        self.log.info(
+            "[MDM] init: get audio devices",
+            input_device=self.audio_input_device,
+            output_device=self.audio_output_device,
+        )
         try:
             result = audio.get_device_index_from_crc(self.audio_input_device, True)
             if result is None:
@@ -195,7 +191,7 @@ class RF:
             return False
 
     def transmit_sine(self):
-        """ Transmit a sine wave for audio tuning """
+        """Transmit a sine wave for audio tuning"""
         self.ctx.state_manager.setTransmitting(True)
         self.log.info("[MDM] TRANSMIT", mode="SINE")
         start_of_transmission = time.time()
@@ -224,7 +220,7 @@ class RF:
         self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
 
     def stop_sine(self):
-        """ Stop transmitting sine wave"""
+        """Stop transmitting sine wave"""
         # clear audio out queue
         self.audio_out_queue.queue.clear()
         self.ctx.state_manager.setTransmitting(False)
@@ -248,11 +244,9 @@ class RF:
         self.ctx.state_manager.waitForTransmission()
         self.ctx.state_manager.setTransmitting(True)
         # if we're transmitting FreeDATA signals, reset channel busy state
-        self.log.debug(
-            "[MDM] TRANSMIT", mode="MORSE"
-        )
+        self.log.debug("[MDM] TRANSMIT", mode="MORSE")
         start_of_transmission = time.time()
-        txbuffer_out = cw.MorseCodePlayer().text_to_signal(self.ctx.config_manager.config['STATION'].get('mycall'))
+        txbuffer_out = cw.MorseCodePlayer().text_to_signal(self.ctx.config_manager.config["STATION"].get("mycall"))
         txbuffer_out = audio.normalize_audio(txbuffer_out)
         # transmit audio
         self.enqueue_audio_out(txbuffer_out)
@@ -261,10 +255,7 @@ class RF:
         transmission_time = end_of_transmission - start_of_transmission
         self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
 
-
-    def transmit(
-            self, mode, repeats: int, repeat_delay: int, frames: bytearray
-    ) -> None:
+    def transmit(self, mode, repeats: int, repeat_delay: int, frames: bytearray) -> None:
         """Transmits data using the specified mode and parameters.
 
         This method transmits data using the given FreeDV mode, number of
@@ -292,11 +283,10 @@ class RF:
 
         start_of_transmission = time.time()
         txbuffer = self.modulator.create_burst(mode, repeats, repeat_delay, frames)
-
         # Re-sample back up to 48k (resampler works on np.int16)
         x = np.frombuffer(txbuffer, dtype=np.int16)
-        
-        if self.ctx.config_manager.config['AUDIO'].get('tx_auto_audio_level'):
+
+        if self.ctx.config_manager.config["AUDIO"].get("tx_auto_audio_level"):
             x = audio.normalize_audio(x)
         x = audio.set_audio_volume(x, self.tx_audio_level)
         txbuffer_out = self.resampler.resample8_to_48(x)
@@ -306,8 +296,6 @@ class RF:
         end_of_transmission = time.time()
         transmission_time = end_of_transmission - start_of_transmission
         self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
-
-
 
     def enqueue_audio_out(self, audio_48k) -> None:
         """Enqueues audio data for output.
@@ -338,12 +326,11 @@ class RF:
             block_size = self.sd_output_stream.blocksize
 
         pad_length = -len(audio_48k) % block_size
-        padded_data = np.pad(audio_48k, (0, pad_length), mode='constant')
+        padded_data = np.pad(audio_48k, (0, pad_length), mode="constant")
         sliced_audio_data = padded_data.reshape(-1, block_size)
         # add each block to audio out queue
         for block in sliced_audio_data:
             self.audio_out_queue.put(block)
-
 
         self.enqueuing_audio = False
         self.ctx.state_manager.transmitting_event.wait()
@@ -353,10 +340,25 @@ class RF:
         else:
             self.log.warning("Radio manager not yet initialized...should happen soon, some errors might occur")  #
 
-
         self.ctx.event_manager.send_ptt_change(False)
 
         return
+
+    def enqueue_streaming_audio_chunks(self, audio_block, queue):
+        # total_samples = len(audio_block)
+        # for start in range(0, total_samples, self.AUDIO_STREAMING_CHUNK_SIZE):
+        #    end = start + self.AUDIO_STREAMING_CHUNK_SIZE
+        #    chunk = audio_block[start:end]
+        #    queue.put(chunk.tobytes())
+
+        block_size = self.AUDIO_STREAMING_CHUNK_SIZE
+
+        pad_length = -len(audio_block) % block_size
+        padded_data = np.pad(audio_block, (0, pad_length), mode="constant")
+        sliced_audio_data = padded_data.reshape(-1, block_size)
+        # add each block to audio out queue
+        for block in sliced_audio_data:
+            queue.put(block)
 
     def sd_output_audio_callback(self, outdata: np.ndarray, frames: int, time, status) -> None:
         """Callback function for the audio output stream.
@@ -410,13 +412,16 @@ class RF:
         if status:
             self.log.warning("[AUDIO STATUS]", status=status, time=time, frames=frames)
             # FIXME on windows input overflows crashing the rx audio stream. Lets restart the server then
-            #if status.input_overflow:
+            # if status.input_overflow:
             #    self.self.ctx.modem_service.put("restart")
             return
         try:
             audio_48k = np.frombuffer(indata, dtype=np.int16)
             audio_8k = self.resampler.resample48_to_8(audio_48k)
-            if self.ctx.config_manager.config['AUDIO'].get('rx_auto_audio_level'):
+
+            self.enqueue_streaming_audio_chunks(audio_8k, self.ctx.audio_rx_queue)
+
+            if self.ctx.config_manager.config["AUDIO"].get("rx_auto_audio_level"):
                 audio_8k = audio.normalize_audio(audio_8k)
 
             audio_8k_level_adjusted = audio.set_audio_volume(audio_8k, self.rx_audio_level)
@@ -430,8 +435,8 @@ class RF:
             index = 0
             for mode in self.demodulator.MODE_DICT:
                 mode_data = self.demodulator.MODE_DICT[mode]
-                audiobuffer = mode_data['audio_buffer']
-                decode = mode_data['decode']
+                audiobuffer = mode_data["audio_buffer"]
+                decode = mode_data["decode"]
                 index += 1
                 if audiobuffer:
                     if (audiobuffer.nbuffer + length_audio_8k_level_adjusted) > audiobuffer.size:
