@@ -1,9 +1,6 @@
-import queue
 from command import TxCommand
 import api_validations
 import base64
-from queue import Queue
-import numpy as np
 import threading
 from norm.norm_transmission_iss import NormTransmissionISS
 

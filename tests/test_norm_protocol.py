@@ -1,5 +1,4 @@
 import sys
-import time
 import unittest
 import unittest.mock
 import queue
@@ -7,16 +6,12 @@ import threading
 import random
 import structlog
 import base64
-import numpy as np
 
 sys.path.append("freedata_server")
 
-from config import CONFIG
 from context import AppContext
 from event_manager import EventManager
 from state_manager import StateManager
-from data_frame_factory import DataFrameFactory
-from frame_dispatcher import DISPATCHER
 import codec2
 import command_norm
 

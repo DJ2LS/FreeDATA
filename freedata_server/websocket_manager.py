@@ -1,8 +1,6 @@
 import threading
 import json
 import asyncio
-from asyncio import run_coroutine_threadsafe
-
 import numpy as np
 import structlog
 

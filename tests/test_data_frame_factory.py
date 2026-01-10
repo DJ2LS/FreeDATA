@@ -3,6 +3,7 @@ import unittest
 
 from freedata_server.data_frame_factory import DataFrameFactory
 from freedata_server.codec2 import FREEDV_MODE
+from freedata_server.config import CONFIG
 from freedata_server import helpers
 from freedata_server.modem_frametypes import FRAME_TYPE
 
@@ -10,7 +11,6 @@ from freedata_server.modem_frametypes import FRAME_TYPE
 # Dummy Context with config
 class DummyCtx:
     def __init__(self, config_path):
-        from config import CONFIG
 
         self.config_manager = CONFIG(self, config_path)
 

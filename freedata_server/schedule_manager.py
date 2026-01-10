@@ -8,9 +8,9 @@ from freedata_server import command_message_send
 # from message_system_db_manager import DatabaseManager
 from freedata_server.message_system_db_messages import DatabaseManagerMessages
 from freedata_server.message_system_db_beacon import DatabaseManagerBeacon
-from message_system_db_broadcasts import DatabaseManagerBroadcasts
-from norm.norm_transmission import NormTransmission, NORMMsgPriority, NORMMsgType
-from norm.norm_transmission_iss import NormTransmissionISS
+from freedata_server.message_system_db_broadcasts import DatabaseManagerBroadcasts
+from freedata_server.norm.norm_transmission import NormTransmission
+from freedata_server.norm.norm_transmission_iss import NormTransmissionISS
 
 from freedata_server import explorer
 from freedata_server import command_beacon

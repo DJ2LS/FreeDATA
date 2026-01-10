@@ -1,10 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
 import command_norm
-import command_message_send
-import adif_udp_logger
-import wavelog_api_logger
-from context import AppContext, get_ctx
 import asyncio
 
 from freedata_server.api.common import api_response, api_abort
@@ -549,7 +545,7 @@ async def get_freedata_broadcasts_per_domain(domain: str, ctx: AppContext = Depe
 
 
 @router.get("/broadcasts/domains", summary="Get All Broadcast Messages", tags=["FreeDATA"], responses={})
-async def get_freedata_broadcasts(ctx: AppContext = Depends(get_ctx)):
+async def get_freedata_broadcasts(ctx: AppContext = Depends(get_ctx)):  # noqa: F811 # same as line 534, but different path
     # filters = {k: v for k, v in ctx.config_manager.read().get('FILTERS', {}).items()}
     # use query params if needed
     # filters = dict(ctx.request.query_params)
