@@ -1,4 +1,3 @@
-import sys
 import unittest
 import unittest.mock
 import queue
@@ -7,13 +6,11 @@ import random
 import structlog
 import base64
 
-sys.path.append("freedata_server")
-
-from context import AppContext
-from event_manager import EventManager
-from state_manager import StateManager
-import codec2
-import command_norm
+from freedata_server.context import AppContext
+from freedata_server.event_manager import EventManager
+from freedata_server.state_manager import StateManager
+from freedata_server import codec2
+from freedata_server import command_norm
 
 
 class TestModem:

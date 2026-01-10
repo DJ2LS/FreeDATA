@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends
 
-import command_norm
 import asyncio
 
 from freedata_server.api.common import api_response, api_abort
@@ -13,6 +12,7 @@ from freedata_server.message_system_db_broadcasts import DatabaseManagerBroadcas
 from freedata_server import command_message_send
 from freedata_server import adif_udp_logger
 from freedata_server import wavelog_api_logger
+from freedata_server import command_norm
 from freedata_server.context import AppContext, get_ctx
 from freedata_server.norm.norm_transmission_iss import NormTransmissionISS
 

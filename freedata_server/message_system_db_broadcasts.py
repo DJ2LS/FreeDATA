@@ -251,7 +251,6 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             session.remove()
 
     def get_broadcasts_per_domain_json(self, domain: str = None) -> dict:
-
         if domain:
             self.mark_domain_as_read(domain)
 
@@ -300,7 +299,6 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             session.remove()
 
     def delete_broadcast_message_or_domain(self, id) -> dict:
-
         session = self.get_thread_scoped_session()
         try:
             msg = session.query(BroadcastMessage).filter_by(id=id).first()

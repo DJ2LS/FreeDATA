@@ -54,7 +54,6 @@ class NormTransmission:
         logger(msg)
 
     def set_state(self, state):
-
         self.last_state_change_timestamp = time.time()
         if self.state == state:
             self.log(f"{type(self).__name__} state {self.state.name} unchanged.")

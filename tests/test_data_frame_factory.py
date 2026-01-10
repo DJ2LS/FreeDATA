@@ -11,7 +11,6 @@ from freedata_server.modem_frametypes import FRAME_TYPE
 # Dummy Context with config
 class DummyCtx:
     def __init__(self, config_path):
-
         self.config_manager = CONFIG(self, config_path)
 
 

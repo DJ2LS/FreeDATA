@@ -725,7 +725,6 @@ class DataFrameFactory:
     def build_norm_data(
         self, origin, domain, gridsquare, timestamp, burst_info, payload_size, payload_data, flag, checksum
     ):
-
         payload = {
             "origin": helpers.callsign_to_bytes(origin),
             "domain": helpers.callsign_to_bytes(domain),

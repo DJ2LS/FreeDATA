@@ -1,8 +1,8 @@
-from command import TxCommand
-import api_validations
+from freedata_server.command import TxCommand
+from freedata_server import api_validations
 import base64
 import threading
-from norm.norm_transmission_iss import NormTransmissionISS
+from freedata_server.norm.norm_transmission_iss import NormTransmissionISS
 
 
 class Norm(TxCommand):
