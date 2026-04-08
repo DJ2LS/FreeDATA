@@ -10,6 +10,7 @@ from freedata_server.message_system_db_messages import DatabaseManagerMessages
 from freedata_server.message_system_db_beacon import DatabaseManagerBeacon
 from freedata_server import explorer
 from freedata_server import command_beacon
+import pskreporter
 import structlog
 from freedata_server.arq_session_irs import IRS_State
 from freedata_server.arq_session_iss import ISS_State
