@@ -22,6 +22,8 @@ class CONFIG:
             "enable_explorer": bool,
             "enable_stats": bool,
             "respond_to_cq": bool,
+            'enable_pskreporter': bool,
+            'pskreporter_fallback_frequency': int,
             "enable_callsign_blacklist": bool,
             "callsign_blacklist": list,
         },

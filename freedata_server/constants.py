@@ -8,4 +8,7 @@ LICENSE = "GPL3.0"
 DOCUMENTATION_URL = "https://wiki.freedata.app"
 STATS_API_URL = "https://api.freedata.app/stats.php"
 EXPLORER_API_URL = "https://api.freedata.app/explorer.php"
+PSKREPORT_URL = "https//report.pskreporter.info"
+PSKREPORT_PORT_LIVE = 14739
+PSK_PORT_DEBUG = 4739
 MESSAGE_SYSTEM_DATABASE_VERSION = 0
