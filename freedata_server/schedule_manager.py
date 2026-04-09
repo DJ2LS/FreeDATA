@@ -2,7 +2,7 @@ import sched
 import time
 import threading
 
-import command_message_send
+from freedata_server import command_message_send
 #from freedata_server.context import AppContext
 #from message_system_db_manager import DatabaseManager
 from message_system_db_messages import DatabaseManagerMessages
