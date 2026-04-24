@@ -90,7 +90,7 @@ async def nocache(request: Request, call_next):
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private"
     response.headers["Pragma"] = "no-cache"
     # structlog stdlib logger akzeptiert %-Formatierung; alternativ key/value:
-    logger.info("[API] %s %s → %d", request.method, request.url.path, response.status_code)
+    logger.info("[API] %s %s -> %d", request.method, request.url.path, response.status_code)
     return response
 
 
