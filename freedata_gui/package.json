@@ -33,7 +33,7 @@
     "chartjs-plugin-annotation": "^3.1.0",
     "core-js": "^3.45.1",
     "d3": "^7.9.0",
-    "dompurify": "^3.2.7",
+    "dompurify": "^3.4.0",
     "gettext-parser": "^8.0.0",
     "gridstack": "^12.3.3",
     "i18next": "^25.5.2",
