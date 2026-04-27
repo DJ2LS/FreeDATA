@@ -1,6 +1,7 @@
 from sqlalchemy.exc import SQLAlchemyError
-from message_system_db_model import Station
-from message_system_db_manager import DatabaseManager
+from freedata_server.message_system_db_model import Station
+from freedata_server.message_system_db_manager import DatabaseManager
+
 
 class DatabaseManagerStations(DatabaseManager):
     """Manages database operations for stations.
@@ -9,6 +10,7 @@ class DatabaseManagerStations(DatabaseManager):
     retrieving, creating, and updating station information in the database.
     It handles database sessions and logging.
     """
+
     def __init__(self, ctx):
         """Initializes DatabaseManagerStations.
 
@@ -31,7 +33,7 @@ class DatabaseManagerStations(DatabaseManager):
                 return None
         except Exception as e:
             self.log(f"error fetching database station with error: {e}", isWarning=True)
-            self.log(f"---> please delete or update existing database", isWarning=True)
+            self.log("---> please delete or update existing database", isWarning=True)
 
             return []
 
@@ -67,7 +69,6 @@ class DatabaseManagerStations(DatabaseManager):
         finally:
             session.remove()
 
-
     def update_station_location(self, callsign, gridsquare):
         """
         Updates the location information of a station identified by its callsign.
@@ -90,9 +91,9 @@ class DatabaseManagerStations(DatabaseManager):
                     station.location = {}
 
                 # Update the station's location with gridsquare if it has changed
-                if station.location.get('gridsquare') != gridsquare:
+                if station.location.get("gridsquare") != gridsquare:
                     self.log(f"Updating location for {callsign}")
-                    station.location['gridsquare'] = gridsquare  # Update directly without re-serialization
+                    station.location["gridsquare"] = gridsquare  # Update directly without re-serialization
                     session.flush()
                 else:
                     self.log(f"No changes needed for {callsign}'s location")

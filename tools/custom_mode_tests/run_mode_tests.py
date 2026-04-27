@@ -12,22 +12,14 @@ The script runs predefined mode pairs in both transmission and reception directi
 and visualizes the results in separate plots.
 """
 
-
-import sys
-
-sys.path.append('freedata_server')
-
 import ctypes
 import threading
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
-from collections import defaultdict
 from scipy.fftpack import fft
-from codec2 import open_instance, api, audio_buffer, FREEDV_MODE, resampler
-import modulator
-import config
-import helpers
+from freedata_server.codec2 import open_instance, api, audio_buffer, FREEDV_MODE
+from freedata_server import modulator
+from freedata_server import config
 
 
 class FreeDV:
@@ -49,7 +41,7 @@ class FreeDV:
 
         while audiobuffer.nbuffer >= nin:
             nbytes = api.freedv_rawdatarx(self.freedv, bytes_out, audiobuffer.buffer.ctypes)
-            rx_status = api.freedv_get_rx_status(self.freedv)
+            _rx_status = api.freedv_get_rx_status(self.freedv)
             nin = api.freedv_nin(self.freedv)
             audiobuffer.pop(nin)
             if nbytes == bytes_per_frame:
@@ -72,16 +64,16 @@ class FreeDV:
         if avg_volume == 0 or max_val == 0:
             papr = 0
         else:
-            papr = 10 * np.log10((max_val ** 2) / (avg_volume ** 2))
+            papr = 10 * np.log10((max_val**2) / (avg_volume**2))
 
         # Compute FFT
-        fft_values = np.abs(fft(txbuffer))[:len(txbuffer) // 2]
-        freqs = np.fft.fftfreq(len(txbuffer), d=1 / 8000)[:len(txbuffer) // 2]  # Assuming 8 kHz sample rate
+        fft_values = np.abs(fft(txbuffer))[: len(txbuffer) // 2]
+        freqs = np.fft.fftfreq(len(txbuffer), d=1 / 8000)[: len(txbuffer) // 2]  # Assuming 8 kHz sample rate
 
         return avg_volume_db, max_possible_volume_db, papr, freqs, fft_values
 
     def write_to_file(self, txbuffer, filename):
-        with open(filename, 'wb') as f:
+        with open(filename, "wb") as f:
             f.write(txbuffer)
 
 
@@ -93,14 +85,21 @@ def plot_audio_metrics(avg_volume_per_mode, avg_max_volume_per_mode, avg_papr_pe
     max_volume_values = list(avg_max_volume_per_mode.values())
     papr_values = list(avg_papr_per_mode.values())
 
-    plt.plot(modes, volume_values, marker='o', linestyle='-', label='Average Volume (dB)')
-    plt.plot(modes, max_volume_values, marker='x', linestyle='--', label='Max Possible Volume (dB)', color='blue')
-    plt.plot(modes, papr_values, marker='s', linestyle='-', label='Average PAPR (dB)', color='red')
-    plt.ylabel('Volume (dB) / PAPR (dB)')
-    plt.xlabel('Modes')
-    plt.title('Audio Metrics per Mode')
+    plt.plot(modes, volume_values, marker="o", linestyle="-", label="Average Volume (dB)")
+    plt.plot(
+        modes,
+        max_volume_values,
+        marker="x",
+        linestyle="--",
+        label="Max Possible Volume (dB)",
+        color="blue",
+    )
+    plt.plot(modes, papr_values, marker="s", linestyle="-", label="Average PAPR (dB)", color="red")
+    plt.ylabel("Volume (dB) / PAPR (dB)")
+    plt.xlabel("Modes")
+    plt.title("Audio Metrics per Mode")
     plt.legend()
-    plt.xticks(rotation=45, ha='right')
+    plt.xticks(rotation=45, ha="right")
     plt.pause(0.1)
 
 
@@ -108,10 +107,10 @@ def plot_fft_per_mode(fft_data):
     """Plot FFTs in a separate window."""
     for mode, (freqs, fft_values) in fft_data.items():
         plt.figure(figsize=(8, 4))
-        plt.plot(freqs, fft_values, label=f'FFT {mode}')
-        plt.xlabel('Frequency (Hz)')
-        plt.ylabel('Magnitude')
-        plt.title(f'FFT of {mode}')
+        plt.plot(freqs, fft_values, label=f"FFT {mode}")
+        plt.xlabel("Frequency (Hz)")
+        plt.ylabel("Magnitude")
+        plt.title(f"FFT of {mode}")
         plt.legend()
     plt.pause(0.1)
 
@@ -120,18 +119,19 @@ def plot_results_summary(results):
     """Plot pass/fail results for each mode pair."""
     mode_pairs = [f"{tx} -> {rx}" for tx, rx, _, _, _, _ in results]
     pass_fail = [1 if result[2] else -1 for result in results]  # Convert True/False to 1/0
-    colors = ['green' if r == 1 else 'red' for r in pass_fail]
+    colors = ["green" if r == 1 else "red" for r in pass_fail]
 
     plt.figure(figsize=(10, 5))
     plt.bar(mode_pairs, pass_fail, color=colors)
-    plt.ylabel('Pass (1) / Fail (0)')
-    plt.xlabel('Mode Pairs')
-    plt.title('Mode Constellation Pass/Fail Summary')
-    plt.xticks(rotation=45, ha='right')
+    plt.ylabel("Pass (1) / Fail (0)")
+    plt.xlabel("Mode Pairs")
+    plt.title("Mode Constellation Pass/Fail Summary")
+    plt.xticks(rotation=45, ha="right")
     plt.ylim(-1, 1)  # Ensure bars are properly visible
     plt.show()
 
-def test_freedv_mode_pairs(mode_pairs, config_file='config.ini'):
+
+def test_freedv_mode_pairs(mode_pairs, config_file="config.ini"):
     results = []
     fft_data = {}
     volume_per_mode = {}
@@ -143,13 +143,20 @@ def test_freedv_mode_pairs(mode_pairs, config_file='config.ini'):
             freedv_tx = FreeDV(test_tx, config_file)
             freedv_rx = FreeDV(test_rx, config_file)
 
-            message = b'ABC'
+            message = b"ABC"
             txbuffer = freedv_tx.modulator.create_burst(test_tx, 1, 100, message)
             txbuffer = np.frombuffer(txbuffer, dtype=np.int16)
 
             result = freedv_rx.demodulate(txbuffer)
             avg_volume_db, max_possible_volume_db, papr, freqs, fft_values = freedv_tx.compute_audio_metrics(txbuffer)
-            results.append((test_tx.name, test_rx.name, result, avg_volume_db, max_possible_volume_db, papr))
+            results.append((
+                test_tx.name,
+                test_rx.name,
+                result,
+                avg_volume_db,
+                max_possible_volume_db,
+                papr,
+            ))
             volume_per_mode[test_tx.name] = avg_volume_db
             max_volume_per_mode[test_tx.name] = max_possible_volume_db
             papr_per_mode[test_tx.name] = papr
@@ -170,7 +177,8 @@ if __name__ == "__main__":
         (FREEDV_MODE.data_ofdm_2438, FREEDV_MODE.data_ofdm_2438),
     ]
     results, avg_volume_per_mode, avg_max_volume_per_mode, avg_papr_per_mode, fft_data = test_freedv_mode_pairs(
-        test_mode_pairs)
+        test_mode_pairs
+    )
     plot_audio_metrics(avg_volume_per_mode, avg_max_volume_per_mode, avg_papr_per_mode)
     plot_fft_per_mode(fft_data)
     plot_results_summary(results)

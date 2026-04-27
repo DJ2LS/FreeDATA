@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 
 import { getOverallHealth } from '../js/eventHandler.js';
-import { getFreedataMessages } from '../js/api';
+import { getFreedataMessages, getFreedataDomains } from '../js/api';
 import { loadAllData } from '../js/eventHandler';
 
 import { setActivePinia } from 'pinia';
@@ -11,15 +11,19 @@ setActivePinia(pinia);
 
 import { useChatStore } from '../store/chatStore.js';
 const chat = useChatStore(pinia);
-
+import { useBroadcastStore } from '../store/broadcastStore.js';
+const broadcast = useBroadcastStore(pinia);
 
 // Network state computation
 import { useStateStore } from '../store/stateStore.js';
+import {onChange, settingsStore as settings} from "@/store/settingsStore";
 const state = useStateStore(pinia);
 const isNetworkDisconnected = computed(() => state.modem_connection !== "connected");
 
 // Accessing the network traffic state
 const isNetworkTraffic = computed(() => state.is_network_traffic);
+
+
 
 </script>
 
@@ -89,7 +93,7 @@ const isNetworkTraffic = computed(() => state.is_network_traffic);
       aria-controls="list-chat"
       :title="$t('navbar.chat_help')"
       :class="{ disabled: isNetworkDisconnected }"
-      @click="isNetworkDisconnected ? null : getFreedataMessages"
+      @click="isNetworkDisconnected ? null : getFreedataMessages()"
     >
       <i class="bi bi-chat-text h3" />
       <span
@@ -97,6 +101,27 @@ const isNetworkTraffic = computed(() => state.is_network_traffic);
         class="badge bg-danger position-absolute top-0 end-0 mt-1 me-1"
       >
         {{ chat.totalUnreadMessages }}
+      </span>
+    </a>
+
+    <a
+     v-if="settings.remote.EXP.enable_groupchat"
+      id="list-broadcast-list"
+      class="list-group-item list-group-item-dark list-group-item-action border-0 rounded-3 mb-2"
+      data-bs-toggle="list"
+      href="#list-broadcasts"
+      role="tab"
+      aria-controls="list-broadcast"
+      :title="$t('navbar.broadcast_help')"
+      :class="{ disabled: isNetworkDisconnected }"
+      @click="isNetworkDisconnected ? null : getFreedataDomains()"
+    >
+      <i class="bi bi-broadcast h3" />
+<span
+        v-if="broadcast.totalUnreadMessages > 0"
+        class="badge bg-danger position-absolute top-0 end-0 mt-1 me-1"
+      >
+        {{ broadcast.totalUnreadMessages }}
       </span>
     </a>
 

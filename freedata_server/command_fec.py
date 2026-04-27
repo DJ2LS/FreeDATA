@@ -1,5 +1,6 @@
-from command import TxCommand
+from freedata_server.command import TxCommand
 import base64
+
 
 class FecCommand(TxCommand):
     """Command for transmitting data using Forward Error Correction (FEC).
@@ -25,16 +26,16 @@ class FecCommand(TxCommand):
         Returns:
             dict: The API parameters after processing.
         """
-        self.mode = apiParams['mode']
-        self.wakeup = apiParams['wakeup']
-        payload_b64 = apiParams['payload']
+        self.mode = apiParams["mode"]
+        self.wakeup = apiParams["wakeup"]
+        payload_b64 = apiParams["payload"]
 
         if len(payload_b64) % 4:
             raise TypeError("Invalid base64 payload")
         self.payload = base64.b64decode(payload_b64)
 
         return super().set_params_from_api(apiParams)
-    
+
     def build_wakeup_frame(self):
         """Builds a wakeup frame for FEC.
 
@@ -55,8 +56,8 @@ class FecCommand(TxCommand):
         Returns:
             bytearray: The built FEC frame.
         """
-        return self.frame_factory.build_fec(self. mode, self.payload)
-    
+        return self.frame_factory.build_fec(self.mode, self.payload)
+
     def transmit(self, tx_frame_queue):
         """Transmits the FEC frame, optionally sending a wakeup frame first.
 

@@ -18,7 +18,7 @@ except ImportError:
 from serial.tools import list_ports_common
 from serial.tools import list_ports_windows
 
-SERIAL_REGISTRY_PATH = 'HARDWARE\\DEVICEMAP\\SERIALCOMM'
+SERIAL_REGISTRY_PATH = "HARDWARE\\DEVICEMAP\\SERIALCOMM"
 
 
 def regval_to_listport(winport):
@@ -35,7 +35,7 @@ def regval_to_listport(winport):
     listport = list_ports_common.ListPortInfo(device)
 
     # Format the description like other ListPortInfo
-    description = description.replace('\\Device\\', '')
+    description = description.replace("\\Device\\", "")
     listport.description = "{} ({})".format(description, device)
 
     return listport
@@ -101,8 +101,7 @@ def comports_list():
     """
     comports = list(list_ports_windows.comports())
 
-    comports[len(comports):] = [li for li in winreg_comports()
-                                if li not in comports]
+    comports[len(comports) :] = [li for li in winreg_comports() if li not in comports]
 
     return comports
 
@@ -145,6 +144,6 @@ def comports(include_links=False):
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # test
-if __name__ == '__main__':
+if __name__ == "__main__":
     for port, desc, hwid in sorted(comports()):
         print("%s: %s [%s]" % (port, desc, hwid))

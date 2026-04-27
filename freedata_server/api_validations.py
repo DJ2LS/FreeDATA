@@ -1,4 +1,4 @@
-""" This module provides a set of validation functions used within the FreeData system. It includes:
+"""This module provides a set of validation functions used within the FreeData system. It includes:
 
 validate_remote_config: Ensures that a remote configuration is present.
 validate_freedata_callsign: Checks if a callsign conforms to a defined pattern. Note: The current regular expression allows 1 to 7 alphanumeric characters followed by a hyphen and 1 to 3 digits, but it may require adjustment to fully support all SSID values from 0 to 255.
@@ -6,11 +6,10 @@ validate_message_attachment: Validates that a message attachment (represented as
 
 """
 
-
 import re
 
-GRID_RE = re.compile(r'^[A-Ra-r]{2}[0-9]{2}([A-Xa-x]{2})?$')
-CALL_RE = re.compile(r'^[A-Z0-9]{1,7}(-[0-9]{1,3})?$', re.IGNORECASE)
+GRID_RE = re.compile(r"^[A-Ra-r]{2}[0-9]{2}([A-Xa-x]{2})?$")
+CALL_RE = re.compile(r"^[A-Z0-9]{1,7}(-[0-9]{1,3})?$", re.IGNORECASE)
 
 
 def validate_gridsquare(value: str):
@@ -86,7 +85,7 @@ def validate_message_attachment(attachment):
     Raises:
         ValueError: If the attachment is missing a required field or if the 'name' or 'data' field is empty.
     """
-    for field in ['name', 'type', 'data']:
+    for field in ["name", "type", "data"]:
         if field not in attachment:
             raise ValueError(f"Attachment missing '{field}'")
 

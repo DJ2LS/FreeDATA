@@ -45,6 +45,16 @@
             >
               <chat />
             </div>
+
+            <div
+              id="list-broadcasts"
+              class="tab-pane fade"
+              role="tabpanel"
+              aria-labelledby="list-broadcasts-list"
+            >
+              <broadcasts_view />
+            </div>
+
             <div
               id="list-settings"
               class="tab-pane fade"
@@ -68,6 +78,8 @@ import pinia from '../store/index';
 
 import main_modals from './main_modals.vue';
 import settings_view from './settings_screen.vue';
+import broadcasts_view from './broadcasts_screen.vue';
+
 import main_footer_navbar from './main_footer_navbar.vue';
 import main_left_navbar from './main_left_navbar.vue';
 import chat from './chat_screen.vue';
@@ -80,6 +92,7 @@ export default {
   components: {
     main_modals,
     settings_view,
+    broadcasts_view,
     main_footer_navbar,
     main_left_navbar,
     chat,

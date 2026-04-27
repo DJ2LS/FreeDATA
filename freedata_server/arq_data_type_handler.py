@@ -5,14 +5,13 @@ It supports various session types (raw, compressed, and p2p-related) defined in 
 and routes data to the appropriate methods for compression, decompression, and event handling.
 """
 
-
-
 import structlog
 import lzma
 import gzip
 import zlib
-from message_p2p import message_received, message_failed, message_transmitted
+from freedata_server.message_p2p import message_received, message_failed, message_transmitted
 from enum import Enum
+
 
 class ARQ_SESSION_TYPES(Enum):
     """Enumeration for ARQ session types.
@@ -38,34 +37,34 @@ class ARQDataTypeHandler:
 
         self.handlers = {
             ARQ_SESSION_TYPES.raw: {
-                'prepare': self.prepare_raw,
-                'handle': self.handle_raw,
-                'failed': self.failed_raw,
-                'transmitted': self.transmitted_raw,
+                "prepare": self.prepare_raw,
+                "handle": self.handle_raw,
+                "failed": self.failed_raw,
+                "transmitted": self.transmitted_raw,
             },
             ARQ_SESSION_TYPES.raw_lzma: {
-                'prepare': self.prepare_raw_lzma,
-                'handle': self.handle_raw_lzma,
-                'failed': self.failed_raw_lzma,
-                'transmitted': self.transmitted_raw_lzma,
+                "prepare": self.prepare_raw_lzma,
+                "handle": self.handle_raw_lzma,
+                "failed": self.failed_raw_lzma,
+                "transmitted": self.transmitted_raw_lzma,
             },
             ARQ_SESSION_TYPES.raw_gzip: {
-                'prepare': self.prepare_raw_gzip,
-                'handle': self.handle_raw_gzip,
-                'failed': self.failed_raw_gzip,
-                'transmitted': self.transmitted_raw_gzip,
+                "prepare": self.prepare_raw_gzip,
+                "handle": self.handle_raw_gzip,
+                "failed": self.failed_raw_gzip,
+                "transmitted": self.transmitted_raw_gzip,
             },
             ARQ_SESSION_TYPES.p2pmsg_zlib: {
-                'prepare': self.prepare_p2pmsg_zlib,
-                'handle': self.handle_p2pmsg_zlib,
-                'failed' : self.failed_p2pmsg_zlib,
-                'transmitted': self.transmitted_p2pmsg_zlib,
+                "prepare": self.prepare_p2pmsg_zlib,
+                "handle": self.handle_p2pmsg_zlib,
+                "failed": self.failed_p2pmsg_zlib,
+                "transmitted": self.transmitted_p2pmsg_zlib,
             },
             ARQ_SESSION_TYPES.p2p_connection: {
-                'prepare': self.prepare_p2p_connection,
-                'handle': self.handle_p2p_connection,
-                'failed': self.failed_p2p_connection,
-                'transmitted': self.transmitted_p2p_connection,
+                "prepare": self.prepare_p2p_connection,
+                "handle": self.handle_p2p_connection,
+                "failed": self.failed_p2p_connection,
+                "transmitted": self.transmitted_p2p_connection,
             },
         }
 
@@ -107,8 +106,8 @@ class ARQDataTypeHandler:
 
         self.ctx.state_manager.setARQ(False)
 
-        if session_type and session_type in self.handlers and 'handle' in self.handlers[session_type]:
-            return self.handlers[session_type]['handle'](data, statistics)
+        if session_type and session_type in self.handlers and "handle" in self.handlers[session_type]:
+            return self.handlers[session_type]["handle"](data, statistics)
         else:
             self.log(f"Unknown handling endpoint for type: {type_byte}", isWarning=True)
 
@@ -131,8 +130,8 @@ class ARQDataTypeHandler:
 
         self.ctx.state_manager.setARQ(False)
 
-        if session_type in self.handlers and 'failed' in self.handlers[session_type]:
-            return self.handlers[session_type]['failed'](data, statistics)
+        if session_type in self.handlers and "failed" in self.handlers[session_type]:
+            return self.handlers[session_type]["failed"](data, statistics)
         else:
             self.log(f"Unknown handling endpoint: {session_type}", isWarning=True)
 
@@ -150,8 +149,8 @@ class ARQDataTypeHandler:
             A tuple containing the prepared data and the integer value of the session type,
             or None if no prepare handler is found for the given session type.
         """
-        if session_type in self.handlers and 'prepare' in self.handlers[session_type]:
-            return self.handlers[session_type]['prepare'](data), session_type.value
+        if session_type in self.handlers and "prepare" in self.handlers[session_type]:
+            return self.handlers[session_type]["prepare"](data), session_type.value
         else:
             self.log(f"Unknown preparation endpoint: {session_type}", isWarning=True)
 
@@ -174,8 +173,8 @@ class ARQDataTypeHandler:
 
         self.ctx.state_manager.setARQ(False)
 
-        if session_type in self.handlers and 'transmitted' in self.handlers[session_type]:
-            return self.handlers[session_type]['transmitted'](data, statistics)
+        if session_type in self.handlers and "transmitted" in self.handlers[session_type]:
+            return self.handlers[session_type]["transmitted"](data, statistics)
         else:
             self.log(f"Unknown handling endpoint: {session_type}", isWarning=True)
 
@@ -439,7 +438,10 @@ class ARQDataTypeHandler:
         decompressed_data = decompressor.decompress(data)
         decompressed_data += decompressor.flush()
 
-        self.log(f"Handling failed ZLIB compressed P2PMSG data: {len(decompressed_data)} Bytes from {len(data)} Bytes", isWarning=True)
+        self.log(
+            f"Handling failed ZLIB compressed P2PMSG data: {len(decompressed_data)} Bytes from {len(data)} Bytes",
+            isWarning=True,
+        )
         message_failed(self.ctx, decompressed_data, statistics)
         return decompressed_data
 
@@ -464,8 +466,7 @@ class ARQDataTypeHandler:
 
         message_transmitted(self.ctx, decompressed_data, statistics)
         return decompressed_data
-    
-    
+
     def prepare_p2p_connection(self, data):
         """Prepares P2P connection data for transmission using ZLIB compression.
 
@@ -488,7 +489,6 @@ class ARQDataTypeHandler:
         return compressed_data
 
     def handle_p2p_connection(self, data, statistics):
-
         decompressor = zlib.decompressobj(wbits=-zlib.MAX_WBITS)
         decompressed_data = decompressor.decompress(data)
         decompressed_data += decompressor.flush()
@@ -498,16 +498,17 @@ class ARQDataTypeHandler:
             self.ctx.state_manager.p2p_connection_sessions[session_id].received_arq(decompressed_data)
 
     def failed_p2p_connection(self, data, statistics):
-
         decompressor = zlib.decompressobj(wbits=-zlib.MAX_WBITS)
         decompressed_data = decompressor.decompress(data)
         decompressed_data += decompressor.flush()
-        self.log(f"Handling failed gzip compressed P2P_CONNECTION data: {len(decompressed_data)} Bytes from {len(data)} Bytes", isWarning=True)
+        self.log(
+            f"Handling failed gzip compressed P2P_CONNECTION data: {len(decompressed_data)} Bytes from {len(data)} Bytes",
+            isWarning=True,
+        )
         for session_id in self.ctx.state_manager.p2p_connection_sessions:
             self.ctx.state_manager.p2p_connection_sessions[session_id].failed_arq()
 
     def transmitted_p2p_connection(self, data, statistics):
-
         decompressor = zlib.decompressobj(wbits=-zlib.MAX_WBITS)
         decompressed_data = decompressor.decompress(data)
         decompressed_data += decompressor.flush()

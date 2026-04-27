@@ -53,35 +53,6 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
     </label>
   </div>
 
-  <!-- Explorer Stats Publishing -->
-  <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50 text-wrap">
-      {{ $t('settings.web.enablestats') }}
-      <button
-        type="button"
-        class="btn btn-link p-0 ms-2"
-        data-bs-toggle="tooltip"
-        :title="$t('settings.web.enablestats_help')"
-      >
-        <i class="bi bi-question-circle" />
-      </button>
-    </label>
-    <label class="input-group-text w-50">
-      <div class="form-check form-switch form-check-inline">
-        <input
-          id="ExplorerStatsSwitch"
-          v-model="settings.remote.STATION.enable_stats"
-          class="form-check-input"
-          type="checkbox"
-          @change="onChange"
-        >
-        <label
-          class="form-check-label"
-          for="ExplorerStatsSwitch"
-        >{{ $t('settings.enable') }}</label>
-      </div>
-    </label>
-  </div>
 </template>
 
 

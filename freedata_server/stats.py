@@ -1,17 +1,16 @@
-# -*- coding: UTF-8 -*-
 """
 Created on 05.11.23
 
 @author: DJ2LS
 """
-# pylint: disable=invalid-name, line-too-long, c-extension-no-member
-# pylint: disable=import-outside-toplevel, attribute-defined-outside-init
+
 import requests
 import json
 import structlog
-from constants import MODEM_VERSION, STATS_API_URL
+from freedata_server.constants import MODEM_VERSION, STATS_API_URL
 
 log = structlog.get_logger("stats")
+
 
 class stats:
     """Handles the collection and submission of FreeData session statistics.
@@ -20,9 +19,11 @@ class stats:
     SNR, data rate, file size, and duration. It then pushes these statistics
     to a remote API endpoint for aggregation and analysis.
     """
+
     def __init__(self, ctx):
         self.api_url = STATS_API_URL
         self.ctx = ctx
+
     def push(self, status, session_statistics, dxcall, receiving=True):
         """Pushes session statistics to the remote API endpoint.
 
@@ -48,27 +49,29 @@ class stats:
         else:
             station = "ISS"
 
-        mycallsign = self.ctx.config_manager.config['STATION']['mycall']
-        ssid = self.ctx.config_manager.config['STATION']['myssid']
+        mycallsign = self.ctx.config_manager.config["STATION"]["mycall"]
+        ssid = self.ctx.config_manager.config["STATION"]["myssid"]
         full_callsign = f"{mycallsign}-{ssid}"
 
         headers = {"Content-Type": "application/json"}
         station_data = {
-            'callsign': full_callsign,
-            'dxcallsign': dxcall,
-            'gridsquare': self.ctx.config_manager.config['STATION']['mygrid'],
-            'dxgridsquare': str(self.ctx.state_manager.dxgrid, "utf-8"),
-            'frequency': 0 if self.ctx.state_manager.radio_frequency is None else self.ctx.state_manager.radio_frequency,
-            'avgsnr': avg_snr,
-            'bytesperminute': session_statistics['bytes_per_minute'],
-            'filesize': session_statistics['total_bytes'],
-            'duration': session_statistics['duration'],
-            'status': status,
-            'direction': station,
-            'version': MODEM_VERSION,
-            'time_histogram': session_statistics['time_histogram'],  # Adding new histogram data
-            'snr_histogram': session_statistics['snr_histogram'],  # Adding new histogram data
-            'bpm_histogram': session_statistics['bpm_histogram'],  # Adding new histogram data
+            "callsign": full_callsign,
+            "dxcallsign": dxcall,
+            "gridsquare": self.ctx.config_manager.config["STATION"]["mygrid"],
+            "dxgridsquare": str(self.ctx.state_manager.dxgrid, "utf-8"),
+            "frequency": 0
+            if self.ctx.state_manager.radio_frequency is None
+            else self.ctx.state_manager.radio_frequency,
+            "avgsnr": avg_snr,
+            "bytesperminute": session_statistics["bytes_per_minute"],
+            "filesize": session_statistics["total_bytes"],
+            "duration": session_statistics["duration"],
+            "status": status,
+            "direction": station,
+            "version": MODEM_VERSION,
+            "time_histogram": session_statistics["time_histogram"],  # Adding new histogram data
+            "snr_histogram": session_statistics["snr_histogram"],  # Adding new histogram data
+            "bpm_histogram": session_statistics["bpm_histogram"],  # Adding new histogram data
         }
 
         station_data = json.dumps(station_data)
@@ -79,5 +82,5 @@ class stats:
             # print(response.status_code)
             # print(response.content)
 
-        except Exception as e:
+        except Exception as _:
             log.warning("[API] connection lost")

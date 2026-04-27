@@ -1,8 +1,10 @@
 import numpy as np
-#from scipy.signal import freqz
+
+# from scipy.signal import freqz
 import ctypes
 
-testFilter = (ctypes.c_float * 3)(1.000000,1.000000,1.000000)
+testFilter = (ctypes.c_float * 3)(1.000000, 1.000000, 1.000000)
+
 
 def generate_filter_coefficients(Fs_Hz, bandwidth_Hz, taps):
     """Generates filter coefficients for a sinc filter.
@@ -32,6 +34,7 @@ def generate_filter_coefficients(Fs_Hz, bandwidth_Hz, taps):
     # Convert to ctypes array (interleaved real and imaginary)
     CArrayType = ctypes.c_float * (len(h) * 2)
     return CArrayType(*(np.hstack([np.real(h), np.imag(h)]).tolist()))
+
 
 """
 def plot_filter():

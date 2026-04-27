@@ -1,6 +1,8 @@
 import time
 import threading
 import numpy as np
+
+
 class StateManager:
     """Manages and updates the state of the FreeDATA server.
 
@@ -10,8 +12,8 @@ class StateManager:
     and retrieve state information, as well as manage events and
     synchronization.
     """
-    def __init__(self, statequeue):
 
+    def __init__(self, statequeue):
         # state related settings
         self.statequeue = statequeue
         self.newstate = None
@@ -37,7 +39,7 @@ class StateManager:
         # If true, any wait() call is blocking
         self.transmitting_event = threading.Event()
         self.setTransmitting(False)
-        
+
         self.audio_dbfs = 0
         self.dxcallsign: bytes = b"ZZ9YY-0"
         self.dxgrid: bytes = b"------"
@@ -50,7 +52,7 @@ class StateManager:
 
         self.p2p_connection_sessions = {}
 
-        #self.mesh_routing_table = []
+        # self.mesh_routing_table = []
 
         self.radio_frequency = 0
         self.radio_mode = None
@@ -98,7 +100,7 @@ class StateManager:
             value: The new value for the state variable.
         """
         setattr(self, key, value)
-        #print(f"State ==> Setting {key} to value {value}")
+        # print(f"State ==> Setting {key} to value {value}")
         # only process data if changed
         new_state = self.get_state_event(True)
         if new_state != self.newstate:
@@ -117,7 +119,7 @@ class StateManager:
             value: The new value for the radio parameter.
         """
         setattr(self, key, value)
-        #print(f"State ==> Setting {key} to value {value}")
+        # print(f"State ==> Setting {key} to value {value}")
         # only process data if changed
         new_radio = self.get_radio_event(True)
         if new_radio != self.newradio:
@@ -134,13 +136,13 @@ class StateManager:
         Args:
             array (list): A list of booleans representing the busy status of each slot.
         """
-        for i in range(0,len(array),1):
+        for i in range(0, len(array), 1):
             if not array[i] == self.channel_busy_slot[i]:
                 self.channel_busy_slot = array
                 self.newstate = self.get_state_event(True)
                 self.sendStateUpdate(self.newstate)
                 continue
-    
+
     def get_state_event(self, isChangedState):
         """Generates a state event dictionary.
 
@@ -157,7 +159,7 @@ class StateManager:
             dict: A dictionary containing the state information.
         """
         msgtype = "state-change"
-        if (not isChangedState):
+        if not isChangedState:
             msgtype = "state"
 
         return {
@@ -170,7 +172,7 @@ class StateManager:
             "is_codec2_traffic": self.is_receiving_codec2_signal(),
             "audio_dbfs": self.audio_dbfs,
             "activities": self.activities_list,
-            "is_modem_busy" : self.getARQ()
+            "is_modem_busy": self.getARQ(),
         }
 
     def get_radio_event(self, isChangedState):
@@ -189,7 +191,7 @@ class StateManager:
             dict: A dictionary containing the radio state information.
         """
         msgtype = "radio-change"
-        if (not isChangedState):
+        if not isChangedState:
             msgtype = "radio"
 
         return {
@@ -199,10 +201,10 @@ class StateManager:
             "radio_rf_level": self.radio_rf_level,
             "radio_mode": self.radio_mode,
             "s_meter_strength": self.s_meter_strength,
-            "radio_swr" : self.radio_swr,
+            "radio_swr": self.radio_swr,
             "radio_tuner": self.radio_tuner,
         }
-    
+
     # .wait() blocks until the event is set
     def isTransmitting(self):
         """Checks if the server is currently transmitting.
@@ -215,7 +217,7 @@ class StateManager:
             bool: True if transmitting, False otherwise.
         """
         return not self.transmitting_event.is_set()
-    
+
     # .wait() blocks until the event is set
     def setTransmitting(self, transmitting: bool):
         """Sets the transmitting status of the server.
@@ -345,7 +347,11 @@ class StateManager:
                     self.remove_arq_iss_session(session_id)
 
             # check again if session id exists in session because of cleanup
-            if session_id in sessions and sessions[session_id].state.name not in ['ENDED', 'ABORTED', 'FAILED']:
+            if session_id in sessions and sessions[session_id].state.name not in [
+                "ENDED",
+                "ABORTED",
+                "FAILED",
+            ]:
                 print(f"[State Manager] running session...[{session_id}]")
                 return True
         return False
@@ -364,7 +370,7 @@ class StateManager:
             ARQSessionISS or None: The ARQSessionISS object if found, None otherwise.
         """
         if id not in self.arq_iss_sessions:
-            #raise RuntimeError(f"ARQ ISS Session '{id}' not found!")
+            # raise RuntimeError(f"ARQ ISS Session '{id}' not found!")
             # DJ2LS: WIP We need to find a better way of handling this
             pass
         return self.arq_iss_sessions[id]
@@ -383,7 +389,7 @@ class StateManager:
             ARQSessionIRS or None: The ARQSessionIRS object if found, None otherwise.
         """
         if id not in self.arq_irs_sessions:
-            #raise RuntimeError(f"ARQ IRS Session '{id}' not found!")
+            # raise RuntimeError(f"ARQ IRS Session '{id}' not found!")
             # DJ2LS: WIP We need to find a better way of handling this
             pass
         return self.arq_irs_sessions[id]
@@ -424,8 +430,8 @@ class StateManager:
         for session_id in list(self.arq_irs_sessions.keys()):
             session = self.arq_irs_sessions[session_id]
             session.transmission_aborted()
-            # For now, we don't remove IRS session because of resuming transmissions. 
-            #self.remove_arq_irs_session(session_id)
+            # For now, we don't remove IRS session because of resuming transmissions.
+            # self.remove_arq_irs_session(session_id)
 
         # Stop and remove ISS sessions
         for session_id in list(self.arq_iss_sessions.keys()):
@@ -448,12 +454,12 @@ class StateManager:
         activity_id = np.random.bytes(8).hex()
 
         # if timestamp not provided, add it here
-        if 'timestamp' not in activity_data:
-            activity_data['timestamp'] = int(time.time())
+        if "timestamp" not in activity_data:
+            activity_data["timestamp"] = int(time.time())
 
         # if frequency not provided, add it here
-        if 'frequency' not in activity_data:
-            activity_data['frequency'] = self.radio_frequency
+        if "frequency" not in activity_data:
+            activity_data["frequency"] = self.radio_frequency
         self.activities_list[activity_id] = activity_data
         self.sendStateUpdate(self.newstate)
 
@@ -582,8 +588,8 @@ class StateManager:
             # Check IRS sessions
             if session_id in self.arq_irs_sessions:
                 return self.arq_irs_sessions[session_id].dxcall
-#Part of the code to solve P2P connections with the ability to respond to SSIDs other than the one set on the modem.
-#I will circle back around and check that this is really the best way to handle this edge case...
+            # Part of the code to solve P2P connections with the ability to respond to SSIDs other than the one set on the modem.
+            # I will circle back around and check that this is really the best way to handle this edge case...
             if session_id in self.p2p_connection_sessions:
                 return self.p2p_connection_sessions[session_id].destination
 
