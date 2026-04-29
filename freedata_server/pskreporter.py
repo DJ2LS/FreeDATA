@@ -237,16 +237,6 @@ def send_bulk(sock: socket.socket, spots: Iterable[Tuple]) -> None:
     log.info("PSK packet sent", spots=len(validated))
     log.info(dump_packet(pkt))
 
-
-# def debug_string(s, label=""):
-#    print(f"\n=== {label} ===")
-#    print(f"String: '{s}'")
-#    print(f"Length: {len(s)}")
-#    print(f"Repr: {repr(s)}")
-#    print(f"Bytes: {s.encode('utf-8')}")
-#    for i, c in enumerate(s):
-#        print(f"  [{i}] ord={ord(c):3d} hex={ord(c):02x} char={repr(c)}")
-
 def dump_packet(pkt: bytes):
     print(" ".join(f"{b:02x}" for b in pkt))
 
