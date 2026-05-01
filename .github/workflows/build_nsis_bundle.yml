@@ -36,7 +36,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install .[nuitka]
 
-      - uses: robinraju/release-downloader@v1.12
+      - uses: robinraju/release-downloader@v1.13
         with:
           repository: "Hamlib/Hamlib"
           fileName: "hamlib-w64-*.zip"
