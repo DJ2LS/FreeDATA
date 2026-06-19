@@ -251,10 +251,6 @@
             "locator_placeholder": "Your grid locator",
             "respondtocq": "Respond to CQ callings with a QRV reply",
             "respondtocq_help": "QRV reply sent with random delay",
-            "enable_pskreporter": "Report received beacons to PSKReporter",
-            "enable_pskreporter_help": "Reports received beacons to PSKreporter.info",
-            "pskreporter_fallback_frequency": "Default frequency if your rig doesnt support this",
-            "pskreporter_fallback_frequency_help": "Default frequency in Hz if your rig doesnt support this",
             "enablecallsignblacklist": "Enable callsign blacklist",
             "enablecallsignblacklist_help": "Ignore requests from blacklisted callsigns",
             "callsignblacklist": "Callsign blacklist",
@@ -314,7 +310,11 @@
             "enableexplorer": "Publish station details",
             "enableexplorer_help": "Share your station's status with FreeDATA web service",
             "enablestats":"Publish statistics",
-            "enablestats_help": "Share your station's statistics with FreeDATA web service"
+            "enablestats_help": "Share your station's statistics with FreeDATA web service",
+            "enable_pskreporter": "Report received beacons to PSKReporter",
+            "enable_pskreporter_help": "Reports received beacons to PSKreporter.info",
+            "pskreporter_fallback_frequency": "Default frequency if your rig doesnt support this",
+            "pskreporter_fallback_frequency_help": "Default frequency in Hz if your rig doesnt support this"
         },
         "exp": {
             "introduction": "Warning: These features may be incomplete. They are for experienced users ONLY!",

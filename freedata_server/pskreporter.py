@@ -8,7 +8,6 @@ import time
 import struct
 import socket
 import sys
-import json
 from datetime import datetime
 from typing import Dict, Any, Tuple, List, Iterable, Union
 from pathlib import Path
@@ -27,7 +26,7 @@ HOST = "report.pskreporter.info"
 PORT_TEST = 14739
 PORT_LIVE = 4739
 
-# Global station metadata used for receiver record
+# Global station metadata used for the receiver record
 _mycall = ""
 _mygrid = ""
 _mysw = ""
@@ -41,7 +40,7 @@ def load_seq() -> int:
         return DEFAULT_SEQ
     try:
         return int(SEQ_PATH.read_text().strip())
-    except:
+    except Exception:
         return DEFAULT_SEQ
 
 
@@ -53,13 +52,10 @@ def save_seq(seq: int) -> None:
 
 
 # ----------------------------------------------------------------------
-# packing functions
+# packing helpers
 # ----------------------------------------------------------------------
-def hx(a):
-    return bytes(a)
-
-
 def pstr(s: str) -> bytes:
+    """Pack a string as a 1-byte length prefix followed by its UTF-8 bytes."""
     b = s.encode("utf-8")
     if len(b) > 255:
         raise ValueError("String too long for pstr()")
@@ -75,9 +71,20 @@ def p32(i: int) -> bytes:
 
 
 def pad(b: bytes) -> bytes:
+    """Pad to a 4-byte boundary, as required by the IPFIX-based PSKReporter protocol."""
     while len(b) % 4 != 0:
         b += b"\x00"
     return b
+
+
+# ----------------------------------------------------------------------
+# Grid square helpers
+# ----------------------------------------------------------------------
+def normalize_grid(grid: str) -> str:
+    """PSKReporter expects Maidenhead locators with the sub-square letters lowercase."""
+    if len(grid) < 2:
+        return grid
+    return grid[:-2] + grid[-2:].lower()
 
 
 # ----------------------------------------------------------------------
@@ -98,16 +105,16 @@ def make_psk_beacon(callsign, grid, frequency, snr, timestamp=None) -> Dict[str,
 # ----------------------------------------------------------------------
 def transform_beacon_to_spot(beacon: Dict[str, Any]) -> Tuple:
     """
-    Convert FreeDATA beacon into a 7-field PSKReporter:
-    (call, freq_hz, imd, snr, mode, grid, epoch)
+    Convert a FreeDATA beacon into a 7-field PSKReporter spot tuple:
+    (call, freq_hz, snr, imd, mode, grid, epoch)
     """
     call = beacon["callsign"].split("-")[0]
-    grid_check = beacon.get("gridsquare", "")
-    grid = grid_check[:-2] + grid_check[-2:].lower()
-    log.warning("Raw grid: ", raw_grid=grid)
+    grid = normalize_grid(beacon.get("gridsquare", ""))
+    log.debug("normalized grid", grid=grid)
+
     freq_hz = int(float(beacon["frequency"]))
-    imd = 0
     snr = int(beacon["snr"])
+    imd = 0
     mode = "FreeDATA"
 
     ts = beacon.get("timestamp")
@@ -115,7 +122,7 @@ def transform_beacon_to_spot(beacon: Dict[str, Any]) -> Tuple:
         try:
             dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
             epoch = int(dt.timestamp())
-        except:
+        except Exception:
             epoch = int(time.time())
     else:
         epoch = int(ts)
@@ -150,7 +157,7 @@ def build_packet(senders: List[Tuple]) -> bytes:
     global _mycall, _mygrid, _mysw
 
     # Receiver format descriptor
-    rrf = hx([
+    rrf = bytes([
         0x00, 0x03, 0x00, 0x24, 0x99, 0x92, 0x00, 0x03, 0x00, 0x00,
         0x80, 0x02, 0xFF, 0xFF, 0x00, 0x00, 0x76, 0x8F,
         0x80, 0x04, 0xFF, 0xFF, 0x00, 0x00, 0x76, 0x8F,
@@ -159,7 +166,7 @@ def build_packet(senders: List[Tuple]) -> bytes:
     ])
 
     # Sender format descriptor
-    srf = hx([
+    srf = bytes([
         0x00, 0x02, 0x00, 0x44, 0x99, 0x93, 0x00, 0x08,
         0x80, 0x01, 0xFF, 0xFF, 0x00, 0x00, 0x76, 0x8F,
         0x80, 0x05, 0x00, 0x04, 0x00, 0x00, 0x76, 0x8F,
@@ -171,31 +178,30 @@ def build_packet(senders: List[Tuple]) -> bytes:
         0x00, 0x96, 0x00, 0x04
     ])
 
-    # Receiver record
+    # Receiver record (our own station info)
     rr = pad(pstr(_mycall) + pstr(_mygrid) + pstr(_mysw))
-    rr = hx([0x99, 0x92]) + p16(len(rr) + 4) + rr
+    rr = bytes([0x99, 0x92]) + p16(len(rr) + 4) + rr
 
-    # Sender records
+    # Sender records (one per heard station)
     sr = b""
-    for call, freq_hz, imd, snr, mode, grid, epoch in senders:
+    for call, freq_hz, snr, imd, mode, grid, epoch in senders:
         sr += pstr(call)
         sr += p32(freq_hz)
-        sr += struct.pack("b", imd)
-        sr += struct.pack("b", snr)
+        sr += struct.pack("b", snr)   # field 0x8006: sNR
+        sr += struct.pack("b", imd)   # field 0x8007: IMDFlag
         sr += pstr(mode)
-        sr += b"\x01"
+        sr += b"\x01"                 # field 0x800B: informationSource
         sr += pstr(grid)
         sr += p32(epoch)
 
     sr = pad(sr)
-    sr = hx([0x99, 0x93]) + p16(len(sr) + 4) + sr
+    sr = bytes([0x99, 0x93]) + p16(len(sr) + 4) + sr
 
     seq = load_seq()
     save_seq(seq + 1)
 
     # Packet header
-    header = b""
-    header += hx([0x00, 0x0A])
+    header = bytes([0x00, 0x0A])
     header += p16(len(rrf) + len(srf) + len(rr) + len(sr) + 16)
     header += p32(int(time.time()))
     header += p32(seq)
@@ -233,12 +239,8 @@ def send_bulk(sock: socket.socket, spots: Iterable[Tuple]) -> None:
 
     pkt = build_packet(validated)
     sock.send(pkt)
-    log.info(pkt)
+    log.debug("PSK packet built", hex=pkt.hex())
     log.info("PSK packet sent", spots=len(validated))
-    log.info(dump_packet(pkt))
-
-def dump_packet(pkt: bytes):
-    print(" ".join(f"{b:02x}" for b in pkt))
 
 
 # ----------------------------------------------------------------------
@@ -250,24 +252,25 @@ class Pskreporter:
         self.modem_version = self.ctx.constants.MODEM_VERSION
 
     def push(self):
-        mycall = f"{self.ctx.config_manager.config['STATION']['mycall']}"
-        mygrid = self.ctx.config_manager.config["STATION"]["mygrid"]
-        pskreporter_fallback_frequency = self.ctx.config_manager.config["STATION"]["pskreporter_fallback_frequency"]
-        version = "FreeDATA " + str(self.modem_version)
-        # psk_debug = self.ctx.config_manager.config["STATION"]["pskreporter_debug"]
-        # log.info(psk_debug)
+        station = self.ctx.config_manager.config["STATION"]
+        mycall = station["mycall"]
+        mygrid = station["mygrid"]
+        fallback_frequency = station["pskreporter_fallback_frequency"]
+        version = f"FreeDATA {self.modem_version}"
+
         udp = init_socket(mycall, mygrid, version, testing=False)
 
         spots = []
-
         for heard in self.ctx.state_manager.heard_stations:
             try:
                 callsign = heard[0]
-                grid_check = heard[1]
-                grid = grid_check[:-2] + grid_check[-2:].lower()
+                grid = normalize_grid(heard[1])
                 timestamp = heard[2]
-                freq = pskreporter_fallback_frequency if heard[6] == "---" else heard[6]
-                snr = heard[4].split("/")[1] if isinstance(heard[4], str) and "/" in heard[4] else heard[4]
+                freq = fallback_frequency if heard[6] == "---" else heard[6]
+
+                raw_snr = heard[4]
+                snr = raw_snr.split("/")[1] if isinstance(raw_snr, str) and "/" in raw_snr else raw_snr
+
                 beacon = make_psk_beacon(callsign, grid, freq, snr, timestamp)
                 spots.append(transform_beacon_to_spot(beacon))
 
@@ -276,9 +279,5 @@ class Pskreporter:
 
         if spots:
             send_bulk(udp, spots)
-            log.info(spots)
-            log.info(grid)
-            log.info(snr)
-            log.info(freq)
         else:
             log.info("No PSKReporter spots to send")

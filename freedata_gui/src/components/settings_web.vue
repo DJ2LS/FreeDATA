@@ -86,12 +86,12 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
 
-      {{ $t('settings.station.enable_pskreporter') }}
+      {{ $t('settings.web.enable_pskreporter') }}
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        :title="$t('settings.station.enable_pskreporter_help')"
+        :title="$t('settings.web.enable_pskreporter_help')"
       >
         <i class="bi bi-question-circle" />
       </button>
@@ -116,13 +116,13 @@ import { settingsStore as settings, onChange } from "../store/settingsStore.js";
   <!-- PSKReporter fallback -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50 text-wrap">
-      {{ $t('settings.station.pskreporter_fallback_frequency') }}
+      {{ $t('settings.web.pskreporter_fallback_frequency') }}
 
       <button
         type="button"
         class="btn btn-link p-0 ms-2"
         data-bs-toggle="tooltip"
-        :title="$t('settings.station.pskreporter_fallback_frequency_help')"
+        :title="$t('settings.web.pskreporter_fallback_frequency_help')"
       >
         <i class="bi bi-question-circle" />
       </button>
