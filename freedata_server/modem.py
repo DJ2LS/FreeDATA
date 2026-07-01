@@ -179,13 +179,22 @@ class RF:
             self.resampler = codec2.resampler()
 
             # SoundDevice audio input stream
+            # blocksize=0 lets PortAudio deliver small blocks, keeping RX
+            # buffering delay low. latency=0.2 sets the ring depth explicitly:
+            # the default ("high") can negotiate as little as two periods on
+            # some devices (measured on snd-aloop, where a two period ring at
+            # 100 ms periods drops audio continuously), and with blocksize=0
+            # alone the ring can come out as shallow as 40 ms. An explicit
+            # 200 ms request gives a deep ring of small periods on every
+            # device we measured (CM108 hardware and snd-aloop alike).
             self.sd_input_stream = sd.InputStream(
                 channels=1,
                 dtype="int16",
                 callback=self.sd_input_audio_callback,
                 device=in_dev_index,
                 samplerate=self.AUDIO_SAMPLE_RATE,
-                blocksize=4800,
+                blocksize=0,
+                latency=0.2,
             )
             self.sd_input_stream.start()
 
