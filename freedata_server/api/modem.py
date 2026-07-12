@@ -453,7 +453,7 @@ async def post_arq_raw(
     """
     if not ctx.state_manager.is_modem_running:
         api_abort("Modem not running.", 503)
-    if ctx.state_manager.is_modem_busy:
+    if ctx.state_manager.getARQ():
         api_abort("Modem Busy.", 503)
     dxcall = payload.get("dxcall")
     data_type = payload.get("type")
