@@ -464,7 +464,7 @@ async def post_arq_raw(
         api_abort("Invalid 'type' parameter.", 400)
     if not raw_data:
         api_abort("Missing 'data' parameter.", 400)
-    await enqueue_tx_command(ctx, command_arq_raw.SendARQRawCommand, payload)
+    await enqueue_tx_command(ctx, command_arq_raw.ARQRawCommand, payload)
     return api_response({"data": raw_data, "dxcall": dxcall, "type": data_type})
 
 
