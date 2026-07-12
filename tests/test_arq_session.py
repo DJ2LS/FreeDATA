@@ -154,6 +154,47 @@ class TestARQSession(unittest.TestCase):
         # self.ctx_IRS.shutdown()
         # self.ctx_ISS.shutdown()
 
+    def testARQSessionIRSSuccessEmitsFinishedEvent(self):
+        # Gap 3 regression test: a completed IRS session must emit exactly
+        # one "arq-transfer-inbound" event with success=True, and the
+        # payload must round-trip through the event's base64 data field
+        # (previously the success branch in arq_session_irs.py never called
+        # send_arq_session_finished at all, so no such event was ever
+        # emitted -- only the abort/failure paths did).
+        self.loss_probability = 0
+        payload = np.random.bytes(200)
+
+        self.establishChannels()
+        params = {
+            "dxcall": "AA1AAA-1",
+            "data": base64.b64encode(payload),
+            # "raw" (not "raw_lzma"): the event's data field carries the
+            # bytes as received over the air, before ARQDataTypeHandler's
+            # separate decompression step -- "raw" keeps this an honest
+            # exact-match round-trip check instead of asserting equality
+            # against still-compressed bytes.
+            "type": "raw",
+        }
+        cmd = ARQRawCommand(self.ctx_ISS, params)
+        cmd.run()
+        self.waitForSession(self.ctx_ISS.TESTMODE_EVENTS, True)
+        self.channels_running = False
+
+        finished_events = []
+        while not self.ctx_IRS.TESTMODE_EVENTS.empty():
+            ev = self.ctx_IRS.TESTMODE_EVENTS.get()
+            if "arq-transfer-inbound" in ev:
+                finished_events.append(ev["arq-transfer-inbound"])
+
+        successes = [e for e in finished_events if e.get("success") is True]
+        self.assertEqual(
+            len(successes),
+            1,
+            f"expected exactly one successful arq-transfer-inbound event, got {finished_events}",
+        )
+        received = base64.b64decode(successes[0]["data"])
+        self.assertEqual(received, payload)
+
     def DisabledtestARQSessionAbortTransmissionISS(self):
         # set Packet Error Rate (PER) / frame loss probability
         self.loss_probability = 0

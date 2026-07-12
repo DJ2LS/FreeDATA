@@ -373,6 +373,17 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.session_ended = time.time()
             self.set_state(IRS_State.ENDED)
 
+            session_stats = self.calculate_session_statistics(self.received_bytes, self.total_length)
+            self.ctx.event_manager.send_arq_session_finished(
+                False,
+                self.id,
+                self.dxcall,
+                True,
+                self.state.name,
+                data=self.received_data,
+                statistics=session_stats,
+            )
+
             return self.received_data, self.type_byte
         else:
             ack = self.frame_factory.build_arq_burst_ack(
