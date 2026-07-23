@@ -18,9 +18,10 @@ jobs:
         include:
           #- node-version: "16" # EOL
           #- node-version: "18" # EOL
-          - node-version: "20"
+          #- node-version: "20" # EOL (2026-04-30), also incompatible with @babel/core 8 (requires ^22.18.0 || >=24.11.0)
           - node-version: "22"
           - node-version: "24"
+          - node-version: "26"
 
     steps:
       - uses: actions/checkout@v6
