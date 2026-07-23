@@ -23,7 +23,7 @@ function connect(endpoint, dispatcher) {
     `${wsProtocol}//${hostname}:${adjustedPort}/${endpoint}`,
   );
 
-  if (endpoint.includes("audio")){
+  if (endpoint.includes("audio")) {
     socket.binaryType = "arraybuffer";
   }
 

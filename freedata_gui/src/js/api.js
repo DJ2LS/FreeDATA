@@ -9,7 +9,10 @@ import {
   validateCallsignWithoutSSID,
 } from "./freedata";
 import { processFreedataMessages } from "./messagesHandler";
-import { processFreedataDomains, processFreedataBroadcastsPerDomain } from "./broadcastsHandler";
+import {
+  processFreedataDomains,
+  processFreedataBroadcastsPerDomain,
+} from "./broadcastsHandler";
 
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
@@ -327,13 +330,12 @@ export async function setStationInfo(callsign, info) {
   return await apiPost(`/freedata/station/${callsign}`, info);
 }
 
-
 export async function getFreedataBroadcasts() {
   broadcastStore.loading = true;
   try {
     const res = await apiGet("/freedata/broadcasts");
     if (res) {
-      processFreedataBroadcasts(res)
+      processFreedataBroadcasts(res);
     }
   } catch (error) {
     console.error("Error fetching broadcasts:", error);
@@ -347,7 +349,7 @@ export async function getFreedataBroadcastsPerDomain(domain) {
   try {
     const res = await apiGet(`/freedata/broadcasts/${domain}/`);
     if (res) {
-      processFreedataBroadcastsPerDomain(res)
+      processFreedataBroadcastsPerDomain(res);
     }
   } catch (error) {
     console.error("Error fetching broadcasts:", error);
@@ -356,13 +358,12 @@ export async function getFreedataBroadcastsPerDomain(domain) {
   }
 }
 
-
 export async function getFreedataDomains() {
   broadcastStore.loading = true;
   try {
     const res = await apiGet("/freedata/broadcasts/domains");
     if (res) {
-      processFreedataDomains(res)
+      processFreedataDomains(res);
     }
   } catch (error) {
     console.error("Error fetching broadcasts:", error);
@@ -389,12 +390,8 @@ export async function deleteFreedataBroadcastDomain(id) {
   return await apiDelete(`/freedata/broadcasts/${id}`);
 }
 
-
-
 export async function postFreedataBroadcastADIF(id) {
   return await apiPost(`/freedata/broadcasts/${id}/adif`, {
     action: "retransmit",
   });
 }
-
-

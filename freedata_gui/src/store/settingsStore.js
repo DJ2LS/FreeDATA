@@ -96,7 +96,7 @@ const defaultConfig = {
     EXP: {
       enable_ring_buffer: false,
       enable_vhf: false,
-      enable_groupchat: false
+      enable_groupchat: false,
     },
   },
 };

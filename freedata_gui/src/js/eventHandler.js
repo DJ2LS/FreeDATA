@@ -5,8 +5,8 @@ import {
   getModemState,
   getRadioStatus,
   getSysInfo,
-    getFreedataDomains,
-    getFreedataBroadcastsPerDomain
+  getFreedataDomains,
+  getFreedataBroadcastsPerDomain,
 } from "./api";
 import { processFreedataMessages } from "./messagesHandler";
 import { processRadioStatus } from "./radioHandler";
@@ -45,7 +45,7 @@ export async function loadAllData() {
   getOverallHealth();
   getFreedataMessages();
   getFreedataDomains();
-  getFreedataBroadcastsPerDomain(broadcast.selectedDomain)
+  getFreedataBroadcastsPerDomain(broadcast.selectedDomain);
   processFreedataMessages();
   processRadioStatus();
 }
@@ -111,8 +111,8 @@ export function eventDispatcher(data) {
   switch (data["message-db"]) {
     case "changed":
       console.log("fetching new messages...");
-        getFreedataDomains();
-        getFreedataBroadcastsPerDomain(broadcast.selectedDomain)
+      getFreedataDomains();
+      getFreedataBroadcastsPerDomain(broadcast.selectedDomain);
 
       var messages = getFreedataMessages();
       processFreedataMessages(messages);

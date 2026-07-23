@@ -9,8 +9,8 @@ const MAX_BLOCKS = 10;
 
 export function addDataToAudio(data) {
   const int16 = new Int16Array(data);
-  const copy = new Int16Array(int16);  // Kopie für Sicherheit
-/*
+  const copy = new Int16Array(int16); // Kopie für Sicherheit
+  /*
   const stream = audio.rxStream;
 
   if (stream.length >= MAX_BLOCKS) {
@@ -19,7 +19,5 @@ export function addDataToAudio(data) {
 
   stream.push(copy);
   */
-   audio.addBlock(copy);
-
-  
+  audio.addBlock(copy);
 }

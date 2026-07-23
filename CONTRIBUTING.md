@@ -7,11 +7,12 @@ in C/C++, and the frontend is build with VueJS, so you will need Python (from
 3.10 to 3.13) to work on the backend, and node+npm to work on the frontend.
 
 System dependencies required:
-  - python3 (with virtual environment support)
-  - portaudio
-  - hamlib (optional, there is a vendored version bundled with the freedata
-    server, or you can build it from source)
-  - nodejs + npm
+
+- python3 (with virtual environment support)
+- portaudio
+- hamlib (optional, there is a vendored version bundled with the freedata
+  server, or you can build it from source)
+- nodejs + npm
 
 Example for debian trixie: `sudo apt update && sudo apt install python3
 python3-venv nodejs npm portaudio19-dev`
@@ -37,6 +38,7 @@ To fetch the `npm` dependencies go inside `./freedata_gui` and run `npm
 install`. See `./freedata_gui/README.md` for additional informations.
 
 ## Linting and Formatting (python-only)
+
 The python sources must be formatted and checked using `ruff`. There is a CI
 workflow that block all PRs that do not pass the linter/formatter checks.
 
@@ -54,5 +56,6 @@ usefull in the CI. In the future it will no longer be necessary
   fix automatically, you must fix them manually.
 
 ## Testing backend
+
 To run the backend tests run inside the virtual environment `python -m unittest
 discover tests`

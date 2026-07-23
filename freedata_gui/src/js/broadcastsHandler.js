@@ -1,19 +1,19 @@
-import { setActivePinia } from 'pinia';
-import pinia from '../store/index';
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { useBroadcastStore } from '../store/broadcastStore.js';
+import { useBroadcastStore } from "../store/broadcastStore.js";
 import {
   deleteFreedataBroadcastDomain,
   deleteFreedataBroadcastMessage,
   postFreedataBroadcastADIF,
   retransmitFreedataBroadcast,
-  sendFreedataBroadcastMessage
+  sendFreedataBroadcastMessage,
 } from "@/js/api";
 const broadcast = useBroadcastStore(pinia);
 
 export async function processFreedataBroadcastsPerDomain(data) {
-  console.log(data)
+  console.log(data);
   broadcast.setBroadcastsForDomain(data);
 }
 
@@ -25,11 +25,9 @@ export async function processFreedataDomains(data) {
   // sum of unread_count
   broadcast.totalUnreadMessages = Object.values(data).reduce(
     (sum, domain) => sum + (domain.unread_count || 0),
-    0
+    0,
   );
 }
-
-
 
 export function newBroadcastMessage(params) {
   sendFreedataBroadcastMessage(params);
@@ -42,7 +40,7 @@ export function repeatBroadcastTransmission(id) {
 
 export function deleteBroadcastDomainFromDB(domain) {
   deleteFreedataBroadcastDomain(domain);
-  broadcast.selectedDomain = '';
+  broadcast.selectedDomain = "";
 }
 
 export function sendBroadcastADIFviaUDP(domain) {

@@ -53,11 +53,6 @@ export const useAudioStore = defineStore("audioStore", () => {
     }
   }
 
-  
-
-
-
-
   const loadAudioDevices = async () => {
     try {
       const devices = await getAudioDevices();
@@ -83,7 +78,6 @@ export const useAudioStore = defineStore("audioStore", () => {
     resetBuffer,
     get bufferedBlockCount() {
       return readyBlocks;
-    }, 
-    
+    },
   };
 });

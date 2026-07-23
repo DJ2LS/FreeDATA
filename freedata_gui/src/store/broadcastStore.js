@@ -1,9 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
-
 export const useBroadcastStore = defineStore("broadcastStore", () => {
-
   // Indicator if we are loading data
   var loading = ref(false);
 
@@ -29,21 +27,20 @@ export const useBroadcastStore = defineStore("broadcastStore", () => {
   const newPriority = ref("");
 
   // selectedMessage
-  const selectedMessage = ref()
+  const selectedMessage = ref();
 
   // unread message counter
   var totalUnreadMessages = ref(0);
-
 
   function triggerScrollToBottom() {
     scrollTrigger.value++;
   }
 
-  function setDomains(data){
+  function setDomains(data) {
     domains.value = data;
   }
 
-  function setBroadcastsForDomain(data){
+  function setBroadcastsForDomain(data) {
     domainBroadcasts.value = data;
   }
 
@@ -61,6 +58,6 @@ export const useBroadcastStore = defineStore("broadcastStore", () => {
     newPriority,
     newMessageType,
     selectedMessage,
-    totalUnreadMessages
+    totalUnreadMessages,
   };
-})
+});
