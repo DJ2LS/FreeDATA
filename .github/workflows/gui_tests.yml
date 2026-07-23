@@ -24,7 +24,7 @@ jobs:
           - node-version: "26"
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v6
         with:
