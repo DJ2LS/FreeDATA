@@ -2,6 +2,7 @@ from freedata_server.message_system_db_manager import DatabaseManager
 from freedata_server.message_system_db_model import BroadcastMessage
 from freedata_server.message_system_db_station import DatabaseManagerStations
 from sqlalchemy.orm.attributes import flag_modified
+from sqlalchemy import or_
 from datetime import datetime, timedelta, timezone
 from freedata_server import helpers
 import base64
@@ -12,6 +13,10 @@ class DatabaseManagerBroadcasts(DatabaseManager):
         super().__init__(ctx)
 
         self.MAX_ATTEMPTS = 20
+
+        # Fixed fallback expiry (hours) used only if a broadcast message is created
+        # without an explicit expires_at. Not user-configurable by design.
+        self.DEFAULT_EXPIRY_HOURS = 24
 
         self.stations_manager = DatabaseManagerStations(self.ctx)
 
@@ -55,6 +60,14 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 # Create station and status
                 origin_station = self.stations_manager.get_or_create_station(origin, session)
                 status_obj = self.get_or_create_status(session, status) if status else None
+
+                if expires_at is None:
+                    expires_at = (
+                        datetime.now(timezone.utc) + timedelta(hours=self.DEFAULT_EXPIRY_HOURS)
+                    ).timestamp()
+                    self.log(
+                        f"No expires_at provided for {id}, defaulting to {self.DEFAULT_EXPIRY_HOURS}h from now"
+                    )
 
                 print("nexttransmission_at", nexttransmission_at)
                 print("received_at", received_at)
@@ -186,6 +199,34 @@ class DatabaseManagerBroadcasts(DatabaseManager):
         try:
             now_ts = datetime.now(timezone.utc).timestamp()
 
+            # A broadcast can sit in the transmit queue for a long time if the server
+            # was offline (e.g. nexttransmission_at from a backoff schedule set weeks ago).
+            # Anything whose expires_at has already passed should never be transmitted -
+            # mark it as expired instead of silently sending stale data on the next start.
+            expired_status = self.get_or_create_status(session, "expired")
+            expired_msgs = (
+                session
+                .query(BroadcastMessage)
+                .filter(
+                    BroadcastMessage.direction == "transmit",
+                    BroadcastMessage.expires_at.isnot(None),
+                    BroadcastMessage.expires_at <= now_ts,
+                    BroadcastMessage.status_id != expired_status.id,
+                )
+                .all()
+            )
+            for expired_msg in expired_msgs:
+                self.log(
+                    f"Broadcast {expired_msg.id} expired (expires_at={expired_msg.expires_at} <= now={now_ts}), "
+                    f"marking as expired and skipping transmission",
+                    isWarning=True,
+                )
+                expired_msg.status_id = expired_status.id
+            if expired_msgs:
+                session.commit()
+                for expired_msg in expired_msgs:
+                    self.ctx.event_manager.freedata_message_db_change(message_id=expired_msg.id)
+
             message = (
                 session
                 .query(BroadcastMessage)
@@ -193,6 +234,10 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     BroadcastMessage.direction == "transmit",
                     BroadcastMessage.attempts < self.MAX_ATTEMPTS,
                     BroadcastMessage.nexttransmission_at <= now_ts,
+                    or_(
+                        BroadcastMessage.expires_at.is_(None),
+                        BroadcastMessage.expires_at > now_ts,
+                    ),
                 )
                 .order_by(BroadcastMessage.nexttransmission_at.asc())
                 .first()
@@ -201,6 +246,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             return message
 
         except Exception as e:
+            session.rollback()
             self.log(f"Error at get_first_queued_message: {e}", isWarning=True)
             return None
 
