@@ -1,5 +1,11 @@
 # FreeDATA
 
+> [!NOTE]
+> Development has slowed due to limited maintainer time.
+
+> [!WARNING]
+> Latest release accumulated many changes towards the 0.18.x release, including a new broadcast feature for group chats. If you run into issues, please fall back to the more stable release, [v0.17.8](https://github.com/DJ2LS/FreeDATA/releases/tag/v0.17.8).
+
 > FreeDATA is a versatile, **open-source platform designed specifically for HF communications**, leveraging **codec2** data modes for robust global digital communication. It features a network-based server-client architecture, a REST API, multi-platform compatibility, and a messaging system.
 
 > Please keep in mind, this project is still **under development** with many issues which need to be solved.
