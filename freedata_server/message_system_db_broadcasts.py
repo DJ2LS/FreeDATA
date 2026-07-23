@@ -62,12 +62,8 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 status_obj = self.get_or_create_status(session, status) if status else None
 
                 if expires_at is None:
-                    expires_at = (
-                        datetime.now(timezone.utc) + timedelta(hours=self.DEFAULT_EXPIRY_HOURS)
-                    ).timestamp()
-                    self.log(
-                        f"No expires_at provided for {id}, defaulting to {self.DEFAULT_EXPIRY_HOURS}h from now"
-                    )
+                    expires_at = (datetime.now(timezone.utc) + timedelta(hours=self.DEFAULT_EXPIRY_HOURS)).timestamp()
+                    self.log(f"No expires_at provided for {id}, defaulting to {self.DEFAULT_EXPIRY_HOURS}h from now")
 
                 print("nexttransmission_at", nexttransmission_at)
                 print("received_at", received_at)
