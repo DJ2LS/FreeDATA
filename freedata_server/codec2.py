@@ -106,21 +106,10 @@ elif sys.platform == "darwin":
 elif sys.platform in ["win32", "win64"]:
     files = glob.glob(os.path.join(script_dir, "**\\*libcodec2*.dll"), recursive=True)
     if not files:
-        raise FileNotFoundError(
-            "[C2 ] Libcodec2 not found"
-            f"in or under: {script_dir}"
-        )
+        raise FileNotFoundError(f"[C2 ] Libcodec2 not found in {script_dir}")
     dll_path = files[0]
     dll_dir = os.path.dirname(dll_path)
-
     os.add_dll_directory(dll_dir)
-    import ctypes
-
-    try:
-        codec2 = ctypes.CDLL(dll_path)
-    except OSError:
-        # As a fallback, load by full path
-        codec2 = ctypes.WinDLL(dll_path)
 
 else:
     files = []
