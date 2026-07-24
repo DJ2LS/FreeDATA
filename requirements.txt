@@ -1,6 +1,5 @@
 numpy
 psutil
-PyAudio
 pyserial
 sounddevice
 structlog
