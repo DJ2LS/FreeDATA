@@ -42,14 +42,15 @@ jobs:
           npm i
           npm run build
 
-      - name: Set up Python 3.13
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.12"
 
       - name: Install Linux dependencies
         if: ${{startsWith(matrix.os, 'ubuntu')}}
         run: |
+          sudo apt-get update
           sudo apt install -y --fix-missing portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake patchelf
 
       - name: Install MacOS pyAudio
