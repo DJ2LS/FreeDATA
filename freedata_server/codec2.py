@@ -89,20 +89,36 @@ def freedv_get_mode_name_by_value(mode: int) -> str:
     return FREEDV_MODE(mode).name
 
 
-# Get the directory of the current script file
-script_dir = os.path.dirname(os.path.abspath(__file__))
+# Determine the base directory to search for the codec2 shared library.
+#
+# In normal (non-frozen) execution this is simply the directory containing
+# this script, and that's where "lib/codec2/*" lives relative to
+# freedata_server/codec2.py.
+#
+# When compiled by Nuitka into a standalone binary however, data files added
+# via --include-data-dir/--include-data-files (e.g. "lib=lib") are placed
+# relative to the *distribution* directory (next to the produced .exe), not
+# relative to this module's own (nested) package directory. Using
+# os.path.dirname(__file__) in that case points at "<dist>/freedata_server"
+# while the actual DLL ends up at "<dist>/lib/codec2/libcodec2.dll" - a
+# sibling directory, not a child - so the glob below never finds it.
+#
+# Nuitka exposes the correct directory via the compiled-only global
+# `__compiled__.containing_dir`, which always points at the distribution
+# directory regardless of platform or nesting. See:
+# https://nuitka.net/user-documentation/common-issue-solutions.html#standalone-finding-files
+try:
+    script_dir = __compiled__.containing_dir  # type: ignore[name-defined]
+except NameError:
+    script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Use script_dir to construct the paths for file search
 if sys.platform == "linux":
-    files = glob.glob(os.path.join(script_dir, "**/*libcodec2*"), recursive=True)
-    # files.append(os.path.join(script_dir, "libcodec2.so"))
+    files = glob.glob(os.path.join(script_dir, "**", "*libcodec2*"), recursive=True)
 elif sys.platform == "darwin":
-    if hasattr(sys, "_MEIPASS"):
-        files = glob.glob(os.path.join(getattr(sys, "_MEIPASS"), "**/*libcodec2*"), recursive=True)
-    else:
-        files = glob.glob(os.path.join(script_dir, "**/*libcodec2*.dylib"), recursive=True)
+    files = glob.glob(os.path.join(script_dir, "**", "*libcodec2*.dylib"), recursive=True)
 elif sys.platform in ["win32", "win64"]:
-    files = glob.glob(os.path.join(script_dir, "**\\*libcodec2*.dll"), recursive=True)
+    files = glob.glob(os.path.join(script_dir, "**", "*libcodec2*.dll"), recursive=True)
 else:
     files = []
 api = None
