@@ -34,7 +34,6 @@ requires-python = ">=3.10"
 dependencies = [
     "numpy",
     "psutil",
-    "PyAudio",
     "pyserial",
     "sounddevice",
     "structlog",
@@ -78,12 +77,13 @@ nuitka = [
 
 [tool.setuptools.packages.find]
 where = [ "." ]
-exclude = [
-    "tools*",
+include = [
+    "freedata_server*",
+    "freedata_gui",
 ]
 
 [tool.setuptools.package-data]
-freedata_server = [ "lib/**/*" ]
+freedata_server = [ "lib/**/*", "config.ini.example" ]
 freedata_gui = [ "dist/**/*" ]
 
 [tool.setuptools.dynamic]

@@ -44,6 +44,9 @@
 #
 #
 # Changelog:
+# 2.10:	24 Jul 2026
+#	Remove python3-pyaudio (unused dependency, FreeDATA uses sounddevice)
+#
 # 2.9:	10 Jan Sep 2026
 #	Add Ubuntu 24.10 and 25.04
 #	Change hamlib default version to 4.6.5
@@ -164,7 +167,7 @@ case $osname in
    "Debian GNU/Linux")
 	case $osversion in
 	   "11" | "12" | "13")
-		sudo apt install --upgrade -y fonts-noto-color-emoji git build-essential cmake python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama python3-venv wget python3-dev
+		sudo apt install --upgrade -y fonts-noto-color-emoji git build-essential cmake python3 portaudio19-dev python3-pip python3-colorama python3-venv wget python3-dev
 	   ;;
 
 	   *)
@@ -182,7 +185,7 @@ case $osname in
    "Ubuntu" | "Linux Mint")
 	case $osversion in
 	   "21.3" | "22.04" | "24.04" | "24.10" | "25.04" )
-		sudo apt install --upgrade -y fonts-noto-color-emoji git build-essential cmake python3 portaudio19-dev python3-pyaudio python3-pip python3-colorama python3-venv wget python3-dev
+		sudo apt install --upgrade -y fonts-noto-color-emoji git build-essential cmake python3 portaudio19-dev python3-pip python3-colorama python3-venv wget python3-dev
 	   ;;
 
 	   *)
@@ -197,7 +200,7 @@ case $osname in
    "Fedora Linux")
 	case $osversion in
 	   "VERSION_ID=40" | "VERSION_ID=41")
-		sudo dnf install -y git cmake make automake gcc gcc-c++ kernel-devel wget portaudio-devel python3-pyaudio python3-pip python3-colorama python3-virtualenv google-noto-emoji-fonts python3-devel
+		sudo dnf install -y git cmake make automake gcc gcc-c++ kernel-devel wget portaudio-devel python3-pip python3-colorama python3-virtualenv google-noto-emoji-fonts python3-devel
 	   ;;
 	esac
    ;;

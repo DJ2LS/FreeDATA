@@ -18,7 +18,7 @@ ARG HAMLIB_VERSION=4.5.5
 ENV HAMLIB_VERSION=${HAMLIB_VERSION}
 
 RUN apt-get update && \
-  apt-get install --upgrade -y fonts-noto-color-emoji git build-essential cmake portaudio19-dev python3-pyaudio python3-colorama wget && \
+  apt-get install --upgrade -y fonts-noto-color-emoji git build-essential cmake portaudio19-dev python3-colorama wget && \
   mkdir -p /app/FreeDATA
 
 WORKDIR /src
