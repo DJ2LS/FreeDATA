@@ -30,7 +30,7 @@ jobs:
 
       - name: Install Linux dependencies
         run: |
-          sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2 patchelf desktop-file-utils
+          sudo apt install -y --fix-missing portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2 patchelf desktop-file-utils
 
       - name: Install Python dependencies
         run: |

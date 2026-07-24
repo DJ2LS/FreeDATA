@@ -105,6 +105,12 @@ elif sys.platform == "darwin":
         files = glob.glob(os.path.join(script_dir, "**/*libcodec2*.dylib"), recursive=True)
 elif sys.platform in ["win32", "win64"]:
     files = glob.glob(os.path.join(script_dir, "**\\*libcodec2*.dll"), recursive=True)
+    if not files:
+        raise FileNotFoundError(f"[C2 ] Libcodec2 not found in {script_dir}")
+    dll_path = files[0]
+    dll_dir = os.path.dirname(dll_path)
+    os.add_dll_directory(dll_dir)
+
 else:
     files = []
 api = None
