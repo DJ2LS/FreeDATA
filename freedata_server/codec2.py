@@ -141,55 +141,55 @@ api.freedv_open.restype = ctypes.c_void_p
 api.freedv_set_sync.argype = [ctypes.c_void_p, ctypes.c_int]  # type: ignore
 api.freedv_set_sync.restype = ctypes.c_void_p
 
-api.freedv_open_advanced.argtype = [ctypes.c_int, ctypes.c_void_p]  # type: ignore
+api.freedv_open_advanced.argtypes = [ctypes.c_int, ctypes.c_void_p]  # type: ignore
 api.freedv_open_advanced.restype = ctypes.c_void_p
 
-api.freedv_get_bits_per_modem_frame.argtype = [ctypes.c_void_p]  # type: ignore
+api.freedv_get_bits_per_modem_frame.argtypes = [ctypes.c_void_p]  # type: ignore
 api.freedv_get_bits_per_modem_frame.restype = ctypes.c_int
 
-api.freedv_get_modem_extended_stats.argtype = [ctypes.c_void_p, ctypes.c_void_p]
+api.freedv_get_modem_extended_stats.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
 api.freedv_get_modem_extended_stats.restype = ctypes.c_int
 
-api.freedv_nin.argtype = [ctypes.c_void_p]  # type: ignore
+api.freedv_nin.argtypes = [ctypes.c_void_p]  # type: ignore
 api.freedv_nin.restype = ctypes.c_int
 
-api.freedv_rawdatarx.argtype = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]  # type: ignore
+api.freedv_rawdatarx.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]  # type: ignore
 api.freedv_rawdatarx.restype = ctypes.c_int
 
-api.freedv_rawdatatx.argtype = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]  # type: ignore
+api.freedv_rawdatatx.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]  # type: ignore
 api.freedv_rawdatatx.restype = ctypes.c_int
 
-api.freedv_rawdatapostambletx.argtype = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]  # type: ignore
+api.freedv_rawdatapostambletx.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]  # type: ignore
 api.freedv_rawdatapostambletx.restype = ctypes.c_int
 
-api.freedv_rawdatapreambletx.argtype = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]  # type: ignore
+api.freedv_rawdatapreambletx.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]  # type: ignore
 api.freedv_rawdatapreambletx.restype = ctypes.c_int
 
-api.freedv_get_n_max_modem_samples.argtype = [ctypes.c_void_p]  # type: ignore
+api.freedv_get_n_max_modem_samples.argtypes = [ctypes.c_void_p]  # type: ignore
 api.freedv_get_n_max_modem_samples.restype = ctypes.c_int
 
-api.freedv_set_frames_per_burst.argtype = [ctypes.c_void_p, ctypes.c_int]  # type: ignore
+api.freedv_set_frames_per_burst.argtypes = [ctypes.c_void_p, ctypes.c_int]  # type: ignore
 api.freedv_set_frames_per_burst.restype = ctypes.c_void_p
 
-api.freedv_get_rx_status.argtype = [ctypes.c_void_p]  # type: ignore
+api.freedv_get_rx_status.argtypes = [ctypes.c_void_p]  # type: ignore
 api.freedv_get_rx_status.restype = ctypes.c_int
 
-api.freedv_get_modem_stats.argtype = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p]  # type: ignore
+api.freedv_get_modem_stats.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p]  # type: ignore
 api.freedv_get_modem_stats.restype = ctypes.c_int
 
-api.freedv_get_n_tx_postamble_modem_samples.argtype = [ctypes.c_void_p]  # type: ignore
+api.freedv_get_n_tx_postamble_modem_samples.argtypes = [ctypes.c_void_p]  # type: ignore
 api.freedv_get_n_tx_postamble_modem_samples.restype = ctypes.c_int
 
-api.freedv_get_n_tx_preamble_modem_samples.argtype = [ctypes.c_void_p]  # type: ignore
+api.freedv_get_n_tx_preamble_modem_samples.argtypes = [ctypes.c_void_p]  # type: ignore
 api.freedv_get_n_tx_preamble_modem_samples.restype = ctypes.c_int
 
-api.freedv_get_n_tx_modem_samples.argtype = [ctypes.c_void_p]  # type: ignore
+api.freedv_get_n_tx_modem_samples.argtypes = [ctypes.c_void_p]  # type: ignore
 api.freedv_get_n_tx_modem_samples.restype = ctypes.c_int
 
-api.freedv_get_n_max_modem_samples.argtype = [ctypes.c_void_p]  # type: ignore
+api.freedv_get_n_max_modem_samples.argtypes = [ctypes.c_void_p]  # type: ignore
 api.freedv_get_n_max_modem_samples.restype = ctypes.c_int
 
-api.freedv_ofdm_print_info.argtype = [ctypes.c_void_p]  # type: ignore
+api.freedv_ofdm_print_info.argtypes = [ctypes.c_void_p]  # type: ignore
 api.freedv_ofdm_print_info.restype = ctypes.c_void_p
 
 api.FREEDV_FS_8000 = 8000  # type: ignore
@@ -316,8 +316,8 @@ api.FDMDV_OS_48 = 6  # type: ignore
 api.FDMDV_OS_TAPS_48K = 48  # type: ignore
 # Number of oversampling filter taps at 8kHz
 api.FDMDV_OS_TAPS_48_8K = api.FDMDV_OS_TAPS_48K // api.FDMDV_OS_48  # type: ignore
-api.fdmdv_8_to_48_short.argtype = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int]  # type: ignore
-api.fdmdv_48_to_8_short.argtype = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int]  # type: ignore
+api.fdmdv_8_to_48_short.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int]  # type: ignore
+api.fdmdv_48_to_8_short.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int]  # type: ignore
 
 
 class resampler:
