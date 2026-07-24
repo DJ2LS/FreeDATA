@@ -6,6 +6,7 @@ Created on Wed Dec 23 07:04:24 2020
 """
 
 import queue
+import threading
 import time
 from freedata_server import codec2
 import numpy as np
@@ -75,6 +76,15 @@ class RF:
 
         self.data_queue_received = queue.Queue()
 
+        # RX audio captured by the real-time sounddevice callback is handed to
+        # rx_audio_processing_worker through this queue, keeping the callback
+        # minimal (copy + enqueue). Running the DSP in the callback under the GIL
+        # is what makes it miss its deadline and overflow on slower CPUs.
+        self.rx_audio_in_queue = queue.Queue(maxsize=100)
+        self.rx_audio_worker_running = False
+        self.rx_audio_worker_thread = None
+        self.rx_audio_dropped_blocks = 0
+
         self.demodulator = demodulator.Demodulator(self.ctx)
         self.modulator = modulator.Modulator(self.ctx)
 
@@ -116,6 +126,12 @@ class RF:
             # self.stream = lambda: None
             # self.stream.active = False
             # self.stream.stop
+            # stop the RX audio processing worker before closing the streams
+            self.rx_audio_worker_running = False
+            try:
+                self.rx_audio_in_queue.put_nowait(None)
+            except queue.Full:
+                pass
             self.sd_input_stream.close()
             self.sd_output_stream.close()
         except Exception as e:
@@ -163,15 +179,33 @@ class RF:
             self.resampler = codec2.resampler()
 
             # SoundDevice audio input stream
+            # blocksize=0 lets PortAudio deliver small blocks, keeping RX
+            # buffering delay low. latency=0.2 sets the ring depth explicitly:
+            # the default ("high") can negotiate as little as two periods on
+            # some devices (measured on snd-aloop, where a two period ring at
+            # 100 ms periods drops audio continuously), and with blocksize=0
+            # alone the ring can come out as shallow as 40 ms. An explicit
+            # 200 ms request gives a deep ring of small periods on every
+            # device we measured (CM108 hardware and snd-aloop alike).
             self.sd_input_stream = sd.InputStream(
                 channels=1,
                 dtype="int16",
                 callback=self.sd_input_audio_callback,
                 device=in_dev_index,
                 samplerate=self.AUDIO_SAMPLE_RATE,
-                blocksize=4800,
+                blocksize=0,
+                latency=0.2,
             )
             self.sd_input_stream.start()
+
+            # process RX audio off the real-time callback thread
+            self.rx_audio_worker_running = True
+            self.rx_audio_worker_thread = threading.Thread(
+                target=self.rx_audio_processing_worker,
+                name="rx_audio_processing_worker",
+                daemon=True,
+            )
+            self.rx_audio_worker_thread.start()
 
             self.sd_output_stream = sd.OutputStream(
                 channels=1,
@@ -415,34 +449,60 @@ class RF:
             # if status.input_overflow:
             #    self.self.ctx.modem_service.put("restart")
             return
+        # Keep this real-time callback minimal: copy the captured block and hand
+        # it to rx_audio_processing_worker. The DSP (resample, FFT, demod-buffer
+        # push) runs there so a long GIL hold by another thread cannot stall this
+        # callback and cause a sounddevice input overflow on slower hardware.
         try:
-            audio_48k = np.frombuffer(indata, dtype=np.int16)
-            audio_8k = self.resampler.resample48_to_8(audio_48k)
+            self.rx_audio_in_queue.put_nowait(indata.copy())
+        except queue.Full:
+            # worker is not draining fast enough; drop this block (counted)
+            self.rx_audio_dropped_blocks += 1
 
-            self.enqueue_streaming_audio_chunks(audio_8k, self.ctx.audio_rx_queue)
+    def rx_audio_processing_worker(self) -> None:
+        """Performs all RX audio DSP off the real-time input callback.
 
-            if self.ctx.config_manager.config["AUDIO"].get("rx_auto_audio_level"):
-                audio_8k = audio.normalize_audio(audio_8k)
+        Drains rx_audio_in_queue (raw 48 kHz int16 blocks copied by
+        sd_input_audio_callback) and runs the resample to 8 kHz, optional
+        level/FFT processing and the demodulator-buffer push on a normal
+        worker thread, so the audio callback is never blocked by these
+        operations (or by the GIL while another thread holds it).
+        """
+        while self.rx_audio_worker_running:
+            try:
+                indata = self.rx_audio_in_queue.get(timeout=0.5)
+            except queue.Empty:
+                continue
+            if indata is None:  # shutdown sentinel
+                break
+            try:
+                audio_48k = np.frombuffer(indata, dtype=np.int16)
+                audio_8k = self.resampler.resample48_to_8(audio_48k)
 
-            audio_8k_level_adjusted = audio.set_audio_volume(audio_8k, self.rx_audio_level)
+                self.enqueue_streaming_audio_chunks(audio_8k, self.ctx.audio_rx_queue)
 
-            if not self.ctx.state_manager.isTransmitting():
-                audio.calculate_fft(audio_8k_level_adjusted, self.ctx.modem_fft, self.ctx.state_manager)
+                if self.ctx.config_manager.config["AUDIO"].get("rx_auto_audio_level"):
+                    audio_8k = audio.normalize_audio(audio_8k)
 
-            length_audio_8k_level_adjusted = len(audio_8k_level_adjusted)
-            # Avoid buffer overflow by filling only if buffer for
-            # selected datachannel mode is not full
-            index = 0
-            for mode in self.demodulator.MODE_DICT:
-                mode_data = self.demodulator.MODE_DICT[mode]
-                audiobuffer = mode_data["audio_buffer"]
-                decode = mode_data["decode"]
-                index += 1
-                if audiobuffer:
-                    if (audiobuffer.nbuffer + length_audio_8k_level_adjusted) > audiobuffer.size:
-                        self.demodulator.buffer_overflow_counter[index] += 1
-                        self.ctx.event_manager.send_buffer_overflow(self.demodulator.buffer_overflow_counter)
-                    elif decode:
-                        audiobuffer.push(audio_8k_level_adjusted)
-        except Exception as e:
-            self.log.warning("[AUDIO EXCEPTION]", status=status, time=time, frames=frames, e=e)
+                audio_8k_level_adjusted = audio.set_audio_volume(audio_8k, self.rx_audio_level)
+
+                if not self.ctx.state_manager.isTransmitting():
+                    audio.calculate_fft(audio_8k_level_adjusted, self.ctx.modem_fft, self.ctx.state_manager)
+
+                length_audio_8k_level_adjusted = len(audio_8k_level_adjusted)
+                # Avoid buffer overflow by filling only if buffer for
+                # selected datachannel mode is not full
+                index = 0
+                for mode in self.demodulator.MODE_DICT:
+                    mode_data = self.demodulator.MODE_DICT[mode]
+                    audiobuffer = mode_data["audio_buffer"]
+                    decode = mode_data["decode"]
+                    index += 1
+                    if audiobuffer:
+                        if (audiobuffer.nbuffer + length_audio_8k_level_adjusted) > audiobuffer.size:
+                            self.demodulator.buffer_overflow_counter[index] += 1
+                            self.ctx.event_manager.send_buffer_overflow(self.demodulator.buffer_overflow_counter)
+                        elif decode:
+                            audiobuffer.push(audio_8k_level_adjusted)
+            except Exception as e:
+                self.log.warning("[AUDIO EXCEPTION]", e=e)
