@@ -1,4 +1,5 @@
 umpy
+numpy
 psutil
 PyAudio
 pyserial
