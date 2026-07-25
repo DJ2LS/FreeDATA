@@ -46,9 +46,14 @@ def resolve_config_path() -> str:
     if not os.path.exists(candidate):
         # We cannot log to file yet since we don't know the directory; write to stderr.
 
+#        print(f"Config path: {DEFAULT_CONFIG_FILE}")
+#        print(f"Config dir exists: {os.path.exists(os.path.dirname(DEFAULT_CONFIG_FILE))}")
+#        print(f"Config file exists: {os.path.exists(DEFAULT_CONFIG_FILE)}")
+
         try:
             os.makedirs(os.path.dirname(candidate), exist_ok=True)
-            template = os.path.join(os.path.dirname(__file__), "config.ini.example")
+            template = os.path.join(os.path.dirname(__file__), "config.ini")
+            print(f"template {template}")
             if os.path.isfile(template):
                 shutil.copyfile(template, candidate)
                 sys.stderr.write(f"[INFO] No config found - created a default one at: {candidate}\n")
