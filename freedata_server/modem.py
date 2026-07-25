@@ -71,6 +71,26 @@ class RF:
         self.AUDIO_STREAMING_CHUNK_SIZE = 2400
         self.audio_out_queue = queue.Queue()
 
+        # Size of the block the RX DSP chain runs on, in 48 kHz samples. The input
+        # stream is opened with blocksize=0 (PortAudio picks the capture size per
+        # device), so the DSP must not rely on the captured block size:
+        # rx_audio_processing_worker re-blocks whatever the callback is handed
+        # to exactly this size, so a device or setting that delivers some other
+        # size cannot reach the DSP. 4800 (100 ms, 800 samples at 8 kHz) is the
+        # size the rest of the chain is built around:
+        #   * codec2.resampler.resample48_to_8 asserts len % FDMDV_OS_48 (6) == 0
+        #     and raises AssertionError otherwise,
+        #   * audio.calculate_fft pads/truncates to 800 samples at 8 kHz, so a
+        #     shorter block is mostly zero padding and the spectrum, channel busy
+        #     detection and audio_dbfs all degrade,
+        #   * enqueue_streaming_audio_chunks zero-pads every block up to
+        #     AUDIO_STREAMING_CHUNK_SIZE, so a shorter block streams mostly
+        #     silence and emits one chunk per block regardless of size,
+        #   * audio.normalize_audio (rx_auto_audio_level, on by default)
+        #     normalizes per block, so a shorter block means a faster, jumpier AGC.
+        # Lowering this lowers RX latency, but needs those four addressed first.
+        self.RX_DSP_BLOCK_48K = 4800
+
         # Make sure our resampler will work
         assert (self.AUDIO_SAMPLE_RATE / self.modem_sample_rate) == codec2.api.FDMDV_OS_48  # type: ignore
 
@@ -84,6 +104,11 @@ class RF:
         self.rx_audio_worker_running = False
         self.rx_audio_worker_thread = None
         self.rx_audio_dropped_blocks = 0
+        # 48 kHz samples that have been captured but do not yet fill a whole
+        # RX_DSP_BLOCK_48K; they are carried over to the next captured block so the
+        # sample stream handed to the resampler stays gapless (its filter memory
+        # depends on that) and always has a valid length.
+        self.rx_audio_carry_48k = np.empty(0, dtype=np.int16)
 
         self.demodulator = demodulator.Demodulator(self.ctx)
         self.modulator = modulator.Modulator(self.ctx)
@@ -179,14 +204,20 @@ class RF:
             self.resampler = codec2.resampler()
 
             # SoundDevice audio input stream
-            # blocksize=0 lets PortAudio deliver small blocks, keeping RX
-            # buffering delay low. latency=0.2 sets the ring depth explicitly:
-            # the default ("high") can negotiate as little as two periods on
-            # some devices (measured on snd-aloop, where a two period ring at
-            # 100 ms periods drops audio continuously), and with blocksize=0
-            # alone the ring can come out as shallow as 40 ms. An explicit
-            # 200 ms request gives a deep ring of small periods on every
-            # device we measured (CM108 hardware and snd-aloop alike).
+            # blocksize=0 lets PortAudio pick the capture block size per device.
+            # This is deliberate and load-bearing: a fixed blocksize=4800 makes
+            # some virtual devices (measured on snd-aloop) starve/overflow --
+            # a two period ring at 100 ms periods drops audio continuously and
+            # the modem is deaf. latency=0.2 sets the ring depth explicitly so
+            # the ring comes out deep (many small periods) on every device
+            # measured (CM108 hardware and snd-aloop alike).
+            # The capture block size is decoupled from the DSP block size:
+            # PortAudio may deliver any block length here (512/1024-class blocks
+            # are common on real hardware, and are NOT a multiple of codec2's
+            # FDMDV_OS_48 == 6, which resample48_to_8 asserts on).
+            # rx_audio_processing_worker re-blocks whatever arrives into exact
+            # RX_DSP_BLOCK_48K blocks, so no capture size can reach the DSP
+            # chain short or misaligned; see the note on that constant.
             self.sd_input_stream = sd.InputStream(
                 channels=1,
                 dtype="int16",
@@ -199,6 +230,7 @@ class RF:
             self.sd_input_stream.start()
 
             # process RX audio off the real-time callback thread
+            self.rx_audio_carry_48k = np.empty(0, dtype=np.int16)  # no stale audio across restarts
             self.rx_audio_worker_running = True
             self.rx_audio_worker_thread = threading.Thread(
                 target=self.rx_audio_processing_worker,
@@ -476,33 +508,70 @@ class RF:
             if indata is None:  # shutdown sentinel
                 break
             try:
-                audio_48k = np.frombuffer(indata, dtype=np.int16)
-                audio_8k = self.resampler.resample48_to_8(audio_48k)
-
-                self.enqueue_streaming_audio_chunks(audio_8k, self.ctx.audio_rx_queue)
-
-                if self.ctx.config_manager.config["AUDIO"].get("rx_auto_audio_level"):
-                    audio_8k = audio.normalize_audio(audio_8k)
-
-                audio_8k_level_adjusted = audio.set_audio_volume(audio_8k, self.rx_audio_level)
-
-                if not self.ctx.state_manager.isTransmitting():
-                    audio.calculate_fft(audio_8k_level_adjusted, self.ctx.modem_fft, self.ctx.state_manager)
-
-                length_audio_8k_level_adjusted = len(audio_8k_level_adjusted)
-                # Avoid buffer overflow by filling only if buffer for
-                # selected datachannel mode is not full
-                index = 0
-                for mode in self.demodulator.MODE_DICT:
-                    mode_data = self.demodulator.MODE_DICT[mode]
-                    audiobuffer = mode_data["audio_buffer"]
-                    decode = mode_data["decode"]
-                    index += 1
-                    if audiobuffer:
-                        if (audiobuffer.nbuffer + length_audio_8k_level_adjusted) > audiobuffer.size:
-                            self.demodulator.buffer_overflow_counter[index] += 1
-                            self.ctx.event_manager.send_buffer_overflow(self.demodulator.buffer_overflow_counter)
-                        elif decode:
-                            audiobuffer.push(audio_8k_level_adjusted)
+                self.process_rx_audio_block(indata)
             except Exception as e:
                 self.log.warning("[AUDIO EXCEPTION]", e=e)
+
+    def process_rx_audio_block(self, indata) -> None:
+        """Re-blocks one captured audio block and runs the DSP chain on it.
+
+        The input stream is free to hand the callback any block size, so the
+        captured samples are appended to rx_audio_carry_48k and the DSP chain is
+        run once per whole RX_DSP_BLOCK_48K available. Anything left over is
+        carried into the next captured block rather than being processed short:
+        a short block would fail codec2's "multiple of 6" resampler assertion and
+        silently degrade the FFT, streaming and AGC paths (see RX_DSP_BLOCK_48K).
+
+        Args:
+            indata (np.ndarray): One captured 48 kHz int16 block, any length.
+        """
+        captured_48k = np.frombuffer(indata, dtype=np.int16)
+        self.rx_audio_carry_48k = np.concatenate((self.rx_audio_carry_48k, captured_48k))
+
+        block = self.RX_DSP_BLOCK_48K
+        processed = 0
+        while len(self.rx_audio_carry_48k) - processed >= block:
+            self.run_rx_audio_dsp(self.rx_audio_carry_48k[processed : processed + block])
+            processed += block
+
+        if processed:
+            # copy so the carry does not keep the whole concatenated block alive
+            self.rx_audio_carry_48k = self.rx_audio_carry_48k[processed:].copy()
+
+    def run_rx_audio_dsp(self, audio_48k: np.ndarray) -> None:
+        """Runs the RX DSP chain on exactly one RX_DSP_BLOCK_48K of audio.
+
+        Resamples to 8 kHz, feeds the audio streaming queue, applies the optional
+        auto level and the configured RX gain, updates the FFT, and pushes the
+        result into each decoding demodulator buffer that has room for it.
+
+        Args:
+            audio_48k (np.ndarray): RX_DSP_BLOCK_48K 48 kHz int16 samples.
+        """
+        audio_8k = self.resampler.resample48_to_8(audio_48k)
+
+        self.enqueue_streaming_audio_chunks(audio_8k, self.ctx.audio_rx_queue)
+
+        if self.ctx.config_manager.config["AUDIO"].get("rx_auto_audio_level"):
+            audio_8k = audio.normalize_audio(audio_8k)
+
+        audio_8k_level_adjusted = audio.set_audio_volume(audio_8k, self.rx_audio_level)
+
+        if not self.ctx.state_manager.isTransmitting():
+            audio.calculate_fft(audio_8k_level_adjusted, self.ctx.modem_fft, self.ctx.state_manager)
+
+        length_audio_8k_level_adjusted = len(audio_8k_level_adjusted)
+        # Avoid buffer overflow by filling only if buffer for
+        # selected datachannel mode is not full
+        index = 0
+        for mode in self.demodulator.MODE_DICT:
+            mode_data = self.demodulator.MODE_DICT[mode]
+            audiobuffer = mode_data["audio_buffer"]
+            decode = mode_data["decode"]
+            index += 1
+            if audiobuffer:
+                if (audiobuffer.nbuffer + length_audio_8k_level_adjusted) > audiobuffer.size:
+                    self.demodulator.buffer_overflow_counter[index] += 1
+                    self.ctx.event_manager.send_buffer_overflow(self.demodulator.buffer_overflow_counter)
+                elif decode:
+                    audiobuffer.push(audio_8k_level_adjusted)
