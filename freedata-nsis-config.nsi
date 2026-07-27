@@ -8,7 +8,7 @@ Name "FreeDATA Installer"
 OutFile "FreeDATA-Installer.exe"
 
 ; Default installation directory for the server
-InstallDir "$LOCALAPPDATA\FreeDATA"
+InstallDir "$APPDATA\FreeDATA"
 
 ; Registry key to store the installation directory
 InstallDirRegKey HKCU "Software\FreeDATA" "Install_Dir"
