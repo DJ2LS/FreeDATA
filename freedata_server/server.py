@@ -1,4 +1,5 @@
 import os
+import shutil
 import sys
 
 import threading
@@ -10,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from freedata_server.log_handler import setup_logging
-from freedata_server.constants import CONFIG_ENV_VAR, DEFAULT_CONFIG_FILE, API_VERSION
+from freedata_server.constants import CONFIG_ENV_VAR, DEFAULT_CONFIG_FILE, DEFAULT_APP_DIR, API_VERSION
 from freedata_server.context import AppContext
 
 from freedata_server.api.general import router as general_router
@@ -27,18 +28,39 @@ import uvicorn
 # --- Resolve config path FIRST (no logger needed yet) ---
 def resolve_config_path() -> str:
     """
-    Determine the configuration file to use (env var or default next to this file).
-    Exits if not found.
+    Determine the configuration file to use.
+
+    Uses FREEDATA_CONFIG if set, otherwise defaults to a per-user config
+    directory (DEFAULT_APP_DIR). If no config file exists yet at that
+    location, a fresh one is bootstrapped from the bundled
+    config.ini.example template so a plain `pip install freedata` followed
+    by `freedata` works out of the box without any manual setup.
     """
-    candidate = os.getenv(
-        CONFIG_ENV_VAR,
-        os.path.join(os.path.dirname(__file__), DEFAULT_CONFIG_FILE),
+    candidate = os.path.abspath(
+        os.getenv(
+            CONFIG_ENV_VAR,
+            os.path.join(DEFAULT_APP_DIR, DEFAULT_CONFIG_FILE),
+        )
     )
+
     if not os.path.exists(candidate):
         # We cannot log to file yet since we don't know the directory; write to stderr.
-        sys.stderr.write(f"[FATAL] Config file not found: {candidate}\n")
-        sys.exit(1)
-    return os.path.abspath(candidate)
+        template = os.path.join(os.path.dirname(__file__), "config.ini.example")
+        try:
+            os.makedirs(os.path.dirname(candidate), exist_ok=True)
+            if os.path.isfile(template):
+                shutil.copyfile(template, candidate)
+                sys.stderr.write(f"[INFO] No config found - created a default one at: {candidate}\n")
+            else:
+                sys.stderr.write(
+                    f"[FATAL] Config file not found and no template available to create one: {candidate}\n"
+                )
+                sys.exit(1)
+        except OSError as e:
+            sys.stderr.write(f"[FATAL] Could not create config file at {candidate}: {e}\n")
+            sys.exit(1)
+
+    return candidate
 
 
 config_file = resolve_config_path()
@@ -95,11 +117,15 @@ async def nocache(request: Request, call_next):
 
 
 # Static GUI mounting
+# Order matters: prefer paths anchored to this file's location (work no
+# matter what the current working directory is) over cwd-relative
+# fallbacks kept for backwards compatibility with older layouts.
 potential_gui_dirs = [
+    os.path.join(os.path.dirname(__file__), "gui"),  # nuitka standalone build
+    os.path.join(os.path.dirname(os.path.dirname(__file__)), "freedata_gui", "dist"),  # pip install (sibling package)
     "../freedata_gui/dist",
     "freedata_gui/dist",
     "FreeDATA/freedata_gui/dist",
-    os.path.join(os.path.dirname(__file__), "gui"),
 ]
 gui_dir = next((d for d in potential_gui_dirs if os.path.isdir(d)), None)
 if gui_dir:

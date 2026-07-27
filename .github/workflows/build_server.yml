@@ -53,12 +53,11 @@ jobs:
           sudo apt update
           sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake patchelf
 
-      - name: Install MacOS pyAudio
+      - name: Install MacOS dependencies
         if: ${{startsWith(matrix.os, 'macos')}}
         run: |
           brew install portaudio
           python -m pip install --upgrade pip
-          pip3 install pyaudio
 
       - name: Install Python dependencies
         run: |

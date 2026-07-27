@@ -5,7 +5,7 @@ from freedata_server.message_system_db_model import Base, Config, Station, Statu
 import structlog
 from freedata_server import helpers
 import os
-from freedata_server.constants import MESSAGE_SYSTEM_DATABASE_VERSION
+from freedata_server.constants import MESSAGE_SYSTEM_DATABASE_VERSION, DEFAULT_APP_DIR
 
 
 class DatabaseManager:
@@ -42,18 +42,19 @@ class DatabaseManager:
         This method determines the database file path based on the
         environment variable `FREEDATA_DATABASE`. If the variable is set,
         its value is used as the path. Otherwise, it defaults to
-        `freedata-messages.db` in the script directory.
+        `freedata-messages.db` in the per-user app directory
+        (DEFAULT_APP_DIR), so a plain `pip install` keeps the database
+        outside the installed package and it survives upgrades.
 
         Returns:
             str: The database file path as a SQLAlchemy URL.
         """
-        script_directory = os.path.dirname(os.path.abspath(__file__))
-
         if self.DATABASE_ENV_VAR in os.environ:
-            # db_path = os.getenv(self.DATABASE_ENV_VAR, os.path.join(script_directory, self.DEFAULT_DATABASE_FILE))
             db_path = os.getenv(self.DATABASE_ENV_VAR)
         else:
-            db_path = os.path.join(script_directory, self.DEFAULT_DATABASE_FILE)
+            db_path = os.path.join(DEFAULT_APP_DIR, self.DEFAULT_DATABASE_FILE)
+
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
         return "sqlite:///" + db_path
 
     def initialize_default_values(self):

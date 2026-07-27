@@ -1,6 +1,7 @@
 import configparser
 import structlog
 import json
+import os
 
 
 class CONFIG:
@@ -296,6 +297,11 @@ class CONFIG:
             data if successful, False otherwise.
         """
         try:
+            # need to create the directory before writing to it
+            config_dir = os.path.dirname(self.config_name)
+            if config_dir:
+                os.makedirs(config_dir, exist_ok=True)
+
             with open(self.config_name, "w") as configfile:
                 self.parser.write(configfile)
                 self.ctx.config = self.read()

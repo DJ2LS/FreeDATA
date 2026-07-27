@@ -1,5 +1,8 @@
 name: Deploy Python Package
-on: [push]
+on:
+  push:
+    tags:
+      - "v*"
 
 jobs:
   deploy:
@@ -17,15 +20,63 @@ jobs:
       with:
         node-version: 24
 
-    - name: Install Linux dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake patchelf
-
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
         pip install .[build]
+
+    - name: Set package version from tag
+      env:
+        RELEASE_TAG: ${{ github.ref_name }}
+      run: |
+        python3 - <<'EOF'
+        import os
+        import re
+        import sys
+
+        from packaging.version import InvalidVersion, Version
+
+        tag = os.environ["RELEASE_TAG"]
+        version = tag.removeprefix("v")
+
+        if not re.fullmatch(r"\d+\.\d+\.\d+(-[0-9A-Za-z.]+)?", version):
+            print(
+                f"::error::Tag '{tag}' does not look like a release version. "
+                f"Use e.g. v1.2.3, v1.2.3-beta, v1.2.3-rc1 or v1.2.3-alpha.1."
+            )
+            sys.exit(1)
+
+        try:
+            Version(version)
+        except InvalidVersion:
+            print(
+                f"::error::Tag '{tag}' has an unrecognized pre-release suffix "
+                f"('{version}' is not valid PEP 440). Use a standard suffix such "
+                f"as -alpha, -alpha.1, -beta, -rc1 or -dev."
+            )
+            sys.exit(1)
+
+        print(f"Releasing version {version} (from tag {tag})")
+
+        path = "freedata_server/constants.py"
+        with open(path) as f:
+            content = f.read()
+
+        new_content, count = re.subn(
+            r'^MODEM_VERSION = .*$',
+            f'MODEM_VERSION = "{version}"',
+            content,
+            count=1,
+            flags=re.MULTILINE,
+        )
+        if count != 1:
+            print("::error::Could not find MODEM_VERSION in freedata_server/constants.py")
+            sys.exit(1)
+
+        with open(path, "w") as f:
+            f.write(new_content)
+        EOF
+        grep "^MODEM_VERSION" freedata_server/constants.py
 
     - name: Build GUI
       working-directory: freedata_gui
@@ -39,7 +90,7 @@ jobs:
 
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@v1.14.0
-      if: startsWith(github.ref, 'refs/tags/v')
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
+        skip-existing: true
