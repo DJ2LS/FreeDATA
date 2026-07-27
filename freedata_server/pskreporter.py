@@ -87,51 +87,32 @@ def normalize_grid(grid: str) -> str:
     return grid[:-2] + grid[-2:].lower()
 
 
-# ----------------------------------------------------------------------
-# Beacon constructor
-# ----------------------------------------------------------------------
-def make_psk_beacon(callsign, grid, frequency, snr, timestamp=None) -> Dict[str, Any]:
-    return {
-        "callsign": callsign,
-        "gridsquare": grid,
-        "frequency": int(float(frequency)),
-        "snr": int(float(snr)),
-        "timestamp": timestamp or int(time.time())
-    }
+def heard_to_spot(heard, fallback_frequency) -> Tuple:
+    """Convert a FreeDATA heard-station record directly to a PSKReporter spot tuple."""
+    callsign = heard[0].split("-")[0]
+    grid = normalize_grid(heard[1])
 
+    freq = fallback_frequency if heard[6] == "---" else heard[6]
+    freq_hz = int(float(freq))
 
-# ----------------------------------------------------------------------
-# Transform beacon
-# ----------------------------------------------------------------------
-def transform_beacon_to_spot(beacon: Dict[str, Any]) -> Tuple:
-    """
-    Convert a FreeDATA beacon into a 7-field PSKReporter spot tuple:
-    (call, freq_hz, snr, imd, mode, grid, epoch)
-    """
-    call = beacon["callsign"].split("-")[0]
-    grid = normalize_grid(beacon.get("gridsquare", ""))
-    log.debug("normalized grid", grid=grid)
-
-    freq_hz = int(float(beacon["frequency"]))
-    snr = int(beacon["snr"])
-    imd = 0
-    mode = "FreeDATA"
-
-    ts = beacon.get("timestamp")
-    if isinstance(ts, str):
-        try:
-            dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
-            epoch = int(dt.timestamp())
-        except Exception:
-            epoch = int(time.time())
-    else:
-        epoch = int(ts)
+    raw_snr = heard[4]
+    snr = raw_snr.split("/")[1] if isinstance(raw_snr, str) and "/" in raw_snr else raw_snr
+    snr = int(snr)
 
     if not (-128 <= snr <= 127):
         raise ValueError(f"SNR {snr} out of range")
 
-    return (call, freq_hz, snr, imd, mode, grid, epoch)
+    timestamp = heard[2]
+    if isinstance(timestamp, str):
+        try:
+            dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+            epoch = int(dt.timestamp())
+        except Exception:
+            epoch = int(time.time())
+    else:
+        epoch = int(timestamp)
 
+    return (callsign, freq_hz, snr, 0, "FreeDATA", grid, epoch)
 
 # ----------------------------------------------------------------------
 # Validate the spot structure
@@ -153,7 +134,8 @@ def validate_spot(spot: Union[List, Tuple]) -> Tuple:
 # ----------------------------------------------------------------------
 # Packet builder
 # ----------------------------------------------------------------------
-def build_packet(senders: List[Tuple]) -> bytes:
+
+def build_packet(senders: List[Tuple], seq: int) -> bytes:
     global _mycall, _mygrid, _mysw
 
     # Receiver format descriptor
@@ -197,9 +179,6 @@ def build_packet(senders: List[Tuple]) -> bytes:
     sr = pad(sr)
     sr = bytes([0x99, 0x93]) + p16(len(sr) + 4) + sr
 
-    seq = load_seq()
-    save_seq(seq + 1)
-
     # Packet header
     header = bytes([0x00, 0x0A])
     header += p16(len(rrf) + len(srf) + len(rr) + len(sr) + 16)
@@ -208,7 +187,6 @@ def build_packet(senders: List[Tuple]) -> bytes:
     header += p32(SESSION_ID)
 
     return header + rrf + srf + rr + sr
-
 
 # ----------------------------------------------------------------------
 # UDP Handling
@@ -237,10 +215,17 @@ def send_bulk(sock: socket.socket, spots: Iterable[Tuple]) -> None:
     if not validated:
         raise ValueError("No valid spots")
 
-    pkt = build_packet(validated)
+    # Load sequence BEFORE building packet
+    seq = load_seq()
+    pkt = build_packet(validated, seq)
+
+    # Send the packet
     sock.send(pkt)
     log.debug("PSK packet built", hex=pkt.hex())
     log.info("PSK packet sent", spots=len(validated))
+
+    # ONLY increment sequence AFTER successful send
+    save_seq(seq + 1)
 
 
 # ----------------------------------------------------------------------
@@ -263,17 +248,7 @@ class Pskreporter:
         spots = []
         for heard in self.ctx.state_manager.heard_stations:
             try:
-                callsign = heard[0]
-                grid = normalize_grid(heard[1])
-                timestamp = heard[2]
-                freq = fallback_frequency if heard[6] == "---" else heard[6]
-
-                raw_snr = heard[4]
-                snr = raw_snr.split("/")[1] if isinstance(raw_snr, str) and "/" in raw_snr else raw_snr
-
-                beacon = make_psk_beacon(callsign, grid, freq, snr, timestamp)
-                spots.append(transform_beacon_to_spot(beacon))
-
+                spots.append(heard_to_spot(heard, fallback_frequency))
             except Exception as e:
                 log.warning("Skipping bad heard record", error=str(e))
 
