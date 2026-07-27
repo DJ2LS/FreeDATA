@@ -27,7 +27,7 @@ def _default_app_dir() -> str:
 CONFIG_ENV_VAR = "FREEDATA_CONFIG"
 DEFAULT_CONFIG_FILE = "config.ini"
 DEFAULT_APP_DIR = _default_app_dir()
-MODEM_VERSION = "0.18.1"
+MODEM_VERSION = "0.18.2"
 API_VERSION = 4
 ARQ_PROTOCOL_VERSION = 1
 LICENSE = "GPL3.0"
