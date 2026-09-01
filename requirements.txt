@@ -25,4 +25,4 @@ pick
 # Build
 build
 wheel
-nuitka<=4.1.3
+nuitka<=4.2
