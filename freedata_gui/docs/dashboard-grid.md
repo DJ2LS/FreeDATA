@@ -242,11 +242,8 @@ trace or axes).
 each a 256-entry RGB table. The `wf_theme` setting is the index into this
 array. Its default is `2` (viridis, shown as "Default" in settings).
 
-The files [colormap.js](../src/assets/waterfall/colormap.js),
-[index.html](../src/assets/waterfall/index.html),
-[waterfall.css](../src/assets/waterfall/waterfall.css) and `make_colormap.py`
-are leftovers from upstream and are not imported by the GUI. `index.html`
-references `style.css` and `script.js`, which do not exist.
+`spectrum.js` is based on Jeppe Ledet-Pedersen's MIT-licensed waterfall; its
+[LICENSE](../src/assets/waterfall/LICENSE) and README are kept next to it.
 
 ## 7. RX audio playback
 
@@ -327,8 +324,7 @@ on the grid at the same time without duplicate DOM ids.
 - On mount, and on every window `resize`, `drawMap()` rebuilds an SVG with a
   `d3.geoMercator()` projection scaled to the container width.
 - It lazily imports `@/assets/countries-50m.json` and converts it with
-  `feature(world, world.objects.countries)`. The `countries-10m.json` and
-  `countries-110m.json` files in `src/assets/` are not used here.
+  `feature(world, world.objects.countries)`.
 - It draws the countries (paths with class `country-path`, so the zoom
   handler can rescale their stroke) and two label layers: all country names,
   shown when zoom k >= 3, and the 10 largest by `d3.geoArea`, shown when
@@ -392,8 +388,6 @@ Waterfall:
 - The bandwidth marker lines are hard-coded positions in bin units, so they
   are only correct for the bin spacing assumed in the source comment. The
   comment itself says "Math not correct".
-- `colormap.js`, `index.html` and `waterfall.css` are unused; `index.html`
-  points to files that do not exist.
 
 RX audio:
 

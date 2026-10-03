@@ -30,13 +30,10 @@ From [package.json](../package.json). "Used in" lists the files that import the 
 | `js-image-compressor` | Shrinking image attachments before sending | `chat_new_message.vue` |
 | `vuemoji-picker` | Emoji picker | `chat_new_message.vue`, `broadcast_new_message.vue` |
 | `uuid` | Unique DOM ids for toasts (`v4()`), version `^14` | [popupHandler.js](../src/js/popupHandler.js) |
-| `core-js` | Not imported. Only useful through Babel polyfilling (see 1.3) | none |
-| `bootstrap-vue-next` | **Not imported anywhere** | none |
-| `gettext-parser` | **Not imported anywhere** | none |
 
 ### 1.2 Dev dependencies and scripts
 
-Dev dependencies: `@vue/cli-service` (webpack build and dev server), `eslint`, `eslint-plugin-vue`, `globals`, `@eslint/js`, `@babel/core`, `@babel/eslint-parser`.
+Dev dependencies: `@vue/cli-service` (webpack build and dev server), `eslint`, `eslint-plugin-vue`, `globals`.
 
 | Script | Command | Notes |
 |---|---|---|
@@ -49,7 +46,7 @@ After the current round of bug fixes (working tree), `npm run build` and `npx es
 ### 1.3 Build configuration
 
 - [vue.config.js](../vue.config.js): `publicPath: "/gui/"`, so every asset URL in the built `index.html` is prefixed with `/gui/`. `transpileDependencies` is empty.
-- [babel.config.js](../babel.config.js) names the preset `@vue/cli-plugin-babel/preset`, but `@vue/cli-plugin-babel` is not in `package.json` or `package-lock.json` (it was removed in commit `d4ccda12`, "adjusted linting packages"). Vue CLI only adds `babel-loader` through that plugin, so Babel (and `core-js` polyfilling) is not part of the build as configured. `browserslist` in `package.json` therefore has no effect on JS transpilation.
+- There is no Babel step: `@vue/cli-plugin-babel` is not installed (removed in commit `d4ccda12`, "adjusted linting packages"), and the leftover `babel.config.js`, `core-js` and the Babel packages have been removed. Code is bundled by webpack as written, so `browserslist` in `package.json` has no effect on JS transpilation.
 - [jsconfig.json](../jsconfig.json) declares the `@/* -> src/*` alias for editors. The webpack alias itself comes from Vue CLI's defaults, and code uses it (`@/js/i18n`, `@/js/api`, `@/js/mobile_devices`).
 - [public/index.html](../public/index.html): favicons, `manifest.json` link, iOS web-app meta tags, and an inline script that writes `window.visualViewport.height` (or `innerHeight`) into the CSS variable `--app-height` on resize, orientation change and `DOMContentLoaded`.
 - [public/manifest.json](../public/manifest.json): PWA manifest (`display: standalone`, `start_url: "."`, 192/512 px icons). No service worker is registered.
@@ -57,7 +54,7 @@ After the current round of bug fixes (working tree), `npm run build` and `npx es
 
 ### 1.4 Linting
 
-[eslint.config.js](../eslint.config.js) uses only `eslint-plugin-vue`'s `flat/base` config (`flat/recommended` is commented out because of unresolved errors). Two rules are set: `vue/no-unused-vars: error`, `vue/multi-word-component-names: warn`. Browser globals are enabled. No JavaScript rule set (`@eslint/js`) is applied, and `@babel/eslint-parser` is not configured. The `ignores` list sits in the same object as `rules`, so in flat config it only limits that object; it is not a global ignore.
+[eslint.config.js](../eslint.config.js) uses only `eslint-plugin-vue`'s `flat/base` config (`flat/recommended` is commented out because of unresolved errors). Two rules are set: `vue/no-unused-vars: error`, `vue/multi-word-component-names: warn`. Browser globals are enabled. No JavaScript rule set (such as `@eslint/js`) is applied. The `ignores` list sits in the same object as `rules`, so in flat config it only limits that object; it is not a global ignore.
 
 ### 1.5 How the server serves the build
 
@@ -522,6 +519,6 @@ The modem lifecycle event (`{"freedata_server": "started"|"restarted"|"stopped"|
 - **`settingsStore.local.host` / `port` are dead**; the server address always comes from `window.location` with the hard-coded 8080 -> 5000 mapping.
 - **`stateStore.hamlib_status`** is read by rig-control components but never written.
 - **`GET /freedata/broadcasts/undefined/`** at startup: `broadcast.selectedDomain` starts as `undefined` and `loadAllData()` requests that domain anyway.
-- **Build tooling**: `babel.config.js` refers to `@vue/cli-plugin-babel`, which is not installed; `bootstrap-vue-next`, `gettext-parser` and (without Babel) `core-js` are unused dependencies. `npm run build` runs `npm i` every time.
+- **Build tooling**: `npm run build` runs `npm i` every time.
 - **`freedata.js` `btoa_FD` / `atob_FD` / `atob`** use Node's `Buffer`, which webpack 5 does not polyfill; they are not called anywhere.
 - Server-side mismatches that the GUI cannot fix are listed in section 8 (`hello-client` never sent, `buffer-overflow` not handled).
