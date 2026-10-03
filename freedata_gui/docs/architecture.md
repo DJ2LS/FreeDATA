@@ -231,7 +231,7 @@ Runs when the `/states` socket opens, on `hello-client` (never sent, see 8.4), o
 
 | `type` | stateStore fields written |
 |---|---|
-| `state` or `state-change` | `modem_connection = "connected"`, `busy_state <- is_modem_busy`, `channel_busy <- channel_busy` (not in the server payload, so `undefined`), `is_codec2_traffic`, `is_modem_running`, `dbfs_level = round(audio_dbfs)`, `dbfs_level_percent = round(10^(audio_dbfs/20) * 100)`, `radio_status`, `channel_busy_slot`, `beacon_state <- is_beacon_running`, `away_from_key <- is_away_from_key`, `activities = Object.entries(activities).reverse()`, then `build_HSL()` merges received activities into `heard_stations` (one entry per `origin`, newest timestamp wins, sorted newest first) |
+| `state` or `state-change` | `modem_connection = "connected"`, `busy_state <- is_modem_busy`, `channel_busy <- channel_busy` (`true` while the channel is busy), `is_codec2_traffic`, `is_modem_running`, `dbfs_level = round(audio_dbfs)`, `dbfs_level_percent = round(10^(audio_dbfs/20) * 100)`, `radio_status`, `channel_busy_slot`, `beacon_state <- is_beacon_running`, `away_from_key <- is_away_from_key`, `activities = Object.entries(activities).reverse()`, then `build_HSL()` merges received activities into `heard_stations` (one entry per `origin`, newest timestamp wins, sorted newest first) |
 | `radio-change` or `radio` | `s_meter_strength_raw = round(s_meter_strength)`, `s_meter_strength_percent = round(10^(s/20) * 100)`, `radio_status`, `frequency <- radio_frequency`, `mode <- radio_mode`, `swr_raw = radio_swr.toFixed(2)`, `swr_percent = swr/6*100` if `0 <= swr <= 6` else `0`, `tuner <- radio_tuner`, `rf_level = round(radio_rf_level/5)*5` |
 
 Other `type` values are ignored.
@@ -263,7 +263,7 @@ ARQ outbound states (`d = data["arq-transfer-outbound"]`):
 | `INFO_SENT`, `ABORTING` | no (console only) | none |
 | `BURST_SENT` | yes | `arq_transmission_percent = round(received_bytes/total_bytes*100)`, `arq_total_bytes`, `arq_speed_list_timestamp/bpm/snr = statistics.*_histogram` (the arrays are replaced), `arq_bytes_per_minute`, `arq_bits_per_second`, `speed_level` |
 | `ABORTED` | yes | percent, total bytes, bytes/min, bits/s reset to 0 |
-| `ENDED` | yes | `arq_transmission_percent = round(d.received_bytes/d.total_bytes*100)` (both absent in finished events, so `NaN`), `arq_total_bytes = d.total_bytes` (absent), `arq_bytes_per_minute`, `arq_bits_per_second` from `statistics`; all four reset to 0 after 5 s |
+| `ENDED` | yes | `arq_transmission_percent = 100` (finished events carry no `received_bytes`/`total_bytes`; `ENDED` means success), `arq_total_bytes = d.statistics.total_bytes`, `arq_bytes_per_minute`, `arq_bits_per_second` from `statistics`; all four reset to 0 after 5 s |
 | `FAILED` | yes | the same four reset to 0 after 5 s |
 
 ARQ inbound states (`d = data["arq-transfer-inbound"]`):
@@ -273,7 +273,7 @@ ARQ inbound states (`d = data["arq-transfer-inbound"]`):
 | `NEW` | yes | `dxcallsign`, `arq_transmission_percent = 0`, `arq_total_bytes = d.total_bytes` |
 | `OPEN_ACK_SENT`, `INFO_ACK_SENT` | yes | `arq_transmission_percent`, `arq_total_bytes = d.total_bytes` |
 | `BURST_REPLY_SENT` | yes | percent, `arq_total_bytes = d.received_bytes` (not `total_bytes`), `arq_speed_list_*` arrays replaced from `statistics.*_histogram`, bytes/min, bits/s, `speed_level` |
-| `ENDED` | yes | percent from `statistics.received_bytes / statistics.total_bytes` (`received_bytes` is not in `statistics`, so `NaN`), bytes/min, bits/s, `arq_total_bytes = d.total_bytes` (absent); all reset after 5 s |
+| `ENDED` | yes | `arq_transmission_percent = 100`, bytes/min, bits/s, `arq_total_bytes = d.statistics.total_bytes`; all reset after 5 s |
 | `ABORTED` | yes | percent and total bytes set to 0 |
 | `FAILED` | yes | four values reset after 5 s |
 
@@ -297,7 +297,7 @@ All stores except settings are Pinia setup stores. "Writers" and "Readers" are f
 | `is_modem_running` | | modem started | stateDispatcher, `getOverallHealth` (sets false when disconnected) | components |
 | `radio_status` | `false` | rig connected | stateDispatcher, `getOverallHealth` | components |
 | `channel_busy_slot` | 5 x `false` | per-slot busy | stateDispatcher | components |
-| `channel_busy` | `false` | Not in server payload | stateDispatcher | *unused* |
+| `channel_busy` | `false` | `true` while the channel is busy (server `channel_busy`) | stateDispatcher | *unused* |
 | `is_codec2_traffic` | `""` | codec2 traffic detected | stateDispatcher | `grid_active_stats.vue` |
 | `dbfs_level`, `dbfs_level_percent` | `0` | RX audio level | stateDispatcher | audio meters |
 | `beacon_state`, `away_from_key` | `false` | beacon flags | stateDispatcher | beacon controls |
@@ -421,7 +421,7 @@ Callers still get `undefined` for any failure and cannot tell an HTTP error from
 | `setRadioParametersTuner(s)` | POST `/radio` | `{radio_tuner}` | Returns body |
 | `getRadioStatus()` | GET `/radio` | | Returns body |
 | `getFreedataMessages()` | GET `/freedata/messages` | | `chatStore.loading` around the call; passes body to `processFreedataMessages` |
-| `getFreedataMessageById(id)` | GET `/freedata/messages/{id}` | | Returns body (a JSON string; `requestMessageInfo` `JSON.parse`s it) |
+| `getFreedataMessageById(id)` | GET `/freedata/messages/{id}` | | Returns the message object (`undefined` for an unknown id, which the server answers with 404) |
 | `getFreedataAttachmentBySha512(h)` | GET `/freedata/messages/attachment/{h}` | | Returns body (`data` is base64) |
 | `sendFreedataMessage(destination, body, attachments)` | POST `/freedata/messages` | `{destination, body, attachments}` | Returns body |
 | `postFreedataMessageADIF(id)` | POST `/freedata/messages/{id}/adif` | `{action: "retransmit"}` | Returns body |
@@ -432,7 +432,8 @@ Callers still get `undefined` for any failure and cannot tell an HTTP error from
 | `getStationInfo(c)` | GET `/freedata/station/{c}` | | Returns body |
 | `setStationInfo(c, info)` | POST `/freedata/station/{c}` | the whole `stationInfo` object (`{callsign, location, info}`) | Returns body |
 | `getFreedataBroadcasts()` | GET `/freedata/broadcasts` | | `broadcastStore.loading`; groups the flat list by `domain` and passes `{domain: [messages]}` to `processFreedataBroadcastsPerDomain`. No callers |
-| `getFreedataBroadcastsPerDomain(d)` | GET `/freedata/broadcasts/{d}/` | | `broadcastStore.loading`; `processFreedataBroadcastsPerDomain` |
+| `getFreedataBroadcastsPerDomain(d)` | GET `/freedata/broadcasts/{d}/` | | `broadcastStore.loading`; `processFreedataBroadcastsPerDomain`. Read-only: does not mark anything read |
+| `setFreedataBroadcastDomainAsRead(d)` | PATCH `/freedata/broadcasts/{d}/read` | none | Returns `{domain, marked_read, status}`. Called by `domainSelected()` in `broadcast_domains.vue` when the user opens a domain that has unread broadcasts |
 | `getFreedataDomains()` | GET `/freedata/broadcasts/domains` | | `broadcastStore.loading`; `processFreedataDomains` |
 | `sendFreedataBroadcastMessage(params)` | POST `/freedata/broadcasts` | `{origin, domain, gridsquare, type, priority, data}` (built in broadcast components) | Returns body |
 | `retransmitFreedataBroadcast(id)` | PATCH `/freedata/broadcasts/{id}` | `{action: "retransmit"}` | Returns body |
@@ -460,8 +461,7 @@ Compared with `../freedata_server/api/*.py` in the current working tree.
 | GUI call | GUI sends | Server expects | Effect |
 |---|---|---|---|
 | `postFreedataMessageADIF` | `{action: "retransmit"}` | no body | Body ignored; harmless but misleading |
-| `setStationInfo` | `{callsign, location, info}` | `{info: dict}` | Works; `callsign`/`location` ignored. `update_station_info` returns `True`/`False` and the route only checks `is None`, so an unknown station gives 200 `false` instead of 404 |
-| `sendFreedataBroadcastMessage` from `broadcast_new_message.vue` | `priority: "1"` (string) | number expected by convention | Passed through unchanged to `NormTransmissionISS` as a string; `broadcast_modal.vue` sends `1` |
+| `setStationInfo` | `{callsign, location, info}` | `{info: dict}` | Works; `callsign`/`location` ignored. Unknown stations are created; a database error gives 500 (error toast) |
 | `setConfig` | full config | full config, `STATION.mycall` and `STATION.mygrid` must validate | Default `remote` has `mygrid: ""`, which would fail validation (400). `onChange()` refuses to POST before a config has been loaded from the server, so the defaults are not posted |
 
 ### 8.3 Response handling per route
@@ -479,11 +479,13 @@ Every non-2xx response becomes `undefined` in api.js (7.1). Failed POST/PATCH/DE
 | `GET /radio/` | Always 200 in practice; `processRadioStatus` handles `undefined` by writing `mode = "unknown"`, `frequency = 0`, `rf_level = 0`, `tuner = "unknown"` |
 | `GET /freedata/station/{c}` 404 (unknown station) | `getStationInfoByCallsign` resets the store to defaults (handled, logs an error) |
 | `GET /freedata/beacons/{c}` error | `loadBeaconData()` treats a non-array result as an empty list (handled) |
-| `GET /freedata/messages/{id}` unknown id | 200 `"null"`; `requestMessageInfo` parses string results with `JSON.parse` and gets `null` (handled) |
+| `GET /freedata/messages/{id}` 404 (unknown id) | `requestMessageInfo` stores `null` (handled, logged only) |
 | `PATCH /freedata/messages/{id}` 404 / 500 | Error toast |
 | `DELETE /freedata/messages/{id}` 409 (message queued or transmitting) / 404 | Error toast. `deleteCallsignFromDB` skips `queued`/`transmitting` messages up front and shows one warning toast with the number skipped |
-| `POST /freedata/broadcasts` 500 (missing key) | Error toast. With `EXP.enable_groupchat = false` the server still returns 200 and nothing is sent (server-side issue) |
+| `POST /freedata/broadcasts` 409 (`EXP.enable_groupchat = false`) / 500 (missing key) | Error toast with the server message |
 | `PATCH /freedata/broadcasts/{id}` 404 | Error toast |
+| `DELETE /freedata/broadcasts/{id}` 404 (unknown message id or domain) | Error toast |
+| `POST /freedata/station/{c}` 400 (no `info` dict) / 500 (database error) | Error toast |
 | `POST /modem/fec_transmit` 501 | Not used by the GUI |
 
 ### 8.4 WebSocket message mismatches
@@ -491,8 +493,6 @@ Every non-2xx response becomes `undefined` in api.js (7.1). Failed POST/PATCH/DE
 | Server sends | GUI expects | Effect |
 |---|---|---|
 | never sends `hello-client` | `type: "hello-client"` | "Connected to server" toast never shows |
-| ARQ *finished* events: `{session_id, dxcall, statistics, success, state, data}` | `received_bytes`, `total_bytes` at top level (outbound) or `statistics.received_bytes` (inbound) | `arq_transmission_percent` becomes `NaN` and `arq_total_bytes` `undefined` for 5 s after `ENDED` |
-| `state` / `state-change` frames have no `channel_busy` | `data.channel_busy` | `stateStore.channel_busy` is always `undefined` (field is unused anyway) |
 | `{"buffer-overflow": ...}` | not handled | dropped silently |
 | `message-db` with `message_id` | ignored | full reload of messages and broadcasts on every change |
 
@@ -514,7 +514,7 @@ The modem lifecycle event (`{"freedata_server": "started"|"restarted"|"stopped"|
 ## 9. Known issues
 
 - **Fixed 1 s reconnect** for each socket with no backoff.
-- **`loadAllData()` still runs often.** It now runs once per `/states` (re)connect instead of once per socket, but also on every left-navbar click and on every modem `started`/`restarted` event. Since the server restarts the modem on any config change (see [screens-and-settings.md](screens-and-settings.md#6-known-issues)), each change that the server writes is followed (after the modem restart) by a full reload.
+- **`loadAllData()` still runs often.** It now runs once per `/states` (re)connect instead of once per socket, but also on every left-navbar click and on every modem `started`/`restarted` event. Since the server restarts the modem on every non-GUI config change (see [screens-and-settings.md](screens-and-settings.md#6-known-issues)), each such change is followed (after the modem restart) by a full reload.
 - **`displayToast` still takes HTML.** Server fields in `eventHandler.js`, API error messages and attachment file names are escaped with `escapeHtml`, but the function itself does not escape, so every new caller has to.
 - **GET errors are silent.** `apiGet` only logs failures (no call passes `notify = true`), so failed background loads (messages, domains, devices, config) give no user feedback beyond stale data.
 - **Unused API wrappers**: `getVersion()`, `getFreedataBroadcasts()` and `sendModemARQRaw()` have no callers.
@@ -524,4 +524,4 @@ The modem lifecycle event (`{"freedata_server": "started"|"restarted"|"stopped"|
 - **`GET /freedata/broadcasts/undefined/`** at startup: `broadcast.selectedDomain` starts as `undefined` and `loadAllData()` requests that domain anyway.
 - **Build tooling**: `babel.config.js` refers to `@vue/cli-plugin-babel`, which is not installed; `bootstrap-vue-next`, `gettext-parser` and (without Babel) `core-js` are unused dependencies. `npm run build` runs `npm i` every time. `package-lock.json` is out of sync with `package.json` (`uuid` locked at `14.0.0` while `package.json` asks for `^13.0.0`).
 - **`freedata.js` `btoa_FD` / `atob_FD` / `atob`** use Node's `Buffer`, which webpack 5 does not polyfill; they are not called anywhere.
-- Server-side mismatches that the GUI cannot fix are listed in section 8 (`hello-client` never sent, `NaN` progress after ARQ `ENDED`, missing `channel_busy`, `buffer-overflow` not handled, `setStationInfo` returning 200 `false`, broadcasts accepted with group chat disabled).
+- Server-side mismatches that the GUI cannot fix are listed in section 8 (`hello-client` never sent, `buffer-overflow` not handled).

@@ -99,8 +99,8 @@ How `POST /config/` runs:
 1. `validate_remote_config(new_cfg)` checks `STATION.mycall` and `STATION.mygrid` (see §5) and **normalizes them in place**. Any failure gives 400.
 2. `old_cfg = config_manager.read()`. If it equals `new_cfg`, `old_cfg` is returned unchanged and nothing restarts.
 3. `config_manager.write(new_cfg)` runs once. A falsy result gives 500.
-4. `ctx.modem_service.put("restart")` restarts the modem.
-5. Returns `config_manager.read()`.
+4. The config is re-read. `ctx.modem_service.put("restart")` restarts the modem only if a section other than `GUI` differs between the old and the re-read config. GUI-only changes (`GUI.distance_unit`, `GUI.auto_run_browser`) are written without a restart.
+5. Returns the re-read config.
 
 Minimal valid body fragment:
 
@@ -153,6 +153,7 @@ Validation rewrites these to `"AA1AAA"` and `"JN48ea"`.
   "is_beacon_running": false,
   "is_away_from_key": false,
   "radio_status": true,
+  "channel_busy": false,
   "channel_busy_slot": [false, false, true, false, false],
   "is_codec2_traffic": false,
   "audio_dbfs": -7.9,
@@ -183,7 +184,7 @@ Each request builds a new DB manager instance (`DatabaseManagerMessages`, `...At
 |---|---|---|---|---|
 | GET | `/freedata/messages` | none (query params are ignored) | `get_all_messages_json(filters=config["FILTERS"])`, for example `{"total_messages": N, "messages": [...]}` | none |
 | POST | `/freedata/messages` | `{"destination": str, "body": str, "attachments"?: [ {name,type,data} ], "id"?: str}` | The request body, echoed back | 500 `Failed to transmit message.` if the command raises |
-| GET | `/freedata/messages/{message_id}` | path `message_id: str` | `get_message_by_id_json(...)`, which is already a JSON **string**. `api_response` encodes it again, so the body is a double-encoded JSON string. An unknown id gives 200 with the body `"null"` | none in practice. The 404 check compares the string with `None` |
+| GET | `/freedata/messages/{message_id}` | path `message_id: str` | The message as a JSON object (`get_message_by_id(...)`, i.e. `P2PMessage.to_dict()`) | 404 `Message not found` |
 | PATCH | `/freedata/messages/{message_id}` | `{"action": "retransmit"}` or any dict of fields to update | Retransmit sets `status` to `queued`, increments `attempts` and returns `{"message_id", "status": "queued"}`. Otherwise returns the `update_message` result `{"status": "success", "message": ...}` | 404 `Message not found` (checked with `get_message_by_id` before updating); 500 `Error updating message` if `update_message` does not report `success` |
 | DELETE | `/freedata/messages/{message_id}` | none | `{"message": "<id> deleted", "status": "success"}` | 404 `Message not found`; 409 with the manager's failure message for any other failure (for example `Message is queued or transmitting`) |
 | POST | `/freedata/messages/{message_id}/adif` | none | `{"adif_output": <adif string>}` | 404 `Message not found or ADIF unavailable` |
@@ -214,7 +215,7 @@ The message is stored with `status="queued"`, `direction="transmit"`. All of thi
 | GET | `/freedata/beacons` | none | `get_all_beacons()` | none |
 | GET | `/freedata/beacons/{callsign}` | none | `get_beacons_by_callsign(callsign)` | none |
 | GET | `/freedata/station/{callsign}` | none | `get_station(callsign)` | 404 `Station not found` |
-| POST | `/freedata/station/{callsign}` | `{"info": { ... }}` (must be a dict) | `update_station_info(callsign, new_info=info)` result | 400 `Invalid input data`; 404 `Station not found` |
+| POST | `/freedata/station/{callsign}` | `{"info": { ... }}` (must be a dict) | `true` (unknown stations are created by `update_station_info`) | 400 `Invalid input data`; 500 `Error updating station info` if the database update fails |
 
 #### Broadcasts (NORM / group chat)
 
@@ -222,19 +223,22 @@ The message is stored with `status="queued"`, `direction="transmit"`. All of thi
 |---|---|---|---|---|
 | GET | `/freedata/broadcasts` | none | `get_all_broadcasts_json()` | none |
 | GET | `/freedata/broadcasts/domains` | none | `get_broadcast_domains_json()` | none |
-| GET | `/freedata/broadcasts/{domain}/` (**trailing slash**) | none | `get_broadcasts_per_domain_json(domain)` | none |
-| POST | `/freedata/broadcasts` | `{"origin", "domain", "data" (base64), "type", "gridsquare", "priority"?}` | `{"message": "broadcast transmitted", "status": "success"}` | 500 `Failed to transmit broadcast.` if the command raises (for example on a missing key) |
+| GET | `/freedata/broadcasts/{domain}/` (**trailing slash**) | none | `get_broadcasts_per_domain_json(domain)`: `{domain: [ {id, timestamp, origin, gridsquare, msg_type, priority, payload_size, payload_data, direction, status, error_reason, received_at, nexttransmission_at, expires_at} ]}`. Read-only | none |
+| PATCH | `/freedata/broadcasts/{domain}/read` | none | `mark_domain_as_read(domain)`: `{"domain", "marked_read": <count>, "status": "success"}`. Sends a `message-db` event if anything changed | none (an unknown domain gives `marked_read: 0`) |
+| POST | `/freedata/broadcasts` | `{"origin", "domain", "data" (base64), "type", "gridsquare", "priority"?}` | `{"message": "broadcast transmitted", "status": "success"}` | 409 `Group chat is disabled (EXP.enable_groupchat), broadcast not transmitted.`; 500 `Failed to transmit broadcast.` if the command raises (for example on a missing key) |
 | PATCH | `/freedata/broadcasts/{id}` | `{"action": "retransmit"}` | `{"message_id": id, "status": "retransmit started"}` | 404 `Message not found`; 400 `Invalid action` for any other action |
-| DELETE | `/freedata/broadcasts/{id}` | none | `{"message": "<id> deleted", "status": "success"}` | 404 `Message not found` |
+| DELETE | `/freedata/broadcasts/{id}` | none | `{"message": "<id> deleted", "status": "success"}`. `id` is tried as a message id first, then as a domain | 404 `Broadcast message or domain not found`; 500 with the error message on a database error |
 
 `POST /freedata/broadcasts` runs `command_norm.Norm` ([command_norm.py](../command_norm.py)):
 - `origin` and `domain` get `-0` appended if they fail callsign validation;
 - `data` is base64-decoded and **truncated to 390 bytes** (`15 * 26`);
-- `priority` defaults to `1`;
+- `priority` is coerced to `int`; it defaults to `1` and also falls back to `1` when it is not a number or outside 0-7 (it is a 3-bit field in the burst flags);
 - `origin`, `domain`, `data`, `type` and `gridsquare` are required. A missing key raises in the constructor, so the endpoint answers 500;
 - `Norm.run()` returns `False` without transmitting when `EXP.enable_groupchat` is false. Otherwise it starts `NormTransmissionISS.prepare_and_transmit_data` in a thread. `run()` catches its own exceptions.
 
-`enqueue_tx_command` ignores the return value of `run()`, so a disabled group chat still gives 200 `broadcast transmitted`.
+`enqueue_tx_command` ignores the return value of `run()`, so the endpoint checks `EXP.enable_groupchat` itself before building the command and answers 409 when group chat is disabled.
+
+The GET per domain does not change anything. Clients mark a domain read explicitly with `PATCH /freedata/broadcasts/{domain}/read` (the GUI does this when the user opens a domain), so background reloads do not clear unread counts.
 
 `PATCH /freedata/broadcasts/{id}` first checks that the broadcast exists (404 if not), then calls `increment_attempts(id)`. It then runs `NormTransmissionISS(ctx).retransmit_data(msg)` through `loop.run_in_executor` without awaiting it.
 
@@ -265,7 +269,7 @@ These are produced by `EventManager.broadcast()` ([event_manager.py](../event_ma
 | Modem lifecycle | `{"freedata_server": "started" \| "restarted" \| "stopped" \| "failed"}` |
 | Message DB change | `{"message-db": "changed", "message_id": <id or null>}` |
 | Logging | `{"type": "message-logging", "endpoint", "status", "message"}` |
-| ARQ new / progress / finished | `{"type": "arq", "arq-transfer-outbound"\|"arq-transfer-inbound": {session_id, dxcall, ...}}`. *new* carries `total_bytes, state`. *progress* carries `received_bytes, total_bytes, state, speed_level, statistics`. *finished* carries `statistics, success, state, data` |
+| ARQ new / progress / finished | `{"type": "arq", "arq-transfer-outbound"\|"arq-transfer-inbound": {session_id, dxcall, ...}}`. *new* carries `total_bytes, state`. *progress* carries `received_bytes, total_bytes, state, speed_level, statistics`. *finished* carries `statistics, success, state, data` (no top-level `received_bytes`/`total_bytes`; the byte count is `statistics.total_bytes`) |
 | Custom | arbitrary kwargs passed to `send_custom_event(**data)` |
 
 ### 3.2 `/states` messages
@@ -273,7 +277,7 @@ These are produced by `EventManager.broadcast()` ([event_manager.py](../event_ma
 Produced by `StateManager` ([state_manager.py](../state_manager.py)):
 
 - `{"type": "state", ...}`: a full state snapshot, sent by `sendState()` (for example from `GET /modem/state`).
-- `{"type": "state-change", ...}`: the same fields, sent by `set(key, value)` and `set_channel_slot_busy()` when the snapshot differs from the last one. Fields: `is_modem_running, is_beacon_running, is_away_from_key, radio_status, channel_busy_slot, is_codec2_traffic, audio_dbfs, activities, is_modem_busy`.
+- `{"type": "state-change", ...}`: the same fields, sent by `set(key, value)` and `set_channel_slot_busy()` when the snapshot differs from the last one. Fields: `is_modem_running, is_beacon_running, is_away_from_key, radio_status, channel_busy, channel_busy_slot, is_codec2_traffic, audio_dbfs, activities, is_modem_busy`. `channel_busy` is `true` while the channel is busy (`not channel_busy_event.is_set()`; the event is set while the channel is free).
 - `{"type": "radio-change", radio_status, radio_frequency, radio_rf_level, radio_mode, s_meter_strength, radio_swr, radio_tuner}`, sent by `set_radio()` when the value changes. `get_radio_event` can also build `type: "radio"`.
 
 ### 3.3 `/fft` messages
@@ -337,9 +341,8 @@ The module docstring says the callsign regex "may require adjustment" for SSID 0
 ## 6. Known quirks in the API layer
 
 - Error bodies are `{"detail": {"error": "..."}}`, not the `{"error": "..."}` shown in the OpenAPI examples.
-- `enqueue_tx_command` only reports exceptions. Commands that catch their own errors in `run()` (`ARQRawCommand`, `Norm`, `SendMessageCommand.transmit`) or return `False` (`Norm` with group chat disabled) still give a 200 response.
+- `enqueue_tx_command` only reports exceptions. Commands that catch their own errors in `run()` (`ARQRawCommand`, `Norm`, `SendMessageCommand.transmit`) still give a 200 response. (`POST /freedata/broadcasts` checks the group chat setting before running `Norm`, see 2.6.)
 - `POST /modem/fec_transmit` always returns 501, because FEC transmission is not implemented.
-- `GET /freedata/messages/{id}` returns a double-encoded JSON string, and an unknown id gives 200 with `"null"` instead of 404.
 - `GET /modem/state` also pushes a full state frame to every `/states` WebSocket client.
 - `/freedata/broadcasts/{domain}/` needs a trailing slash.
 - Many endpoints document 503 "Modem not running" or "Modem busy" in `responses=` but never raise it (for example `/radio/tune` busy, all `/freedata/*` routes).

@@ -520,7 +520,6 @@ All managers take `ctx` (the `AppContext`) in `__init__`. Methods marked "event"
 | `get_all_messages(filters=None)` | dict | `list[dict]` | All messages; filters `id` (exact), `callsign` (substring in origin/via/destination), `origin_callsign`/`via_callsign`/`destination_callsign`/`direction` (substring) |
 | `get_all_messages_json(filters=None)` | dict | `dict` `{total_messages, messages}` | Wrapper with count |
 | `get_message_by_id(message_id)` | str | `dict` or `None` | Single message |
-| `get_message_by_id_json(message_id)` | str | `str` JSON | `json.dumps` of the above (`"null"` if missing) |
 | `get_message_by_id_adif(message_id)` | str | `str` ADIF or `None` | ADIF record: CALL (remote base call), QSO_DATE, TIME_ON, TIME_OFF (+`statistics.duration`), FREQ (MHz, default `14.000000`), MODE `DYNAMIC`, SUBMODE `FREEDATA`, COMMENT, GRIDSQUARE (origin station) |
 | `delete_message(message_id)` | str | `dict` `{status, message}` | Refuse with `{"status": "failure", "message": "Message is queued or transmitting"}` if `queued`/`transmitting`; otherwise delete attachments/links, then the message (event). Unknown id -> `"Message not found"` |
 | `update_message(message_id, update_data, frequency=None)` | str, dict, float | `dict` `{status, message}` | Update `status` (by name), `statistics` (+frequency), `body`, `is_read`, `attempt`, `priority` (event) |
@@ -564,13 +563,13 @@ All managers take `ctx` (the `AppContext`) in `__init__`. Methods marked "event"
 | `get_all_broadcasts_json()` | - | `list[dict]` | All broadcasts (without `attempts`) |
 | `get_first_queued_message()` | - | `BroadcastMessage` or `None` | Expire stale transmit rows, return next due one |
 | `get_broadcast_domains_json()` | - | `dict[domain -> stats]` | Per-domain counts, unread count, last message |
-| `get_broadcasts_per_domain_json(domain=None)` | str | `dict[domain -> list]` | Messages grouped by domain; marks the domain read first |
-| `delete_broadcast_message_or_domain(id)` | str | `dict` | Delete one message by id, else all messages of domain `id` (event) |
+| `get_broadcasts_per_domain_json(domain=None)` | str | `dict[domain -> list]` | Messages grouped by domain (items include `priority`). Read-only; does not mark anything read |
+| `delete_broadcast_message_or_domain(id)` | str | `dict` | Delete one message by id, else all messages of domain `id` (event). `status` is `success`, `not_found` (neither matched) or `error` (exception) |
 | `check_missing_bursts()` | - | `dict` or `None` | First incomplete received broadcast due for a NACK |
 | `get_broadcast_per_id(id, get_object=False)` | str, bool | `dict`, ORM object or `None` | Single broadcast |
 | `increment_attempts(message_id)` | str | `None` | `attempts += 1` |
 | `increment_attempts_and_update_next_transmission(message_id)` | str | `None` | Attempts + backoff schedule; `max_attempts_reached` at 20 |
-| `mark_domain_as_read(domain)` | str | `int` | Set `is_read=True` for unread rows in domain (event) |
+| `mark_domain_as_read(domain)` | str | `int` | Set `is_read=True` for unread rows in domain (event only if something changed). Called by `PATCH /freedata/broadcasts/{domain}/read` |
 
 ### `MessageP2P` and module functions ([message_p2p.py](../message_p2p.py))
 
@@ -601,7 +600,6 @@ Observed in the current code.
 
 1. **Per-call engines** - every manager instantiation creates a new engine and runs `create_all`; messages/broadcast managers create additional nested managers (and engines).
 2. **Detached ORM objects** - broadcast `get_first_queued_message` and `get_broadcast_per_id(get_object=True)` return ORM objects after `session.remove()` (detached instances).
-3. **Double-encoded single-message API response** - `get_message_by_id_json` returns a JSON string (`"null"` for an unknown id). `GET /freedata/messages/{id}` passes that string to `api_response`, so the body is a JSON-encoded string, and the endpoint's `is None` check never produces a 404 ([api/freedata.py](../api/freedata.py)).
-4. **Scheduler re-inserts the queued message** - when the scheduler constructs `SendMessageCommand` with an existing queued message dict, `set_params_from_api` calls `add_message` again with the same `id`; this hits the `IntegrityError` path (warning, no new row).
-5. **Two updates per ARQ callback** - `message_transmitted` / `message_failed` each perform two separate `update_message` calls (status, then statistics), producing two commits and two change events (marked `# Todo ... WIP`).
-6. **No index migration** - indexes are only created together with their table; an existing database does not get indexes that were added to the models later.
+3. **Scheduler re-inserts the queued message** - when the scheduler constructs `SendMessageCommand` with an existing queued message dict, `set_params_from_api` calls `add_message` again with the same `id`; this hits the `IntegrityError` path (warning, no new row).
+4. **Two updates per ARQ callback** - `message_transmitted` / `message_failed` each perform two separate `update_message` calls (status, then statistics), producing two commits and two change events (marked `# Todo ... WIP`).
+5. **No index migration** - indexes are only created together with their table; an existing database does not get indexes that were added to the models later.

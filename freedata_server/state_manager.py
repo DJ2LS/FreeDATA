@@ -174,6 +174,8 @@ class StateManager:
             "is_away_from_key": self.is_away_from_key,
             "radio_status": self.radio_status,
             "channel_busy_slot": self.channel_busy_slot,
+            # channel_busy_event is *set* while the channel is free
+            "channel_busy": not self.channel_busy_event.is_set(),
             "is_codec2_traffic": self.is_receiving_codec2_signal(),
             "audio_dbfs": self.audio_dbfs,
             "activities": self.activities_list,

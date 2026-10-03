@@ -193,15 +193,15 @@ export function sendADIFviaUDP(id) {
 /**
  * Request information about a message by its ID and store it in
  * chatStore.messageInfoById (null if unknown or on error).
- * The server returns the message as a JSON string.
+ * The server returns the message as a JSON object (404 for unknown ids,
+ * which getFreedataMessageById turns into undefined).
  * @param {string} id - The ID of the message.
- * @returns {Promise<Object|null>} - The parsed message info.
+ * @returns {Promise<Object|null>} - The message info.
  */
 export async function requestMessageInfo(id) {
   let info = null;
   try {
-    const result = await getFreedataMessageById(id);
-    info = typeof result === "string" ? JSON.parse(result) : result ?? null;
+    info = (await getFreedataMessageById(id)) ?? null;
   } catch (error) {
     console.error("Error fetching message info:", error);
     info = null;

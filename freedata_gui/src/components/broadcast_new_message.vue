@@ -71,7 +71,7 @@ function transmitNewBroadcast() {
     domain: broadcast.selectedDomain,
     gridsquare: settings.remote.STATION.mygrid,
     type: "MESSAGE",
-    priority: "1",
+    priority: 1,
     data: base64data
   }
 

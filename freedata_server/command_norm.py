@@ -19,10 +19,14 @@ class Norm(TxCommand):
         self.data = base64.b64decode(apiParams["data"])
         self.data = self.data[: 15 * 26]
 
-        if "priority" not in apiParams:
+        # priority is a 3-bit field (0-7) in the burst flags; the GUI may send
+        # it as a string, so coerce it and fall back to 1 if it is invalid
+        try:
+            self.priority = int(apiParams.get("priority", 1))
+        except (TypeError, ValueError):
             self.priority = 1
-        else:
-            self.priority = apiParams["priority"]
+        if not 0 <= self.priority <= 7:
+            self.priority = 1
 
         self.msgtype = apiParams["type"]
         self.gridsquare = apiParams["gridsquare"]

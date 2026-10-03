@@ -86,7 +86,7 @@
 
 <script setup>
 
-import { getFreedataBroadcastsPerDomain } from '../js/api.js';
+import { getFreedataBroadcastsPerDomain, setFreedataBroadcastDomainAsRead } from '../js/api.js';
 import { setActivePinia } from 'pinia';
 import pinia from '../store/index';
 setActivePinia(pinia);
@@ -124,8 +124,12 @@ function getDateTime(input) {
 function domainSelected(domain) {
   broadcast.selectedDomain = domain.toUpperCase();
   broadcast.triggerScrollToBottom();
-  //setMessagesAsRead(domain);
   getFreedataBroadcastsPerDomain(domain);
+  // the GET above does not mark anything read; the server sends a
+  // message-db change event afterwards, which refreshes the unread badges
+  if (broadcast.domains?.[domain]?.unread_count) {
+    setFreedataBroadcastDomainAsRead(domain);
+  }
 }
 
 

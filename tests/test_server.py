@@ -79,6 +79,35 @@ class TestIntegration(unittest.TestCase):
         config = r.json()
         self.assertEqual(config["NETWORK"]["modemport"], 5000)
 
+    def test_message_unknown_id_404(self):
+        r = requests.get(self.url + "/freedata/messages/does-not-exist")
+        self.assertEqual(r.status_code, 404)
+
+    def test_broadcast_delete_unknown_404(self):
+        r = requests.delete(self.url + "/freedata/broadcasts/does-not-exist")
+        self.assertEqual(r.status_code, 404)
+
+    def test_broadcast_post_groupchat_disabled_409(self):
+        # the test config (config.ini.example) has EXP.enable_groupchat = False
+        payload = {
+            "origin": "AA1AAA-0",
+            "domain": "BB1BBB-0",
+            "gridsquare": "JN48ea",
+            "type": "MESSAGE",
+            "priority": 1,
+            "data": "aGVsbG8=",
+        }
+        r = requests.post(self.url + "/freedata/broadcasts", json=payload)
+        self.assertEqual(r.status_code, 409)
+        self.assertIn("error", r.json()["detail"])
+
+    def test_broadcast_domain_mark_read(self):
+        r = requests.get(self.url + "/freedata/broadcasts/BB1BBB-0/")
+        self.assertEqual(r.status_code, 200)
+        r = requests.patch(self.url + "/freedata/broadcasts/BB1BBB-0/read")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.json()["marked_read"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()

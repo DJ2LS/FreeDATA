@@ -153,9 +153,13 @@ async def post_config(
     if not ctx.config_manager.write(new_cfg):
         api_abort("Error writing configuration", 500)
 
-    # Trigger modem restart
-    ctx.modem_service.put("restart")
+    updated = ctx.config_manager.read()
+
+    # Trigger modem restart, unless only the GUI section changed
+    # (GUI-only keys such as distance_unit are not used by the modem)
+    sections = (set(old_cfg) | set(updated)) - {"GUI"}
+    if any(old_cfg.get(section) != updated.get(section) for section in sections):
+        ctx.modem_service.put("restart")
 
     # Return updated configuration
-    updated = ctx.config_manager.read()
     return updated

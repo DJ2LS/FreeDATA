@@ -296,9 +296,8 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             session.remove()
 
     def get_broadcasts_per_domain_json(self, domain: str = None) -> dict:
-        if domain:
-            self.mark_domain_as_read(domain)
-
+        # read-only: marking a domain as read is done explicitly via
+        # mark_domain_as_read() (PATCH /freedata/broadcasts/{domain}/read)
         session = self.get_thread_scoped_session()
         try:
             query = session.query(BroadcastMessage).order_by(BroadcastMessage.timestamp.asc())
@@ -324,6 +323,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     "origin": msg.origin,
                     "gridsquare": msg.gridsquare,
                     "msg_type": msg.msg_type,
+                    "priority": msg.priority,
                     "payload_size": msg.payload_size,
                     "payload_data": msg.payload_data,
                     "direction": msg.direction,
@@ -364,7 +364,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                 self.ctx.event_manager.freedata_message_db_change(message_id=id)
                 return {"status": "success", "deleted": count, "type": "domain", "domain": id}
 
-            return {"status": "error", "message": f"Neither broadcast message ID '{id}' nor domain found."}
+            return {"status": "not_found", "message": f"Neither broadcast message ID '{id}' nor domain found."}
 
         except Exception as e:
             session.rollback()

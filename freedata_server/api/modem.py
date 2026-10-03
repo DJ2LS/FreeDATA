@@ -103,6 +103,7 @@ router = APIRouter()
                             },
                         },
                         "audio_dbfs": -7.915304862713354,
+                        "channel_busy": False,
                         "channel_busy_slot": [False, False, True, False, False],
                         "is_away_from_key": False,
                         "is_beacon_running": True,

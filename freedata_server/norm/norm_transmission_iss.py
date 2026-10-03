@@ -121,7 +121,8 @@ class NormTransmissionISS(NormTransmission):
             message_type = NORMMsgType[msg_type_val] if isinstance(msg_type_val, str) else msg_type_val
             checksum_hex = db_msg_obj.get("checksum")
 
-            if not all([total_bursts, priority, message_type, checksum_hex]):
+            # priority 0 is valid, so check it against None instead of truthiness
+            if not all([total_bursts, message_type, checksum_hex]) or priority is None:
                 self.log("Missing required fields in db_msg_obj", isWarning=True)
                 raise ValueError("Missing required fields")
 

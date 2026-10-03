@@ -44,7 +44,8 @@ A full run takes about a minute. Both commands exit non-zero when a test fails.
 | `test_message_protocol.py` | A P2P message sent over an ARQ session, checked on both stations | two |
 | `test_norm_protocol.py` | Sending a NORM broadcast (smoke test, see section 5) | two |
 | `test_rx_audio_callback.py` | RX audio callback/worker split and re-blocking to whole DSP blocks | yes (not started) |
-| `test_server.py` | Starts the real server as a subprocess; `/`, `GET /config`, `POST /config` | separate process |
+| `test_api_fixes.py` | `GET /freedata/messages/{id}` (object / 404, called directly), broadcast DB helpers (read-only per-domain GET with `priority`, `mark_domain_as_read`, delete `not_found`), `Norm` priority coercion, `channel_busy` in state events, `POST /config` restarting only for non-GUI changes (fake ctx with its own config copy) | yes |
+| `test_server.py` | Starts the real server as a subprocess; `/`, `GET /config`, `POST /config`, 404 for unknown message id and broadcast delete, 409 for `POST /freedata/broadcasts` with group chat disabled, `PATCH /freedata/broadcasts/{domain}/read` | separate process |
 | `test_p2p_connection.py` | Disabled, see section 5 | — |
 
 ## 3. Test environment isolation

@@ -356,6 +356,12 @@ export async function getFreedataBroadcastsPerDomain(domain) {
   }
 }
 
+// Marks all broadcasts of a domain as read. GET /freedata/broadcasts/{domain}/
+// is side-effect free, so this is called when the user opens a domain.
+export async function setFreedataBroadcastDomainAsRead(domain) {
+  return await apiPatch(`/freedata/broadcasts/${domain}/read`);
+}
+
 export async function getFreedataDomains() {
   broadcastStore.loading = true;
   try {

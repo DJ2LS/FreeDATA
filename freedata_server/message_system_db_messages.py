@@ -4,7 +4,6 @@ from freedata_server.message_system_db_model import Status, P2PMessage
 from freedata_server.message_system_db_station import DatabaseManagerStations
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timedelta, timezone
-import json
 from freedata_server.exceptions import MessageStatusError
 
 
@@ -223,22 +222,6 @@ class DatabaseManagerMessages(DatabaseManager):
             return None
         finally:
             session.remove()
-
-    def get_message_by_id_json(self, message_id):
-        """Retrieves a P2P message by ID as a JSON string.
-
-        This method retrieves a message by its ID and returns it as a JSON
-        string. It calls get_message_by_id to fetch the message and then
-        serializes it to JSON.
-
-        Args:
-            message_id (str): The ID of the message.
-
-        Returns:
-            str: The message data as a JSON string, or an empty JSON object if not found.
-        """
-        message_dict = self.get_message_by_id(message_id)
-        return json.dumps(message_dict)  # Convert to JSON string
 
     def get_message_by_id_adif(self, message_id):
         """

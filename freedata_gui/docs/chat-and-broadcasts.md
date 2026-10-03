@@ -265,8 +265,8 @@ broadcast_modal.vue                  (mounted by main_modals.vue)
 
 - `getFreedataDomains()` is called from the left navbar, on websocket connect, on every `message-db` event and 1 s after sending from the modal. `processFreedataDomains` stores the object and sums `unread_count`.
 - The sidebar shows each domain with `message_count`, an unread badge (red if > 0, green otherwise) and `last_message_timestamp` (seconds -> time today / date otherwise).
-- `domainSelected(domain)` sets `selectedDomain = domain.toUpperCase()` and loads `GET /freedata/broadcasts/{domain}/` with the original case. On the server this call also **marks all messages in the domain as read** (`mark_domain_as_read`), which fires another `message-db` event if anything changed.
-- Because `eventDispatcher` reloads the selected domain on every `message-db` event, new broadcasts in the selected domain are marked read as soon as they arrive, even if the broadcasts page is not visible.
+- `domainSelected(domain)` sets `selectedDomain = domain.toUpperCase()` and loads `GET /freedata/broadcasts/{domain}/` with the original case. That GET is read-only. If the domain has unread broadcasts (`domains[domain].unread_count > 0`), it also calls `setFreedataBroadcastDomainAsRead(domain)` -> `PATCH /freedata/broadcasts/{domain}/read`, which runs `mark_domain_as_read` on the server and fires a `message-db` event, so the domain list and the navbar badge refresh.
+- Background reloads (`eventDispatcher` on every `message-db` event, `loadAllData()`) only GET the selected domain, so broadcasts that arrive later stay unread (and counted in the badge) until the user selects the domain again.
 - Delete domain: the graph button in the `broadcasts_screen.vue` header opens `#deleteBroadcastModal` (it no longer calls a handler itself). The modal header shows `broadcast.selectedDomain`; its button calls `deleteBroadcastDomainFromDB(selectedDomain)` -> `DELETE /freedata/broadcasts/{domain}` and clears `selectedDomain`. The server endpoint is shared with message delete: it tries the value as a message id first, then as a domain.
 
 ### 3.4 Sending
@@ -279,7 +279,7 @@ Two entry points build the same payload for `POST /freedata/broadcasts` via `new
 | `domain` | `broadcast.selectedDomain` (falls back to first domain) | `broadcast.newDomain` trimmed, default `GLOBAL-1`; datalist offers `EUROPE-1`, `ASIA-1`, `NA-1`, `SA-1`, `AFRICA-1` |
 | `gridsquare` | `settings.remote.STATION.mygrid` | same |
 | `type` | `"MESSAGE"` | `newMessageType` uppercased, default `MESSAGE` |
-| `priority` | `"1"` (string) | `1` (number) |
+| `priority` | `1` (number) | `1` (number) |
 | `data` | `encodeBroadcastText(DOMPurify.sanitize(marked.parse(inputText)))` | MESSAGE: same; METAR: `encodeBroadcastText(metarString)` |
 
 `encodeBroadcastText(text)` ([broadcastsHandler.js](../src/js/broadcastsHandler.js)) UTF-8 encodes the text (`TextEncoder`) and base64-encodes the bytes, so emoji, Cyrillic, CJK etc. no longer make `btoa()` throw.
@@ -290,7 +290,7 @@ Two entry points build the same payload for `POST /freedata/broadcasts` via `new
 - Modal: shows `N / 390 bytes` under the MESSAGE textarea and under the METAR preview (red when too large, plus a "too long" note for MESSAGE) and disables "Send Broadcast" while the payload is too large.
 - In both, sending a payload over the limit (for example via Enter) is refused with a warning toast "Broadcast too long: N of 390 bytes (after formatting)".
 - Modal: after sending, it waits 1 s, then reloads domains and the target domain and selects it. The type `<select>` only offers `MESSAGE`; the `METAR` option is commented out, so the METAR form (IATA/ICAO input with airports datalist, time, AUTO/COR, wind, visibility/CAVOK, cloud layers, temp/dew, QNH, remarks, live preview) is not reachable from the UI.
-- Server side ([command_norm.py](../../freedata_server/command_norm.py)): requires `origin`, `domain`, `data`, `type`, `gridsquare`; `priority` defaults to 1; appends `-0` to `origin`/`domain` if they are not valid callsigns; **truncates the decoded data to 390 bytes** (15 x 26). `run()` does nothing if `EXP.enable_groupchat` is off.
+- Server side ([command_norm.py](../../freedata_server/command_norm.py)): requires `origin`, `domain`, `data`, `type`, `gridsquare`; `priority` is coerced to an int and falls back to 1 if missing, not a number or outside 0-7; appends `-0` to `origin`/`domain` if they are not valid callsigns; **truncates the decoded data to 390 bytes** (15 x 26). With `EXP.enable_groupchat` off, the endpoint refuses the request with **409** ("Group chat is disabled ..."), which api.js shows as an error toast.
 
 ### 3.5 Rendering received and sent broadcasts
 
@@ -305,7 +305,7 @@ All bubbles decode `message.payload_data.final` with `decodeBroadcastText()` ins
 
 There is no ADIF button on broadcasts: the server has no ADIF endpoint for them (only `POST /freedata/messages/{id}/adif` for P2P messages), so the buttons, `sendBroadcastADIFviaUDP` and `postFreedataBroadcastADIF` were removed. Delete handlers are methods that await the API call inside `try/catch`.
 
-The info button sets `broadcast.selectedMessage` for `#broadcastMessageInfoModal`. The per-domain endpoint does not return `priority`, so the received-text footer shows an empty priority badge.
+The info button sets `broadcast.selectedMessage` for `#broadcastMessageInfoModal`. The per-domain endpoint returns `priority`, which the received bubbles show in their footer.
 
 ### 3.6 METAR support ([metar.js](../src/js/metar.js))
 
@@ -352,13 +352,14 @@ The handlers now return the API promise, so the components' `try/await` waits fo
 | `PATCH /freedata/messages/{id}` retransmit | `{action: "retransmit"}` | 404 unknown id; sets `queued`, increments attempts; 500 on update failure | Match. GUI allows retransmit in any status, including `queued`/`transmitting` |
 | `PATCH /freedata/messages/{id}` read | `{is_read: true}` | 404 unknown id; `update_message` accepts `is_read`; 500 on failure | Match. The GUI sets `is_read` locally before the response; on failure the 500 ms reload restores the server state |
 | `DELETE /freedata/messages/{id}` | empty JSON body | 404 not found; **409** if `queued`/`transmitting` | Single-message delete button is disabled for those statuses. Delete conversation skips `queued`/`transmitting` messages and says so in a toast; any other refusal shows an error toast |
-| `GET /freedata/messages/{id}` | - | Returns `json.dumps(message)`, i.e. a JSON **string**; the 404 branch is never taken because `json.dumps(None)` is `"null"` | `requestMessageInfo` `JSON.parse`s string results (objects are used as-is), which matches the string format. Unknown id -> `null` |
+| `GET /freedata/messages/{id}` | - | The message as a JSON object; 404 for an unknown id | Match. `requestMessageInfo` stores the object, or `null` on 404 |
 | `POST /freedata/messages/{id}/adif` | `{action: "retransmit"}` | Body ignored; 404 if ADIF unavailable | Harmless extra body |
 | `GET /freedata/messages/attachment/{hash}` | - | 404 if missing; `{id, name, type, data, checksum_crc32, hash_sha512}` | Match (`data`, `type` used). 404 -> `undefined.data` TypeError, caught and logged |
-| `POST /freedata/broadcasts` | `{origin, domain, gridsquare, type, priority, data}` | `Norm`: same keys; 500 only if the constructor raises | `priority` is a string `"1"` from the inline composer and a number from the modal; the server passes it through unchanged. Returns 200 "broadcast transmitted" even when group chat is disabled and nothing is sent |
+| `POST /freedata/broadcasts` | `{origin, domain, gridsquare, type, priority, data}` | `Norm`: same keys, `priority` coerced to int (0-7, else 1); **409** if `EXP.enable_groupchat` is off; 500 if the constructor raises | Match. Both entry points send `priority: 1`. Errors show a toast |
 | `PATCH /freedata/broadcasts/{id}` | `{action: "retransmit"}` | 404 unknown id; 400 other actions | Match |
-| `DELETE /freedata/broadcasts/{id or domain}` | empty JSON body | `delete_broadcast_message_or_domain` always returns a dict, so `if not ok` never fires: unknown ids give **200** with no deletion | Server-side issue; the GUI cannot tell |
-| `GET /freedata/broadcasts/{domain}/` | - | `{domain: [...]}`, no `priority` field; marks domain read | `selectedDomain === undefined` on startup gives `GET /freedata/broadcasts/undefined/` |
+| `DELETE /freedata/broadcasts/{id or domain}` | empty JSON body | 200 on success; **404** if neither a message id nor a domain matches; 500 on a database error | Match. Errors show a toast |
+| `GET /freedata/broadcasts/{domain}/` | - | `{domain: [...]}` including `priority`; read-only | `selectedDomain === undefined` on startup gives `GET /freedata/broadcasts/undefined/` |
+| `PATCH /freedata/broadcasts/{domain}/read` | no body | Marks all unread broadcasts of the domain read; `{domain, marked_read, status}` | Called from `domainSelected()` when the domain has unread broadcasts |
 | `GET /freedata/broadcasts/domains` | - | `{domain: {message_count, unread_count, last_message_*}}` | Match |
 | `GET /freedata/broadcasts` | - | All broadcasts as a flat list | `getFreedataBroadcasts()` groups the list by `domain` and stores it like the per-domain endpoint. No caller in the GUI |
 | `POST /freedata/broadcasts/{id}/adif` | - | Does not exist | The GUI no longer calls it (broadcast ADIF removed) |
@@ -375,11 +376,11 @@ The handlers now return the API promise, so the components' `try/await` waits fo
 
 ### Bugs and limitations
 
-2. **Every `message-db` event reloads everything**: full message list (including all attachment base64 data), domain list, selected domain's broadcasts. Fetching the selected domain also marks it read on the server, so broadcasts arriving in the selected domain are marked read immediately, wherever the user is.
+2. **Every `message-db` event reloads everything**: full message list (including all attachment base64 data), domain list, selected domain's broadcasts.
 3. **Failed loads are silent.** GET errors (message list, domains, broadcasts, attachments, beacons) are only logged; only POST/PATCH/DELETE failures show a toast (4.1).
 4. **Broadcast scroll-to-bottom is not wired** (no watcher on `broadcast.scrollTrigger` in `broadcasts_screen.vue`).
 5. **METAR**: the METAR type is still disabled in the modal. ICAO lookup now exists, but only 35 entries of `airports.json` carry an ICAO code, so most ICAO stations (e.g. `EFHK`) show no airport name.
-6. **Broadcast priority**: the inline composer sends `priority: "1"` (string), the modal `1` (number). The per-domain endpoint returns no `priority`, so the received-text bubble shows an empty priority badge.
+6. **Broadcasts in the open domain stay unread.** Mark-as-read only happens when a domain is selected, so broadcasts arriving while the user is looking at that domain keep the unread badge until the domain is selected again.
 7. **`GET /freedata/broadcasts/undefined/`** at startup: `broadcast.selectedDomain` starts as `undefined` and is requested anyway.
 8. **Dead code**: `chat_conversations.vue` `newChat()` is unused; `broadcastStore.newPriority` is unused; `stationStore` is not used by these components; `broadcast_new_message.vue` declares `#broadcastEmojiPickerModal` although its emoji button is commented out; `getFreedataBroadcasts()` has no caller.
 9. **Attachments**: the 100 KiB limit counts raw bytes per message; there is no limit on the number of files, and files are still read completely with `readAsBinaryString` + `btoa()`.

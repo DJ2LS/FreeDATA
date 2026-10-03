@@ -371,13 +371,11 @@ export function eventDispatcher(data) {
               </div>
             `;
             displayToast("success", "bi-info-circle", message, 5000);
-            stateStore.arq_transmission_percent = Math.round(
-              (data["arq-transfer-outbound"].received_bytes /
-                data["arq-transfer-outbound"].total_bytes) *
-                100,
-            );
+            // finished events carry no received_bytes / total_bytes, only
+            // statistics.total_bytes; ENDED means the transfer succeeded
+            stateStore.arq_transmission_percent = 100;
             stateStore.arq_total_bytes =
-              data["arq-transfer-outbound"].total_bytes;
+              data["arq-transfer-outbound"].statistics?.total_bytes ?? 0;
 
             stateStore.arq_bytes_per_minute =
               data["arq-transfer-outbound"].statistics.bytes_per_minute;
@@ -538,11 +536,9 @@ export function eventDispatcher(data) {
             //  data["arq-transfer-inbound"].data,
             //  data["arq-transfer-inbound"]
             //);
-            stateStore.arq_transmission_percent = Math.round(
-              (data["arq-transfer-inbound"].statistics.received_bytes /
-                data["arq-transfer-inbound"].statistics.total_bytes) *
-                100,
-            );
+            // finished events carry no received_bytes / total_bytes, only
+            // statistics.total_bytes; ENDED means the transfer succeeded
+            stateStore.arq_transmission_percent = 100;
 
             stateStore.arq_bytes_per_minute =
               data["arq-transfer-inbound"].statistics.bytes_per_minute;
@@ -550,7 +546,7 @@ export function eventDispatcher(data) {
               data["arq-transfer-inbound"].statistics.bits_per_second;
 
             stateStore.arq_total_bytes =
-              data["arq-transfer-inbound"].total_bytes;
+              data["arq-transfer-inbound"].statistics?.total_bytes ?? 0;
 
             // Reset progressbar values after a delay
             setTimeout(() => {
