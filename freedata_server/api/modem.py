@@ -325,7 +325,7 @@ async def post_fec(
     Trigger FEC frame transmission.
 
     Currently not implemented: the FEC/FEC_WAKEUP frame types are disabled
-    in modem_frametypes.py and FecCommand cannot build or transmit frames,
+    in modem_frametypes.py and there is no FEC command implementation,
     so this endpoint returns 501 instead of reporting a fake success.
     """
     api_abort("FEC transmission is not implemented.", 501)

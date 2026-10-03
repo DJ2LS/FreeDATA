@@ -14,7 +14,7 @@ Source files: [server.py](../server.py), [api/](../api/), [api_validations.py](.
 
 ```python
 app = FastAPI(title="FreeDATA API", version=str(API_VERSION), lifespan=lifespan)
-app.state.ctx = ctx          # used by get_ctx()
+app.state.ctx = ctx  # used by get_ctx()
 ```
 
 `main()` reads `NETWORK.modemaddress` (default `0.0.0.0`) and `NETWORK.modemport` (default `5000`) from the config and runs `uvicorn.run(app, host, port)`.
@@ -163,7 +163,7 @@ Validation rewrites these to `"AA1AAA"` and `"JN48ea"`.
 
 **Beacon.** The handler sets `is_beacon_running` and `is_away_from_key` via `state_manager.set(...)`, which pushes a `state-change` frame to `/states`. `BeaconCommand` gets the payload but does not use it. The beacon frame reads `state_manager.is_away_from_key` instead.
 
-**FEC.** FEC transmission is not implemented. The `FEC` / `FEC_WAKEUP` frame types are disabled in [modem_frametypes.py](../modem_frametypes.py), and `FecCommand` ([command_fec.py](../command_fec.py)) cannot build or transmit frames. The handler therefore aborts with 501 straight away. It does not check the modem state or the body, and it does not run `FecCommand`.
+**FEC.** FEC transmission is not implemented. The `FEC` / `FEC_WAKEUP` frame types are disabled in [modem_frametypes.py](../modem_frametypes.py), and there is no FEC command class (the old, non-working `command_fec.py` was removed). The handler therefore aborts with 501 straight away and does not check the modem state or the body.
 
 **500 on command failure.** Every endpoint that runs a transmit command through `enqueue_tx_command` (see §4) aborts with 500 when that call returns `False`, which happens when the command's constructor (parameter parsing) or its `run()` raised. Failures that a command catches itself still give 200. For example, `ARQRawCommand.run()` catches its own exceptions and returns `False`.
 
@@ -290,9 +290,9 @@ Raw received audio, sent as binary frames. `modem.py` puts the chunks on `audio_
 
 ```python
 async def enqueue_tx_command(ctx, cmd_class, params=None) -> bool:
-    command = cmd_class(ctx, params or {})          # TxCommand.__init__ -> set_params_from_api(params)
-    await asyncio.to_thread(command.run)             # blocking run() off the event loop
-    return True                                      # any exception -> logged, returns False
+    command = cmd_class(ctx, params or {})  # TxCommand.__init__ -> set_params_from_api(params)
+    await asyncio.to_thread(command.run)  # blocking run() off the event loop
+    return True  # any exception -> logged, returns False
 ```
 
 Despite the name, nothing is queued. The handler `await`s `command.run()` in a worker thread, so the HTTP response waits until `run()` returns. Parameter parsing happens in the constructor (`TxCommand.__init__` calls `set_params_from_api`), inside the same `try`. Parse errors and run errors are both caught there.

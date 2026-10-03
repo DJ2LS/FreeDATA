@@ -38,11 +38,8 @@ dependencies = [
     "sounddevice",
     "structlog",
     "requests",
-    "chardet",
     "colorama",
-    "ordered-set",
     "sqlalchemy",
-    "websocket-client",
     "fastapi[standard]",
     "uvicorn[standard]",
 ]
@@ -61,7 +58,6 @@ test = [
     "pytest",
     "pytest-cov",
     "pytest-rerunfailures",
-    "pick",
 ]
 dev = [
     "freedata[test]",

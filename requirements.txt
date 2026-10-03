@@ -4,23 +4,16 @@ pyserial
 sounddevice
 structlog
 requests
-chardet
 colorama
-ordered-set
-websocket-client
 sqlalchemy
 fastapi[standard]
 uvicorn[standard]
 
 # Development and test dependencies
-autopep8
-black
-isort
-pycodestyle
+ruff
 pytest
 pytest-cov
 pytest-rerunfailures
-pick
 
 # Build
 build

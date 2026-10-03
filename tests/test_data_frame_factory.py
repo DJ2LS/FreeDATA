@@ -1,4 +1,3 @@
-import os
 import unittest
 
 import testenv  # noqa: F401  isolates config + message DB, must precede freedata_server imports

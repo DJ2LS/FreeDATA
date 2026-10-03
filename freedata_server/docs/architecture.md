@@ -12,7 +12,7 @@ Files covered: [server.py](../server.py), [context.py](../context.py), [constant
 [websocket_manager.py](../websocket_manager.py), [log_handler.py](../log_handler.py), [stats.py](../stats.py),
 [explorer.py](../explorer.py), [adif_udp_logger.py](../adif_udp_logger.py),
 [wavelog_api_logger.py](../wavelog_api_logger.py), [helpers.py](../helpers.py), [maidenhead.py](../maidenhead.py),
-[b64.py](../b64.py), [exceptions.py](../exceptions.py), [serial_ports.py](../serial_ports.py),
+[exceptions.py](../exceptions.py), [serial_ports.py](../serial_ports.py),
 [list_ports_winreg.py](../list_ports_winreg.py), [\_\_init\_\_.py](../__init__.py) (empty).
 
 ---
@@ -547,8 +547,6 @@ Most jobs catch exceptions and `print()` them.
   centre lat/lon), `latlon_to_maidenhead(lat, lon, precision=6)` (4/6/8 chars),
   `distance_between_locators()` (`{"kilometers", "miles"}`), `generate_full_maidenhead()` (pads 2- or
   4-char locators to 6 chars with **random** characters; other lengths except >6 raise `ValueError`).
-- **[b64.py](../b64.py)** - Scratch script: decodes a hard-coded base64 string and prints it when run
-  as `__main__` (nothing happens on import).
 - **[exceptions.py](../exceptions.py)** - `NoCallsign(UserWarning)`, `MessageStatusError(UserWarning)`.
 - **[serial_ports.py](../serial_ports.py)** - `get_ports()` returns `[{"port", "description"}]`; the
   description is suffixed with the CRC-16 hex of the HWID. On Windows uses

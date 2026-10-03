@@ -1,7 +1,0 @@
-import base64
-
-
-string = b"aGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQh"
-
-if __name__ == "__main__":
-    print(base64.b64decode(string))

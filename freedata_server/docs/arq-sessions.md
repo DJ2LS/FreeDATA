@@ -559,8 +559,7 @@ Server-initiated messages (methods of `SocketCommandHandler`):
 
 [norm/](../norm/): [norm_transmission.py](../norm/norm_transmission.py) (base + enums + bit packing),
 [norm_transmission_iss.py](../norm/norm_transmission_iss.py),
-[norm_transmission_irs.py](../norm/norm_transmission_irs.py),
-[norm_transmission_resend.py](../norm/norm_transmission_resend.py) (contains only a comment).
+[norm_transmission_irs.py](../norm/norm_transmission_irs.py).
 
 All NORM code returns early unless `EXP.enable_groupchat` is set. Frames are always sent with
 `rf_modem.transmit(FREEDV_MODE.datac4, 1, 200, frame)`. Bursts carry a fixed 26-byte payload

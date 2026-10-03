@@ -225,8 +225,7 @@ Loop (every 10 ms, while the stream is active and `shutdown_flag` unset, or in T
 2. If `nbytes == bytes_per_frame`: compute SNR and scatter, then put onto `ctx.rf_modem.data_queue_received`:
 
    ```python
-   {"payload": bytes_out, "freedv": freedv, "bytes_per_frame": ..., "snr": ...,
-    "frequency_offset": ..., "mode_name": ...}
+   {"payload": bytes_out, "freedv": freedv, "bytes_per_frame": ..., "snr": ..., "frequency_offset": ..., "mode_name": ...}
    ```
 
    `frame_dispatcher.DISPATCHER.worker_receive` ([frame_dispatcher.py](../frame_dispatcher.py)) consumes this queue.
