@@ -14,7 +14,7 @@ import {
   postFreedataMessageADIF,
   getBeaconDataByCallsign,
 } from "./api";
-import { displayToast } from "./popupHandler";
+import { displayToast, escapeHtml } from "./popupHandler";
 import { useIsMobile } from "@/js/mobile_devices";
 const { isMobile } = useIsMobile(768);
 
@@ -164,7 +164,7 @@ export async function deleteCallsignFromDB(callsign) {
     displayToast(
       "warning",
       "bi-exclamation-triangle",
-      `${skipped} message(s) to ${callsign} are queued or being transmitted and were not deleted.`,
+      `${skipped} message(s) to ${escapeHtml(callsign)} are queued or being transmitted and were not deleted.`,
       7000,
     );
   }
