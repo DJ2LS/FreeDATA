@@ -29,7 +29,7 @@ From [package.json](../package.json). "Used in" lists the files that import the 
 | `dompurify` | Sanitising user input / rendered HTML | chat and broadcast components |
 | `js-image-compressor` | Shrinking image attachments before sending | `chat_new_message.vue` |
 | `vuemoji-picker` | Emoji picker | `chat_new_message.vue`, `broadcast_new_message.vue` |
-| `uuid` | Unique DOM ids for toasts. `package.json` asks for `^13.0.0`, but `package-lock.json` pins `14.0.0`, so the lock file is out of sync with `package.json` | [popupHandler.js](../src/js/popupHandler.js) |
+| `uuid` | Unique DOM ids for toasts (`v4()`), version `^14` | [popupHandler.js](../src/js/popupHandler.js) |
 | `core-js` | Not imported. Only useful through Babel polyfilling (see 1.3) | none |
 | `bootstrap-vue-next` | **Not imported anywhere** | none |
 | `gettext-parser` | **Not imported anywhere** | none |
@@ -522,6 +522,6 @@ The modem lifecycle event (`{"freedata_server": "started"|"restarted"|"stopped"|
 - **`settingsStore.local.host` / `port` are dead**; the server address always comes from `window.location` with the hard-coded 8080 -> 5000 mapping.
 - **`stateStore.hamlib_status`** is read by rig-control components but never written.
 - **`GET /freedata/broadcasts/undefined/`** at startup: `broadcast.selectedDomain` starts as `undefined` and `loadAllData()` requests that domain anyway.
-- **Build tooling**: `babel.config.js` refers to `@vue/cli-plugin-babel`, which is not installed; `bootstrap-vue-next`, `gettext-parser` and (without Babel) `core-js` are unused dependencies. `npm run build` runs `npm i` every time. `package-lock.json` is out of sync with `package.json` (`uuid` locked at `14.0.0` while `package.json` asks for `^13.0.0`).
+- **Build tooling**: `babel.config.js` refers to `@vue/cli-plugin-babel`, which is not installed; `bootstrap-vue-next`, `gettext-parser` and (without Babel) `core-js` are unused dependencies. `npm run build` runs `npm i` every time.
 - **`freedata.js` `btoa_FD` / `atob_FD` / `atob`** use Node's `Buffer`, which webpack 5 does not polyfill; they are not called anywhere.
 - Server-side mismatches that the GUI cannot fix are listed in section 8 (`hello-client` never sent, `buffer-overflow` not handled).
