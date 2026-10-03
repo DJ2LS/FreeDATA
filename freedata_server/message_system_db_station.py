@@ -1,4 +1,5 @@
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm.attributes import flag_modified
 from freedata_server.message_system_db_model import Station
 from freedata_server.message_system_db_manager import DatabaseManager
 
@@ -22,6 +23,9 @@ class DatabaseManagerStations(DatabaseManager):
     def get_station(self, callsign):
         """
         Retrieves a station by its callsign.
+
+        Returns:
+            dict or None: The station as a dictionary, or None if not found or on error.
         """
         session = self.get_thread_scoped_session()
         try:
@@ -35,7 +39,7 @@ class DatabaseManagerStations(DatabaseManager):
             self.log(f"error fetching database station with error: {e}", isWarning=True)
             self.log("---> please delete or update existing database", isWarning=True)
 
-            return []
+            return None
 
         finally:
             session.remove()
@@ -64,7 +68,7 @@ class DatabaseManagerStations(DatabaseManager):
                 return False
         except SQLAlchemyError as e:
             session.rollback()
-            self.log(f"Failed to update station {callsign} with error: {e}", isError=True)
+            self.log(f"Failed to update station {callsign} with error: {e}", isWarning=True)
             return False
         finally:
             session.remove()
@@ -93,7 +97,9 @@ class DatabaseManagerStations(DatabaseManager):
                 # Update the station's location with gridsquare if it has changed
                 if station.location.get("gridsquare") != gridsquare:
                     self.log(f"Updating location for {callsign}")
-                    station.location["gridsquare"] = gridsquare  # Update directly without re-serialization
+                    station.location["gridsquare"] = gridsquare
+                    # plain JSON column: in-place changes are not tracked, so flag it explicitly
+                    flag_modified(station, "location")
                     session.flush()
                 else:
                     self.log(f"No changes needed for {callsign}'s location")
@@ -105,7 +111,7 @@ class DatabaseManagerStations(DatabaseManager):
                 return False
         except SQLAlchemyError as e:
             session.rollback()
-            self.log(f"Failed to update location for station {callsign} with error: {e}", isError=True)
+            self.log(f"Failed to update location for station {callsign} with error: {e}", isWarning=True)
             return False
         finally:
             session.remove()

@@ -656,9 +656,9 @@ class radio:
         This method reads the configuration and constructs the command-line
         arguments for starting the rigctld process. It handles various
         settings like model ID, serial port parameters, PTT configuration,
-        and custom arguments. Values defined as 'ignore', 0, or '0' in the
-        configuration are skipped. The method returns a list of formatted
-        arguments.
+        and custom arguments. Values defined as 'ignore' or the integer 0 in
+        the configuration are skipped (the string '0' is not). The method
+        returns a list of formatted arguments.
 
         Returns:
             list: A list of strings representing the formatted rigctld arguments.

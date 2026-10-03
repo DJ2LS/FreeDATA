@@ -86,5 +86,9 @@ class ARQFrameHandler(frame_handler.FrameHandler):
             self.logger.warning("DISCARDING FRAME", frame=frame)
             return
 
+        if session is None:
+            self.logger.warning("DISCARDING FRAME - unknown ARQ session", frame=frame)
+            return
+
         session.set_details(snr, frequency_offset)
         session.on_frame_received(frame)

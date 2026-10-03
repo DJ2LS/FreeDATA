@@ -150,7 +150,6 @@ async def post_config(
         return old_cfg
 
     # Write new config
-    print(ctx.config_manager.write(new_cfg))
     if not ctx.config_manager.write(new_cfg):
         api_abort("Error writing configuration", 500)
 

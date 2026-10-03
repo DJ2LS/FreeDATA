@@ -83,6 +83,8 @@ async def lifespan(app: FastAPI):
     # shutdown on exit
     ctx.shutdown()
     logger.info("Shutdown complete")
+    # hard exit: leftover non-daemon threads (audio, rig, sockets) must not keep the process alive
+    os._exit(0)
 
 
 # Create FastAPI app with unified lifespan
@@ -131,7 +133,7 @@ gui_dir = next((d for d in potential_gui_dirs if os.path.isdir(d)), None)
 if gui_dir:
     app.mount("/gui", StaticFiles(directory=gui_dir, html=True), name="static")
 else:
-    logger.warning("GUI directory not found: %s", gui_dir)
+    logger.warning("GUI directory not found, searched: %s", ", ".join(potential_gui_dirs))
 
 # Register routers
 app.include_router(general_router, prefix="", tags=["General"])

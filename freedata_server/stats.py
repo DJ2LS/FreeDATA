@@ -39,7 +39,7 @@ class stats:
             receiving (bool, optional): True if the session was receiving data, False otherwise. Defaults to True.
         """
         try:
-            snr_raw = [item["snr"] for item in self.ctx.state_manager.arq_speed_list]
+            snr_raw = list(session_statistics["snr_histogram"].values())
             avg_snr = round(sum(snr_raw) / len(snr_raw), 2)
         except Exception:
             avg_snr = 0

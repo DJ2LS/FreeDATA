@@ -12,4 +12,5 @@ class SocketDataHandler:
         self.cmd_request.sendall(full_message.encode())
 
     def send_data_to_client(self, data):
-        self.cmd_request.sendall(data + b"\r")
+        # data port is binary transparent, so send the payload unmodified
+        self.cmd_request.sendall(data)

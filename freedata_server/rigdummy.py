@@ -112,6 +112,18 @@ class radio:
 
         return None
 
+    def set_rf_level(self, rf):
+        """
+
+        Args:
+          rf:
+
+        Returns:
+
+        """
+        self.parameters["rf"] = rf
+        return None
+
     def get_status(self):
         """
 

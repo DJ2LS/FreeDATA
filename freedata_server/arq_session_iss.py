@@ -209,6 +209,10 @@ class ARQSessionISS(arq_session.ARQSession):
 
                 return
 
+        # an abort is running or done - don't override it with a failed state
+        if self.state in [ISS_State.ABORTED, ISS_State.ABORTING]:
+            return
+
         self.set_state(ISS_State.FAILED)
         self.transmission_failed()
 
@@ -436,7 +440,7 @@ class ARQSessionISS(arq_session.ARQSession):
         # print(self.ctx.state_manager.p2p_connection_sessions)
         # print(self.arq_data_type_handler.state_manager.p2p_connection_sessions)
         session_stats = self.calculate_session_statistics(self.confirmed_bytes, self.total_length)
-        self.arq_data_type_handler.transmitted(self.type_byte, self.data, session_stats)
+        self.arq_data_type_handler.transmitted(self.type_byte, self.data, session_stats, session_id=self.id)
 
         self.ctx.state_manager.remove_arq_iss_session(self.id)
         self.ctx.state_manager.setARQ(False)
@@ -462,7 +466,7 @@ class ARQSessionISS(arq_session.ARQSession):
         self.log("Transmission failed!")
         session_stats = self.calculate_session_statistics(self.confirmed_bytes, self.total_length)
         self.ctx.event_manager.send_arq_session_finished(
-            True, self.id, self.dxcall, False, self.state.name, session_stats
+            True, self.id, self.dxcall, False, self.state.name, statistics=session_stats
         )
 
         self.ctx.state_manager.setARQ(False)
@@ -471,6 +475,7 @@ class ARQSessionISS(arq_session.ARQSession):
             self.type_byte,
             self.data,
             statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length),
+            session_id=self.id,
         )
         return None, None
 
@@ -521,11 +526,34 @@ class ARQSessionISS(arq_session.ARQSession):
         """Sends an ARQ stop frame.
 
         This method builds and sends an ARQ_STOP frame to the IRS, initiating
-        the termination of the ARQ session. It uses the launch_twr method
-        for transmission and retries.
+        the termination of the ARQ session. The frame is repeated in a
+        background thread while the session is ABORTING (launch_twr can't be
+        used here, as its retry loop stops as soon as the state is ABORTING).
         """
         stop_frame = self.frame_factory.build_arq_stop(self.id)
-        self.launch_twr(stop_frame, self.TIMEOUT_STOP_ACK, self.RETRIES_STOP, mode=FREEDV_MODE.signalling)
+        thread_stop = threading.Thread(target=self.transmit_stop_and_wait, args=[stop_frame], daemon=True)
+        thread_stop.start()
+
+    def transmit_stop_and_wait(self, stop_frame):
+        """Transmits an ARQ_STOP frame and retries until a stop acknowledgement arrives.
+
+        Retries while the session is ABORTING. If no ARQ_STOP_ACK is received
+        within RETRIES_STOP attempts, the abort is finished anyway.
+
+        Args:
+            stop_frame: The ARQ_STOP frame to transmit.
+        """
+        retries = self.RETRIES_STOP
+        while retries > 0 and self.state is ISS_State.ABORTING:
+            self.event_frame_received = threading.Event()
+            self.transmit_frame(stop_frame, mode=FREEDV_MODE.signalling)
+            self.log(f"Waiting {self.TIMEOUT_STOP_ACK} seconds for stop ack...")
+            self.event_frame_received.wait(self.TIMEOUT_STOP_ACK)
+            retries = retries - 1
+
+        if self.state is ISS_State.ABORTING:
+            self.log("No stop ack received, finishing abort", isWarning=True)
+            self.transmission_aborted()
 
     def transmission_aborted(self, irs_frame=None):
         """Handles the abortion of the transmission.

@@ -132,8 +132,10 @@ def get_device_index_from_crc(crc, isInput: bool):
         isInput (bool): True if searching for an input device, False for an output device.
 
     Returns:
-        tuple: A tuple containing the native device index and name, or (None, None) if not found.
+        tuple: A tuple containing the native device index and name, or None if not found
+        or if the devices could not be enumerated.
     """
+    detected_devices = []
     try:
         in_devices = []
         out_devices = []
@@ -151,7 +153,8 @@ def get_device_index_from_crc(crc, isInput: bool):
 
     except Exception as _:
         log.warning(f"Audio device {crc} not detected ", devices=detected_devices, isInput=isInput)
-        return [None, None]
+
+    return None
 
 
 def test_audio_devices(input_id: str, output_id: str) -> list:
@@ -216,7 +219,7 @@ def set_audio_volume(datalist: np.ndarray, dB: float) -> np.ndarray:
 
     :param datalist: Audio samples to scale
     :type datalist: np.ndarray
-    :param dB: Decibels to scale samples, constrained to the range [-50, 50]
+    :param dB: Decibels to scale samples, constrained to the range [-30, 20]
     :type dB: float
     :return: Scaled audio samples
     :rtype: np.ndarray
@@ -227,7 +230,7 @@ def set_audio_volume(datalist: np.ndarray, dB: float) -> np.ndarray:
         print(f"[MDM] Changing audio volume failed with error: {e}")
         dB = 0.0  # 0 dB means no change
 
-    # Clip dB value to the range [-50, 50]
+    # Clip dB value to the range [-30, 20]
     dB = np.clip(dB, -30, 20)
 
     # Ensure datalist is an np.ndarray
@@ -247,7 +250,7 @@ def set_audio_volume(datalist: np.ndarray, dB: float) -> np.ndarray:
 
 def normalize_audio(datalist: np.ndarray) -> np.ndarray:
     """
-    Normalize the audio samples so the loudest value reaches 95% of the maximum possible value for np.int16
+    Normalize the audio samples so the loudest value reaches 85% of the maximum possible value for np.int16
     :param datalist: Audio samples to normalize
     :type datalist: np.ndarray
     :return: Normalized audio samples, clipped to the range of int16
@@ -270,7 +273,7 @@ def normalize_audio(datalist: np.ndarray) -> np.ndarray:
         # print("[MDM] Max value is zero. Cannot normalize. Returning unmodified.")
         return datalist
 
-    # Define the target max value as 95% of the maximum for np.int16
+    # Define the target max value as 85% of the maximum for np.int16
     target_max_value = int(32767 * 0.85)
 
     # Compute the normalization factor

@@ -215,6 +215,7 @@ class ARQSession:
                     type_byte,
                     received_data,
                     self.update_histograms(len(received_data), len(received_data)),
+                    session_id=self.id,
                 )
             return
 
@@ -396,5 +397,6 @@ class ARQSession:
         self.received_data = None
         self.received_bytes = 0
         self.received_crc = None
+        self.delivered_crc = None
         self.maximum_bandwidth = 0
         self.abort = False

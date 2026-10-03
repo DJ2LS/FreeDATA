@@ -104,13 +104,29 @@ class DataSocket(socketserver.BaseRequestHandler):
         logger = self.logger.warn if isWarning else self.logger.info
         logger(msg)
 
+    def get_target_sessions(self):
+        """Returns the P2P connection session(s) data from the data port is queued for.
+
+        This is the active session of the command socket (set on CONNECT or when
+        being connected), if it is still registered. Otherwise all P2P sessions
+        are used (legacy behaviour).
+        """
+        sessions = self.ctx.state_manager.p2p_connection_sessions
+        command_server = getattr(self.server.socket_interface_manager, "command_server", None)
+        command_handler = getattr(command_server, "command_handler", None)
+        active_session = getattr(command_handler, "session", None)
+        if active_session is not None and sessions.get(getattr(active_session, "session_id", None)) is active_session:
+            return [active_session]
+        return list(sessions.values())
+
     def handle(self):
         self.log(f"Data connection established with {self.client_address}")
         try:
             while True:
                 ready_to_read, _, _ = select.select([self.request], [], [], 1)  # 1-second timeout
                 if ready_to_read:
-                    self.data = self.request.recv(1024).strip()
+                    # data port carries binary payloads, so don't strip anything
+                    self.data = self.request.recv(1024)
                     if not self.data:
                         break
                     try:
@@ -118,17 +134,8 @@ class DataSocket(socketserver.BaseRequestHandler):
                     except Exception:
                         self.log(f"Data received from {self.client_address}: [{len(self.data)}] - {self.data}")
 
-                    for session_id in self.ctx.state_manager.p2p_connection_sessions:
-                        session = self.ctx.state_manager.p2p_connection_sessions[session_id]
-
-                        # print(f"sessions: {self.ctx.state_manager.p2p_connection_sessions}")
-                        # print(f"session_id: {session_id}")
-                        # print(f"session: {session}")
-                        # print(f"data to send: {self.data}")
-
-                        # print(session.p2p_data_tx_queue.empty())
+                    for session in self.get_target_sessions():
                         session.p2p_data_tx_queue.put(self.data)
-                        # print(session.p2p_data_tx_queue.empty())
 
                 # Check if there's something to send from the queue, without blocking
                 """

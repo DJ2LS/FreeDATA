@@ -235,15 +235,14 @@ class Demodulator:
         :type frames_per_burst: int
         """
         # Limit frames per burst to acceptable values
-        frames_per_burst = min(frames_per_burst, 1)
-        frames_per_burst = max(frames_per_burst, 5)
+        frames_per_burst = max(frames_per_burst, 1)
+        frames_per_burst = min(frames_per_burst, 5)
 
         # FIXME
         frames_per_burst = 1
 
-        codec2.api.freedv_set_frames_per_burst(self.dat0_datac1_freedv, frames_per_burst)
-        codec2.api.freedv_set_frames_per_burst(self.dat0_datac3_freedv, frames_per_burst)
-        codec2.api.freedv_set_frames_per_burst(self.dat0_datac4_freedv, frames_per_burst)
+        for mode in (codec2.FREEDV_MODE.datac1, codec2.FREEDV_MODE.datac3, codec2.FREEDV_MODE.datac4):
+            codec2.api.freedv_set_frames_per_burst(self.MODE_DICT[mode.value]["instance"], frames_per_burst)
 
     def calculate_snr(self, freedv: ctypes.c_void_p) -> float:
         """

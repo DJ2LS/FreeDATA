@@ -2,7 +2,6 @@ from queue import Queue
 from freedata_server.event_manager import EventManager
 from freedata_server.state_manager import StateManager
 from freedata_server.schedule_manager import ScheduleManager
-from freedata_server.radio_manager import RadioManager
 from freedata_server.config import CONFIG
 from freedata_server.service_manager import SM as ServiceManager
 from freedata_server.message_system_db_manager import DatabaseManager
@@ -28,7 +27,7 @@ class AppContext:
         self.schedule_manager = ScheduleManager(self)
         self.service_manager = ServiceManager(self)
         self.websocket_manager = WebsocketManager(self)
-        self.radio_manager = RadioManager(self)
+        self.radio_manager = None  # Radio manager instance, started by the service manager on "start"
         self.socket_interface_manager = None  # Socket interface instance, We start it as we need it
         self.rf_modem = None  # Modem instnace, we start it as we need it
         self.message_system_db_manager = DatabaseManager(self)
@@ -53,7 +52,7 @@ class AppContext:
         self.modem_service.put("start")
 
         # DB setup
-        db = DatabaseManager(self.event_manager)
+        db = DatabaseManager(self)
         db.check_database_version()
         db.initialize_default_values()
         db.database_repair_and_cleanup()
@@ -72,9 +71,6 @@ class AppContext:
         self.schedule_manager.stop()
         self.service_manager.shutdown()
         # self._audio.terminate()
-        import os
-
-        os._exit(0)
 
 
 # Dependency provider for FastAPI (HTTP & WebSocket)

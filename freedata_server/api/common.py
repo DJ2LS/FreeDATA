@@ -25,3 +25,4 @@ def validate(req, param, validator, is_required=True):
             return True
     if not validator(req[param]):
         api_abort(f"Value of '{param}' is invalid.", 400)
+    return True

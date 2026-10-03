@@ -73,7 +73,8 @@ async def get_freedata_message(message_id: str, ctx: AppContext = Depends(get_ct
 )
 async def post_freedata_message(payload: dict, ctx: AppContext = Depends(get_ctx)):
     # Transmit FreeDATA message
-    await enqueue_tx_command(ctx, command_message_send.SendMessageCommand, payload)
+    if not await enqueue_tx_command(ctx, command_message_send.SendMessageCommand, payload):
+        api_abort("Failed to transmit message.", 500)
     return api_response(payload)
 
 
@@ -130,14 +131,20 @@ async def post_freedata_message_adif_log(message_id: str, ctx: AppContext = Depe
     },
 )
 async def patch_freedata_message(message_id: str, payload: dict, ctx: AppContext = Depends(get_ctx)):
+    # update_message() returns a {"status": "failure"} dict (never None) for
+    # unknown ids, so check existence explicitly before updating.
+    if _mgr_msgs(ctx).get_message_by_id(message_id) is None:
+        api_abort("Message not found", 404)
     if payload.get("action") == "retransmit":
-        _mgr_msgs(ctx).update_message(message_id, {"status": "queued"})
+        update_result = _mgr_msgs(ctx).update_message(message_id, {"status": "queued"})
+        if not update_result or update_result.get("status") != "success":
+            api_abort("Error updating message", 500)
         _mgr_msgs(ctx).increment_message_attempts(message_id)
         result = {"message_id": message_id, "status": "queued"}
     else:
         result = _mgr_msgs(ctx).update_message(message_id, update_data=payload)
-    if result is None:
-        api_abort("Message not found", 404)
+        if not result or result.get("status") != "success":
+            api_abort("Error updating message", 500)
     return api_response(result)
 
 
@@ -220,9 +227,11 @@ async def get_freedata_messages(ctx: AppContext = Depends(get_ctx)):
     },
 )
 async def delete_freedata_message(message_id: str, ctx: AppContext = Depends(get_ctx)):
-    ok = _mgr_msgs(ctx).delete_message(message_id)
-    if not ok:
-        api_abort("Message not found", 404)
+    result = _mgr_msgs(ctx).delete_message(message_id)
+    if result.get("status") != "success":
+        if result.get("message") == "Message not found":
+            api_abort("Message not found", 404)
+        api_abort(result.get("message", "Error deleting message"), 409)
     return api_response({"message": f"{message_id} deleted", "status": "success"})
 
 
@@ -564,6 +573,9 @@ async def delete_freedata_broadcast_domain(id: str, ctx: AppContext = Depends(ge
 @router.patch("/broadcasts/{id}", summary="Retransmit Broadcast by ID", tags=["FreeDATA"], responses={})
 async def patch_freedata_broadcast_domain(id: str, payload: dict, ctx: AppContext = Depends(get_ctx)):
     if payload.get("action") == "retransmit":
+        # check existence before touching the attempts counter
+        if _mgr_broadcasts(ctx).get_broadcast_per_id(id) is None:
+            api_abort("Message not found", 404)
         _mgr_broadcasts(ctx).increment_attempts(id)
         msg = _mgr_broadcasts(ctx).get_broadcast_per_id(id, get_object=True)
         if msg:
@@ -578,5 +590,6 @@ async def patch_freedata_broadcast_domain(id: str, payload: dict, ctx: AppContex
 
 @router.post("/broadcasts", summary="Transmit Broadcast", tags=["FreeDATA"], responses={})
 async def post_freedata_broadcast(payload: dict, ctx: AppContext = Depends(get_ctx)):
-    await enqueue_tx_command(ctx, command_norm.Norm, payload)
+    if not await enqueue_tx_command(ctx, command_norm.Norm, payload):
+        api_abort("Failed to transmit broadcast.", 500)
     return api_response({"message": "broadcast transmitted", "status": "success"})

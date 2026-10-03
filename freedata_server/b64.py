@@ -3,4 +3,5 @@ import base64
 
 string = b"aGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQhaGVsbG8gd29ybGQh"
 
-print(base64.b64decode(string))
+if __name__ == "__main__":
+    print(base64.b64decode(string))

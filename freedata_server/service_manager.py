@@ -35,7 +35,7 @@ class SM:
 
         self.shutdown_flag = threading.Event()
 
-        self.runner_thread = threading.Thread(target=self.runner, name="runner thread", daemon=False)
+        self.runner_thread = threading.Thread(target=self.runner, name="runner thread", daemon=True)
 
         self.runner_thread.start()
 
@@ -184,7 +184,7 @@ class SM:
         except AttributeError:
             pass
         try:
-            if self.frame_dispatcher and hasattr(self.ctx, "frame_dispatcher"):
+            if getattr(self, "frame_dispatcher", None):
                 self.frame_dispatcher.stop()
         except AttributeError:
             pass
@@ -220,8 +220,10 @@ class SM:
         """Starts the radio manager.
 
         This method initializes and starts the RadioManager, which handles
-        communication with the radio.
+        communication with the radio. An already running radio manager is
+        stopped first, so only one instance is active at a time.
         """
+        self.stop_radio_manager()
         self.ctx.radio_manager = radio_manager.RadioManager(self.ctx)
 
     def stop_radio_manager(self):
@@ -231,7 +233,7 @@ class SM:
         resources. It handles potential AttributeErrors if the radio manager
         has not been initialized.
         """
-        if hasattr(self.ctx, "radio_manager"):
+        if getattr(self.ctx, "radio_manager", None):
             self.ctx.radio_manager.stop()
             self.ctx.radio_manager = None
 
@@ -246,4 +248,6 @@ class SM:
         self.ctx.modem_service.put("stop")
         threading.Event().wait(2)  # we need some time before processing with the shutdown_event_flag
         self.shutdown_flag.set()
-        self.runner_thread.join(0.5)
+        # wake the runner thread, which is blocking on modem_service.get()
+        self.ctx.modem_service.put("shutdown")
+        self.runner_thread.join(5)

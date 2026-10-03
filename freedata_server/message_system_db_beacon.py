@@ -1,5 +1,6 @@
 from freedata_server.message_system_db_manager import DatabaseManager
 from freedata_server.message_system_db_model import Beacon, Station
+from sqlalchemy.orm.attributes import flag_modified
 from datetime import timezone, timedelta, datetime
 
 
@@ -46,7 +47,9 @@ class DatabaseManagerBeacon(DatabaseManager):
             # Now, check and update the station's location with gridsquare if it has changed
             if station.location.get("gridsquare") != gridsquare:
                 self.log(f"Updating location for {callsign}")
-                station.location["gridsquare"] = gridsquare  # Update directly without re-serialization
+                station.location["gridsquare"] = gridsquare
+                # plain JSON column: in-place changes are not tracked, so flag it explicitly
+                flag_modified(station, "location")
                 session.flush()
 
             # Now, add the beacon
@@ -60,7 +63,7 @@ class DatabaseManagerBeacon(DatabaseManager):
             if session:
                 session.rollback()
         finally:
-            if session and not session.is_active:
+            if session:
                 session.remove()
 
     def get_beacons_by_callsign(self, callsign):
@@ -149,7 +152,7 @@ class DatabaseManagerBeacon(DatabaseManager):
             self.log(f"An error occurred while fetching all beacons: {e}", isWarning=True)
             return []  # Return an empty list or handle the error as appropriate
         finally:
-            if session and not session.is_active:
+            if session:
                 session.remove()
 
     def beacon_cleanup_older_than_days(self, days):
@@ -185,5 +188,5 @@ class DatabaseManagerBeacon(DatabaseManager):
                 session.rollback()
             return 0  # Return 0 or handle the error as appropriate
         finally:
-            if session and not session.is_active:
+            if session:
                 session.remove()

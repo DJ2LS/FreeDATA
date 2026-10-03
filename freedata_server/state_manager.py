@@ -27,6 +27,11 @@ class StateManager:
         self.channel_busy_event = threading.Event()
         self.channel_busy_condition_traffic = threading.Event()
         self.channel_busy_condition_codec2 = threading.Event()
+        # nothing received yet, so start with a free channel. Otherwise waiters on these
+        # conditions (e.g. is_receiving_codec2_signal) block forever until the first
+        # FFT/demodulator update, which never comes if the modem isn't running.
+        self.set_channel_busy_condition_traffic(False)
+        self.set_channel_busy_condition_codec2(False)
 
         self.is_modem_running = False
 
@@ -257,11 +262,11 @@ class StateManager:
         """Gets the ARQ status.
 
         This method returns True if the is_modem_busy event is not set,
-        indicating that ARQ is currently not busy. Otherwise, it returns
-        False.
+        indicating that ARQ is currently busy (see setARQ). Otherwise, it
+        returns False.
 
         Returns:
-            bool: True if ARQ is not busy, False otherwise.
+            bool: True if ARQ is busy, False otherwise.
         """
         return not self.is_modem_busy.is_set()
 
@@ -369,11 +374,7 @@ class StateManager:
         Returns:
             ARQSessionISS or None: The ARQSessionISS object if found, None otherwise.
         """
-        if id not in self.arq_iss_sessions:
-            # raise RuntimeError(f"ARQ ISS Session '{id}' not found!")
-            # DJ2LS: WIP We need to find a better way of handling this
-            pass
-        return self.arq_iss_sessions[id]
+        return self.arq_iss_sessions.get(id)
 
     def get_arq_irs_session(self, id):
         """Retrieves an ARQ IRS session by ID.
@@ -388,11 +389,7 @@ class StateManager:
         Returns:
             ARQSessionIRS or None: The ARQSessionIRS object if found, None otherwise.
         """
-        if id not in self.arq_irs_sessions:
-            # raise RuntimeError(f"ARQ IRS Session '{id}' not found!")
-            # DJ2LS: WIP We need to find a better way of handling this
-            pass
-        return self.arq_irs_sessions[id]
+        return self.arq_irs_sessions.get(id)
 
     def remove_arq_iss_session(self, id):
         """Removes an ARQ ISS session.
@@ -475,7 +472,7 @@ class StateManager:
         if self.channel_busy_condition_traffic.is_set() and self.channel_busy_condition_codec2.is_set():
             self.channel_busy_event.set()
         else:
-            self.channel_busy_event = threading.Event()
+            self.channel_busy_event.clear()
 
     def set_channel_busy_condition_traffic(self, busy):
         """Sets the channel busy condition based on data traffic.
@@ -492,7 +489,7 @@ class StateManager:
         if not busy:
             self.channel_busy_condition_traffic.set()
         else:
-            self.channel_busy_condition_traffic = threading.Event()
+            self.channel_busy_condition_traffic.clear()
         self.calculate_channel_busy_state()
 
     def set_channel_busy_condition_codec2(self, traffic):
@@ -510,7 +507,7 @@ class StateManager:
         if not traffic:
             self.channel_busy_condition_codec2.set()
         else:
-            self.channel_busy_condition_codec2 = threading.Event()
+            self.channel_busy_condition_codec2.clear()
         self.calculate_channel_busy_state()
 
     def is_receiving_codec2_signal(self):
@@ -566,9 +563,15 @@ class StateManager:
         return True
 
     def get_p2p_connection_session(self, id):
-        if id not in self.p2p_connection_sessions:
-            pass
-        return self.p2p_connection_sessions[id]
+        """Retrieves a P2P connection session by ID.
+
+        Args:
+            id: The ID of the P2P connection session.
+
+        Returns:
+            P2PConnection or None: The session object if found, None otherwise.
+        """
+        return self.p2p_connection_sessions.get(id)
 
     def get_dxcall_by_session_id(self, session_id):
         """

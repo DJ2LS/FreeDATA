@@ -44,7 +44,9 @@ class ScheduleManager:
 
         self.ctx = ctx
 
-        self.scheduler = sched.scheduler(time.time, threading.Event().wait)
+        # interruptible delay function, so stop() can wake the scheduler thread immediately
+        self.stop_event = threading.Event()
+        self.scheduler = sched.scheduler(time.time, self.stop_event.wait)
         self.events = {
             "check_for_queued_messages": {"function": self.check_for_queued_messages, "interval": 15},
             "explorer_publishing": {"function": self.push_to_explorer, "interval": 60},
@@ -93,6 +95,7 @@ class ScheduleManager:
         # get actual freedata_server instance
         self.modem = modem
 
+        self.stop_event.clear()
         self.running = True  # Set the running flag to True
         for event_info in self.events.values():
             # Schedule each event for the first time
@@ -115,6 +118,8 @@ class ScheduleManager:
         # Clear scheduled events to break the scheduler out of its waiting state
         for event in list(self.scheduler.queue):
             self.scheduler.cancel(event)
+        # wake the scheduler thread if it is sleeping until the next event
+        self.stop_event.set()
 
         # Wait for the scheduler thread to finish
         if self.scheduler_thread:
@@ -170,7 +175,7 @@ class ScheduleManager:
         """
         if (
             not self.ctx.state_manager.getARQ()
-            and not self.ctx.state_manager.channel_busy_event.is_set()
+            and self.ctx.state_manager.channel_busy_event.is_set()  # set == channel available
             and self.ctx.state_manager.is_modem_running
         ):
             try:
@@ -199,8 +204,13 @@ class ScheduleManager:
             # set an IRS session to RESUME for being ready getting the data again
             if session.is_IRS and session.last_state_change_timestamp + 90 < time.time():
                 try:
+                    # if session is received successfully, indiciated by ENDED state, delete it
+                    # this needs to be checked before setting RESUME, otherwise ENDED is overwritten
+                    if session.state in [session.state_enum.ENDED]:
+                        session_to_be_deleted.add(session)
+
                     # if session state is already RESUME, don't set it again for avoiding a flooded cli
-                    if session.state not in [session.state_enum.RESUME]:
+                    elif session.state not in [session.state_enum.RESUME]:
                         self.log.info(
                             f"[SCHEDULE] [ARQ={session_id}] Setting state to",
                             old_state=session.state,
@@ -208,10 +218,6 @@ class ScheduleManager:
                         )
                         session.state = session.set_state(session.state_enum.RESUME)
                         session.state = session.state_enum.RESUME
-
-                    # if session is received successfully, indiciated by ENDED state, delete it
-                    if session.state in [session.state_enum.ENDED]:
-                        session_to_be_deleted.add(session)
 
                 except Exception as e:
                     self.log.warning("[SCHEDULE] error setting ARQ state", error=e)
@@ -258,7 +264,6 @@ class ScheduleManager:
         if self.ctx.config_manager.config["EXP"]["enable_groupchat"] and self.ctx.state_manager.is_modem_running:
             msg = DatabaseManagerBroadcasts(self.ctx).get_first_queued_message()
             if msg:
-                print(msg.payload_data)
                 self.log.info("[SCHEDULE] Sending broadcast", id=msg.id)
                 DatabaseManagerBroadcasts(self.ctx).increment_attempts_and_update_next_transmission(msg.id)
                 NormTransmissionISS(self.ctx).retransmit_data(msg)

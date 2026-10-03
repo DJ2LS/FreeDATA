@@ -1,6 +1,7 @@
 import threading
 from freedata_server import arq_session
 from freedata_server import helpers
+from freedata_server import stats
 from freedata_server.modem_frametypes import FRAME_TYPE
 from freedata_server.codec2 import FREEDV_MODE
 from enum import Enum
@@ -112,11 +113,14 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.running_p2p_connection = None
         try:
             self.running_p2p_connection = self.ctx.state_manager.get_p2p_connection_session(self.id)
-            # register arq session in p2p connection
-            self.running_p2p_connection.running_arq_session = self
-            self.running_p2p_connection.set_state(P2PStates.ARQ_SESSION)
+            if self.running_p2p_connection is not None:
+                # register arq session in p2p connection
+                self.running_p2p_connection.running_arq_session = self
+                self.running_p2p_connection.set_state(P2PStates.ARQ_SESSION)
         except Exception as _:
             self.log("Error getting p2p connection session")
+
+        self.statistics = stats.stats(self.ctx)
 
         self.type_byte = None
         self.total_length = 0
@@ -124,6 +128,9 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.received_data = None
         self.received_bytes = 0
         self.received_crc = None
+        # CRC of the data which has already been handed over to the data type handler.
+        # Used for avoiding a duplicate delivery if the ISS repeats its last burst.
+        self.delivered_crc = None
 
         self.maximum_bandwidth = 0
 
@@ -342,6 +349,19 @@ class ARQSessionIRS(arq_session.ARQSession):
             Tuple[bytearray, int]: The received data and its type byte if the transmission is successful,
                                     or None, None in case of failure or incomplete transmission.
         """
+        # Data has already been delivered - the ISS probably missed our final ACK and repeats
+        # its last burst. Repeat the final ACK, but don't deliver the data a second time.
+        if self.delivered_crc is not None and self.delivered_crc == self.total_crc:
+            self.log("Data already received and delivered, repeating final ACK", isWarning=True)
+            ack = self.frame_factory.build_arq_burst_ack(self.id, self.speed_level, flag_final=True, flag_checksum=True)
+            self.transmit_frame(ack, mode=FREEDV_MODE.signalling_ack)
+            return None, None
+
+        # No receive buffer, e.g. after a failed transmission. The ISS has to re-open the session.
+        if self.received_data is None:
+            self.log("Ignoring burst frame, no active transfer (session needs to be re-opened)", isWarning=True)
+            return None, None
+
         self.process_incoming_data(burst_frame)
         # update statistics
         self.update_histograms(self.received_bytes, self.total_length)
@@ -372,6 +392,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.log("ACK sent")
             self.session_ended = time.time()
             self.set_state(IRS_State.ENDED)
+            self.delivered_crc = self.total_crc
 
             session_stats = self.calculate_session_statistics(self.received_bytes, self.total_length)
             self.ctx.event_manager.send_arq_session_finished(
@@ -392,7 +413,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             self.transmit_frame(ack, mode=FREEDV_MODE.signalling_ack)
             self.log("CRC fail at the end of transmission!", isWarning=True)
             self.log(
-                f"Failed Data [Is real:{len(self.received_data)}/Is calculated:{self.received_bytes}/Should:{self.total_bytes}]:{self.received_data}",
+                f"Failed Data [Is real:{len(self.received_data)}/Is calculated:{self.received_bytes}/Should:{self.total_length}]:{self.received_data}",
                 isWarning=True,
             )
             return self.transmission_failed()
@@ -465,6 +486,21 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.log("Aborting transmission... setting abort flag")
         self.abort = True
 
+    def push_statistics(self, session_stats):
+        """Pushes session statistics to the stats API in a background thread.
+
+        The push is a blocking HTTP request, so it must not run on the
+        frame dispatching thread.
+
+        Args:
+            session_stats (dict): The session statistics to push.
+        """
+        threading.Thread(
+            target=self.statistics.push,
+            args=[self.state.name, session_stats, self.dxcall],
+            daemon=True,
+        ).start()
+
     def send_stop_ack(self, stop_frame):
         """Sends a stop acknowledgement and finalizes the session.
 
@@ -488,7 +524,7 @@ class ARQSessionIRS(arq_session.ARQSession):
             False, self.id, self.dxcall, False, self.state.name, statistics=session_stats
         )
         if self.ctx.config_manager.config["STATION"]["enable_stats"]:
-            self.statistics.push(self.state.name, session_stats, self.dxcall)
+            self.push_statistics(session_stats)
 
         return None, None
 
@@ -514,10 +550,10 @@ class ARQSessionIRS(arq_session.ARQSession):
         self.received_data = None
         self.received_bytes = 0
         self.ctx.event_manager.send_arq_session_finished(
-            True, self.id, self.dxcall, False, self.state.name, statistics=session_stats
+            False, self.id, self.dxcall, False, self.state.name, statistics=session_stats
         )
         if self.ctx.config_manager.config["STATION"]["enable_stats"]:
-            self.statistics.push(self.state.name, session_stats, self.dxcall)
+            self.push_statistics(session_stats)
 
         self.ctx.state_manager.setARQ(False)
         return None, None
@@ -541,7 +577,7 @@ class ARQSessionIRS(arq_session.ARQSession):
 
             # self.ctx.rf_modem.demodulator.set_decode_mode()
             self.ctx.event_manager.send_arq_session_finished(
-                True,
+                False,
                 self.id,
                 self.dxcall,
                 False,

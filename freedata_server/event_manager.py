@@ -1,5 +1,6 @@
 import base64
 import json
+import queue
 import structlog
 
 
@@ -28,8 +29,8 @@ class EventManager:
         """Broadcasts an event to all registered queues.
 
         This method broadcasts the given event data to all queues registered
-        with the EventManager. It clears a queue if its size exceeds 10 to
-        prevent excessive queue buildup.
+        with the EventManager. If a queue holds more than 10 events, the
+        oldest events are dropped to prevent excessive queue buildup.
 
         Args:
             data: The event data to broadcast.
@@ -39,8 +40,12 @@ class EventManager:
 
         for q in self.queues:
             self.logger.debug("Event: ", ev=data)
-            if q.qsize() > 10:
-                q.queue.clear()
+            # keep the queue bounded by dropping the oldest events only
+            while q.qsize() > 10:
+                try:
+                    q.get_nowait()
+                except queue.Empty:
+                    break
             q.put(data)
 
     def send_ptt_change(self, on: bool = False):

@@ -30,7 +30,7 @@ class P2PConnectionFrameHandler(frame_handler.FrameHandler):
 
         if frame["frame_type_int"] == FR.P2P_CONNECTION_CONNECT.value:
             # Lost OPEN_ACK case .. ISS will retry opening a session
-            if session_id in self.ctx.state_manager.arq_irs_sessions:
+            if session_id in self.ctx.state_manager.p2p_connection_sessions:
                 session = self.ctx.state_manager.p2p_connection_sessions[session_id]
 
             # Normal case when receiving a SESSION_OPEN for the first time
@@ -56,6 +56,9 @@ class P2PConnectionFrameHandler(frame_handler.FrameHandler):
             FR.P2P_CONNECTION_HEARTBEAT_ACK.value,
         ]:
             session = self.ctx.state_manager.get_p2p_connection_session(session_id)
+            if session is None:
+                self.logger.warning("DISCARDING FRAME - unknown P2P session", frame=frame)
+                return
 
         else:
             self.logger.warning("DISCARDING FRAME", frame=frame)

@@ -3,7 +3,7 @@ from freedata_server.message_system_db_attachments import DatabaseManagerAttachm
 from freedata_server.message_system_db_model import Status, P2PMessage
 from freedata_server.message_system_db_station import DatabaseManagerStations
 from sqlalchemy.exc import IntegrityError
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import json
 from freedata_server.exceptions import MessageStatusError
 
@@ -65,8 +65,16 @@ class DatabaseManagerMessages(DatabaseManager):
             if status:
                 status = self.get_or_create_status(session, status)
 
-            # Parse the timestamp from the message ID
-            timestamp = datetime.fromisoformat(message_data["id"].split("_")[2])
+            # Parse the timestamp from the message ID (origin_destination_isotimestamp).
+            # Fall back to the current time for IDs that don't follow this format.
+            try:
+                timestamp = datetime.fromisoformat(message_data["id"].rsplit("_", 1)[1])
+            except (IndexError, ValueError, TypeError, AttributeError):
+                self.log(
+                    f"Could not parse timestamp from message ID {message_data.get('id')}, using current time",
+                    isWarning=True,
+                )
+                timestamp = datetime.now(timezone.utc)
 
             if frequency and frequency not in ["---"]:
                 statistics["frequency"] = frequency
@@ -283,9 +291,7 @@ class DatabaseManagerMessages(DatabaseManager):
                 comment = "QSO via FreeDATA RF-Chat"
 
                 # Gridsquare handling
-                print(origin_info)
                 if origin_info and "location" in origin_info and origin_info["location"] is not None:
-                    print(origin_info["location"])
                     grid = origin_info["location"].get("gridsquare", "")
                 else:
                     grid = ""
@@ -346,18 +352,21 @@ class DatabaseManagerMessages(DatabaseManager):
             ('success' or 'failure') and a corresponding message.
         """
 
-        # Delete attachment links associated with this message.
-        # This call will check each attachment link:
-        # - If the attachment is used by other messages, only the link is removed.
-        # - If the attachment is solely linked to this message, the attachment record is deleted.
-        self.attachments_manager.delete_attachments_by_message_id(message_id)
-
         session = self.get_thread_scoped_session()
         try:
             message = session.query(P2PMessage).filter_by(id=message_id).first()
             if message:
-                if message.to_dict()["status"] in ["transmitting", "queued"]:
+                # Check the guard before touching attachments, so a refused delete keeps them.
+                # (Don't use to_dict() here: it would load the attachment links into this session.)
+                status_name = message.status.name if message.status else None
+                if status_name in ["transmitting", "queued"]:
                     raise MessageStatusError("Message is queued or transmitting")
+
+                # Delete attachment links associated with this message.
+                # This call will check each attachment link:
+                # - If the attachment is used by other messages, only the link is removed.
+                # - If the attachment is solely linked to this message, the attachment record is deleted.
+                self.attachments_manager.delete_attachments_by_message_id(message_id)
 
                 session.delete(message)
                 session.commit()
@@ -367,14 +376,14 @@ class DatabaseManagerMessages(DatabaseManager):
                 return {"status": "success", "message": f"Message {message_id} deleted"}
             else:
                 return {"status": "failure", "message": "Message not found"}
+        except MessageStatusError as e:
+            session.rollback()
+            self.log(f"Error deleting message with ID {message_id}: {e}", isWarning=True)
+            return {"status": "failure", "message": str(e)}
         except Exception as e:
             session.rollback()
             self.log(f"Error deleting message with ID {message_id}: {e}", isWarning=True)
             return {"status": "failure", "message": "error deleting message"}
-        except MessageStatusError as e:
-            session.rollback()
-            self.log(f"Error deleting message with ID {message_id}: {e}", isWarning=True)
-            return {"status": "failure", "message": e}
 
         finally:
             session.remove()

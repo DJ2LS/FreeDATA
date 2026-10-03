@@ -27,6 +27,14 @@ class NORMFrameHandler(frame_handler.FrameHandler):
                 print(frame["id"].decode("utf-8"))
                 broadcast = DatabaseManagerBroadcasts(self.ctx).get_broadcast_per_id(frame["id"].decode("utf-8"))
                 if broadcast is not None:
+                    # only repair broadcasts we have sent ourselves, not ones we only received
+                    if broadcast.get("direction") != "transmit":
+                        self.logger.info(
+                            "[NORM] ignoring NACK for broadcast not originated by us",
+                            id=broadcast["id"],
+                            nack_origin=frame.get("origin"),
+                        )
+                        return
                     if broadcast["attempts"] >= 30:
                         print("maximum attempts reached...")
                         return

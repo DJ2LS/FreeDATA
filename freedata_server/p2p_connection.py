@@ -244,8 +244,19 @@ class P2PConnection:
             self.log("Timeout!")
             retries = retries - 1
 
-        # self.connected_iss() # override connection state for simulation purposes
-        # self.session_failed()
+        # retries exhausted
+        self.transmission_in_progress = False
+        self.log("Retries exhausted", isWarning=True)
+        if self.state is States.DISCONNECTING:
+            # we wanted to disconnect anyway, so treat the connection as closed
+            self.received_disconnect_ack(None)
+        elif self.state not in [
+            States.DISCONNECTED,
+            States.ABORTED,
+            States.FAILED,
+            States.ARQ_SESSION,
+        ]:
+            self.session_failed()
 
     def launch_twr(self, frame_or_burst, timeout, retries, mode):
         twr = threading.Thread(
@@ -294,16 +305,21 @@ class P2PConnection:
                 self.origin, self.destination, self.bandwidth
             )
 
-    def connected_irs(self, frame):
+    def connected_irs(self, frame=None):
         self.log("CONNECTED IRS...........................")
         self.ctx.state_manager.register_p2p_connection_session(self)
-        self.ctx.socket_interface_manager.command_server.command_handler.session = self
+        if self.ctx.socket_interface_manager and hasattr(
+            self.ctx.socket_interface_manager.command_server, "command_handler"
+        ):
+            self.ctx.socket_interface_manager.command_server.command_handler.session = self
         self.set_state(States.CONNECTED)
         self.is_ISS = False
         self.is_Master = False
-        self.origin = frame["origin"]
-        self.destination = frame["destination"]
-        self.destination_crc = frame["destination_crc"]
+        # heartbeat frames don't carry callsigns, so only update them from a CONNECT frame
+        if frame and "origin" in frame:
+            self.origin = frame["origin"]
+            self.destination = frame["destination"]
+            self.destination_crc = frame["destination_crc"]
         # self.log(frame)
 
         self.log(f"destination: {self.destination} - origin: {self.origin}")
@@ -385,7 +401,9 @@ class P2PConnection:
             self.set_state(States.AWAITING_DATA)
 
         try:
-            received_data = frame["data"].rstrip(b"\x00")
+            # Don't strip the 0x00 frame padding: a raw deflate stream may legitimately end
+            # with 0x00, and the decompressor ignores trailing padding after the end of the stream.
+            received_data = frame["data"]
 
             decompressor = zlib.decompressobj(wbits=-zlib.MAX_WBITS)
             received_data = decompressor.decompress(received_data)
@@ -445,7 +463,7 @@ class P2PConnection:
 
         # ensure we have correct state
         if self.state is States.NEW:
-            self.connected_irs()
+            self.connected_irs(frame)
 
         self.log("Received heartbeat...")
         self.last_data_timestamp = time.time()
@@ -610,6 +628,8 @@ class P2PConnection:
             try:
                 # Retrieve the session (may raise if not found)
                 session = get(self.session_id)
+                if session is None:
+                    continue
                 # Remove the session
                 remove(session.id)
             except Exception as e:

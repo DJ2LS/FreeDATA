@@ -6,6 +6,7 @@ Created on Wed Dec 23 07:04:24 2020
 """
 
 import queue
+from queue import Full
 import threading
 import time
 from freedata_server import codec2
@@ -49,7 +50,7 @@ class RF:
         self.audio_input_device = self.ctx.config_manager.config["AUDIO"]["input_device"]
         self.audio_output_device = self.ctx.config_manager.config["AUDIO"]["output_device"]
 
-        self.ctx.radio_managercontrol = self.ctx.config_manager.config["RADIO"]["control"]
+        self.radiocontrol = self.ctx.config_manager.config["RADIO"]["control"]
         self.rigctld_ip = self.ctx.config_manager.config["RIGCTLD"]["ip"]
         self.rigctld_port = self.ctx.config_manager.config["RIGCTLD"]["port"]
 
@@ -68,7 +69,9 @@ class RF:
         self.MODE = 0
         self.rms_counter = 0
 
-        self.AUDIO_STREAMING_CHUNK_SIZE = 2400
+        # one RX DSP block at 8 kHz (RX_DSP_BLOCK_48K / FDMDV_OS_48 = 800 samples,
+        # 100 ms), so streamed RX audio chunks are not mostly zero padding
+        self.AUDIO_STREAMING_CHUNK_SIZE = 800
         self.audio_out_queue = queue.Queue()
 
         # Size of the block the RX DSP chain runs on, in 48 kHz samples. The input
@@ -129,6 +132,7 @@ class RF:
         if self.ctx.TESTMODE:
             self.log.warning("RUNNING IN TEST MODE")
             self.resampler = codec2.resampler()  # we need a resampler in test mode
+            self.tx_resampler = codec2.resampler()
             self.demodulator.start(None)
             return True
         else:
@@ -157,8 +161,11 @@ class RF:
                 self.rx_audio_in_queue.put_nowait(None)
             except queue.Full:
                 pass
-            self.sd_input_stream.close()
-            self.sd_output_stream.close()
+            # streams don't exist in TESTMODE or if audio init failed
+            if getattr(self, "sd_input_stream", None):
+                self.sd_input_stream.close()
+            if getattr(self, "sd_output_stream", None):
+                self.sd_output_stream.close()
         except Exception as e:
             self.log.error("[MDM] Error stopping freedata_server", e=e)
 
@@ -200,8 +207,12 @@ class RF:
             sd.default.samplerate = self.AUDIO_SAMPLE_RATE
             sd.default.device = (in_dev_index, out_dev_index)
 
-            # init codec2 resampler
+            # init codec2 resamplers. The resampler keeps filter memory between
+            # calls, so RX (rx_audio_processing_worker) and TX (transmit and
+            # sd_output_audio_callback) each get their own instance instead of
+            # sharing one from two threads.
             self.resampler = codec2.resampler()
+            self.tx_resampler = codec2.resampler()
 
             # SoundDevice audio input stream
             # blocksize=0 lets PortAudio pick the capture block size per device.
@@ -355,7 +366,7 @@ class RF:
         if self.ctx.config_manager.config["AUDIO"].get("tx_auto_audio_level"):
             x = audio.normalize_audio(x)
         x = audio.set_audio_volume(x, self.tx_audio_level)
-        txbuffer_out = self.resampler.resample8_to_48(x)
+        txbuffer_out = self.tx_resampler.resample8_to_48(x)
         # transmit audio
         self.enqueue_audio_out(txbuffer_out)
 
@@ -424,7 +435,11 @@ class RF:
         sliced_audio_data = padded_data.reshape(-1, block_size)
         # add each block to audio out queue
         for block in sliced_audio_data:
-            queue.put(block)
+            try:
+                queue.put_nowait(block)
+            except Full:
+                # no consumer draining the stream - drop the block instead of stalling RX DSP
+                pass
 
     def sd_output_audio_callback(self, outdata: np.ndarray, frames: int, time, status) -> None:
         """Callback function for the audio output stream.
@@ -445,7 +460,7 @@ class RF:
         try:
             if not self.audio_out_queue.empty() and not self.enqueuing_audio:
                 chunk = self.audio_out_queue.get_nowait()
-                audio_8k = self.resampler.resample48_to_8(chunk)
+                audio_8k = self.tx_resampler.resample48_to_8(chunk)
                 audio.calculate_fft(audio_8k, self.ctx.modem_fft, self.ctx.state_manager)
                 outdata[:] = chunk.reshape(outdata.shape)
 
@@ -563,12 +578,10 @@ class RF:
         length_audio_8k_level_adjusted = len(audio_8k_level_adjusted)
         # Avoid buffer overflow by filling only if buffer for
         # selected datachannel mode is not full
-        index = 0
-        for mode in self.demodulator.MODE_DICT:
+        for index, mode in enumerate(self.demodulator.MODE_DICT):
             mode_data = self.demodulator.MODE_DICT[mode]
             audiobuffer = mode_data["audio_buffer"]
             decode = mode_data["decode"]
-            index += 1
             if audiobuffer:
                 if (audiobuffer.nbuffer + length_audio_8k_level_adjusted) > audiobuffer.size:
                     self.demodulator.buffer_overflow_counter[index] += 1

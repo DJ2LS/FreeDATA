@@ -87,7 +87,18 @@ class ARQDataTypeHandler:
                 return session_type
         return None
 
-    def dispatch(self, type_byte: int, data: bytearray, statistics: dict):
+    def call_handler(self, session_type, action, data, statistics, session_id=None):
+        """Calls a registered handler function.
+
+        P2P connection handlers additionally get the ARQ session id, which is
+        equal to the id of the owning P2P connection session.
+        """
+        handler = self.handlers[session_type][action]
+        if session_type is ARQ_SESSION_TYPES.p2p_connection:
+            return handler(data, statistics, session_id=session_id)
+        return handler(data, statistics)
+
+    def dispatch(self, type_byte: int, data: bytearray, statistics: dict, session_id=None):
         """Dispatches the handling of received ARQ data based on its type.
 
         This method retrieves the session type corresponding to the given type byte,
@@ -107,11 +118,11 @@ class ARQDataTypeHandler:
         self.ctx.state_manager.setARQ(False)
 
         if session_type and session_type in self.handlers and "handle" in self.handlers[session_type]:
-            return self.handlers[session_type]["handle"](data, statistics)
+            return self.call_handler(session_type, "handle", data, statistics, session_id)
         else:
             self.log(f"Unknown handling endpoint for type: {type_byte}", isWarning=True)
 
-    def failed(self, type_byte: int, data: bytearray, statistics: dict):
+    def failed(self, type_byte: int, data: bytearray, statistics: dict, session_id=None):
         """Handles the failure of an ARQ session based on the provided type byte.
 
         This method retrieves the session type from the given type byte and calls
@@ -131,7 +142,7 @@ class ARQDataTypeHandler:
         self.ctx.state_manager.setARQ(False)
 
         if session_type in self.handlers and "failed" in self.handlers[session_type]:
-            return self.handlers[session_type]["failed"](data, statistics)
+            return self.call_handler(session_type, "failed", data, statistics, session_id)
         else:
             self.log(f"Unknown handling endpoint: {session_type}", isWarning=True)
 
@@ -154,7 +165,7 @@ class ARQDataTypeHandler:
         else:
             self.log(f"Unknown preparation endpoint: {session_type}", isWarning=True)
 
-    def transmitted(self, type_byte: int, data: bytearray, statistics: dict):
+    def transmitted(self, type_byte: int, data: bytearray, statistics: dict, session_id=None):
         """Handles the successful transmission of ARQ data based on its type.
 
         This method retrieves the session type from the given type byte and calls
@@ -174,7 +185,7 @@ class ARQDataTypeHandler:
         self.ctx.state_manager.setARQ(False)
 
         if session_type in self.handlers and "transmitted" in self.handlers[session_type]:
-            return self.handlers[session_type]["transmitted"](data, statistics)
+            return self.call_handler(session_type, "transmitted", data, statistics, session_id)
         else:
             self.log(f"Unknown handling endpoint: {session_type}", isWarning=True)
 
@@ -488,16 +499,36 @@ class ARQDataTypeHandler:
         print(self.ctx.state_manager.p2p_connection_sessions)
         return compressed_data
 
-    def handle_p2p_connection(self, data, statistics):
+    def get_p2p_connection_sessions(self, session_id=None):
+        """Returns the P2P connection session(s) a P2P_CONNECTION ARQ transfer belongs to.
+
+        The ARQ session id equals the id of the owning P2P connection session. If the
+        id is unknown, all P2P connection sessions are returned (legacy behaviour).
+
+        Args:
+            session_id: The ARQ / P2P connection session id, if known.
+
+        Returns:
+            list: The matching P2PConnection objects.
+        """
+        sessions = self.ctx.state_manager.p2p_connection_sessions
+        if session_id is not None:
+            if session_id in sessions:
+                return [sessions[session_id]]
+            self.log(f"No P2P connection session found for id {session_id}", isWarning=True)
+            return []
+        return list(sessions.values())
+
+    def handle_p2p_connection(self, data, statistics, session_id=None):
         decompressor = zlib.decompressobj(wbits=-zlib.MAX_WBITS)
         decompressed_data = decompressor.decompress(data)
         decompressed_data += decompressor.flush()
 
         self.log(f"Handling gzip compressed P2P_CONNECTION data: {len(decompressed_data)} Bytes from {len(data)} Bytes")
-        for session_id in self.ctx.state_manager.p2p_connection_sessions:
-            self.ctx.state_manager.p2p_connection_sessions[session_id].received_arq(decompressed_data)
+        for session in self.get_p2p_connection_sessions(session_id):
+            session.received_arq(decompressed_data)
 
-    def failed_p2p_connection(self, data, statistics):
+    def failed_p2p_connection(self, data, statistics, session_id=None):
         decompressor = zlib.decompressobj(wbits=-zlib.MAX_WBITS)
         decompressed_data = decompressor.decompress(data)
         decompressed_data += decompressor.flush()
@@ -505,12 +536,12 @@ class ARQDataTypeHandler:
             f"Handling failed gzip compressed P2P_CONNECTION data: {len(decompressed_data)} Bytes from {len(data)} Bytes",
             isWarning=True,
         )
-        for session_id in self.ctx.state_manager.p2p_connection_sessions:
-            self.ctx.state_manager.p2p_connection_sessions[session_id].failed_arq()
+        for session in self.get_p2p_connection_sessions(session_id):
+            session.failed_arq()
 
-    def transmitted_p2p_connection(self, data, statistics):
+    def transmitted_p2p_connection(self, data, statistics, session_id=None):
         decompressor = zlib.decompressobj(wbits=-zlib.MAX_WBITS)
         decompressed_data = decompressor.decompress(data)
         decompressed_data += decompressor.flush()
-        for session_id in self.ctx.state_manager.p2p_connection_sessions:
-            self.ctx.state_manager.p2p_connection_sessions[session_id].transmitted_arq(decompressed_data)
+        for session in self.get_p2p_connection_sessions(session_id):
+            session.transmitted_arq(decompressed_data)

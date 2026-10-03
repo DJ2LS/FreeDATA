@@ -93,6 +93,8 @@ async def post_radio(
         dict: The applied radio parameters.
     """
     radio_manager = ctx.radio_manager
+    if radio_manager is None:
+        api_abort("Radio manager not running", 503)
     if "radio_frequency" in new_params:
         radio_manager.set_frequency(new_params["radio_frequency"])
     if "radio_mode" in new_params:
@@ -155,7 +157,8 @@ async def post_radio_tune(
     if enable:
         if not ctx.state_manager.is_modem_running:
             api_abort("Modem not running", 503)
-        await enqueue_tx_command(ctx, command_transmit_sine.TransmitSine)
+        if not await enqueue_tx_command(ctx, command_transmit_sine.TransmitSine):
+            api_abort("Failed to start tuning tone.", 500)
     else:
         ctx.rf_modem.stop_sine()
     return api_response(params)

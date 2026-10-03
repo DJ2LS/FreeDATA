@@ -65,10 +65,13 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     expires_at = (datetime.now(timezone.utc) + timedelta(hours=self.DEFAULT_EXPIRY_HOURS)).timestamp()
                     self.log(f"No expires_at provided for {id}, defaulting to {self.DEFAULT_EXPIRY_HOURS}h from now")
 
-                print("nexttransmission_at", nexttransmission_at)
-                print("received_at", received_at)
-                print("timestamp", timestamp)
-                print("exires_at", expires_at)
+                self.logger.debug(
+                    f"[{type(self).__name__}]: New broadcast {id}",
+                    nexttransmission_at=nexttransmission_at,
+                    received_at=received_at,
+                    timestamp=timestamp,
+                    expires_at=expires_at,
+                )
 
                 # New message
                 msg = BroadcastMessage(
@@ -377,8 +380,6 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             now = datetime.now(timezone.utc)
             one_minute_ago_ts = (now - timedelta(minutes=1)).timestamp()
             now = now.timestamp()
-            print(now)
-            print(one_minute_ago_ts)
             messages = (
                 session
                 .query(BroadcastMessage)
@@ -401,11 +402,14 @@ class DatabaseManagerBroadcasts(DatabaseManager):
                     continue
 
                 # Check next transmission time
-                print("nexttransmissionat", msg.nexttransmission_at)
-                print("now", now)
-                print("expires_at", msg.expires_at)
-                print("timestamp", msg.timestamp)
-                print("received_at", msg.received_at)
+                self.logger.debug(
+                    f"[{type(self).__name__}]: Checking missing bursts for {msg.id}",
+                    now=now,
+                    nexttransmission_at=msg.nexttransmission_at,
+                    expires_at=msg.expires_at,
+                    timestamp=msg.timestamp,
+                    received_at=msg.received_at,
+                )
                 if now <= msg.nexttransmission_at:
                     dt = datetime.fromtimestamp(msg.nexttransmission_at, timezone.utc)
                     self.log(f"Skip {msg.id}: wait until {int(msg.nexttransmission_at)} ({dt.isoformat()})")
@@ -436,7 +440,7 @@ class DatabaseManagerBroadcasts(DatabaseManager):
             return None
 
         except Exception as e:
-            self.log(f"Fehler at check_missing_bursts: {e}", isWarning=True)
+            self.log(f"Error at check_missing_bursts: {e}", isWarning=True)
             return None
 
         finally:
@@ -519,7 +523,6 @@ class DatabaseManagerBroadcasts(DatabaseManager):
 
             # Update next transmission
             msg.nexttransmission_at = (datetime.now(timezone.utc) + timedelta(minutes=next_delay)).timestamp()
-            print("---------------", msg.nexttransmission_at)
             # Check max attempts
             if msg.attempts >= self.MAX_ATTEMPTS:
                 # Mark as failed or set specific status

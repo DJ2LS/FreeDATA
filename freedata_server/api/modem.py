@@ -6,7 +6,6 @@ from freedata_server import (
     command_beacon,
     command_ping,
     command_test,
-    command_fec,
     command_arq_raw,
 )
 from freedata_server import api_validations as validations
@@ -162,7 +161,8 @@ async def post_cq(ctx: AppContext = Depends(get_ctx)):
     """
     if not ctx.state_manager.is_modem_running:
         api_abort("Modem not running", 503)
-    await enqueue_tx_command(ctx, command_cq.CQCommand)
+    if not await enqueue_tx_command(ctx, command_cq.CQCommand):
+        api_abort("Failed to send CQ.", 500)
     return api_ok()
 
 
@@ -209,7 +209,8 @@ async def post_beacon(
     ctx.state_manager.set("is_beacon_running", enabled)
     ctx.state_manager.set("is_away_from_key", away)
     if enabled and not ctx.state_manager.getARQ():
-        await enqueue_tx_command(ctx, command_beacon.BeaconCommand, payload)
+        if not await enqueue_tx_command(ctx, command_beacon.BeaconCommand, payload):
+            api_abort("Failed to send beacon.", 500)
     return api_response({"enabled": enabled, "away_from_key": away})
 
 
@@ -248,7 +249,8 @@ async def post_ping(
     dxcall = payload.get("dxcall")
     if not dxcall or not validations.validate_freedata_callsign(dxcall):
         api_abort("Invalid 'dxcall' parameter.", 400)
-    await enqueue_tx_command(ctx, command_ping.PingCommand, payload)
+    if not await enqueue_tx_command(ctx, command_ping.PingCommand, payload):
+        api_abort("Failed to send ping.", 500)
     return api_response({"message": True})
 
 
@@ -279,7 +281,8 @@ async def post_send_test(
     """
     if not ctx.state_manager.is_modem_running:
         api_abort("Modem not running", 503)
-    await enqueue_tx_command(ctx, command_test.TestCommand)
+    if not await enqueue_tx_command(ctx, command_test.TestCommand):
+        api_abort("Failed to send test frame.", 500)
     return api_ok()
 
 
@@ -304,6 +307,10 @@ async def post_send_test(
             "description": "Internal Server Error: An unexpected error occurred on the server.",
             "content": {"application/json": {"example": {"error": "Internal server error."}}},
         },
+        501: {
+            "description": "Not Implemented: FEC transmission is currently not supported.",
+            "content": {"application/json": {"example": {"error": "FEC transmission is not implemented."}}},
+        },
         503: {
             "description": "Modem not running.",
             "content": {"application/json": {"example": {"error": "Modem not running."}}},
@@ -316,13 +323,12 @@ async def post_fec(
 ):
     """
     Trigger FEC frame transmission.
+
+    Currently not implemented: the FEC/FEC_WAKEUP frame types are disabled
+    in modem_frametypes.py and FecCommand cannot build or transmit frames,
+    so this endpoint returns 501 instead of reporting a fake success.
     """
-    if not ctx.state_manager.is_modem_running:
-        api_abort("Modem not running", 503)
-    if "message" not in payload:
-        api_abort("Field 'message' required.", 400)
-    await enqueue_tx_command(ctx, command_fec.FecCommand, payload)
-    return api_response({"message": "FEC transmission started."})
+    api_abort("FEC transmission is not implemented.", 501)
 
 
 @router.post(
@@ -464,7 +470,8 @@ async def post_arq_raw(
         api_abort("Invalid 'type' parameter.", 400)
     if not raw_data:
         api_abort("Missing 'data' parameter.", 400)
-    await enqueue_tx_command(ctx, command_arq_raw.ARQRawCommand, payload)
+    if not await enqueue_tx_command(ctx, command_arq_raw.ARQRawCommand, payload):
+        api_abort("Failed to start ARQ raw transmission.", 500)
     return api_response({"data": raw_data, "dxcall": dxcall, "type": data_type})
 
 

@@ -59,7 +59,7 @@ class Beacon(Base):
     callsign = Column(String, ForeignKey("station.callsign"))
     station = relationship("Station", back_populates="beacons")
 
-    Index("idx_beacon_callsign", "callsign")
+    __table_args__ = (Index("idx_beacon_callsign", "callsign"),)
 
 
 class Station(Base):
@@ -78,7 +78,7 @@ class Station(Base):
     info = Column(JSON, nullable=True)
     beacons = relationship("Beacon", order_by="Beacon.id", back_populates="station")
 
-    Index("idx_station_callsign_checksum", "callsign", "checksum")
+    __table_args__ = (Index("idx_station_callsign_checksum", "callsign", "checksum"),)
 
     def to_dict(self):
         """Converts the Station object to a dictionary.
@@ -134,12 +134,14 @@ class P2PMessage(Base):
     statistics = Column(JSON, nullable=True)
     is_read = Column(Boolean, default=True)
 
-    Index(
-        "idx_p2p_message_origin_timestamp",
-        "origin_callsign",
-        "via_callsign",
-        "destination_callsign",
-        "timestamp",
+    __table_args__ = (
+        Index(
+            "idx_p2p_message_origin_timestamp",
+            "origin_callsign",
+            "via_callsign",
+            "destination_callsign",
+            "timestamp",
+        ),
     )
 
     def to_dict(self):
@@ -192,7 +194,7 @@ class Attachment(Base):
     hash_sha512 = Column(String)
     message_attachments = relationship("MessageAttachment", back_populates="attachment")
 
-    Index("idx_attachments_id_message_id", "id", "hash_sha512")
+    __table_args__ = (Index("idx_attachments_id_message_id", "id", "hash_sha512"),)
 
     def to_dict(self):
         """Converts the Attachment object to a dictionary.
@@ -215,7 +217,7 @@ class BroadcastMessage(Base):
 
     id = Column(String, primary_key=True)
     origin = Column(String, ForeignKey("station.callsign"))
-    timestamp = Column(Float, default=lambda: datetime.now(timezone.utc))
+    timestamp = Column(Float, default=lambda: datetime.now(timezone.utc).timestamp())
     repairing_callsigns = Column(JSON, nullable=True)
     domain = Column(String)
     gridsquare = Column(String)
@@ -228,9 +230,9 @@ class BroadcastMessage(Base):
     msg_type = Column(String)
     total_bursts = Column(Integer, default=0)
     checksum = Column(String)
-    received_at = Column(Float, default=lambda: datetime.now(timezone.utc))
-    nexttransmission_at = Column(Float, default=lambda: datetime.now(timezone.utc))
-    expires_at = Column(Float, default=lambda: datetime.now(timezone.utc))
+    received_at = Column(Float, default=lambda: datetime.now(timezone.utc).timestamp())
+    nexttransmission_at = Column(Float, default=lambda: datetime.now(timezone.utc).timestamp())
+    expires_at = Column(Float, default=lambda: datetime.now(timezone.utc).timestamp())
 
     status_id = Column(Integer, ForeignKey("status.id"), nullable=True)
     status = relationship("Status", backref="broadcast_messages")

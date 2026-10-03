@@ -15,7 +15,10 @@ async def enqueue_tx_command(ctx: AppContext, cmd_class, params: dict = None) ->
         params: A dict of parameters for the command (optional).
 
     Returns:
-        bool: True if the command ran successfully, False otherwise.
+        bool: True if the command was instantiated and run without raising,
+        False if an exception occurred. The return value of command.run() is
+        not used, as most commands return None (or a non-indicative value)
+        on success.
     """
     params = params or {}
     try:
@@ -23,8 +26,8 @@ async def enqueue_tx_command(ctx: AppContext, cmd_class, params: dict = None) ->
         command = cmd_class(ctx, params)
         logger.info("Enqueueing transmit command", command=command.get_name())
         # Run in a thread to avoid blocking the event loop
-        result = await asyncio.to_thread(command.run)
-        return bool(result)
+        await asyncio.to_thread(command.run)
+        return True
     except Exception as e:
-        logger.error("Command execution failed", error=str(e))
+        logger.error("Command execution failed", command=getattr(cmd_class, "__name__", str(cmd_class)), error=str(e))
         return False

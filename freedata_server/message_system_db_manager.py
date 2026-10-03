@@ -409,7 +409,13 @@ class DatabaseManager:
                         col_type = column.type.compile(dialect=self.engine.dialect)
                         nullable_clause = "" if column.nullable else "NOT NULL"
                         default_clause = ""
-                        if column.default is not None and hasattr(column.default, "arg"):
+                        # only static scalar defaults can be rendered into DDL;
+                        # callable (e.g. lambda) or SQL expression defaults are skipped
+                        if (
+                            column.default is not None
+                            and getattr(column.default, "is_scalar", False)
+                            and hasattr(column.default, "arg")
+                        ):
                             default_value = column.default.arg
                             if isinstance(default_value, str):
                                 default_clause = f" DEFAULT '{default_value}'"
@@ -423,7 +429,8 @@ class DatabaseManager:
                         ddl = " ".join(ddl.split())
                         self.log(f"Adding missing column with DDL: {ddl}")
                         try:
-                            with self.engine.connect() as conn:
+                            # engine.begin() commits on successful exit
+                            with self.engine.begin() as conn:
                                 conn.execute(text(ddl))
                             self.log(f"Column '{col_name}' added to table '{table.name}'.")
                         except Exception as e:
