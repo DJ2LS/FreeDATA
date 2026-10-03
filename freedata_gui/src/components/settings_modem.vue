@@ -1,6 +1,6 @@
 <script setup>
 
-import { settingsStore as settings, onChange } from "../store/settingsStore.js";
+import { settingsStore as settings, onChange, getRemote } from "../store/settingsStore.js";
 
 
 // Pinia setup
@@ -13,6 +13,33 @@ import { startModem, stopModem } from "../js/api.js";
 
 import { useAudioStore } from "../store/audioStore";
 const audioStore = useAudioStore(pinia);
+
+// Number inputs: v-model.number yields "" when a field is cleared, which the
+// server rejects (it expects an int). Restore the previous value instead of
+// saving, round to an integer and clamp to the input's min/max before saving.
+const previousNumbers = {};
+function rememberNumber(section, key) {
+  previousNumbers[`${section}.${key}`] = settings.remote[section][key];
+}
+function onNumberChange(event, section, key) {
+  const el = event.target;
+  let value = settings.remote[section][key];
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    const previous = previousNumbers[`${section}.${key}`];
+    if (previous !== "" && previous !== null && previous !== undefined && Number.isFinite(Number(previous))) {
+      settings.remote[section][key] = Number(previous);
+    } else {
+      getRemote(); // reload the last saved config from the server
+    }
+    return;
+  }
+  value = Math.round(value);
+  if (el.min !== "" && value < Number(el.min)) value = Number(el.min);
+  if (el.max !== "" && value > Number(el.max)) value = Number(el.max);
+  settings.remote[section][key] = value;
+  previousNumbers[`${section}.${key}`] = value;
+  onChange();
+}
 
 
 function reloadModem(){
@@ -87,7 +114,8 @@ function reloadModem(){
       maxlength="5"
       max="65534"
       min="1025"
-      @change="onChange"
+      @focus="rememberNumber('NETWORK', 'modemport')"
+      @change="onNumberChange($event, 'NETWORK', 'modemport')"
     >
   </div>
 

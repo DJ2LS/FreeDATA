@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { setActivePinia } from "pinia";
 import pinia from "../../store/index";
 import { useStateStore } from "../../store/stateStore.js";
@@ -57,14 +57,17 @@ async function handleSendCQ() {
 }
 
 // Listen for the stationSelected event and update dxcallPing
-window.addEventListener(
-  "stationSelected",
-  function (eventdata) {
-    const evt = eventdata;
-    dxcallPing.value = evt.detail;
-  },
-  false
-);
+function onStationSelected(eventdata) {
+  dxcallPing.value = eventdata.detail;
+}
+
+onMounted(() => {
+  window.addEventListener("stationSelected", onStationSelected, false);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("stationSelected", onStationSelected, false);
+});
 </script>
 
 
@@ -96,7 +99,7 @@ window.addEventListener(
                 <label for="floatingInput">{{ $t('grid.components.dxcall') }}</label>
               </div>
               <button
-                id="sendPing"
+                id="broadcastsVertSendPing"
                 class="btn btn-sm btn-outline-secondary"
                 type="button"
                 data-bs-placement="bottom"
@@ -117,7 +120,7 @@ window.addEventListener(
         <div class="row">
           <div class="col">
             <button
-              id="sendCQ"
+              id="broadcastsVertSendCQ"
               class="btn btn-sm btn-outline-secondary w-100"
               type="button"
               :title=" $t('grid.components.cqcqcq_help')"

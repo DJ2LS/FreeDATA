@@ -15,15 +15,7 @@ import { useBroadcastStore } from '../store/broadcastStore.js';
 const broadcast = useBroadcastStore(pinia);
 
 import { useIsMobile } from '../js/mobile_devices.js';
-import {getFreedataBroadcastsPerDomain} from "@/js/api";
 const { isMobile } = useIsMobile(992);
-
-function domainSelected(domain) {
-  broadcast.selectedDomain = domain.toUpperCase();
-  broadcast.triggerScrollToBottom();
-  //setMessagesAsRead(domain);
-  getFreedataBroadcastsPerDomain(domain);
-}
 
 
 function resetDomain() {
@@ -98,7 +90,6 @@ function resetDomain() {
                   class="btn btn-outline-secondary ms-2"
                   data-bs-target="#deleteBroadcastModal"
                   data-bs-toggle="modal"
-                  @click="domainSelected(domain)"
                 >
                   <i class="bi bi-graph-up h5" />
                 </button>

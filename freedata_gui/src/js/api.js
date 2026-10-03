@@ -2,12 +2,12 @@
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
-import { computed } from "vue";
 
 import {
   validateCallsignWithSSID,
   validateCallsignWithoutSSID,
 } from "./freedata";
+import { displayToast, escapeHtml } from "./popupHandler";
 import { processFreedataMessages } from "./messagesHandler";
 import {
   processFreedataDomains,
@@ -28,129 +28,115 @@ function buildURL(endpoint) {
   return `${protocol}//${hostname}:${adjustedPort}${endpoint}`;
 }
 
-// Check network connectivity
-const isNetworkConnected = computed(
-  () => state.modem_connection !== "disconnected",
-);
-function checkNetworkConnectivity() {
-  if (!isNetworkConnected.value) {
-    console.warn("Network is disconnected. API call aborted.");
-    return false;
-  }
-  return true;
-}
-// Set network traffic state
+// Network traffic indicator, reference-counted so concurrent requests
+// keep it set until the last one has finished.
+// REST calls are not gated on the WebSocket state: the server may be
+// reachable even if a socket is (re)connecting. A failed fetch simply
+// returns undefined.
+let pendingRequests = 0;
 function setNetworkTrafficBusy(isBusy) {
-  state.is_network_traffic = isBusy;
+  pendingRequests = Math.max(0, pendingRequests + (isBusy ? 1 : -1));
+  state.is_network_traffic = pendingRequests > 0;
 }
 
-// Fetch GET request
-async function apiGet(endpoint) {
-  if (!checkNetworkConnectivity()) return;
+// Extract a readable error message from a FastAPI error response.
+// The server sends {"detail": {"error": "..."}} (api_abort),
+// {"detail": "..."} or {"detail": [{"msg": "..."}]} (validation errors).
+async function getErrorMessage(response) {
+  let message = `${response.status} ${response.statusText}`.trim();
+  try {
+    const body = await response.json();
+    const detail = body?.detail ?? body?.error ?? body;
+    if (typeof detail === "string") {
+      message = detail;
+    } else if (Array.isArray(detail)) {
+      message = detail
+        .map((item) => item?.msg ?? JSON.stringify(item))
+        .join("; ");
+    } else if (detail && typeof detail.error === "string") {
+      message = detail.error;
+    }
+  } catch {
+    // body is not JSON, keep the status text
+  }
+  return message;
+}
 
-  setNetworkTrafficBusy(true); // Set the network busy state to true
+// Show an API error to the user. Identical messages are suppressed for a
+// few seconds to avoid toast spam.
+const recentErrors = new Map();
+const ERROR_TOAST_SUPPRESS_MS = 5000;
+function showApiError(method, endpoint, message) {
+  const key = `${method} ${endpoint} ${message}`;
+  const now = Date.now();
+  if (now - (recentErrors.get(key) || 0) < ERROR_TOAST_SUPPRESS_MS) return;
+  recentErrors.set(key, now);
+  displayToast(
+    "danger",
+    "bi-exclamation-octagon",
+    `<strong>Server error</strong>
+     <div class="small text-muted">${escapeHtml(method)} ${escapeHtml(endpoint)}</div>
+     <div>${escapeHtml(message)}</div>`,
+    8000,
+  );
+}
+
+// Common request handler. Returns the parsed JSON body, or undefined on any
+// error. Errors from requests that change something (POST/PATCH/DELETE)
+// are shown as toast; GET requests are mostly background loads and are
+// only logged unless `notify` is true.
+async function apiRequest(method, endpoint, payload, notify) {
+  setNetworkTrafficBusy(true);
 
   try {
-    const response = await fetch(buildURL(endpoint));
+    const options = { method };
+    if (payload !== undefined) {
+      options.headers = { "Content-Type": "application/json" };
+      options.body = JSON.stringify(payload);
+    }
+    const response = await fetch(buildURL(endpoint), options);
     if (!response.ok) {
-      throw new Error(`REST response not ok: ${response.statusText}`);
+      const message = await getErrorMessage(response);
+      console.error(`REST ${method} ${endpoint} failed: ${message}`);
+      if (notify) showApiError(method, endpoint, message);
+      return;
     }
     return await response.json();
   } catch (error) {
-    console.error("Error getting from REST:", error);
+    console.error(`REST ${method} ${endpoint} failed:`, error);
+    if (notify) {
+      showApiError(method, endpoint, error?.message || String(error));
+    }
   } finally {
-    setNetworkTrafficBusy(false); // Set the network busy state back to false
+    setNetworkTrafficBusy(false);
   }
+}
+
+// Fetch GET request
+async function apiGet(endpoint, notify = false) {
+  return apiRequest("GET", endpoint, undefined, notify);
 }
 
 // Fetch POST request
 export async function apiPost(endpoint, payload = {}) {
-  if (!checkNetworkConnectivity()) return;
-
-  setNetworkTrafficBusy(true); // Set the network busy state to true
-
-  try {
-    const response = await fetch(buildURL(endpoint), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      throw new Error(`REST response not ok: ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error posting to REST:", error);
-  } finally {
-    setNetworkTrafficBusy(false); // Set the network busy state back to false
-  }
+  return apiRequest("POST", endpoint, payload, true);
 }
 
 // Fetch PATCH request
 export async function apiPatch(endpoint, payload = {}) {
-  if (!checkNetworkConnectivity()) return;
-
-  setNetworkTrafficBusy(true); // Set the network busy state to true
-
-  try {
-    const response = await fetch(buildURL(endpoint), {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      throw new Error(`REST response not ok: ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error patching to REST:", error);
-  } finally {
-    setNetworkTrafficBusy(false); // Set the network busy state back to false
-  }
+  return apiRequest("PATCH", endpoint, payload, true);
 }
 
 // Fetch DELETE request
 export async function apiDelete(endpoint, payload = {}) {
-  if (!checkNetworkConnectivity()) return;
-
-  setNetworkTrafficBusy(true); // Set the network busy state to true
-
-  try {
-    const response = await fetch(buildURL(endpoint), {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      throw new Error(`REST response not ok: ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error deleting from REST:", error);
-  } finally {
-    setNetworkTrafficBusy(false); // Set the network busy state back to false
-  }
+  return apiRequest("DELETE", endpoint, payload, true);
 }
 
 // functions using updated apiGet and apiPost
+// /version returns api_version, modem_version, os_info and python_info
 export async function getVersion() {
   let data = await apiGet("/version");
-  if (data && data.version) {
-    return data.version;
-  }
-  return 0;
+  return data?.modem_version || "N/A";
 }
 
 export async function getSysInfo() {
@@ -215,12 +201,17 @@ export async function sendModemPing(dxcall) {
   }
 }
 
-export async function sendModemARQRaw(mycall, dxcall, data, uuid) {
+/**
+ * Send raw data via ARQ.
+ * @param {string} dxcall destination callsign (with SSID)
+ * @param {string} data base64 encoded payload
+ * @param {string} type one of "raw", "raw_lzma", "raw_gzip"
+ */
+export async function sendModemARQRaw(dxcall, data, type = "raw") {
   return await apiPost("/modem/send_arq_raw", {
-    mycallsign: mycall,
     dxcall,
+    type,
     data,
-    uuid,
   });
 }
 
@@ -334,8 +325,15 @@ export async function getFreedataBroadcasts() {
   broadcastStore.loading = true;
   try {
     const res = await apiGet("/freedata/broadcasts");
-    if (res) {
-      processFreedataBroadcasts(res);
+    if (Array.isArray(res)) {
+      // /freedata/broadcasts returns a flat list; group it by domain like
+      // /freedata/broadcasts/{domain}/ does
+      const perDomain = {};
+      for (const msg of res) {
+        const domain = msg.domain || "unknown";
+        (perDomain[domain] = perDomain[domain] || []).push(msg);
+      }
+      processFreedataBroadcastsPerDomain(perDomain);
     }
   } catch (error) {
     console.error("Error fetching broadcasts:", error);
@@ -390,8 +388,3 @@ export async function deleteFreedataBroadcastDomain(id) {
   return await apiDelete(`/freedata/broadcasts/${id}`);
 }
 
-export async function postFreedataBroadcastADIF(id) {
-  return await apiPost(`/freedata/broadcasts/${id}/adif`, {
-    action: "retransmit",
-  });
-}

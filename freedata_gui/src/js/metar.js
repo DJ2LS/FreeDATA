@@ -1,3 +1,5 @@
+import airports from "@/assets/airports.json";
+
 export function parseMetar(raw) {
   const out = {
     iata: null,
@@ -27,16 +29,9 @@ export function parseMetar(raw) {
   out.auto = tokens.includes("AUTO");
   out.cor = tokens.includes("COR");
 
-  for (const t of tokens) {
-    if (/^[A-Z]{3}$/.test(t)) {
-      out.iata = t;
-      break;
-    }
-    if (/^[A-Z]{4}$/.test(t)) {
-      out.iata = t;
-      break;
-    } // IACA override
-  }
+  // Station: "METAR|SPECI [COR|AMD] CCCC DDHHMMZ ...". `iata` holds the
+  // station code as given (3-letter IATA or 4-character ICAO).
+  out.iata = _findStation(tokens);
 
   const tTok = tokens.find((t) => /^\d{6}Z$/.test(t));
   if (tTok) {
@@ -102,6 +97,60 @@ export function parseMetar(raw) {
   }
 
   return out;
+}
+
+// Words that look like a station code but are not one
+const _NOT_A_STATION = new Set([
+  "METAR", "SPECI", "COR", "AMD", "AUTO", "NIL", "CAVOK", "NSC", "NCD",
+  "SKC", "CLR", "NSW", "RMK", "NOSIG", "TEMPO", "BECMG",
+]);
+
+function _isStation(t) {
+  return (
+    (/^[A-Z]{3}$/.test(t) || /^[A-Z][A-Z0-9]{3}$/.test(t)) &&
+    !_NOT_A_STATION.has(t)
+  );
+}
+
+function _findStation(tokens) {
+  const timeIdx = tokens.findIndex((t) => /^\d{6}Z$/.test(t));
+  if (timeIdx > 0) {
+    // the station precedes the time group
+    if (_isStation(tokens[timeIdx - 1])) return tokens[timeIdx - 1];
+    return tokens.slice(0, timeIdx).find(_isStation) || null;
+  }
+  // No time group: only accept the first token after the report type,
+  // never scan the body (it would pick AUTO, TSRA, ...)
+  let i = 0;
+  while (i < tokens.length && ["METAR", "SPECI", "COR", "AMD"].includes(tokens[i])) i++;
+  return i < tokens.length && _isStation(tokens[i]) ? tokens[i] : null;
+}
+
+// ---------------- Airport lookup ----------------
+
+let _airportByCode = null;
+
+/**
+ * Look up an airport by IATA (3 letters) or ICAO (4 characters) code.
+ * IATA codes take precedence; ICAO codes come from the `icao` field, which
+ * only some entries of airports.json have.
+ * @param {string} code
+ * @returns {Object|null}
+ */
+export function lookupAirport(code) {
+  if (!code) return null;
+  if (!_airportByCode) {
+    _airportByCode = {};
+    for (const a of airports) {
+      if (a?.iata && !_airportByCode[a.iata]) _airportByCode[a.iata] = a;
+    }
+    for (const a of airports) {
+      if (a?.icao && /^[A-Z0-9]{4}$/.test(a.icao) && !_airportByCode[a.icao]) {
+        _airportByCode[a.icao] = a;
+      }
+    }
+  }
+  return _airportByCode[code] || null;
 }
 
 function _signed(s) {

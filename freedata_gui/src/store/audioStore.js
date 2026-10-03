@@ -76,8 +76,5 @@ export const useAudioStore = defineStore("audioStore", () => {
     addBlock,
     getNextBlock,
     resetBuffer,
-    get bufferedBlockCount() {
-      return readyBlocks;
-    },
   };
 });

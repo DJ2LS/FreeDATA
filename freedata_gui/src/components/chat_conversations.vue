@@ -62,7 +62,7 @@
               {{ details.unread_messages }} {{ $t('chat.new') }}
             </span>
             <br>
-            <small>{{ sanitizeBody(details.body.substring(0, 35) + '...') || "\u003Cfile\u003E" }}</small>
+            <small>{{ previewBody(details.body) }}</small>
 
           </div>
           <div class="col-5 text-end">
@@ -80,7 +80,8 @@ import DOMPurify from 'dompurify';
 import { setActivePinia } from 'pinia';
 import pinia from '../store/index';
 import { useChatStore } from '../store/chatStore.js';
-import { getBeaconDataByCallsign, setFreedataMessageAsRead, getFreedataMessages } from '../js/api.js';
+import { setFreedataMessageAsRead, getFreedataMessages } from '../js/api.js';
+import { loadBeaconData, parseServerTimestamp } from '../js/messagesHandler.js';
 import { ref } from 'vue';
 import { useIsMobile } from '../js/mobile_devices.js';
 const { isMobile } = useIsMobile(720);
@@ -94,7 +95,7 @@ const newChatCall = ref(null);
 function chatSelected(callsign) {
   chat.selectedCallsign = callsign.toUpperCase();
   chat.triggerScrollToBottom();
-  processBeaconData(callsign);
+  loadBeaconData(callsign);
   setMessagesAsRead(callsign);
 }
 
@@ -124,21 +125,9 @@ async function setMessagesAsRead(callsign) {
   }
 }
 
-async function processBeaconData(callsign) {
-  const beacons = await getBeaconDataByCallsign(callsign);
-  chat.beaconLabelArray = beacons.map((entry) => entry.timestamp);
-  chat.beaconDataArray = beacons.map((entry) => entry.snr);
-}
-
 function getDateTime(input) {
-  let date;
-  if (typeof input === 'number') {
-    // Assuming input is a Unix timestamp in seconds
-    date = new Date(input * 1000);
-  } else {
-    // Assuming input is an ISO 8601 formatted string
-    date = new Date(input);
-  }
+  // Unix seconds or ISO 8601 (UTC, possibly without timezone designator)
+  const date = parseServerTimestamp(input);
 
   const now = new Date();
   const isSameDay = date.getDate() === now.getDate() &&
@@ -175,13 +164,18 @@ function startNewChat() {
   chat.newChatMessage = "Hi there! Nice to meet you!";
 }
 
-function sanitizeBody(body) {
-  return body ? DOMPurify.sanitize(body, { ALLOWED_TAGS: [] }) : null;
+// Plain-text preview of the last message; "<file>" for attachment-only messages
+function previewBody(body) {
+  const text = body
+    ? (DOMPurify.sanitize(body, { ALLOWED_TAGS: [], RETURN_DOM: true }).textContent || '').trim()
+    : '';
+  if (!text) return '<file>';
+  return text.length > 35 ? text.substring(0, 35) + '...' : text;
 }
 
 export default {
   setup() {
-    return { chat, newChatCall, chatSelected, setMessagesAsRead, processBeaconData, getDateTime, newChat, startNewChat, sanitizeBody };
+    return { chat, newChatCall, chatSelected, setMessagesAsRead, getDateTime, newChat, startNewChat, previewBody };
   }
 };
 </script>

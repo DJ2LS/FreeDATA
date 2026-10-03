@@ -5,19 +5,13 @@ setActivePinia(pinia);
 import { useAudioStore } from "../store/audioStore.js";
 const audio = useAudioStore(pinia);
 
-const MAX_BLOCKS = 10;
-
+// Server sends int16 mono PCM (8 kHz). Any number of samples is accepted.
 export function addDataToAudio(data) {
-  const int16 = new Int16Array(data);
-  const copy = new Int16Array(int16); // Kopie für Sicherheit
-  /*
-  const stream = audio.rxStream;
-
-  if (stream.length >= MAX_BLOCKS) {
-    stream.shift();
-  }
-
-  stream.push(copy);
-  */
+  if (!(data instanceof ArrayBuffer)) return;
+  // Drop a trailing odd byte instead of letting Int16Array throw a RangeError
+  const sampleCount = Math.floor(data.byteLength / 2);
+  if (sampleCount === 0) return;
+  // slice() copies, so the block does not share memory with the socket buffer
+  const copy = new Int16Array(data.slice(0, sampleCount * 2));
   audio.addBlock(copy);
 }

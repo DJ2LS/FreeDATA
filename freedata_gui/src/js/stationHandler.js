@@ -1,5 +1,10 @@
+// pinia store setup
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
+setActivePinia(pinia);
+
 import { useStationStore } from "../store/stationStore.js";
-const station = useStationStore();
+const station = useStationStore(pinia);
 
 import { getStationInfo, setStationInfo } from "../js/api";
 

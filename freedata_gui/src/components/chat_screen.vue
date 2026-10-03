@@ -7,6 +7,7 @@ import chat_messages from "./chat_messages.vue";
 import chat_new_message from "./chat_new_message.vue";
 
 import { getStationInfoByCallsign } from "./../js/stationHandler";
+import { loadBeaconData } from "./../js/messagesHandler";
 
 import { setActivePinia } from 'pinia';
 import pinia from '../store/index';
@@ -135,7 +136,7 @@ function resetChat() {
                   class="btn btn-outline-secondary ms-2"
                   data-bs-target="#deleteChatModal"
                   data-bs-toggle="modal"
-                  @click="chatSelected(callsign)"
+                  @click="loadBeaconData(chat.selectedCallsign)"
                 >
                   <i class="bi bi-graph-up h5" />
                 </button>

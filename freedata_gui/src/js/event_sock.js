@@ -30,9 +30,12 @@ function connect(endpoint, dispatcher) {
   // handle opening
   socket.addEventListener("open", function () {
     console.log(`Connected to the WebSocket server: ${endpoint}`);
-    // when connected again, initially load all data from server
-    loadAllData();
-    state.modem_connection = "connected";
+    // The states socket defines the connection state. Load all data once
+    // per (re)connect, not once for every socket.
+    if (endpoint === "states") {
+      state.modem_connection = "connected";
+      loadAllData();
+    }
   });
 
   // handle data

@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { setActivePinia } from "pinia";
 import pinia from "../../store/index";
 import { useStateStore } from "../../store/stateStore.js";
@@ -55,14 +55,17 @@ function startStopBeacon() {
 }
 
 // Listen for the stationSelected event and update dxcallPing
-window.addEventListener(
-  "stationSelected",
-  function (eventdata) {
-    const evt = eventdata;
-    dxcallPing.value = evt.detail;
-  },
-  false
-);
+function onStationSelected(eventdata) {
+  dxcallPing.value = eventdata.detail;
+}
+
+onMounted(() => {
+  window.addEventListener("stationSelected", onStationSelected, false);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("stationSelected", onStationSelected, false);
+});
 </script>
 
 <template>
@@ -88,7 +91,7 @@ window.addEventListener(
           aria-describedby="btnGroupAddon"
         >
         <button
-          id="sendPing"
+          id="broadcastsSendPing"
           class="btn btn-outline-secondary"
           type="button"
           data-bs-placement="bottom"
@@ -103,7 +106,7 @@ window.addEventListener(
         </button>
 
         <button
-          id="sendCQ"
+          id="broadcastsSendCQ"
           class="btn btn-outline-secondary ms-1"
           type="button"
           :title=" $t('grid.components.cqcqcq_help')"

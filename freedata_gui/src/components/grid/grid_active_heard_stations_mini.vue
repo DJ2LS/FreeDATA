@@ -49,7 +49,7 @@ function pushToPing(origin) {
           <thead>
             <tr>
               <th scope="col">
-                Tim{{ $t('grid.components.time') }}e
+                {{ $t('grid.components.time') }}
               </th>
               <th scope="col">
                 {{ $t('grid.components.dxcall') }}

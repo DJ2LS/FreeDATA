@@ -230,31 +230,8 @@ function fetchMyStationInfo() {
     </div>
   </div>
 
-  <!-- Updater release notes -->
-  <div id="updaterReleaseNotes" ref="modalElement" class="modal fade" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <span id="updater_last_version" class="input-group-text"/>
-          <span id="updater_last_update" class="input-group-text ms-1"/>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"/>
-        </div>
-        <div class="modal-body">
-          <div class="modal-dialog modal-dialog-scrollable">
-            <div id="updater_release_notes" class=""/>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            {{ $t('modals.close') }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- Delete chat modal -->
-  <div id="deleteChatModal" ref="modalElement" class="modal fade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div id="deleteChatModal" ref="modalElement" class="modal fade" tabindex="-1" aria-labelledby="deleteChatModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -294,12 +271,12 @@ function fetchMyStationInfo() {
   </div>
 
   <!-- Delete broadcast domain modal -->
-  <div id="deleteBroadcastModal" ref="deleteBroadcastModalElement" class="modal fade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div id="deleteBroadcastModal" ref="deleteBroadcastModalElement" class="modal fade" tabindex="-1" aria-labelledby="deleteBroadcastModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h1 id="deleteBroadcastModalLabel" class="modal-title fs-5">
-            {{ chat.selectedCallsign }} {{ $t('modals.options') }}
+            {{ broadcast.selectedDomain }} {{ $t('modals.options') }}
           </h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"/>
         </div>
@@ -392,13 +369,14 @@ function fetchMyStationInfo() {
     ref="modalElement"
     class="modal fade"
     tabindex="-1"
+    aria-labelledby="newChatModalLabel"
     aria-hidden="true"
   >
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h1
-            id="deleteChatModalLabel"
+            id="newChatModalLabel"
             class="modal-title fs-5"
           >
             {{ $t('modals.startnewchat') }}
@@ -612,7 +590,7 @@ function fetchMyStationInfo() {
           </div>
           <div class="input-group input-group-sm mb-1">
             <span class="input-group-text">{{ $t('modals.testframe') }}</span>
-            <button id="sendTestFrame" type="button" class="btn btn-danger" @click="sendModemTestFrame()">
+            <button id="audioModalSendTestFrame" type="button" class="btn btn-danger" @click="sendModemTestFrame()">
               {{ $t('modals.testframetransmit') }}
             </button>
           </div>
@@ -620,23 +598,23 @@ function fetchMyStationInfo() {
             <span class="input-group-text">{{ $t('modals.audiotuningrxlevel') }}</span>
             <span class="input-group-text">{{ settings.remote.AUDIO.rx_audio_level }}</span>
             <span class="input-group-text w-75">
-              <input id="audioLevelRX" v-model.number="settings.remote.AUDIO.rx_audio_level" type="range" class="form-range" min="-30" max="20" step="1" @change="onChange">
+              <input id="audioModalLevelRX" v-model.number="settings.remote.AUDIO.rx_audio_level" type="range" class="form-range" min="-30" max="20" step="1" @change="onChange">
             </span>
           </div>
           <div class="input-group input-group-sm mb-1">
             <span class="input-group-text">{{ $t('modals.audiotuningtxlevel') }}</span>
             <span class="input-group-text">{{ settings.remote.AUDIO.tx_audio_level }}</span>
             <span class="input-group-text w-75">
-              <input id="audioLevelTX" v-model.number="settings.remote.AUDIO.tx_audio_level" type="range" class="form-range" min="-30" max="20" step="1" @change="onChange">
+              <input id="audioModalLevelTX" v-model.number="settings.remote.AUDIO.tx_audio_level" type="range" class="form-range" min="-30" max="20" step="1" @change="onChange">
             </span>
           </div>
 
           <div class="input-group input-group-sm mb-1">
             <span class="input-group-text">{{ $t('modals.audiotuningtransmitsine') }}</span>
-            <button id="sendTestFrame" type="button" class="btn btn-success" @click="sendSineTone(true)">
+            <button id="audioModalSineToneStart" type="button" class="btn btn-success" @click="sendSineTone(true)">
               {{ $t('modals.audiotuningtransmitsine30s') }}
             </button>
-            <button id="sendTestFrame" type="button" class="btn btn-danger" @click="sendSineTone(false)">
+            <button id="audioModalSineToneStop" type="button" class="btn btn-danger" @click="sendSineTone(false)">
               {{ $t('general.stop') }}
             </button>
           </div>

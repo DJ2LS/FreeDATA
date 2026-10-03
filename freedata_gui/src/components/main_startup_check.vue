@@ -254,15 +254,28 @@
                         </option>
                       </select>
                     </div>
-                    <!-- Test Hamlib Button -->
+                    <!-- Test Hamlib Button: reads the radio status only, never transmits -->
                     <div class="input-group input-group-sm mb-1">
                       <button
                         type="button"
                         class="btn btn-sm btn-outline-secondary"
+                        :disabled="hamlibTestRunning"
                         @click="testHamlib"
                       >
                         {{ $t('modals.testhamlib') }}
                       </button>
+                      <span
+                        v-if="hamlibTestResult !== null"
+                        class="input-group-text"
+                      >
+                        <span
+                          class="badge me-2"
+                          :class="hamlibTestResult.online ? 'bg-success' : 'bg-danger'"
+                        >
+                          {{ hamlibTestResult.online ? i18next.t('grid.components.online') : i18next.t('grid.components.offline') }}
+                        </span>
+                        {{ hamlibTestResult.details }}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -327,7 +340,7 @@
 
 <script setup>
 import { Modal } from 'bootstrap/dist/js/bootstrap.esm.min.js';
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 
 // Pinia setup
 import { setActivePinia } from 'pinia';
@@ -336,13 +349,13 @@ setActivePinia(pinia);
 
 // Store imports
 import { settingsStore as settings, onChange } from '../store/settingsStore.js';
-import { sendModemCQ, startModem, stopModem } from '../js/api.js';
+import { startModem, stopModem, getRadioStatus } from '../js/api.js';
 import { useStateStore } from '../store/stateStore.js';
 import { useAudioStore } from '../store/audioStore';
 import { useSerialStore } from '../store/serialStore.js';
 
 // API imports
-import { getVersion, getSysInfo } from '../js/api';
+import { getSysInfo } from '../js/api';
 import i18next from "@/js/i18n";
 
 // Reactive state
@@ -353,19 +366,23 @@ const serialStore = useSerialStore(pinia);
 // Get the full API URL
 const apiUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
 
+// Result of the last "Test Hamlib" check (null = not run yet)
+const hamlibTestResult = ref(null);
+const hamlibTestRunning = ref(false);
+
 // Initialize modal on mount
 onMounted(() => {
+  // getSysInfo() already provides modem_version from /version, so no separate
+  // getVersion() call is needed. loadAllData() also fetches it once the
+  // connection is up; don't overwrite those values with "N/A" placeholders
+  // if this request fails (e.g. still disconnected).
   getSysInfo().then((res) => {
-    if (res) {
+    if (res && (res.api_version !== "N/A" || !state.api_version)) {
       state.api_version = res.api_version;
       state.modem_version = res.modem_version;
       state.os_info = res.os_info;
       state.python_info = res.python_info;
     }
-  });
-
-  getVersion().then((res) => {
-    state.modem_version = res;
   });
 
   new Modal('#modemCheck', {}).show();
@@ -421,12 +438,30 @@ function getRigControlStatus() {
       return state.radio_status;
     default:
       console.error('Unknown radio control mode ' + settings.remote.RADIO.control);
-      return 'Unknown control type' + settings.remote.RADIO.control;
+      return false;
   }
 }
 
-function testHamlib() {
-  sendModemCQ();
+// Non-transmitting rig control check: read the current radio status from the server
+async function testHamlib() {
+  hamlibTestRunning.value = true;
+  try {
+    const res = await getRadioStatus();
+    if (res && res.radio_status) {
+      const details = [
+        res.radio_frequency ? `${res.radio_frequency} Hz` : '',
+        res.radio_mode || '',
+      ].filter(Boolean).join(' ');
+      hamlibTestResult.value = { online: true, details };
+    } else {
+      hamlibTestResult.value = { online: false, details: '' };
+    }
+  } catch (error) {
+    console.error('Radio status check failed', error);
+    hamlibTestResult.value = { online: false, details: '' };
+  } finally {
+    hamlibTestRunning.value = false;
+  }
 }
 
 function reloadGUI() {

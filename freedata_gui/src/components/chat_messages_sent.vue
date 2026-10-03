@@ -111,6 +111,7 @@ import {
   repeatMessageTransmission,
   deleteMessageFromDB,
   requestMessageInfo,
+  parseServerTimestamp,
   getMessageAttachment,
   sendADIFviaUDP,
 } from "../js/messagesHandler";
@@ -146,10 +147,11 @@ export default {
     },
 
     getDateTime() {
-      let date = new Date(this.message.timestamp);
-      let hours = date.getHours().toString().padStart(2, "0");
-      let minutes = date.getMinutes().toString().padStart(2, "0");
-      let seconds = date.getSeconds().toString().padStart(2, "0");
+      // shown with a "UTC" label, so use UTC like the broadcast bubbles
+      let date = parseServerTimestamp(this.message.timestamp);
+      let hours = date.getUTCHours().toString().padStart(2, "0");
+      let minutes = date.getUTCMinutes().toString().padStart(2, "0");
+      let seconds = date.getUTCSeconds().toString().padStart(2, "0");
       return `${hours}:${minutes}:${seconds}`;
     },
 
@@ -189,8 +191,10 @@ export default {
       sendADIFviaUDP(this.message.id);
     },
 
-    showMessageInfo() {
-      chatStore.messageInfoById = requestMessageInfo(this.message.id);
+    async showMessageInfo() {
+      // requestMessageInfo stores the parsed result in chatStore.messageInfoById
+      chatStore.messageInfoById = null;
+      await requestMessageInfo(this.message.id);
     },
 
     async downloadAttachment(hash_sha512, fileName) {

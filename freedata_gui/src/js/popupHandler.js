@@ -1,8 +1,29 @@
 import { v4 as uuidv4 } from "uuid";
 import * as bootstrap from "bootstrap";
 
+/**
+ * Escape a value for safe interpolation into HTML (text or quoted attribute).
+ * null/undefined become an empty string, other values are converted with String().
+ * @param {*} str value to escape
+ * @returns {string} escaped string
+ */
+export function escapeHtml(str) {
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+// `content` is inserted as HTML: escape any untrusted text with escapeHtml()
 export function displayToast(type, icon, content, duration) {
   const mainToastContainer = document.getElementById("mainToastContainer");
+  if (!mainToastContainer) {
+    console.warn("Toast container not available yet, toast dropped");
+    return;
+  }
 
   const randomID = uuidv4();
   const toastCode = `

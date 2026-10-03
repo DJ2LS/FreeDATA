@@ -1,4 +1,5 @@
 <template>
+  <div>
   <div
     class="alert alert-info"
     role="alert"
@@ -123,6 +124,7 @@
   :placeholder="$t('settings.station.locator_placeholder')"
   maxlength="6"
   aria-label="Station Grid Locator"
+  @focus="rememberGridsquare"
   @change="checkGridsquare"
 />
 
@@ -215,36 +217,42 @@
       </div>
     </div>
   </div>
+  </div>
 </template>
 
 <script setup>
-import { onMounted } from "vue";
 import { settingsStore as settings, onChange, getRemote } from "../store/settingsStore.js";
 import { validateCallsignWithoutSSID } from "../js/freedata";
-import * as bootstrap from "bootstrap";
 import i18next from "../js/i18n";
 
-// Initialize Bootstrap tooltips
-onMounted(() => {
-  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-  [...tooltipTriggerList].forEach(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
-});
+const gridRegex = /^[A-Ra-r]{2}[0-9]{2}([A-Xa-x]{2})?$/;
+// Last grid locator known to be valid (or the value loaded from the server),
+// used to revert invalid input so it never reaches settings.remote / the server.
+let lastValidGrid = settings.remote.STATION.mygrid;
 
+// Tooltips are handled globally by the delegated Tooltip in App.vue
+
+// Remember the value before editing (it may have been reloaded from the server)
+function rememberGridsquare() {
+  lastValidGrid = settings.remote.STATION.mygrid;
+}
 
 function checkGridsquare(e) {
   let value = e.target.value.trim();
-  const regex = /^[A-Ra-r]{2}[0-9]{2}([A-Xa-x]{2})?$/;
 
-  if (regex.test(value)) {
+  if (gridRegex.test(value)) {
     let formatted =
       value.substring(0, 2).toUpperCase() +
       value.substring(2, 4) +
       (value.length === 6 ? value.substring(4, 6).toLowerCase() : "");
 
     settings.remote.STATION.mygrid = formatted;
+    lastValidGrid = formatted;
     onChange();
   } else {
     alert(i18next.t('settings.station.locator_error'));
+    // Revert so the invalid value is not posted by a later onChange()
+    settings.remote.STATION.mygrid = lastValidGrid;
   }
 }
 

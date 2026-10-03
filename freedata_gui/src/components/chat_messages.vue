@@ -17,7 +17,7 @@
       >
         <template
           v-for="(item, index) in chat.sorted_chat_list[callsign]"
-          :key="item.timestamp"
+          :key="item.id"
         >
           <!-- Date Separator -->
           <div v-if="showDateSeparator(index, item.timestamp, chat.sorted_chat_list[callsign])">
@@ -48,13 +48,14 @@ import pinia from '../store/index';
 import { useChatStore } from '../store/chatStore.js';
 import SentMessage from './chat_messages_sent.vue';
 import ReceivedMessage from './chat_messages_received.vue';
+import { parseServerTimestamp } from '../js/messagesHandler.js';
 
 setActivePinia(pinia);
 
 const chat = useChatStore(pinia);
 
 function getDate(timestampRaw) {
-  const date = new Date(timestampRaw);
+  const date = parseServerTimestamp(timestampRaw);
   return date.toLocaleDateString(undefined, {
     year: 'numeric',
     month: '2-digit',

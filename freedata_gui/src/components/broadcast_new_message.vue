@@ -8,12 +8,18 @@ import {settingsStore as settings} from '../store/settingsStore.js';
 const broadcast = useBroadcastStore(pinia);
 
 
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { VuemojiPicker } from 'vuemoji-picker';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { useIsMobile } from '../js/mobile_devices.js';
-import {newBroadcastMessage} from "@/js/broadcastsHandler";
+import {
+  newBroadcastMessage,
+  encodeBroadcastText,
+  utf8Bytes,
+  BROADCAST_MAX_BYTES,
+} from "@/js/broadcastsHandler";
+import { displayToast } from "@/js/popupHandler";
 
 const { isMobile } = useIsMobile(992);
 
@@ -25,6 +31,19 @@ const handleEmojiClick = (detail) => {
   broadcast.inputText += detail.unicode;
 };
 
+// The payload actually sent is the sanitized HTML, UTF-8 encoded.
+function buildPayload(text) {
+  return DOMPurify.sanitize(marked.parse(text));
+}
+
+// Size of the encoded payload in bytes (the server truncates at BROADCAST_MAX_BYTES)
+const payloadBytes = computed(() => {
+  const text = (broadcast.inputText || '').trim();
+  if (text.length === 0) return 0;
+  return utf8Bytes(buildPayload(text)).length;
+});
+const payloadTooLarge = computed(() => payloadBytes.value > BROADCAST_MAX_BYTES);
+
 // Transmit Broadcast Message
 function transmitNewBroadcast() {
   if (!broadcast.selectedDomain) {
@@ -34,9 +53,19 @@ function transmitNewBroadcast() {
   broadcast.inputText = broadcast.inputText.trim();
   if (broadcast.inputText.length === 0) return;
 
-  const sanitizedInput = DOMPurify.sanitize(marked.parse(broadcast.inputText));
+  const sanitizedInput = buildPayload(broadcast.inputText);
+  const size = utf8Bytes(sanitizedInput).length;
+  if (size > BROADCAST_MAX_BYTES) {
+    displayToast(
+      'warning',
+      'bi-exclamation-triangle',
+      `Broadcast too long: ${size} of ${BROADCAST_MAX_BYTES} bytes (after formatting). Please shorten the message.`,
+      5000,
+    );
+    return;
+  }
 
-  const base64data = btoa(sanitizedInput);
+  const base64data = encodeBroadcastText(sanitizedInput);
   const params = {
     origin: settings.remote.STATION.mycall + '-' + settings.remote.STATION.myssid,
     domain: broadcast.selectedDomain,
@@ -79,7 +108,7 @@ function applyMarkdown(formatType) {
           type="button"
           class="btn btn-outline-secondary border-0 rounded-pill me-1"
           data-bs-toggle="modal"
-          data-bs-target="#emojiPickerModal"
+          data-bs-target="#broadcastEmojiPickerModal"
           data-bs-backdrop="false"
           @click="$refs.inputField.focus()"
         >
@@ -119,14 +148,24 @@ function applyMarkdown(formatType) {
           rows="1"
           :placeholder="$t('chat.entermessage_placeholder')"
           style="resize: none;"
-          maxlength="390"
           @keyup.enter="transmitNewBroadcast()"
         />
+
+        <!-- Payload size (bytes after formatting and UTF-8 encoding) -->
+        <span
+          v-if="payloadBytes > BROADCAST_MAX_BYTES * 0.75"
+          class="align-self-center small ms-2"
+          :class="payloadTooLarge ? 'text-danger fw-bold' : 'text-muted'"
+          :title="'Maximum broadcast size is ' + BROADCAST_MAX_BYTES + ' bytes'"
+        >
+          {{ payloadBytes }}/{{ BROADCAST_MAX_BYTES }}
+        </span>
 
         <!-- Send Button -->
         <button
           class="btn btn-sm btn-secondary ms-1 me-2 rounded-pill"
           type="button"
+          :disabled="payloadTooLarge"
           @click="transmitNewBroadcast()"
         >
           <i class="bi bi-send ms-2 me-2" style="font-size: 1.2rem" />
@@ -136,7 +175,7 @@ function applyMarkdown(formatType) {
   </nav>
 
   <!-- Emoji Modal -->
-  <div id="emojiPickerModal" class="modal fade" aria-hidden="true">
+  <div id="broadcastEmojiPickerModal" class="modal fade" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal">
       <div class="modal-content">
         <div class="modal-header">
@@ -145,7 +184,7 @@ function applyMarkdown(formatType) {
             type="button"
             class="btn-close"
             data-bs-dismiss="modal"
-            data-bs-target="#emojiPickerModal"
+            data-bs-target="#broadcastEmojiPickerModal"
             aria-label="Close"
           />
         </div>

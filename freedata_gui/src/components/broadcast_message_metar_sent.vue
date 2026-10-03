@@ -17,10 +17,6 @@
       <button class="btn btn-outline-secondary border-0 me-1" @click="deleteMsg">
         <i class="bi bi-trash" />
       </button>
-
-      <button class="btn btn-outline-secondary border-0" @click="sendADIF">
-        ADIF
-      </button>
     </div>
 
     <div class="col-8 align-items-end">
@@ -102,9 +98,8 @@ import {
   qnhToString,
   timeToString,
   buildCompassSVG,
+  lookupAirport,
 } from '@/js/metar.js';
-
-import airports from '@/assets/airports.json';
 
 import { setActivePinia } from 'pinia';
 import pinia from '../store/index';
@@ -115,14 +110,8 @@ const broadcast = useBroadcastStore(pinia);
 import {
   repeatBroadcastTransmission,
   deleteBroadcastMessageFromDB,
-  sendBroadcastADIFviaUDP,
+  decodeBroadcastText,
 } from '@/js/broadcastsHandler';
-
-// Build iata lookup once
-const AIRPORT_BY_IATA = {};
-for (const a of airports) {
-  if (a?.iata) AIRPORT_BY_IATA[a.iata] = a;
-}
 
 export default {
   name: 'BroadcastMessageMetarSent',
@@ -138,23 +127,18 @@ export default {
       let raw = '';
       const b64 = this.message?.payload_data?.final;
       if (b64) {
-        try { raw = atob(b64); } catch { raw = '<decode error>'; }
+        try { raw = decodeBroadcastText(b64); } catch { raw = '<decode error>'; }
       }
-      console.log(atob(b64))
       return parseMetar((raw || '').trim());
     },
 
     airportInfo() {
-      const iata = this.parsed.iata || null;
-      console.log(iata)
-      console.log(AIRPORT_BY_IATA[iata])
-      if (iata && AIRPORT_BY_IATA[iata]) return AIRPORT_BY_IATA[iata];
-      return null;
+      return lookupAirport(this.parsed.iata);
     },
 
     stationLabel() {
       if (this.airportInfo) {
-        const code = this.parsed.iata || this.airportInfo.iata || '';
+        const code = this.parsed.iata || this.airportInfo.iata || this.airportInfo.icao || '';
         const name = this.airportInfo.name || '';
         return code ? `${code} – ${name}` : name || 'METAR';
       }
@@ -189,7 +173,6 @@ export default {
       catch (e) { console.error('Delete failed:', e); }
     },
 
-    sendADIF() { sendBroadcastADIFviaUDP(this.message.id); },
   },
 };
 </script>

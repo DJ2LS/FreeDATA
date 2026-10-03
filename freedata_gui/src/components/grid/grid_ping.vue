@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { setActivePinia } from "pinia";
 import pinia from "../../store/index";
 setActivePinia(pinia);
@@ -12,13 +12,18 @@ function transmitPing() {
   sendModemPing(dxcallPing.value.toUpperCase());
 }
 
-window.addEventListener(
-  "stationSelected",
-  function (eventdata) {
-    dxcallPing.value = eventdata.detail;
-  },
-  false,
-);
+// Listen for the stationSelected event and update dxcallPing
+function onStationSelected(eventdata) {
+  dxcallPing.value = eventdata.detail;
+}
+
+onMounted(() => {
+  window.addEventListener("stationSelected", onStationSelected, false);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("stationSelected", onStationSelected, false);
+});
 </script>
 
 <template>

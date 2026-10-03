@@ -54,7 +54,7 @@
 
 <script setup>
 import { settingsStore as settings } from '../../store/settingsStore.js';
-import { ref, onMounted, onBeforeUnmount, nextTick, toRaw } from 'vue';
+import { ref, onMounted, onBeforeUnmount, nextTick, toRaw, watch } from 'vue';
 import * as d3 from 'd3';
 import { feature } from 'topojson-client';
 import { locatorToLatLng, distance } from 'qth-locator';
@@ -73,12 +73,22 @@ let svg, path, projection, zoom;
 const basePinRadius = 5; // Base radius for pins
 let actualPinRadius = basePinRadius;
 
-setTimeout(() => {centerMap();}, 1500);
+let centerMapTimer = setTimeout(() => {
+  centerMapTimer = null;
+  centerMap();
+}, 1500);
 
-// Function to get distance between two grid squares
+// Function to get distance between two grid squares, in settings.remote.GUI.distance_unit
 function getMaidenheadDistance(dxGrid) {
   try {
-    return parseInt(distance(settings.remote.STATION.mygrid, dxGrid));
+    const distanceKm = parseInt(distance(settings.remote.STATION.mygrid, dxGrid));
+    if (settings.remote.GUI.distance_unit === "mi") {
+      return Math.round(distanceKm * 0.621371);
+    }
+    if (settings.remote.GUI.distance_unit === "nm") {
+      return Math.round(distanceKm * 0.539957);
+    }
+    return distanceKm;
   } catch (e) {
     console.error('Error calculating distance:', e);
     return null;
@@ -179,6 +189,7 @@ const drawMap = () => {
       .data(countriesGeoJSON.features)
       .enter()
       .append('path')
+      .attr('class', 'country-path')
       .attr('d', path)
       .attr('fill', '#ccc')
       .attr('stroke', '#333')
@@ -301,7 +312,7 @@ const updatePinsAndLines = (g) => {
       .attr('cx', d => projection([d.lon, d.lat])[0])
       .attr('cy', d => projection([d.lon, d.lat])[1])
       .on('mouseover', (event, d) => {
-        infoText.value = `${d.origin} - ${d.gridsquare} (${getMaidenheadDistance(d.gridsquare)} km)`;
+        infoText.value = `${d.origin} - ${d.gridsquare} (${getMaidenheadDistance(d.gridsquare)} ${settings.remote.GUI.distance_unit || 'km'})`;
       })
       .on('mouseout', () => {
         infoText.value = '';
@@ -315,6 +326,7 @@ const centerMap = () => {
     console.error('Error: Station grid square (mygrid) is not defined.');
     return;
   }
+  if (!svg || !projection) return;
 
   const [lat, lng] = locatorToLatLng(mygrid);
   const [x, y] = projection([lng, lat]);
@@ -348,8 +360,25 @@ onMounted(async () => {
   window.addEventListener('resize', drawMap);
 });
 
+// Refresh pins and lines when the heard stations list changes
+watch(
+  () => state.heard_stations,
+  () => {
+    if (!svg || !projection) return;
+    const g = svg.select('g');
+    // The map group is created asynchronously; skip until it exists
+    if (g.empty()) return;
+    updatePinsAndLines(g);
+  },
+  { deep: true }
+);
+
 onBeforeUnmount(() => {
   window.removeEventListener('resize', drawMap);
+  if (centerMapTimer !== null) {
+    clearTimeout(centerMapTimer);
+    centerMapTimer = null;
+  }
 });
 </script>
 
@@ -375,12 +404,6 @@ onBeforeUnmount(() => {
 .path {
   fill: #ccc;
   stroke: #333;
-}
-
-.connection-line {
-  stroke: red;
-  stroke-width: 1;
-  stroke-opacity: 0.5;
 }
 
 .popup {

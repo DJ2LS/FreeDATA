@@ -1,5 +1,6 @@
 import { reactive, watch } from "vue";
 import { getConfig, setConfig } from "../js/api";
+import { displayToast } from "../js/popupHandler";
 
 // Default configuration
 const defaultConfig = {
@@ -27,7 +28,7 @@ const defaultConfig = {
     MODEM: {
       tx_delay: 0,
       enable_morse_identifier: false,
-      maximum_bandwidth: 3000,
+      maximum_bandwidth: 2438,
     },
     NETWORK: {
       modemaddress: "127.0.0.1",
@@ -37,7 +38,7 @@ const defaultConfig = {
       control: "disabled",
       model_id: 0,
       serial_port: "",
-      serial_speed: "",
+      serial_speed: 0,
       data_bits: 0,
       stop_bits: 0,
       serial_handshake: "",
@@ -62,6 +63,7 @@ const defaultConfig = {
     },
     STATION: {
       enable_explorer: false,
+      enable_stats: false,
       mycall: "DEFAULT",
       myssid: 0,
       mygrid: "",
@@ -83,7 +85,7 @@ const defaultConfig = {
     QSO_LOGGING: {
       enable_adif_udp: false,
       adif_udp_host: "127.0.0.1",
-      adif_udp_port: "2237",
+      adif_udp_port: 2237,
       enable_adif_wavelog: false,
       adif_wavelog_host: "127.0.0.1",
       adif_wavelog_api_key: "",
@@ -101,18 +103,81 @@ const defaultConfig = {
   },
 };
 
-// Initialize local settings from browser storage
-const localConfig =
-  JSON.parse(localStorage.getItem("localConfig")) || defaultConfig.local;
+// Deep copy of plain JSON data
+function clone(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function isPlainObject(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+// Recursively merge `override` over `base`, returns a new object.
+// Keys missing in `override` keep their default value.
+function deepMerge(base, override) {
+  const result = clone(base);
+  if (!isPlainObject(override)) return result;
+  for (const [key, value] of Object.entries(override)) {
+    if (value === undefined) continue;
+    result[key] =
+      isPlainObject(value) && isPlainObject(result[key])
+        ? deepMerge(result[key], value)
+        : value;
+  }
+  return result;
+}
+
+// Initialize local settings from browser storage, merged over the defaults
+// so keys added in newer versions get their default value
+function loadLocalConfig() {
+  try {
+    const stored = JSON.parse(localStorage.getItem("localConfig"));
+    return deepMerge(defaultConfig.local, stored);
+  } catch (error) {
+    console.error("Failed to load local config, using defaults:", error);
+    return clone(defaultConfig.local);
+  }
+}
+const localConfig = loadLocalConfig();
 console.log("--------- LOCAL CONFIG -----------");
 console.log(localConfig);
 
-export const settingsStore = reactive({ ...defaultConfig, local: localConfig });
-// Function to handle remote configuration changes
+export const settingsStore = reactive({
+  local: localConfig,
+  remote: clone(defaultConfig.remote),
+});
 
+// true once a config has been received from the server
+let remoteConfigLoaded = false;
+
+// Apply a config received from the server to the store. The callsign
+// blacklist is edited as newline separated text in the GUI.
+function applyRemoteConfig(conf) {
+  remoteConfigLoaded = true;
+  settingsStore.remote = conf;
+  const blacklist = conf?.STATION?.callsign_blacklist;
+  if (Array.isArray(blacklist)) {
+    settingsStore.remote.STATION.callsign_blacklist = blacklist.join("\n");
+  }
+}
+
+// Function to handle remote configuration changes
 export function onChange() {
-  let remote_config = settingsStore.remote;
-  let blacklistContent = remote_config.STATION.callsign_blacklist;
+  // Never post the GUI defaults over the server config
+  if (!remoteConfigLoaded) {
+    console.warn("Configuration not loaded from server yet, not saving");
+    displayToast(
+      "warning",
+      "bi-exclamation-triangle",
+      "Settings not saved: configuration not loaded from server yet",
+      5000,
+    );
+    return getRemote();
+  }
+
+  // Work on a copy so a failed request does not leave the store modified
+  let remote_config = clone(settingsStore.remote);
+  let blacklistContent = remote_config.STATION?.callsign_blacklist;
   // Check if the content is a string
   if (typeof blacklistContent === "string") {
     // Split the string by newlines to create an array
@@ -120,35 +185,37 @@ export function onChange() {
       .split("\n") // Split text by newlines
       .map((item) => item.trim()) // Trim whitespace from each line
       .filter((item) => item !== ""); // Remove empty lines
-
-    // Update the settings store with the validated array
-    remote_config.STATION.callsign_blacklist = blacklistContent;
   }
 
   // Ensure it's an array, even if the data comes in incorrectly formatted
   if (!Array.isArray(blacklistContent)) {
     // Convert any other data types to an empty array as a fallback
-    remote_config.STATION.callsign_blacklist = [];
+    blacklistContent = [];
+  }
+  if (remote_config.STATION) {
+    remote_config.STATION.callsign_blacklist = blacklistContent;
   }
 
-  setConfig(remote_config).then((conf) => {
-    settingsStore.remote = conf;
-    settingsStore.remote.STATION.callsign_blacklist =
-      conf.STATION.callsign_blacklist.join("\n");
+  return setConfig(remote_config).then((conf) => {
+    if (conf && typeof conf === "object") {
+      applyRemoteConfig(conf);
+    } else {
+      // Saving failed (the error is shown by api.js). Reload the config from
+      // the server so the UI shows what is actually stored.
+      console.warn("Saving configuration failed, reloading from server");
+      return getRemote();
+    }
   });
 }
 
-// Function to fetch remote configuration
+// Function to fetch remote configuration. Only loads, never posts.
 export function getRemote() {
   return getConfig().then((conf) => {
-    if (conf !== undefined) {
-      settingsStore.remote = conf;
-      settingsStore.remote.STATION.callsign_blacklist =
-        conf.STATION.callsign_blacklist.join("\n");
-      onChange();
+    if (conf && typeof conf === "object") {
+      applyRemoteConfig(conf);
     } else {
-      console.warn("Received undefined configuration, using default!");
-      settingsStore.remote = defaultConfig.remote;
+      // keep the current values (defaults until the first successful load)
+      console.warn("Received undefined configuration, keeping current values");
     }
   });
 }
@@ -164,6 +231,10 @@ watch(
 
 // Function to save local settings to browser storage
 export function saveLocalSettingsToConfig() {
-  localStorage.setItem("localConfig", JSON.stringify(settingsStore.local));
-  console.log("Settings saved!");
+  try {
+    localStorage.setItem("localConfig", JSON.stringify(settingsStore.local));
+    console.log("Settings saved!");
+  } catch (error) {
+    console.error("Failed to save local settings:", error);
+  }
 }

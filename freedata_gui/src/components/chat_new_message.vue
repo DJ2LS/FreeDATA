@@ -12,7 +12,7 @@ import { VuemojiPicker } from 'vuemoji-picker';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import ImageCompressor from 'js-image-compressor'; // Import the compressor
-import { displayToast } from "../js/popupHandler";
+import { displayToast, escapeHtml } from "../js/popupHandler";
 
 import { useIsMobile } from '../js/mobile_devices.js';
 const { isMobile } = useIsMobile(992);
@@ -45,7 +45,33 @@ function handleDrop(event) {
   handleFiles(event.dataTransfer.files);
 }
 
-// Handle files from file input or drag-and-drop
+// Maximum total attachment size per message (raw bytes, after image compression).
+// Attachments are sent base64-encoded (+33 %) over ARQ. Even at the fastest
+// HF speed levels this is only a few kB per minute, and with the robust modes
+// well under 1 kB per minute, so 100 KiB already means minutes to hours of
+// airtime. It still fits one compressed image (max 750x750 px, see below).
+const MAX_ATTACHMENT_BYTES = 100 * 1024;
+
+function formatBytes(bytes) {
+  return bytes >= 1024 ? `${(bytes / 1024).toFixed(1)} KiB` : `${bytes} Bytes`;
+}
+
+// Check whether a file of `size` bytes still fits into the attachment limit.
+// Shows a toast and returns false if it does not.
+function fitsAttachmentLimit(name, size) {
+  const used = selectedFiles.value.reduce((sum, f) => sum + (f.size || 0), 0);
+  if (used + size <= MAX_ATTACHMENT_BYTES) return true;
+  displayToast(
+    "warning",
+    "bi-paperclip",
+    `<strong>${escapeHtml(name)}</strong> not attached: ${formatBytes(size)}.
+     Attachments are limited to ${formatBytes(MAX_ATTACHMENT_BYTES)} per message
+     (${formatBytes(used)} already attached), because larger files take too long to transmit over HF.`,
+    10000
+  );
+  return false;
+}
+
 // Handle files from file input or drag-and-drop
 function handleFiles(files) {
   for (let file of files) {
@@ -81,10 +107,11 @@ function handleFiles(files) {
             console.warn("Compressed file is larger than original. Using original file instead.");
             compressedFile = file; // Use original file
           }
+          if (!fitsAttachmentLimit(file.name, compressedFile.size)) return;
           // toast notification
           let message = `
               <div>
-                <strong> Prepared <span class="badge bg-secondary"> ${file.name}</span></strong>
+                <strong> Prepared <span class="badge bg-secondary"> ${escapeHtml(file.name)}</span></strong>
                 <div class="mt-2">
                   <span class="badge bg-secondary"> ${file.size} Bytes</span>
                   <i class="bi bi-caret-right-fill"></i>
@@ -103,6 +130,8 @@ function handleFiles(files) {
           // Convert compressed image to base64
           const reader = new FileReader();
           reader.onload = () => {
+            // re-check: other files may have been added meanwhile
+            if (!fitsAttachmentLimit(file.name, compressedFile.size)) return;
             const base64Content = btoa(reader.result);
             selectedFiles.value.push({
               name: compressedFile.name,
@@ -129,9 +158,12 @@ function handleFiles(files) {
       // Run image compression
       new ImageCompressor(options);
     } else {
-      // Handle non-image files
+      // Handle non-image files (check before reading the file into memory)
+      if (!fitsAttachmentLimit(file.name, file.size)) continue;
       const reader = new FileReader();
       reader.onload = () => {
+        // re-check: other files may have been added meanwhile
+        if (!fitsAttachmentLimit(file.name, file.size)) return;
         const base64Content = btoa(reader.result);
         selectedFiles.value.push({
           name: file.name,
@@ -155,9 +187,10 @@ function removeFile(index) {
 
 // Transmit a new message
 function transmitNewMessage() {
-  if (typeof chat.selectedCallsign === 'undefined') {
-    chat.selectedCallsign = Object.keys(chat.callsign_list)[0];
+  if (!chat.selectedCallsign) {
+    chat.selectedCallsign = Object.keys(chat.callsign_list || {})[0];
   }
+  if (!chat.selectedCallsign) return;
 
   chat.inputText = chat.inputText.trim();
   if (chat.inputText.length === 0 && selectedFiles.value.length === 0) return;
@@ -171,14 +204,10 @@ function transmitNewMessage() {
   // Sanitize inputText before sending the message
   const sanitizedInput = DOMPurify.sanitize(marked.parse(chat.inputText));
 
-  if (chat.selectedCallsign.startsWith('BC-')) {
-    return 'new broadcast';
+  if (attachments.length > 0) {
+    newMessage(chat.selectedCallsign, sanitizedInput, attachments);
   } else {
-    if (attachments.length > 0) {
-      newMessage(chat.selectedCallsign, sanitizedInput, attachments);
-    } else {
-      newMessage(chat.selectedCallsign, sanitizedInput);
-    }
+    newMessage(chat.selectedCallsign, sanitizedInput);
   }
 
   chat.inputText = '';
@@ -279,7 +308,7 @@ function applyMarkdown(formatType) {
           type="button"
           class="btn btn-outline-secondary border-0 rounded-pill me-1"
           data-bs-toggle="modal"
-          data-bs-target="#emojiPickerModal"
+          data-bs-target="#chatEmojiPickerModal"
           data-bs-backdrop="false"
           @click="$refs.chatModuleMessage.focus()"
         >
@@ -356,7 +385,7 @@ function applyMarkdown(formatType) {
 
   <!-- Emoji Picker Modal -->
   <div
-    id="emojiPickerModal"
+    id="chatEmojiPickerModal"
     class="modal fade"
     aria-hidden="true"
   >
@@ -370,7 +399,7 @@ function applyMarkdown(formatType) {
             type="button"
             class="btn-close"
             data-bs-dismiss="modal"
-            data-bs-target="#emojiPickerModal"
+            data-bs-target="#chatEmojiPickerModal"
             aria-label="Close"
           />
         </div>

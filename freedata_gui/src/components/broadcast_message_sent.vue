@@ -27,13 +27,6 @@
       >
         <i class="bi bi-trash" />
       </button>
-
-      <button
-        class="btn btn-outline-secondary border-0"
-        @click="sendADIF"
-      >
-        ADIF
-      </button>
     </div>
 
     <!-- message area -->
@@ -66,7 +59,7 @@ import pinia from '../store/index';
 import { useBroadcastStore } from '../store/broadcastStore.js';
 setActivePinia(pinia);
 const broadcast = useBroadcastStore(pinia);
-import {repeatBroadcastTransmission, deleteBroadcastMessageFromDB, sendBroadcastADIFviaUDP} from "@/js/broadcastsHandler";
+import {repeatBroadcastTransmission, deleteBroadcastMessageFromDB, decodeBroadcastText} from "@/js/broadcastsHandler";
 
 export default {
   props: {
@@ -84,7 +77,7 @@ export default {
 
       if (this.message.payload_data?.final) {
         try {
-          body = atob(this.message.payload_data.final);
+          body = decodeBroadcastText(this.message.payload_data.final);
         } catch (e) {
           body = "<decode error>";
         }
@@ -122,9 +115,6 @@ export default {
       } catch (e) {
         console.error("Delete failed:", e);
       }
-    },
-    sendADIF() {
-      sendBroadcastADIFviaUDP(this.message.id);
     },
   },
 };

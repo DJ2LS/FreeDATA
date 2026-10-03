@@ -38,13 +38,6 @@
 
       <button
         class="btn btn-outline-secondary border-0"
-        @click="sendADIF"
-      >
-        {{ $t('chat.adif') }}
-      </button>
-
-      <button
-        class="btn btn-outline-secondary border-0"
         @click="deleteMessage"
       >
         <i class="bi bi-trash" />
@@ -58,7 +51,7 @@
 <script>
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-import {deleteBroadcastMessageFromDB, sendBroadcastADIFviaUDP} from "@/js/broadcastsHandler";
+import {deleteBroadcastMessageFromDB, decodeBroadcastText} from "@/js/broadcastsHandler";
 
 import { setActivePinia } from 'pinia';
 import pinia from '../store/index';
@@ -84,14 +77,6 @@ export default {
       return date.toISOString().split("T")[1].split(".")[0]; // HH:MM:SS
     },
 
-    sendADIF() {
-      sendBroadcastADIFviaUDP(this.message.id);
-    },
-
-    deleteMessage() {
-      deleteBroadcastMessageFromDB(this.message.id);
-    },
-
     parsedMessageBody() {
       let body = " <p class=\"card-text placeholder-glow\">\n" +
           "      <span class=\"placeholder col-7\"></span>\n" +
@@ -99,7 +84,7 @@ export default {
           "    </p>";
       if (this.message.payload_data?.final) {
         try {
-          body = atob(this.message.payload_data.final);
+          body = decodeBroadcastText(this.message.payload_data.final);
         } catch (e) {
           body = "<decode error>";
         }
@@ -121,6 +106,14 @@ export default {
     showBroadcastMessageInfo() {
       console.log(this.message);
       broadcast.selectedMessage = this.message;
+    },
+
+    async deleteMessage() {
+      try {
+        await deleteBroadcastMessageFromDB(this.message.id);
+      } catch (e) {
+        console.error("Delete failed:", e);
+      }
     },
   },
 };

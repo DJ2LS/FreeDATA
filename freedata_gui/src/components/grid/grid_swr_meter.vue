@@ -13,16 +13,14 @@ const state = useStateStore(pinia);
     style="height: 22px"
   >
     <div
-      id="swr_level"
       class="progress-bar progress-bar-striped bg-primary force-gpu"
       role="progressbar"
       :style="{ width: state.swr_percent + '%' }"
-      aria-valuenow="state.swr_percent"
+      :aria-valuenow="state.swr_percent"
       aria-valuemin="0"
-      aria-valuemax="5"
+      aria-valuemax="100"
     />
     <p
-      id="swr_level_value"
       class="justify-content-center d-flex position-absolute w-100"
     >
       SWR 1:{{ state.swr_raw }}

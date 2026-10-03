@@ -13,7 +13,13 @@ import pinia from "../store/index";
 import { useBroadcastStore } from "../store/broadcastStore.js";
 import { settingsStore as settings } from "../store/settingsStore.js";
 import { getFreedataBroadcastsPerDomain, getFreedataDomains } from "../js/api";
-import { newBroadcastMessage } from "../js/broadcastsHandler";
+import {
+  newBroadcastMessage,
+  encodeBroadcastText,
+  utf8Bytes,
+  BROADCAST_MAX_BYTES,
+} from "../js/broadcastsHandler";
+import { displayToast } from "../js/popupHandler";
 import airports from "@/assets/airports.json";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
@@ -152,26 +158,50 @@ function nowUTCToForm() {
   metar.dd = p.dd; metar.HH = p.HH; metar.mm = p.mm;
 }
 
+// -------- PAYLOAD --------
+const currentType = computed(() =>
+  broadcast.newMessageType && broadcast.newMessageType.trim()
+    ? broadcast.newMessageType.trim().toUpperCase()
+    : "MESSAGE"
+);
+
+// The text that is actually sent (before base64): raw METAR or sanitized HTML
+function buildPayload(type) {
+  if (type === "METAR") return metarString.value;
+  const text = (broadcast.inputText || "").trim();
+  if (!text.length) return "";
+  return DOMPurify.sanitize(marked.parse(text));
+}
+
+// Size of the payload in bytes (the server truncates at BROADCAST_MAX_BYTES)
+const payloadBytes = computed(() => utf8Bytes(buildPayload(currentType.value)).length);
+const payloadTooLarge = computed(() => payloadBytes.value > BROADCAST_MAX_BYTES);
+
 // -------- SEND --------
 function newBroadcast() {
   const domain = broadcast.newDomain && broadcast.newDomain.trim()
     ? broadcast.newDomain.trim()
     : "GLOBAL-1";
-  const type = broadcast.newMessageType && broadcast.newMessageType.trim()
-    ? broadcast.newMessageType.trim().toUpperCase()
-    : "MESSAGE";
+  const type = currentType.value;
 
-  let base64data = "";
-
-  if (type === "METAR") {
-    const raw = metarString.value;        // raw METAR
-    base64data = btoa(raw);
-  } else {
+  if (type === "MESSAGE") {
     broadcast.inputText = (broadcast.inputText || "").trim();
     if (!broadcast.inputText.length) return;
-    const sanitizedInput = DOMPurify.sanitize(marked.parse(broadcast.inputText));
-    base64data = btoa(sanitizedInput);
   }
+
+  const payload = buildPayload(type);
+  const size = utf8Bytes(payload).length;
+  if (size > BROADCAST_MAX_BYTES) {
+    displayToast(
+      "warning",
+      "bi-exclamation-triangle",
+      `Broadcast too long: ${size} of ${BROADCAST_MAX_BYTES} bytes (after formatting). Please shorten the message.`,
+      5000
+    );
+    return;
+  }
+
+  const base64data = encodeBroadcastText(payload);
 
   const params = {
     origin: settings.remote.STATION.mycall + '-' + settings.remote.STATION.myssid,
@@ -261,6 +291,12 @@ function newBroadcast() {
             />
             <div class="form-text">
               Markdown supported. Will be sanitized before sending.
+              <span :class="payloadTooLarge ? 'text-danger fw-bold' : ''">
+                {{ payloadBytes }} / {{ BROADCAST_MAX_BYTES }} bytes
+              </span>
+              <span v-if="payloadTooLarge" class="text-danger">
+                - too long, please shorten the message.
+              </span>
             </div>
           </div>
 
@@ -415,6 +451,9 @@ function newBroadcast() {
             <div class="mt-3">
               <label class="form-label">Preview</label>
               <pre class="form-control" style="height:auto; min-height: 60px; white-space: pre-wrap;">{{ metarString }}</pre>
+              <div class="form-text" :class="payloadTooLarge ? 'text-danger fw-bold' : ''">
+                {{ payloadBytes }} / {{ BROADCAST_MAX_BYTES }} bytes
+              </div>
             </div>
           </div>
         </div>
@@ -432,6 +471,7 @@ function newBroadcast() {
             class="btn btn-primary"
             data-bs-dismiss="modal"
             data-bs-trigger="hover"
+            :disabled="payloadTooLarge"
             @click="newBroadcast"
           >
             Send Broadcast

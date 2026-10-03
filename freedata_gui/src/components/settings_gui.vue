@@ -203,7 +203,7 @@ function saveSettings() {
 export default {
   data() {
     // Ensure distance_unit has a default value
-    if (settings.remote.GUI.distance_unit !== "km" || settings.remote.GUI.distance_unit !== "mi") {
+    if (!["km", "mi", "nm"].includes(settings.remote.GUI.distance_unit)) {
       settings.remote.GUI.distance_unit = "km";
     }
     return {

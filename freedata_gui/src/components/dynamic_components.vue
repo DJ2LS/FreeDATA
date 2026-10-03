@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, nextTick, shallowRef, render, h } from "vue";
+import { ref, onMounted, onBeforeUnmount, nextTick, shallowRef, render, h } from "vue";
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
@@ -8,6 +8,7 @@ import { GridStack } from "gridstack";
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 import { setRadioParametersFrequency } from "../js/api";
+import { displayToast } from "../js/popupHandler";
 import { saveLocalSettingsToConfig, settingsStore } from "../store/settingsStore";
 
 import active_heard_stations from "./grid/grid_active_heard_stations.vue";
@@ -338,7 +339,7 @@ const gridWidgets = [
     false,
     { x: 16, y: 8, w: 4, h: 24 }
   )
-  //Next new widget ID should be 24
+  //Next new widget ID should be 25
 ];
 
 function updateFrequencyAndApply(frequency) {
@@ -385,7 +386,7 @@ function downloadPreset() {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 
-  console.log("Downloaded preset as FreeDATA_preset.gui");
+  console.log("Downloaded preset as FreeDATA_GUI_preset.freedata");
 }
 
 
@@ -410,9 +411,21 @@ function uploadPreset() {
       try {
         const content = e.target.result;
 
-        // Store the file content into the settingsStore
-        clearAllItems()
-        settingsStore.local.grid_preset = content;
+        // Validate before touching the current layout or the saved preset
+        const layout = parseLayout(content, true);
+        if (layout === null) {
+          console.error("Invalid preset file, keeping current layout and preset.");
+          displayToast(
+            "danger",
+            "bi-exclamation-triangle",
+            "Invalid preset file. Current layout and preset were kept.",
+            5000,
+          );
+          return;
+        }
+
+        // Store the validated layout into the settingsStore
+        settingsStore.local.grid_preset = JSON.stringify(layout);
         loadPreset();
         console.log("Preset uploaded and stored.");
       } catch (err) {
@@ -435,6 +448,17 @@ function uploadPreset() {
 
 
 function loadPreset() {
+  const preset = parseLayout(settingsStore.local.grid_preset, false);
+  if (preset === null || preset.length === 0) {
+    console.error("No valid saved grid preset, keeping current layout.");
+    displayToast(
+      "danger",
+      "bi-exclamation-triangle",
+      "No valid saved grid preset. Current layout was kept.",
+      5000,
+    );
+    return;
+  }
   clearAllItems();
   settingsStore.local.grid_layout = settingsStore.local.grid_preset;
   restoreGridLayoutFromConfig();
@@ -454,10 +478,48 @@ function onChange(event, changeItems) {
   }
 }
 
+/**
+ * Parse and validate a layout string ([[x, y, w, h, widgetId], ...]).
+ * strict: every entry must be valid and use a known widget id, and the
+ * layout must not be empty (used for uploaded files).
+ * Not strict: invalid entries / unknown ids are dropped (used for stored layouts).
+ * Returns the array of valid entries, or null if the input is unusable.
+ */
+function parseLayout(text, strict) {
+  let parsed;
+  try {
+    parsed = JSON.parse(text || "[]");
+  } catch (err) {
+    console.error("Grid layout is not valid JSON", err);
+    return null;
+  }
+  // Older configs may hold the layout JSON-encoded twice
+  if (typeof parsed === "string") {
+    try {
+      parsed = JSON.parse(parsed);
+    } catch (err) {
+      return null;
+    }
+  }
+  if (!Array.isArray(parsed)) return null;
+  const valid = parsed.filter(
+    (entry) =>
+      Array.isArray(entry) &&
+      entry.length === 5 &&
+      entry.every((v) => typeof v === "number" && Number.isFinite(v)) &&
+      gridWidgets.some((gw) => gw.id === entry[4]),
+  );
+  if (strict && (valid.length === 0 || valid.length !== parsed.length)) return null;
+  return valid;
+}
+
 function restoreGridLayoutFromConfig() {
   if (items.value.length === 0) {
-    const savedGrid = JSON.parse(settingsStore.local.grid_layout || "[]");
-    console.log(savedGrid)
+    const savedGrid = parseLayout(settingsStore.local.grid_layout, false);
+    if (savedGrid === null) {
+      console.error("Stored grid layout is invalid; falling back to default layout");
+      return;
+    }
     savedGrid.forEach(([x, y, w, h, id]) => {
       const widget = gridWidgets.find((gw) => gw.id === id);
       if (widget) {
@@ -518,12 +580,14 @@ function setGridEditState() {
 
 function clearAllItems() {
   grid?.removeAll(false);
-  count.value = 0;
+  // count is not reset, so new widgets never reuse the id/key of a removed one
   items.value = [];
   saveGridLayout();
 }
 
 function quickfill() {
+  // Start from an empty grid so pressing the button twice does not duplicate widgets
+  clearAllItems();
   gridWidgets.forEach((gw) => {
     if (gw.quickFill) {
       gw.autoPlace = false;
@@ -534,6 +598,7 @@ function quickfill() {
   saveGridLayout();
 }
 function quickfillSM() {
+  clearAllItems();
   gridWidgets.forEach((gw) => {
     if (gw.quickFillSM) {
       gw.autoPlace = false;
@@ -576,18 +641,31 @@ onMounted(() => {
     }
   });
 
-  restoreGridLayoutFromConfig();
+  window.addEventListener("add-widget", onAddWidget);
+
+  try {
+    restoreGridLayoutFromConfig();
+  } catch (err) {
+    console.error("Failed to restore grid layout; using default", err);
+    grid?.removeAll(false);
+    items.value = [];
+  }
 
   if (items.value.length === 0) {
     console.info("Grid config is empty; using default");
     quickfill();
   }
 
-  window.addEventListener("add-widget", (event) => {
-    const evt = event;
-    addNewWidget2(gridWidgets[evt.detail], true);
-  });
   setGridEditState();
+});
+
+function onAddWidget(event) {
+  const widget = gridWidgets[event.detail];
+  if (widget) addNewWidget2(widget, true);
+}
+
+onBeforeUnmount(() => {
+  window.removeEventListener("add-widget", onAddWidget);
 });
 </script>
 

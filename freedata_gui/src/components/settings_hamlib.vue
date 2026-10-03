@@ -1,5 +1,5 @@
 <script setup>
-import { settingsStore as settings, onChange } from "../store/settingsStore.js";
+import { settingsStore as settings, onChange, getRemote } from "../store/settingsStore.js";
 import { useSerialStore } from "../store/serialStore.js";
 
 // Pinia setup
@@ -8,6 +8,33 @@ import pinia from "../store/index";
 setActivePinia(pinia);
 
 const serialStore = useSerialStore(pinia);
+
+// Number inputs: v-model.number yields "" when a field is cleared, which the
+// server rejects (it expects an int). Restore the previous value instead of
+// saving, round to an integer and clamp to the input's min/max before saving.
+const previousNumbers = {};
+function rememberNumber(section, key) {
+  previousNumbers[`${section}.${key}`] = settings.remote[section][key];
+}
+function onNumberChange(event, section, key) {
+  const el = event.target;
+  let value = settings.remote[section][key];
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    const previous = previousNumbers[`${section}.${key}`];
+    if (previous !== "" && previous !== null && previous !== undefined && Number.isFinite(Number(previous))) {
+      settings.remote[section][key] = Number(previous);
+    } else {
+      getRemote(); // reload the last saved config from the server
+    }
+    return;
+  }
+  value = Math.round(value);
+  if (el.min !== "" && value < Number(el.min)) value = Number(el.min);
+  if (el.max !== "" && value > Number(el.max)) value = Number(el.max);
+  settings.remote[section][key] = value;
+  previousNumbers[`${section}.${key}`] = value;
+  onChange();
+}
 
 /*
 const settings = ref({
@@ -72,7 +99,10 @@ const settings = ref({
       class="form-control"
       :placeholder="$t('settings.radio.hamlibrigctldport_placeholder')"
       aria-label="Rigctld Port"
-      @change="onChange"
+      min="1"
+      max="65535"
+      @focus="rememberNumber('RIGCTLD', 'port')"
+      @change="onNumberChange($event, 'RIGCTLD', 'port')"
     >
   </div>
 
@@ -497,12 +527,12 @@ const settings = ref({
       </label>
 
       <input
-        id="rigctldIp"
+        id="hamlibCustomSerialPort"
         v-model="settings.remote.RADIO.serial_port"
         type="text"
         class="form-control"
-        placeholder="settings.remote.RADIO.serial_port.port"
-        aria-label="Rigctld IP"
+        placeholder="e.g. /dev/ttyUSB0 or COM3"
+        aria-label="Radio custom COM port"
         @change="onChange"
       >
     </div>
@@ -750,7 +780,7 @@ const settings = ref({
         </button>
       </label>
       <select
-        id="dtrSelect"
+        id="pttModeSelect"
         v-model="settings.remote.RADIO.ptt_mode"
         class="form-select form-select-sm w-50"
         @change="onChange"

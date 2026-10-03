@@ -76,10 +76,6 @@
         <i class="bi bi-info-circle" />
       </button>
 
-      <button class="btn btn-outline-secondary border-0" @click="sendADIF">
-        ADIF
-      </button>
-
       <button class="btn btn-outline-secondary border-0" @click="deleteMessage">
         <i class="bi bi-trash" />
       </button>
@@ -99,9 +95,8 @@ import {
   qnhToString,
   timeToString,
   buildCompassSVG,
+  lookupAirport,
 } from '@/js/metar.js';
-
-import airports from '@/assets/airports.json';
 
 import { setActivePinia } from 'pinia';
 import pinia from '../store/index';
@@ -111,14 +106,8 @@ const broadcast = useBroadcastStore(pinia);
 
 import {
   deleteBroadcastMessageFromDB,
-  sendBroadcastADIFviaUDP,
+  decodeBroadcastText,
 } from '@/js/broadcastsHandler';
-
-// Build iata lookup once
-const AIRPORT_BY_IATA = {};
-for (const a of airports) {
-  if (a?.iata) AIRPORT_BY_IATA[a.iata] = a;
-}
 
 export default {
   name: 'BroadcastMessageMetarReceived',
@@ -134,20 +123,18 @@ export default {
       let raw = '';
       const b64 = this.message?.payload_data?.final;
       if (b64) {
-        try { raw = atob(b64); } catch { raw = '<decode error>'; }
+        try { raw = decodeBroadcastText(b64); } catch { raw = '<decode error>'; }
       }
       return parseMetar((raw || '').trim());
     },
 
     airportInfo() {
-      const iata = this.parsed.iata || null;
-      if (iata && AIRPORT_BY_IATA[iata]) return AIRPORT_BY_IATA[iata];
-      return null;
+      return lookupAirport(this.parsed.iata);
     },
 
     stationLabel() {
       if (this.airportInfo) {
-        const code = this.parsed.iata || this.airportInfo.iata || '';
+        const code = this.parsed.iata || this.airportInfo.iata || this.airportInfo.icao || '';
         const name = this.airportInfo.name || '';
         return code ? `${code} – ${name}` : name || 'METAR';
       }
@@ -171,7 +158,6 @@ export default {
 
   methods: {
     showBroadcastMessageInfo() { broadcast.selectedMessage = this.message; },
-    sendADIF() { sendBroadcastADIFviaUDP(this.message.id); },
     async deleteMessage() {
       try { await deleteBroadcastMessageFromDB(this.message.id); }
       catch (e) { console.error('Delete failed:', e); }

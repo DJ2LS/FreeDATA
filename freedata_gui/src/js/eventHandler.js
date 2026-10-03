@@ -1,5 +1,5 @@
 import { toRaw } from "vue";
-import { displayToast } from "./popupHandler";
+import { displayToast, escapeHtml } from "./popupHandler";
 import {
   getFreedataMessages,
   getModemState,
@@ -8,7 +8,6 @@ import {
   getFreedataDomains,
   getFreedataBroadcastsPerDomain,
 } from "./api";
-import { processFreedataMessages } from "./messagesHandler";
 import { processRadioStatus } from "./radioHandler";
 import i18next from "./i18n";
 
@@ -46,13 +45,16 @@ export async function loadAllData() {
   getFreedataMessages();
   getFreedataDomains();
   getFreedataBroadcastsPerDomain(broadcast.selectedDomain);
-  processFreedataMessages();
   processRadioStatus();
 }
 
 export function connectionFailed(endpoint, event) {
-  console.log(event);
-  stateStore.modem_connection = "disconnected";
+  console.log(endpoint, event);
+  // Only the control sockets decide the connection state. An error on a
+  // data stream (fft, audio_rx) should not mark the server as unreachable.
+  if (endpoint === "states" || endpoint === "events") {
+    stateStore.modem_connection = "disconnected";
+  }
 }
 
 export function stateDispatcher(data) {
@@ -114,8 +116,8 @@ export function eventDispatcher(data) {
       getFreedataDomains();
       getFreedataBroadcastsPerDomain(broadcast.selectedDomain);
 
-      var messages = getFreedataMessages();
-      processFreedataMessages(messages);
+      // getFreedataMessages() also updates the chat store
+      getFreedataMessages();
       return;
     default:
       break;
@@ -128,7 +130,9 @@ export function eventDispatcher(data) {
       return;
   }
 
-  switch (data.modem) {
+  // server sends {"freedata_server": "started"|"stopped"|"restarted"|"failed"},
+  // "modem" is kept for older servers
+  switch (data.freedata_server ?? data.modem) {
     case "started":
       displayToast("success", "bi-arrow-left-right", "Modem started", 5000);
       loadAllData();
@@ -170,9 +174,9 @@ export function eventDispatcher(data) {
           const message = `
             <div>
                 <strong>${i18next.t("popups.adiflogheader")}:</strong>
-                <span class="badge bg-success">${i18next.t("popups.adiflogtext1")}${data.message}${i18next.t("popups.adiflogtext2")}</span>
+                <span class="badge bg-success">${i18next.t("popups.adiflogtext1")}${escapeHtml(data.message)}${i18next.t("popups.adiflogtext2")}</span>
                 <div class="mt-2">
-                <span class="badge bg-secondary">${data.endpoint} ${i18next.t("popups.adiflogheader")}</span>
+                <span class="badge bg-secondary">${escapeHtml(data.endpoint)} ${i18next.t("popups.adiflogheader")}</span>
                 </div>
             </div>
           `;
@@ -181,9 +185,9 @@ export function eventDispatcher(data) {
           const message = `
             <div>
                 <strong>${i18next.t("popups.adiflogheader")}:</strong>
-                <span class="badge bg-danger">${data.message}</span>
+                <span class="badge bg-danger">${escapeHtml(data.message)}</span>
                 <div class="mt-2">
-                <span class="badge bg-secondary">${data.endpoint} ${i18next.t("popups.adiflogerror")}</span>
+                <span class="badge bg-secondary">${escapeHtml(data.endpoint)} ${i18next.t("popups.adiflogerror")}</span>
                 </div>
             </div>
                   `;
@@ -198,10 +202,10 @@ export function eventDispatcher(data) {
           message = `
       <div>
         <strong>${i18next.t("popups.cqreceived")}:</strong>
-        <span class="badge bg-info text-dark">${data.dxcallsign}</span>
+        <span class="badge bg-info text-dark">${escapeHtml(data.dxcallsign)}</span>
         <div class="mt-2">
-          <span class="badge bg-secondary">${i18next.t("popups.snr")}: ${data.snr}</span>
-          <span class="badge bg-warning text-dark">${i18next.t("popups.gridsquare")}: ${data.gridsquare}</span>
+          <span class="badge bg-secondary">${i18next.t("popups.snr")}: ${escapeHtml(data.snr)}</span>
+          <span class="badge bg-warning text-dark">${i18next.t("popups.gridsquare")}: ${escapeHtml(data.gridsquare)}</span>
         </div>
       </div>
     `;
@@ -212,10 +216,10 @@ export function eventDispatcher(data) {
           message = `
       <div>
         <strong>${i18next.t("popups.qrvreceived")}:</strong>
-        <span class="badge bg-info text-dark">${data.dxcallsign}</span>
+        <span class="badge bg-info text-dark">${escapeHtml(data.dxcallsign)}</span>
         <div class="mt-2">
-          <span class="badge bg-secondary">${i18next.t("popups.snr")}: ${data.snr}</span>
-          <span class="badge bg-warning text-dark">${i18next.t("popups.gridsquare")}: ${data.gridsquare}</span>
+          <span class="badge bg-secondary">${i18next.t("popups.snr")}: ${escapeHtml(data.snr)}</span>
+          <span class="badge bg-warning text-dark">${i18next.t("popups.gridsquare")}: ${escapeHtml(data.gridsquare)}</span>
         </div>
       </div>
     `;
@@ -226,9 +230,9 @@ export function eventDispatcher(data) {
           message = `
       <div>
         <strong>${i18next.t("popups.pingreceived")}:</strong>
-        <span class="badge bg-info text-dark">${data.dxcallsign}</span>
+        <span class="badge bg-info text-dark">${escapeHtml(data.dxcallsign)}</span>
         <div class="mt-2">
-          <span class="badge bg-secondary">${i18next.t("popups.snr")}: ${data.snr}</span>
+          <span class="badge bg-secondary">${i18next.t("popups.snr")}: ${escapeHtml(data.snr)}</span>
         </div>
       </div>
     `;
@@ -239,10 +243,10 @@ export function eventDispatcher(data) {
           message = `
       <div>
         <strong>${i18next.t("popups.pingackreceived")}:</strong>
-        <span class="badge bg-info text-dark">${data.dxcallsign}</span>
+        <span class="badge bg-info text-dark">${escapeHtml(data.dxcallsign)}</span>
         <div class="mt-2">
-          <span class="badge bg-secondary">${i18next.t("popups.snr")}: ${data.snr}</span>
-          <span class="badge bg-warning text-dark">${i18next.t("popups.gridsquare")}: ${data.gridsquare}</span>
+          <span class="badge bg-secondary">${i18next.t("popups.snr")}: ${escapeHtml(data.snr)}</span>
+          <span class="badge bg-warning text-dark">${i18next.t("popups.gridsquare")}: ${escapeHtml(data.gridsquare)}</span>
         </div>
       </div>
     `;
@@ -250,7 +254,7 @@ export function eventDispatcher(data) {
           break;
 
         default:
-          console.log("unknown event data received: ${data.gridsquare}");
+          console.log(`unknown event data received: ${data.received}`);
       }
       return;
 
@@ -262,10 +266,10 @@ export function eventDispatcher(data) {
             message = `
               <div>
                 <strong>${i18next.t("popups.newtransmissionwith")}:</strong>
-                <span class="badge bg-info text-dark">${data["arq-transfer-outbound"].dxcall}</span>
+                <span class="badge bg-info text-dark">${escapeHtml(data["arq-transfer-outbound"].dxcall)}</span>
                 <div class="mt-2">
-                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${data["arq-transfer-outbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${data["arq-transfer-outbound"].total_bytes}</span>
+                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${escapeHtml(data["arq-transfer-outbound"].session_id)}</span>
+                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${escapeHtml(data["arq-transfer-outbound"].total_bytes)}</span>
                 </div>
               </div>
             `;
@@ -279,10 +283,10 @@ export function eventDispatcher(data) {
             message = `
               <div>
                 <strong>${i18next.t("popups.openingtransmissionwith")}:</strong>
-                <span class="badge bg-info text-dark">${data["arq-transfer-outbound"].dxcall}</span>
+                <span class="badge bg-info text-dark">${escapeHtml(data["arq-transfer-outbound"].dxcall)}</span>
                 <div class="mt-2">
-                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${data["arq-transfer-outbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${data["arq-transfer-outbound"].total_bytes}</span>
+                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${escapeHtml(data["arq-transfer-outbound"].session_id)}</span>
+                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${escapeHtml(data["arq-transfer-outbound"].total_bytes)}</span>
                 </div>
               </div>
             `;
@@ -297,11 +301,11 @@ export function eventDispatcher(data) {
             message = `
               <div>
                 <strong>${i18next.t("popups.ongoingtransmissionwith")}:</strong>
-                <span class="badge bg-info text-dark">${data["arq-transfer-outbound"].dxcall}</span>
+                <span class="badge bg-info text-dark">${escapeHtml(data["arq-transfer-outbound"].dxcall)}</span>
                 <div class="mt-2">
-                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${data["arq-transfer-outbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">${i18next.t("popups.transmittedbytes")}: ${data["arq-transfer-outbound"].received_bytes}</span>
-                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${data["arq-transfer-outbound"].total_bytes}</span>
+                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${escapeHtml(data["arq-transfer-outbound"].session_id)}</span>
+                  <span class="badge bg-warning text-dark">${i18next.t("popups.transmittedbytes")}: ${escapeHtml(data["arq-transfer-outbound"].received_bytes)}</span>
+                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${escapeHtml(data["arq-transfer-outbound"].total_bytes)}</span>
                 </div>
               </div>
             `;
@@ -313,13 +317,13 @@ export function eventDispatcher(data) {
             );
             stateStore.arq_total_bytes =
               data["arq-transfer-outbound"].total_bytes;
-            stateStore.arq_speed_list_timestamp.value = toRaw(
+            stateStore.arq_speed_list_timestamp = toRaw(
               data["arq-transfer-outbound"].statistics.time_histogram,
             );
-            stateStore.arq_speed_list_bpm.value = toRaw(
+            stateStore.arq_speed_list_bpm = toRaw(
               data["arq-transfer-outbound"].statistics.bpm_histogram,
             );
-            stateStore.arq_speed_list_snr.value = toRaw(
+            stateStore.arq_speed_list_snr = toRaw(
               data["arq-transfer-outbound"].statistics.snr_histogram,
             );
 
@@ -339,10 +343,10 @@ export function eventDispatcher(data) {
             message = `
               <div>
                 <strong>${i18next.t("popups.transmissionabortedwith")}:</strong>
-                <span class="badge bg-info text-dark">${data["arq-transfer-outbound"].dxcall}</span>
+                <span class="badge bg-info text-dark">${escapeHtml(data["arq-transfer-outbound"].dxcall)}</span>
                 <div class="mt-2">
-                  <span class="badge bg-primary">${i18next.t("popups.state")}: ${data["arq-transfer-outbound"].state}</span>
-                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${data["arq-transfer-outbound"].session_id}</span>
+                  <span class="badge bg-primary">${i18next.t("popups.state")}: ${escapeHtml(data["arq-transfer-outbound"].state)}</span>
+                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${escapeHtml(data["arq-transfer-outbound"].session_id)}</span>
                 </div>
               </div>
             `;
@@ -357,12 +361,12 @@ export function eventDispatcher(data) {
             message = `
               <div>
                 <strong>${i18next.t("popups.transmissionendedwith")}:</strong>
-                <span class="badge bg-info text-dark">${data["arq-transfer-outbound"].dxcall}</span>
+                <span class="badge bg-info text-dark">${escapeHtml(data["arq-transfer-outbound"].dxcall)}</span>
                 <div class="mt-2">
-                  <span class="badge bg-primary">${i18next.t("popups.state")}: ${data["arq-transfer-outbound"].state}</span>
-                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${data["arq-transfer-outbound"].session_id}</span>
-                    <span class="badge bg-warning text-dark">${i18next.t("popups.bytesperminute")}: ${data["arq-transfer-outbound"].statistics.bytes_per_minute}</span>
-                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${data["arq-transfer-outbound"].statistics.total_bytes}</span>
+                  <span class="badge bg-primary">${i18next.t("popups.state")}: ${escapeHtml(data["arq-transfer-outbound"].state)}</span>
+                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${escapeHtml(data["arq-transfer-outbound"].session_id)}</span>
+                    <span class="badge bg-warning text-dark">${i18next.t("popups.bytesperminute")}: ${escapeHtml(data["arq-transfer-outbound"].statistics.bytes_per_minute)}</span>
+                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${escapeHtml(data["arq-transfer-outbound"].statistics.total_bytes)}</span>
                 </div>
               </div>
             `;
@@ -392,10 +396,10 @@ export function eventDispatcher(data) {
             message = `
               <div>
                 <strong>${i18next.t("popups.transmissionfailedwith")}:</strong>
-                <span class="badge bg-info text-dark">${data["arq-transfer-outbound"].dxcall}</span>
+                <span class="badge bg-info text-dark">${escapeHtml(data["arq-transfer-outbound"].dxcall)}</span>
                 <div class="mt-2">
-                  <span class="badge bg-primary">${i18next.t("popups.state")}: ${data["arq-transfer-outbound"].state}</span>
-                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${data["arq-transfer-outbound"].session_id}</span>
+                  <span class="badge bg-primary">${i18next.t("popups.state")}: ${escapeHtml(data["arq-transfer-outbound"].state)}</span>
+                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${escapeHtml(data["arq-transfer-outbound"].session_id)}</span>
                 </div>
               </div>
             `;
@@ -419,10 +423,10 @@ export function eventDispatcher(data) {
             message = `
               <div>
                 <strong>${i18next.t("popups.newtransmissionwith")}:</strong>
-                <span class="badge bg-info text-dark">${data["arq-transfer-inbound"].dxcall}</span>
+                <span class="badge bg-info text-dark">${escapeHtml(data["arq-transfer-inbound"].dxcall)}</span>
                 <div class="mt-2">
-                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${data["arq-transfer-inbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${data["arq-transfer-inbound"].total_bytes}</span>
+                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${escapeHtml(data["arq-transfer-inbound"].session_id)}</span>
+                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${escapeHtml(data["arq-transfer-inbound"].total_bytes)}</span>
                 </div>
               </div>
             `;
@@ -436,12 +440,12 @@ export function eventDispatcher(data) {
           case "OPEN_ACK_SENT":
             message = `
               <div>
-                <strong>${i18next.t("popups.confirmingtransmissionwith")}:${data["arq-transfer-inbound"].dxcall}</strong>
-                <span class="badge bg-info text-dark">${data["arq-transfer-inbound"].dxcall}</span>
+                <strong>${i18next.t("popups.confirmingtransmissionwith")}:${escapeHtml(data["arq-transfer-inbound"].dxcall)}</strong>
+                <span class="badge bg-info text-dark">${escapeHtml(data["arq-transfer-inbound"].dxcall)}</span>
                 <div class="mt-2">
-                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${data["arq-transfer-inbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">${i18next.t("popups.receivedbytes")}: ${data["arq-transfer-inbound"].received_bytes}</span>
-                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${data["arq-transfer-inbound"].total_bytes}</span>
+                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${escapeHtml(data["arq-transfer-inbound"].session_id)}</span>
+                  <span class="badge bg-warning text-dark">${i18next.t("popups.receivedbytes")}: ${escapeHtml(data["arq-transfer-inbound"].received_bytes)}</span>
+                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${escapeHtml(data["arq-transfer-inbound"].total_bytes)}</span>
                 </div>
               </div>
             `;
@@ -458,12 +462,12 @@ export function eventDispatcher(data) {
           case "INFO_ACK_SENT":
             message = `
               <div>
-                <strong>${i18next.t("popups.openingtransmissionwith")}:${data["arq-transfer-inbound"].dxcall}</strong>
-                <span class="badge bg-info text-dark">${data["arq-transfer-inbound"].dxcall}</span>
+                <strong>${i18next.t("popups.openingtransmissionwith")}:${escapeHtml(data["arq-transfer-inbound"].dxcall)}</strong>
+                <span class="badge bg-info text-dark">${escapeHtml(data["arq-transfer-inbound"].dxcall)}</span>
                 <div class="mt-2">
-                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${data["arq-transfer-inbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">${i18next.t("popups.receivedbytes")}: ${data["arq-transfer-inbound"].received_bytes}</span>
-                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${data["arq-transfer-inbound"].total_bytes}</span>
+                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${escapeHtml(data["arq-transfer-inbound"].session_id)}</span>
+                  <span class="badge bg-warning text-dark">${i18next.t("popups.receivedbytes")}: ${escapeHtml(data["arq-transfer-inbound"].received_bytes)}</span>
+                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${escapeHtml(data["arq-transfer-inbound"].total_bytes)}</span>
                 </div>
               </div>
             `;
@@ -481,11 +485,11 @@ export function eventDispatcher(data) {
             message = `
               <div>
                 <strong>${i18next.t("popups.ongoingtransmissionwith")}:</strong>
-                <span class="badge bg-info text-dark">${data["arq-transfer-inbound"].dxcall}</span>
+                <span class="badge bg-info text-dark">${escapeHtml(data["arq-transfer-inbound"].dxcall)}</span>
                 <div class="mt-2">
-                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${data["arq-transfer-inbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">${i18next.t("popups.receivedbytes")}: ${data["arq-transfer-inbound"].received_bytes}</span>
-                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${data["arq-transfer-inbound"].total_bytes}</span>
+                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${escapeHtml(data["arq-transfer-inbound"].session_id)}</span>
+                  <span class="badge bg-warning text-dark">${i18next.t("popups.receivedbytes")}: ${escapeHtml(data["arq-transfer-inbound"].received_bytes)}</span>
+                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${escapeHtml(data["arq-transfer-inbound"].total_bytes)}</span>
                 </div>
               </div>
             `;
@@ -498,13 +502,13 @@ export function eventDispatcher(data) {
             );
             stateStore.arq_total_bytes =
               data["arq-transfer-inbound"].received_bytes;
-            stateStore.arq_speed_list_timestamp.value = toRaw(
+            stateStore.arq_speed_list_timestamp = toRaw(
               data["arq-transfer-inbound"].statistics.time_histogram,
             );
-            stateStore.arq_speed_list_bpm.value = toRaw(
+            stateStore.arq_speed_list_bpm = toRaw(
               data["arq-transfer-inbound"].statistics.bpm_histogram,
             );
-            stateStore.arq_speed_list_snr.value = toRaw(
+            stateStore.arq_speed_list_snr = toRaw(
               data["arq-transfer-inbound"].statistics.snr_histogram,
             );
 
@@ -519,12 +523,12 @@ export function eventDispatcher(data) {
             message = `
               <div>
                 <strong>${i18next.t("popups.transmissionendedwith")}:</strong>
-                <span class="badge bg-info text-dark">${data["arq-transfer-inbound"].dxcall}</span>
+                <span class="badge bg-info text-dark">${escapeHtml(data["arq-transfer-inbound"].dxcall)}</span>
                 <div class="mt-2">
-                  <span class="badge bg-primary">${i18next.t("popups.state")}: ${data["arq-transfer-inbound"].state}</span>
-                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${data["arq-transfer-inbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">${i18next.t("popups.bytesperminute")}: ${data["arq-transfer-inbound"].statistics.bytes_per_minute}</span>
-                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${data["arq-transfer-inbound"].statistics.total_bytes}</span>
+                  <span class="badge bg-primary">${i18next.t("popups.state")}: ${escapeHtml(data["arq-transfer-inbound"].state)}</span>
+                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${escapeHtml(data["arq-transfer-inbound"].session_id)}</span>
+                  <span class="badge bg-warning text-dark">${i18next.t("popups.bytesperminute")}: ${escapeHtml(data["arq-transfer-inbound"].statistics.bytes_per_minute)}</span>
+                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${escapeHtml(data["arq-transfer-inbound"].statistics.total_bytes)}</span>
                 </div>
               </div>
             `;
@@ -561,12 +565,12 @@ export function eventDispatcher(data) {
             message = `
               <div>
                 <strong>${i18next.t("popups.transmissionabortedwith")}:</strong>
-                <span class="badge bg-info text-dark">${data["arq-transfer-inbound"].dxcall}</span>
+                <span class="badge bg-info text-dark">${escapeHtml(data["arq-transfer-inbound"].dxcall)}</span>
                 <div class="mt-2">
-                  <span class="badge bg-primary">${i18next.t("popups.state")}: ${data["arq-transfer-inbound"].state}</span>
-                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${data["arq-transfer-inbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">${i18next.t("popups.receivedbytes")}: ${data["arq-transfer-inbound"].received_bytes}</span>
-                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${data["arq-transfer-inbound"].total_bytes}</span>
+                  <span class="badge bg-primary">${i18next.t("popups.state")}: ${escapeHtml(data["arq-transfer-inbound"].state)}</span>
+                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${escapeHtml(data["arq-transfer-inbound"].session_id)}</span>
+                  <span class="badge bg-warning text-dark">${i18next.t("popups.receivedbytes")}: ${escapeHtml(data["arq-transfer-inbound"].received_bytes)}</span>
+                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${escapeHtml(data["arq-transfer-inbound"].total_bytes)}</span>
                 </div>
               </div>
             `;
@@ -579,12 +583,12 @@ export function eventDispatcher(data) {
             message = `
               <div>
                 <strong>${i18next.t("popups.transmissionfailedwith")}:</strong>
-                <span class="badge bg-info text-dark">${data["arq-transfer-inbound"].dxcall}</span>
+                <span class="badge bg-info text-dark">${escapeHtml(data["arq-transfer-inbound"].dxcall)}</span>
                 <div class="mt-2">
-                  <span class="badge bg-primary">${i18next.t("popups.state")}: ${data["arq-transfer-inbound"].state}</span>
-                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${data["arq-transfer-inbound"].session_id}</span>
-                  <span class="badge bg-warning text-dark">${i18next.t("popups.receivedbytes")}: ${data["arq-transfer-inbound"].received_bytes}</span>
-                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${data["arq-transfer-inbound"].total_bytes}</span>
+                  <span class="badge bg-primary">${i18next.t("popups.state")}: ${escapeHtml(data["arq-transfer-inbound"].state)}</span>
+                  <span class="badge bg-secondary">${i18next.t("popups.sessionid")}: ${escapeHtml(data["arq-transfer-inbound"].session_id)}</span>
+                  <span class="badge bg-warning text-dark">${i18next.t("popups.receivedbytes")}: ${escapeHtml(data["arq-transfer-inbound"].received_bytes)}</span>
+                  <span class="badge bg-warning text-dark">${i18next.t("popups.totalbytes")}: ${escapeHtml(data["arq-transfer-inbound"].total_bytes)}</span>
                 </div>
               </div>
             `;

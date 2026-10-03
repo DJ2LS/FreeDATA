@@ -1,7 +1,7 @@
 <script setup>
 // reason for no check is, that we have some mixing of typescript and chart js which seems to be not to be fixed that easy
-import { ref, computed, onMounted } from "vue";
-import { initWaterfall } from "../../js/waterfallHandler.js";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { initWaterfall, removeWaterfall } from "../../js/waterfallHandler.js";
 import { setActivePinia } from "pinia";
 import pinia from "../../store/index";
 setActivePinia(pinia);
@@ -15,6 +15,8 @@ import {
   LinearScale,
   PointElement,
   LineElement,
+  BarController,
+  BarElement,
   Title,
   Tooltip,
   Legend,
@@ -43,6 +45,8 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  BarController,
+  BarElement,
   Title,
   Tooltip,
   Legend
@@ -99,7 +103,7 @@ const transmissionSpeedChartData = computed(() => ({
     {
       type: "line",
       label: "SNR[dB]",
-      data: state.arq_speed_list_snr.value,
+      data: state.arq_speed_list_snr,
       borderColor: "rgb(75, 192, 192, 1.0)",
       pointRadius: 1,
       segment: {
@@ -116,7 +120,7 @@ const transmissionSpeedChartData = computed(() => ({
     {
       type: "bar",
       label: "Speed[bpm]",
-      data: state.arq_speed_list_bpm.value,
+      data: state.arq_speed_list_bpm,
       borderColor: "rgb(120, 100, 120, 1.0)",
       backgroundColor: "rgba(120, 100, 120, 0.2)",
       order: 0,
@@ -187,8 +191,15 @@ const localSpectrumID = ref("");
 localSpectrumID.value =
   "gridwfid-" + (Math.random() + 1).toString(36).substring(7);
 
+let localSpectrum = null;
+
 onMounted(() => {
-  initWaterfall(localSpectrumID.value);
+  localSpectrum = initWaterfall(localSpectrumID.value);
+});
+
+onBeforeUnmount(() => {
+  removeWaterfall(localSpectrum);
+  localSpectrum = null;
 });
 </script>
 

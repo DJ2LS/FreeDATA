@@ -42,12 +42,12 @@
     </label>
 
     <input
-      id="rigctldIp"
+      id="serialPttCustomPort"
       v-model="settings.remote.RADIO.ptt_port"
       type="text"
       class="form-control"
-      placeholder="settings.remote.RADIO.ptt_port.port"
-      aria-label="Rigctld IP"
+      placeholder="e.g. /dev/ttyUSB0 or COM3"
+      aria-label="PTT custom COM port"
       @change="onChange"
     >
   </div>

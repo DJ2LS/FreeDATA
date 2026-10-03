@@ -228,7 +228,7 @@
             id="url"
             class="tab-pane fade"
             role="tabpanel"
-            aria-labelledby="url-tab"
+            aria-labelledby="links-tab"
             tabindex="0"
           >
             <settings_url />

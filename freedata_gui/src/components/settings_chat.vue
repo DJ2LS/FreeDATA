@@ -1,5 +1,5 @@
 <script>
-import { settingsStore as settings, onChange } from "../store/settingsStore.js";
+import { settingsStore as settings, onChange, getRemote } from "../store/settingsStore.js";
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 
@@ -8,13 +8,47 @@ setActivePinia(pinia);
 
 // Export methods and computed properties for use in the template
 export default {
+  data() {
+    return {
+      showWavelogApiKey: false,
+    };
+  },
   computed: {
     settings() {
       return settings;
     },
   },
+  created() {
+    // Not reactive on purpose: values remembered on focus of number inputs
+    this.previousNumbers = {};
+  },
   methods: {
     onChange,
+    rememberNumber(section, key) {
+      this.previousNumbers[`${section}.${key}`] = settings.remote[section][key];
+    },
+    // Number inputs: v-model.number yields "" when a field is cleared, which the
+    // server rejects (it expects an int). Restore the previous value instead of
+    // saving, round to an integer and clamp to the input's min/max before saving.
+    onNumberChange(event, section, key) {
+      const el = event.target;
+      let value = settings.remote[section][key];
+      if (typeof value !== "number" || !Number.isFinite(value)) {
+        const previous = this.previousNumbers[`${section}.${key}`];
+        if (previous !== "" && previous !== null && previous !== undefined && Number.isFinite(Number(previous))) {
+          settings.remote[section][key] = Number(previous);
+        } else {
+          getRemote(); // reload the last saved config from the server
+        }
+        return;
+      }
+      value = Math.round(value);
+      if (el.min !== "" && value < Number(el.min)) value = Number(el.min);
+      if (el.max !== "" && value > Number(el.max)) value = Number(el.max);
+      settings.remote[section][key] = value;
+      this.previousNumbers[`${section}.${key}`] = value;
+      onChange();
+    },
   },
 };
 </script>
@@ -132,7 +166,8 @@ export default {
       :placeholder=" $t('settings.chat.adifloggingudpport_placeholder')"
       max="65534"
       min="1025"
-      @change="onChange"
+      @focus="rememberNumber('QSO_LOGGING', 'adif_udp_port')"
+      @change="onNumberChange($event, 'QSO_LOGGING', 'adif_udp_port')"
     >
   </div>
 
@@ -205,11 +240,20 @@ export default {
     <input
       id="wavelogApiKey"
       v-model="settings.remote.QSO_LOGGING.adif_wavelog_api_key"
-      type="text"
+      :type="showWavelogApiKey ? 'text' : 'password'"
       class="form-control"
       :placeholder="$t('settings.chat.adifloggingwavelogapi_placeholder')"
+      autocomplete="off"
       @change="onChange"
     >
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      :aria-label="showWavelogApiKey ? 'Hide API key' : 'Show API key'"
+      @click="showWavelogApiKey = !showWavelogApiKey"
+    >
+      <i :class="showWavelogApiKey ? 'bi bi-eye-slash' : 'bi bi-eye'" />
+    </button>
   </div>
 </template>
 

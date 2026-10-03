@@ -1,6 +1,6 @@
 <script setup>
 // @ts-nocheck
-const { distance } = require("qth-locator");
+import { distance } from "qth-locator";
 
 import { setActivePinia } from 'pinia';
 import pinia from '../../store/index';
@@ -156,7 +156,7 @@ function transmitPing(callsign) {
                 {{ $t('grid.components.snr') }}
               </th>
               <th
-                id="thSnr"
+                id="thAfk"
                 scope="col"
               >
                 {{ $t('grid.components.afk') }}

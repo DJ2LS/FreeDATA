@@ -15,7 +15,7 @@
   <!-- List of broadcasts -->
 
   <div
-    id="chat-list-tab"
+    id="broadcast-list-tab"
     class="list-group m-0 p-1"
     role="tablist"
   >
