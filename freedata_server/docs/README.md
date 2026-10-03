@@ -18,6 +18,7 @@ of known issues and oddities that remain in the source.
 | [protocol-frames.md](protocol-frames.md) | Frame types, byte layouts, frame dispatch and handlers, `TxCommand` classes |
 | [arq-sessions.md](arq-sessions.md) | ARQ ISS/IRS state machines, speed-level adaptation, data-type handlers, P2P connections, TCP socket interface, NORM broadcasts |
 | [message-system.md](message-system.md) | SQLite database and schema, P2P message lifecycle and wire format, attachments, beacons, stations, broadcasts |
+| [testing.md](testing.md) | Running the test suite, test-mode mechanics, test isolation, writing tests, known gaps |
 
 ## Big picture
 
@@ -50,3 +51,4 @@ queues. Start with [architecture.md](architecture.md).
 3. [arq-sessions.md](arq-sessions.md): reliable transfer on top of those frames.
 4. [message-system.md](message-system.md): the main user feature built on ARQ.
 5. [api.md](api.md) and [modem-audio-radio.md](modem-audio-radio.md) as reference.
+6. [testing.md](testing.md) before changing behaviour: run the suite, then add a test.

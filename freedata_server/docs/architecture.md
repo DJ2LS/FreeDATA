@@ -45,7 +45,8 @@ repository root). Most of the startup work happens at **module import time** of
 4. **FastAPI app** - `FastAPI(title="FreeDATA API", version=str(API_VERSION), lifespan=lifespan)`.
    - `app.state.ctx = ctx` - used by the dependency `context.get_ctx()`, which returns
      `request.app.state.ctx` (or the WebSocket equivalent).
-   - `lifespan`: nothing on startup; on exit calls `ctx.shutdown()` and logs "Shutdown complete".
+   - `lifespan`: nothing on startup; on exit calls `ctx.shutdown()`, logs "Shutdown complete" and
+     then calls `os._exit(0)`, so leftover threads (audio, rig, sockets) cannot keep the process alive.
    - `CORSMiddleware` with `allow_origins=["*"]`, all methods/headers, credentials allowed.
    - HTTP middleware `nocache` sets `Cache-Control: no-store, no-cache, must-revalidate, private`
      and `Pragma: no-cache` on every response and logs `[API] METHOD path -> status`.
@@ -98,7 +99,10 @@ repository root). Most of the startup work happens at **module import time** of
 1. For every IRS session: `transmission_aborted()`; for every ISS session:
    `abort_transmission(send_stop=False)` + `transmission_aborted()` (exceptions swallowed).
 2. `websocket_manager.shutdown()`, `schedule_manager.stop()`, `service_manager.shutdown()`.
-3. `os._exit(0)` - hard process exit (no further cleanup or atexit handlers run).
+
+`shutdown()` returns normally and does **not** exit the process, so tests can create and shut down
+several contexts in one interpreter. The hard `os._exit(0)` lives in the server's `lifespan` hook
+(section 1.1) and is only used when the server itself stops.
 
 ---
 
@@ -145,7 +149,7 @@ the rest of the code reads configuration through `ctx.config_manager.config`.
 | `state_queue` | `StateManager.sendState/sendStateUpdate/set/set_radio/set_channel_slot_busy/add_activity` | `wsm` states thread -> `states_client_list` |
 | `modem_fft` | `audio.calculate_fft(...)` called from `modem.py` | `wsm` fft thread -> `fft_client_list` |
 | `audio_rx_queue` | `modem.py` `enqueue_streaming_audio_chunks(...)` | `wsm` audio thread -> `audio_rx_client_list` (binary frames) |
-| `modem_service` | `AppContext.startup()` (`"start"`), `api/modem.py` (`"start"`, `"stop"`), `api/config.py` (`"restart"`), `modem.py` (`"stop"`), `SM.shutdown()` (`"stop"`) | `SM.runner` thread |
+| `modem_service` | `AppContext.startup()` (`"start"`), `api/modem.py` (`"start"`, `"stop"`), `api/config.py` (`"restart"`), `modem.py` (`"stop"`), `SM.shutdown()` (`"stop"`, then `"shutdown"` as a wake-up) | `SM.runner` thread |
 | `TESTMODE_*` | see table above | tests |
 
 ---
@@ -155,7 +159,7 @@ the rest of the code reads configuration through `ctx.config_manager.config`.
 | Thread | Started by | Loop |
 |---|---|---|
 | Main / uvicorn event loop | `main()` | FastAPI request + WebSocket handling (`wsm.handle_connection` awaits `receive_text()` to detect disconnects). |
-| `runner thread` (non-daemon) | `SM.__init__` | Blocking `modem_service.get()`; handles `start` / `stop` / `restart`; clears the queue after each command. |
+| `runner thread` (daemon) | `SM.__init__` | Blocking `modem_service.get()`; handles `start` / `stop` / `restart`; clears the queue after each command. |
 | Radio update thread (daemon) | `RadioManager._init_rig_control()` | Every `refresh_rate` (1 s): `radio.get_parameters()` -> `state_manager.set_radio(...)`. |
 | 4 WebSocket worker threads (daemon) | `wsm.startWorkerThreads()` | `queue.get(timeout=1)` -> send to every client in the matching set. |
 | Scheduler thread (non-daemon) | `ScheduleManager.start(modem)` | `sched.scheduler.run()` executing the recurring jobs in section 7. |
@@ -218,7 +222,7 @@ Holds mutable runtime state and pushes state snapshots to `state_queue`.
 | Attribute | Initial | Meaning |
 |---|---|---|
 | `channel_busy_slot` | `[False]*5` | Per-slot busy flags. |
-| `channel_busy_event`, `channel_busy_condition_traffic`, `channel_busy_condition_codec2` | `threading.Event()` | Channel-busy logic (see below). |
+| `channel_busy_event`, `channel_busy_condition_traffic`, `channel_busy_condition_codec2` | `threading.Event()`, all set (= channel free) | Channel-busy logic (see below). The constructor calls `set_channel_busy_condition_traffic(False)` and `set_channel_busy_condition_codec2(False)`, so the channel counts as free until the FFT or demodulator report otherwise. Without this, `is_receiving_codec2_signal()` would stay true when the modem isn't running and message sending would wait forever. |
 | `is_modem_running` | `False` | |
 | `is_modem_busy` | Event, set (= not busy) | Managed via `setARQ/getARQ`. |
 | `is_beacon_running`, `is_away_from_key` | `False` | |
@@ -259,7 +263,8 @@ Holds mutable runtime state and pushes state snapshots to `state_queue`.
 ### 4.3 ServiceManager (`SM`) - [service_manager.py](../service_manager.py)
 
 Owns the modem lifecycle. Constructor sets `ctx.rf_modem = False`, creates `shutdown_flag` and
-starts the non-daemon `runner thread`.
+starts the `runner thread` (a daemon thread, so an `AppContext` that is never shut down cannot keep
+the interpreter alive).
 
 **Commands processed by `runner()`**
 
@@ -285,7 +290,9 @@ After each command the remaining queue content is discarded (`modem_service.queu
 - `start_radio_manager()`: calls `stop_radio_manager()` first (so only one instance runs), then
   `ctx.radio_manager = RadioManager(ctx)`.
 - `stop_radio_manager()`: if `ctx.radio_manager` is set, `ctx.radio_manager.stop()`; `ctx.radio_manager = None`.
-- `shutdown()`: puts `"stop"`, waits 2 s, sets `shutdown_flag`, joins runner (0.5 s).
+- `shutdown()`: puts `"stop"`, waits 2 s, sets `shutdown_flag`, then puts `"shutdown"` to wake the
+  runner (which is blocked in `modem_service.get()`) so it sees the flag and returns; joins the
+  runner (5 s).
 
 ### 4.4 RadioManager - [radio_manager.py](../radio_manager.py)
 
@@ -319,10 +326,12 @@ Selects a rig backend from `RADIO.control` and mirrors radio parameters into the
 
 ### 4.6 ScheduleManager - [schedule_manager.py](../schedule_manager.py)
 
-Uses `sched.scheduler(time.time, threading.Event().wait)`. `start(modem)` waits 0.1 s, stores the
-modem, sets `running=True`, enters every job with delay 0 and runs the scheduler in a new non-daemon
-thread. `schedule_event()` runs the job and re-enters it after `interval` while `running`.
-`stop()` clears `running`, cancels all queued events and joins the thread (1 s). `start` is called
+Uses `sched.scheduler(time.time, self.stop_event.wait)`, so the scheduler sleeps on an Event that
+`stop()` can interrupt. `start(modem)` waits 0.1 s, stores the modem, clears `stop_event`, sets
+`running=True`, enters every job with delay 0 and runs the scheduler in a new non-daemon thread.
+`schedule_event()` runs the job and re-enters it after `interval` while `running`.
+`stop()` clears `running`, cancels all queued events, sets `stop_event` (waking the thread at once
+instead of after up to 600 s, the longest job interval) and joins the thread (1 s). `start` is called
 from `SM.start_modem()`; `stop` from `SM.stop_modem()` and `AppContext.shutdown()`. Jobs are
 listed in section 7.
 
@@ -563,4 +572,5 @@ Behaviour visible in the code that may surprise maintainers:
 - `stats.py` and `explorer.py` `json.dumps()` the payload and then pass it to
   `requests.post(json=...)`, so the body is a JSON-encoded string (double encoding).
 - When `modemaddress` is empty the logged/opened GUI URL uses `0.0.0.0`.
-- `AppContext.shutdown()` ends with `os._exit(0)`.
+- The server exits with `os._exit(0)` from its `lifespan` hook, so `atexit` handlers don't run when
+  the server stops.

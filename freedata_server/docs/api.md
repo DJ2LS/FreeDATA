@@ -10,7 +10,7 @@ Source files: [server.py](../server.py), [api/](../api/), [api_validations.py](.
 
 ### 1.1 App creation and lifespan
 
-[server.py](../server.py) works out the config file path (from the `FREEDATA_CONFIG` env var, falling back to the default app dir), sets up logging, then builds a single `AppContext` and calls `ctx.startup()` **at import time**, before the FastAPI app is created. The FastAPI `lifespan` hook does nothing on startup. On shutdown it calls `ctx.shutdown()`.
+[server.py](../server.py) works out the config file path (from the `FREEDATA_CONFIG` env var, falling back to the default app dir), sets up logging, then builds a single `AppContext` and calls `ctx.startup()` **at import time**, before the FastAPI app is created. The FastAPI `lifespan` hook does nothing on startup. On shutdown it calls `ctx.shutdown()` and then `os._exit(0)`.
 
 ```python
 app = FastAPI(title="FreeDATA API", version=str(API_VERSION), lifespan=lifespan)
