@@ -6,6 +6,7 @@ import random
 import structlog
 import base64
 
+import testenv  # noqa: F401  isolates config + message DB, must precede freedata_server imports
 from freedata_server.context import AppContext
 from freedata_server.event_manager import EventManager
 from freedata_server.state_manager import StateManager
@@ -49,12 +50,12 @@ class TestMessageProtocol(unittest.TestCase):
 
         # ISS
 
-        cls.ctx_ISS = AppContext("freedata_server/config.ini.example")
+        cls.ctx_ISS = AppContext(testenv.config_path())
         cls.ctx_ISS.TESTMODE = True
         cls.ctx_ISS.startup()
 
         # IRS
-        cls.ctx_IRS = AppContext("freedata_server/config.ini.example")
+        cls.ctx_IRS = AppContext(testenv.config_path())
         cls.ctx_IRS.TESTMODE = True
         cls.ctx_IRS.startup()
 
@@ -123,6 +124,13 @@ class TestMessageProtocol(unittest.TestCase):
 
         self.channelB = threading.Thread(target=self.channelWorker, args=[self.ctx_IRS, self.ctx_ISS], name="channelB")
         self.channelB.start()
+        # always stop the (non-daemon) channel threads, even if the test fails
+        self.addCleanup(self.closeChannels)
+
+    def closeChannels(self):
+        self.channels_running = False
+        self.channelA.join()
+        self.channelB.join()
 
     def waitAndCloseChannels(self):
         self.waitForSession(self.ctx_ISS.modem_events, True)

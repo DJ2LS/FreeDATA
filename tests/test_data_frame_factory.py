@@ -1,6 +1,7 @@
 import os
 import unittest
 
+import testenv  # noqa: F401  isolates config + message DB, must precede freedata_server imports
 from freedata_server.data_frame_factory import DataFrameFactory
 from freedata_server.codec2 import FREEDV_MODE
 from freedata_server.config import CONFIG
@@ -18,9 +19,7 @@ class TestDataFrameFactory(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Setup minimal context and config
-        base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "freedata_server"))
-        example_path = os.path.join(base, "config.ini.example")
-        cls.ctx = DummyCtx(example_path)
+        cls.ctx = DummyCtx(testenv.config_path())
         cls.ctx.config_manager.config["STATION"]["mycall"] = "T1CALL"
         cls.ctx.config_manager.config["STATION"]["mygrid"] = "AB12aa"
 

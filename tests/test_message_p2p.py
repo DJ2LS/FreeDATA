@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 import base64
 
+import testenv  # noqa: F401  isolates config + message DB, must precede freedata_server imports
 from freedata_server.context import AppContext
 from freedata_server.message_p2p import MessageP2P
 from freedata_server.message_system_db_messages import DatabaseManagerMessages
@@ -10,7 +11,7 @@ from freedata_server.message_system_db_messages import DatabaseManagerMessages
 class TestMessageP2P(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.ctx = AppContext("freedata_server/config.ini.example")
+        cls.ctx = AppContext(testenv.config_path())
         cls.ctx.config_manager.read()
 
         cls.event_manager = cls.ctx.event_manager

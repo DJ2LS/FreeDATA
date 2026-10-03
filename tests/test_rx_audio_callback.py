@@ -23,10 +23,11 @@ import unittest
 
 import numpy as np
 
+import testenv  # noqa: F401  isolates config + message DB, must precede freedata_server imports
 from freedata_server.context import AppContext
 from freedata_server import modem, codec2
 
-CONFIG = "freedata_server/config.ini.example"
+CONFIG = testenv.config_path()
 
 # A capture size PortAudio really does hand us, and deliberately NOT a multiple of
 # codec2's FDMDV_OS_48 (6) -- 512 % 6 == 2. Passing this straight to

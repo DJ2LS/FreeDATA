@@ -2,6 +2,7 @@ import time
 
 import unittest
 import unittest.mock
+import testenv  # noqa: F401  isolates config + message DB, must precede freedata_server imports
 from freedata_server.context import AppContext
 
 import queue
@@ -26,12 +27,12 @@ class TestARQSession(unittest.TestCase):
 
         # ISS
 
-        cls.ctx_ISS = AppContext("freedata_server/config.ini.example")
+        cls.ctx_ISS = AppContext(testenv.config_path())
         cls.ctx_ISS.TESTMODE = True
         cls.ctx_ISS.startup()
 
         # IRS
-        cls.ctx_IRS = AppContext("freedata_server/config.ini.example")
+        cls.ctx_IRS = AppContext(testenv.config_path())
         cls.ctx_IRS.TESTMODE = True
         cls.ctx_IRS.startup()
 

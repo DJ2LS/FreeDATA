@@ -3,8 +3,10 @@ import unittest.mock
 import queue
 import threading
 import random
+import time
 import structlog
 
+import testenv  # noqa: F401  isolates config + message DB, must precede freedata_server imports
 from freedata_server.context import AppContext
 from freedata_server.event_manager import EventManager
 from freedata_server.state_manager import StateManager
@@ -48,12 +50,12 @@ class TestMessageProtocol(unittest.TestCase):
 
         # ISS
 
-        cls.ctx_ISS = AppContext("freedata_server/config.ini.example")
+        cls.ctx_ISS = AppContext(testenv.config_path())
         cls.ctx_ISS.TESTMODE = True
         cls.ctx_ISS.startup()
 
         # IRS
-        cls.ctx_IRS = AppContext("freedata_server/config.ini.example")
+        cls.ctx_IRS = AppContext(testenv.config_path())
         cls.ctx_IRS.TESTMODE = True
         cls.ctx_IRS.startup()
 
@@ -103,16 +105,19 @@ class TestMessageProtocol(unittest.TestCase):
 
         self.logger.info(f"[{threading.current_thread().name}] Channel closed.")
 
-    def waitForSession(self, event_queue, outbound=False):
+    def waitForSession(self, event_queue, outbound=False, timeout=120):
+        """Wait for the session-ending event and return it (None on timeout)."""
         key = "arq-transfer-outbound" if outbound else "arq-transfer-inbound"
-        while self.channels_running:
+        deadline = time.time() + timeout
+        while time.time() < deadline:
             try:
                 ev = event_queue.get(timeout=2)
-                if key in ev and ("success" in ev[key] or "ABORTED" in ev[key]):
+                if isinstance(ev, dict) and key in ev and ("success" in ev[key] or "ABORTED" in ev[key]):
                     self.logger.info(f"[{threading.current_thread().name}] {key} session ended.")
-                    break
+                    return ev
             except queue.Empty:
                 continue
+        return None
 
     def establishChannels(self):
         self.channels_running = True
@@ -123,10 +128,13 @@ class TestMessageProtocol(unittest.TestCase):
         self.channelB.start()
 
     def waitAndCloseChannels(self):
-        self.waitForSession(self.ctx_ISS.modem_events, True)
+        # TESTMODE_EVENTS mirrors all events and, unlike modem_events, is not drained by the websocket worker
+        iss_event = self.waitForSession(self.ctx_ISS.TESTMODE_EVENTS, True)
+        irs_event = self.waitForSession(self.ctx_IRS.TESTMODE_EVENTS, False)
         self.channels_running = False
-        self.waitForSession(self.ctx_IRS.modem_events, False)
-        self.channels_running = False
+        self.channelA.join()
+        self.channelB.join()
+        return iss_event, irs_event
 
     def testMessageViaSession(self):
         self.loss_probability = 0  # no loss
@@ -137,17 +145,14 @@ class TestMessageProtocol(unittest.TestCase):
             "body": "Hello World",
         }
 
-        command = command_message_send.SendMessageCommand(self.ctx, params)
+        command = command_message_send.SendMessageCommand(self.ctx_ISS, params)
         command.run()
 
-        # del cmd
-        print(self.ctx_ISS.TESTMODE_EVENTS.empty())
-
-        while not self.ctx_ISS.TESTMODE_EVENTS.empty():
-            event = self.ctx_ISS.TESTMODE_EVENTS.get()
-            success = event.get("arq-transfer-outbound", {}).get("success", None)
-            if success is not None:
-                self.assertTrue(success, f"Test failed because of wrong success: {success}")
+        iss_event, irs_event = self.waitAndCloseChannels()
+        self.assertIsNotNone(iss_event, "no outbound session end event received")
+        self.assertTrue(iss_event["arq-transfer-outbound"].get("success"), f"outbound transfer failed: {iss_event}")
+        self.assertIsNotNone(irs_event, "no inbound session end event received")
+        self.assertTrue(irs_event["arq-transfer-inbound"].get("success"), f"inbound transfer failed: {irs_event}")
 
 
 if __name__ == "__main__":

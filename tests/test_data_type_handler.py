@@ -1,5 +1,6 @@
 import unittest
 
+import testenv  # noqa: F401  isolates config + message DB, must precede freedata_server imports
 from freedata_server.context import AppContext
 from freedata_server.arq_data_type_handler import ARQDataTypeHandler, ARQ_SESSION_TYPES
 
@@ -7,7 +8,7 @@ from freedata_server.arq_data_type_handler import ARQDataTypeHandler, ARQ_SESSIO
 class TestDispatcher(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.ctx = AppContext("freedata_server/config.ini.example")
+        cls.ctx = AppContext(testenv.config_path())
         cls.event_manager = cls.ctx.event_manager
         cls.state_manager = cls.ctx.state_manager
         cls.arq_data_type_handler = ARQDataTypeHandler(cls.ctx)

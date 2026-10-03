@@ -7,6 +7,7 @@ import random
 import socket
 import structlog
 
+import testenv  # noqa: F401  isolates config + message DB, must precede freedata_server imports
 from freedata_server.config import CONFIG
 from freedata_server.state_manager import StateManager
 from freedata_server.event_manager import EventManager
@@ -44,7 +45,7 @@ class TestModem:
 class TestP2PConnectionSession(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        config_manager = CONFIG("freedata_server/config.ini.example")
+        config_manager = CONFIG(testenv.config_path())
         cls.config = config_manager.read()
         cls.logger = structlog.get_logger("TESTS")
         cls.channels_running = True

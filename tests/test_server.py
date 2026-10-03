@@ -1,10 +1,13 @@
 import unittest
 from subprocess import Popen, PIPE
-import shlex
+import sys
 import os
 import requests
 import time
 import json
+
+import testenv
+from freedata_server.constants import API_VERSION
 
 
 # API Server integration testst
@@ -14,10 +17,11 @@ class TestIntegration(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cmd = "python3 freedata_server/server.py"
+        # run with the interpreter running the tests (not whatever "python3" is on PATH)
+        cmd = [sys.executable, "-m", "freedata_server.server"]
         my_env = os.environ.copy()
-        my_env["FREEDATA_CONFIG"] = "freedata_server/config.ini.example"
-        cls.process = Popen(shlex.split(cmd), stdin=PIPE, env=my_env)
+        my_env["FREEDATA_CONFIG"] = testenv.config_path()
+        cls.process = Popen(cmd, stdin=PIPE, env=my_env)
         cls.wait_for_server(cls.url)
         time.sleep(5)
 
@@ -45,7 +49,7 @@ class TestIntegration(unittest.TestCase):
         self.assertEqual(r.status_code, 200)
 
         data = r.json()
-        self.assertEqual(data["api_version"], 3)
+        self.assertEqual(data["api_version"], API_VERSION)
 
     def test_config_get(self):
         r = requests.get(self.url + "/config")
@@ -61,7 +65,8 @@ class TestIntegration(unittest.TestCase):
         self.assertIn("RADIO", config)
 
     def test_config_post(self):
-        config = {"STATION": {"mygrid": "JN48ea"}}
+        # the API requires a valid mycall and mygrid in every config update
+        config = {"STATION": {"mycall": "AA1AAA", "mygrid": "JN48ea"}}
         r = requests.post(
             self.url + "/config",
             headers={"Content-type": "application/json"},
