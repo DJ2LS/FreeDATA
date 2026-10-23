@@ -216,6 +216,12 @@ The message is stored with `status="queued"`, `direction="transmit"`. All of thi
 | GET | `/freedata/beacons/{callsign}` | none | `get_beacons_by_callsign(callsign)` | none |
 | GET | `/freedata/station/{callsign}` | none | `get_station(callsign)` | 404 `Station not found` |
 | POST | `/freedata/station/{callsign}` | `{"info": { ... }}` (must be a dict) | `true` (unknown stations are created by `update_station_info`) | 400 `Invalid input data`; 500 `Error updating station info` if the database update fails |
+| GET | `/freedata/station/{callsign}/encryption` | none | encryption status of the station | 400 invalid callsign |
+| PATCH | `/freedata/station/{callsign}/encryption` | `{"enabled": bool}` | encryption status | 400 `'enabled' must be true or false`; 500 database error |
+| PUT | `/freedata/station/{callsign}/encryption/key` | `{"key": str}` | encryption status plus `decrypted`, `requeued` | 400 invalid key / key doesn't decrypt the waiting messages |
+| DELETE | `/freedata/station/{callsign}/encryption/key` | none | encryption status | 400 invalid callsign |
+
+The encryption endpoints are described in [encryption.md](encryption.md#api).
 
 #### Broadcasts (NORM / group chat)
 

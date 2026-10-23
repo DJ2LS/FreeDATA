@@ -9,7 +9,14 @@ import structlog
 import lzma
 import gzip
 import zlib
-from freedata_server.message_p2p import message_received, message_failed, message_transmitted
+from freedata_server import encryption
+from freedata_server.message_p2p import (
+    message_received,
+    message_failed,
+    message_transmitted,
+    encrypted_message_received,
+    decompress_p2pmsg,
+)
 from enum import Enum
 
 
@@ -26,6 +33,7 @@ class ARQ_SESSION_TYPES(Enum):
     raw_lzma = 10
     raw_gzip = 11
     p2pmsg_zlib = 20
+    p2pmsg_zlib_aesgcm = 21  # zlib compressed, then AES-256-GCM encrypted (encryption.py)
     p2p_connection = 30
 
 
@@ -60,6 +68,12 @@ class ARQDataTypeHandler:
                 "failed": self.failed_p2pmsg_zlib,
                 "transmitted": self.transmitted_p2pmsg_zlib,
             },
+            ARQ_SESSION_TYPES.p2pmsg_zlib_aesgcm: {
+                "prepare": self.prepare_p2pmsg_zlib_aesgcm,
+                "handle": self.handle_p2pmsg_zlib_aesgcm,
+                "failed": self.failed_p2pmsg_zlib_aesgcm,
+                "transmitted": self.transmitted_p2pmsg_zlib_aesgcm,
+            },
             ARQ_SESSION_TYPES.p2p_connection: {
                 "prepare": self.prepare_p2p_connection,
                 "handle": self.handle_p2p_connection,
@@ -87,18 +101,21 @@ class ARQDataTypeHandler:
                 return session_type
         return None
 
-    def call_handler(self, session_type, action, data, statistics, session_id=None):
+    def call_handler(self, session_type, action, data, statistics, session_id=None, dxcall=None):
         """Calls a registered handler function.
 
         P2P connection handlers additionally get the ARQ session id, which is
-        equal to the id of the owning P2P connection session.
+        equal to the id of the owning P2P connection session. Encrypted message
+        handlers get the callsign of the remote station to look up its key.
         """
         handler = self.handlers[session_type][action]
         if session_type is ARQ_SESSION_TYPES.p2p_connection:
             return handler(data, statistics, session_id=session_id)
+        if session_type is ARQ_SESSION_TYPES.p2pmsg_zlib_aesgcm:
+            return handler(data, statistics, dxcall=dxcall)
         return handler(data, statistics)
 
-    def dispatch(self, type_byte: int, data: bytearray, statistics: dict, session_id=None):
+    def dispatch(self, type_byte: int, data: bytearray, statistics: dict, session_id=None, dxcall=None):
         """Dispatches the handling of received ARQ data based on its type.
 
         This method retrieves the session type corresponding to the given type byte,
@@ -118,11 +135,11 @@ class ARQDataTypeHandler:
         self.ctx.state_manager.setARQ(False)
 
         if session_type and session_type in self.handlers and "handle" in self.handlers[session_type]:
-            return self.call_handler(session_type, "handle", data, statistics, session_id)
+            return self.call_handler(session_type, "handle", data, statistics, session_id, dxcall)
         else:
             self.log(f"Unknown handling endpoint for type: {type_byte}", isWarning=True)
 
-    def failed(self, type_byte: int, data: bytearray, statistics: dict, session_id=None):
+    def failed(self, type_byte: int, data: bytearray, statistics: dict, session_id=None, dxcall=None):
         """Handles the failure of an ARQ session based on the provided type byte.
 
         This method retrieves the session type from the given type byte and calls
@@ -142,11 +159,11 @@ class ARQDataTypeHandler:
         self.ctx.state_manager.setARQ(False)
 
         if session_type in self.handlers and "failed" in self.handlers[session_type]:
-            return self.call_handler(session_type, "failed", data, statistics, session_id)
+            return self.call_handler(session_type, "failed", data, statistics, session_id, dxcall)
         else:
             self.log(f"Unknown handling endpoint: {session_type}", isWarning=True)
 
-    def prepare(self, data: bytearray, session_type=ARQ_SESSION_TYPES.raw):
+    def prepare(self, data: bytearray, session_type=ARQ_SESSION_TYPES.raw, dxcall=None):
         """Prepares data for transmission based on the specified ARQ session type.
 
         This method checks if a prepare handler exists for the given session type
@@ -155,17 +172,23 @@ class ARQDataTypeHandler:
         Args:
             data: The bytearray of data to be prepared.
             session_type: The ARQ_SESSION_TYPES enum member representing the session type.
+            dxcall: The destination callsign, needed for encrypted session types.
 
         Returns:
             A tuple containing the prepared data and the integer value of the session type,
             or None if no prepare handler is found for the given session type.
+
+        Raises:
+            encryption.KeyMissingError: For an encrypted type if no key is known for dxcall.
         """
         if session_type in self.handlers and "prepare" in self.handlers[session_type]:
+            if session_type is ARQ_SESSION_TYPES.p2pmsg_zlib_aesgcm:
+                return self.handlers[session_type]["prepare"](data, dxcall), session_type.value
             return self.handlers[session_type]["prepare"](data), session_type.value
         else:
             self.log(f"Unknown preparation endpoint: {session_type}", isWarning=True)
 
-    def transmitted(self, type_byte: int, data: bytearray, statistics: dict, session_id=None):
+    def transmitted(self, type_byte: int, data: bytearray, statistics: dict, session_id=None, dxcall=None):
         """Handles the successful transmission of ARQ data based on its type.
 
         This method retrieves the session type from the given type byte and calls
@@ -185,7 +208,7 @@ class ARQDataTypeHandler:
         self.ctx.state_manager.setARQ(False)
 
         if session_type in self.handlers and "transmitted" in self.handlers[session_type]:
-            return self.call_handler(session_type, "transmitted", data, statistics, session_id)
+            return self.call_handler(session_type, "transmitted", data, statistics, session_id, dxcall)
         else:
             self.log(f"Unknown handling endpoint: {session_type}", isWarning=True)
 
@@ -476,6 +499,54 @@ class ARQDataTypeHandler:
         decompressed_data += decompressor.flush()
 
         message_transmitted(self.ctx, decompressed_data, statistics)
+        return decompressed_data
+
+    def prepare_p2pmsg_zlib_aesgcm(self, data, dxcall):
+        """Compresses P2PMSG data like p2pmsg_zlib, then encrypts it with the key of dxcall.
+
+        Raises:
+            encryption.KeyMissingError: If no key has been entered for dxcall.
+        """
+        key = self.ctx.station_keys.get(dxcall)
+        if key is None:
+            raise encryption.KeyMissingError(f"No encryption key for {dxcall}")
+        compressed_data = self.prepare_p2pmsg_zlib(data)
+        encrypted_data = encryption.encrypt(key, compressed_data)
+        self.log(f"Encrypted P2PMSG data for {dxcall}: {len(compressed_data)} Bytes >>> {len(encrypted_data)} Bytes")
+        return encrypted_data
+
+    def handle_p2pmsg_zlib_aesgcm(self, data, statistics, dxcall=None):
+        """Handles an encrypted P2PMSG. If the key of dxcall is unknown or wrong, the
+        message is kept encrypted until the user enters the key.
+
+        Returns:
+            The decrypted, decompressed data, or None if the message is pending.
+        """
+        self.log(f"Handling encrypted P2PMSG data from {dxcall}: {len(data)} Bytes")
+        return encrypted_message_received(self.ctx, dxcall, data, statistics)
+
+    def _decrypt_own_p2pmsg(self, data, dxcall):
+        """Decrypts a message we sent, to update its database entry afterwards."""
+        key = self.ctx.station_keys.get(dxcall)
+        if key is None:
+            self.log(f"Key for {dxcall} was removed, can't update the sent message", isWarning=True)
+            return None
+        try:
+            return decompress_p2pmsg(encryption.decrypt(key, data))
+        except encryption.DecryptionError:
+            self.log(f"Key for {dxcall} was changed, can't update the sent message", isWarning=True)
+            return None
+
+    def failed_p2pmsg_zlib_aesgcm(self, data, statistics, dxcall=None):
+        decompressed_data = self._decrypt_own_p2pmsg(data, dxcall)
+        if decompressed_data is not None:
+            message_failed(self.ctx, decompressed_data, statistics)
+        return decompressed_data
+
+    def transmitted_p2pmsg_zlib_aesgcm(self, data, statistics, dxcall=None):
+        decompressed_data = self._decrypt_own_p2pmsg(data, dxcall)
+        if decompressed_data is not None:
+            message_transmitted(self.ctx, decompressed_data, statistics, encrypted=True)
         return decompressed_data
 
     def prepare_p2p_connection(self, data):

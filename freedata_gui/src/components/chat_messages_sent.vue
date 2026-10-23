@@ -77,7 +77,22 @@
 
         <div class="card-footer p-1 border-top-0">
           <p class="text p-0 m-0 mb-1 me-1 text-end">
+            <i
+              v-if="message.encrypted"
+              class="bi bi-lock-fill me-1"
+              :title="$t('chat.encryption.sent_encrypted')"
+            />
+            <button
+              v-if="message.status === 'key_required'"
+              type="button"
+              class="badge text-bg-warning border-0"
+              :title="$t('chat.encryption.reason_send')"
+              @click="enterKey"
+            >
+              <i class="bi bi-key me-1" />{{ $t('chat.encryption.msgstatuskeyrequired') }}
+            </button>
             <span
+              v-else
               class="badge mr-2"
               :class="{
                 'text-bg-danger': message.status === 'failed',
@@ -115,6 +130,7 @@ import {
   getMessageAttachment,
   sendADIFviaUDP,
 } from "../js/messagesHandler";
+import { openEncryptionDialog } from "../js/encryptionHandler";
 
 // pinia store setup
 import { setActivePinia } from "pinia";
@@ -189,6 +205,10 @@ export default {
     },
     sendADIF() {
       sendADIFviaUDP(this.message.id);
+    },
+
+    enterKey() {
+      openEncryptionDialog(this.message.destination, "send");
     },
 
     async showMessageInfo() {

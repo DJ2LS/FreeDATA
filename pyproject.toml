@@ -42,6 +42,7 @@ dependencies = [
     "sqlalchemy",
     "fastapi[standard]",
     "uvicorn[standard]",
+    "cryptography",
 ]
 
 [project.urls]

@@ -12,6 +12,10 @@ from freedata_server.event_manager import EventManager
 from freedata_server.state_manager import StateManager
 from freedata_server import codec2
 from freedata_server import command_message_send
+from freedata_server import encryption
+from freedata_server.message_system_db_encryption import DatabaseManagerEncryption
+from freedata_server.message_system_db_messages import DatabaseManagerMessages
+from freedata_server.message_system_db_station import DatabaseManagerStations
 
 
 class TestModem:
@@ -153,6 +157,35 @@ class TestMessageProtocol(unittest.TestCase):
         self.assertTrue(iss_event["arq-transfer-outbound"].get("success"), f"outbound transfer failed: {iss_event}")
         self.assertIsNotNone(irs_event, "no inbound session end event received")
         self.assertTrue(irs_event["arq-transfer-inbound"].get("success"), f"inbound transfer failed: {irs_event}")
+
+    def testEncryptedMessageViaSession(self):
+        self.loss_probability = 0  # no loss
+        destination = "AA1AAA-2"
+        station = self.ctx_ISS.config_manager.config["STATION"]
+        origin = f"{station['mycall']}-{station['myssid']}"
+        key = encryption.parse_key("correct horse battery staple")
+        # both test stations share one message database
+        DatabaseManagerStations(self.ctx_ISS).set_encryption_enabled(destination, True)
+        self.ctx_ISS.station_keys.set(destination, key)
+        self.ctx_IRS.station_keys.set(origin, key)
+        self.addCleanup(DatabaseManagerStations(self.ctx_ISS).set_encryption_enabled, destination, False)
+
+        self.establishChannels()
+        command = command_message_send.SendMessageCommand(
+            self.ctx_ISS, {"destination": destination, "body": "Hello encrypted World"}
+        )
+        command.run()
+
+        iss_event, irs_event = self.waitAndCloseChannels()
+        self.assertTrue(iss_event and iss_event["arq-transfer-outbound"].get("success"), f"outbound: {iss_event}")
+        self.assertTrue(irs_event and irs_event["arq-transfer-inbound"].get("success"), f"inbound: {irs_event}")
+
+        # the IRS could decrypt it (nothing left waiting for a key) ...
+        self.assertEqual(DatabaseManagerEncryption(self.ctx_IRS).count_pending(origin), 0)
+        # ... and the ISS marked the message as sent encrypted
+        sent = DatabaseManagerMessages(self.ctx_ISS).get_message_by_id(command.message.id)
+        self.assertEqual(sent["status"], "transmitted")
+        self.assertTrue(sent["encrypted"])
 
 
 if __name__ == "__main__":

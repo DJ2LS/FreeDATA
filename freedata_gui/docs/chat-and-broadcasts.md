@@ -19,6 +19,7 @@ Server-side storage and transport are documented in [../../freedata_server/docs/
 | [chat_messages_sent.vue](../src/components/chat_messages_sent.vue) | Outgoing bubble: status badge, attempt counter, retransmit/info/delete/ADIF buttons |
 | [chat_messages_received.vue](../src/components/chat_messages_received.vue) | Incoming bubble: info/ADIF/delete buttons |
 | [chat_messages_image_preview.vue](../src/components/chat_messages_image_preview.vue) | Inline `<img>` preview for image attachments |
+| [chat_encryption_modal.vue](../src/components/chat_encryption_modal.vue) | Encryption dialog (`#encryptionModal`, mounted in `main_modals.vue`): legal warning, turn on/off, enter/generate/forget key, waiting-message counts, key fingerprint |
 | [chat_new_message.vue](../src/components/chat_new_message.vue) | Composer: textarea, markdown buttons, attachments, emoji picker |
 | [broadcasts_screen.vue](../src/components/broadcasts_screen.vue) | Broadcast page layout: domain sidebar, message area, composer |
 | [broadcast_domains.vue](../src/components/broadcast_domains.vue) | Domain list with message/unread counts, "start new broadcast" button |
@@ -29,9 +30,11 @@ Server-side storage and transport are documented in [../../freedata_server/docs/
 | [broadcast_modal.vue](../src/components/broadcast_modal.vue) | "New broadcast" modal: domain, type, MESSAGE or METAR form |
 | [messagesHandler.js](../src/js/messagesHandler.js) | Builds conversations from the message list; wrappers around chat API calls (returning their promises); `parseServerTimestamp`, `loadBeaconData` |
 | [broadcastsHandler.js](../src/js/broadcastsHandler.js) | Stores broadcast API responses; wrappers around broadcast API calls (returning their promises); UTF-8 helpers `utf8Bytes`, `encodeBroadcastText`, `decodeBroadcastText` and `BROADCAST_MAX_BYTES` |
+| [encryptionHandler.js](../src/js/encryptionHandler.js) | Encryption API wrappers that update `encryptionStore`, `openEncryptionDialog`, `generateEncryptionKey` |
 | [metar.js](../src/js/metar.js) | METAR parser, flight category, formatters, SVG wind compass, `lookupAirport` |
 | [chatStore.js](../src/store/chatStore.js) | Pinia store for chat (plus beacon/speed chart arrays used by modals) |
 | [broadcastStore.js](../src/store/broadcastStore.js) | Pinia store for broadcasts |
+| [encryptionStore.js](../src/store/encryptionStore.js) | Encryption status per callsign and the dialog request (`dialogCallsign`, `dialogReason`, `dialogRequest`) |
 | [stationStore.js](../src/store/stationStore.js) | Pinia store holding `stationInfo` (callsign, gridsquare, personal info). Not referenced by any chat or broadcast component |
 
 Related, out of this document's scope: the new-chat, delete-chat, delete-domain, message-info and broadcast-info modals live in [main_modals.vue](../src/components/main_modals.vue).
@@ -230,6 +233,35 @@ sequenceDiagram
     Note over S,DB: ARQ ISS end: message_transmitted / message_failed
     DB-->>WS: message-db changed -> reload -> badge "transmitted" or "failed"
 ```
+
+### Encryption
+
+Per-station encryption is described on the server side in
+[encryption.md](../../freedata_server/docs/encryption.md). In the GUI:
+
+- **Lock button** in the chat header ([chat_screen.vue](../src/components/chat_screen.vue)). It loads
+  `GET /freedata/station/{callsign}/encryption` when the selected chat changes and on every
+  `message-db` event. Grey open lock: off. Green lock: on with a key entered. Yellow lock: on
+  without a key, messages waiting to be sent, or received messages waiting for the key.
+- **Dialog** ([chat_encryption_modal.vue](../src/components/chat_encryption_modal.vue)). To turn
+  encryption on, the user has to enter a key (or *Generate* one: 32 random bytes from
+  `crypto.getRandomValues`, shown as hex) and tick the legal confirmation under the
+  warning. The key is sent first (`PUT .../encryption/key`) and encryption is only turned
+  on (`PATCH .../encryption`) once the key is accepted. When encryption is on, the dialog
+  shows the key fingerprint and offers *Forget key* and *Turn encryption off*. *Save key*
+  is also offered when encryption is off but received messages are waiting, because
+  decrypting doesn't require sending encrypted. Server errors (invalid key, key doesn't
+  decrypt) are shown inside the dialog instead of as a toast (`apiRequestResult` in
+  [api.js](../src/js/api.js)).
+- **Asking for keys.** The server sends
+  `{"type": "encryption", "status": "key_required", "callsign", "reason"}` when a message is
+  waiting to be sent (`send`), was received (`receive`) or couldn't be decrypted
+  (`wrong_key`). [eventHandler.js](../src/js/eventHandler.js) shows a toast and opens the dialog
+  for that station with a matching message.
+- **Bubbles.** Sent messages with status `key_required` get a yellow *key required* badge that
+  opens the dialog. Sent and received messages with `encrypted: true` show a lock icon.
+- **Strings** are under `chat.encryption` in [en_English.json](../src/locales/en_English.json).
+  Other languages fall back to English.
 
 ---
 

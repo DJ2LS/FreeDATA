@@ -51,7 +51,7 @@ DatabaseManagerAttachments(self).clean_orphaned_attachments()
 ### Schema versioning / migration
 
 - The `config` table holds one row with `db_variable = "database_version"`; `db_version` is a string.
-- Expected version: `MESSAGE_SYSTEM_DATABASE_VERSION = 1` ([constants.py](../constants.py)).
+- Expected version: `MESSAGE_SYSTEM_DATABASE_VERSION = 2` ([constants.py](../constants.py)). Version 2 added the encryption columns, the `pending_encrypted_message` table and the `key_required` status, see [encryption.md](encryption.md#database-schema-version-2).
 - `check_database_version()`:
   - No row -> inserts version `"0"`.
   - `current < expected` -> `update_database_schema()` then stores the expected version.

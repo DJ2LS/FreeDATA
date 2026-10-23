@@ -440,7 +440,9 @@ class ARQSessionISS(arq_session.ARQSession):
         # print(self.ctx.state_manager.p2p_connection_sessions)
         # print(self.arq_data_type_handler.state_manager.p2p_connection_sessions)
         session_stats = self.calculate_session_statistics(self.confirmed_bytes, self.total_length)
-        self.arq_data_type_handler.transmitted(self.type_byte, self.data, session_stats, session_id=self.id)
+        self.arq_data_type_handler.transmitted(
+            self.type_byte, self.data, session_stats, session_id=self.id, dxcall=self.dxcall
+        )
 
         self.ctx.state_manager.remove_arq_iss_session(self.id)
         self.ctx.state_manager.setARQ(False)
@@ -476,6 +478,7 @@ class ARQSessionISS(arq_session.ARQSession):
             self.data,
             statistics=self.calculate_session_statistics(self.confirmed_bytes, self.total_length),
             session_id=self.id,
+            dxcall=self.dxcall,
         )
         return None, None
 

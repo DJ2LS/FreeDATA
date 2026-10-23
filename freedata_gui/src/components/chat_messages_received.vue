@@ -40,6 +40,11 @@
 
         <div class="card-footer p-0 border-top-0">
           <p class="p-0 m-0 me-1 text-end ">
+            <i
+              v-if="message.encrypted"
+              class="bi bi-lock-fill me-1"
+              :title="$t('chat.encryption.received_encrypted')"
+            />
             <span class="mr-2 ">{{ getDateTime }} {{ $t('chat.utc') }}</span>
           </p>
           <!-- Display formatted timestamp in card-footer -->

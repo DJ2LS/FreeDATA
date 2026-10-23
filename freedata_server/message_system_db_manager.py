@@ -77,6 +77,7 @@ class DatabaseManager:
                 "queued",
                 "receiving",
                 "assembling",
+                "key_required",
             ]
 
             # Add default statuses if they don't exist

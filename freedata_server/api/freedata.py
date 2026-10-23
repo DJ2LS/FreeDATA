@@ -9,6 +9,10 @@ from freedata_server.message_system_db_attachments import DatabaseManagerAttachm
 from freedata_server.message_system_db_beacon import DatabaseManagerBeacon
 from freedata_server.message_system_db_station import DatabaseManagerStations
 from freedata_server.message_system_db_broadcasts import DatabaseManagerBroadcasts
+from freedata_server.message_system_db_encryption import DatabaseManagerEncryption
+from freedata_server.message_p2p import decrypt_pending_messages
+from freedata_server import api_validations
+from freedata_server import encryption
 from freedata_server import command_message_send
 from freedata_server import adif_udp_logger
 from freedata_server import wavelog_api_logger
@@ -537,6 +541,129 @@ async def set_station_info(callsign: str, payload: dict, ctx: AppContext = Depen
     if not result:
         api_abort("Error updating station info", 500)
     return api_response(result)
+
+
+def _encryption_callsign(callsign: str) -> str:
+    """Validates a callsign the same way message destinations are
+    (MessageP2P.from_api_params), so keys match the stored destination."""
+    callsign = callsign.strip()
+    if not api_validations.validate_freedata_callsign(callsign):
+        callsign = f"{callsign}-0"
+    if not api_validations.validate_freedata_callsign(callsign):
+        api_abort("Invalid callsign", 400)
+    return callsign
+
+
+def _encryption_status(ctx: AppContext, callsign: str) -> dict:
+    db = DatabaseManagerEncryption(ctx)
+    return {
+        "callsign": callsign,
+        "enabled": _mgr_stations(ctx).is_encryption_enabled(callsign),
+        "key_loaded": ctx.station_keys.has(callsign),
+        "fingerprint": ctx.station_keys.fingerprint(callsign),
+        "pending_received": db.count_pending(callsign),
+        "waiting_to_send": db.count_key_required(callsign),
+    }
+
+
+@router.get(
+    "/station/{callsign}/encryption",
+    summary="Get Station Encryption Status",
+    tags=["FreeDATA"],
+    responses={
+        200: {
+            "description": "Encryption setting and key state of a station.",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "callsign": "XX1XXX-0",
+                        "enabled": True,
+                        "key_loaded": False,
+                        "fingerprint": None,
+                        "pending_received": 1,
+                        "waiting_to_send": 0,
+                    }
+                }
+            },
+        },
+        400: {"description": "Invalid callsign."},
+    },
+)
+async def get_station_encryption(callsign: str, ctx: AppContext = Depends(get_ctx)):
+    return api_response(_encryption_status(ctx, _encryption_callsign(callsign)))
+
+
+@router.patch(
+    "/station/{callsign}/encryption",
+    summary="Turn Station Encryption On or Off",
+    tags=["FreeDATA"],
+    responses={
+        200: {
+            "description": "Encryption setting updated. Returns the encryption status.",
+            "content": {"application/json": {"example": {"enabled": True}}},
+        },
+        400: {"description": "Invalid callsign or 'enabled' missing."},
+        500: {"description": "Database error."},
+    },
+)
+async def patch_station_encryption(callsign: str, payload: dict, ctx: AppContext = Depends(get_ctx)):
+    # Most amateur radio licences forbid encrypted messages - the GUI shows a
+    # warning before calling this endpoint with enabled=True.
+    callsign = _encryption_callsign(callsign)
+    enabled = payload.get("enabled")
+    if not isinstance(enabled, bool):
+        api_abort("'enabled' must be true or false", 400)
+    if not _mgr_stations(ctx).set_encryption_enabled(callsign, enabled):
+        api_abort("Error updating encryption setting", 500)
+    return api_response(_encryption_status(ctx, callsign))
+
+
+@router.put(
+    "/station/{callsign}/encryption/key",
+    summary="Enter Station Encryption Key",
+    tags=["FreeDATA"],
+    responses={
+        200: {
+            "description": (
+                "Key accepted and held in memory. Waiting received messages are decrypted "
+                "and messages waiting for the key are queued again."
+            ),
+            "content": {"application/json": {"example": {"key_loaded": True, "decrypted": 1, "requeued": 0}}},
+        },
+        400: {"description": "Invalid key, or the key does not decrypt the waiting messages."},
+    },
+)
+async def put_station_encryption_key(callsign: str, payload: dict, ctx: AppContext = Depends(get_ctx)):
+    callsign = _encryption_callsign(callsign)
+    try:
+        # scrypt for passphrases takes a moment, keep it off the event loop
+        key = await asyncio.to_thread(encryption.parse_key, payload.get("key"))
+    except ValueError as e:
+        api_abort(str(e), 400)
+
+    decrypted, still_pending = await asyncio.to_thread(decrypt_pending_messages, ctx, callsign, key)
+    if still_pending and not decrypted:
+        api_abort("This key does not decrypt the messages received from this station", 400)
+
+    ctx.station_keys.set(callsign, key)
+    requeued = DatabaseManagerEncryption(ctx).requeue_key_required(callsign)
+    if decrypted:
+        ctx.event_manager.freedata_message_db_change()
+    result = _encryption_status(ctx, callsign)
+    result.update({"decrypted": decrypted, "requeued": requeued})
+    return api_response(result)
+
+
+@router.delete(
+    "/station/{callsign}/encryption/key",
+    summary="Forget Station Encryption Key",
+    tags=["FreeDATA"],
+    responses={200: {"description": "Key removed from memory. Returns the encryption status."}},
+)
+async def delete_station_encryption_key(callsign: str, ctx: AppContext = Depends(get_ctx)):
+    callsign = _encryption_callsign(callsign)
+    ctx.station_keys.remove(callsign)
+    return api_response(_encryption_status(ctx, callsign))
 
 
 @router.get("/broadcasts", summary="Get All Broadcast Messages", tags=["FreeDATA"], responses={})

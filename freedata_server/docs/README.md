@@ -18,6 +18,7 @@ of known issues and oddities that remain in the source.
 | [protocol-frames.md](protocol-frames.md) | Frame types, byte layouts, frame dispatch and handlers, `TxCommand` classes |
 | [arq-sessions.md](arq-sessions.md) | ARQ ISS/IRS state machines, speed-level adaptation, data-type handlers, P2P connections, TCP socket interface, NORM broadcasts |
 | [message-system.md](message-system.md) | SQLite database and schema, P2P message lifecycle and wire format, attachments, beacons, stations, broadcasts |
+| [encryption.md](encryption.md) | Per-station AES-256-GCM message encryption: keys, wire format, send/receive flow, database, API, legal note |
 | [testing.md](testing.md) | Running the test suite, test-mode mechanics, test isolation, writing tests, known gaps |
 
 ## Big picture

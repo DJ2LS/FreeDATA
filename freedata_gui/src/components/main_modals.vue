@@ -17,6 +17,7 @@ import { deleteBroadcastDomainFromDB } from "../js/broadcastsHandler";
 
 // NEW: Broadcast modal component (the split-out modal)
 import BroadcastModal from "./broadcast_modal.vue";
+import chat_encryption_modal from "./chat_encryption_modal.vue";
 
 // Chart.js imports
 import {
@@ -696,4 +697,5 @@ function fetchMyStationInfo() {
   </div>
 
   <BroadcastModal />
+  <chat_encryption_modal />
 </template>

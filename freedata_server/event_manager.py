@@ -269,6 +269,16 @@ class EventManager:
         """
         self.broadcast({"message-db": "changed", "message_id": message_id})
 
+    def send_encryption_key_required(self, callsign, reason):
+        """Asks the GUI for the encryption key of a station.
+
+        Args:
+            callsign (str): The station whose key is needed.
+            reason (str): "send" (a message waits to be sent), "receive" (a received
+                message waits to be decrypted) or "wrong_key" (decryption failed).
+        """
+        self.broadcast({"type": "encryption", "status": "key_required", "callsign": callsign, "reason": reason})
+
     def freedata_logging(self, type, status, message):
         """Broadcasts a FreeDATA logging event.
 

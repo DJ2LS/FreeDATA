@@ -41,7 +41,8 @@ A full run takes about a minute. Both commands exit non-zero when a test fails.
 | `test_message_p2p.py` | `MessageP2P` from API params, payloads with attachments | yes |
 | `test_protocols.py` | PING → PING_ACK and CQ → QRV through the real frame dispatcher | yes |
 | `test_arq_session.py` | A full ARQ transfer (1000 random bytes) between two stations; IRS success event | two |
-| `test_message_protocol.py` | A P2P message sent over an ARQ session, checked on both stations | two |
+| `test_message_protocol.py` | A P2P message sent over an ARQ session, checked on both stations; the same with encryption on | two |
+| `test_encryption.py` | AES-GCM helpers and key parsing, the encrypted ARQ data type, holding sent/received messages until a key is entered, the station encryption API, database migration from version 1 | yes |
 | `test_norm_protocol.py` | Sending a NORM broadcast (smoke test, see section 5) | two |
 | `test_rx_audio_callback.py` | RX audio callback/worker split and re-blocking to whole DSP blocks | yes (not started) |
 | `test_api_fixes.py` | `GET /freedata/messages/{id}` (object / 404, called directly), broadcast DB helpers (read-only per-domain GET with `priority`, `mark_domain_as_read`, delete `not_found`), `Norm` priority coercion, `channel_busy` in state events, `POST /config` restarting only for non-GUI changes (fake ctx with its own config copy) | yes |

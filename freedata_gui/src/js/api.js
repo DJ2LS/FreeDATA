@@ -321,6 +321,55 @@ export async function setStationInfo(callsign, info) {
   return await apiPost(`/freedata/station/${callsign}`, info);
 }
 
+// Per-station encryption. Errors are returned to the caller (shown in the
+// encryption dialog) instead of as toast.
+async function apiRequestResult(method, endpoint, payload) {
+  setNetworkTrafficBusy(true);
+  try {
+    const options = { method };
+    if (payload !== undefined) {
+      options.headers = { "Content-Type": "application/json" };
+      options.body = JSON.stringify(payload);
+    }
+    const response = await fetch(buildURL(endpoint), options);
+    if (!response.ok) {
+      return { ok: false, error: await getErrorMessage(response) };
+    }
+    return { ok: true, data: await response.json() };
+  } catch (error) {
+    return { ok: false, error: error?.message || String(error) };
+  } finally {
+    setNetworkTrafficBusy(false);
+  }
+}
+
+export async function getStationEncryption(callsign) {
+  return await apiGet(`/freedata/station/${encodeURIComponent(callsign)}/encryption`);
+}
+
+export async function setStationEncryptionEnabled(callsign, enabled) {
+  return await apiRequestResult(
+    "PATCH",
+    `/freedata/station/${encodeURIComponent(callsign)}/encryption`,
+    { enabled },
+  );
+}
+
+export async function setStationEncryptionKey(callsign, key) {
+  return await apiRequestResult(
+    "PUT",
+    `/freedata/station/${encodeURIComponent(callsign)}/encryption/key`,
+    { key },
+  );
+}
+
+export async function deleteStationEncryptionKey(callsign) {
+  return await apiRequestResult(
+    "DELETE",
+    `/freedata/station/${encodeURIComponent(callsign)}/encryption/key`,
+  );
+}
+
 export async function getFreedataBroadcasts() {
   broadcastStore.loading = true;
   try {

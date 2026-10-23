@@ -73,6 +73,39 @@ class DatabaseManagerStations(DatabaseManager):
         finally:
             session.remove()
 
+    def is_encryption_enabled(self, callsign):
+        """Returns True if messages to this station are to be encrypted."""
+        session = self.get_thread_scoped_session()
+        try:
+            station = session.query(Station).filter_by(callsign=callsign).first()
+            return bool(station and station.encryption_enabled)
+        except SQLAlchemyError as e:
+            self.log(f"Failed to read encryption setting of {callsign}: {e}", isWarning=True)
+            return False
+        finally:
+            session.remove()
+
+    def set_encryption_enabled(self, callsign, enabled):
+        """Turns encryption for a station on or off, creating the station if needed.
+
+        Returns:
+            bool: True if the update was successful, False otherwise.
+        """
+        session = self.get_thread_scoped_session()
+        try:
+            station = self.get_or_create_station(callsign, session)
+            if not station:
+                return False
+            station.encryption_enabled = bool(enabled)
+            session.commit()
+            return True
+        except SQLAlchemyError as e:
+            session.rollback()
+            self.log(f"Failed to set encryption for {callsign}: {e}", isWarning=True)
+            return False
+        finally:
+            session.remove()
+
     def update_station_location(self, callsign, gridsquare):
         """
         Updates the location information of a station identified by its callsign.

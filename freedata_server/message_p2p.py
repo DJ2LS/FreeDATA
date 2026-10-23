@@ -1,36 +1,103 @@
 from datetime import datetime, timezone
 from freedata_server import api_validations
+from freedata_server import encryption
 import base64
 import json
+import zlib
 from freedata_server.message_system_db_messages import DatabaseManagerMessages
+from freedata_server.message_system_db_encryption import DatabaseManagerEncryption
 
 
-def message_received(ctx, data, statistics):
+def message_received(ctx, data, statistics, encrypted=False, frequency=None):
     """Handles a received P2P message.
 
     This function processes a received P2P message by decoding the data,
     converting it to a dictionary, and adding it to the message database.
 
     Args:
-        event_manager (EventManager): The event manager instance.
-        state_manager (StateManager): The state manager instance.
+        ctx (AppContext): The application context.
         data (bytes): The received message data.
         statistics (dict): Statistics about the message transmission.
+        encrypted (bool): Whether the message was received encrypted.
+        frequency (int, optional): Frequency the message was received on,
+            defaults to the current radio frequency.
     """
     decompressed_json_string = data.decode("utf-8")
     received_message_obj = MessageP2P.from_payload(decompressed_json_string)
     received_message_dict = MessageP2P.to_dict(received_message_obj)
-    DatabaseManagerMessages(ctx).add_message(
+    return DatabaseManagerMessages(ctx).add_message(
         received_message_dict,
         statistics,
         direction="receive",
         status="received",
         is_read=False,
-        frequency=ctx.state_manager.radio_frequency,
+        frequency=frequency if frequency is not None else ctx.state_manager.radio_frequency,
+        encrypted=encrypted,
     )
 
 
-def message_transmitted(ctx, data, statistics):
+def decompress_p2pmsg(data):
+    """Decompresses a headerless zlib P2P message payload."""
+    decompressor = zlib.decompressobj(wbits=-zlib.MAX_WBITS)
+    return decompressor.decompress(bytes(data)) + decompressor.flush()
+
+
+def encrypted_message_received(ctx, callsign, data, statistics):
+    """Handles an encrypted P2P message received from a station.
+
+    Decrypts and stores the message if the station's key is known. Otherwise
+    (or if the key doesn't fit) the encrypted data is kept until the user
+    enters the right key, and the GUI is asked for it.
+
+    Returns:
+        bytes or None: The decrypted, decompressed message, or None if it is pending.
+    """
+    key = ctx.station_keys.get(callsign) if callsign else None
+    if key is not None:
+        try:
+            plaintext = decompress_p2pmsg(encryption.decrypt(key, data))
+            message_received(ctx, plaintext, statistics, encrypted=True)
+            return plaintext
+        except encryption.DecryptionError:
+            reason = "wrong_key"
+    else:
+        reason = "receive"
+
+    DatabaseManagerEncryption(ctx).add_pending(
+        callsign, data, statistics=statistics, frequency=ctx.state_manager.radio_frequency
+    )
+    ctx.event_manager.send_encryption_key_required(callsign, reason)
+    return None
+
+
+def decrypt_pending_messages(ctx, callsign, key):
+    """Decrypts the stored encrypted messages of a station with a key.
+
+    Successfully decrypted messages are added to the message database and
+    removed from the pending list. Messages the key doesn't fit stay pending.
+
+    Returns:
+        tuple: (number decrypted, number still pending)
+    """
+    db = DatabaseManagerEncryption(ctx)
+    decrypted = failed = 0
+    for pending in db.get_pending(callsign):
+        try:
+            plaintext = decompress_p2pmsg(encryption.decrypt(key, pending["data"]))
+        except (encryption.DecryptionError, zlib.error):
+            failed += 1
+            continue
+        try:
+            message_received(ctx, plaintext, pending["statistics"], encrypted=True, frequency=pending["frequency"])
+        except (ValueError, KeyError) as e:
+            # decrypted, but not a valid message - nothing a different key would fix
+            db.log(f"Dropping undecodable encrypted message from {callsign}: {e}", isWarning=True)
+        db.delete_pending(pending["id"])
+        decrypted += 1
+    return decrypted, failed
+
+
+def message_transmitted(ctx, data, statistics, encrypted=False):
     """Handles a transmitted P2P message.
 
     This function processes a transmitted P2P message by decoding the
@@ -38,16 +105,18 @@ def message_transmitted(ctx, data, statistics):
     and statistics in the database.
 
     Args:
-        event_manager (EventManager): The event manager instance.
-        state_manager (StateManager): The state manager instance.
+        ctx (AppContext): The application context.
         data (bytes): The transmitted message data.
         statistics (dict): Statistics about the message transmission.
+        encrypted (bool): Whether the message was sent encrypted.
     """
     decompressed_json_string = data.decode("utf-8")
     payload_message_obj = MessageP2P.from_payload(decompressed_json_string)
     payload_message = MessageP2P.to_dict(payload_message_obj)
     # Todo we need to optimize this - WIP
-    DatabaseManagerMessages(ctx).update_message(payload_message["id"], update_data={"status": "transmitted"})
+    DatabaseManagerMessages(ctx).update_message(
+        payload_message["id"], update_data={"status": "transmitted", "encrypted": encrypted}
+    )
     DatabaseManagerMessages(ctx).update_message(
         payload_message["id"],
         update_data={"statistics": statistics},

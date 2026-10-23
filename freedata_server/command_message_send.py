@@ -3,6 +3,8 @@ from freedata_server.arq_session_iss import ARQSessionISS
 from freedata_server.message_p2p import MessageP2P
 from freedata_server.arq_data_type_handler import ARQ_SESSION_TYPES
 from freedata_server.message_system_db_messages import DatabaseManagerMessages
+from freedata_server.message_system_db_station import DatabaseManagerStations
+from freedata_server import encryption
 import threading
 import numpy as np
 import time
@@ -22,13 +24,27 @@ class SendMessageCommand(TxCommand):
         """
         origin = f"{self.ctx.config_manager.config['STATION']['mycall']}-{self.ctx.config_manager.config['STATION']['myssid']}"
         self.message = MessageP2P.from_api_params(origin, apiParams)
+
+        # an encrypted station without a key: hold the message until the key is entered
+        status = "queued"
+        if self.key_missing(self.message.destination):
+            status = "key_required"
+
         DatabaseManagerMessages(self.ctx).add_message(
             self.message.to_dict(),
             statistics={},
             direction="transmit",
-            status="queued",
+            status=status,
             frequency=self.ctx.state_manager.radio_frequency,
         )
+        if status == "key_required":
+            self.ctx.event_manager.send_encryption_key_required(self.message.destination, "send")
+
+    def key_missing(self, destination):
+        """True if messages to destination are to be encrypted, but its key is unknown."""
+        return DatabaseManagerStations(self.ctx).is_encryption_enabled(
+            destination
+        ) and not self.ctx.station_keys.has(destination)
 
     def transmit(self):
         """Transmits the first queued message using ARQ.
@@ -59,6 +75,16 @@ class SendMessageCommand(TxCommand):
             message_dict = DatabaseManagerMessages(self.ctx).get_message_by_id(first_queued_message["id"])
             message = MessageP2P.from_api_params(message_dict["origin"], message_dict)
 
+            # the key may be gone since the message was queued (e.g. after a server restart)
+            if self.key_missing(message.destination):
+                self.log(f"No encryption key for {message.destination}, holding message", isWarning=True)
+                DatabaseManagerMessages(self.ctx).update_message(
+                    first_queued_message["id"], update_data={"status": "key_required"}
+                )
+                self.ctx.event_manager.send_encryption_key_required(message.destination, "send")
+                return
+            encrypt = DatabaseManagerStations(self.ctx).is_encryption_enabled(message.destination)
+
             # wait some random time and wait if we have an ongoing codec2 transmission
             # on our channel. This should prevent some packet collision
             random_delay = np.random.randint(0, 10)
@@ -78,17 +104,26 @@ class SendMessageCommand(TxCommand):
                     self.log("Codec2 signal found, skipping  message until next cycle", isWarning=True)
                     return
 
+            # Convert JSON string to bytes (using UTF-8 encoding)
+            payload = message.to_payload().encode("utf-8")
+            json_bytearray = bytearray(payload)
+            session_type = ARQ_SESSION_TYPES.p2pmsg_zlib_aesgcm if encrypt else ARQ_SESSION_TYPES.p2pmsg_zlib
+            try:
+                data, data_type = self.arq_data_type_handler.prepare(json_bytearray, session_type, message.destination)
+            except encryption.KeyMissingError:
+                # key removed while we waited for a free channel
+                DatabaseManagerMessages(self.ctx).update_message(
+                    first_queued_message["id"], update_data={"status": "key_required"}
+                )
+                self.ctx.event_manager.send_encryption_key_required(message.destination, "send")
+                return
+
             # If we came until here, we are setting status to transmitting, otherwise it stays in queued
             DatabaseManagerMessages(self.ctx).update_message(
                 first_queued_message["id"],
                 update_data={"status": "transmitting"},
                 frequency=self.ctx.state_manager.radio_frequency,
             )
-
-            # Convert JSON string to bytes (using UTF-8 encoding)
-            payload = message.to_payload().encode("utf-8")
-            json_bytearray = bytearray(payload)
-            data, data_type = self.arq_data_type_handler.prepare(json_bytearray, ARQ_SESSION_TYPES.p2pmsg_zlib)
             # destination must come from the same (queued) message as the payload,
             # which is not necessarily self.message
             iss = ARQSessionISS(self.ctx, message.destination, data, data_type)

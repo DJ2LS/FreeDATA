@@ -8,6 +8,7 @@ from freedata_server.message_system_db_manager import DatabaseManager
 from freedata_server.message_system_db_attachments import DatabaseManagerAttachments
 from freedata_server.websocket_manager import wsm as WebsocketManager
 from freedata_server import constants
+from freedata_server.encryption import StationKeyStore
 from fastapi import Request, WebSocket
 
 
@@ -30,6 +31,7 @@ class AppContext:
         self.radio_manager = None  # Radio manager instance, started by the service manager on "start"
         self.socket_interface_manager = None  # Socket interface instance, We start it as we need it
         self.rf_modem = None  # Modem instnace, we start it as we need it
+        self.station_keys = StationKeyStore()  # pre-shared encryption keys, memory only
         self.message_system_db_manager = DatabaseManager(self)
         self.message_system_db_attachments = DatabaseManagerAttachments(self)
 

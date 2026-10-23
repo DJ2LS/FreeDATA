@@ -1,4 +1,4 @@
-from sqlalchemy import Index, Boolean, Column, String, Integer, JSON, ForeignKey, DateTime, Float
+from sqlalchemy import Index, Boolean, Column, String, Integer, JSON, ForeignKey, DateTime, Float, LargeBinary
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime, timezone
 
@@ -76,6 +76,8 @@ class Station(Base):
     checksum = Column(String, nullable=True)
     location = Column(JSON, nullable=True)
     info = Column(JSON, nullable=True)
+    # encrypt P2P messages sent to this station (see encryption.py), off by default
+    encryption_enabled = Column(Boolean, default=False, nullable=True)
     beacons = relationship("Beacon", order_by="Beacon.id", back_populates="station")
 
     __table_args__ = (Index("idx_station_callsign_checksum", "callsign", "checksum"),)
@@ -91,6 +93,7 @@ class Station(Base):
             "checksum": self.checksum,
             "location": self.location,
             "info": self.info,
+            "encryption_enabled": bool(self.encryption_enabled),
         }
 
 
@@ -133,6 +136,8 @@ class P2PMessage(Base):
     direction = Column(String)
     statistics = Column(JSON, nullable=True)
     is_read = Column(Boolean, default=True)
+    # sent or received encrypted over the air
+    encrypted = Column(Boolean, default=False, nullable=True)
 
     __table_args__ = (
         Index(
@@ -173,6 +178,31 @@ class P2PMessage(Base):
             "priority": self.priority,
             "is_read": self.is_read,
             "statistics": self.statistics,
+            "encrypted": bool(self.encrypted),
+        }
+
+
+class PendingEncryptedMessage(Base):
+    """An encrypted P2P message that could not be decrypted yet.
+
+    Received messages are kept here (still encrypted) until the user enters
+    the key for the sending station.
+    """
+
+    __tablename__ = "pending_encrypted_message"
+    id = Column(Integer, primary_key=True)
+    callsign = Column(String, index=True)
+    data = Column(LargeBinary)
+    statistics = Column(JSON, nullable=True)
+    frequency = Column(Integer, nullable=True)
+    received_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "callsign": self.callsign,
+            "size": len(self.data or b""),
+            "received_at": self.received_at.isoformat() if self.received_at else None,
         }
 
 

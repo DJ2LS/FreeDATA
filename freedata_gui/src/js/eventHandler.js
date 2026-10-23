@@ -9,6 +9,7 @@ import {
   getFreedataBroadcastsPerDomain,
 } from "./api";
 import { processRadioStatus } from "./radioHandler";
+import { loadEncryptionStatus, openEncryptionDialog } from "./encryptionHandler";
 import i18next from "./i18n";
 
 // ----------------- init pinia stores -------------
@@ -24,6 +25,8 @@ const serialStore = useSerialStore(pinia);
 import { getRemote } from "../store/settingsStore";
 import { useBroadcastStore } from "../store/broadcastStore";
 const broadcast = useBroadcastStore(pinia);
+import { useChatStore } from "../store/chatStore";
+const chat = useChatStore(pinia);
 
 export async function loadAllData() {
   let stateData = await getModemState();
@@ -118,6 +121,8 @@ export function eventDispatcher(data) {
 
       // getFreedataMessages() also updates the chat store
       getFreedataMessages();
+      // waiting encrypted messages may have changed
+      loadEncryptionStatus(chat.selectedCallsign);
       return;
     default:
       break;
@@ -160,6 +165,21 @@ export function eventDispatcher(data) {
   var message = "";
   console.log(data);
   switch (data.type) {
+    case "encryption":
+      if (data.status === "key_required") {
+        displayToast(
+          "warning",
+          "bi-lock",
+          `<strong>${escapeHtml(data.callsign)}</strong>: ${escapeHtml(
+            i18next.t(`chat.encryption.reason_${data.reason}`),
+          )}`,
+          8000,
+        );
+        // ask for the key right away; the dialog loads the station's status
+        openEncryptionDialog(data.callsign, data.reason);
+      }
+      return;
+
     case "hello-client":
       message = i18next.t("popups.connectedtoserver");
       displayToast("success", "bi-ethernet", message, 5000);

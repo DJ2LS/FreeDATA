@@ -512,7 +512,7 @@ Most jobs catch exceptions and `print()` them.
 - **[constants.py](../constants.py)** - `CONFIG_ENV_VAR="FREEDATA_CONFIG"`, `DEFAULT_CONFIG_FILE="config.ini"`,
   `DEFAULT_APP_DIR`, `MODEM_VERSION="0.19.0"`, `API_VERSION=4`, `ARQ_PROTOCOL_VERSION=1`,
   `LICENSE="GPL3.0"`, `DOCUMENTATION_URL`, `STATS_API_URL`, `EXPLORER_API_URL`,
-  `MESSAGE_SYSTEM_DATABASE_VERSION=1`. The `_default_app_dir()` docstring mentions
+  `MESSAGE_SYSTEM_DATABASE_VERSION=2`. The `_default_app_dir()` docstring mentions
   `FREEDATA_DATABASE` as a second override variable.
 - **[stats.py](../stats.py)** - `stats(ctx).push(status, session_statistics, dxcall, receiving=True)`
   POSTs session statistics (callsign, grid, frequency, avg SNR computed from the session's

@@ -349,6 +349,7 @@ own (section 2.3).
 | `raw_lzma` | 10 | `lzma.compress` | `lzma.decompress`, returned only | no-op | decompress, returned only |
 | `raw_gzip` | 11 | `gzip.compress` | `gzip.decompress`, returned only | no-op | decompress, returned only |
 | `p2pmsg_zlib` | 20 | raw deflate (`zlib.compressobj(level=6, wbits=-MAX_WBITS, Z_FILTERED)`, no header) | inflate, then `message_p2p.message_received(ctx, data, stats)` (stores the message in the DB) | inflate, then `message_failed` | inflate, then `message_transmitted` |
+| `p2pmsg_zlib_aesgcm` | 21 | as `p2pmsg_zlib`, then AES-256-GCM with the destination's key (`KeyMissingError` without a key), see [encryption.md](encryption.md) | decrypt with the key of `dxcall`, inflate, `message_received(..., encrypted=True)`; without a fitting key the payload is stored in `pending_encrypted_message` | decrypt own payload, inflate, then `message_failed` | decrypt own payload, inflate, then `message_transmitted(..., encrypted=True)` |
 | `p2p_connection` | 30 | raw deflate (as above) | inflate, then `received_arq(data)` on the owning P2P connection | `failed_arq()` on the owning P2P connection | `transmitted_arq(data)` on the owning P2P connection |
 
 Entry points:

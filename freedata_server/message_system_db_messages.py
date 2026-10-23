@@ -35,6 +35,7 @@ class DatabaseManagerMessages(DatabaseManager):
         status=None,
         is_read=True,
         frequency=None,
+        encrypted=False,
     ):
         """Adds a new P2P message to the database.
 
@@ -50,6 +51,7 @@ class DatabaseManagerMessages(DatabaseManager):
             status (str, optional): The status of the message. Defaults to None.
             is_read (bool, optional): Whether the message has been read. Defaults to True.
             frequency (float, optional): The frequency of the message. Defaults to None.
+            encrypted (bool, optional): Whether the message was received encrypted. Defaults to False.
 
         Returns:
             str or None: The message ID if successfully added, None otherwise.
@@ -90,6 +92,7 @@ class DatabaseManagerMessages(DatabaseManager):
                 is_read=is_read,
                 attempt=0,
                 statistics=statistics,
+                encrypted=encrypted,
             )
 
             session.add(new_message)
@@ -405,7 +408,7 @@ class DatabaseManagerMessages(DatabaseManager):
                         if frequency and frequency not in ["---"]:
                             statistics["frequency"] = frequency
                         setattr(message, key, statistics)
-                    elif key in ["body", "is_read", "attempt", "priority"]:
+                    elif key in ["body", "is_read", "attempt", "priority", "encrypted"]:
                         setattr(message, key, value)
 
                 session.commit()

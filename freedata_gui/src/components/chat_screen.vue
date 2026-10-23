@@ -8,6 +8,7 @@ import chat_new_message from "./chat_new_message.vue";
 
 import { getStationInfoByCallsign } from "./../js/stationHandler";
 import { loadBeaconData } from "./../js/messagesHandler";
+import { loadEncryptionStatus, openEncryptionDialog } from "./../js/encryptionHandler";
 
 import { setActivePinia } from 'pinia';
 import pinia from '../store/index';
@@ -15,6 +16,8 @@ setActivePinia(pinia);
 
 import { useChatStore } from '../store/chatStore.js';
 const chat = useChatStore(pinia);
+import { useEncryptionStore } from '../store/encryptionStore.js';
+const encryption = useEncryptionStore(pinia);
 
 import { useIsMobile } from '../js/mobile_devices.js';
 const { isMobile } = useIsMobile(992);
@@ -30,7 +33,7 @@ import {
   Legend,
 } from 'chart.js';
 
-import { watch, nextTick, ref } from 'vue';
+import { watch, nextTick, ref, computed } from 'vue';
 import annotationPlugin from 'chartjs-plugin-annotation';
 
 ChartJS.register(
@@ -63,6 +66,24 @@ watch(
 function resetChat() {
   chat.selectedCallsign = null;
 }
+
+// encryption state of the selected station, shown as lock button
+watch(
+  () => chat.selectedCallsign,
+  (callsign) => loadEncryptionStatus(callsign),
+  { immediate: true }
+);
+
+const encryptionButton = computed(() => {
+  const status = encryption.status[chat.selectedCallsign];
+  if (status?.pending_received || (status?.enabled && (!status.key_loaded || status.waiting_to_send))) {
+    return { icon: 'bi-lock', css: 'btn-warning' };
+  }
+  if (!status?.enabled) {
+    return { icon: 'bi-unlock', css: 'btn-outline-secondary' };
+  }
+  return { icon: 'bi-lock-fill', css: 'btn-success' };
+});
 
 
 
@@ -139,6 +160,17 @@ function resetChat() {
                   @click="loadBeaconData(chat.selectedCallsign)"
                 >
                   <i class="bi bi-graph-up h5" />
+                </button>
+                <button
+                  class="btn ms-2"
+                  :class="encryptionButton.css"
+                  :title="$t('chat.encryption.title')"
+                  @click="openEncryptionDialog(chat.selectedCallsign)"
+                >
+                  <i
+                    class="bi h5"
+                    :class="encryptionButton.icon"
+                  />
                 </button>
               </div>
             </div>
