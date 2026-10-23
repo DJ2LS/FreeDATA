@@ -31,7 +31,7 @@ jobs:
       - name: Install Linux dependencies
         run: |
           sudo apt update
-          sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2 patchelf desktop-file-utils
+          sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake patchelf desktop-file-utils
 
       - name: Install Python dependencies
         run: |
@@ -85,8 +85,8 @@ jobs:
               echo "$SERVER_CONFIG_FILE exists."
           else 
               echo "$SERVER_CONFIG_FILE does not exist. Copying the default one"
-              mkdir ~/.config/FreeDATA
-              cp ./server/config.ini $SERVER_CONFIG_FILE
+              mkdir -p ~/.config/FreeDATA
+              cp ./server/config.ini.example $SERVER_CONFIG_FILE
           fi
 
           echo "Setting server config variable"
